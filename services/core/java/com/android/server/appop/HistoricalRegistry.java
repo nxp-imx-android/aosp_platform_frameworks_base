@@ -299,6 +299,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                 mIsReady = true;
             }
             if (oldMode != mMode && mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+                Slog.i(TAG, "Historical registry mode is disabled, clearing history.");
                 clearAllHistory();
                 mIsReady = false;
             }
@@ -388,6 +389,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             @Nullable String filterAttributionTag, int filterOp, int filter,
             @NonNull SimpleDateFormat sdf, @NonNull Date date, boolean includeDiscreteOps,
             int limit, boolean dumpHistory) {
+        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+            return;
+        }
         pw.println();
         pw.print(prefix);
         pw.print("History:");
@@ -605,6 +609,13 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             }
             final AppOpsManager.HistoricalOps result =
                     new AppOpsManager.HistoricalOps(beginTimeMillis, endTimeMillis);
+            final Bundle payload = new Bundle();
+
+            if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+                payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
+                callback.sendResult(payload);
+                return;
+            }
 
             mShortIntervalHistoryHelper.addShortIntervalOpsToHistoricalOpsResult(result,
                     beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
@@ -614,9 +625,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                         beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
                         attributionTag, flags);
             }
-
             // Send back the result.
-            final Bundle payload = new Bundle();
             payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
             callback.sendResult(payload);
         } finally {
@@ -626,12 +635,18 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void clearHistory(int uid, String packageName) {
+        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+            return;
+        }
         mShortIntervalHistoryHelper.clearHistory(uid, packageName);
         mLongIntervalHistoryHelper.clearHistory(uid, packageName);
     }
 
     @Override
     public void clearAllHistory() {
+        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+            return;
+        }
         mShortIntervalHistoryHelper.clearHistory();
         mLongIntervalHistoryHelper.clearHistory();
     }
@@ -666,6 +681,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void persistPendingHistory() {
+        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+            return;
+        }
         mLongIntervalHistoryHelper.shutdown();
         mShortIntervalHistoryHelper.shutdown();
     }
