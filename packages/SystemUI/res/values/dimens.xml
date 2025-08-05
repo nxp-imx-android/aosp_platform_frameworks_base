@@ -1397,6 +1397,7 @@
     <dimen name="qs_media_seekbar_progress_stroke_width">2dp</dimen>
     <dimen name="qs_media_session_collapsed_legacy_guideline">144dp</dimen>
     <dimen name="qs_media_session_collapsed_guideline">168dp</dimen>
+    <dimen name="qs_media_session_collapsed_guideline_with_arrows">216dp</dimen>
 
     <!-- Chipbar -->
     <!-- (Used for media tap-to-transfer chip for sender device and active unlock) -->

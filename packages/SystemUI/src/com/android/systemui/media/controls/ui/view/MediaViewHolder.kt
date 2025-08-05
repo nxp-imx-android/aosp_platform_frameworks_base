@@ -91,6 +91,10 @@ class MediaViewHolder constructor(itemView: View) {
 
     val actionsTopBarrier = itemView.requireViewById<Barrier>(R.id.media_action_barrier_top)
 
+    // Pagination
+    val pageLeft = itemView.requireViewById<ImageButton>(R.id.page_left)
+    val pageRight = itemView.requireViewById<ImageButton>(R.id.page_right)
+
     fun getAction(id: Int): ImageButton {
         return when (id) {
             R.id.actionPlayPause -> actionPlayPause
@@ -105,10 +109,6 @@ class MediaViewHolder constructor(itemView: View) {
                 throw IllegalArgumentException()
             }
         }
-    }
-
-    fun getTransparentActionButtons(): List<ImageButton> {
-        return listOf(actionNext, actionPrev, action0, action1, action2, action3, action4)
     }
 
     fun marquee(start: Boolean, delay: Long) {
@@ -161,6 +161,8 @@ class MediaViewHolder constructor(itemView: View) {
                     R.id.icon,
                     R.id.media_scrubbing_elapsed_time,
                     R.id.media_scrubbing_total_time,
+                    R.id.page_left,
+                    R.id.page_right,
                 )
                 .apply {
                     if (enableSuggestedDeviceUi()) {
@@ -192,6 +194,8 @@ class MediaViewHolder constructor(itemView: View) {
                 R.id.header_artist,
                 R.id.media_explicit_indicator,
                 R.id.actionPlayPause,
+                R.id.page_left,
+                R.id.page_right,
             )
 
         val backgroundIds =

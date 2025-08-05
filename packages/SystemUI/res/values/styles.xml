@@ -972,6 +972,10 @@
         <item name="android:stateListAnimator">@anim/media_button_state_list_animator</item>
     </style>
 
+    <style name="MediaPlayer.PageButton" parent="MediaPlayer.SessionAction.Secondary">
+        <item name="android:color">@color/media_player_action_color</item>
+    </style>
+
     <style name="MediaPlayer.OutlineButton">
         <item name="android:background">@drawable/qs_media_outline_button</item>
         <item name="android:textColor">@color/media_on_background</item>

@@ -76,6 +76,7 @@ import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
 import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.controls.ui.binder.SeekBarObserver
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
+import com.android.systemui.media.controls.ui.view.MediaCarouselScrollHandler
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
 import com.android.systemui.media.controls.util.MediaUiEventLogger
@@ -156,6 +157,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     @Mock private lateinit var collapsedSet: ConstraintSet
     @Mock private lateinit var mediaOutputDialogManager: MediaOutputDialogManager
     @Mock private lateinit var mediaCarouselController: MediaCarouselController
+    @Mock private lateinit var mediaCarouselScrollHandler: MediaCarouselScrollHandler
     @Mock private lateinit var falsingManager: FalsingManager
     @Mock private lateinit var transitionParent: ViewGroup
     @Mock private lateinit var suggestionDrawable: Drawable
@@ -196,6 +198,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
     private lateinit var deviceSuggestionIcon: ImageView
     private lateinit var deviceSuggestionConnectingIcon: ProgressBar
     private lateinit var deviceSuggestionButton: View
+    private lateinit var pageLeftButton: ImageButton
+    private lateinit var pageRightButton: ImageButton
 
     private lateinit var session: MediaSession
     private lateinit var device: MediaDeviceData
@@ -231,6 +235,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
         mainExecutor = FakeExecutor(clock)
         whenever(mediaViewController.expandedLayout).thenReturn(expandedSet)
         whenever(mediaViewController.collapsedLayout).thenReturn(collapsedSet)
+        whenever(mediaCarouselController.mediaCarouselScrollHandler)
+            .thenReturn(mediaCarouselScrollHandler)
 
         // Set up package manager mocks
         val icon = context.getDrawable(R.drawable.ic_android)
@@ -430,6 +436,11 @@ public class MediaControlPanelTest : SysuiTestCase() {
         whenever(viewHolder.deviceSuggestionConnectingIcon)
             .thenReturn(deviceSuggestionConnectingIcon)
         whenever(viewHolder.deviceSuggestionButton).thenReturn(deviceSuggestionButton)
+
+        pageLeftButton = ImageButton(context).also { it.setId(R.id.page_left) }
+        whenever(viewHolder.pageLeft).thenReturn(pageLeftButton)
+        pageRightButton = ImageButton(context).also { it.setId(R.id.page_right) }
+        whenever(viewHolder.pageRight).thenReturn(pageRightButton)
     }
 
     @After
@@ -1876,6 +1887,72 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         // Then we request keyguard dismissal
         verify(activityStarter).postStartActivityDismissingKeyguard(eq(pendingIntent))
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun bindPageArrows() {
+        player.attachPlayer(viewHolder)
+        player.bindPlayer(mediaData, PACKAGE)
+
+        viewHolder.pageLeft.callOnClick()
+        verify(mediaCarouselScrollHandler).scrollByStep(eq(-1))
+
+        viewHolder.pageRight.callOnClick()
+        verify(mediaCarouselScrollHandler).scrollByStep(eq(1))
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun setArrowsVisible() {
+        val guidePx =
+            context.resources.getDimensionPixelSize(
+                R.dimen.qs_media_session_collapsed_guideline_with_arrows
+            )
+
+        player.attachPlayer(viewHolder)
+        player.bindPlayer(mediaData, PACKAGE)
+
+        player.setPageArrowsVisible(true)
+
+        verify(expandedSet).setVisibility(R.id.page_left, ConstraintSet.VISIBLE)
+        verify(expandedSet).setVisibility(R.id.page_right, ConstraintSet.VISIBLE)
+
+        verify(collapsedSet).setVisibility(R.id.page_left, ConstraintSet.VISIBLE)
+        verify(collapsedSet).setVisibility(R.id.page_right, ConstraintSet.VISIBLE)
+        verify(collapsedSet).setGuidelineEnd(eq(R.id.action_button_guideline), eq(guidePx))
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun setArrowsNotVisible() {
+        val guidePx =
+            context.resources.getDimensionPixelSize(R.dimen.qs_media_session_collapsed_guideline)
+
+        player.attachPlayer(viewHolder)
+        player.bindPlayer(mediaData, PACKAGE)
+
+        player.setPageArrowsVisible(false)
+
+        verify(expandedSet).setVisibility(R.id.page_left, ConstraintSet.GONE)
+        verify(expandedSet).setVisibility(R.id.page_right, ConstraintSet.GONE)
+
+        verify(collapsedSet).setVisibility(R.id.page_left, ConstraintSet.GONE)
+        verify(collapsedSet).setVisibility(R.id.page_right, ConstraintSet.GONE)
+        verify(collapsedSet).setGuidelineEnd(eq(R.id.action_button_guideline), eq(guidePx))
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun enablePageArrows() {
+        player.attachPlayer(viewHolder)
+        player.bindPlayer(mediaData, PACKAGE)
+
+        player.setPageLeftEnabled(true)
+        assertThat(viewHolder.pageLeft.isEnabled).isTrue()
+
+        player.setPageRightEnabled(true)
+        assertThat(viewHolder.pageRight.isEnabled).isTrue()
     }
 
     private fun getColorIcon(color: Int): Icon {

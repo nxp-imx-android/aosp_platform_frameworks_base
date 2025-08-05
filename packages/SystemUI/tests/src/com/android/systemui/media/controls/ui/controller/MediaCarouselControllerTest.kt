@@ -33,6 +33,7 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.dump.DumpManager
@@ -961,6 +962,65 @@ class MediaCarouselControllerTest : SysuiTestCase() {
 
         // This is processed as a user-initiated dismissal
         verify(mediaDataManager).dismissMediaData(eq(PAUSED_LOCAL), anyLong(), eq(true))
+    }
+
+    @EnableFlags(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun singleMediaPlayer_disablePageArrows() {
+        verify(mediaDataManager).addListener(capture(listener))
+        listener.value.onMediaDataLoaded(
+            PLAYING_LOCAL,
+            null,
+            DATA.copy(
+                active = true,
+                isPlaying = true,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = false,
+            ),
+        )
+        runAllReady()
+
+        val player = MediaPlayerData.players().first()
+        verify(player).setPageArrowsVisible(eq(false))
+    }
+
+    @EnableFlags(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @Test
+    fun multipleMediaPlayers_enablePageArrows() {
+        verify(mediaDataManager).addListener(capture(listener))
+        listener.value.onMediaDataLoaded(
+            PLAYING_LOCAL,
+            null,
+            DATA.copy(
+                active = true,
+                isPlaying = true,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = false,
+            ),
+        )
+        listener.value.onMediaDataLoaded(
+            PAUSED_LOCAL,
+            null,
+            DATA.copy(
+                active = true,
+                isPlaying = false,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = false,
+            ),
+        )
+        runAllReady()
+
+        assertEquals(2, MediaPlayerData.players().size)
+        MediaPlayerData.players().forEachIndexed { index, mediaPlayer ->
+            verify(mediaPlayer, atLeast(1)).setPageArrowsVisible(eq(true))
+            if (index == 0) {
+                verify(mediaPlayer).setPageLeftEnabled(eq(false))
+                verify(mediaPlayer).setPageRightEnabled(eq(true))
+            } else if (index == 1) {
+                verify(mediaPlayer).setPageLeftEnabled(eq(true))
+                verify(mediaPlayer).setPageRightEnabled(eq(false))
+            }
+        }
     }
 
     /**
