@@ -1509,12 +1509,12 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     || mUsbPortStatus.getCurrentDataRole() != currentDataRole
                     || mUsbPortStatus.getSupportedRoleCombinations()
                     != supportedRoleCombinations) {
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                        supportedRoleCombinations, UsbPortStatus.CONTAMINANT_PROTECTION_NONE,
-                        UsbPortStatus.CONTAMINANT_DETECTION_NOT_SUPPORTED,
-                        UsbPortStatus.DATA_STATUS_UNKNOWN, false,
-                        UsbPortStatus.POWER_BRICK_STATUS_UNKNOWN,
-                        new int[] {}, 0, null);
+                UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                mUsbPortStatus = builder.build();
+
                 dispositionChanged = true;
             }
 
@@ -1556,11 +1556,16 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     != powerTransferLimited
                     || mUsbPortStatus.getPowerBrickConnectionStatus()
                     != powerBrickConnectionStatus) {
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                        supportedRoleCombinations, contaminantProtectionStatus,
-                        contaminantDetectionStatus, usbDataStatus,
-                        powerTransferLimited, powerBrickConnectionStatus,
-                        new int[] {}, 0, null);
+                UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                builder.setContaminantStatus(contaminantProtectionStatus,
+                        contaminantDetectionStatus);
+                builder.setUsbDataStatus(usbDataStatus);
+                builder.setPowerTransferLimited(powerTransferLimited);
+                builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+                mUsbPortStatus = builder.build();
                 dispositionChanged = true;
             }
 
@@ -1586,6 +1591,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             boolean dispositionChanged = false;
             boolean complianceChanged = false;
             boolean displayPortChanged = false;
+            UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
 
             if (mUsbPortStatus != null) {
                 complianceChanged = complianceWarningsChanged(complianceWarnings);
@@ -1616,21 +1622,35 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 if (mUsbPortStatus == null && complianceWarnings.length > 0) {
                     mComplianceWarningChange = COMPLIANCE_WARNING_CHANGED;
                 }
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                        supportedRoleCombinations, contaminantProtectionStatus,
-                        contaminantDetectionStatus, usbDataStatus,
-                        powerTransferLimited, powerBrickConnectionStatus,
-                        complianceWarnings, plugState, displayPortAltModeInfo);
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                builder.setContaminantStatus(contaminantProtectionStatus,
+                        contaminantDetectionStatus);
+                builder.setUsbDataStatus(usbDataStatus);
+                builder.setPowerTransferLimited(powerTransferLimited);
+                builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+                builder.setComplianceWarnings(complianceWarnings);
+                builder.setPlugState(plugState);
+                builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                mUsbPortStatus = builder.build();
                 dispositionChanged = true;
             // Case used in order to send compliance warning broadcast or signal DisplayPort
             // listeners. These targeted broadcasts don't use dispositionChanged to broadcast to
             // general ACTION_USB_PORT_CHANGED.
             } else if (complianceChanged || displayPortChanged) {
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole,
-                        currentDataRole, supportedRoleCombinations,
-                        contaminantProtectionStatus, contaminantDetectionStatus,
-                        usbDataStatus, powerTransferLimited, powerBrickConnectionStatus,
-                        complianceWarnings, plugState, displayPortAltModeInfo);
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                builder.setContaminantStatus(contaminantProtectionStatus,
+                        contaminantDetectionStatus);
+                builder.setUsbDataStatus(usbDataStatus);
+                builder.setPowerTransferLimited(powerTransferLimited);
+                builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+                builder.setComplianceWarnings(complianceWarnings);
+                builder.setPlugState(plugState);
+                builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                mUsbPortStatus = builder.build();
             }
 
             if (mUsbPortStatus.isConnected() && mConnectedAtMillis == 0) {
