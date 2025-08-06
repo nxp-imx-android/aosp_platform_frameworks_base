@@ -36,6 +36,7 @@ import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureType
 
 /** Main component for the pre-capture UI. */
 @Composable
@@ -90,7 +91,15 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                     )
                 RegionBox(
                     buttonText =
-                        stringResource(id = R.string.screen_capture_region_selection_button),
+                        stringResource(
+                            id =
+                                when (viewModel.captureType) {
+                                    ScreenCaptureType.SCREENSHOT ->
+                                        R.string.screen_capture_region_selection_button
+                                    ScreenCaptureType.SCREEN_RECORD ->
+                                        R.string.screen_capture_record_region_selection_button
+                                }
+                        ),
                     buttonIcon = icon,
                     onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
                     onCaptureClick = { viewModel.takePartialScreenshot() },
