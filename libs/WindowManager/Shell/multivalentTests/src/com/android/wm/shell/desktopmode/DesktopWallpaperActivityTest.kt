@@ -16,9 +16,9 @@
 
 package com.android.wm.shell.desktopmode
 
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import androidx.activity.BackEventCompat
 import androidx.fragment.app.FragmentActivity
@@ -34,50 +34,47 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Tests for [DesktopWallpaperActivity].
+/**
+ * Tests for [DesktopWallpaperActivity].
  *
- * Build/Install/Run:
- *  atest WMShellRobolectricTests:DesktopWallpaperActivityTest (on host)
- *  atest WMShellMultivalentTestsOnDevice:DesktopWallpaperActivityTest (on device)
+ * Build/Install/Run: atest WMShellRobolectricTests:DesktopWallpaperActivityTest (on host) atest
+ * WMShellMultivalentTestsOnDevice:DesktopWallpaperActivityTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DesktopWallpaperActivityTest() {
 
-    @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
     @Rule
     @JvmField
-    val activityScenarioRule =
-        ActivityScenarioRule(DesktopWallpaperActivity::class.java)
+    val activityScenarioRule = ActivityScenarioRule(DesktopWallpaperActivity::class.java)
 
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
     )
     fun onTopResumedActivityChanged_whenTrue_setsWindowFocusable() {
         activityScenarioRule.scenario.onActivity { activity ->
             activity.onTopResumedActivityChanged(true)
 
             val windowFlags = activity.window.attributes.flags
-            assertThat(windowFlags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
-                .isEqualTo(0)
+            assertThat(windowFlags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE).isEqualTo(0)
         }
     }
 
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
     )
     fun onTopResumedActivityChanged_whenFalse_setsWindowNotFocusable() {
         activityScenarioRule.scenario.onActivity { activity ->
             activity.onTopResumedActivityChanged(true)
             assertThat(
-                activity.window.attributes.flags and
+                    activity.window.attributes.flags and
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            )
+                )
                 .isEqualTo(0)
 
             activity.onTopResumedActivityChanged(false)
@@ -91,7 +88,7 @@ class DesktopWallpaperActivityTest() {
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
     )
     fun onBackPressed_movesTaskToBack() {
         var wallpaperActivity: FragmentActivity? = null
@@ -103,6 +100,19 @@ class DesktopWallpaperActivityTest() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
         assertThat(wallpaperActivity?.isFinishing).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onMovedToDisplay_finishesActivity() {
+        var wallpaperActivity: FragmentActivity? = null
+
+        activityScenarioRule.scenario.onActivity { activity ->
+            wallpaperActivity = activity
+            activity.onMovedToDisplay(DEFAULT_DISPLAY, null)
+        }
+
+        assertThat(wallpaperActivity?.isFinishing).isTrue()
     }
 
     private fun backEvent(progress: Float = 0f): BackEventCompat {
