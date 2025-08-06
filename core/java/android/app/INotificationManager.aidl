@@ -273,7 +273,4 @@ interface INotificationManager
     String[] getAdjustmentDeniedPackages(int userId, String key);
     boolean isAdjustmentSupportedForPackage(int userId, String key, String pkg);
     void setAdjustmentSupportedForPackage(int userId, String key, String pkg, boolean enabled);
-
-    // TODO: b/389918945 - Remove once nm_binder_perf flags are going to Nextfood.
-    void incrementCounter(String metricId);
 }

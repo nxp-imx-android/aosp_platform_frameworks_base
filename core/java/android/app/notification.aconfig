@@ -190,16 +190,6 @@ flag {
 }
 
 flag {
-  name: "nm_binder_perf_log_nm_throttling"
-  namespace: "systemui"
-  description: "Log throttled operations (notify, cancel) to statsd. This flag will NOT be pushed past Trunkfood."
-  bug: "389918945"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "nm_binder_perf_get_apps_with_channels"
   namespace: "systemui"
   description: "Use a single binder call to get the set of apps with channels for a user"
