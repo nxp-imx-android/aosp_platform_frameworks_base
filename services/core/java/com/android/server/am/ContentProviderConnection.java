@@ -120,6 +120,11 @@ public final class ContentProviderConnection extends Binder implements
         return provider;
     }
 
+    @Override
+    public ProcessRecord getClient() {
+        return client;
+    }
+
     public void stopAssociation() {
         if (association == null) {
             return; // early exit to optimize on oomadj cycles

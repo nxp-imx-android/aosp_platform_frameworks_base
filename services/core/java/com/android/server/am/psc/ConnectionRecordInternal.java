@@ -43,6 +43,15 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     /** Returns the service associated with this connection. */
     public abstract ServiceRecordInternal getService();
 
+    /** Returns the client process associated with this connection. */
+    public abstract ProcessRecordInternal getClient();
+
+    /**
+     * Returns the attributed client process associated with this connection, if applicable (e.g.,
+     * for SDK Sandbox).
+     */
+    public abstract ProcessRecordInternal getAttributedClient();
+
     /** Tracks the current process state and sequence number for association management. */
     public abstract void trackProcState(int procState, int seq);
 

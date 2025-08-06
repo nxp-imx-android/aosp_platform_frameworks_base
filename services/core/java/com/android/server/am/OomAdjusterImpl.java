@@ -566,7 +566,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Connections for clients marked reachable will be ignored.
      */
     private class ComputeConnectionIgnoringReachableClientsConsumer implements
-            BiConsumer<Connection, ProcessRecord> {
+            BiConsumer<Connection, ProcessRecordInternal> {
         private OomAdjusterArgs mArgs = null;
         public boolean hasReachableClient = false;
 
@@ -576,7 +576,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         @Override
-        public void accept(Connection conn, ProcessRecord client) {
+        public void accept(Connection conn, ProcessRecordInternal client) {
             final ProcessRecordInternal host = mArgs.mApp;
             final ProcessRecordInternal topApp = mArgs.mTopApp;
             final long now = mArgs.mNow;
@@ -1085,9 +1085,9 @@ public class OomAdjusterImpl extends OomAdjuster {
      * connectionConsumer}.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private static void forEachClientConnectionLSP(ProcessRecord app,
-            BiConsumer<Connection, ProcessRecord> connectionConsumer) {
-        final ProcessServiceRecordInternal psr = app.mServices;
+    private static void forEachClientConnectionLSP(ProcessRecordInternal app,
+            BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
+        final ProcessServiceRecordInternal psr = app.getServices();
 
         for (int i = psr.numberOfRunningServices() - 1; i >= 0; i--) {
             final ServiceRecordInternal s = psr.getRunningServiceAt(i);
@@ -1095,13 +1095,12 @@ public class OomAdjusterImpl extends OomAdjuster {
                 final ArrayList<? extends ConnectionRecordInternal> clist =
                         s.getConnectionAt(j);
                 for (int k = clist.size() - 1; k >= 0; k--) {
-                    // TODO(b/425766486): Switch to use ConnectionRecordInternal.
-                    final ConnectionRecord cr = (ConnectionRecord) clist.get(k);
-                    final ProcessRecord client;
-                    if (app.isSdkSandbox && cr.binding.attributedClient != null) {
-                        client = cr.binding.attributedClient;
+                    final ConnectionRecordInternal cr = clist.get(k);
+                    final ProcessRecordInternal client;
+                    if (app.isSdkSandbox && cr.getAttributedClient() != null) {
+                        client = cr.getAttributedClient();
                     } else {
-                        client = cr.binding.client;
+                        client = cr.getClient();
                     }
                     if (client == null || client == app) continue;
                     connectionConsumer.accept(cr, client);
@@ -1109,12 +1108,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        final ProcessProviderRecord ppr = app.getProviders();
+        final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int i = ppr.numberOfProviders() - 1; i >= 0; i--) {
-            final ContentProviderRecord cpr = ppr.getProviderAt(i);
+            final ContentProviderRecordInternal cpr = ppr.getProviderAt(i);
             for (int j = cpr.numberOfConnections() - 1; j >= 0; j--) {
-                final ContentProviderConnection conn = cpr.getConnectionsAt(j);
-                connectionConsumer.accept(conn, conn.client);
+                final ContentProviderConnectionInternal conn = cpr.getConnectionsAt(j);
+                connectionConsumer.accept(conn, conn.getClient());
             }
         }
     }
