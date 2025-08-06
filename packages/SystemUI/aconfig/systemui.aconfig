@@ -2138,3 +2138,12 @@ flag {
     }
 }
 
+flag {
+    name: "dream_suppression"
+    namespace: "systemui"
+    description: "Suppress dream when device is in a vehicle."
+    bug: "433984504"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

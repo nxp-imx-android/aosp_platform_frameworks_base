@@ -40,6 +40,7 @@ import com.android.systemui.dreams.homecontrols.HomeControlsDreamService;
 import com.android.systemui.dreams.homecontrols.dagger.HomeControlsDataSourceModule;
 import com.android.systemui.dreams.homecontrols.dagger.HomeControlsRemoteServiceComponent;
 import com.android.systemui.dreams.homecontrols.system.HomeControlsRemoteService;
+import com.android.systemui.dreams.suppression.dagger.DreamSuppressionStartableModule;
 import com.android.systemui.lowlightclock.LowLightClockDreamService;
 import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.pipeline.shared.TileSpec;
@@ -72,6 +73,7 @@ import javax.inject.Named;
         ScrimModule.class,
         HomeControlsDataSourceModule.class,
         DreamSettingsRepositoryModule.class,
+        DreamSuppressionStartableModule.class,
 },
         subcomponents = {
                 DreamComplicationComponent.class,
