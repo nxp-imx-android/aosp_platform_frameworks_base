@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Den här varningen visas eftersom det här är en felsökningsbar app som för närvarande testas. Om du inte är utvecklaren rapporterar du detta till utvecklaren och ber om en app som inte är felsökningsbar. &lt;br&gt;&lt;br&gt; Den här appen är inte kompatibel med 16 kB. APK- och ELF-kontrollerna misslyckades. Följ stegen på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Följande bibliotek har inte anpassats för 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Visa inte igen"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilitet med Android-appar"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : LOAD-segmentet är inte anpassat för detta&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : Det okomprimerade biblioteket är inte anpassat för detta&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : LOAD-segmentet och det okomprimerade biblioteket är inte anpassade för detta&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : Okänt fel&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Tjänsten är inte etablerad."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Det går inte att ändra inställningen för nummerpresentatör."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Du har bytt mobildata till <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -696,10 +692,8 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Verifiera din identitet"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Fortsätt med hjälp av din biometriska data"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Fortsätt med hjälp av din biometriska data eller skärmlåset"</string>
-    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
-    <skip />
+    <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"Verifiera din identitet på telefonen för att fortsätta"</string>
+    <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"Verifiera din identitet på surfplattan för att fortsätta"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrisk hårdvara är inte tillgänglig"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Autentiseringen avbröts"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Identifierades inte"</string>
@@ -1134,6 +1128,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Lås upp med SIM-kortets pinkod."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Lås upp med SIM-kortets PUK-kod."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Lås upp med lösenord."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Fält för mönster."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Fält med dragreglage."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2048,7 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maximera"</string>
     <string name="close_button_text" msgid="10603510034455258">"Stäng"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Svara"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Avvisa"</string>
