@@ -44,9 +44,6 @@ class AppCompatRoundedCorners {
     }
 
     void updateRoundedCornersIfNeeded(@NonNull final WindowState mainWindow) {
-        if (!requiresRoundedCorners(mainWindow)) {
-            return;
-        }
         final SurfaceControl windowSurface = mainWindow.getSurfaceControl();
         if (windowSurface == null || !windowSurface.isValid()) {
             return;
