@@ -1959,7 +1959,7 @@ flag {
 flag {
     name: "large_screen_sharing"
     namespace: "systemui"
-    description: "Enables the new large screen window sharing experience."
+    description: "Enables the new large screen window and tab sharing experience."
     bug: "430582532"
 }
 
