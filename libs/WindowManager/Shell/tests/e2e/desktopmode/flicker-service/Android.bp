@@ -109,20 +109,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeFlickerTest",
-    base: "WMShellFlickerTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest"],
-}
-
-test_module_config {
-    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutFlickerTest",
-    base: "WMShellFlickerTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.OpenBrowserWithKeyboardShortcutFlickerTest"],
-}
-
-test_module_config {
     name: "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest",
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -228,6 +214,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest"],
+}
+
+test_module_config {
     name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutFlickerTest",
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -253,6 +246,20 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.MinimizeAppsWithKeyboardFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-OpenAppFromAllAppsUsingKeyboardFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.OpenBrowserWithKeyboardShortcutFlickerTest"],
 }
 
 test_module_config {

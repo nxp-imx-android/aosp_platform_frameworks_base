@@ -142,6 +142,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.maximize.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
