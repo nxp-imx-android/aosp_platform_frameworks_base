@@ -76,7 +76,6 @@ import com.android.systemui.shade.NotificationShadeWindowControllerImpl;
 import com.android.systemui.shade.ShadeModule;
 import com.android.systemui.startable.Dependencies;
 import com.android.systemui.statusbar.CommandQueue;
-import com.android.systemui.statusbar.KeyboardShortcutsModule;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationLockscreenUserManagerImpl;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -150,7 +149,6 @@ import javax.inject.Provider;
         GestureModule.class,
         HeadsUpModule.class,
         KeyguardModule.class,
-        KeyboardShortcutsModule.class,
         KeyguardBlueprintModule.class,
         KeyguardSectionsModule.class,
         KeyboardTouchpadTutorialModule.class,
