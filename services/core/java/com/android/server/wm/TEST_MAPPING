@@ -51,7 +51,7 @@
       "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/pip2"
     },
     {
-      "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/splitscreen"
+      "path": "frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/splitscreen"
     },
     {
       "path": "cts/tests/framework/base/windowmanager/src/android/server/wm/activity"
