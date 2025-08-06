@@ -1384,7 +1384,7 @@ public class UserManagerService extends IUserManager.Stub {
         int userSize = mUsers.size();
         for (int i = 0; i < userSize; i++) {
             UserInfo user = mUsers.valueAt(i).info;
-            if (user.isMain() && !mRemovingUserIds.get(user.id)) {
+            if (user.isMainUnlogged() && !mRemovingUserIds.get(user.id)) {
                 return user;
             }
         }
@@ -2536,7 +2536,7 @@ public class UserManagerService extends IUserManager.Stub {
             }
             return getOwnerName();
         }
-        if (user.isMain()) {
+        if (user.isMainUnlogged()) {
             return getOwnerName();
         }
         if (user.isGuest()) {
@@ -8812,6 +8812,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public @UserIdInt int getMainUserId() {
+            UserManager.logStaticDeprecation();
             return getMainUserIdUnchecked();
         }
 
