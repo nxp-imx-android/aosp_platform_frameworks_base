@@ -4,6 +4,9 @@
       "path": "frameworks/base/libs/WindowManager/Shell/tests/unittest"
     },
     {
+      "path": "frameworks/base/libs/WindowManager/Shell/multivalentTests"
+    },
+    {
       // Includes all CTS configs other than: Display, IME
       // CTS Keyguard is moved to keyguard subfolder
       // CTS BackNavigation is moved to back subfolder
