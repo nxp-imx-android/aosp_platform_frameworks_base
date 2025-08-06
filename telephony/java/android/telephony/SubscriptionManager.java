@@ -4599,6 +4599,48 @@ public class SubscriptionManager {
     }
 
     /**
+     * Gets the last known phone number from the first available source, bypassing
+     * certain liveness checks like IMS registration status.
+     * <p>
+     * This API is similar to {@link #getPhoneNumber(int)} but returns a cached value
+     * even if IMS is not registered. It is intended for internal system use where
+     * number availability is critical.
+     *
+     * @param subscriptionId The subscription ID.
+     * @return The last known phone number, or an empty string if not available.
+     *
+     * @throws IllegalStateException if the telephony process is not currently available.
+     * @throws SecurityException if the caller doesn't have permissions required.
+     * @throws UnsupportedOperationException If the device does not have
+     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     *
+     * @hide
+     */
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.READ_PHONE_NUMBERS,
+            android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
+            "carrier privileges",
+    })
+    @NonNull
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    public String getLastKnownPhoneNumber(int subscriptionId) {
+        if (subscriptionId == DEFAULT_SUBSCRIPTION_ID) {
+            subscriptionId = getDefaultSubscriptionId();
+        }
+        try {
+            ISub iSub = TelephonyManager.getSubscriptionService();
+            if (iSub != null) {
+                return iSub.getLastKnownPhoneNumberFromFirstAvailableSource(subscriptionId,
+                        mContext.getOpPackageName(), mContext.getAttributionTag());
+            } else {
+                throw new IllegalStateException("subscription service unavailable.");
+            }
+        } catch (RemoteException ex) {
+            throw ex.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
      * Set the preferred usage setting.
      *
      * The cellular usage setting is a switch which controls the mode of operation for the cellular
