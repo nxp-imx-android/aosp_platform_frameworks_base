@@ -541,15 +541,15 @@ public class OomAdjusterImpl extends OomAdjuster {
      * A helper consumer for marking and collecting reachable processes.
      */
     private static class ReachableCollectingConsumer implements
-            BiConsumer<Connection, ProcessRecord> {
-        ArrayList<ProcessRecord> mReachables = null;
+            BiConsumer<Connection, ProcessRecordInternal> {
+        ArrayList<ProcessRecordInternal> mReachables = null;
 
-        public void init(ArrayList<ProcessRecord> reachables) {
+        public void init(ArrayList<ProcessRecordInternal> reachables) {
             mReachables = reachables;
         }
 
         @Override
-        public void accept(Connection unused, ProcessRecord host) {
+        public void accept(Connection unused, ProcessRecordInternal host) {
             if (host.isReachable()) {
                 return;
             }
@@ -603,11 +603,11 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * A helper consumer for computing host process importance from a connection from a client app.
      */
-    private class ComputeHostConsumer implements BiConsumer<Connection, ProcessRecord> {
+    private class ComputeHostConsumer implements BiConsumer<Connection, ProcessRecordInternal> {
         public OomAdjusterArgs args = null;
 
         @Override
-        public void accept(Connection conn, ProcessRecord host) {
+        public void accept(Connection conn, ProcessRecordInternal host) {
             final ProcessRecordInternal client = args.mApp;
             final int cachedAdj = args.mCachedAdj;
             final ProcessRecord topApp = args.mTopApp;
@@ -637,7 +637,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     private class ComputeConnectionsConsumer implements Consumer<OomAdjusterArgs> {
         @Override
         public void accept(OomAdjusterArgs args) {
-            final ProcessRecord app = args.mApp;
+            final ProcessRecordInternal app = args.mApp;
             final ActiveUidsInternal uids = args.mUids;
 
             // This process was updated in some way, mark that it was last calculated this sequence.
@@ -849,7 +849,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         mAdjSeq++;
 
-        final ArrayList<ProcessRecord> reachables = mTmpProcessList;
+        final ArrayList<ProcessRecordInternal> reachables = mTmpProcessList;
         reachables.clear();
 
         for (int i = 0, size = targets.size(); i < size; i++) {
@@ -915,7 +915,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     @Override
-    protected void collectReachableProcessesLSP(@NonNull ArrayList<ProcessRecord> reachables) {
+    protected void collectReachableProcessesLSP(
+            @NonNull ArrayList<ProcessRecordInternal> reachables) {
         collectAndMarkReachableProcessesLSP(reachables);
         for (int i = 0, size = reachables.size(); i < size; i++) {
             final ProcessRecordInternal state = reachables.get(i);
@@ -928,10 +929,10 @@ public class OomAdjusterImpl extends OomAdjuster {
      * provided {@code reachables} list (targets excluded).
      */
     @GuardedBy({"mService", "mProcLock"})
-    private void collectAndMarkReachableProcessesLSP(ArrayList<ProcessRecord> reachables) {
+    private void collectAndMarkReachableProcessesLSP(ArrayList<ProcessRecordInternal> reachables) {
         mReachableCollectingConsumer.init(reachables);
         for (int i = 0; i < reachables.size(); i++) {
-            ProcessRecord pr = reachables.get(i);
+            ProcessRecordInternal pr = reachables.get(i);
             forEachConnectionLSP(pr, mReachableCollectingConsumer);
         }
     }
@@ -940,18 +941,20 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Calculate initial importance states for {@code reachables} and update their slot position
      * if necessary.
      */
-    private void initReachableStatesLSP(ArrayList<ProcessRecord> reachables, int targetCount,
-            OomAdjusterArgs args) {
+    private void initReachableStatesLSP(ArrayList<ProcessRecordInternal> reachables,
+            int targetCount, OomAdjusterArgs args) {
         int i = 0;
         boolean initReachables = !Flags.skipUnimportantConnections();
         for (; i < targetCount && !initReachables; i++) {
-            final ProcessRecord target = reachables.get(i);
+            final ProcessRecordInternal target = reachables.get(i);
             final int prevProcState = target.getCurProcState();
             final int prevAdj = target.getCurRawAdj();
             final int prevCapability = target.getCurCapability();
-            final boolean prevShouldNotFreeze = target.mOptRecord.shouldNotFreeze();
+            final boolean prevShouldNotFreeze = target.shouldNotFreeze();
 
-            args.mApp = target;
+            // TODO: b/425766486 - Remove the type casting after OomAdjusterArgs.mApp is migrated
+            //  to ProcessRecordInternal.
+            args.mApp = (ProcessRecord) target;
             // If target client is a reachable, reachables need to be reinited in case this
             // client is important enough to change this target in the computeConnection step.
             initReachables |= computeOomAdjIgnoringReachablesLSP(args);
@@ -969,8 +972,10 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         for (int size = reachables.size(); i < size; i++) {
-            final ProcessRecord reachable = reachables.get(i);
-            args.mApp = reachable;
+            final ProcessRecordInternal reachable = reachables.get(i);
+            // TODO: b/425766486 - Remove the type casting after OomAdjusterArgs.mApp is migrated
+            //  to ProcessRecordInternal.
+            args.mApp = (ProcessRecord) reachable;
             computeOomAdjIgnoringReachablesLSP(args);
 
             // Just add to the procState priority queue. The adj priority queue should be
@@ -1004,14 +1009,14 @@ public class OomAdjusterImpl extends OomAdjuster {
      * {@code connectionConsumer}.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private static void forEachConnectionLSP(ProcessRecord app,
-            BiConsumer<Connection, ProcessRecord> connectionConsumer) {
-        final ProcessServiceRecord psr = app.mServices;
+    private static void forEachConnectionLSP(ProcessRecordInternal app,
+            BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
+        final ProcessServiceRecordInternal psr =  app.getServices();
         for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
-            ConnectionRecord cr = psr.getConnectionAt(i);
-            ProcessRecord service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
-                    ? cr.binding.service.getIsolationHostProcess()
-                    : cr.binding.service.getHostProcess();
+            ConnectionRecordInternal cr = psr.getConnectionAt(i);
+            ProcessRecordInternal service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
+                    ? cr.getService().getIsolationHostProcess()
+                    : cr.getService().getHostProcess();
             if (service == null || service == app || isSandboxAttributedConnection(cr, service)) {
                 continue;
             }
@@ -1024,8 +1029,8 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         for (int i = psr.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
-            final ConnectionRecord cr = psr.getSdkSandboxConnectionAt(i);
-            final ProcessRecord service = cr.binding.service.getHostProcess();
+            final ConnectionRecordInternal cr = psr.getSdkSandboxConnectionAt(i);
+            final ProcessRecordInternal service = cr.getService().getHostProcess();
             if (service == null || service == app) {
                 continue;
             }
@@ -1035,10 +1040,10 @@ public class OomAdjusterImpl extends OomAdjuster {
             connectionConsumer.accept(cr, service);
         }
 
-        final ProcessProviderRecord ppr = app.getProviders();
+        final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
-            ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
-            ProcessRecord provider = cpc.provider.getHostProcess();
+            ContentProviderConnectionInternal cpc = ppr.getProviderConnectionAt(i);
+            ProcessRecordInternal provider = cpc.getProvider().getHostProcess();
             if (provider == null || provider == app || isHighPriorityProcess(provider)) {
                 continue;
             }
@@ -1052,7 +1057,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * but the host process has not set the corresponding flag,
      * {@link ProcessRecordInternal#mScheduleLikeTopApp}.
      */
-    private static boolean allowSkipForBindScheduleLikeTopApp(ConnectionRecord cr,
+    private static boolean allowSkipForBindScheduleLikeTopApp(ConnectionRecordInternal cr,
             ProcessRecordInternal host) {
         // If feature flag for optionally blocking skipping is disabled. Always allow skipping.
         if (!Flags.notSkipConnectionRecomputeForBindScheduleLikeTopApp()) {
@@ -1064,9 +1069,9 @@ public class OomAdjusterImpl extends OomAdjuster {
         return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP) && !host.getScheduleLikeTopApp());
     }
 
-    private static boolean isSandboxAttributedConnection(ConnectionRecord cr,
+    private static boolean isSandboxAttributedConnection(ConnectionRecordInternal cr,
             ProcessRecordInternal host) {
-        return host.isSdkSandbox && cr.binding.attributedClient != null;
+        return host.isSdkSandbox && cr.getAttributedClient() != null;
     }
 
     private static boolean isHighPriorityProcess(ProcessRecordInternal proc) {

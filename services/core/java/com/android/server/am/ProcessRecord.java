@@ -95,7 +95,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     volatile ApplicationInfo info; // all about the first app in the process
     final ProcessInfo processInfo; // if non-null, process-specific manifest info
     final boolean appZygote;    // true if this is forked from the app zygote
-    final int userId;           // user of process.
     final String processName;   // name of the process
     final String sdkSandboxClientAppPackage; // if this is an sdk sandbox process, name of the
                                              // app package for which it is running
@@ -593,7 +592,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         processInfo = procInfo;
         appZygote = (UserHandle.getAppId(_uid) >= Process.FIRST_APP_ZYGOTE_ISOLATED_UID
                 && UserHandle.getAppId(_uid) <= Process.LAST_APP_ZYGOTE_ISOLATED_UID);
-        userId = UserHandle.getUserId(_uid);
         processName = _processName;
         sdkSandboxClientAppPackage = _sdkSandboxClientAppPackage;
         if (isSdkSandbox) {

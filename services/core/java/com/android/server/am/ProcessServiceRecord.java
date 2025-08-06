@@ -154,10 +154,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         }
     }
 
-    /**
-     * @return true if this process has any foreground services (even timed-out short-FGS)
-     */
-    boolean hasForegroundServices() {
+    @Override
+    public boolean hasForegroundServices() {
         return mHasForegroundServices;
     }
 

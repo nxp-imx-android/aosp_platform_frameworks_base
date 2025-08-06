@@ -36,6 +36,7 @@ import android.app.ActivityManager;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
@@ -235,6 +236,11 @@ public abstract class ProcessRecordInternal {
      * This may differ from {@link #getApplicationUid()} if it's an isolated process.
      */
     public final int uid;
+    /**
+     * The user ID of the process.
+     * This is derived from {@link #uid} using {@link android.os.UserHandle#getUserId(int)}.
+     */
+    public final int userId;
     public final boolean isolated;     // true if this is a special isolated process
     public final boolean isSdkSandbox; // true if this is an SDK sandbox process
 
@@ -678,6 +684,7 @@ public abstract class ProcessRecordInternal {
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         mProcessName = processName;
         this.uid = uid;
+        userId = UserHandle.getUserId(uid);
         isSdkSandbox = Process.isSdkSandboxUid(this.uid);
         isolated = Process.isIsolatedUid(this.uid);
         mServiceLock = serviceLock;
