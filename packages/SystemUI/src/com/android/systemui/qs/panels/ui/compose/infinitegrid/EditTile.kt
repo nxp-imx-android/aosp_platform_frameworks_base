@@ -167,6 +167,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.common.ui.icons.MoreVert
 import com.android.systemui.common.ui.icons.Undo
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.DragAndDropState
@@ -796,7 +797,7 @@ private fun CurrentTilesGrid(
                         alpha = .15f,
                     )
                 }
-                .testTag(CURRENT_TILES_GRID_TEST_TAG),
+                .sysuiResTag(CURRENT_TILES_GRID_TEST_TAG),
     ) {
         EditTiles(
             listState = listState,
@@ -908,7 +909,7 @@ private fun AvailableTileGrid(
         verticalArrangement = spacedBy(2.dp),
         horizontalAlignment = Alignment.Start,
         modifier =
-            Modifier.fillMaxWidth().wrapContentHeight().testTag(AVAILABLE_TILES_GRID_TEST_TAG),
+            Modifier.fillMaxWidth().wrapContentHeight().sysuiResTag(AVAILABLE_TILES_GRID_TEST_TAG),
     ) {
         groupedTileSpecs.entries.forEachIndexed { index, (category, tileSpecs) ->
             key(category) {
