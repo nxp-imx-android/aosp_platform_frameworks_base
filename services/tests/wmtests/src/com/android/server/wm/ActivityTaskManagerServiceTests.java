@@ -361,6 +361,31 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
     @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
     @Test
+    public void testRequestHandoffTaskData_succeedsWithActivityInBackground()
+        throws Exception{
+        // Create a test task.
+        final HandoffActivityData handoffActivityData
+            = new HandoffActivityData.Builder(new ComponentName("pkg", "cls"))
+                .build();
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(false).when(activity).attachedToProcess();
+        doReturn(handoffActivityData).when(activity).getHandoffActivityData();
+        doReturn(false).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        final TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        mAtm.requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        // Verify that the result code is success.
+        receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @Test
     public void testRequestHandoffTaskData_failsIfNoDataReturned()
         throws Exception{
         // Create a test task.
@@ -398,7 +423,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         // Verify that the result code is failure.
         receiver.verifyFailed(
             task.getRootTaskId(),
-            HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_TASK);
+            HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
     }
 
     @Test
@@ -741,7 +766,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         doReturn(true).when(topRootTask).goToSleepIfPossible(anyBoolean());
         topActivity.setState(STOPPING, "test");
         topActivity.activityStopped(null /* newIcicle */, null /* newPersistentState */,
-                null /* description */);
+                null /* handoffActivityData */, null /* description */);
         verify(mSupervisor.mGoingToSleepWakeLock).release();
 
         // Move the current top to back, the top app should update to the next activity.

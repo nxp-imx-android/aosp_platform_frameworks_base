@@ -236,6 +236,7 @@ import android.annotation.Size;
 import android.app.Activity;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityOptions;
+import android.app.HandoffActivityData;
 import android.app.IApplicationThread;
 import android.app.IScreenCaptureObserver;
 import android.app.PendingIntent;
@@ -497,6 +498,7 @@ final class ActivityRecord extends WindowToken {
     WindowProcessController app;      // if non-null, hosting application
     private State mState;    // current state we are in
     private Bundle mIcicle;         // last saved activity state
+    private HandoffActivityData mHandoffActivityData; // last saved handoff activity data
     private boolean mHandoffEnabled = false; // if Handoff is enabled for this activity
     private boolean mAllowFullTaskRecreation = false; // if the entire task stack can be recreated
                                                       // during handoff of this activity.
@@ -926,7 +928,8 @@ final class ActivityRecord extends WindowToken {
                 Slog.w(TAG, "Activity stop timeout for " + ActivityRecord.this);
                 if (isInHistory()) {
                     activityStopped(
-                            null /*icicle*/, null /*persistentState*/, null /*description*/);
+                            null /*icicle*/, null /*persistentState*/, null /*handoffActivityData*/,
+                            null /*description*/);
                 }
             }
         }
@@ -1276,6 +1279,9 @@ final class ActivityRecord extends WindowToken {
     void setHandoffEnabled(boolean handoffEnabled, boolean allowFullTaskRecreation) {
         mHandoffEnabled = handoffEnabled;
         mAllowFullTaskRecreation = allowFullTaskRecreation;
+        if (!mHandoffEnabled) {
+            mHandoffActivityData = null;
+        }
     }
 
     /**
@@ -1299,6 +1305,27 @@ final class ActivityRecord extends WindowToken {
         }
 
         return mAllowFullTaskRecreation;
+    }
+
+    /**
+     * Set the handoff activity data for this activity. If Handoff is disabled for this activity,
+     * this will be ignored.
+     * @param handoffActivityData The handoff activity data.
+     */
+    void setHandoffActivityData(@Nullable HandoffActivityData handoffActivityData) {
+        if (!isHandoffEnabled()) {
+            return;
+        }
+
+        mHandoffActivityData = handoffActivityData;
+    }
+
+    /**
+     * Get the handoff activity data for this activity.
+     * @return the handoff activity data.
+     */
+    @Nullable HandoffActivityData getHandoffActivityData() {
+        return mHandoffActivityData;
     }
 
     /** Update the saved state of an activity. */
@@ -3520,6 +3547,7 @@ final class ActivityRecord extends WindowToken {
         pendingResults = null;
         newIntents = null;
         setSavedState(null /* savedState */);
+        setHandoffActivityData(null);
     }
 
     /** Activity finish request was not executed. */
@@ -6137,6 +6165,7 @@ final class ActivityRecord extends WindowToken {
         }
         r.setCustomizeSplashScreenExitAnimation(handleSplashScreenExit);
         r.setSavedState(null /* savedState */);
+        r.setHandoffActivityData(null /* handoffActivityData */);
 
         r.mDisplayContent.handleActivitySizeCompatModeIfNeeded(r);
         r.mDisplayContent.mUnknownAppVisibilityController.notifyAppResumedFinished(r);
@@ -6331,8 +6360,11 @@ final class ActivityRecord extends WindowToken {
      * Notifies that the activity has stopped, and it is okay to destroy any surfaces which were
      * keeping alive in case they were still being used.
      */
-    void activityStopped(Bundle newIcicle, PersistableBundle newPersistentState,
-            CharSequence description) {
+    void activityStopped(
+        Bundle newIcicle,
+        PersistableBundle newPersistentState,
+        HandoffActivityData newHandoffActivityData,
+        CharSequence description) {
         removeStopTimeout();
         final boolean isStopping = mState == STOPPING;
         if (!isStopping && mState != RESTARTING_PROCESS) {
@@ -6350,6 +6382,9 @@ final class ActivityRecord extends WindowToken {
             setSavedState(newIcicle);
             launchCount = 0;
             updateTaskDescription(description);
+        }
+        if (newHandoffActivityData != null) {
+            setHandoffActivityData(newHandoffActivityData);
         }
         ProtoLog.i(WM_DEBUG_STATES, "Saving icicle of %s: %s", this, mIcicle);
 
