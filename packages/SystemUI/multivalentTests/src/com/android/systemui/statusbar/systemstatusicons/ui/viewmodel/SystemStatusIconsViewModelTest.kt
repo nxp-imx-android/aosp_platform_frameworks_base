@@ -44,6 +44,9 @@ import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
+import com.android.systemui.statusbar.pipeline.satellite.data.repository.deviceBasedSatelliteRepository
+import com.android.systemui.statusbar.pipeline.satellite.shared.model.SatelliteConnectionState
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
@@ -87,6 +90,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotBluetooth: String
     private lateinit var slotConnectedDisplay: String
     private lateinit var slotDataSaver: String
+    private lateinit var slotDeviceBasedSatellite: String
     private lateinit var slotEthernet: String
     private lateinit var slotHotspot: String
     private lateinit var slotManagedProfile: String
@@ -105,6 +109,8 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotConnectedDisplay =
             context.getString(com.android.internal.R.string.status_bar_connected_display)
         slotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver)
+        slotDeviceBasedSatellite =
+            context.getString(com.android.internal.R.string.status_bar_oem_satellite)
         slotEthernet = context.getString(com.android.internal.R.string.status_bar_ethernet)
         slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotManagedProfile =
@@ -220,20 +226,20 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showConnectedDisplay()
             showTty()
             showDataSaver()
-            showAirplaneMode()
             showNextAlarm()
             showEthernet()
             showVibrate()
             showHotspot()
             showVpn()
             showManagedProfile()
+            showSatelliteIcon()
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
-                    slotAirplane,
                     slotBluetooth,
                     slotConnectedDisplay,
                     slotDataSaver,
+                    slotDeviceBasedSatellite,
                     slotEthernet,
                     slotHotspot,
                     slotManagedProfile,
@@ -245,10 +251,10 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                 )
                 .inOrder()
 
-            // The [mute,vibrate] and [ethernet, wifi] icons can not be shown at the same time so we
-            // have to test it separately.
+            // Some icons need to be tested separately
             showMute() // This will make vibrate inactive
-            showWifi() // This will make ethernet inactive
+            showWifi() // This will make ethernet, satellite inactive
+            showAirplaneMode() // This will make satellite inactive
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
@@ -352,5 +358,18 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private fun Kosmos.showTty() {
         fakeTtyStatusInteractor.isEnabled.value = true
+    }
+
+    private suspend fun Kosmos.showSatelliteIcon() {
+        hideAirplaneMode()
+        fakeWifiRepository.setIsWifiEnabled(false)
+        fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Inactive())
+        val mobileInteractor = fakeMobileIconsInteractor.getMobileConnectionInteractorForSubId(1)
+        mobileInteractor.isInService.value = false
+        mobileInteractor.isEmergencyOnly.value = false
+
+        deviceBasedSatelliteRepository.isSatelliteProvisioned.value = true
+        deviceBasedSatelliteRepository.isSatelliteAllowedForCurrentLocation.value = true
+        deviceBasedSatelliteRepository.connectionState.value = SatelliteConnectionState.Connected
     }
 }

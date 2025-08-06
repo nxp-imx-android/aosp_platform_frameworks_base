@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.NextA
 import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.BluetoothIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.ConnectedDisplayIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.DataSaverIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.devicesatellite.ui.viewmodel.DeviceBasedSatelliteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.OrderedIconSlotNamesInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
@@ -60,6 +61,7 @@ constructor(
     bluetoothIconViewModelFactory: BluetoothIconViewModel.Factory,
     connectedDisplayIconViewModelFactory: ConnectedDisplayIconViewModel.Factory,
     dataSaverIconViewModelFactory: DataSaverIconViewModel.Factory,
+    deviceBasedSatelliteIconViewModelFactory: DeviceBasedSatelliteIconViewModel.Factory,
     ethernetIconViewModelFactory: EthernetIconViewModel.Factory,
     hotspotIconViewModelFactory: HotspotIconViewModel.Factory,
     managedProfileIconViewModelFactory: ManagedProfileIconViewModel.Factory,
@@ -85,6 +87,9 @@ constructor(
         connectedDisplayIconViewModelFactory.create(context)
     }
     private val dataSaverIcon by lazy { dataSaverIconViewModelFactory.create(context) }
+    private val deviceSatelliteIcon by lazy {
+        deviceBasedSatelliteIconViewModelFactory.create(context)
+    }
     private val ethernetIcon by lazy { ethernetIconViewModelFactory.create(context) }
     private val hotspotIcon by lazy { hotspotIconViewModelFactory.create(context) }
     private val managedProfileIcon by lazy { managedProfileIconViewModelFactory.create(context) }
@@ -103,6 +108,7 @@ constructor(
             bluetoothIcon,
             connectedDisplayIcon,
             dataSaverIcon,
+            deviceSatelliteIcon,
             ethernetIcon,
             hotspotIcon,
             managedProfileIcon,
@@ -139,6 +145,7 @@ constructor(
             launch { bluetoothIcon.activate() }
             launch { connectedDisplayIcon.activate() }
             launch { dataSaverIcon.activate() }
+            launch { deviceSatelliteIcon.activate() }
             launch { ethernetIcon.activate() }
             launch { hotspotIcon.activate() }
             launch { managedProfileIcon.activate() }
