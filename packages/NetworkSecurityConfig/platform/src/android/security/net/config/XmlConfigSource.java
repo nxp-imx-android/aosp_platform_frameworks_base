@@ -413,7 +413,7 @@ public class XmlConfigSource implements ConfigSource {
             NetworkSecurityConfig.Builder localhostBuilder =
                     NetworkSecurityConfig.getLocalhostBuilder();
             addDebugAnchorsIfNeeded(debugConfigBuilder, localhostBuilder);
-            localhostBuilder.setParent(platformDefaultBuilder);
+            localhostBuilder.setParent(baseConfigBuilder);
             mLocalhostConfig = localhostBuilder.build();
         }
         mDefaultConfig = baseConfigBuilder.build();
