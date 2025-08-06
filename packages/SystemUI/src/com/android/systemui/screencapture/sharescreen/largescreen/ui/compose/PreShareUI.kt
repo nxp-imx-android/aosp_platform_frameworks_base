@@ -17,15 +17,11 @@
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareViewModel
 
 /** Main component for the screen share UI. */
 @Composable
-fun PreShareUI(preShareViewModelFactory: PreShareViewModel.Factory) {
-    val viewModel: PreShareViewModel =
-        rememberViewModel("PreShareViewModel") { preShareViewModelFactory.create() }
-
+fun PreShareUI(viewModel: PreShareViewModel) {
     PreShareToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
 
     // TODO: Add PreShareSelector here.
