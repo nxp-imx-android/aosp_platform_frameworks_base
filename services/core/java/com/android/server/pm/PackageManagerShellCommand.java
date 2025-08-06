@@ -4311,7 +4311,9 @@ class PackageManagerShellCommand extends ShellCommand {
         try {
             session = new PackageInstaller.Session(
                     mInterface.getPackageInstaller().openSession(sessionId));
-            if (!session.isMultiPackage() && !session.isStaged()) {
+            if (!com.android.art.flags.Flags.artManagedInstallFilesValidationApi()
+                    && !session.isMultiPackage()
+                    && !session.isStaged()) {
                 // Validity check that all .dm files match an apk.
                 // (The installer does not support standalone .dm files and will not process them.)
                 try {
