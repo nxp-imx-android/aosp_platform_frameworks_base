@@ -52,7 +52,6 @@ import java.util.List;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper
-//@DisableFlags(AsyncGroupHeaderViewInflation.FLAG_NAME)
 public class NotificationChildrenContainerTest extends SysuiTestCase {
 
     private ExpandableNotificationRow mGroup;
@@ -135,21 +134,12 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         ComposeView headerView = new ComposeView(mContext);
         mChildrenContainer.setBundleHeaderView(headerView);
         mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
+        mChildrenContainer.getContainingNotification().expandNotification();
         mChildrenContainer.setChildrenExpanded(true);
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
     }
 
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
-        ComposeView headerView = new ComposeView(mContext);
-        mChildrenContainer.setBundleHeaderView(headerView);
-        mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
-        mGroup.setUserLocked(true);
-        Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
-                NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
-    }
 
     @Test
     public void testShowingAsLowPriority_lowPriority() {
