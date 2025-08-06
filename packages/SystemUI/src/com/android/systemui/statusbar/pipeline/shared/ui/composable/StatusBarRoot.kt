@@ -24,7 +24,9 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -223,149 +225,151 @@ fun StatusBarRoot(
         return
     }
 
-    AndroidView(
-        factory = { context ->
-            val inflater = LayoutInflater.from(context)
-            val phoneStatusBarView =
-                inflater.inflate(R.layout.status_bar, parent, false) as PhoneStatusBarView
+    Box(modifier.fillMaxSize()) {
+        AndroidView(
+            factory = { context ->
+                val inflater = LayoutInflater.from(context)
+                val phoneStatusBarView =
+                    inflater.inflate(R.layout.status_bar, parent, false) as PhoneStatusBarView
 
-            if (StatusBarChipsModernization.isEnabled) {
-                addStartSideComposable(
-                    phoneStatusBarView = phoneStatusBarView,
-                    clockViewModelFactory = clockViewModelFactory,
-                    statusBarViewModel = statusBarViewModel,
-                    iconViewStore = iconViewStore,
-                    appHandlesViewModel = appHandlesViewModel,
-                    context = context,
-                )
-            }
-
-            touchableExclusionRegionDisposableHandle =
-                HomeStatusBarTouchExclusionRegionBinder.bind(
-                    phoneStatusBarView,
-                    appHandlesViewModel,
-                )
-
-            if (StatusBarChipsModernization.isEnabled) {
-                // Make sure the primary chip is hidden when StatusBarChipsModernization is
-                // enabled. OngoingActivityChips will be shown in a composable container
-                // when this flag is enabled.
-                phoneStatusBarView
-                    .requireViewById<View>(R.id.ongoing_activity_chip_primary)
-                    .visibility = View.GONE
-            } else {
-                ongoingCallController.setChipView(
-                    phoneStatusBarView.requireViewById(R.id.ongoing_activity_chip_primary)
-                )
-            }
-
-            // For notifications, first inflate the [NotificationIconContainer]
-            val notificationIconArea =
-                phoneStatusBarView.requireViewById<ViewGroup>(R.id.notification_icon_area)
-            inflater.inflate(R.layout.notification_icon_area, notificationIconArea, true)
-            // Then bind it using the icons binder
-            val notificationIconContainer =
-                phoneStatusBarView.requireViewById<NotificationIconContainer>(
-                    R.id.notificationIcons
-                )
-
-            // Add a composable container for `StatusBarPopupChip`s
-            if (StatusBarPopupChips.isEnabled) {
-                with(mediaHost) {
-                    expansion = MediaHostState.EXPANDED
-                    expandedMatchesParentHeight = true
-                    showsOnlyActiveMedia = true
-                    falsingProtectionNeeded = false
-                    disableScrolling = true
-                    init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
+                if (StatusBarChipsModernization.isEnabled) {
+                    addStartSideComposable(
+                        phoneStatusBarView = phoneStatusBarView,
+                        clockViewModelFactory = clockViewModelFactory,
+                        statusBarViewModel = statusBarViewModel,
+                        iconViewStore = iconViewStore,
+                        appHandlesViewModel = appHandlesViewModel,
+                        context = context,
+                    )
                 }
 
-                val endSideContent =
-                    phoneStatusBarView.requireViewById<AlphaOptimizedLinearLayout>(
-                        R.id.status_bar_end_side_content
+                touchableExclusionRegionDisposableHandle =
+                    HomeStatusBarTouchExclusionRegionBinder.bind(
+                        phoneStatusBarView,
+                        appHandlesViewModel,
                     )
 
-                val composeView =
-                    ComposeView(context).apply {
-                        layoutParams =
-                            LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                            )
+                if (StatusBarChipsModernization.isEnabled) {
+                    // Make sure the primary chip is hidden when StatusBarChipsModernization is
+                    // enabled. OngoingActivityChips will be shown in a composable container
+                    // when this flag is enabled.
+                    phoneStatusBarView
+                        .requireViewById<View>(R.id.ongoing_activity_chip_primary)
+                        .visibility = View.GONE
+                } else {
+                    ongoingCallController.setChipView(
+                        phoneStatusBarView.requireViewById(R.id.ongoing_activity_chip_primary)
+                    )
+                }
 
-                        setViewCompositionStrategy(
-                            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                // For notifications, first inflate the [NotificationIconContainer]
+                val notificationIconArea =
+                    phoneStatusBarView.requireViewById<ViewGroup>(R.id.notification_icon_area)
+                inflater.inflate(R.layout.notification_icon_area, notificationIconArea, true)
+                // Then bind it using the icons binder
+                val notificationIconContainer =
+                    phoneStatusBarView.requireViewById<NotificationIconContainer>(
+                        R.id.notificationIcons
+                    )
+
+                // Add a composable container for `StatusBarPopupChip`s
+                if (StatusBarPopupChips.isEnabled) {
+                    with(mediaHost) {
+                        expansion = MediaHostState.EXPANDED
+                        expandedMatchesParentHeight = true
+                        showsOnlyActiveMedia = true
+                        falsingProtectionNeeded = false
+                        disableScrolling = true
+                        init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
+                    }
+
+                    val endSideContent =
+                        phoneStatusBarView.requireViewById<AlphaOptimizedLinearLayout>(
+                            R.id.status_bar_end_side_content
                         )
 
-                        setContent {
-                            StatusBarPopupChipsContainer(
-                                chips = statusBarViewModel.popupChips,
-                                mediaHost = mediaHost,
-                                onMediaControlPopupVisibilityChanged = { popupShowing ->
-                                    mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
-                                },
+                    val composeView =
+                        ComposeView(context).apply {
+                            layoutParams =
+                                LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                )
+
+                            setViewCompositionStrategy(
+                                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
                             )
+
+                            setContent {
+                                StatusBarPopupChipsContainer(
+                                    chips = statusBarViewModel.popupChips,
+                                    mediaHost = mediaHost,
+                                    onMediaControlPopupVisibilityChanged = { popupShowing ->
+                                        mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
+                                    },
+                                )
+                            }
                         }
-                    }
-                endSideContent.addView(composeView, 0)
-            }
+                    endSideContent.addView(composeView, 0)
+                }
 
-            // If the flag is enabled, create and add a compose section to the end
-            // of the system_icons container
-            if (SystemStatusIconsInCompose.isEnabled) {
-                phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility = View.GONE
-                addSystemStatusIconsComposable(phoneStatusBarView, statusBarViewModel)
-            } else {
-                val statusIconContainer =
-                    phoneStatusBarView.requireViewById<StatusIconContainer>(R.id.statusIcons)
-                val darkIconManager =
-                    darkIconManagerFactory.create(
+                // If the flag is enabled, create and add a compose section to the end
+                // of the system_icons container
+                if (SystemStatusIconsInCompose.isEnabled) {
+                    phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility = View.GONE
+                    addSystemStatusIconsComposable(phoneStatusBarView, statusBarViewModel)
+                } else {
+                    val statusIconContainer =
+                        phoneStatusBarView.requireViewById<StatusIconContainer>(R.id.statusIcons)
+                    val darkIconManager =
+                        darkIconManagerFactory.create(
+                            statusIconContainer,
+                            StatusBarLocation.HOME,
+                            darkIconDispatcher,
+                        )
+                    iconController.addIconGroup(darkIconManager)
+
+                    HomeStatusBarIconBlockListBinder.bind(
                         statusIconContainer,
-                        StatusBarLocation.HOME,
-                        darkIconDispatcher,
+                        darkIconManager,
+                        statusBarViewModel.iconBlockList,
                     )
-                iconController.addIconGroup(darkIconManager)
 
-                HomeStatusBarIconBlockListBinder.bind(
-                    statusIconContainer,
-                    darkIconManager,
-                    statusBarViewModel.iconBlockList,
-                )
+                    if (NewStatusBarIcons.isEnabled) {
+                        addBatteryComposable(phoneStatusBarView, statusBarViewModel)
+                        // Also adjust the paddings :)
+                        SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(
+                            phoneStatusBarView.requireViewById(R.id.statusIcons)
+                        )
+                    }
+                }
 
-                if (NewStatusBarIcons.isEnabled) {
-                    addBatteryComposable(phoneStatusBarView, statusBarViewModel)
-                    // Also adjust the paddings :)
-                    SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(
-                        phoneStatusBarView.requireViewById(R.id.statusIcons)
+                notificationIconsBinder.bindWhileAttached(notificationIconContainer, context.displayId)
+
+                if (StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled) {
+                    bindRegionSamplingViewModel(
+                        context.displayId,
+                        phoneStatusBarView,
+                        statusBarRegionSamplingViewModelFactory,
                     )
                 }
-            }
 
-            notificationIconsBinder.bindWhileAttached(notificationIconContainer, context.displayId)
-
-            if (StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled) {
-                bindRegionSamplingViewModel(
+                // This binder handles everything else
+                statusBarViewBinder.bind(
                     context.displayId,
                     phoneStatusBarView,
-                    statusBarRegionSamplingViewModelFactory,
+                    statusBarViewModel,
+                    eventAnimationInteractor::animateStatusBarContentForChipEnter,
+                    eventAnimationInteractor::animateStatusBarContentForChipExit,
+                    listener = null,
                 )
-            }
-
-            // This binder handles everything else
-            statusBarViewBinder.bind(
-                context.displayId,
-                phoneStatusBarView,
-                statusBarViewModel,
-                eventAnimationInteractor::animateStatusBarContentForChipEnter,
-                eventAnimationInteractor::animateStatusBarContentForChipExit,
-                listener = null,
-            )
-            onViewCreated(phoneStatusBarView)
-            phoneStatusBarView
-        },
-        modifier = modifier,
-        onRelease = { touchableExclusionRegionDisposableHandle.dispose() },
-    )
+                onViewCreated(phoneStatusBarView)
+                phoneStatusBarView
+            },
+            modifier = modifier,
+            onRelease = { touchableExclusionRegionDisposableHandle.dispose() },
+        )
+    }
 }
 
 /** Adds the composable chips shown on the start side of the status bar. */
