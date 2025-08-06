@@ -142,22 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Grava el micròfon"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostra els tocs"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Tria una aplicació per gravar"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"El vídeo s\'ha desat"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Repeteix"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Edita"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Suprimeix"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Captura tota la pantalla"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Captura l\'àrea seleccionada"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Captura"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grava"</string>
     <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
     <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"S\'està compartint la pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"S\'està compartint contingut"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vols deixar de compartir la pantalla?"</string>
@@ -167,8 +165,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Ara mateix estàs compartint <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Ara mateix estàs compartint una aplicació"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Ara mateix estàs compartint contingut amb una aplicació"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"Ara mateix estàs compartint contingut amb <xliff:g id="HOST_APP_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Deixa de compartir"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"S\'està emetent la pantalla"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Vols aturar l\'emissió?"</string>
@@ -205,6 +202,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"Escàner de codis QR"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Desbloquejat"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Dispositiu bloquejat"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"S\'està escanejant la cara"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Envia"</string>
     <string name="cancel" msgid="1089011503403416730">"Cancel·la"</string>
@@ -540,6 +541,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Llisca cap amunt per obrir"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Prem la icona de desbloqueig per obrir"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"S\'ha desbloquejat amb la cara. Llisca cap amunt per obrir."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"S\'ha desbloquejat amb la cara. Prem la icona per obrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"S\'ha desbloquejat amb la cara. Prem per obrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"S\'ha reconegut la cara. Prem per obrir."</string>
@@ -873,8 +876,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Ara les teves converses més llargues es poden resumir ràpidament"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"L\'organitzador de notificacions agrupa i silencia les notificacions de prioritat baixa. Afegeix més categories a Configuració."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificació}many{# de notificacions}other{# notificacions}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Fet"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplica"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactiva"</string>
@@ -987,8 +989,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Obre l\'assistent digital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Bloqueja la pantalla"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Crea una nota"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"Tanca la finestra actual"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasca"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utilitza la pantalla dividida amb l\'aplicació a la dreta"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utilitza la pantalla dividida amb l\'aplicació a l\'esquerra"</string>
@@ -1365,10 +1366,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Atura la sessió compartida per moure contingut multimèdia a un altre dispositiu"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Atura"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Deixa de compartir"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"S\'està compartint l\'àudio"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Comparteix l\'àudio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Número de compilació"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"El número de compilació s\'ha copiat al porta-retalls."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"copiar al porta-retalls."</string>
@@ -1623,7 +1622,7 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Ves a la pantalla d\'inici"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Llisca cap amunt amb tres dits al ratolí tàctil"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Ben fet!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Has completat el gest per anar a la pantalla d\'inici"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Has completat el gest per anar a la pantalla d\'inici."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Llisca cap amunt amb tres dits al ratolí tàctil per anar a la pantalla d\'inici"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Mostra les aplicacions recents"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Llisca cap amunt amb tres dits i mantén-los premuts al ratolí tàctil"</string>
@@ -1638,7 +1637,7 @@
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"Mostra totes les aplicacions"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"Prem la tecla d\'acció al teclat"</string>
     <string name="tutorial_action_key_success_title" msgid="2371827347071979571">"Enhorabona!"</string>
-    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Has completat el gest per veure totes les aplicacions"</string>
+    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Has completat el gest per veure totes les aplicacions."</string>
     <string name="touchpad_action_key_error_body" msgid="8685502040091860903">"Prem la tecla d\'acció al teclat per veure totes les aplicacions"</string>
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"Animació del tutorial; fes clic per posar en pausa i reprendre la reproducció."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Retroil·luminació del teclat"</string>

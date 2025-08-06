@@ -33,7 +33,7 @@
     <string name="battery_saver_dismiss_action" msgid="7199342621040014738">"لا، شكرًا"</string>
     <string name="standard_battery_saver_text" msgid="6855876746552374119">"عادي"</string>
     <string name="extreme_battery_saver_text" msgid="8455810156739865335">"التوفير العالي"</string>
-    <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"التدوير التلقائي للشاشة"</string>
+    <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"تدوير الشاشة تلقائيًا"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"هل تريد السماح لتطبيق <xliff:g id="APPLICATION">%1$s</xliff:g> بالدخول إلى <xliff:g id="USB_DEVICE">%2$s</xliff:g>؟"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"‏هل تريد السماح لتطبيق <xliff:g id="APPLICATION">%1$s</xliff:g> بالدخول إلى <xliff:g id="USB_DEVICE">%2$s</xliff:g>؟\nلم يتم منح هذا التطبيق إذن تسجيل، ولكن يمكنه تسجيل الصوت من خلال جهاز USB هذا."</string>
     <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"هل تريد السماح لتطبيق \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" بالوصول إلى <xliff:g id="USB_DEVICE">%2$s</xliff:g>؟"</string>
@@ -142,22 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"التسجيل من الميكروفون"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"عرض أماكن اللمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"يُرجى اختيار تطبيق لتسجيل محتوى شاشته"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"تم حفظ الفيديو"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"إعادة تسجيل الشاشة"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"تعديل"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"حذف"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"أخذ لقطة للشاشة بأكملها"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"أخذ لقطة شاشة للمنطقة المحدّدة"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"التقاط"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"تسجيل"</string>
     <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
     <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"‫<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"جارِ مشاركة محتوى الشاشة"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"مشاركة المحتوى"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"هل تريد إيقاف مشاركة الشاشة؟"</string>
@@ -167,8 +165,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"تتم حاليًا مشاركة شاشة تطبيق \"<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>\""</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"تتم حاليًا مشاركة محتوى تطبيق"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"تتم حاليًا مشاركة المحتوى مع تطبيق"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"تتم حاليًا مشاركة المحتوى مع \"<xliff:g id="HOST_APP_NAME">%1$s</xliff:g>\""</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"إيقاف المشاركة"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"جارٍ بث محتوى الشاشة"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"هل تريد إيقاف البث؟"</string>
@@ -205,6 +202,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"الماسح الضوئي لرمز الاستجابة السريعة"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"تم فتح القفل"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"الجهاز مُقفل."</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"مسح الوجه"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"إرسال"</string>
     <string name="cancel" msgid="1089011503403416730">"إلغاء"</string>
@@ -381,7 +382,7 @@
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"جارٍ التفعيل…"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"لا يمكن ضبط مستوى السطوع لأنّ التطبيق العلوي يتحكّم فيه"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"التدوير التلقائي"</string>
-    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"التدوير التلقائي للشاشة"</string>
+    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"تدوير الشاشة تلقائيًا"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"الموقع الجغرافي"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"شاشة الاستراحة"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"الوصول إلى الكاميرا"</string>
@@ -540,6 +541,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"مرِّر إلى الأعلى لفتح القفل"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"اضغط على رمز فتح القفل لفتح قفل الشاشة."</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"تم فتح قفل جهازك عند تقريبه من وجهك. مرِّر سريعًا للأعلى لفتح الجهاز."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"تم فتح القفل ببصمة وجهك. لفتح الجهاز، اضغط على رمز فتح القفل."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"تم فتح قفل جهازك عند تقريبه من وجهك. اضغط لفتح الجهاز."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"تم التعرّف على الوجه. اضغط لفتح الجهاز."</string>
@@ -873,8 +876,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"يمكن الآن تلخيص المحادثات الطويلة لتقديم ملخّصات سريعة"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"تعمل ميزة \"منظّم الإشعارات\" على جمع الإشعارات ذات الأولوية المنخفضة وكتم صوتها. ويمكنك إضافة المزيد من الفئات في \"الإعدادات\"."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{إشعار واحد}zero{‫# إشعار}two{إشعاران}few{‫# إشعارات}many{‫# إشعارًا}other{‫# إشعار}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>، <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"تمّ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"تطبيق"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"إيقاف"</string>
@@ -987,8 +989,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"فتح المساعد الرقمي"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"شاشة القفل"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"تدوين ملاحظة"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"إغلاق النافذة الحالية"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"تعدُّد المهام"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"استخدام \"وضع تقسيم الشاشة\" مع تثبيت التطبيق على اليمين"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"استخدام \"وضع تقسيم الشاشة\" مع تثبيت التطبيق على اليسار"</string>
@@ -1365,10 +1366,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"أوقِف الجلسة المشتركة لنقل الوسائط إلى جهاز آخر."</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"إيقاف"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"إيقاف المشاركة"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"جارٍ مشاركة الصوت"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"مشاركة الصوت"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"رقم الإصدار"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"تم نسخ رقم الإصدار إلى الحافظة."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"نسخ المحتوى إلى الحافظة"</string>
