@@ -22,6 +22,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
@@ -53,13 +54,12 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
@@ -70,7 +70,8 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             usingMediaInComposeFragment = false // This is not for the compose fragment
         }
 
-    private val Kosmos.underTest by Kosmos.Fixture { quickSettingsShadeOverlayContentViewModel }
+    private val Kosmos.underTest by
+        Kosmos.Fixture { quickSettingsShadeOverlayContentViewModelFactory.create() }
 
     @Before
     fun setUp() =
@@ -209,6 +210,33 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
         )
         configurationController.onConfigurationChanged(Configuration())
     }
+
+    @Test
+    @DisableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun transparencyEnabled_shadeBlurFlagOff_isDisabled() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            assertThat(underTest.isTransparencyEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun transparencyEnabled_shadeBlurFlagOn_blurSupported_isEnabled() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            assertThat(underTest.isTransparencyEnabled).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun transparencyEnabled_shadeBlurFlagOn_blurUnsupported_isDisabled() =
+        kosmos.runTest {
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+
+            assertThat(underTest.isTransparencyEnabled).isFalse()
+        }
 
     private fun Kosmos.lockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)

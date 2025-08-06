@@ -28,9 +28,6 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
-import com.android.systemui.media.controls.shared.model.MediaData
-import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -81,7 +78,6 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                     qsContainerViewModelFactory = kosmos.quickSettingsContainerViewModelFactory,
                     footerActionsViewModelFactory = footerActionsViewModelFactory,
                     footerActionsController = footerActionsController,
-                    mediaCarouselInteractor = mediaCarouselInteractor,
                     shadeModeInteractor = shadeModeInteractor,
                     sceneInteractor = sceneInteractor,
                     mainDispatcher = testDispatcher,
@@ -98,34 +94,6 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
 
         verify(footerActionsController, times(1)).init()
     }
-
-    @Test
-    fun addAndRemoveMedia_mediaVisibilityIsUpdated() =
-        kosmos.runTest {
-            val userMedia = MediaData(active = true)
-
-            assertThat(underTest.isMediaVisible).isFalse()
-
-            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
-
-            assertThat(underTest.isMediaVisible).isTrue()
-
-            mediaPipelineRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
-
-            assertThat(underTest.isMediaVisible).isFalse()
-        }
-
-    @Test
-    fun addInactiveMedia_mediaVisibilityIsUpdated() =
-        kosmos.runTest {
-            val userMedia = MediaData(active = false)
-
-            assertThat(underTest.isMediaVisible).isFalse()
-
-            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
-
-            assertThat(underTest.isMediaVisible).isTrue()
-        }
 
     @Test
     fun shadeModeChange_split_switchToShadeScene() =

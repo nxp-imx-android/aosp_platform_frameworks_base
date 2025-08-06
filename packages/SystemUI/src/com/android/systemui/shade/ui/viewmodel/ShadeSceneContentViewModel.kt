@@ -25,6 +25,9 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.qs.panels.domain.interactor.TileSquishinessInteractor
@@ -65,6 +68,7 @@ constructor(
     val brightnessMirrorViewModelFactory: BrightnessMirrorViewModel.Factory,
     val mediaCarouselInteractor: MediaCarouselInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
+    val mediaViewModelFactory: MediaViewModel.Factory,
     disableFlagsInteractor: DisableFlagsInteractor,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
@@ -87,9 +91,10 @@ constructor(
             source = deviceEntryInteractor.isDeviceEntered.map { !it },
         )
 
-    val isMediaVisible: Boolean by
+    val showMedia: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isMediaVisible",
+            // mediaCarouselInteractor.hasAnyMedia if in SplitShade.
             source = mediaCarouselInteractor.hasActiveMedia,
         )
 
@@ -110,6 +115,14 @@ constructor(
             initialValue = 0f,
             source = unfoldTransitionInteractor.unfoldTranslationX(isOnStartSide = true),
         )
+
+    val qqsMediaUiBehavior =
+        MediaUiBehavior(
+            isCarouselDismissible = true,
+            carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
+        )
+
+    fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
 
     private val footerActionsControllerInitialized = AtomicBoolean(false)
 

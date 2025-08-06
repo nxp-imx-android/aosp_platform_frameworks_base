@@ -32,7 +32,6 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.ui.controller.mediaCarouselController
-import com.android.systemui.media.controls.ui.view.qqsMediaHost
 import com.android.systemui.media.controls.ui.view.qsMediaHost
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
@@ -98,7 +97,6 @@ class ShadeSceneTest : SysuiTestCase() {
                         notificationsPlaceholderViewModelFactory =
                             notificationsPlaceholderViewModelFactory,
                         mediaCarouselController = mediaCarouselController,
-                        qqsMediaHost = qqsMediaHost,
                         qsMediaHost = qsMediaHost,
                         jankMonitor = interactionJankMonitor,
                     )

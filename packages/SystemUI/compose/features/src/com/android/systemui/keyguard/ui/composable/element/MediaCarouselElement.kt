@@ -22,12 +22,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
+import com.android.systemui.Flags.mediaControlsInCompose
+import com.android.systemui.keyguard.ui.viewmodel.MediaCarouselElementViewModel
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.composable.MediaCarousel
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dagger.MediaModule
+import com.android.systemui.media.remedia.ui.compose.Media
+import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.res.R
 import javax.inject.Inject
 import javax.inject.Named
@@ -37,6 +43,7 @@ class MediaCarouselElement
 constructor(
     private val mediaCarouselController: MediaCarouselController,
     @param:Named(MediaModule.KEYGUARD) private val mediaHost: MediaHost,
+    private val mediaCarouselElementViewModelFactory: MediaCarouselElementViewModel.Factory,
 ) {
 
     @Composable
@@ -52,18 +59,43 @@ constructor(
                 dimensionResource(id = R.dimen.notification_side_paddings) +
                     dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
             }
-        MediaCarousel(
-            isVisible = true,
-            mediaHost = mediaHost,
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = horizontalPadding)
-                    .onGloballyPositioned { coordinates ->
-                        onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
-                    },
-            carouselController = mediaCarouselController,
-            onReleaseCallback = { onBottomChanged?.invoke(0f) },
-        )
+        if (mediaControlsInCompose()) {
+            val viewModel =
+                rememberViewModel("MediaCarouselElement") {
+                    mediaCarouselElementViewModelFactory.create()
+                }
+
+            Element(
+                key = Media.Elements.mediaCarousel,
+                modifier =
+                    modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding)
+                        .onLayoutRectChanged {
+                            onBottomChanged?.invoke(it.boundsInWindow.bottom.toFloat())
+                        },
+            ) {
+                Media(
+                    viewModelFactory = viewModel.mediaViewModelFactory,
+                    presentationStyle = MediaPresentationStyle.Default,
+                    behavior = viewModel.mediaUiBehavior,
+                    onDismissed = viewModel::onSwipeToDismiss,
+                )
+            }
+        } else {
+            MediaCarousel(
+                isVisible = true,
+                mediaHost = mediaHost,
+                modifier =
+                    modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding)
+                        .onGloballyPositioned { coordinates ->
+                            onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
+                        },
+                carouselController = mediaCarouselController,
+                onReleaseCallback = { onBottomChanged?.invoke(0f) },
+            )
+        }
     }
 }

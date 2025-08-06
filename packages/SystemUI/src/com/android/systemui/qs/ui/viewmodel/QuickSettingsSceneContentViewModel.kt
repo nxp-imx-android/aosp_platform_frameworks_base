@@ -22,7 +22,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -55,7 +54,6 @@ constructor(
     qsContainerViewModelFactory: QuickSettingsContainerViewModel.Factory,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
-    val mediaCarouselInteractor: MediaCarouselInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val sceneInteractor: SceneInteractor,
     @Main private val mainDispatcher: CoroutineDispatcher,
@@ -64,12 +62,6 @@ constructor(
         qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
 
     private val hydrator = Hydrator("QuickSettingsSceneContentViewModel.hydrator")
-
-    val isMediaVisible: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isMediaVisible",
-            source = mediaCarouselInteractor.hasAnyMedia,
-        )
 
     private val footerActionsControllerInitialized = AtomicBoolean(false)
 

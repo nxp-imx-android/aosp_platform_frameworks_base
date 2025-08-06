@@ -119,12 +119,24 @@ constructor(
     @Named(QSFragmentComposeModule.QS_USING_MEDIA_PLAYER) private val usingMedia: Boolean,
     private val uiEventLogger: UiEventLogger,
     @Assisted private val lifecycleScope: LifecycleCoroutineScope,
-    val mediaCarouselInteractor: MediaCarouselInteractor,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
 ) : Dumpable, ExclusiveActivatable() {
 
     val containerViewModel = containerViewModelFactory.create(supportsBrightnessMirroring = true)
     val quickQuickSettingsViewModel = quickQuickSettingsViewModelFactory.create()
+
+    val qsMediaUiBehavior =
+        MediaUiBehavior(
+            isCarouselDismissible = false,
+            carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
+        )
+
+    val qqsMediaUiBehavior =
+        MediaUiBehavior(
+            isCarouselDismissible = true,
+            carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
+        )
 
     private val qqsMediaInRowViewModel =
         mediaInRowInLandscapeViewModelFactory.create(LOCATION_QQS, qqsMediaUiBehavior)
@@ -304,20 +316,6 @@ constructor(
                     flowOf(false)
                 },
         )
-
-    val qsMediaUiBehavior: MediaUiBehavior
-        get() =
-            MediaUiBehavior(
-                isCarouselDismissible = false,
-                carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
-            )
-
-    val qqsMediaUiBehavior: MediaUiBehavior
-        get() =
-            MediaUiBehavior(
-                isCarouselDismissible = true,
-                carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
-            )
 
     val qqsMediaInRow: Boolean
         get() = qqsMediaInRowViewModel.shouldMediaShowInRow
@@ -520,6 +518,8 @@ constructor(
     fun onQSOpen() {
         uiEventLogger.log(QSEvent.QS_PANEL_EXPANDED)
     }
+
+    fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
 
     override suspend fun onActivated(): Nothing {
         initMediaHosts() // init regardless of using media (same as current QS).
