@@ -46,7 +46,6 @@ import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_FG_ONL
 import static com.android.server.wm.ActivityTaskSupervisor.getApplicationLabel;
 import static com.android.server.wm.PendingRemoteAnimationRegistry.TIMEOUT_MS;
 import static com.android.window.flags.Flags.balAdditionalLogging;
-import static com.android.window.flags.Flags.balAdditionalStartModes;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
 import static com.android.window.flags.Flags.balShowToastsBlocked;
 
@@ -1103,9 +1102,9 @@ public class BackgroundActivityStartController {
      * or {@link #BAL_BLOCK} if the launch should be blocked
      */
     BalVerdict checkBackgroundActivityStartAllowedByCaller(BalState state) {
-        boolean evaluateVisibleOnly = balAdditionalStartModes()
-                && state.mCheckedOptions.getPendingIntentCreatorBackgroundActivityStartMode()
-                == MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE;
+        boolean evaluateVisibleOnly =
+                state.mCheckedOptions.getPendingIntentCreatorBackgroundActivityStartMode()
+                        == MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE;
         boolean basedOnRealCaller = false;
         if (evaluateVisibleOnly) {
             return evaluateChain(state, basedOnRealCaller, mCheckCallerVisible,
@@ -1307,9 +1306,9 @@ public class BackgroundActivityStartController {
      * or {@link #BAL_BLOCK} if the launch should be blocked
      */
     BalVerdict checkBackgroundActivityStartAllowedByRealCaller(BalState state) {
-        boolean evaluateVisibleOnly = balAdditionalStartModes()
-                && state.mCheckedOptions.getPendingIntentBackgroundActivityStartMode()
-                == MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE;
+        boolean evaluateVisibleOnly =
+                state.mCheckedOptions.getPendingIntentBackgroundActivityStartMode()
+                        == MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE;
         boolean basedOnRealCaller = true;
         if (evaluateVisibleOnly) {
             return evaluateChain(state, basedOnRealCaller, mCheckRealCallerVisible,
