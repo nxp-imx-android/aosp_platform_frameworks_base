@@ -41,7 +41,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.common.shared.model.Icon
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -221,16 +221,18 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
 /**
  * A composable that allows the user to create, move, resize, and redraw a rectangular region.
  *
+ * @param buttonText The text of the capture button.
+ * @param buttonIcon The icon of the capture button. Can be null if the icon has not loaded yet.
  * @param onRegionSelected A callback function that is invoked with the final rectangle when the
  *   user finishes a drag gesture. This rectangle is used for taking a screenshot. The rectangle is
  *   of type [android.graphics.Rect] because the screenshot API requires int values.
- * @param drawableLoaderViewModel The view model that is used to load drawables.
  * @param onCaptureClick A callback function that is invoked when the capture button is clicked.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
 fun RegionBox(
-    drawableLoaderViewModel: DrawableLoaderViewModel,
+    buttonText: String,
+    buttonIcon: Icon?,
     onRegionSelected: (rect: IntRect) -> Unit,
     onCaptureClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -305,10 +307,11 @@ fun RegionBox(
             // The button which initiates capturing the specified region of the screen. It is
             // positioned inside or outside the region box depending on the size of the region box.
             RegionBoxButton(
+                text = buttonText,
+                icon = buttonIcon,
                 boxWidthDp,
                 boxHeightDp,
                 currentRect,
-                drawableLoaderViewModel = drawableLoaderViewModel,
                 onClick = onCaptureClick,
             )
 

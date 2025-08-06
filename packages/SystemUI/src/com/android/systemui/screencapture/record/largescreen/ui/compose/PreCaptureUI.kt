@@ -76,7 +76,14 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 // TODO(b/427541309) Set the initial width and height of the RegionBox based on the
                 // viewmodel state.
                 RegionBox(
-                    drawableLoaderViewModel = viewModel,
+                    buttonText =
+                        stringResource(id = R.string.screen_capture_region_selection_button),
+                    buttonIcon =
+                        loadIcon(
+                            viewModel = viewModel,
+                            resId = R.drawable.ic_screen_capture_camera,
+                            contentDescription = null,
+                        ),
                     onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
                     onCaptureClick = { viewModel.takePartialScreenshot() },
                 )
