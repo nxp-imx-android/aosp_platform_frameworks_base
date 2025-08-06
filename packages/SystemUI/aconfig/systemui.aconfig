@@ -2006,6 +2006,16 @@ flag {
 }
 
 flag {
+    name: "block_mouse_edge_back_gesture"
+    namespace: "systemui"
+    description: "Blocks the back gesture from being triggered by a mouse pointer."
+    bug: "403094305"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "animation_library_shell_migration"
     namespace: "systemui"
     description: "Migrate from the old remote animation APIs to the new Shell RemoteTransition-based ones."
