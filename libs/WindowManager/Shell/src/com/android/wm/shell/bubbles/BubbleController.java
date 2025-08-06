@@ -36,6 +36,7 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_NO_LONGER_BUBBLE;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_PACKAGE_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_SHORTCUT_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_CHANGED;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
@@ -422,7 +423,7 @@ public class BubbleController implements ConfigurationChangeListener,
                         context, organizer, mTaskViewController, syncQueue);
                 TaskView taskView = new TaskView(context, mTaskViewController,
                         taskViewTaskController);
-                return new BubbleTaskView(taskView, mainExecutor);
+                return new BubbleTaskView(taskView, mainExecutor, splitScreenController);
             }
         };
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
@@ -1470,6 +1471,19 @@ public class BubbleController implements ConfigurationChangeListener,
             return mAppBubbleRootTaskInfo != null
                     && taskInfo.parentTaskId == mAppBubbleRootTaskInfo.taskId;
         }
+
+        // Skip treating the task as an app bubble if it's transitioning from bubble to split.
+        // In BubblesTransitionObserver#removeBubbleIfLaunchingToSplit, a WCT is applied to set
+        // LaunchNextToBubble=false. Then TaskViewTaskController#notifyTaskRemovalStarted is called,
+        // which triggers this check. However, the isAppBubble flag is only updated during the next
+        // Task#fillTaskInfo by the WM core, so the flag we are currently processing is still true.
+        // Later, TaskViewTransitions#onExternalDone unblocks the animation. Without this check,
+        // DefaultMixedHandler could misinterpret the OPEN change as a bubble-enter transition,
+        // incorrectly re-creating the bubble instead of completing the split-screen transition.
+        if (isBubbleToSplit(taskInfo, mSplitScreenController)) {
+            return false;
+        }
+
         return taskInfo.isAppBubble;
     }
 
