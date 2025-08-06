@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.bubble
 
+import android.platform.systemui_tapl.ui.Root
 import android.platform.test.annotations.Postsubmit
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
@@ -79,12 +80,7 @@ class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) :
                     device.wait(Until.findObject(By.text("BubbleChat")), FIND_OBJECT_TIMEOUT)
                 notification?.click() ?: error("Notification not found")
                 instrumentation.uiAutomation.syncInputTransactions()
-                val showBubble =
-                    device.wait(
-                        Until.findObject(By.res(SYSTEM_UI_PACKAGE, BUBBLE_RES_NAME)),
-                        FIND_OBJECT_TIMEOUT
-                    )
-                showBubble?.click() ?: error("Bubble notify not found")
+                Root.get().bubble.click()
                 instrumentation.uiAutomation.syncInputTransactions()
                 val cancelAllBtn = waitAndGetCancelAllBtn()
                 cancelAllBtn?.click() ?: error("Cancel widget not found")

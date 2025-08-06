@@ -69,6 +69,8 @@ java_defaults {
         "launcher-helper-lib",
         "platform-test-annotations",
         "platform-test-rules",
+        "systemui-helper",
+        "systemui-tapl",
         "wm-flicker-common-app-helpers",
         "wm-flicker-common-assertions",
         "wm-shell-flicker-utils",
