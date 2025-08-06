@@ -16,6 +16,7 @@
 
 package com.android.server.media;
 
+import static android.media.RouteListingPreference.Item.FLAG_SUGGESTED;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS;
@@ -46,7 +47,9 @@ import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORT
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_UNSPECIFIED;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.media.MediaRoute2ProviderService;
+import android.media.RouteListingPreference;
 import android.media.RoutingChangeInfo;
 import android.media.RoutingChangeInfo.EntryPoint;
 import android.media.RoutingSessionInfo;
@@ -70,6 +73,7 @@ final class MediaRouterMetricLogger {
     private static final String TAG = "MediaRouterMetricLogger";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final int REQUEST_INFO_CACHE_CAPACITY = 100;
+    private static final int API_COUNT_CACHE_CAPACITY = 20;
 
     /** LRU cache to store request info. */
     private final EvictionCallbackLruCache<Long, RequestInfo> mRequestInfoCache;
@@ -79,6 +83,12 @@ final class MediaRouterMetricLogger {
 
     /** LRU cache to store information for an ongoing routing change. */
     private final EvictionCallbackLruCache<String, OngoingRoutingChange> mOngoingRoutingChangeCache;
+
+    /**
+     * LRU cache to store the count of RLP API calls per package uid. The key is the package uid and
+     * the value is {@link RlpCount}
+     */
+    private final EvictionCallbackLruCache<Integer, RlpCount> mRlpCountCache;
 
     /** Constructor for {@link MediaRouterMetricLogger}. */
     public MediaRouterMetricLogger() {
@@ -91,6 +101,9 @@ final class MediaRouterMetricLogger {
         mOngoingRoutingChangeCache =
                 new EvictionCallbackLruCache<>(
                         REQUEST_INFO_CACHE_CAPACITY, new OnOngoingRoutingChangeEvictedListener());
+        mRlpCountCache =
+                new EvictionCallbackLruCache<>(
+                        API_COUNT_CACHE_CAPACITY, new OnRlpSuggestionCountEvictedListener());
     }
 
     /**
@@ -278,6 +291,49 @@ final class MediaRouterMetricLogger {
     }
 
     /**
+     * Increments the count of RLP calls and if any of the {@link RouteListingPreference.Item} have
+     * {@link FLAG_SUGGESTED} set, increments the count of RLP suggestion calls.
+     *
+     * @param setterPackageUid Uid of the package which called the API.
+     * @param routeListingPreference the route listing preference with which the API was called.
+     */
+    public void notifyRouteListingPreferenceChanged(
+            int setterPackageUid, @Nullable RouteListingPreference routeListingPreference) {
+        boolean hasFlagSuggested =
+                routeListingPreference != null
+                        && (routeListingPreference.getItems().stream()
+                                .anyMatch(item -> (item.getFlags() & FLAG_SUGGESTED) != 0));
+
+        long rlpTotalCount = 0, rlpWithSuggestedCount = 0;
+        long suggestedCountIncrement = hasFlagSuggested ? 1 : 0;
+        RlpCount existingRlpCount = mRlpCountCache.get(setterPackageUid);
+        if (existingRlpCount != null) {
+            rlpTotalCount = existingRlpCount.rlpTotalCount;
+            rlpWithSuggestedCount = existingRlpCount.rlpWithSuggestionCount;
+        }
+        mRlpCountCache.put(
+                setterPackageUid,
+                new RlpCount(rlpTotalCount + 1, rlpWithSuggestedCount + suggestedCountIncrement));
+    }
+
+    /**
+     * This is called when a {@link android.media.MediaRouter2} instance is unregistered. It takes
+     * care of logging metrics aggregated over the lifecycle of the {@link
+     * android.media.MediaRouter2} instance.
+     *
+     * @param routerPackageUid the Uid of the package associated with the {@link
+     *     android.media.MediaRouter2} instance.
+     */
+    public void notifyRouterUnregistered(int routerPackageUid) {
+        RlpCount rlpCount = mRlpCountCache.remove(routerPackageUid);
+        if (rlpCount == null) {
+            // This helps track scenarios where MediaRouter2 is used but not RLP.
+            rlpCount = new RlpCount(0, 0);
+        }
+        logRlpCountForRouter(routerPackageUid, rlpCount);
+    }
+
+    /**
      * Converts {@link TransferReason} from {@link RoutingSessionInfo} to the transfer reason enum
      * defined for logging.
      *
@@ -376,6 +432,14 @@ final class MediaRouterMetricLogger {
                 MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
     }
 
+    private void logRlpCountForRouter(int routerPackageId, RlpCount rlpCount) {
+        MediaRouterStatsLog.write(
+                MediaRouterStatsLog.ROUTE_LISTING_PREFERENCE_UPDATED,
+                routerPackageId,
+                rlpCount.rlpTotalCount,
+                rlpCount.rlpWithSuggestionCount);
+    }
+
     /** Class to store request info. */
     static class RequestInfo {
         public final long mUniqueRequestId;
@@ -455,6 +519,15 @@ final class MediaRouterMetricLogger {
         }
     }
 
+    private class OnRlpSuggestionCountEvictedListener
+            implements OnEntryEvictedListener<Integer, RlpCount> {
+        @Override
+        public void onEntryEvicted(Integer key, RlpCount value) {
+            Slog.w(TAG, "Rlp suggestion count evicted from cache");
+            logRlpCountForRouter(key, value);
+        }
+    }
+
     private interface OnEntryEvictedListener<K, V> {
         void onEntryEvicted(K key, V value);
     }
@@ -467,4 +540,7 @@ final class MediaRouterMetricLogger {
             @TransferReason int transferReason,
             boolean isSuggested,
             long startTimeInMillis) {}
+
+    /** Tracks the count of changes in route listing preference */
+    private record RlpCount(long rlpTotalCount, long rlpWithSuggestionCount) {}
 }
