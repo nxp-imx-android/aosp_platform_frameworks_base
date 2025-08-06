@@ -2389,6 +2389,17 @@ public class DisplayPolicy {
         mDisplayContent.mDisplayUpdater.onDisplaySwitching(true);
     }
 
+    /**
+     * Returns 'true' if the physical display is currently in the process of switching, for example
+     * on foldable devices when folding or unfolding. The value becomes 'false' when the switching
+     * has been finished (the new display is fully turned on).
+     * It is guaranteed that this method will start returning 'true' before any callbacks related
+     * to this display switch from the DisplayManager like onScreenTurningOn or onDisplayChanged.
+     */
+    public boolean isDisplaySwitching() {
+        return mDisplayContent.mDisplayUpdater.isDisplaySwitching();
+    }
+
     boolean hasBottomNavigationBar() {
         final Rect displayFrame = mDisplayContent.mDisplayFrames.mUnrestricted;
         Insets navBarInsets = mDisplayContent.getInsetsStateController().getRawInsetsState()
