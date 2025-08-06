@@ -25,6 +25,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.res.R
 import com.android.systemui.util.DeviceConfigProxy
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.concurrency.DelayableExecutor
@@ -43,13 +44,25 @@ constructor(
 ) : Dumpable {
 
     @VisibleForTesting
-    internal companion object {
+    companion object {
         const val TAG = "PrivacyConfig"
         private const val MIC_CAMERA = SystemUiDeviceConfigFlags.PROPERTY_MIC_CAMERA_ENABLED
         private const val MEDIA_PROJECTION =
             SystemUiDeviceConfigFlags.PROPERTY_MEDIA_PROJECTION_INDICATORS_ENABLED
         private const val DEFAULT_MIC_CAMERA = true
         private const val DEFAULT_MEDIA_PROJECTION = true
+
+        fun getPrivacyColor(locationOnly: Boolean): Int {
+            if (locationOnly) {
+                return R.color.privacy_chip_location_only_background
+            }
+            return R.color.privacy_chip_background
+        }
+
+        fun privacyItemsAreLocationOnly(privacyItems: List<PrivacyItem>): Boolean {
+            return privacyItems.isNotEmpty() &&
+                privacyItems.all { it.privacyType == PrivacyType.TYPE_LOCATION }
+        }
     }
 
     private val callbacks = mutableListOf<WeakReference<Callback>>()

@@ -19,10 +19,13 @@ package com.android.systemui.statusbar.events
 import android.annotation.UiThread
 import android.graphics.Point
 import android.graphics.Rect
+import android.graphics.drawable.GradientDrawable
+import android.location.flags.Flags.locationIndicatorsEnabled
 import android.util.Log
 import android.view.Display
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.core.animation.Animator
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -32,6 +35,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.privacy.PrivacyConfig
+import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -584,6 +589,22 @@ constructor(
     @UiThread
     override fun updateDotView(state: ViewState) {
         val shouldShow = state.shouldShowDot()
+        if (locationIndicatorsEnabled()) {
+            if (shouldShow && state.designatedCorner != null) {
+                val dot = state.designatedCorner
+                val privacyDotView = dot.findViewById<ImageView>(R.id.privacy_dot)
+                (privacyDotView.drawable?.mutate() as? GradientDrawable)?.let { drawable ->
+                    val colorRes =
+                        PrivacyConfig.Companion.getPrivacyColor(
+                            state.systemPrivacyEventLocationOnlyIsActive
+                        )
+                    val newColor = dot.context.getColor(colorRes)
+                    if (drawable.color?.defaultColor != newColor) {
+                        drawable.setColor(newColor)
+                    }
+                }
+            }
+        }
         if (shouldShow != currentViewState.shouldShowDot()) {
             if (shouldShow && state.designatedCorner != null) {
                 showDotView(state.designatedCorner, true)
@@ -596,14 +617,27 @@ constructor(
     private val systemStatusAnimationCallback: SystemStatusAnimationCallback =
         object : SystemStatusAnimationCallback {
             override fun onSystemStatusAnimationTransitionToPersistentDot(
-                contentDescr: String?
+                contentDescription: String?,
+                privacyItems: List<PrivacyItem>?,
             ): Animator? {
                 synchronized(lock) {
-                    nextViewState =
-                        nextViewState.copy(
-                            systemPrivacyEventIsActive = true,
-                            contentDescription = contentDescr,
-                        )
+                    if (locationIndicatorsEnabled()) {
+                        nextViewState =
+                            nextViewState.copy(
+                                systemPrivacyEventIsActive = true,
+                                systemPrivacyEventLocationOnlyIsActive =
+                                    PrivacyConfig.Companion.privacyItemsAreLocationOnly(
+                                        privacyItems ?: emptyList()
+                                    ),
+                                contentDescription = contentDescription,
+                            )
+                    } else {
+                        nextViewState =
+                            nextViewState.copy(
+                                systemPrivacyEventIsActive = true,
+                                contentDescription = contentDescription,
+                            )
+                    }
                 }
 
                 return null
@@ -611,7 +645,11 @@ constructor(
 
             override fun onHidePersistentDot(): Animator? {
                 synchronized(lock) {
-                    nextViewState = nextViewState.copy(systemPrivacyEventIsActive = false)
+                    nextViewState =
+                        nextViewState.copy(
+                            systemPrivacyEventIsActive = false,
+                            systemPrivacyEventLocationOnlyIsActive = false,
+                        )
                 }
 
                 return null
@@ -680,6 +718,7 @@ private const val DEBUG_VERBOSE = false
 data class ViewState(
     val viewInitialized: Boolean = false,
     val systemPrivacyEventIsActive: Boolean = false,
+    val systemPrivacyEventLocationOnlyIsActive: Boolean = false,
     val shadeExpanded: Boolean = false,
     val qsExpanded: Boolean = false,
     val dotDuplicatedByAvControlsChip: Boolean = false,
