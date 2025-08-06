@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard.ui.composable.layout
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import com.android.compose.modifiers.padding
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.systemui.plugins.clocks.LockscreenElementContext
+import com.android.systemui.plugins.clocks.LockscreenElementFactory
+import com.android.systemui.plugins.clocks.LockscreenElementKeys
 import kotlin.math.max
 import kotlin.math.min
 
@@ -156,8 +158,6 @@ object LockIconAlignmentLines {
  * orientation, and the current UI state.
  *
  * Notes about some non-obvious parameters:
- * - [dateAndWeather] is drawn either with the small clock or with the large clock. It's only drawn
- *   with the large clock if `isDateAndWeatherVisibleWithLargeClock` in the view-model is `true`
  * - [lockIcon] is drawn according to the [LockIconAlignmentLines] that it must supply. The layout
  *   logic uses those alignment lines to make sure other elements don't overlap with the lock icon
  *   as it may be drawn on top of the UDFPS (under display fingerprint sensor)
@@ -168,11 +168,9 @@ object LockIconAlignmentLines {
 @Composable
 fun LockscreenSceneLayout(
     viewModel: LockscreenLayoutViewModel,
+    elementFactory: LockscreenElementFactory,
+    elementContext: LockscreenElementContext,
     statusBar: @Composable () -> Unit,
-    smallClock: @Composable () -> Unit,
-    largeClock: @Composable () -> Unit,
-    dateAndWeather: @Composable (Orientation) -> Unit,
-    smartSpace: @Composable () -> Unit,
     media: @Composable () -> Unit,
     notifications: @Composable () -> Unit,
     lockIcon: @Composable () -> Unit,
@@ -194,13 +192,12 @@ fun LockscreenSceneLayout(
     fun contentColumn(modifier: Modifier = Modifier) {
         if (layout.isContentColumnVisible) {
             ContentColumn(
+                elementFactory = elementFactory,
+                elementContext = elementContext,
                 isSmallClockVisible = layout.isSmallClockVisible,
-                smallClock = smallClock,
                 isDateAndWeatherVisible = viewModel.isDateAndWeatherVisible,
                 shouldDateWeatherBeBelowSmallClock = viewModel.shouldDateWeatherBeBelowSmallClock,
-                dateAndWeather = dateAndWeather,
                 isSmartSpaceVisible = viewModel.isSmartSpaceVisible,
-                smartSpace = smartSpace,
                 isMediaVisible = viewModel.isMediaVisible,
                 media = media,
                 isNotificationsVisible = viewModel.isNotificationsVisible,
@@ -219,15 +216,25 @@ fun LockscreenSceneLayout(
      */
     @Composable
     fun largeClock(modifier: Modifier = Modifier) {
-        if (layout.isLargeClockVisible) {
-            LargeClockWithDateAndWeather(
-                largeClock = largeClock,
+        if (!layout.isLargeClockVisible) {
+            Box(modifier)
+            return
+        }
+
+        if (
+            !elementFactory.lockscreenElement(
+                LockscreenElementKeys.ClockRegionLarge,
+                elementContext,
+                modifier,
+            )
+        ) {
+            LargeClockRegion(
+                elementFactory = elementFactory,
+                elementContext = elementContext,
                 isDateAndWeatherVisible = viewModel.isDateAndWeatherVisibleWithLargeClock,
-                dateAndWeather = dateAndWeather,
+                isSmartSpaceVisible = viewModel.isSmartSpaceVisible,
                 modifier = modifier,
             )
-        } else {
-            Box(modifier)
         }
     }
 
@@ -446,13 +453,12 @@ private fun BottomArea(
  */
 @Composable
 private fun ContentColumn(
+    elementFactory: LockscreenElementFactory,
+    elementContext: LockscreenElementContext,
     isSmallClockVisible: Boolean,
-    smallClock: @Composable () -> Unit,
     isDateAndWeatherVisible: Boolean,
     shouldDateWeatherBeBelowSmallClock: Boolean,
-    dateAndWeather: @Composable (Orientation) -> Unit,
     isSmartSpaceVisible: Boolean,
-    smartSpace: @Composable () -> Unit,
     isMediaVisible: Boolean,
     media: @Composable () -> Unit,
     isNotificationsVisible: Boolean,
@@ -460,26 +466,51 @@ private fun ContentColumn(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.padding(top = 32.dp)) {
-        if (isSmallClockVisible) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 24.dp),
-            ) {
-                smallClock()
+        if (
+            !elementFactory.lockscreenElement(
+                LockscreenElementKeys.ClockRegionSmall,
+                elementContext,
+                modifier,
+            )
+        ) {
+            if (isSmallClockVisible) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 24.dp),
+                ) {
+                    elementFactory.lockscreenElement(
+                        LockscreenElementKeys.ClockSmall,
+                        elementContext,
+                        modifier,
+                    )
+                    if (isDateAndWeatherVisible && !shouldDateWeatherBeBelowSmallClock) {
+                        elementFactory.lockscreenElement(
+                            LockscreenElementKeys.SmartspaceDateWeatherVertical,
+                            elementContext,
+                            modifier,
+                        )
+                    }
+                }
 
-                if (isDateAndWeatherVisible && !shouldDateWeatherBeBelowSmallClock) {
-                    dateAndWeather(Orientation.Vertical)
+                if (isDateAndWeatherVisible && shouldDateWeatherBeBelowSmallClock) {
+                    elementFactory.lockscreenElement(
+                        LockscreenElementKeys.SmartspaceDateWeatherHorizontal,
+                        elementContext,
+                        modifier,
+                    )
+                }
+
+                AnimatedVisibility(isSmartSpaceVisible) {
+                    Box(Modifier.padding(bottom = 24.dp)) {
+                        elementFactory.lockscreenElement(
+                            LockscreenElementKeys.SmartspaceCards,
+                            elementContext,
+                            modifier,
+                        )
+                    }
                 }
             }
-        }
-
-        if (isDateAndWeatherVisible && shouldDateWeatherBeBelowSmallClock) {
-            dateAndWeather(Orientation.Horizontal)
-        }
-
-        AnimatedVisibility(isSmartSpaceVisible) {
-            Box(Modifier.padding(bottom = 24.dp)) { smartSpace() }
         }
 
         AnimatedVisibility(isMediaVisible) { Box(Modifier.padding(bottom = 24.dp)) { media() } }
@@ -490,24 +521,42 @@ private fun ContentColumn(
 
 /** Draws the large clock. */
 @Composable
-private fun LargeClockWithDateAndWeather(
-    largeClock: @Composable () -> Unit,
+private fun LargeClockRegion(
+    elementFactory: LockscreenElementFactory,
+    elementContext: LockscreenElementContext,
     isDateAndWeatherVisible: Boolean,
-    dateAndWeather: @Composable (Orientation) -> Unit,
+    isSmartSpaceVisible: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier) {
-        if (isDateAndWeatherVisible) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                modifier = Modifier.align(Alignment.Center),
-            ) {
-                largeClock()
-                dateAndWeather(Orientation.Horizontal)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            modifier = Modifier.align(Alignment.Center),
+        ) {
+            AnimatedVisibility(isSmartSpaceVisible) {
+                Box(Modifier.padding(bottom = 24.dp)) {
+                    elementFactory.lockscreenElement(
+                        LockscreenElementKeys.SmartspaceCards,
+                        elementContext,
+                        modifier,
+                    )
+                }
             }
-        } else {
-            Box(Modifier.align(Alignment.Center)) { largeClock() }
+
+            elementFactory.lockscreenElement(
+                LockscreenElementKeys.ClockLarge,
+                elementContext,
+                modifier,
+            )
+
+            if (isDateAndWeatherVisible) {
+                elementFactory.lockscreenElement(
+                    LockscreenElementKeys.SmartspaceDateWeatherHorizontal,
+                    elementContext,
+                    modifier,
+                )
+            }
         }
     }
 }

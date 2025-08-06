@@ -29,8 +29,6 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
-import com.android.systemui.keyguard.ui.composable.element.SmallClockElement
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
@@ -58,7 +56,6 @@ constructor(
     private val contentViewModelFactory: NotificationsShadeOverlayContentViewModel.Factory,
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
-    private val smallClockElement: SmallClockElement,
     private val keyguardClockViewModel: KeyguardClockViewModel,
     private val jankMonitor: InteractionJankMonitor,
 ) : Overlay {
@@ -115,14 +112,7 @@ constructor(
         ) {
             Column {
                 if (isFullWidth) {
-                    val burnIn = rememberBurnIn(keyguardClockViewModel)
-
-                    with(smallClockElement) {
-                        SmallClock(
-                            burnInParams = burnIn.parameters,
-                            onTopChanged = burnIn.onSmallClockTopChanged,
-                        )
-                    }
+                    // TODO(b/432451019): Integrate with smallClock for correct transition
                 }
 
                 if (viewModel.showMedia) {
