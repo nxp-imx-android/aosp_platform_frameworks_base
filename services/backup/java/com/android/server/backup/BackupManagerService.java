@@ -500,9 +500,18 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
     }
 
     /**
+     * Sets the active state of the backup service for a given user.
+     *
+     * This method is the entry point for activating or deactivating the backup service. It
+     * enforces the necessary permissions and then delegates to helper methods to handle the logic.
+     * If the call is for the system user, it acts as a global toggle for all users.
+     *
      * Only privileged callers should be changing the backup state. Deactivating backup in the
      * system user also deactivates backup in all users. We are not guaranteed that {@code userId}
      * is unlocked at this point yet, so handle both cases.
+     *
+     * @param userId The user for whom to change the backup service's state.
+     * @param makeActive {@code true} to activate the service, {@code false} to deactivate it.
      */
     public void setBackupServiceActive(@UserIdInt int userId, boolean makeActive) {
         enforceSetBackupServiceActiveAllowedForUser(userId);
@@ -531,37 +540,71 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
         }
 
         synchronized (mLock) {
-            Slog.i(TAG, "Making backup " + (makeActive ? "" : "in") + "active");
+            Slog.i(TAG, "Making backup " + (makeActive ? "" : "in") + "active for user " + userId);
             if (makeActive) {
-                try {
-                    activateBackupForUserLocked(userId);
-                } catch (IOException e) {
-                    Slog.e(TAG, "Unable to persist backup service activity");
-                }
-
-                // If the user is unlocked, we can start the backup service for it. Otherwise we
-                // will start the service when the user is unlocked as part of its unlock callback.
-                if (mUserManagerInternal.isUserUnlocked(userId)) {
-                    // Clear calling identity as initialization enforces the system identity but we
-                    // can be coming from shell.
-                    final long oldId = Binder.clearCallingIdentity();
-                    try {
-                        startServiceForUser(userId);
-                    } finally {
-                        Binder.restoreCallingIdentity(oldId);
-                    }
-                }
+                handleBackupActivationLocked(userId);
             } else {
-                try {
-                    //TODO(b/121198006): what if this throws an exception?
-                    deactivateBackupForUserLocked(userId);
-                } catch (IOException e) {
-                    Slog.e(TAG, "Unable to persist backup service inactivity");
-                }
-                //TODO(b/121198006): loop through active users that have work profile and
-                // stop them as well.
-                onStopUser(userId);
+                handleBackupDeactivationLocked(userId);
             }
+        }
+    }
+
+    @GuardedBy("mLock")
+    private void handleBackupActivationLocked(@UserIdInt int userId) {
+        try {
+            activateBackupForUserLocked(userId);
+        } catch (IOException e) {
+            Slog.e(TAG, "Unable to persist backup service activity");
+        }
+
+        // Enabling for a single user.
+        if (userId != UserHandle.USER_SYSTEM) {
+            if (mUserManagerInternal.isUserUnlocked(userId)) {
+                final long oldId = Binder.clearCallingIdentity();
+                try {
+                    startServiceForUser(userId);
+                } finally {
+                    Binder.restoreCallingIdentity(oldId);
+                }
+            }
+            return;
+        }
+
+        // Globally enabling. Start services for all running users.
+        final long oldId = Binder.clearCallingIdentity();
+        try {
+            List<UserInfo> users = mUserManagerInternal.getUsers(/* excludeDying */ true);
+            for (UserInfo user : users) {
+                if (mUserManagerInternal.isUserRunning(user.id)) {
+                    startServiceForUser(user.id);
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(oldId);
+        }
+    }
+
+    @GuardedBy("mLock")
+    private void handleBackupDeactivationLocked(@UserIdInt int userId) {
+        try {
+            deactivateBackupForUserLocked(userId);
+        } catch (IOException e) {
+            Slog.e(TAG, "Unable to persist backup service inactivity");
+        }
+
+        // Disabling for a single user.
+        if (userId != UserHandle.USER_SYSTEM) {
+            onStopUser(userId);
+            return;
+        }
+
+        // Globally disabling. Stop services for all running users.
+        int[] userIdsToStop = new int[mUserServices.size()];
+        for (int i = 0; i < mUserServices.size(); i++) {
+            userIdsToStop[i] = mUserServices.keyAt(i);
+        }
+        for (int userToStop : userIdsToStop) {
+            onStopUser(userToStop);
         }
     }
 
