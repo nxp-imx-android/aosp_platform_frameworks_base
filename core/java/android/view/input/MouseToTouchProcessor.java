@@ -130,7 +130,7 @@ public class MouseToTouchProcessor extends InputEventCompatProcessor {
         }
         boolean primaryButton = (event.getButtonState() & MotionEvent.BUTTON_PRIMARY)
                 == MotionEvent.BUTTON_PRIMARY;
-        if (primaryButton || isTouchpadGesture(event)) {
+        if (primaryButton || event.isSynthesizedTouchpadGesture()) {
             mState = STATE_CONVERTING;
             return List.of(obtainRewrittenEventAsTouch(event));
         } else {
@@ -262,12 +262,5 @@ public class MouseToTouchProcessor extends InputEventCompatProcessor {
     private static boolean isActionButtonEvent(int action) {
         return action == MotionEvent.ACTION_BUTTON_PRESS
                 || action == MotionEvent.ACTION_BUTTON_RELEASE;
-    }
-
-    private static boolean isTouchpadGesture(MotionEvent event) {
-        return event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER
-                && (event.getClassification() == MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
-                || event.getClassification() == MotionEvent.CLASSIFICATION_MULTI_FINGER_SWIPE
-                || event.getClassification() == MotionEvent.CLASSIFICATION_PINCH);
     }
 }

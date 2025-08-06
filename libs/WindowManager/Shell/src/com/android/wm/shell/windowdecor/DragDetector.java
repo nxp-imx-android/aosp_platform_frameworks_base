@@ -34,8 +34,6 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.android.wm.shell.windowdecor.extension.MotionEventKt;
-
 /**
  * A detector for touch inputs that differentiates between drag and click inputs. It receives a flow
  * of {@link MotionEvent} and generates a new flow of motion events with slop in consideration to
@@ -92,7 +90,7 @@ public class DragDetector {
      * {@link #mEventHandler} handles the previous down event if the event shouldn't be passed
      */
     public boolean onMotionEvent(View v, MotionEvent ev) {
-        if (MotionEventKt.isTouchpadGesture(ev)) {
+        if (ev.isSynthesizedTouchpadGesture()) {
             // Touchpad finger gestures are ignored.
             return false;
         }
