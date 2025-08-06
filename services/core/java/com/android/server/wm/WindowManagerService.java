@@ -503,6 +503,11 @@ public class WindowManagerService extends IWindowManager.Stub
     int mVr2dDisplayId = INVALID_DISPLAY;
     boolean mVrModeEnabled = false;
 
+    private static final int WINDOW_INTERACTION_HISTORY_SIZE = 3;
+
+    WindowInteractionTracker mInteractionTracker = new WindowInteractionTracker(
+            WINDOW_INTERACTION_HISTORY_SIZE);
+
     /**
      * Tracks a map of input tokens to info that is used to decide whether to intercept
      * a key event.
@@ -6769,6 +6774,12 @@ public class WindowManagerService extends IWindowManager.Stub
     boolean updateFocusedWindowLocked(int mode, boolean updateInputWindows) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "wmUpdateFocus");
         boolean changed = mRoot.updateFocusedWindowLocked(mode, updateInputWindows);
+        if (changed && Flags.systemContentPriority()) {
+            DisplayContent dc = mRoot.getTopFocusedDisplayContent();
+            if (dc != null && updateWindowInteractionHistoryByFocus(dc.mCurrentFocus)) {
+                scheduleAnimationLocked();
+            }
+        }
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         return changed;
     }
@@ -9489,6 +9500,25 @@ public class WindowManagerService extends IWindowManager.Stub
             return null;
         }
         return new WindowContainerInfo(targetTask.effectiveUid, taskWindowContainerToken);
+    }
+
+    /**
+     * Update the interaction history based on focus changes if needed. It assumes that the new
+     * focused window is recently interacted by the user. It returns {@code true} if the history is
+     * updated, otherwise returns {@code false}.
+     */
+    private boolean updateWindowInteractionHistoryByFocus(WindowState focusedWindow) {
+        if (focusedWindow == null) {
+            return false;
+        }
+        WindowState lastInteractedWindow = mInteractionTracker.peek();
+        if (lastInteractedWindow == null || lastInteractedWindow != focusedWindow) {
+            mInteractionTracker.add(focusedWindow);
+            RenderingPrioritizationPolicy.updatePriorityByInteraction(
+                    mInteractionTracker.getRecentlyInteractedWindows());
+            return true;
+        }
+        return false;
     }
 
     /**

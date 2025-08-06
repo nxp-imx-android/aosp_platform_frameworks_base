@@ -747,6 +747,20 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     int mFrameRateSelectionPriority = RefreshRatePolicy.LAYER_PRIORITY_UNSET;
 
+
+    /**
+     * A value representing the importance of the window from the system perspective. A higher
+     * priority value means the window will get preferred access to the limited resource in
+     * rendering.
+     */
+    int mSystemContentPriority = 0;
+    /**
+     * A score contributing to the {@link mSystemContentPriority}. This score is calculated based on
+     * the recent user interaction history. The newer interacted window will typically get a higher
+     * score.
+     */
+    int mInteractionPriorityScore = 0;
+
     /**
      * This is the frame rate which is passed to SurfaceFlinger if the window set a
      * preferredDisplayModeId or is part of the high refresh rate deny list.
@@ -5190,6 +5204,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
+    private void updateSystemContentPriorityIfNeeded() {
+        int newPriority = mInteractionPriorityScore;
+        if (newPriority != mSystemContentPriority) {
+            getPendingTransaction().setSystemContentPriority(mSurfaceControl, newPriority);
+            mSystemContentPriority = newPriority;
+        }
+    }
+
     @Override
     void prepareSurfaces() {
         mIsDimming = false;
@@ -5197,6 +5219,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             updateSurfacePositionNonOrganized();
             // Send information to SurfaceFlinger about the priority of the current window.
             updateFrameRateSelectionPriorityIfNeeded();
+            updateSystemContentPriorityIfNeeded();
             if (isVisibleRequested()) {
                 updateScaleIfNeeded();
             }
