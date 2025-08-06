@@ -125,7 +125,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
     private int mRangeZone = NearbyDevice.RANGE_UNKNOWN;
 
     protected final Context mContext;
-    protected final MediaRoute2Info mRouteInfo;
+    @Nullable protected final MediaRoute2Info mRouteInfo;
     @Nullable private final DynamicRouteAttributes mDynamicRouteAttributes;
     protected final RouteListingPreference.Item mRlpItem;
     private boolean mIsSuggested;
@@ -204,6 +204,12 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
 
     public void setRangeZone(@NearbyDevice.RangeZone int rangeZone) {
         mRangeZone = rangeZone;
+    }
+
+    /** Returns a route associated with this device. */
+    @Nullable
+    public MediaRoute2Info getRouteInfo() {
+        return mRouteInfo;
     }
 
     /**
