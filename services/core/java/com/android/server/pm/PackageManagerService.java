@@ -235,7 +235,6 @@ import com.android.server.pm.permission.PermissionManagerService;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.ArchiveState;
-import com.android.server.pm.pkg.PackageState;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.pkg.PackageUserState;
 import com.android.server.pm.pkg.PackageUserStateInternal;
@@ -258,8 +257,6 @@ import com.android.server.utils.WatchedArrayMap;
 import com.android.server.utils.WatchedSparseBooleanArray;
 import com.android.server.utils.WatchedSparseIntArray;
 import com.android.server.utils.Watcher;
-
-import dalvik.system.VMRuntime;
 
 import libcore.util.EmptyArray;
 import libcore.util.HexEncoding;
@@ -969,7 +966,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final @NonNull String mRequiredSdkSandboxPackage;
     private final @Nullable ComponentName mDeveloperVerificationServiceProvider;
     private final @Nullable String mDeveloperVerificationPolicyDelegatePackage;
-    final CompilerStats mCompilerStats = new CompilerStats();
 
     private final DomainVerificationConnection mDomainVerificationConnection;
 
@@ -2351,8 +2347,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 setting.updateProcesses();
             }
 
-            mCompilerStats.read();
-
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
                     SystemClock.uptimeMillis());
             Slog.i(TAG, "Time to scan packages: "
@@ -3068,7 +3062,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     public void shutdown() {
-        mCompilerStats.writeNow();
         mDynamicCodeLogger.writeNow();
         if (!refactorCrashrecovery()) {
             CrashRecoveryAdaptor.packageWatchdogWriteNow(mContext);
@@ -5704,54 +5697,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
 
             UserHandle user = Binder.getCallingUserHandle();
-            int userId = user.getIdentifier();
-
-            // Proxy the call to either ART Service or the legacy implementation. If the
-            // implementation is switched with the system property, the dex usage info will be
-            // incomplete, with these effects:
-            //
-            // -  Shared dex files may temporarily get compiled for private use.
-            // -  Secondary dex files may not get compiled at all.
-            // -  Stale compiled artifacts for secondary dex files may not get cleaned up.
-            //
-            // This recovers in the first background dexopt after the depending apps have been
-            // loaded for the first time.
-
             DexUseManagerLocal dexUseManager = DexOptHelper.getDexUseManagerLocal();
             // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
             try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
                     LocalManagerRegistry.getManager(PackageManagerLocal.class)
                             .withFilteredSnapshot(callingUid, user)) {
-                if (loaderIsa != null) {
-                    // Check that loaderIsa agrees with the ISA that dexUseManager will
-                    // determine.
-                    PackageState loadingPkgState =
-                            filteredSnapshot.getPackageState(loadingPackageName);
-                    // If we don't find the loading package just pass it through and let
-                    // dexUseManager throw on it.
-                    if (loadingPkgState != null) {
-                        String loadingPkgAbi = loadingPkgState.getPrimaryCpuAbi();
-                        if (loadingPkgAbi == null) {
-                            loadingPkgAbi = Build.SUPPORTED_ABIS[0];
-                        }
-                        String loadingPkgDexCodeIsa =
-                                InstructionSets.getDexCodeInstructionSet(
-                                        VMRuntime.getInstructionSet(loadingPkgAbi));
-                        if (!loaderIsa.equals(loadingPkgDexCodeIsa)) {
-                            // TODO(b/251903639): We make this a wtf to surface any situations
-                            // where this argument doesn't correspond to our expectations. Later
-                            // it should be turned into an IllegalArgumentException, when we can
-                            // assume it's the caller that's wrong rather than us.
-                            Log.wtf(TAG,
-                                    "Invalid loaderIsa in notifyDexLoad call from "
-                                            + loadingPackageName + ", uid " + callingUid
-                                            + ": expected " + loadingPkgDexCodeIsa + ", got "
-                                            + loaderIsa);
-                            return;
-                        }
-                    }
-                }
-
                 // This is called from binder, so exceptions thrown here are caught and handled
                 // by it.
                 dexUseManager.notifyDexContainersLoaded(
@@ -7664,14 +7614,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
         };
         forEachPackageState(snapshot.getPackageStates(), actionWrapped);
-    }
-
-    public CompilerStats.PackageStats getOrCreateCompilerPackageStats(AndroidPackage pkg) {
-        return getOrCreateCompilerPackageStats(pkg.getPackageName());
-    }
-
-    public CompilerStats.PackageStats getOrCreateCompilerPackageStats(String pkgName) {
-        return mCompilerStats.getOrCreatePackageStats(pkgName);
     }
 
     void grantImplicitAccess(@NonNull Computer snapshot, @UserIdInt int userId,
