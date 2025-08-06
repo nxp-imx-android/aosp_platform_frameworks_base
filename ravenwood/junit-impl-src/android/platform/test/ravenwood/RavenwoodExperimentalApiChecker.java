@@ -44,15 +44,8 @@ public class RavenwoodExperimentalApiChecker {
      * Check if experimental APIs are enabled, and if not, throws
      * {@link RavenwoodUnsupportedApiException}.
      */
-    public static boolean onExperimentalApiCalled(Class<?> clazz, String method, String desc) {
-        // Even when experimental APIs are disabled, we don't want to throw from <clinit>.
-        // because that'd make the class unloadable. Instead, we return false to skip the rest of
-        // the code.
-        if ("<clinit>".equals(method)) {
-            return isExperimentalApiEnabled();
-        }
+    public static void onExperimentalApiCalled(Class<?> clazz, String method, String desc) {
         onExperimentalApiCalled(2);
-        return true;
     }
 
     /**

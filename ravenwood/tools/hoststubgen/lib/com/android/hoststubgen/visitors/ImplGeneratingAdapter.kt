@@ -16,7 +16,6 @@
 package com.android.hoststubgen.visitors
 
 import com.android.hoststubgen.HostStubGenErrors
-import com.android.hoststubgen.HostStubGenInternalException
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_DESC
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
 import com.android.hoststubgen.asm.CTOR_NAME
@@ -32,7 +31,6 @@ import com.android.hoststubgen.asm.reasonParam
 import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.asm.writeByteCodeToPushArguments
 import com.android.hoststubgen.asm.writeByteCodeToReturn
-import com.android.hoststubgen.asm.writeByteCodeToReturnDefault
 import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
@@ -42,13 +40,12 @@ import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported
-import com.android.hoststubgen.hosthelper.HostTestUtils
 import com.android.hoststubgen.log
 import com.android.hoststubgen.utils.ClassDescriptorSet
+import java.lang.annotation.RetentionPolicy
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
-import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.INVOKEINTERFACE
@@ -56,7 +53,6 @@ import org.objectweb.asm.Opcodes.INVOKESPECIAL
 import org.objectweb.asm.Opcodes.INVOKESTATIC
 import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
 import org.objectweb.asm.Type
-import java.lang.annotation.RetentionPolicy
 
 const val OPCODE_VERSION = Opcodes.ASM9
 
@@ -448,7 +444,7 @@ class ImplGeneratingAdapter(
                     }
                     log.v("Making method experimental...")
                     innerVisitor = innerVisitor?.let {
-                        ReturnDecidingMethodCallHookInjectingAdapter(
+                        MethodCallHookInjectingAdapter(
                             name,
                             descriptor,
                             listOf(options.experimentalMethodCallHook!!),
@@ -501,7 +497,30 @@ class ImplGeneratingAdapter(
         next: MethodVisitor?
     ) : BodyReplacingMethodVisitor(createBody, next) {
         override fun emitNewCode() {
-            writeByteCodeToReturnDefault(descriptor, this)
+            when (Type.getReturnType(descriptor)) {
+                Type.VOID_TYPE -> visitInsn(Opcodes.RETURN)
+                Type.BOOLEAN_TYPE, Type.BYTE_TYPE, Type.CHAR_TYPE, Type.SHORT_TYPE,
+                Type.INT_TYPE -> {
+                    visitInsn(Opcodes.ICONST_0)
+                    visitInsn(Opcodes.IRETURN)
+                }
+                Type.LONG_TYPE -> {
+                    visitInsn(Opcodes.LCONST_0)
+                    visitInsn(Opcodes.LRETURN)
+                }
+                Type.FLOAT_TYPE -> {
+                    visitInsn(Opcodes.FCONST_0)
+                    visitInsn(Opcodes.FRETURN)
+                }
+                Type.DOUBLE_TYPE -> {
+                    visitInsn(Opcodes.DCONST_0)
+                    visitInsn(Opcodes.DRETURN)
+                }
+                else -> {
+                    visitInsn(Opcodes.ACONST_NULL)
+                    visitInsn(Opcodes.ARETURN)
+                }
+            }
             visitMaxs(0, 0) // We let ASM figure them out.
         }
     }
@@ -581,77 +600,6 @@ class ImplGeneratingAdapter(
                     "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V",
                     false
                 )
-            }
-        }
-    }
-
-
-    /**
-     * Similar to [MethodCallHookInjectingAdapter], but the hook must return boolean.
-     *
-     * The hook must always return true, except in <clinit>, it can return false. If the hook
-     * returns false, we return from the method, without running any of the remaining code.
-     *
-     * Can we use false for other methods?
-     * - No, for <init>, beucase we always must call super's <init>. We can never return
-     *   early from <init.
-     * - For other methods, we could.
-     */
-    private inner class ReturnDecidingMethodCallHookInjectingAdapter(
-        val name: String,
-        val descriptor: String,
-        val hooks: List<String>,
-        next: MethodVisitor?,
-    ) : MethodVisitor(OPCODE_VERSION, next) {
-        /**
-         * Whether or not the hook can return false to skip the rest of the method body.
-         */
-        val allowReturn = name == "<clinit>"
-
-        override fun visitCode() {
-            super.visitCode() // Note it's possible nested visitor added code too
-
-            hooks.forEach { hook ->
-                mv.visitLdcInsn(Type.getType("L$currentClassName;"))
-                visitLdcInsn(name)
-                visitLdcInsn(descriptor)
-
-                val (clazz, method) = hook.parseClassMethod()
-                visitMethodInsn(INVOKESTATIC, clazz, method,
-                    "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z",
-                    false
-                )
-                if (!allowReturn) {
-                    // We don't allow "return". The hook must always return true.
-                    visitMethodInsn(INVOKESTATIC, HostTestUtils.CLASS_INTERNAL_NAME,
-                        HostTestUtils.ASSERT_THAT_HOOK_RETURNED_TRUE,
-                        "(Z)V",
-                        false
-                    )
-                } else {
-                    var label = Label()
-
-                    visitJumpInsn(Opcodes.IFNE, label)
-                    if (Type.getReturnType(descriptor) != Type.VOID_TYPE) {
-                        // If we ever want to use it for non-void method,
-                        // The below visitFrame() call needs to accommodate that.
-                        // (Need some investigation to implement it properly...)
-                        throw HostStubGenInternalException(
-                            "This feature for non-void method isn't implemented yet")
-                    }
-                    writeByteCodeToReturnDefault(descriptor, this)
-
-                    visitLabel(label)
-
-                    // We need to inject a frame.
-                    //
-                    // We assume our method cal is the first thing we do in this method
-                    // and the frame can be empty.
-                    // In reality, it's possible the "next" visitors created more with frames,
-                    // in super.visitCode(), in that case this would probably break...
-                    //
-                    super.visitFrame(Opcodes.F_NEW, 0, null, 0, null)
-                }
             }
         }
     }

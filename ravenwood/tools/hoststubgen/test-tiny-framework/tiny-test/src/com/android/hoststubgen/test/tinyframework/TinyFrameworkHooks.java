@@ -60,8 +60,7 @@ public class TinyFrameworkHooks {
     /**
      * The method call hook when experimental APIs are called
      */
-    public static boolean onExperimentalMethodCalled(Class<?> clazz, String method, String desc) {
+    public static void onExperimentalMethodCalled(Class<?> clazz, String method, String desc) {
         sExperimentalMethodCalls.add(new MethodInfo(clazz, method, desc));
-        return true;
     }
 }
