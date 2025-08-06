@@ -24,7 +24,7 @@ import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.FixedTimeKeeper
 import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.TypefaceCache
-import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.shared.clocks.view.FlexClockTextView
 import org.junit.Assert.assertEquals
 import org.junit.Before

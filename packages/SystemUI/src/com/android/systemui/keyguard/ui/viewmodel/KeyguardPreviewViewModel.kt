@@ -24,7 +24,7 @@ import android.view.Display
 import com.android.internal.policy.SystemBarUtils
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.domain.interactor.KeyguardPreviewInteractor
-import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
 import com.android.systemui.res.R as SysuiR
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import dagger.assisted.Assisted

@@ -150,7 +150,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardServiceShowLocksc
 import com.android.systemui.keyguard.domain.interactor.ShowWhileAwakeReason;
 import com.android.systemui.keyguard.shared.constants.TrustAgentUiEvent;
 import com.android.systemui.log.SessionTracker;
-import com.android.systemui.plugins.clocks.WeatherData;
+import com.android.systemui.plugins.keyguard.data.model.WeatherData;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;

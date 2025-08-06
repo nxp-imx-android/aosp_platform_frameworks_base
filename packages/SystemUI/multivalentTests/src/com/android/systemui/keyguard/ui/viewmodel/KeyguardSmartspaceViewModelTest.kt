@@ -26,7 +26,7 @@ import com.android.systemui.keyguard.data.repository.keyguardSmartspaceRepositor
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever

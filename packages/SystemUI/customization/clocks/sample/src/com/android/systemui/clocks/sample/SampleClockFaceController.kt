@@ -24,15 +24,15 @@ import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
-import com.android.systemui.plugins.clocks.ClockAnimations
-import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockFaceConfig
-import com.android.systemui.plugins.clocks.ClockFaceController
-import com.android.systemui.plugins.clocks.ClockFaceEvents
-import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
-import com.android.systemui.plugins.clocks.ClockSettings
-import com.android.systemui.plugins.clocks.ClockViewIds
-import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAnimations
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceEvents
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPositionAnimationArgs
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
 
 class SampleClockFaceController(
     private val hostCtx: Context,

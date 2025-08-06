@@ -37,16 +37,16 @@ import androidx.constraintlayout.widget.ConstraintSet.START
 import androidx.constraintlayout.widget.ConstraintSet.TOP
 import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
 import com.android.compose.animation.scene.ContentScope
-import com.android.systemui.customization.clocks.ContextUtil.getSafeStatusBarHeight
 import com.android.systemui.customization.clocks.R as clocksR
-import com.android.systemui.plugins.clocks.AodClockBurnInModel
-import com.android.systemui.plugins.clocks.ClockFaceLayout
-import com.android.systemui.plugins.clocks.ClockPreviewConfig
-import com.android.systemui.plugins.clocks.ClockViewIds
-import com.android.systemui.plugins.clocks.LockscreenElement
-import com.android.systemui.plugins.clocks.LockscreenElementContext
-import com.android.systemui.plugins.clocks.LockscreenElementFactory
-import com.android.systemui.plugins.clocks.LockscreenElementKeys
+import com.android.systemui.customization.clocks.utils.ContextUtils.getSafeStatusBarHeight
+import com.android.systemui.plugins.keyguard.ui.clocks.AodClockBurnInModel
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 
 /** A ClockFaceLayout that applies the default lockscreen layout to a single view */
 open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {

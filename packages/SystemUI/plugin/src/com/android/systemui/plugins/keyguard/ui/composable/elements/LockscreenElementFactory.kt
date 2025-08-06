@@ -12,84 +12,20 @@
  * permissions and limitations under the License.
  */
 
-// TODO(b/432451019): move to .ui.composable subpackage
-package com.android.systemui.plugins.clocks
+package com.android.systemui.plugins.keyguard.ui.composable.elements
 
-import android.content.Context
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
-import com.android.systemui.plugins.annotations.GeneratedImport
-import com.android.systemui.plugins.annotations.ProtectedInterface
-import com.android.systemui.plugins.annotations.ProtectedReturn
-import com.android.systemui.plugins.annotations.SimpleProperty
-import com.android.systemui.plugins.annotations.ThrowsOnFailure
-import kotlin.collections.mutableSetOf
+import com.android.systemui.plugins.keyguard.VRectF
 import kotlin.sequences.associateBy
-
-/** Element Composable together with some metadata about the function. */
-@Stable
-@ProtectedInterface
-interface LockscreenElement {
-    @get:SimpleProperty
-    /** Key of identifying this lockscreen element */
-    val key: ElementKey
-
-    @get:SimpleProperty
-    /** Context override for the composable */
-    val context: Context
-
-    @Composable
-    @ThrowsOnFailure
-    /** Compose function which renders this element */
-    fun ContentScope.LockscreenElement(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-    )
-}
-
-@Composable
-/** Convenience method for building an element w/ the default Modifier */
-fun ContentScope.Element(key: ElementKey, content: @Composable BoxScope.() -> Unit) {
-    Element(key, Modifier, content)
-}
-
-/** Provides Lockscreen Elements for use by the lockscreen layout */
-@ProtectedInterface
-@GeneratedImport("java.util.ArrayList")
-interface LockscreenElementProvider {
-    @get:ProtectedReturn("return new ArrayList<LockscreenElement>();")
-    /** Returns the clock views as a map of composable functions. */
-    val elements: List<LockscreenElement>
-}
-
-/** Combined Element Composable arguments. Contains relevant rendering parameters. */
-data class LockscreenElementContext(
-    /** ContentScope to use when rendering lockscreen elements */
-    val scope: ContentScope,
-
-    /** Modifier to apply to elements that should handle burn-in when dozing */
-    val burnInModifier: Modifier,
-
-    /** Callback executed when an element is positioned by compose. */
-    val onElementPositioned: (ElementKey, VRectF) -> Unit,
-) {
-    /**
-     * A list of all the elements that have been rendered so far. This allows us to prevent crashes
-     * that occur when the same element is rendered twice at different locations.
-     */
-    val history = mutableSetOf<ElementKey>()
-}
 
 @Immutable
 /** Factory to build composable lockscreen elements based on keys */

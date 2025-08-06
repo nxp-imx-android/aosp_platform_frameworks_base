@@ -34,7 +34,7 @@ import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
-import com.android.systemui.plugins.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.shared.R as sharedR
 import com.android.systemui.util.kotlin.pairwise
 

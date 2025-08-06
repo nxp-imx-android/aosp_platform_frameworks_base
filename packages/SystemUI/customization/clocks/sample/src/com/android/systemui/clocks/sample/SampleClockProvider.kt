@@ -19,12 +19,12 @@ import com.android.systemui.customization.clocks.TimeKeeperImpl
 import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.plugins.annotations.Requires
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockMessageBuffers
-import com.android.systemui.plugins.clocks.ClockMetadata
-import com.android.systemui.plugins.clocks.ClockPickerConfig
-import com.android.systemui.plugins.clocks.ClockProviderPlugin
-import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockMetadata
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPickerConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockProviderPlugin
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 
 @Keep // Proguard should not remove this class as it's functionally the entrypoint
 @Requires(target = ClockProviderPlugin::class, version = ClockProviderPlugin.VERSION)

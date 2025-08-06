@@ -20,10 +20,10 @@ import android.util.AttributeSet
 import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockContext
-import com.android.systemui.customization.clocks.FontUtils.set
+import com.android.systemui.customization.clocks.utils.FontUtils.set
 import com.android.systemui.customization.clocks.view.DigitalClockTextView
 import com.android.systemui.customization.clocks.view.DigitalClockTextView.FontVariations
-import com.android.systemui.plugins.clocks.ClockAxisStyle
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 
 class FlexClockTextView(

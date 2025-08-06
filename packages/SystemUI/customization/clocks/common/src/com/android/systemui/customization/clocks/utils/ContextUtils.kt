@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.customization.clocks
+package com.android.systemui.customization.clocks.utils
 
 import android.content.Context
 import com.android.internal.R as internalR
 import com.android.internal.policy.SystemBarUtils
 
-object ContextUtil {
+object ContextUtils {
     fun Context.getSafeStatusBarHeight(): Int {
         return this.displayNoVerify?.let { display ->
             SystemBarUtils.getStatusBarHeight(this.resources, display.cutout)

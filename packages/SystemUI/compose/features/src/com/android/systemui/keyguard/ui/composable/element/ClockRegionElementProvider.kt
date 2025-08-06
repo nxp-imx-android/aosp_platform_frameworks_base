@@ -33,19 +33,19 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.padding
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
-import com.android.systemui.plugins.clocks.LockscreenElement
-import com.android.systemui.plugins.clocks.LockscreenElementContext
-import com.android.systemui.plugins.clocks.LockscreenElementFactory
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockLarge
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockRegionLarge
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockRegionSmall
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockSmall
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceCards
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceDateLargeClock
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceDateSmallClock
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceWeatherLargeClock
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceWeatherSmallClock
-import com.android.systemui.plugins.clocks.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockLarge
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockRegionLarge
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockRegionSmall
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockSmall
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceCards
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceDateLargeClock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceDateSmallClock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceWeatherLargeClock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceWeatherSmallClock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 

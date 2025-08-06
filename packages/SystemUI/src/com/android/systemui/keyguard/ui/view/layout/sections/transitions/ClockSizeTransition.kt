@@ -36,7 +36,7 @@ import com.android.systemui.keyguard.ui.view.layout.sections.transitions.ClockSi
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.plugins.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.shared.R as sharedR
 import com.google.android.material.math.MathUtils
@@ -408,7 +408,10 @@ class ClockSizeTransition(
             duration =
                 if (isLargeClock) STATUS_AREA_MOVE_UP_MILLIS else STATUS_AREA_MOVE_DOWN_MILLIS
             interpolator = Interpolators.EMPHASIZED
-            if (viewModel.shouldDateWeatherBeBelowSmallClock.value || !viewModel.shouldDateWeatherBeBelowLargeClock.value) {
+            if (
+                viewModel.shouldDateWeatherBeBelowSmallClock.value ||
+                    !viewModel.shouldDateWeatherBeBelowLargeClock.value
+            ) {
                 addTarget(sharedR.id.date_smartspace_view)
             }
             addTarget(sharedR.id.bc_smartspace_view)

@@ -16,7 +16,7 @@
 
 package com.android.systemui.customization.clocks
 
-import com.android.systemui.plugins.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 
 enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int) {
     TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),

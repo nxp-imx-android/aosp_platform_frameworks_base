@@ -11,13 +11,18 @@
  * KIND, either express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package com.android.systemui.plugins.clocks
+package com.android.systemui.plugins.keyguard.ui.clocks
 
 import android.content.Context
 import android.icu.util.TimeZone
 import android.text.format.DateFormat
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
+import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRectF
+import com.android.systemui.plugins.keyguard.data.model.AlarmData
+import com.android.systemui.plugins.keyguard.data.model.WeatherData
+import com.android.systemui.plugins.keyguard.data.model.ZenData
 import java.util.Locale
 
 /** Denotes format kind that should be used when rendering the clock */

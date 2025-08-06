@@ -24,15 +24,15 @@ import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.TimeKeeper
 import com.android.systemui.customization.clocks.TimeKeeperImpl
 import com.android.systemui.customization.clocks.TypefaceCache
-import com.android.systemui.plugins.clocks.AxisPresetConfig
-import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
-import com.android.systemui.plugins.clocks.ClockMessageBuffers
-import com.android.systemui.plugins.clocks.ClockMetadata
-import com.android.systemui.plugins.clocks.ClockPickerConfig
-import com.android.systemui.plugins.clocks.ClockProvider
-import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.plugins.keyguard.ui.clocks.AxisPresetConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFontAxis.Companion.merge
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockMetadata
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPickerConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockProvider
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.shared.clocks.FlexClockController.Companion.buildPresetGroup
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
 

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-// TODO(b/432451019): move to .ui.composable subpackage
-package com.android.systemui.plugins.clocks
+package com.android.systemui.plugins.keyguard.ui.composable.elements
 
 import com.android.compose.animation.scene.ElementKey
 

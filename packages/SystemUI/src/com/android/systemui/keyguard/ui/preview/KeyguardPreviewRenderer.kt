@@ -65,9 +65,9 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ThemeConfig
-import com.android.systemui.plugins.clocks.WeatherData
+import com.android.systemui.plugins.keyguard.data.model.WeatherData
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
 import com.android.systemui.res.R
 import com.android.systemui.shared.clocks.ClockRegistry
 import com.android.systemui.shared.keyguard.shared.model.KeyguardQuickAffordanceSlots

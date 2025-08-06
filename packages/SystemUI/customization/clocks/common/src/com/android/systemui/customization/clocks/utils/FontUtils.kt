@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.customization.clocks
+package com.android.systemui.customization.clocks.utils
 
 import com.android.systemui.animation.AxisDefinition
-import com.android.systemui.plugins.clocks.AxisType
-import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockFontAxis
+import com.android.systemui.plugins.keyguard.ui.clocks.AxisType
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFontAxis
 
 object FontUtils {
     fun AxisDefinition.toClockAxis(

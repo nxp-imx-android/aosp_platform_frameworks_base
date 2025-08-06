@@ -22,8 +22,8 @@ import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
-import com.android.systemui.plugins.clocks.VPointF
-import com.android.systemui.plugins.clocks.VRect
+import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import kotlin.math.abs
 
 class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
