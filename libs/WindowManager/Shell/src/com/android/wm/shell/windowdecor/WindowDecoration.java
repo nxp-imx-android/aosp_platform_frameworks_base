@@ -527,8 +527,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         }
 
         if (params.mShouldSetBackground) {
-            final int backgroundColorInt = mTaskInfo.taskDescription != null
-                    ? mTaskInfo.taskDescription.getBackgroundColor() : Color.BLACK;
+            final int backgroundColorInt = Color.BLACK;
             mTmpColor[0] = (float) Color.red(backgroundColorInt) / 255.f;
             mTmpColor[1] = (float) Color.green(backgroundColorInt) / 255.f;
             mTmpColor[2] = (float) Color.blue(backgroundColorInt) / 255.f;
