@@ -43,7 +43,6 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.NotificationMediaManager
-import com.android.systemui.media.controls.util.MediaFeatureFlag
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.statusbar.StatusBarStateController
@@ -95,7 +94,6 @@ import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconV
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
-import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor
 import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.phone.KeyguardBypassController
@@ -256,31 +254,17 @@ class ExpandableNotificationRowBuilder(
             )
 
         mContentBinder =
-            if (NotificationRowContentBinderRefactor.isEnabled)
-                NotificationRowContentBinderImpl(
-                    Mockito.mock(NotifRemoteViewCache::class.java, STUB_ONLY),
-                    remoteInputManager,
-                    conversationProcessor,
-                    Mockito.mock(Executor::class.java, STUB_ONLY),
-                    smartReplyStateInflater,
-                    notifLayoutInflaterFactoryProvider,
-                    Mockito.mock(HeadsUpStyleProvider::class.java, STUB_ONLY),
-                    promotedNotificationContentExtractor,
-                    Mockito.mock(NotificationRowContentBinderLogger::class.java, STUB_ONLY),
-                )
-            else
-                NotificationContentInflater(
-                    Mockito.mock(NotifRemoteViewCache::class.java, STUB_ONLY),
-                    remoteInputManager,
-                    conversationProcessor,
-                    Mockito.mock(MediaFeatureFlag::class.java, STUB_ONLY),
-                    Mockito.mock(Executor::class.java, STUB_ONLY),
-                    smartReplyStateInflater,
-                    notifLayoutInflaterFactoryProvider,
-                    Mockito.mock(HeadsUpStyleProvider::class.java, STUB_ONLY),
-                    promotedNotificationContentExtractor,
-                    Mockito.mock(NotificationRowContentBinderLogger::class.java, STUB_ONLY),
-                )
+            NotificationRowContentBinderImpl(
+                Mockito.mock(NotifRemoteViewCache::class.java, STUB_ONLY),
+                remoteInputManager,
+                conversationProcessor,
+                Mockito.mock(Executor::class.java, STUB_ONLY),
+                smartReplyStateInflater,
+                notifLayoutInflaterFactoryProvider,
+                Mockito.mock(HeadsUpStyleProvider::class.java, STUB_ONLY),
+                promotedNotificationContentExtractor,
+                Mockito.mock(NotificationRowContentBinderLogger::class.java, STUB_ONLY),
+            )
         mContentBinder.setInflateSynchronously(true)
         mBindStage =
             RowContentBindStage(
