@@ -451,12 +451,14 @@
     <style name="Widget.SettingsLib.DialogButton.Filled">
         <item name="android:layout_marginEnd">@dimen/settingslib_expressive_space_extrasmall6</item>
         <item name="android:background">@drawable/settingslib_expressive_button_background_filled</item>
+        <item name="backgroundTint">@color/settingslib_materialColorPrimary</item>
         <item name="android:textColor">@color/settingslib_materialColorOnPrimary</item>
     </style>
 
     <style name="Widget.SettingsLib.DialogButton.Outline">
         <item name="android:layout_marginEnd">@dimen/settingslib_expressive_space_extrasmall4</item>
         <item name="android:background">@drawable/settingslib_expressive_button_background_outline</item>
+        <item name="backgroundTint">@color/settingslib_materialColorOutlineVariant</item>
         <item name="android:textColor">@color/settingslib_materialColorPrimary</item>
     </style>
 </resources>
