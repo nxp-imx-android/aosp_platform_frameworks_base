@@ -22,10 +22,12 @@ import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.content.pm.UserInfo.FLAG_ADMIN;
 import static android.content.pm.UserInfo.FLAG_FULL;
+import static android.content.pm.UserInfo.flagsToString;
 import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
 import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
+import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
@@ -39,7 +41,6 @@ import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
-import static android.content.pm.UserInfo.flagsToString;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -1654,6 +1655,13 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testIsLastFullAdminUser_nonHsum_targetNotSystemUser_returnsFalse_hsuNotAdmin() {
+        testIsLastFullAdminUser_nonHsum_targetNotSystemUser_returnsFalse();
+    }
+
+    @Test
+    @DisableFlags(FLAG_HSU_NOT_ADMIN)
     public void testIsLastFullAdminUser_nonHsum_targetNotSystemUser_returnsFalse() {
         setSystemUserHeadless(false);
         addAdminUser(USER_ID);
@@ -1734,6 +1742,14 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_HSU_NOT_ADMIN)
+    public void
+            testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsOtherFullAdmin_returnsFalse_fl() {
+        testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsOtherFullAdmin_returnsFalse();
+    }
+
+    @Test
+    @DisableFlags(FLAG_HSU_NOT_ADMIN)
     public void
             testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsOtherFullAdmin_returnsFalse() {
         // Ensure system user (0) is full admin
@@ -1745,6 +1761,13 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsSystemUser_returnsTrue_fl() {
+        testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsSystemUser_returnsTrue();
+    }
+
+    @Test
+    @DisableFlags(FLAG_HSU_NOT_ADMIN)
     public void testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsSystemUser_returnsTrue() {
         // Ensure system user (0) is full admin
         setSystemUserHeadless(false);
@@ -1756,6 +1779,13 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testIsLastFullAdminUser_targetAdmin_otherFullAdminIsSystemUser_returnsFalse_fl() {
+        testIsLastFullAdminUser_targetAdmin_otherFullAdminIsSystemUser_returnsFalse();
+    }
+
+    @Test
+    @DisableFlags(FLAG_HSU_NOT_ADMIN)
     public void testIsLastFullAdminUser_targetAdmin_otherFullAdminIsSystemUser_returnsFalse() {
         // Ensure system user (0) is full admin
         setSystemUserHeadless(false);
@@ -1855,7 +1885,15 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    public void testRevokeUserAdminFailsForSystemUser() {
+    @EnableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testRevokeUserAdminFailsForSystemUser_nonHsum_hsuNotAdmin() {
+        testRevokeUserAdminFailsForSystemUser_nonHsum();
+    }
+
+    @Test
+    @DisableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testRevokeUserAdminFailsForSystemUser_nonHsum() {
+        setSystemUserHeadless(false);
         mUms.revokeUserAdmin(UserHandle.USER_SYSTEM);
 
         assertThat(mUsers.get(UserHandle.USER_SYSTEM).info.isAdmin()).isTrue();
@@ -2267,12 +2305,16 @@ public final class UserManagerServiceMockedTest {
     }
 
     private void setSystemUserHeadless(boolean headless) {
+        // Whether system user has FLAG_ADMIN is determined before test is run, based on
+        // FLAG_HSU_NOT_ADMIN. If individual test sets this feature flag on/off, we must explicitly
+        // set the FLAG_ADMIN for system user accordingly.
+        int extraFlags = android.multiuser.Flags.hsuNotAdmin() ? FLAG_ADMIN : 0;
         UserData systemUser = mUsers.get(USER_SYSTEM);
         if (headless) {
-            systemUser.info.flags &= ~UserInfo.FLAG_FULL;
+            systemUser.info.flags &= ~(UserInfo.FLAG_FULL | extraFlags);
             systemUser.info.userType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
         } else {
-            systemUser.info.flags |= UserInfo.FLAG_FULL;
+            systemUser.info.flags |= UserInfo.FLAG_FULL | extraFlags;
             systemUser.info.userType = UserManager.USER_TYPE_FULL_SYSTEM;
         }
         doReturn(headless).when(() -> UserManager.isHeadlessSystemUserMode());
