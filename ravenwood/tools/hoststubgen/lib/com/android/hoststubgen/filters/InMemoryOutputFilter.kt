@@ -25,6 +25,86 @@ import com.android.hoststubgen.utils.Trie
 
 // TODO: Validate all input names.
 
+/**
+ * [InMemoryOutputFilter] basically handles the "text file policies", which handles
+ * package, class, field and method policies.
+ *
+ * This filter basically takes precedence over other filters such as [AnnotationBasedFilter],
+ * with the following exceptions.
+ *
+ * - This will _not_ override more narrowly scoped policies from other filters.
+ *   For example, in the following case:
+ *
+ *   Class definition:
+ *     @KeepPartialClass
+ *     class C {
+ *         @Throw
+ *         void foo() {}
+ *
+ *         void bar() {}
+ *     }
+ *
+ *   Policy:
+ *     class C keepclass
+ *
+ *   The C will have "KeepClass" and method "bar()" will get Keep. However, the text policy
+ *   will not override foo()'s annotation, so the method will still throw.
+ *
+ *   In order to "keep" foo() as well, set an explicit policy on the method, like so:
+ *
+ *   Policy:
+ *     class C keepclass
+ *       method foo keep
+ *
+ * - Similarly, package policies will never override class-level annotations, or class-level
+ *   text policies.
+ *
+ * - "Experimental" text policy will never override "supported" policy.
+ *   For example, in the following case:
+ *
+ *     @KeepPartialClass
+ *     class C {
+ *         @Keep
+ *         void foo() {}
+ *
+ *         void bar() {}
+ *
+ *         @Ignore
+ *         void baz() {}
+ *     }
+ *
+ *   Policy:
+ *     class C
+ *       method foo experimental
+ *
+ *   foo() will just be "Kept", not made "experimental", even though the text policy is set on the
+ *   same scope as the annotation (== method).
+ *
+ *   A more complicated example -- with the same class, if you have the following text policy:
+ *
+ *   Policy:
+ *     class C experimental # Mark the entire class as "experimental"
+ *
+ *  the result will be:
+ *     @KeepPartialClass // class is "supported", so it's still "supported".
+ *     class C {
+ *         @Keep
+ *         void foo() {}
+ *
+ *         // This will be marked as "experimental" from the text policy file.
+ *         void bar() {}
+ *
+ *         // This policy is "unsupported" policy, but the class-wide experimental policy won't
+ *         // override it.
+ *         @Ignore
+ *         void baz() {}
+ *     }
+ *
+ *   If you want to make baz() as experimental, add en explicit method policy:
+ *
+ *     class C experimental # Mark the entire class as "experimental"
+ *       method baz experimental # buz() will be "experimental, not "ignore".
+ */
 class InMemoryOutputFilter(
     private val classes: ClassNodes,
     fallback: OutputFilter,
@@ -94,41 +174,39 @@ class InMemoryOutputFilter(
         }
     }
 
-    // Add a "post-processing" step that applies to all policies
-    private inline fun processPolicy(
-        currentPolicy: FilterPolicyWithReason?,
-        fallback: () -> FilterPolicyWithReason
-    ): FilterPolicyWithReason {
-        // If there's no policy set in our current filter, just use fallback.
-        val policy = currentPolicy ?: return fallback()
-
-        // It's possible that getting policy from inner filters may throw.
-        // If that's the case, then we don't apply additional post-processing.
-        val innerPolicy = runCatching(fallback).getOrNull() ?: return policy
-
-        // Note, because policies in this filter are defined in the policy file, it takes precedence
-        // over annotations. However, if an item has both a text policy and inner (lower-priority)
-        // policies such as an annotation-based policy and if they're the same, we use the inner
-        // policy's "reason" instead. This allows us to differentiate "APIs that are enabled with an
-        // annotation" from "APIs that are enabled by a text policy (which are usually only used
-        // during development)".
-        if (policy.policy == innerPolicy.policy) {
-            return innerPolicy
-        }
-
-        // If the current policy is experimental, but inner policy is considered "supported",
-        // then we should not override the inner policy.
-        if (policy.policy == FilterPolicy.Experimental && innerPolicy.policy.isSupported) {
-            return innerPolicy
-        }
-
-        return policy
-    }
-
     override fun getPolicyForClass(className: String): FilterPolicyWithReason {
-        val policy = mPolicies[getClassKey(className)]
-            ?: mPackagePolicies[getPackageKeyFromClass(className)]
-        return processPolicy(policy) { super.getPolicyForClass(className) }
+        val inMemoryClassPolicy = mPolicies[getClassKey(className)]
+        // If the in-memory policy is set and is _not_ experimental, use it.
+        if (inMemoryClassPolicy != null && !inMemoryClassPolicy.policy.isExperimental) {
+            return inMemoryClassPolicy
+        }
+        // Now, the in-memory class policy is either null or experimental.
+
+        // If the class is "fully"-supported, use it.
+        val fallback = super.getPolicyForClass(className)
+        if (fallback.policy.isClassFullySupported) {
+            return fallback
+        }
+
+        // Otherwise, if the in-memory clsas policy is set -- so it must be "experimental"
+        // at this point -- use it.
+        if (inMemoryClassPolicy != null) {
+            return inMemoryClassPolicy
+        }
+
+        // Otherwise, if a fallback is not from the default one, use it.
+        if (!fallback.isDefault) {
+            return fallback
+        }
+
+        // Lastly, see if we have a package policy, and if so, use it.
+        val parentPolicy = mPackagePolicies[getPackageKeyFromClass(className)]
+        if (parentPolicy != null) {
+            return parentPolicy
+        }
+
+        // Return whatever returned by fallback. (which should be at this point "Unspecified".)
+        return fallback
     }
 
     fun setPolicyForClass(className: String, policy: FilterPolicyWithReason) {
@@ -140,8 +218,29 @@ class InMemoryOutputFilter(
         mPackagePolicies[getPackageKey(packageName)] = policy
     }
 
+    private fun getMemberPolicy(
+        inMemoryPolicy: FilterPolicyWithReason?,
+        fallbackFetcher: () -> FilterPolicyWithReason,
+        ): FilterPolicyWithReason {
+
+        // Similar to getPolicyForClass().
+        // In-memory-policy should take precedence, but if it's "experimental", it can
+        // override an "unsupported" fallback policy.
+        if (inMemoryPolicy != null && !inMemoryPolicy.policy.isExperimental) {
+            return inMemoryPolicy
+        }
+        val fallback = fallbackFetcher()
+        if (fallback.policy.isSupported) {
+            return fallback
+        }
+        if (inMemoryPolicy != null) {
+            return inMemoryPolicy
+        }
+        return fallback
+    }
+
     override fun getPolicyForField(className: String, fieldName: String): FilterPolicyWithReason {
-        return processPolicy(mPolicies[getFieldKey(className, fieldName)]) {
+        return getMemberPolicy(mPolicies[getFieldKey(className, fieldName)]) {
             super.getPolicyForField(className, fieldName)
         }
     }
@@ -159,7 +258,7 @@ class InMemoryOutputFilter(
         val policy = mPolicies[getMethodKey(className, methodName, descriptor)]
             ?: mPolicies[getMethodKey(className, methodName, "*")]
 
-        return processPolicy(policy) {
+        return getMemberPolicy(policy) {
             super.getPolicyForMethod(className, methodName, descriptor)
         }
     }
