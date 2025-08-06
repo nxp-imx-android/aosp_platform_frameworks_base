@@ -16234,7 +16234,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             mHandler.post(() -> {
                 final List<OnCrossProfileWidgetProvidersChangeListener> listeners;
                 synchronized (getLockObject()) {
-                    listeners = new ArrayList<>(mWidgetProviderListeners);
+                    if (mWidgetProviderListeners == null) {
+                        return;
+                    } else {
+                        listeners = new ArrayList<>(mWidgetProviderListeners);
+                    }
                 }
                 final int listenerCount = listeners.size();
                 for (int i = 0; i < listenerCount; i++) {
