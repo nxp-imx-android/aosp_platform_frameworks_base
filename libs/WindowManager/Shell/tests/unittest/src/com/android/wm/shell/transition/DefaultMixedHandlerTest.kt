@@ -21,6 +21,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.IRemoteTransition
 import android.window.RemoteTransition
@@ -28,6 +29,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
+import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -265,6 +267,32 @@ class DefaultMixedHandlerTest : ShellTestCase() {
 
         verify(bubbleTransitions).startBubbleToBubbleLaunchOrExistingBubbleConvert(
             any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    fun test_startAnimation_taskTrampolineBubbleLaunch() {
+        val openingChange =
+            TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
+        openingChange.mode = TRANSIT_OPEN
+        openingChange.taskInfo = createRunningTask()
+        val closingChange =
+            TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
+        closingChange.mode = TRANSIT_CLOSE
+        closingChange.taskInfo = createRunningTask()
+        val info = TransitionInfo(TRANSIT_OPEN, 0)
+        info.addChange(openingChange)
+        info.addChange(closingChange)
+
+        bubbleController.stub {
+            on { shouldBeAppBubble(any()) } doReturn true
+        }
+
+        mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
+
+        verify(bubbleTransitions).startTaskTrampolineBubbleLaunch(
+            any(), eq(openingChange.taskInfo!!), eq(closingChange.taskInfo!!), any())
     }
 
     private fun createTransitionRequestInfo(

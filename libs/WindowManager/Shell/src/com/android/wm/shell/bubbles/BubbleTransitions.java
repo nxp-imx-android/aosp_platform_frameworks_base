@@ -246,6 +246,19 @@ public class BubbleTransitions {
     }
 
     /**
+     * Initiates a Task Trampoline Bubble launch for the given transition.
+     */
+    public void startTaskTrampolineBubbleLaunch(@NonNull IBinder transition,
+            @NonNull ActivityManager.RunningTaskInfo openingTask,
+            @NonNull ActivityManager.RunningTaskInfo closingTask,
+            @NonNull Consumer<TransitionHandler> onInflatedCallback) {
+        final TransitionHandler handler =
+                mBubbleController.jumpcutBubbleSwitchTransition(openingTask, closingTask,
+                        transition, onInflatedCallback);
+        mEnterTransitions.put(transition, handler);
+    }
+
+    /**
      * Starts a new launch or convert transition to show the given bubble.
      */
     public TransitionHandler startLaunchNewTaskBubbleForExistingTransition(Bubble bubble,
@@ -257,6 +270,19 @@ public class BubbleTransitions {
         return new LaunchNewTaskBubbleForExistingTransition(bubble, mContext, expandedViewManager,
                 factory, positioner, stackView, layerView, iconFactory, inflateSync, transition,
                 onInflatedCallback);
+    }
+
+    /**
+     * Starts a jumpcut transition to update Task in the expanding Bubble.
+     */
+    public TransitionHandler startJumpcutBubbleSwitchTransition(Bubble openingBubble,
+            Bubble closingBubble, BubbleExpandedViewManager expandedViewManager,
+            BubbleTaskViewFactory factory, BubblePositioner positioner, BubbleStackView stackView,
+            BubbleBarLayerView layerView, BubbleIconFactory iconFactory, boolean inflateSync,
+            IBinder transition, Consumer<TransitionHandler> onInflatedCallback) {
+        return new JumpcutBubbleSwitchTransition(openingBubble, closingBubble, mContext,
+                expandedViewManager, factory, positioner, stackView, layerView, iconFactory,
+                inflateSync, transition, onInflatedCallback);
     }
 
     /**
@@ -789,6 +815,237 @@ public class BubbleTransitions {
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
             mBubble.setPreparingTransition(null);
+        }
+    }
+
+    /**
+     * Starts a jumpcut to update Task in the expanding Bubble transition.
+     *
+     * 1. In transition startTransaction, ensure the closing Task surface is attached to its Bubble
+     *    TaskView, so that it is visible and unchanged.
+     * 2. When opening Bubble TaskView is ready, ensure the opening Task surface is attached to its
+     *    TaskView, and being visible, so that we only need to animate TaskView next.
+     * 3. Apply jumpcut for the Bubble switch animation, and apply the Transition finishCallback
+     *    after the TaskViews finish surface update.
+     * TODO(b/408328557): To be consolidated with LaunchOrConvertToBubble and ConvertToBubble
+     */
+    @VisibleForTesting
+    class JumpcutBubbleSwitchTransition implements TransitionHandler, BubbleTransition {
+        final BubbleExpandedViewTransitionAnimator mExpandedViewAnimator;
+        private final TransitionProgress mTransitionProgress;
+        Bubble mOpeningBubble;
+        Bubble mClosingBubble;
+
+        IBinder mTransition;
+        Transitions.TransitionFinishCallback mFinishCb;
+        WindowContainerTransaction mFinishWct = null;
+        // The task info is resolved once we find the task from the transition info using the
+        // pending launch cookie otherwise
+        @Nullable
+        TaskInfo mOpeningTaskInfo;
+
+        private SurfaceControl.Transaction mFinishT;
+        private SurfaceControl mTaskLeash;
+
+        JumpcutBubbleSwitchTransition(Bubble openingBubble, Bubble closingBubble, Context context,
+                BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
+                BubblePositioner positioner, BubbleStackView stackView,
+                BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
+                boolean inflateSync, IBinder transition,
+                Consumer<TransitionHandler> onInflatedCallback) {
+            if (layerView != null) {
+                mExpandedViewAnimator = layerView;
+            } else {
+                mExpandedViewAnimator = stackView;
+            }
+            mOpeningBubble = openingBubble;
+            mClosingBubble = closingBubble;
+            mTransition = transition;
+            mTransitionProgress = new TransitionProgress(openingBubble);
+            mOpeningBubble.setInflateSynchronously(inflateSync);
+            mOpeningBubble.setPreparingTransition(this);
+            // Still need the inflate to update the app icon in Bubble.
+            mOpeningBubble.inflate(
+                    b -> {
+                        onInflated(b);
+                        onInflatedCallback.accept(JumpcutBubbleSwitchTransition.this);
+                    },
+                    context,
+                    expandedViewManager,
+                    factory,
+                    positioner,
+                    stackView,
+                    layerView,
+                    iconFactory,
+                    mAppInfoProvider,
+                    false /* skipInflation */);
+        }
+
+        @VisibleForTesting
+        void onInflated(Bubble b) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "JumpcutBubbleSwitchTransition.onInflated()");
+            if (b != mOpeningBubble) {
+                throw new IllegalArgumentException("inflate callback doesn't match bubble");
+            }
+            final TaskView tv = b.getTaskView();
+            tv.setSurfaceLifecycle(SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT);
+            final TaskViewRepository.TaskViewState state = mRepository.byTaskView(
+                    tv.getController());
+            if (state != null) {
+                state.mVisible = true;
+            }
+            mTransitionProgress.setInflated();
+            // Remove any intermediate queued transitions that were started as a result of the
+            // inflation (the task view will be in the right bounds)
+            mTaskViewTransitions.removePendingTransitions(tv.getController());
+            mTaskViewTransitions.enqueueExternal(tv.getController(), () -> mTransition);
+        }
+
+        @Override
+        public void skip() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "JumpcutBubbleSwitchTransition.skip()");
+            mOpeningBubble.setPreparingTransition(null);
+            cleanup();
+        }
+
+        @Override
+        public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
+                @Nullable TransitionRequestInfo request) {
+            return null;
+        }
+
+        @Override
+        public void mergeAnimation(@NonNull IBinder transition, @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startT,
+                @NonNull SurfaceControl.Transaction finishT,
+                @NonNull IBinder mergeTarget,
+                @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        }
+
+        @Override
+        public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
+                @NonNull SurfaceControl.Transaction finishTransaction) {
+            if (!aborted) return;
+            mTaskViewTransitions.onExternalDone(mTransition);
+            mTransition = null;
+        }
+
+        /**
+         * @return true As DefaultMixedTransition assumes that this transition will be handled by
+         * this handler in all cases.
+         */
+        @Override
+        public boolean startAnimation(@NonNull IBinder transition,
+                @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction,
+                @NonNull SurfaceControl.Transaction finishTransaction,
+                @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "JumpcutBubbleSwitchTransition.startAnimation()");
+
+            final TransitionInfo.Change enterBubbleTask = getEnterBubbleTask(info);
+            final TransitionInfo.Change closingBubbleTask = getClosingBubbleTask(info);
+            mOpeningTaskInfo = enterBubbleTask.getTaskInfo();
+            mFinishWct = new WindowContainerTransaction();
+            mFinishT = finishTransaction;
+            mFinishCb = finishCallback;
+            mTaskLeash = enterBubbleTask.getLeash();
+
+            mBubbleData.notificationEntryUpdated(mOpeningBubble, /* suppressFlyout= */ true,
+                    /* showInShade= */ false);
+
+            // Keep showing the closing Bubble Task within the closing Bubble TaskView until the
+            // opening Bubble TaskView is ready.
+            final SurfaceControl closingBubbleTaskLeash = closingBubbleTask.getLeash();
+            final SurfaceControl closingBubbleTaskView = mClosingBubble.getTaskView()
+                    .getSurfaceControl();
+            startTransaction.setAlpha(closingBubbleTaskLeash, 1f)
+                    .setPosition(closingBubbleTaskLeash, 0, 0)
+                    .reparent(closingBubbleTaskLeash, closingBubbleTaskView)
+                    .show(closingBubbleTaskLeash);
+
+            startTransaction.apply();
+
+            mTransitionProgress.setTransitionReady();
+            if (mExpandedViewAnimator.canExpandView(mOpeningBubble)) {
+                final BubbleViewProvider priorBubble =
+                        mExpandedViewAnimator.prepareConvertedView(mOpeningBubble);
+                if (priorBubble != mClosingBubble
+                        // TODO b/419347947 BubbleStackView will return null for non-overflow bubble
+                        && priorBubble != null) {
+                    throw new IllegalStateException("Previous expanded Bubble was taskId="
+                            + priorBubble.getTaskId() + " but expect taskId="
+                            + mClosingBubble.getTaskId());
+                }
+            } else if (mExpandedViewAnimator.isExpanded()) {
+                mTransitionProgress.setReadyToExpand();
+            }
+            if (mTransitionProgress.isReadyToAnimate()) {
+                animateJumpcut();
+            }
+
+            return true;
+        }
+
+        @Override
+        public void continueExpand() {
+            mTransitionProgress.setReadyToExpand();
+        }
+
+        @Override
+        public void surfaceCreated() {
+            mTransitionProgress.setSurfaceReady();
+            mMainExecutor.execute(() -> {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                        "JumpcutBubbleSwitchTransition.surfaceCreated()");
+                final TaskViewTaskController tvc = mOpeningBubble.getTaskView().getController();
+                final TaskViewRepository.TaskViewState state = mRepository.byTaskView(tvc);
+                if (state == null) return;
+                state.mVisible = true;
+                if (mTransitionProgress.isReadyToAnimate()) {
+                    animateJumpcut();
+                }
+            });
+        }
+
+        private void animateJumpcut() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "JumpcutBubbleSwitchTransition.applyJumpcut()");
+            mTaskViewTransitions.onExternalDone(mTransition);
+            final TaskViewTaskController tv = mOpeningBubble.getTaskView().getController();
+
+            // Prepare the transaction to apply when the TaskView surface is ready.
+            final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
+            final SurfaceControl openingTaskViewLeash = mOpeningBubble.getTaskView()
+                    .getSurfaceControl();
+            startT.setAlpha(mTaskLeash, 1f)
+                    // Set task position to 0,0 as it will be placed inside the TaskView
+                    .setPosition(mTaskLeash, 0, 0)
+                    .reparent(mTaskLeash, openingTaskViewLeash)
+                    .show(mTaskLeash);
+            mTaskViewTransitions.prepareOpenAnimation(tv, true /* new */, startT, mFinishT,
+                    (ActivityManager.RunningTaskInfo) mOpeningTaskInfo, mTaskLeash, mFinishWct);
+            startT.apply();
+
+            // Add the task view task listener manually since we aren't going through
+            // TaskViewTransitions (which normally sets up the listener via a pending launch cookie)
+            // Note: In this path, because a new task is being started, the transition may receive
+            // the transition for the task before the organizer does
+            mTaskOrganizer.addListenerForTaskId(tv, mOpeningTaskInfo.taskId);
+
+            if (mFinishWct.isEmpty()) {
+                mFinishWct = null;
+            }
+
+            mExpandedViewAnimator.animateExpand(mClosingBubble, this::cleanup);
+        }
+
+        private void cleanup() {
+            if (mFinishCb != null) {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "JumpcutBubbleSwitchTransition.cleanup()");
+                mFinishCb.onTransitionFinished(mFinishWct);
+                mFinishCb = null;
+            }
+            mOpeningBubble.setPreparingTransition(null);
         }
     }
 
