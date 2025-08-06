@@ -1,0 +1,111 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.companion.virtual.computercontrol;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import android.hardware.input.VirtualKeyEvent;
+import android.hardware.input.VirtualTouchEvent;
+import android.os.RemoteException;
+import android.view.KeyEvent;
+import android.view.Surface;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+@RunWith(AndroidJUnit4.class)
+public class ComputerControlSessionTest {
+
+    private static final int DISPLAY_ID = 42;
+    private static final int WIDTH = 1920;
+    private static final int HEIGHT = 1080;
+
+    @Mock
+    private IComputerControlSession mMockSession;
+    @Mock
+    private IInteractiveMirrorDisplay mMockInteractiveMirrorDisplay;
+
+    private ComputerControlSession mSession;
+
+    private AutoCloseable mMockitoSession;
+
+    @Before
+    public void setUp() {
+        mMockitoSession = MockitoAnnotations.openMocks(this);
+        mSession = new ComputerControlSession(mMockSession);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mMockitoSession.close();
+    }
+
+    @Test
+    public void getVirtualDisplayId_returnsId() throws RemoteException {
+        when(mMockSession.getVirtualDisplayId()).thenReturn(DISPLAY_ID);
+        assertThat(mSession.getVirtualDisplayId()).isEqualTo(DISPLAY_ID);
+    }
+
+    @Test
+    public void sendKeyEvent_sendsEvent() throws RemoteException {
+        VirtualKeyEvent keyEvent = new VirtualKeyEvent.Builder()
+                .setAction(VirtualKeyEvent.ACTION_DOWN)
+                .setKeyCode(KeyEvent.KEYCODE_A)
+                .build();
+        mSession.sendKeyEvent(keyEvent);
+        verify(mMockSession).sendKeyEvent(eq(keyEvent));
+    }
+
+    @Test
+    public void sendTouchEvent_sendsEvent() throws RemoteException {
+        VirtualTouchEvent touchEvent = new VirtualTouchEvent.Builder()
+                .setPointerId(0)
+                .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
+                .setAction(VirtualTouchEvent.ACTION_DOWN)
+                .setX(0)
+                .setY(0)
+                .build();
+        mSession.sendTouchEvent(touchEvent);
+        verify(mMockSession).sendTouchEvent(eq(touchEvent));
+    }
+
+    @Test
+    public void createInteractiveMirrorDisplay_returnsDisplay() throws RemoteException {
+        when(mMockSession.createInteractiveMirrorDisplay(eq(WIDTH), eq(HEIGHT), any()))
+                .thenReturn(mMockInteractiveMirrorDisplay);
+        InteractiveMirrorDisplay display =
+                mSession.createInteractiveMirrorDisplay(WIDTH, HEIGHT, new Surface());
+        assertThat(display).isNotNull();
+    }
+
+    @Test
+    public void close_closesSession() throws RemoteException {
+        mSession.close();
+        verify(mMockSession).close();
+    }
+}
