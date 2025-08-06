@@ -1685,6 +1685,10 @@ public class NotificationStackScrollLayout
         clampScrollPosition();
     }
 
+    public void setApplyHunTranslation(boolean apply) {
+        mAmbientState.setApplyHunTranslation(apply);
+    }
+
     private void updateForcedScroll() {
         if (mForcedScroll != null && (!mForcedScroll.hasFocus()
                 || !mForcedScroll.isAttachedToWindow())) {

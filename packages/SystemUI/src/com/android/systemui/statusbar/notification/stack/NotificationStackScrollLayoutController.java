@@ -1028,6 +1028,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mViewBinder.bindWhileAttached(mView, this);
     }
 
+    public void setApplyHunTranslation(boolean apply) {
+        mView.setApplyHunTranslation(apply);
+    }
+
     private boolean isInVisibleLocation(NotificationEntry entry) {
         ExpandableNotificationRow row = entry.getRow();
         if (row == null) {

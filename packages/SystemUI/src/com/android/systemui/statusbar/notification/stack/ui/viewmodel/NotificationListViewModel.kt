@@ -20,7 +20,9 @@ import android.annotation.SuppressLint
 import android.graphics.RectF
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
@@ -40,7 +42,6 @@ import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -51,6 +52,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import javax.inject.Inject
 
 /**
  * ViewModel for the list of notifications, including child elements like the Clear all/Manage
@@ -68,6 +70,7 @@ constructor(
     val bundleOnboarding: BundleOnboardingViewModel,
     val summarizationOnboarding: SummarizationOnboardingViewModel,
     val logger: NotificationLoggerViewModel,
+    val sceneInteractor: SceneInteractor,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     notificationStackInteractor: NotificationStackInteractor,
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
@@ -94,6 +97,16 @@ constructor(
             .distinctUntilChanged()
             .dumpWhileCollecting("isImportantForAccessibility")
             .flowOn(bgDispatcher)
+
+    /** Emits true when the QS overlay is visible. */
+    val isQsOverlayVisible: Flow<Boolean> =
+        if (SceneContainerFlag.isEnabled) {
+            sceneInteractor.currentOverlays
+                .map { Overlays.QuickSettingsShade in it }
+                .distinctUntilChanged()
+        } else {
+            flowOf(false)
+        }
 
     val shouldShowEmptyShadeView: Flow<AnimatedValue<Boolean>> by lazy {
         combine(
