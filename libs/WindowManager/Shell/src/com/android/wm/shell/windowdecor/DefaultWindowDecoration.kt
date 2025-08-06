@@ -307,6 +307,7 @@ constructor(
             hasGlobalFocus,
             displayExclusionRegion,
             inSyncWithTransition = false,
+            taskSurface,
         )
         if (!applyTransactionOnDraw) {
             t.apply()
@@ -323,6 +324,7 @@ constructor(
         hasGlobalFocus: Boolean,
         displayExclusionRegion: Region,
         inSyncWithTransition: Boolean,
+        taskSurface: SurfaceControl?,
     ) =
         traceSection("DefaultWindowDecoration#relayout") {
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue) {
@@ -356,7 +358,7 @@ constructor(
                 )
 
             val wct = windowContainerTransactionSupplier.invoke()
-            relayout(relayoutParams, startT, finishT, wct)
+            relayout(relayoutParams, startT, finishT, wct, taskSurface)
 
             // After this line, taskInfo  is up-to-date and should be used instead of taskInfo
             if (!wct.isEmpty) {

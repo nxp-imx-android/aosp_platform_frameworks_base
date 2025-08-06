@@ -210,6 +210,7 @@ private constructor(
         hasGlobalFocus: Boolean,
         displayExclusionRegion: Region,
         inSyncWithTransition: Boolean,
+        taskSurface: SurfaceControl?,
     ) =
         when {
             defaultWindowDecor != null -> {
@@ -223,6 +224,7 @@ private constructor(
                         hasGlobalFocus,
                         displayExclusionRegion,
                         inSyncWithTransition,
+                        taskSurface,
                     )
             }
 
