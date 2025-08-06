@@ -15,30 +15,7 @@
  */
 package com.android.hoststubgen.test.tinyframework.exp;
 
-@SuppressWarnings("unused")
 public class A {
-    static final Object sStatic = new Object();
-    static final String sString1;
-    static final String sString2;
-    static final String sString3;
-
-    static {
-        // Use some local variables and stacks to make sure the experimental api hook call
-        // works properly with it.
-        var x = 1;
-        sString1 = System.getProperty("test.prop.1");
-        sString2 = System.getProperty("test.prop.2");
-
-        // Use some local values
-        var temp1 = sString1 + sString2;
-        var temp2 = sString1 + sString2 + x;
-        if ("".equals(temp1)) {
-            sString3 = "case1";
-        } else {
-            sString3 = "case2";
-        }
-    }
-
     public void foo() {
     }
 }

@@ -269,37 +269,6 @@ fun writeByteCodeToReturn(methodDescriptor: String, writer: MethodVisitor) {
 }
 
 /**
- * Write bytecode to "RETURN" that matches the method's return type with the type's empty value,
- * according to [methodDescriptor].
- */
-fun writeByteCodeToReturnDefault(methodDescriptor: String, writer: MethodVisitor) {
-    when (Type.getReturnType(methodDescriptor)) {
-        Type.VOID_TYPE -> writer.visitInsn(Opcodes.RETURN)
-        Type.BOOLEAN_TYPE, Type.BYTE_TYPE, Type.CHAR_TYPE, Type.SHORT_TYPE,
-        Type.INT_TYPE -> {
-            writer.visitInsn(Opcodes.ICONST_0)
-            writer.visitInsn(Opcodes.IRETURN)
-        }
-        Type.LONG_TYPE -> {
-            writer.visitInsn(Opcodes.LCONST_0)
-            writer.visitInsn(Opcodes.LRETURN)
-        }
-        Type.FLOAT_TYPE -> {
-            writer.visitInsn(Opcodes.FCONST_0)
-            writer.visitInsn(Opcodes.FRETURN)
-        }
-        Type.DOUBLE_TYPE -> {
-            writer.visitInsn(Opcodes.DCONST_0)
-            writer.visitInsn(Opcodes.DRETURN)
-        }
-        else -> {
-            writer.visitInsn(Opcodes.ACONST_NULL)
-            writer.visitInsn(Opcodes.ARETURN)
-        }
-    }
-}
-
-/**
  * Write bytecode to pop the 2 uninitialized instances out of the stack
  * after performing constructor redirection.
  */
@@ -584,14 +553,3 @@ abstract class UnifiedVisitor {
         }
     }
 }
-
-/**
- * Data class to store visitFrame() arguments.
- */
-data class FrameInfo(
-    var type: Int,
-    var numLocal: Int,
-    var local: Array<out Any?>?,
-    var numStack: Int,
-    var stack: Array<out Any?>?
-)

@@ -101,8 +101,6 @@ public class TinyFrameworkTextPolicyTest {
         );
         assertThat(TinyFrameworkHooks.sExperimentalMethodCalls).containsExactly(
                 new MethodInfo(com.android.hoststubgen.test.tinyframework.exp.A.class,
-                        "<clinit>", "()V"),
-                new MethodInfo(com.android.hoststubgen.test.tinyframework.exp.A.class,
                         "<init>", "()V"),
                 new MethodInfo(com.android.hoststubgen.test.tinyframework.exp.A.class,
                         "foo", "()V"),

@@ -1694,15 +1694,14 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental
         x: ldc           #x                 // String <init>
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: aload_0
         x: invokespecial #x                 // Method java/lang/Object."<init>":()V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+           18       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -1721,13 +1720,12 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental
         x: ldc           #x                 // String simple
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+           18       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -1788,13 +1786,12 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental
         x: ldc           #x                 // String unsupported
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+           18       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -2286,8 +2283,7 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy
         x: ldc           #x                 // String addFour
         x: ldc           #x                 // String (I)I
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: iload_1
         x: iconst_4
         x: iadd
@@ -2295,8 +2291,8 @@ Constant pool:
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy;
-           21       4     1 value   I
+           18       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy;
+           18       4     1 value   I
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -2312,9 +2308,9 @@ Constant pool:
          x: ldc           #x                 // String unsupportedMethod
          x: ldc           #x                 // String ()Ljava/lang/String;
          x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
-         x: new           #x                // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
+         x: new           #x                 // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
         x: dup
-        x: invokespecial #x                // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
+        x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
@@ -4991,44 +4987,17 @@ public class com.android.hoststubgen.test.tinyframework.exp.A
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/exp/A
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 4, methods: 3, attributes: 2
+  interfaces: 0, fields: 0, methods: 3, attributes: 2
 Constant pool:
 {
-  static final java.lang.Object sStatic;
-    descriptor: Ljava/lang/Object;
-    flags: (0x0018) ACC_STATIC, ACC_FINAL
-    RuntimeVisibleAnnotations:
-      x: #x(#x=s#x)
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]"
-        )
-
-  static final java.lang.String sString1;
-    descriptor: Ljava/lang/String;
-    flags: (0x0018) ACC_STATIC, ACC_FINAL
-    RuntimeVisibleAnnotations:
-      x: #x(#x=s#x)
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]"
-        )
-
-  static final java.lang.String sString2;
-    descriptor: Ljava/lang/String;
-    flags: (0x0018) ACC_STATIC, ACC_FINAL
-    RuntimeVisibleAnnotations:
-      x: #x(#x=s#x)
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]"
-        )
-
-  static final java.lang.String sString3;
-    descriptor: Ljava/lang/String;
-    flags: (0x0018) ACC_STATIC, ACC_FINAL
-    RuntimeVisibleAnnotations:
-      x: #x(#x=s#x)
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]"
-        )
+  private static {};
+    descriptor: ()V
+    flags: (0x000a) ACC_PRIVATE, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/A
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.defaultClassLoadHook:(Ljava/lang/Class;)V
+         x: return
 
   public com.android.hoststubgen.test.tinyframework.exp.A();
     descriptor: ()V
@@ -5042,15 +5011,14 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/A
         x: ldc           #x                 // String <init>
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: aload_0
         x: invokespecial #x                 // Method java/lang/Object."<init>":()V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
+           18       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -5069,91 +5037,12 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/A
         x: ldc           #x                 // String foo
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
-    RuntimeVisibleAnnotations:
-      x: #x(#x=s#x)
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]"
-        )
-
-  static {};
-    descriptor: ()V
-    flags: (0x0008) ACC_STATIC
-    Code:
-      stack=3, locals=3, args_size=0
-         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/A
-         x: ldc           #x                 // String <clinit>
-         x: ldc           #x                 // String ()V
-         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
-         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/A
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.defaultClassLoadHook:(Ljava/lang/Class;)V
-        x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/A
-        x: ldc           #x                 // String <clinit>
-        x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: ifne          27
-        x: return
-        x: new           #x                  // class java/lang/Object
-        x: dup
-        x: invokespecial #x                 // Method java/lang/Object."<init>":()V
-        x: putstatic     #x                 // Field sStatic:Ljava/lang/Object;
-        x: iconst_1
-        x: istore_0
-        x: ldc           #x                 // String test.prop.1
-        x: invokestatic  #x                 // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
-        x: putstatic     #x                 // Field sString1:Ljava/lang/String;
-        x: ldc           #x                 // String test.prop.2
-        x: invokestatic  #x                 // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
-        x: putstatic     #x                 // Field sString2:Ljava/lang/String;
-        x: new           #x                 // class java/lang/StringBuilder
-        x: dup
-        x: invokespecial #x                 // Method java/lang/StringBuilder."<init>":()V
-        x: getstatic     #x                 // Field sString1:Ljava/lang/String;
-        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        x: getstatic     #x                 // Field sString2:Ljava/lang/String;
-        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        x: invokevirtual #x                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
-        x: astore_1
-        x: new           #x                 // class java/lang/StringBuilder
-        x: dup
-        x: invokespecial #x                 // Method java/lang/StringBuilder."<init>":()V
-        x: getstatic     #x                 // Field sString1:Ljava/lang/String;
-        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        x: getstatic     #x                 // Field sString2:Ljava/lang/String;
-        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        x: iload_0
-        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
-       x: invokevirtual #x                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
-       x: astore_2
-       x: ldc           #x                 // String
-       x: aload_1
-       x: invokevirtual #x                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
-       x: ifeq          122
-       x: ldc           #x                 // String case1
-       x: putstatic     #x                 // Field sString3:Ljava/lang/String;
-       x: goto          127
-       x: ldc           #x                 // String case2
-       x: putstatic     #x                 // Field sString3:Ljava/lang/String;
-       x: return
-      StackMapTable: number_of_entries = 3
-        frame_type = 27 /* same */
-        frame_type = 254 /* append */
-          offset_delta = 94
-          locals = [ int, class java/lang/String, class java/lang/String ]
-        frame_type = 248 /* chop */
-          offset_delta = 4
-      LineNumberTable:
-      LocalVariableTable:
-        Start  Length  Slot  Name   Signature
-           39      88     0     x   I
-           78      49     1 temp1   Ljava/lang/String;
-          105      22     2 temp2   Ljava/lang/String;
+           18       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -5268,15 +5157,14 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/sub/A
         x: ldc           #x                 // String <init>
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: aload_0
         x: invokespecial #x                 // Method java/lang/Object."<init>":()V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/sub/A;
+           18       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/sub/A;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
@@ -5295,13 +5183,12 @@ Constant pool:
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/sub/A
         x: ldc           #x                 // String foo
         x: ldc           #x                 // String ()V
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
-        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-           21       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/sub/A;
+           18       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/sub/A;
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
