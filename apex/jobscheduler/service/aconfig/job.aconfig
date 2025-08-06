@@ -81,16 +81,6 @@ flag {
 }
 
 flag {
-    name: "deviceidlejobcontroller_off_main_thread"
-    namespace: "backstage_power"
-    description: "Move the broadcast receiver in DeviceIdleJobController off the main thread."
-    bug: "414140833"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_deadline_delay_job_stall"
     namespace: "backstage_power"
     description: "Fix deadline and delay job stall due to a incorrect time check in TimeController"
