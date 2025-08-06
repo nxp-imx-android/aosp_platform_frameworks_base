@@ -26,11 +26,19 @@ import android.content.AttributionSource;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.util.ArraySet;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 public class ComputerControlSessionProcessor {
 
+    // TODO(b/419548594): Make this configurable.
+    @VisibleForTesting
+    static final int MAXIMUM_CONCURRENT_SESSIONS = 5;
+
     private final PackageManager mPackageManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
+    private final ArraySet<IBinder> mSessions = new ArraySet<>();
 
     public ComputerControlSessionProcessor(
             Context context, VirtualDeviceFactory virtualDeviceFactory) {
@@ -46,9 +54,27 @@ public class ComputerControlSessionProcessor {
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params) {
         // TODO(b/430259551, b/432678191): Async creation of sessions triggering a consent dialog
-        // TODO(b/419548594): Limit the number of active sessions
-        return new ComputerControlSessionImpl(
-                token, params, attributionSource, mPackageManager, mVirtualDeviceFactory);
+
+        synchronized (mSessions) {
+            if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
+                // TODO(b/419548594): Communicate this via a callback in an async flow. Returning
+                // null is not good enough and the developer did nothing wrong, so we shouldn't
+                // throw.
+                throw new UnsupportedOperationException(
+                        "Maximum number of concurrent session reached, try again later.");
+            }
+            IComputerControlSession session = new ComputerControlSessionImpl(
+                    token, params, attributionSource, mPackageManager, mVirtualDeviceFactory,
+                    this::onSessionClosed);
+            mSessions.add(session.asBinder());
+            return session;
+        }
+    }
+
+    private void onSessionClosed(IBinder token) {
+        synchronized (mSessions) {
+            mSessions.remove(token);
+        }
     }
 
     /**

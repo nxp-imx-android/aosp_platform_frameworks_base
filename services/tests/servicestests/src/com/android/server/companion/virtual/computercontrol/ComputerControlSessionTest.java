@@ -62,6 +62,8 @@ public class ComputerControlSessionTest {
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
+    private ComputerControlSessionImpl.OnClosedListener mOnClosedListener;
+    @Mock
     private IVirtualDevice mVirtualDevice;
     @Captor
     private ArgumentCaptor<VirtualDeviceParams> mVirtualDeviceParamsArgumentCaptor;
@@ -98,7 +100,8 @@ public class ComputerControlSessionTest {
                 .thenReturn(mVirtualDevice);
         when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(VIRTUAL_DISPLAY_ID);
         mSession = new ComputerControlSessionImpl(mAppToken, mParams,
-                AttributionSource.myAttributionSource(), mPackageManager, mVirtualDeviceFactory);
+                AttributionSource.myAttributionSource(), mPackageManager, mVirtualDeviceFactory,
+                mOnClosedListener);
     }
 
     @After
@@ -160,6 +163,7 @@ public class ComputerControlSessionTest {
     public void closeSession_closesVirtualDevice() throws Exception {
         mSession.close();
         verify(mVirtualDevice).close();
+        verify(mOnClosedListener).onClosed(mSession.asBinder());
     }
 
     @Test
