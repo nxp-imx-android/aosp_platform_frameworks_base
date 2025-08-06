@@ -97,6 +97,7 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -1318,10 +1319,32 @@ public class ActivityStarterTests extends WindowTestsBase {
                 .setUserId(10)
                 .build();
 
-        final int result = starter.recycleTask(task, null, null, null,
-                BalVerdict.ALLOW_PRIVILEGED);
+        final int result = starter.recycleTask(task, null, null, null);
         assertThat(result == START_SUCCESS).isTrue();
         assertThat(starter.mAddingToTask).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_BAL_REPARENT_EXISTING_TASK)
+    public void testRecycleTaskWhenBalBlocks() {
+        final ActivityStarter starter = prepareStarter(0 /* flags */);
+        starter.mStartActivity = new ActivityBuilder(mAtm).build();
+        starter.mBalVerdict = BalVerdict.BLOCK;
+        final Task task = new TaskBuilder(mAtm.mTaskSupervisor)
+                .setParentTask(createTask(mDisplayContent, WINDOWING_MODE_FULLSCREEN,
+                        ACTIVITY_TYPE_STANDARD))
+                .setCreateActivity(true)
+                .build();
+        final Task rootTask = task.getRootTask();
+        final ActivityRecord topActivity = task.getTopMostActivity();
+
+        spyOn(starter);
+        final Task launchRootTask = new TaskBuilder(mAtm.mTaskSupervisor).build();
+        doReturn(launchRootTask).when(starter).getOrCreateRootTask(eq(starter.mStartActivity),
+                anyInt(), eq(task), any());
+
+        starter.recycleTask(task, topActivity, task, null);
+        assertThat(rootTask == task.getRootTask()).isTrue();
     }
 
     @Test
