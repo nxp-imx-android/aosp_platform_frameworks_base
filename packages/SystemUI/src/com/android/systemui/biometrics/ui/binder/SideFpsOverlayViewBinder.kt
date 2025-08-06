@@ -48,6 +48,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.keyguard.domain.interactor.DeviceEntrySideFpsOverlayInteractor
 import com.android.systemui.keyguard.ui.viewmodel.SideFpsProgressBarViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.res.R
 import dagger.Lazy
 import javax.inject.Inject
@@ -68,6 +69,7 @@ constructor(
     private val sideFpsProgressBarViewModel: Lazy<SideFpsProgressBarViewModel>,
     private val sfpsSensorInteractor: Lazy<SideFpsSensorInteractor>,
     private val windowManager: Lazy<WindowManager>,
+    private val powerInteractor: Lazy<PowerInteractor>,
 ) : CoreStartable {
     private val pauseDelegate: AccessibilityDelegateCompat =
         object : AccessibilityDelegateCompat() {
@@ -132,28 +134,45 @@ constructor(
                             deviceEntrySideFpsOverlayInteractor.get().showIndicatorForDeviceEntry,
                             sideFpsProgressBarViewModel.get().isVisible,
                             displayStateInteractor.get().isInRearDisplayMode,
+                            powerInteractor.get().isAsleep,
                         ) {
                             systemServerAuthReason,
                             showIndicatorForDeviceEntry,
                             progressBarIsVisible,
-                            isInRearDisplayMode ->
+                            isInRearDisplayMode,
+                            isAsleep ->
                             Log.d(
                                 TAG,
                                 "systemServerAuthReason = $systemServerAuthReason, " +
                                     "showIndicatorForDeviceEntry = " +
                                     "$showIndicatorForDeviceEntry, " +
                                     "progressBarIsVisible = $progressBarIsVisible, " +
-                                    "isInRearDisplayMode = $isInRearDisplayMode",
+                                    "isInRearDisplayMode = $isInRearDisplayMode " +
+                                    "isAsleep = $isAsleep",
                             )
-                            if (!isInRearDisplayMode) {
-                                if (progressBarIsVisible) {
+                            if (isInRearDisplayMode || progressBarIsVisible) {
+                                hide()
+                            } else if (systemServerAuthReason != NotRunning) {
+                                if (isAsleep) {
+                                    Log.e(
+                                        TAG,
+                                        "requesting SideFpsIndicator for " +
+                                            "$systemServerAuthReason while asleep.",
+                                    )
                                     hide()
-                                } else if (systemServerAuthReason != NotRunning) {
-                                    show()
-                                } else if (showIndicatorForDeviceEntry) {
-                                    show()
                                 } else {
+                                    show()
+                                }
+                            } else if (showIndicatorForDeviceEntry) {
+                                if (isAsleep) {
+                                    Log.e(
+                                        TAG,
+                                        "requesting SideFpsIndicator for " +
+                                            "DeviceEntry while asleep.",
+                                    )
                                     hide()
+                                } else {
+                                    show()
                                 }
                             } else {
                                 hide()
@@ -200,8 +219,8 @@ constructor(
     private fun hide() {
         if (overlayView != null) {
             val lottie = overlayView!!.requireViewById<LottieAnimationView>(R.id.sidefps_animation)
-            lottie.pauseAnimation()
             lottie.removeAllLottieOnCompositionLoadedListener()
+            lottie.pauseAnimation()
             Log.d(TAG, "hide(): removing overlayView $overlayView, setting to null")
             windowManager.get().removeView(overlayView)
             overlayView = null
