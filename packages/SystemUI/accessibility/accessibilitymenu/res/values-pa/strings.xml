@@ -20,7 +20,7 @@
     <string name="brightness_down_label" msgid="7115662941913272072">"ਚਮਕ ਘਟਾਓ"</string>
     <string name="previous_button_content_description" msgid="840869171117765966">"ਪਿਛਲੀ ਸਕ੍ਰੀਨ \'ਤੇ ਜਾਓ"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"ਅਗਲੀ ਸਕ੍ਰੀਨ \'ਤੇ ਜਾਓ"</string>
-    <string name="accessibility_menu_description" msgid="4458354794093858297">"ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਕੰਟਰੋਲ ਕਰਨ ਲਈ ਪਹੁੰਚਯੋਗਤਾ ਮੀਨੂ ਇੱਕ ਵੱਡਾ ਸਕ੍ਰੀਨ-ਉੱਪਰਲਾ ਮੀਨੂ ਮੁਹੱਈਆ ਕਰਦਾ ਹੈ। ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਲਾਕ ਕਰ ਸਕਦੇ ਹੋ, ਅਵਾਜ਼ ਅਤੇ ਚਮਕ ਨੂੰ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ, ਸਕ੍ਰੀਨਸ਼ਾਟ ਲੈ ਸਕਦੇ ਹੋ ਅਤੇ ਹੋਰ ਵੀ ਬਹੁਤ ਕੁਝ।"</string>
+    <string name="accessibility_menu_description" msgid="4458354794093858297">"ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਕੰਟਰੋਲ ਕਰਨ ਲਈ ਪਹੁੰਚਯੋਗਤਾ ਮੀਨੂ ਇੱਕ ਵੱਡਾ ਸਕ੍ਰੀਨ-ਉੱਪਰਲਾ ਮੀਨੂ ਮੁਹੱਈਆ ਕਰਦਾ ਹੈ। ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਲਾਕ ਕਰ ਸਕਦੇ ਹੋ, ਅਵਾਜ਼ ਅਤੇ ਚਮਕ ਨੂੰ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ, ਸਕ੍ਰੀਨਸ਼ਾਟ ਲੈ ਸਕਦੇ ਹੋ ਅਤੇ ਹੋਰ ਵੀ ਬਹੁਤ ਕੁਝ ਕਰ ਸਕਦੇ ਹੋ।"</string>
     <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
     <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"ਪਹੁੰਚਯੋਗਤਾ ਮੀਨੂ ਸੈਟਿੰਗਾਂ"</string>

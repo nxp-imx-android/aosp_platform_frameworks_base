@@ -25,7 +25,7 @@
     <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"Ustawienia menu ułatwień dostępu"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"Duże przyciski"</string>
-    <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"Zwiększ rozmiar przycisków w menu Ułatwienia dostępu"</string>
+    <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"Zwiększ rozmiar przycisków w menu Ułatwień dostępu"</string>
     <string name="pref_help_title" msgid="6871558837025010641">"Pomoc"</string>
     <string name="brightness_percentage_label" msgid="7391554573977867369">"Jasność: <xliff:g id="PERCENTAGE">%1$s</xliff:g>%%"</string>
     <string name="music_volume_percentage_label" msgid="398635599662604706">"Głośność muzyki: <xliff:g id="PERCENTAGE">%1$s</xliff:g>%%"</string>

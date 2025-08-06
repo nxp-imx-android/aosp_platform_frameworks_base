@@ -21,8 +21,7 @@
     <string name="previous_button_content_description" msgid="840869171117765966">"मागील स्क्रीनवर जा"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"पुढील स्क्रीनवर जा"</string>
     <string name="accessibility_menu_description" msgid="4458354794093858297">"तुमचे डिव्हाइस नियंत्रित करण्यासाठी अ‍ॅक्सेसिबिलिटी मेनू मोठा स्क्रीनवरील मेनू पुरवतो. तुम्ही तुमचे डिव्हाइस लॉक करणे, व्हॉल्यूम आणि ब्राइटनेस नियंत्रित करणे, स्क्रीनशॉट घेणे आणि आणखी बरेच काही करू शकता."</string>
-    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
-    <skip />
+    <string name="accessibility_menu_summary" msgid="4051992323622465342">"मोठा मेनू वापरून व्हॉल्यूम, ब्राइटनेस आणि आणखी बरेच काही नियंत्रित करा"</string>
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"अ‍ॅक्सेसिबिलिटी मेनू सेटिंग्ज"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"मोठी बटणे"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"अ‍ॅक्सेसिबिलिटी मेनू बटणांचा आकार वाढवा"</string>
