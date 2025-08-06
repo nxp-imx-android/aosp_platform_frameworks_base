@@ -35,18 +35,12 @@ import com.android.systemui.communal.data.backup.CommunalBackupUtils
 import com.android.systemui.communal.domain.backup.CommunalPrefsBackupHelper
 import com.android.systemui.controls.controller.AuxiliaryPersistenceWrapper
 import com.android.systemui.controls.controller.ControlsFavoritePersistenceWrapper
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.inputdevice.tutorial.domain.backup.TutorialSchedulerBackupHelper
 import com.android.systemui.keyguard.domain.backup.KeyguardQuickAffordanceBackupHelper
 import com.android.systemui.people.widget.PeopleBackupHelper
 import com.android.systemui.qs.panels.domain.backup.QSPreferencesBackupHelper
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserFileManagerImpl
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import java.util.concurrent.Executor
-import javax.inject.Inject
-
 
 /**
  * Helper for backing up elements in SystemUI
@@ -59,14 +53,6 @@ import javax.inject.Inject
  * indicating that restoring is finished for a given user.
  */
 open class BackupHelper : BackupAgentHelper() {
-
-    @Inject
-    @Background
-    lateinit var backgroundDispatcher: CoroutineDispatcher
-
-    @Inject
-    @Background
-    lateinit var bgScope: CoroutineScope
 
     companion object {
         const val TAG = "BackupHelper"
@@ -114,14 +100,7 @@ open class BackupHelper : BackupAgentHelper() {
             )
             addHelper(
                 COMMUNAL_STATE_BACKUP_KEY,
-                CommunalBackupHelper(
-                    userHandle,
-                    CommunalBackupUtils(
-                        context = this,
-                        backgroundDispatcher = backgroundDispatcher
-                    ),
-                    bgScope = bgScope
-                ),
+                CommunalBackupHelper(userHandle, CommunalBackupUtils(context = this)),
             )
         }
     }
