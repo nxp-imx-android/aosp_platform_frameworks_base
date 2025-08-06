@@ -489,13 +489,14 @@ final class VibrationSettings {
                 return false;
             }
         }
-        if (!SYSTEM_VIBRATION_SCREEN_OFF_USAGE_ALLOWLIST.contains(callerInfo.attrs.getUsage())) {
-            // Usages not allowed even for system vibrations should always be cancelled.
-            return true;
+        if (SYSTEM_VIBRATION_SCREEN_OFF_USAGE_ALLOWLIST.contains(callerInfo.attrs.getUsage())) {
+            // Ignore screen off events for System vibrations from allowed usages.
+            return !UserHandle.isSameApp(callerInfo.uid, Process.SYSTEM_UID)
+                    && !UserHandle.isSameApp(callerInfo.uid, Process.ROOT_UID)
+                    && !Objects.equals(callerInfo.opPkg, sysUiPackageName);
         }
-        // Only allow vibrations from System packages to continue vibrating when the screen goes off
-        return callerInfo.uid != Process.SYSTEM_UID && callerInfo.uid != 0
-                && !Objects.equals(sysUiPackageName, callerInfo.opPkg);
+        // Usages not in allowlist should always be cancelled by screen off, even system vibrations.
+        return true;
     }
 
     /**
