@@ -90,9 +90,6 @@ int timer_settime(int fd, int flags, const struct itimerspec *new_value,
 // unit test image to debug test failures.
 const bool DEBUG_TIMER = false;
 
-// A local debug flag to debug the timer thread itself.
-const bool DEBUG_TICKER = false;
-
 // Enable error logging.
 const bool DEBUG_ERROR = true;
 
@@ -515,7 +512,6 @@ public:
     // this method may overwrite that action.
     std::pair<bool, std::string> setTracedAction(std::string config) {
         const char* s = config.c_str();
-        const char* word = nullptr;
         unsigned int percent = 0;
         if (sscanf(s, "expire=%d", &percent) == 1) {
             if (percent < 0 || percent > 100) {
@@ -1093,7 +1089,6 @@ class AnrTimerService::Timer {
             traceEvent(msg);
         }
         if (verbose) {
-            char name[PATH_MAX];
             ALOGI_IF(DEBUG_TIMER, "event %s %s name=%s",
                      tag, toString().c_str(), getName().c_str());
         } else {
@@ -1178,7 +1173,6 @@ class AnrTimerService::Ticker {
     void remove(nsecs_t scheduled, timer_id_t id) {
         Entry key(scheduled, id, 0);
         AutoMutex _l(lock_);
-        timer_id_t front = headTimerId();
         auto found = running_.find(key);
         if (found != running_.end()) running_.erase(found);
         if (running_.empty()) drained_++;
@@ -1187,7 +1181,6 @@ class AnrTimerService::Ticker {
     // Remove every timer associated with the service.
     void remove(const AnrTimerService* service) {
         AutoMutex _l(lock_);
-        timer_id_t front = headTimerId();
         for (auto i = running_.begin(); i != running_.end(); ) {
             if (i->service == service) {
                 i = running_.erase(i);

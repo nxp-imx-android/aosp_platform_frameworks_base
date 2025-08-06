@@ -665,8 +665,6 @@ class NativeVendorControlRequestMonitorThread {
     }
 
     void handleControlRequest(int fd, const struct usb_ctrlrequest *setup) {
-        JNIEnv *env = AndroidRuntime::getJNIEnv();
-
         uint8_t type = setup->bRequestType;
         uint8_t code = setup->bRequest;
         uint16_t length = setup->wLength;
