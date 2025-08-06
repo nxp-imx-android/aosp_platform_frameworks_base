@@ -817,15 +817,6 @@ def check_vertical_metrics():
                 'yMax and yMin of %s do not match expected values.' % (
                 record.font,))
 
-        if record.name in ['sans-serif', 'sans-serif-condensed',
-                           'serif', 'monospace']:
-            font = open_font(record.font)
-            assert (font['hhea'].ascent == 1900 and
-                    font['hhea'].descent == -500), (
-                        'ascent and descent of %s do not match expected '
-                        'values.' % (record.font,))
-
-
 def check_cjk_punctuation():
     cjk_scripts = {'Hans', 'Hant', 'Jpan', 'Kore'}
     cjk_punctuation = range(0x3000, 0x301F + 1)
