@@ -14002,7 +14002,7 @@ package android.service.oemlock {
 
 package android.service.persistentdata {
 
-  public class PersistentDataBlockManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM) public class PersistentDataBlockManager {
     method @RequiresPermission(android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION) public boolean deactivateFactoryResetProtection(@NonNull byte[]);
     method @RequiresPermission(android.Manifest.permission.ACCESS_PDB_STATE) public int getDataBlockSize();
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_OEM_UNLOCK_STATE, "android.permission.OEM_UNLOCK_STATE"}) public int getFlashLockState();
