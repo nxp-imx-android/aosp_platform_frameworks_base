@@ -61,17 +61,17 @@ constructor(
                 keyguardRepository.statusBarState,
                 repository.legacyShadeExpansion,
                 repository.qsExpansion,
-                repository.isShadeLayoutWide,
+                repository.legacyUseSplitShade,
             ) {
                 lockscreenShadeExpansion,
                 statusBarState,
                 legacyShadeExpansion,
                 qsExpansion,
-                isShadeLayoutWide ->
+                useSplitShade ->
                 when (statusBarState) {
                     // legacyShadeExpansion is 1 instead of 0 when QS is expanded
                     StatusBarState.SHADE ->
-                        if (!isShadeLayoutWide && qsExpansion > 0f) 1f - qsExpansion
+                        if (!useSplitShade && qsExpansion > 0f) 1f - qsExpansion
                         else legacyShadeExpansion
                     StatusBarState.KEYGUARD -> lockscreenShadeExpansion
                     // dragDownAmount, which drives lockscreenShadeExpansion resets to 0f when

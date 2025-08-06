@@ -24,7 +24,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -35,12 +34,7 @@ class ShadeRepositoryImplTest : SysuiTestCase() {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
-    private lateinit var underTest: ShadeRepositoryImpl
-
-    @Before
-    fun setUp() {
-        underTest = ShadeRepositoryImpl(testScope)
-    }
+    private val underTest by lazy { ShadeRepositoryImpl(testScope) }
 
     @Test
     fun updateQsExpansion() =
@@ -175,12 +169,22 @@ class ShadeRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isShadeLayoutWide() =
+    fun updateLegacyUseSplitShade() =
         testScope.runTest {
-            val isShadeLayoutWide by collectLastValue(underTest.isShadeLayoutWide)
-            assertThat(isShadeLayoutWide).isFalse()
+            val legacyUseSplitShade by collectLastValue(underTest.legacyUseSplitShade)
+            assertThat(legacyUseSplitShade).isFalse()
 
             underTest.setShadeLayoutWide(true)
-            assertThat(isShadeLayoutWide).isTrue()
+            assertThat(legacyUseSplitShade).isTrue()
+        }
+
+    @Test
+    fun updateIsWideScreen() =
+        testScope.runTest {
+            val isWideScreen by collectLastValue(underTest.isWideScreen)
+            assertThat(isWideScreen).isFalse()
+
+            underTest.setShadeLayoutWide(true)
+            assertThat(isWideScreen).isTrue()
         }
 }

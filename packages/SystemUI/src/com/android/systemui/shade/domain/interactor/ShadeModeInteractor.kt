@@ -31,11 +31,13 @@ import com.android.systemui.shared.settings.data.repository.SecureSettingsReposi
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
@@ -70,11 +72,9 @@ interface ShadeModeInteractor {
     /** Convenience shortcut for querying whether the current [shadeMode] is [ShadeMode.Split]. */
     val isSplitShade: Boolean
         get() = shadeMode.value is ShadeMode.Split
-
-    /** Whether the user has enabled the Dual Shade setting. */
-    val isDualShadeSettingEnabled: Flow<Boolean>
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ShadeModeInteractorImpl
 @Inject
 constructor(
@@ -86,7 +86,7 @@ constructor(
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) : ShadeModeInteractor {
 
-    override val isDualShadeSettingEnabled: Flow<Boolean> =
+    private val isDualShadeSettingEnabled: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
             secureSettingsRepository
                 .boolSetting(Settings.Secure.DUAL_SHADE, defaultValue = DUAL_SHADE_ENABLED_DEFAULT)
@@ -101,7 +101,20 @@ constructor(
 
     private val isLargeScreen: StateFlow<Boolean> = repository.isLargeScreen
 
-    override val isShadeLayoutWide: StateFlow<Boolean> = repository.isShadeLayoutWide
+    override val isShadeLayoutWide: StateFlow<Boolean> =
+        isDualShadeSettingEnabled
+            .flatMapLatest { isDualShadeSettingEnabled ->
+                if (isDualShadeSettingEnabled) {
+                    repository.isWideScreen
+                } else {
+                    repository.legacyUseSplitShade
+                }
+            }
+            .stateIn(
+                applicationScope,
+                SharingStarted.Eagerly,
+                initialValue = !repository.isWideScreen.value,
+            )
 
     private val shadeModeInitialValue: ShadeMode
         get() =
@@ -150,6 +163,4 @@ class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
     override val shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Single)
 
     override val isShadeLayoutWide: StateFlow<Boolean> = MutableStateFlow(false)
-
-    override val isDualShadeSettingEnabled: Flow<Boolean> = flowOf(false)
 }
