@@ -1155,8 +1155,8 @@
     <!-- If AOD can show an ambient version of the wallpaper (-1 means ignore) -->
     <integer name="config_dozeSupportsAodWallpaperOverride">-1</integer>
 
-    <!-- Whether to enable the desktop screen capture. -->
-    <bool name="config_enableDesktopScreenCapture">false</bool>
+    <!-- Whether to enable large screen UI for screen capture. -->
+    <bool name="config_enableLargeScreenScreencapture">false</bool>
 
     <!-- Whether to enable features improving large screen interaction -->
     <bool name="config_improveLargeScreenInteractionOnLockscreen">false</bool>
