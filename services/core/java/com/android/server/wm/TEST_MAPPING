@@ -93,13 +93,13 @@
       "path": "cts/tests/framework/base/windowmanager/src/android/server/wm/window"
     },
     {
-      "path": "cts/tests/framework/base/windowmanager/src/android/server/wm/testsdk29"
+      "path": "cts/tests/framework/base/windowmanager/testsdk29"
     },
     {
-      "path": "cts/tests/framework/base/windowmanager/src/android/server/wm/testsdk34"
+      "path": "cts/tests/framework/base/windowmanager/testsdk34"
     },
     {
-      "path": "cts/tests/framework/base/windowmanager/src/android/server/wm/testsdk35"
+      "path": "cts/tests/framework/base/windowmanager/testsdk35"
     }
   ]
 }
