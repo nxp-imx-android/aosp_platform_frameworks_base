@@ -53,16 +53,32 @@ class LockscreenToGoneTransitionViewModelTest : SysuiTestCase() {
     @Test
     fun deviceEntryParentViewHides() =
         testScope.runTest {
-            val deviceEntryParentViewAlpha by collectValues(underTest.deviceEntryParentViewAlpha)
+            val deviceEntryParentViewAlpha by collectLastValue(underTest.deviceEntryParentViewAlpha)
+            val tolerance = 0.05f
+
             repository.sendTransitionStep(step(0f, TransitionState.STARTED))
+            assertThat(deviceEntryParentViewAlpha).isEqualTo(1f)
+
             repository.sendTransitionStep(step(0.1f))
+            assertThat(deviceEntryParentViewAlpha).isWithin(tolerance).of(0.9f)
+
             repository.sendTransitionStep(step(0.3f))
+            assertThat(deviceEntryParentViewAlpha).isWithin(tolerance).of(0.7f)
+
             repository.sendTransitionStep(step(0.4f))
+            assertThat(deviceEntryParentViewAlpha).isWithin(tolerance).of(0.6f)
+
             repository.sendTransitionStep(step(0.5f))
+            assertThat(deviceEntryParentViewAlpha).isWithin(tolerance).of(0.5f)
+
             repository.sendTransitionStep(step(0.6f))
+            assertThat(deviceEntryParentViewAlpha).isWithin(tolerance).of(0.4f)
+
             repository.sendTransitionStep(step(0.8f))
+            assertThat(deviceEntryParentViewAlpha).isWithin(tolerance).of(0.2f)
+
             repository.sendTransitionStep(step(1f))
-            deviceEntryParentViewAlpha.forEach { assertThat(it).isEqualTo(0f) }
+            assertThat(deviceEntryParentViewAlpha).isEqualTo(0f)
         }
 
     @Test
