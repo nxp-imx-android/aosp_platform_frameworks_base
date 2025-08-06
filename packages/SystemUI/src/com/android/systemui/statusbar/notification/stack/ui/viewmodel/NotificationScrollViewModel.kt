@@ -276,11 +276,20 @@ constructor(
     /** The alpha of the Notification Stack for lockscreen fade-in */
     val alphaForLockscreenFadeIn = stackAppearanceInteractor.alphaForLockscreenFadeIn
 
-    private val qsAllowsClipping: Flow<Boolean> =
-        combine(shadeModeInteractor.shadeMode, shadeInteractor.qsExpansion) { shadeMode, qsExpansion
-                ->
+    private val allowScrimClipping: Flow<Boolean> =
+        combine(
+                shadeModeInteractor.shadeMode,
+                shadeInteractor.qsExpansion,
+                sceneInteractor.transitionState,
+            ) { shadeMode, qsExpansion, transition ->
                 when (shadeMode) {
-                    is ShadeMode.Dual -> false
+                    is ShadeMode.Dual ->
+                        // Don't clip notifications while we are opening the DualShade panel to
+                        // enable the shared element transition.
+                        !transition.isTransitioning(
+                            from = Scenes.Lockscreen,
+                            to = Overlays.NotificationsShade,
+                        )
                     is ShadeMode.Split -> true
                     is ShadeMode.Single -> qsExpansion < 0.5f
                 }
@@ -290,11 +299,11 @@ constructor(
     /** The bounds of the notification stack in the current scene. */
     private val shadeScrimClipping: Flow<ShadeScrimClipping?> =
         combine(
-                qsAllowsClipping,
+                allowScrimClipping,
                 stackAppearanceInteractor.notificationShadeScrimBounds,
                 stackAppearanceInteractor.shadeScrimRounding,
-            ) { qsAllowsClipping, bounds, rounding ->
-                bounds?.takeIf { qsAllowsClipping }?.let { ShadeScrimClipping(it, rounding) }
+            ) { allowScrimClipping, bounds, rounding ->
+                bounds?.takeIf { allowScrimClipping }?.let { ShadeScrimClipping(it, rounding) }
             }
             .distinctUntilChanged()
             .dumpWhileCollecting("stackClipping")
