@@ -69,3 +69,18 @@ annotation class ProtectedReturn(val statement: String)
 )
 @Retention(AnnotationRetention.BINARY)
 annotation class SimpleProperty
+
+/**
+ * Marks a method or property as being acceptable to throw exceptions from. This doesn't remove the
+ * normal try-catch, and it will still execute the error callback and attempt to disable the plugin.
+ * It merely throws an exception if a valid return value isn't available, and disables the
+ * associated build error.
+ */
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER,
+)
+@Retention(AnnotationRetention.BINARY)
+annotation class ThrowsOnFailure

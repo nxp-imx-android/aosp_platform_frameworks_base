@@ -17,6 +17,7 @@ import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
 import com.android.systemui.plugins.annotations.SimpleProperty
+import com.android.systemui.plugins.annotations.ThrowsOnFailure
 import com.google.auto.service.AutoService
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -103,7 +104,13 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                 val type = procEnv.typeUtils.asElement(typeMirror)
                 for (member in type.enclosedElements) {
                     if (member.kind != ElementKind.METHOD) continue
-                    methods.add(member as ExecutableElement)
+                    val method = member as ExecutableElement
+                    methods.add(method)
+
+                    if (method.isComposable()) {
+                        impAttrs.add(GeneratedImport("androidx.compose.runtime.Composer"))
+                        impAttrs.add(GeneratedImport("androidx.compose.runtime.HotReloaderKt"))
+                    }
                 }
 
                 impAttrs.addAll(type.getAnnotationsByType(GeneratedImport::class.java))
@@ -194,6 +201,7 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                         if (methods.any { methodName.startsWith("${it.simpleName}\$") }) {
                             continue
                         }
+
                         val returnTypeName = method.returnType.toString()
                         val callArgs = StringBuilder()
                         var isFirst = true
@@ -211,27 +219,61 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                                 if (callArgs.length > 0) callArgs.append(", ")
                                 callArgs.append(param.simpleName)
                             }
+
+                            if (method.isComposable()) {
+                                if (!isFirst) completeLine(",")
+                                line("Composer composer,")
+                                startLine("int i")
+
+                                if (callArgs.length > 0) callArgs.append(", ")
+                                callArgs.append("composer, i")
+                            }
                         }
 
                         val isVoid = method.returnType.kind == TypeKind.VOID
                         val methodContainer = if (isStatic) sourceName else "mInstance"
                         val nestedCall = "$methodContainer.$methodName($callArgs)"
-                        val callStatement =
+                        val returnGenericType = returnTypeName.substringBefore("<")
+                        val returnGenericArgs =
+                            returnTypeName.substringAfter("<").substringBeforeLast(">").split(",")
+
+                        val callStatements = {
                             when {
-                                isVoid -> "$nestedCall;"
+                                isVoid -> line("$nestedCall;")
                                 targets.containsKey(returnTypeName) -> {
                                     val targetType = targets.get(returnTypeName)!!.outputName
-                                    "return $targetType.protect($nestedCall, mListener);"
+                                    line("return $targetType.protect($nestedCall, mListener);")
                                 }
-                                else -> "return $nestedCall;"
+                                // Special case which wraps lists containing protected types
+                                LIST_TYPES.contains(returnGenericType) &&
+                                    targets.containsKey(returnGenericArgs[0]) -> {
+                                    val listArg = returnGenericArgs[0].substringAfterLast(".")
+                                    val targetType = targets.get(returnGenericArgs[0])!!.outputName
+                                    line("$returnTypeName source = $nestedCall;")
+                                    line("ArrayList<$listArg> dest = new ArrayList<$listArg>();")
+                                    braceBlock("for ($listArg item : source)") {
+                                        line("dest.add($targetType.protect(item, mListener));")
+                                    }
+                                    line("return dest;")
+                                }
+                                returnGenericArgs.any { targets.containsKey(it) } -> {
+                                    procEnv.messager.printMessage(
+                                        Kind.ERROR,
+                                        "$returnTypeName has protected type as generic argument " +
+                                            "but is not currently supported by the processor.",
+                                    )
+                                    line("return $nestedCall;")
+                                }
+                                else -> line("return $nestedCall;")
                             }
+                        }
 
                         // Simple property methods forgo protection
                         val simpleAttr = method.getAnnotation(SimpleProperty::class.java)
                         if (simpleAttr != null) {
                             braceBlock {
                                 line("final String METHOD = \"$methodName\";")
-                                line(callStatement)
+                                callStatements()
                             }
                             line()
                             continue
@@ -240,28 +282,60 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                         // Standard implementation wraps nested call in try-catch
                         braceBlock {
                             val retAttr = method.getAnnotation(ProtectedReturn::class.java)
-                            val errorStatement =
+                            val throwAttr = method.getAnnotation(ThrowsOnFailure::class.java)
+                            val errorStatements = { isCaught: Boolean ->
                                 when {
-                                    retAttr != null -> retAttr.statement
-                                    isVoid -> "return;"
+                                    // Compose methods should rethrow since compose will throw a
+                                    // different error at a later point anyway due to the missing
+                                    // endgroup calls that are skipped.
+
+                                    // TODO(b/432451019): There may be a way to recover using the
+                                    // HotReload interface to force an additional recompose.
+                                    method.isComposable() -> {
+                                        if (throwAttr != null) {
+                                            procEnv.messager.printMessage(
+                                                Kind.WARNING,
+                                                "$outputName.$methodName rethrows exceptions " +
+                                                    "because it is annotated with @Composable",
+                                            )
+                                        }
+
+                                        if (isCaught) {
+                                            line("throw ex;")
+                                        } else {
+                                            line("return;")
+                                        }
+                                    }
+                                    throwAttr != null -> {
+                                        if (isCaught) {
+                                            line("throw ex;")
+                                        } else {
+                                            line(
+                                                "throw new IllegalStateException(" +
+                                                    "CLASS + \" has a previous failure.\")"
+                                            )
+                                        }
+                                    }
+                                    retAttr != null -> line(retAttr.statement)
+                                    isVoid -> line("return;")
                                     else -> {
-                                        // Non-void methods must be annotated.
                                         procEnv.messager.printMessage(
                                             Kind.ERROR,
-                                            "$outputName.$methodName must be annotated with " +
-                                                "@ProtectedReturn or @SimpleProperty",
+                                            "$outputName.$methodName should be annotated with " +
+                                                "@ProtectedReturn, @SimpleProperty, or @ThrowsOnFailure",
                                         )
-                                        "throw ex;"
+                                        line("// Error: No valid return value")
                                     }
                                 }
+                            }
 
                             line("final String METHOD = \"$methodName\";")
 
                             // Return immediately if any previous call has failed.
-                            braceBlock("if (mHasError)") { line(errorStatement) }
+                            braceBlock("if (mHasError)") { errorStatements(false) }
 
                             // Protect callsite in try/catch block
-                            braceBlock("try") { line(callStatement) }
+                            braceBlock("try") { callStatements() }
 
                             // Notify listener when a target exception is caught
                             for (exType in exTypeAttr.exTypes) {
@@ -269,7 +343,7 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                                 braceBlock("catch ($simpleName ex)") {
                                     line("Log.wtf(CLASS, \"Failed to execute: \" + METHOD, ex);")
                                     line("mHasError = mListener.onFail(CLASS, METHOD, ex);")
-                                    line(errorStatement)
+                                    errorStatements(true)
                                 }
                             }
                         }
@@ -386,5 +460,31 @@ class ProtectedPluginProcessor : AbstractProcessor() {
         }
 
         return true
+    }
+
+    companion object {
+        val LIST_TYPES = setOf("java.util.List", "java.util.Collection")
+
+        /**
+         * Checks whether a method is annotated with @Composable. We do this by matching the
+         * annotation name against the mirror list because the compose runtime cannot be included
+         * here directly.
+         *
+         * This allows us to special case Composable functions as the compose compiler adds special
+         * arguments to those methods when they are compiled, but those changes aren't represented
+         * in the stubs that this processor operates on.
+         */
+        fun ExecutableElement.isComposable(): Boolean {
+            return this.hasAnnotation("androidx.compose.runtime.Composable")
+        }
+
+        fun Element.hasAnnotation(targetName: String): Boolean {
+            for (attr in this.annotationMirrors) {
+                if (attr.annotationType.toString() == targetName) {
+                    return true
+                }
+            }
+            return false
+        }
     }
 }
