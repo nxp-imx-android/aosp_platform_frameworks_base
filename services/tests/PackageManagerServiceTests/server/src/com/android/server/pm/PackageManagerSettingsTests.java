@@ -687,12 +687,10 @@ public class PackageManagerSettingsTests {
         Settings settings = makeSettings();
         assertThat(settings.readLPw(computer, createFakeUsers()), is(true));
 
-        assertThat(settings.getInternalVersion().sdkVersion,
-                is(Build.VERSION.SDK_INT));
-        // TODO: Uncomment this check once settings.getInternalVersion().sdkVersionFull is not
-        // influenced by Build.VERSION.SDK_INT_FULL
-        // assertThat(settings.getInternalVersion().sdkVersionFull,
-        //        is(Build.parseFullVersion(String.valueOf(Build.VERSION.SDK_INT))));
+        final int expectedSdkInt = 36;
+        assertThat(settings.getInternalVersion().sdkVersion, is(expectedSdkInt));
+        assertThat(settings.getInternalVersion().sdkVersionFull,
+                is(Build.parseFullVersion(String.valueOf(expectedSdkInt))));
     }
 
     @Test
@@ -2557,7 +2555,7 @@ public class PackageManagerSettingsTests {
                 ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>"
                         + "<packages>"
                         + "<version sdkVersion=\"36\" databaseVersion=\"3\" buildFingerprint=\"123456:userdebug\" fingerprint=\"64bc7e5656eb8ec3821157973e6eee7449333661\" />"
-                        + "<version volumeUuid=\"primary_physical\" sdkVersion=\"36\" databaseVersion=\"3\" buildFingerprint=\"123456:userdebug\""
+                        + "<version volumeUuid=\"primary_physical\" sdkVersion=\"36\" databaseVersion=\"3\" buildFingerprint=\"123456:userdebug\" />"
                         + "<permission-trees>"
                         + "<item name=\"com.google.android.permtree\" package=\"com.google.android.permpackage\" />"
                         + "</permission-trees>"
