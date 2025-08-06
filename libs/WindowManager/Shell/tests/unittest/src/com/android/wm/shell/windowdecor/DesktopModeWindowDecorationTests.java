@@ -1772,7 +1772,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     @Test
     @DisableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION})
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION,
+            Flags.FLAG_ENABLE_APP_HANDLE_POSITION_REPORTING})
     public void notifyCaptionStateChanged_flagDisabled_doNoNotify() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
