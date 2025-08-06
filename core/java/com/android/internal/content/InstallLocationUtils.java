@@ -452,12 +452,12 @@ public class InstallLocationUtils {
         if (android.content.pm.Flags.alternativeForDexoptCleanup()) {
             Path path = pkg.getPath() != null ? Paths.get(pkg.getPath()) : null;
             if (path == null || !Files.isDirectory(path)) { // monolithic
-                sizeBytes += Files.size(Paths.get(pkg.getBaseApkPath()));
+                sizeBytes += new File(pkg.getBaseApkPath()).length();
             } else { // cluster
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
                     for (Path child : stream) {
                         if (!Files.isDirectory(child)) {
-                            sizeBytes += Files.size(child);
+                            sizeBytes += child.toFile().length();
                         }
                     }
                 }
