@@ -253,8 +253,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
         mTile.handleClick(null /* view */);
         mTestableLooper.processAllMessages();
 
-        ArgumentCaptor<Runnable> onStartRecordingClicked = ArgumentCaptor.forClass(Runnable.class);
-        verify(mController).createScreenRecordDialog(onStartRecordingClicked.capture());
+        verify(mController).createScreenRecordDialog(any());
     }
 
     // Test that the tile is active and labeled correctly when the controller is recording
