@@ -23,7 +23,6 @@ import android.media.session.PlaybackState
 import android.service.notification.StatusBarNotification
 import com.android.internal.logging.InstanceId
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.media.controls.data.repository.MediaFilterRepository
@@ -36,6 +35,7 @@ import com.android.systemui.media.controls.domain.pipeline.MediaSessionBasedFilt
 import com.android.systemui.media.controls.domain.pipeline.MediaTimeoutListener
 import com.android.systemui.media.controls.domain.resume.MediaResumeListener
 import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import java.io.PrintWriter
 import javax.inject.Inject
@@ -84,7 +84,7 @@ constructor(
 
     /** The current list for user media instances */
     val currentMedia =
-        if (!Flags.mediaControlsInCompose()) {
+        if (!MediaControlsInComposeFlag.isEnabled) {
             (mediaPipelineRepository as MediaFilterRepository).currentMedia
         } else {
             // TODO(b/397989775) remove, not used with media_controls_in_compose
@@ -92,7 +92,7 @@ constructor(
         }
 
     override fun start() {
-        if (!SceneContainerFlag.isEnabled && !Flags.mediaControlsInCompose()) {
+        if (!SceneContainerFlag.isEnabled && !MediaControlsInComposeFlag.isEnabled) {
             return
         }
 
@@ -195,7 +195,7 @@ constructor(
     override fun hasAnyMedia() = mediaPipelineRepository.hasAnyMedia()
 
     fun reorderMedia() {
-        if (!Flags.mediaControlsInCompose()) {
+        if (!MediaControlsInComposeFlag.isEnabled) {
             (mediaPipelineRepository as MediaFilterRepository).setOrderedMedia()
         }
     }

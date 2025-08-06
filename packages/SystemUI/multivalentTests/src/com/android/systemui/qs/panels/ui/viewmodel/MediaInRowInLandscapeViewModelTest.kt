@@ -22,7 +22,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.FlagsParameterization.progressionOf
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
-import com.android.systemui.Flags.mediaControlsInCompose
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.kosmos.Kosmos
@@ -34,6 +33,7 @@ import com.android.systemui.media.controls.ui.controller.MediaLocation
 import com.android.systemui.media.controls.ui.controller.mediaHostStatesManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.data.repository.setHasActiveMedia
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
@@ -104,7 +104,7 @@ class MediaInRowInLandscapeViewModelTest(
                     }
                 fakeConfigurationRepository.onConfigurationChange(config)
                 mainResources.configuration.updateFrom(config)
-                if (mediaControlsInCompose()) {
+                if (MediaControlsInComposeFlag.isEnabled) {
                     setHasActiveMedia(testData.mediaVisible)
                 } else {
                     mediaHostStatesManager.updateHostState(

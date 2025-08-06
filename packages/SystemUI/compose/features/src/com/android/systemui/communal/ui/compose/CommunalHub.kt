@@ -207,6 +207,7 @@ import com.android.systemui.communal.util.WindowSizeUtils
 import com.android.systemui.communal.widgets.SmartspaceAppWidgetHostView
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.res.R
@@ -1839,7 +1840,7 @@ private fun Umo(
                 }
             }
     ) {
-        if (SceneContainerFlag.isEnabled || Flags.mediaControlsInCompose()) {
+        if (SceneContainerFlag.isEnabled || MediaControlsInComposeFlag.isEnabled) {
             Media(
                 viewModelFactory = viewModel.mediaViewModelFactory,
                 presentationStyle = MediaPresentationStyle.Large,

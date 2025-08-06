@@ -127,6 +127,7 @@ import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.media.controls.ui.controller.MediaViewLogger
 import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
@@ -1420,7 +1421,7 @@ private fun ContentScope.MediaObject(
     behavior: MediaUiBehavior,
     update: UniqueObjectHostView.() -> Unit = {},
 ) {
-    if (Flags.mediaControlsInCompose()) {
+    if (MediaControlsInComposeFlag.isEnabled) {
         Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
             Media(
                 viewModelFactory = mediaViewModelFactory,

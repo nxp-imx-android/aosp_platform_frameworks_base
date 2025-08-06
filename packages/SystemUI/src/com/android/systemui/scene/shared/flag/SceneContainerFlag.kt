@@ -18,20 +18,13 @@
 
 package com.android.systemui.scene.shared.flag
 
-import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
-import com.android.systemui.Flags.mediaControlsInCompose
 import com.android.systemui.Flags.sceneContainer
-import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
 
 /** Helper for reading or using the scene container flag state. */
 object SceneContainerFlag {
     /** The flag description -- not an aconfig flag name */
     const val DESCRIPTION = "SceneContainerFlag"
-
-    /** A token used for dependency declaration */
-    val token: FlagToken
-        get() = FlagToken(FLAG_SCENE_CONTAINER, isEnabled)
 
     /**
      * Whether the flag is enabled on the current variant. If this is set to `false`, then it the
@@ -47,7 +40,7 @@ object SceneContainerFlag {
     @JvmStatic
     inline val isEnabled
         // NOTE: Changes should also be made in @EnableSceneContainer
-        get() = sceneContainer() && isEnabledOnVariant && mediaControlsInCompose()
+        get() = sceneContainer() && isEnabledOnVariant
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
