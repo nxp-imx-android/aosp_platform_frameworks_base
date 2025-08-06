@@ -103,7 +103,7 @@ constructor(
                     OverlayShadeHeader(
                         viewModel = headerViewModel,
                         notificationsHighlight = ShadeHeader.ChipHighlight.Strong,
-                        quickSettingsHighlight = ShadeHeader.ChipHighlight.Weak,
+                        quickSettingsHighlight = headerViewModel.inactiveChipHighlight,
                         showClock = !isFullWidth,
                         modifier = Modifier.element(NotificationsShade.Elements.StatusBar),
                     )

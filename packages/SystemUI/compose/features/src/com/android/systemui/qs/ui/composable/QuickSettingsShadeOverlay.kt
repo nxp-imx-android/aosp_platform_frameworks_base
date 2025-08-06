@@ -165,9 +165,10 @@ constructor(
                 },
                 header = {
                     if (contentViewModel.showHeader) {
+                        val headerViewModel = quickSettingsContainerViewModel.shadeHeaderViewModel
                         OverlayShadeHeader(
-                            viewModel = quickSettingsContainerViewModel.shadeHeaderViewModel,
-                            notificationsHighlight = ShadeHeader.ChipHighlight.Weak,
+                            viewModel = headerViewModel,
+                            notificationsHighlight = headerViewModel.inactiveChipHighlight,
                             quickSettingsHighlight = ShadeHeader.ChipHighlight.Strong,
                             showClock = true,
                             modifier = Modifier.element(QuickSettingsShade.Elements.StatusBar),
