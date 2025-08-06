@@ -86,6 +86,10 @@ final class InteractiveMirrorDisplayImpl extends IInteractiveMirrorDisplay.Stub 
 
     private void createTouchscreen() throws RemoteException {
         Display display = mVirtualDisplay.getDisplay();
+        // The display may no longer be valid if the session has been closed.
+        if (!display.isValid()) {
+            return;
+        }
         String touchscreenName = display.getName() + "-touchscreen";
         VirtualTouchscreenConfig virtualTouchscreenConfig =
                 new VirtualTouchscreenConfig.Builder(display.getWidth(), display.getHeight())
