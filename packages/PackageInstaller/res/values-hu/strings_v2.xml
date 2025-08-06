@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Az alkalmazás app visszaállításához telepítse a következőt: <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hiba történt az alkalmazás visszaállítása során."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"A(z) <xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> a következő alkalmazás része: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Az alkalmazás le van tiltva. Az eszköz és az adatok biztonságának megőrzése érdekében csak ellenőrzött fejlesztőtől származó alkalmazás telepíthető.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztői ellenőrzésről&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Az alkalmazás nem frissült. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőktől származó frissítések telepíthetők.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztő ellenőrzéséről.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Az alkalmazás nem lett telepítve. Előfordulhat, hogy a nem ellenőrzött fejlesztőtől származó alkalmazás nem biztonságos.&lt;/p&gt; &lt;p&gt;Az alkalmazásfejlesztő ellenőrzéséhez internetkapcsolat szükséges. Ellenőrizze, hogy az eszköz csatlakozik-e az internethez, majd próbálja újra telepíteni az alkalmazást. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztő-ellenőrzésről&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Az alkalmazás nem frissült. Előfordulhat, hogy a nem ellenőrzött fejlesztőtől származó frissítések nem biztonságosak.&lt;/p&gt; &lt;p&gt;Az alkalmazásfejlesztő ellenőrzéséhez internetkapcsolat szükséges. Győződjön meg arról, hogy eszköze rendelkezik internetkapcsolattal, majd próbálkozzon újra az alkalmazás frissítésével. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztő ellenőrzéséről.&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Hiba történt az alkalmazás fejlesztőjének ellenőrzésekor. Előfordulhat, hogy a nem ellenőrzött fejlesztőtől származó alkalmazás nem biztonságos, ezért az alkalmazás nem lett telepítve.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztő-ellenőrzésről&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Hiba történt az alkalmazás fejlesztőjének ellenőrzésekor. Előfordulhat, hogy a nem ellenőrzött fejlesztőktől származó frissítések nem biztonságosak, ezért az alkalmazás nem frissült.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztők ellenőrzéséről.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Ezt az alkalmazást letiltottuk, mert probléma merült fel a fejlesztő ellenőrzése során. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőtől származó alkalmazások telepíthetők.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztői ellenőrzésről.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Az alkalmazás nem frissült, mert probléma merült fel a fejlesztő ellenőrzése során. Az eszköze és az adatai biztonságának megőrzése érdekében csak ellenőrzött fejlesztőktől származó frissítések telepíthetők.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;További információ a fejlesztő ellenőrzéséről.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Felhívjuk figyelmét, hogy az ellenőrzés nélküli telepítés esetén a nem ellenőrzött fejlesztőktől származó alkalmazások veszélyeztethetik az Ön eszközét és adatait."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ellenőrzés nélküli frissítés esetén tartsa szem előtt, hogy a nem ellenőrzött fejlesztőktől származó frissítések veszélyeztethetik az Ön eszközét és adatait."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Az alkalmazásfejlesztő nem ellenőrzött"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Nincs internetkapcsolat, nem sikerült ellenőrizni az alkalmazás fejlesztőjét"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Nem sikerült ellenőrizni az alkalmazás fejlesztőjét"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Telepítés ellenőrzés nélkül"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Frissítés ellenőrzés nélkül"</string>
     <string name="button_install" msgid="7434013176505680162">"Telepítés"</string>
     <string name="button_update" msgid="3046719350226327526">"Frissítés"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Frissítés mindenképp"</string>

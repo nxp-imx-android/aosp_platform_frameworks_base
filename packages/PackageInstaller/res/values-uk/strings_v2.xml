@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Під час спроби відновити цей додаток сталася помилка"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> є частиною такого додатка: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Цей додаток заблоковано. З міркувань безпеки вашого пристрою і даних можна встановлювати лише додатки від перевірених розробників.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Цей додаток не оновлено. З міркувань безпеки вашого пристрою і даних можна встановлювати оновлення лише від перевірених розробників.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Цей додаток не встановлено. Додатки від неперевірених розробників можуть бути небезпечні.&lt;/p&gt; &lt;p&gt;Щоб перевірити розробника додатка, потрібне інтернет-з’єднання. Переконайтеся, що пристрій підключено до Інтернету, а потім повторіть спробу. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Цей додаток не оновлено. Оновлення від неперевірених розробників можуть бути небезпечні.&lt;/p&gt; &lt;p&gt;Щоб перевірити розробника додатка, потрібне інтернет-з’єднання. Переконайтеся, що ваш пристрій підключено до Інтернету, а потім ще раз спробуйте оновити додаток. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Не вдалося перевірити розробника цього додатка. Додатки від неперевірених розробників можуть бути небезпечні, тому додаток не встановлено.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Не вдалося перевірити розробника цього додатка. Оновлення від неперевірених розробників можуть бути небезпечні, тому додаток не оновлено.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Цей додаток заблоковано, оскільки не вдалося перевірити розробника. З міркувань безпеки вашого пристрою і даних можна встановлювати лише додатки від перевірених розробників.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Цей додаток не оновлено, оскільки не вдалося перевірити розробника. З міркувань безпеки вашого пристрою і даних можна встановлювати оновлення лише від перевірених розробників.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Докладніше про перевірку даних розробника.&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Пам’ятайте, що додатки від неперевірених розробників можуть загрожувати безпеці вашого пристрою і даних."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Пам’ятайте, що оновлення від неперевірених розробників можуть загрожувати безпеці вашого пристрою і даних."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Розробника додатка не перевірено"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Немає Інтернету. Неможливо перевірити розробника додатка."</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Не вдається перевірити розробника додатка"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"Установити без перевірки"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Оновити без перевірки"</string>
     <string name="button_install" msgid="7434013176505680162">"Установити"</string>
     <string name="button_update" msgid="3046719350226327526">"Оновити"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Усе одно оновити"</string>

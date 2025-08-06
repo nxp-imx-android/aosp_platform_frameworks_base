@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"මෙම යෙදුම ප්‍රතිසාධනය කිරීම සඳහා, ඔබට <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ස්ථාපනය කිරීමට අවශ්‍ය වනු ඇත"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"මෙම යෙදුම ප්‍රතිසාධනය කිරීමට උත්සාහ කිරීමේ ගැටලුවක් ඇති විය"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> පහත යෙදුමේ කොටසකි: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;මෙම යෙදුම අවහිර කර ඇත. ඔබේ උපාංගය සහ දත්ත සුරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගේ යෙදුම් පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;මෙම යෙදුම යාවත්කාලීන කර නොමැත. ඔබගේ උපාංගය සහ දත්ත ආරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;මෙම යෙදුම ස්ථාපනය කර නොමැත. සත්‍යාපනය නොකළ සංවර්ධකයින්ගේ යෙදුම් අනාරක්ෂිත විය හැක.&lt;/p&gt; &lt;p&gt;යෙදුම් සංවර්ධක සත්‍යාපනය කිරීමට අන්තර්ජාල සම්බන්ධතාවයක් අවශ්‍ය වේ. ඔබේ උපාංගය අන්තර්ජාලයට සම්බන්ධ වී ඇති බවට වග බලා ගන්න, ඉන්පසු යෙදුම නැවත ස්ථාපනය කිරීමට උත්සාහ කරන්න. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;මෙම යෙදුම යාවත්කාලීන කර නොමැත. සත්‍යාපනය නොකළ සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් අනාරක්ෂිත විය හැකිය.&lt;/p&gt; &lt;p&gt;යෙදුම් සංවර්ධකයා සත්‍යාපනය කිරීමට අන්තර්ජාල සම්බන්ධතාවයක් අවශ්‍ය වේ. ඔබේ උපාංගය අන්තර්ජාලයට සම්බන්ධ වී ඇති බවට වග බලා ගන්න, ඉන්පසු යෙදුම නැවත යාවත්කාලීන කිරීමට උත්සාහ කරන්න. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;මෙම යෙදුමේ සංවර්ධකයා සත්‍යාපනය කිරීමේ දී ගැටලුවක් ඇති විය. සත්‍යාපනය නොකළ සංවර්ධකයින්ගේ යෙදුම් අනාරක්ෂිත විය හැකි බැවින්, යෙදුම ස්ථාපනය කර නොමැත.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;මෙම යෙදුමේ සංවර්ධකයා සත්‍යාපනය කිරීමේ දී ගැටලුවක් ඇති විය. සත්‍යාපනය නොකළ සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් අනාරක්ෂිත විය හැකි බැවින්, යෙදුම යාවත්කාලීන කර නොමැත.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳව තව දැන ගන්න&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;සංවර්ධකයා සත්‍යාපනය කිරීමේ ගැටලුවක් ඇති වූ නිසා මෙම යෙදුම අවහිර කරන ලදී. ඔබේ උපාංගය සහ දත්ත සුරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගේ යෙදුම් පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;සංවර්ධකයා සත්‍යාපනය කිරීමේ ගැටලුවක් ඇති වූ නිසා මෙම යෙදුම යාවත්කාලීන කර නොමැත. ඔබගේ උපාංගය සහ දත්ත ආරක්ෂිතව තබා ගැනීමට උදවු කිරීම සඳහා, සත්‍යාපිත සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් පමණක් ස්ථාපනය කළ හැක.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;සංවර්ධක සත්‍යාපනය පිළිබඳ තව දැන ගන්න&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ඔබ සත්‍යාපනය නොකර ස්ථාපනය කරන්නේ නම්, සත්‍යාපනය නොකළ සංවර්ධකයින්ගේ යෙදුම් ඔබේ උපාංගය සහ දත්ත අවදානමට ලක් කළ හැකි බව මතක තබා ගන්න."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ඔබ සත්‍යාපනය නොකර යාවත්කාලීන කරන්නේ නම්, සත්‍යාපනය නොකළ සංවර්ධකයින්ගෙන් ලැබෙන යාවත්කාලීන කිරීම් ඔබේ උපාංගය සහ දත්ත අවදානමට ලක් කළ හැකි බව මතක තබා ගන්න."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"යෙදුම් සංවර්ධක සත්‍යාපනය කර නැත"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"අන්තර්ජාලය නැත, යෙදුම් සංවර්ධකයා සත්‍යාපනය කළ නොහැක"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"යෙදුම් සංවර්ධකයා සත්‍යාපනය කළ නොහැක"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"සත්‍යාපනය නොකර ස්ථාපනය කරන්න"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"සත්‍යාපනය නොකර යාවත්කාලීන කරන්න"</string>
     <string name="button_install" msgid="7434013176505680162">"ස්ථාපනය කරන්න"</string>
     <string name="button_update" msgid="3046719350226327526">"යාවත්කාලීන කරන්න"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"කෙසේ වෙතත් යාවත්කාලීන කරන්න"</string>

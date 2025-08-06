@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restaurar esta aplicación, tendrás que instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"No se ha podido restaurar esta aplicación"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma parte de esta aplicación: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Esta aplicación se ha bloqueado. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar aplicaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Esta aplicación no se ha actualizado. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Esta aplicación no se ha instalado. Las aplicaciones de desarrolladores no verificados pueden ser peligrosas.&lt;/p&gt; &lt;p&gt;Se necesita una conexión a Internet para verificar al desarrollador de la aplicación. Comprueba que tu dispositivo esté conectado a Internet y vuelve a intentar instalar la aplicación. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Esta aplicación no se ha actualizado. Las actualizaciones de desarrolladores no verificados pueden no ser seguras.&lt;/p&gt; &lt;p&gt;Se necesita una conexión a Internet para verificar al desarrollador de la aplicación. Comprueba que tu dispositivo esté conectado a Internet y prueba a actualizar la aplicación de nuevo. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;No se ha podido verificar el desarrollador de esta aplicación. Las aplicaciones de desarrolladores no verificados pueden ser peligrosas, por lo que no se ha instalado la aplicación.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Ha habido un problema al verificar al desarrollador de esta aplicación. Las actualizaciones de desarrolladores no verificados pueden no ser seguras, por lo que la aplicación no se ha actualizado.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Esta aplicación se ha bloqueado porque ha habido un problema al verificar al desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar aplicaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Esta aplicación no se ha actualizado porque ha habido un problema al verificar al desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si instalas la aplicación sin verificar, ten en cuenta que las aplicaciones de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si actualizas la aplicación sin verificar, ten en cuenta que las actualizaciones de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desarrollador de aplicaciones no verificado"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"No hay Internet; no se puede verificar el desarrollador de la aplicación"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"No se puede verificar el desarrollador de la aplicación"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Instalar sin verificar"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Actualizar sin verificar"</string>
     <string name="button_install" msgid="7434013176505680162">"Instalar"</string>
     <string name="button_update" msgid="3046719350226327526">"Actualizar"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Actualizar igualmente"</string>

@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hubo un problema al intentar restablecer esta app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> es parte de la siguiente app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Se bloqueó esta app. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;No se actualizó esta app. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;No se instaló esta app. Las apps de desarrolladores no verificados podrían no ser seguras.&lt;/p&gt; &lt;p&gt;Se requiere una conexión a Internet para verificar al desarrollador de la app. Asegúrate de que el dispositivo esté conectado a Internet y vuelve a intentar instalar la app. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;No se actualizó esta app. Las actualizaciones de desarrolladores no verificados podrían no ser seguras.&lt;/p&gt; &lt;p&gt;Se requiere una conexión a Internet para verificar al desarrollador de la app. Asegúrate de que el dispositivo esté conectado a Internet y vuelve a intentar actualizar la app. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Se produjo un error cuando se verificaba el desarrollador de esta app. Las apps de desarrolladores no verificados pueden ser peligrosas, por lo que no se instaló la app.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Se produjo un error cuando se verificaba el desarrollador de esta app. Las actualizaciones de desarrolladores no verificados pueden ser peligrosas, por lo que no se actualizó la app.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Se bloqueó esta app porque hubo un problema cuando se verificaba su desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;No se actualizó esta app porque hubo un problema cuando se verificaba el desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ten en cuenta que, si instalas una app sin verificar su desarrollador, el dispositivo y tus datos podrían estar en riesgo."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si actualizas sin verificar, ten en cuenta que las actualizaciones de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desarrollador de la app sin verificar"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"No se puede verificar el desarrollador de la app porque no hay conexión a Internet"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"No se puede verificar el desarrollador de la app"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"Instalar sin verificar"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Actualizar sin verificar"</string>
     <string name="button_install" msgid="7434013176505680162">"Instalar"</string>
     <string name="button_update" msgid="3046719350226327526">"Actualizar"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Actualizar de todas formas"</string>
