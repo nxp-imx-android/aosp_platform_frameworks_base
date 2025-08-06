@@ -1207,6 +1207,16 @@ flag {
 }
 
 flag {
+  name: "dream_bouncer_transition_fix"
+  namespace: "systemui"
+  description: "Flag for a minor transition fix when entering the dream with the bouncer open"
+  bug: "409720192"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "lockscreen_shade_to_dream_transition_fix"
   namespace: "systemui"
   description: "Flags a minor transition fix for starting the dream from lockscreen with shade open"

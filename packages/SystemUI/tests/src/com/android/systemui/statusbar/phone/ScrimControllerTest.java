@@ -46,6 +46,7 @@ import android.animation.Animator;
 import android.content.Context;
 import android.graphics.Color;
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.testing.ViewUtils;
 import android.util.MathUtils;
@@ -830,6 +831,41 @@ public class ScrimControllerTest extends SysuiTestCase {
                 mScrimInFront, TRANSPARENT,
                 mNotificationsScrim, TRANSPARENT,
                 mScrimBehind, TRANSPARENT));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DREAM_BOUNCER_TRANSITION_FIX)
+    @DisableSceneContainer
+    public void openBouncerOverDream() {
+        mScrimController.setScrimVisibleListener(visible -> mScrimVisibility = visible);
+        mScrimController.legacyTransitionTo(ScrimState.DREAMING);
+
+        // Open the bouncer.
+        mScrimController.setRawPanelExpansionFraction(0f);
+        when(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit()).thenReturn(true);
+        mScrimController.setBouncerHiddenFraction(KeyguardBouncerConstants.EXPANSION_VISIBLE);
+        finishAnimationsImmediately();
+
+        // Only behind scrim is visible.
+        assertScrimAlpha(Map.of(
+                mScrimInFront, TRANSPARENT,
+                mNotificationsScrim, TRANSPARENT,
+                mScrimBehind, OPAQUE));
+        assertScrimTint(mScrimBehind, mSurfaceColor);
+        assertThat(mScrimVisibility).isEqualTo(OPAQUE);
+
+        // Bouncer is closed.
+        mScrimController.setBouncerHiddenFraction(KeyguardBouncerConstants.EXPANSION_HIDDEN);
+        mScrimController.legacyTransitionTo(ScrimState.DREAMING);
+        finishAnimationsImmediately();
+
+        // All scrims are transparent.
+        assertScrimAlpha(Map.of(
+                mScrimInFront, TRANSPARENT,
+                mNotificationsScrim, TRANSPARENT,
+                mScrimBehind, TRANSPARENT));
+
+        assertThat(mScrimVisibility).isEqualTo(TRANSPARENT);
     }
 
     @Test
