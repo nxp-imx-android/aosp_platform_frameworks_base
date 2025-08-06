@@ -47,11 +47,13 @@ constructor(
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
     companion object {
-        val isNewScreenRecordToolbarEnabled: Boolean = Flags.newScreenRecordToolbar()
+        val isNewScreenRecordToolbarEnabled: Boolean
+            get() = Flags.newScreenRecordToolbar()
 
-        val isLargeScreenScreencaptureEnabled: Boolean = Flags.largeScreenScreencapture()
+        val isLargeScreenScreencaptureEnabled: Boolean
+            get() = Flags.largeScreenScreencapture()
 
-        val shouldShowNewToolbar: Boolean =
-            isNewScreenRecordToolbarEnabled || isLargeScreenScreencaptureEnabled
+        val shouldShowNewToolbar: Boolean
+            get() = isNewScreenRecordToolbarEnabled || isLargeScreenScreencaptureEnabled
     }
 }
