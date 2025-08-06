@@ -22,11 +22,13 @@ import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
+import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -53,6 +55,7 @@ constructor(
     shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
+    mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickSettingsContainerViewModel.hydrator")
@@ -84,7 +87,13 @@ constructor(
             source = mediaCarouselInteractor.hasAnyMedia,
         )
 
+    val showMediaInRow: Boolean
+        get() = qsMediaInRowViewModel.shouldMediaShowInRow
+
     fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
+
+    private val qsMediaInRowViewModel =
+        mediaInRowInLandscapeViewModelFactory.create(LOCATION_QS, mediaUiBehavior)
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
@@ -92,6 +101,7 @@ constructor(
             launch { brightnessSliderViewModel.activate() }
             launch { shadeHeaderViewModel.activate() }
             launch { tileGridViewModel.activate() }
+            launch { qsMediaInRowViewModel.activate() }
             awaitCancellation()
         }
     }

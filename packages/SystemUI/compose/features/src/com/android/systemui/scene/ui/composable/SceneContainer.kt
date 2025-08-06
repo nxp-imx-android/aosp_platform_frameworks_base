@@ -53,6 +53,7 @@ import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.lifecycle.rememberActivated
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
@@ -106,11 +107,16 @@ fun SceneContainer(
 
     val hapticFeedback = LocalHapticFeedback.current
     val shadeExpansionMotion = OverlayShade.rememberShadeExpansionMotion(isFullWidthShade())
+    val animateQsTilesViewModel =
+        rememberViewModel(traceName = "SceneContainer.animateQsTilesViewModel") {
+            viewModel.animateQsTilesViewModelFactory.create()
+        }
     val sceneTransitions =
         remember(hapticFeedback, shadeExpansionMotion) {
             transitionsBuilder.build(
                 shadeExpansionMotion,
                 viewModel.hapticsViewModel.getRevealHaptics(hapticFeedback),
+                animateQsTilesViewModel,
             )
         }
 

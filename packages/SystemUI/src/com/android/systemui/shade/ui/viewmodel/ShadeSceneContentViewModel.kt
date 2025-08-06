@@ -26,12 +26,14 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QQS
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.qs.panels.domain.interactor.TileSquishinessInteractor
+import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.QuickQuickSettingsViewModel
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -80,6 +82,7 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     private val tileSquishinessInteractor: TileSquishinessInteractor,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeSceneContentViewModel.hydrator")
@@ -110,6 +113,9 @@ constructor(
             source = deviceEntryInteractor.isDeviceEntered.map { !it },
         )
 
+    val showMediaInRow: Boolean
+        get() = qqsMediaInRowViewModel.shouldMediaShowInRow
+
     val showMedia: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isMediaVisible",
@@ -135,19 +141,17 @@ constructor(
             source = unfoldTransitionInteractor.unfoldTranslationX(isOnStartSide = true),
         )
 
-    val qqsMediaUiBehavior =
-        MediaUiBehavior(
-            isCarouselDismissible = true,
-            carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
-        )
-
     fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
 
     private val footerActionsControllerInitialized = AtomicBoolean(false)
 
+    private val qqsMediaInRowViewModel =
+        mediaInRowInLandscapeViewModelFactory.create(LOCATION_QQS, qqsMediaUiBehavior)
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
+            launch { qqsMediaInRowViewModel.activate() }
 
             launch {
                 shadeModeInteractor.shadeMode
@@ -190,6 +194,14 @@ constructor(
      */
     fun setTileSquishiness(@FloatRange(0.0, 1.0) squishiness: Float) {
         tileSquishinessInteractor.setSquishinessValue(squishiness.constrainSquishiness())
+    }
+
+    companion object {
+        val qqsMediaUiBehavior =
+            MediaUiBehavior(
+                isCarouselDismissible = true,
+                carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
+            )
     }
 
     @AssistedFactory
