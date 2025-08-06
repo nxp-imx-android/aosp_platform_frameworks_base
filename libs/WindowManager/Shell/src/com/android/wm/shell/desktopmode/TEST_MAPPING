@@ -1,6 +1,9 @@
 {
   "imports": [
     {
+      "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/desktopmode/smoke"
+    },
+    {
       "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/desktopmode/flicker-service"
     },
     {

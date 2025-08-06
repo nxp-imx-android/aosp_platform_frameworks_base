@@ -1,10 +1,7 @@
 {
   "imports": [
     {
-      "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/desktopmode/flicker-service"
-    },
-    {
-      "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/desktopmode/scenarios"
+      "path": "frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/desktopmode"
     }
   ]
 }
