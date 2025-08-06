@@ -530,7 +530,7 @@ public class PowerGroup {
     // interactivity state
     private void updateScreenPolicyLocked(boolean quiescent, boolean dozeAfterScreenOff,
             boolean bootCompleted, boolean screenBrightnessBoostInProgress,
-            boolean brightWhenDozing) {
+            boolean brightWhenDozing, boolean allAdjacentGroupsAreNonInteractive) {
         final int wakefulness = getWakefulnessLocked();
         final int wakeLockSummary = getWakeLockSummaryLocked();
         int policyReason = Display.STATE_REASON_DEFAULT_POLICY;
@@ -543,7 +543,12 @@ public class PowerGroup {
         } else if (wakefulness == WAKEFULNESS_DOZING) {
             if ((wakeLockSummary & WAKE_LOCK_DOZE) != 0) {
                 policy = DisplayPowerRequest.POLICY_DOZE;
-            } else if (dozeAfterScreenOff) {
+            } else if (dozeAfterScreenOff || (mFeatureFlags.isSeparateTimeoutsFlickerEnabled()
+                    && allAdjacentGroupsAreNonInteractive
+                    && mGroupId == Display.DEFAULT_DISPLAY_GROUP)) {
+                // If we force dozeAfterScreenOff or
+                // if we have adjacent groups, but they are all non-interactive now,
+                // then set policy to OFF instead to reduce flickers.
                 policy = DisplayPowerRequest.POLICY_OFF;
             } else if (brightWhenDozing) {
                 policy = DisplayPowerRequest.POLICY_BRIGHT;
@@ -585,9 +590,10 @@ public class PowerGroup {
             PowerSaveState powerSaverState, boolean quiescent,
             boolean dozeAfterScreenOff, boolean bootCompleted,
             boolean screenBrightnessBoostInProgress, boolean waitForNegativeProximity,
-            boolean brightWhenDozing) {
+            boolean brightWhenDozing, boolean allAdjacentGroupsAreNonInteractive) {
         updateScreenPolicyLocked(quiescent, dozeAfterScreenOff,
-                bootCompleted, screenBrightnessBoostInProgress, brightWhenDozing);
+                bootCompleted, screenBrightnessBoostInProgress, brightWhenDozing,
+                allAdjacentGroupsAreNonInteractive);
         mDisplayPowerRequest.screenBrightnessOverride = screenBrightnessOverride;
         mDisplayPowerRequest.screenBrightnessOverrideTag = overrideTag;
         mDisplayPowerRequest.useProximitySensor = useProximitySensor;

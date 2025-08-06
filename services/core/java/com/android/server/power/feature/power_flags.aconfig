@@ -23,6 +23,16 @@ flag {
 }
 
 flag {
+    name: "separate_timeouts_flicker"
+    namespace: "lse_desktop_experience"
+    description: "Prevent timeout flicker when timing out"
+    bug: "425275163"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "wakelock_attribution_via_workchain"
     namespace: "power"
     description: "Enables the attribution of wakelocks via WorkChain for updateWakelockUids"

@@ -18,12 +18,16 @@ package com.android.systemui.statusbar.phone
 
 import android.os.Handler
 import android.os.PowerManager
+import android.platform.test.annotations.RequiresFlagsEnabled
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.server.display.feature.flags.Flags as displayManagerFlags
+import com.android.server.power.feature.flags.Flags as powerManagerFlags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.shade.ShadeViewController
@@ -36,6 +40,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.settings.GlobalSettings
 import junit.framework.Assert.assertFalse
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -68,6 +73,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     @Mock private lateinit var statusBarStateController: StatusBarStateControllerImpl
     @Mock private lateinit var interactionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var powerManager: PowerManager
+    @Mock private lateinit var displayStateInteractor: DisplayStateInteractor
     @Mock private lateinit var handler: Handler
 
     val kosmos = testKosmos()
@@ -88,6 +94,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
                 powerManager,
                 { shadeLockscreenInteractor },
                 { panelExpansionInteractor },
+                { displayStateInteractor },
                 handler,
             )
         controller.initialize(centralSurfaces, shadeViewController, lightRevealScrim)
@@ -112,6 +119,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     fun testAodUiShownIfNotInteractive() {
         `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
         `when`(powerManager.isInteractive).thenReturn(false)
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(false))
 
         val callbackCaptor = ArgumentCaptor.forClass(Runnable::class.java)
         controller.startAnimation()
@@ -127,6 +135,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     fun testAodUiShowNotInvokedIfWakingUp() {
         `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
         `when`(powerManager.isInteractive).thenReturn(false)
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(false))
 
         val callbackCaptor = ArgumentCaptor.forClass(Runnable::class.java)
         controller.startAnimation()
@@ -151,6 +160,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     fun testAodUiNotShownIfInteractive() {
         `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
         `when`(powerManager.isInteractive(eq(Display.DEFAULT_DISPLAY))).thenReturn(true)
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(false))
 
         val callbackCaptor = ArgumentCaptor.forClass(Runnable::class.java)
         controller.startAnimation()
@@ -166,6 +176,7 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
         `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
         `when`(powerManager.isInteractive()).thenReturn(false)
         `when`(powerManager.isInteractive(eq(Display.DEFAULT_DISPLAY))).thenReturn(false)
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(false))
 
         val callbackCaptor = ArgumentCaptor.forClass(Runnable::class.java)
         controller.startAnimation()
@@ -179,6 +190,20 @@ class UnlockedScreenOffAnimationControllerTest : SysuiTestCase() {
     @Test
     fun testNoAnimationPlaying_dozeParamsCanNotControlScreenOff() {
         `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(false)
+
+        assertFalse(controller.shouldPlayUnlockedScreenOffAnimation())
+        controller.startAnimation()
+        assertFalse(controller.isAnimationPlaying())
+    }
+
+    @RequiresFlagsEnabled(
+        displayManagerFlags.FLAG_SEPARATE_TIMEOUTS,
+        powerManagerFlags.FLAG_SEPARATE_TIMEOUTS_FLICKER,
+    )
+    @Test
+    fun testNoAnimationPlaying_whenDefaultDisplayIsOff() {
+        `when`(displayStateInteractor.isDefaultDisplayOff).thenReturn(MutableStateFlow(true))
+        `when`(dozeParameters.canControlUnlockedScreenOff()).thenReturn(true)
 
         assertFalse(controller.shouldPlayUnlockedScreenOffAnimation())
         controller.startAnimation()
