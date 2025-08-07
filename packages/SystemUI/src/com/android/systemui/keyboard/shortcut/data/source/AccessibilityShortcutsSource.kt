@@ -29,6 +29,7 @@ import android.view.KeyEvent.META_ALT_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.KeyboardShortcutGroup
 import android.view.KeyboardShortcutInfo
+import com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures
 import com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures
 import com.android.hardware.input.Flags.enableVoiceAccessKeyGestures
 import com.android.hardware.input.Flags.keyboardA11yShortcutControl
@@ -110,6 +111,9 @@ class AccessibilityShortcutsSource @Inject constructor(@Main private val resourc
                     command(META_META_ON or META_ALT_ON, KEYCODE_M)
                 }
             )
+        }
+
+        if (enableSelectToSpeakKeyGestures()) {
             shortcuts.add(
                 // Activate Select to Speak:
                 //  - Meta + Alt + S

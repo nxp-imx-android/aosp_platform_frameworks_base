@@ -64,7 +64,9 @@ constructor(
 
     override fun start() {
         if (
-            !Flags.enableTalkbackAndMagnifierKeyGestures() && !Flags.enableVoiceAccessKeyGestures()
+            !Flags.enableTalkbackAndMagnifierKeyGestures() &&
+                !Flags.enableSelectToSpeakKeyGestures() &&
+                !Flags.enableVoiceAccessKeyGestures()
         ) {
             return
         }

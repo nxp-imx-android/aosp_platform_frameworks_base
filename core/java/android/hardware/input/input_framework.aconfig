@@ -93,9 +93,16 @@ flag {
 }
 
 flag {
+    name: "enable_select_to_speak_key_gestures"
+    namespace: "accessibility"
+    description: "Adds key gestures for select to speak"
+    bug: "375277034"
+}
+
+flag {
     name: "enable_talkback_and_magnifier_key_gestures"
     namespace: "input"
-    description: "Adds key gestures for talkback and magnifier"
+    description: "Adds key gestures for TalkBack and Magnification"
     bug: "375277034"
 }
 
