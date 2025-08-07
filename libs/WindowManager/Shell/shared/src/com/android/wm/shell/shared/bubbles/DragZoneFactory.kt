@@ -244,8 +244,8 @@ class DragZoneFactory(
                 dragZones.addAll(createBubbleHalfScreenDragZones(forBubbleBar = false))
             }
             is DraggedObject.LauncherIcon -> {
-                val showDropTarget = draggedObject.showDropTarget
-                val showSecondDropTarget = !draggedObject.bubbleBarHasBubbles
+                val showDropTarget = draggedObject.showExpandedViewDropTarget
+                val showSecondDropTarget = draggedObject.showBubbleBarPillowDropTarget
                 dragZones.addAll(createBubbleCornerDragZones(showDropTarget, showSecondDropTarget))
             }
         }
