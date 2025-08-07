@@ -132,6 +132,7 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
+import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
@@ -774,6 +775,16 @@ public final class ViewRootImpl implements ViewParent,
     int mLastSeqId = 0;
     int mSyncSeqId = 0;
     int mLastSyncSeqId = 0;
+
+    /** @hide */
+    public static final class NoPreloadHolder {
+        public static final boolean sAlwaysSeqId;
+        static {
+            sAlwaysSeqId = ActivityThread.currentActivityThread().getApplication()
+                    .getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
+                    ? alwaysSeqIdLayoutWear() : alwaysSeqIdLayout();
+        }
+    }
 
     private boolean mUpdateSurfaceNeeded;
     boolean mFullRedrawNeeded;
@@ -2297,7 +2308,7 @@ public final class ViewRootImpl implements ViewParent,
         final boolean displayChanged = mDisplay.getDisplayId() != displayId;
         final boolean compatScaleChanged = mTmpFrames.compatScale != compatScale;
         final boolean dragResizingChanged = mPendingDragResizing != dragResizing;
-        if (alwaysSeqIdLayout()) {
+        if (NoPreloadHolder.sAlwaysSeqId) {
             reportDraw = seqId > mSeqId;
         }
         if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
@@ -2343,7 +2354,7 @@ public final class ViewRootImpl implements ViewParent,
 
         mForceNextWindowRelayout |= forceLayout;
         mSeqId = seqId > mSeqId ? seqId : mSeqId;
-        if (alwaysSeqIdLayout()) {
+        if (NoPreloadHolder.sAlwaysSeqId) {
             if (syncWithBuffers) {
                 mSyncSeqId = seqId > mSyncSeqId ? seqId : mSyncSeqId;
             }
@@ -3849,7 +3860,7 @@ public final class ViewRootImpl implements ViewParent,
                         == RELAYOUT_RES_CANCEL_AND_REDRAW;
                 cancelReason = "relayout";
                 final boolean dragResizing = mPendingDragResizing;
-                if (alwaysSeqIdLayout()) {
+                if (NoPreloadHolder.sAlwaysSeqId) {
                     if (mSeqId > mLastSeqId) {
                         mLastSeqId = mSeqId;
                         reportNextDraw("relayout");
@@ -4212,7 +4223,8 @@ public final class ViewRootImpl implements ViewParent,
             // traversal. So we don't know if the sync is complete that we can continue to draw.
             // Here invokes cancelDraw to obtain the information.
             try {
-                cancelDraw = mWindowSession.cancelDraw(mWindow, alwaysSeqIdLayout() ? mSeqId : 0);
+                cancelDraw = mWindowSession.cancelDraw(mWindow,
+                        NoPreloadHolder.sAlwaysSeqId ? mSeqId : 0);
                 cancelReason = "wm_sync";
                 if (DEBUG_BLAST) {
                     Log.d(mTag, "cancelDraw returned " + cancelDraw);
@@ -4602,8 +4614,8 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
 
-        final int seqId = alwaysSeqIdLayout() ? mSeqId : mSyncSeqId;
-        if (alwaysSeqIdLayout()) {
+        final int seqId = NoPreloadHolder.sAlwaysSeqId ? mSeqId : mSyncSeqId;
+        if (NoPreloadHolder.sAlwaysSeqId) {
             // If WM asks for a redraw or sync without actually changing config, we won't have run
             // relayout but still need to track that we have drawn the associated frame.
             mLastSeqId = Math.max(mSeqId, mLastSeqId);
@@ -9563,7 +9575,7 @@ public final class ViewRootImpl implements ViewParent,
         if ((mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) == 0
                 && mWindowAttributes.type != TYPE_APPLICATION_STARTING
                 && mSyncSeqId <= mLastSyncSeqId
-                && (mSeqId <= mLastSeqId || !alwaysSeqIdLayout())
+                && (mSeqId <= mLastSeqId || !NoPreloadHolder.sAlwaysSeqId)
                 && winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */) == 0) {
             final InsetsState state = mInsetsController.getState();
             final Rect displayCutoutSafe = mTempRect;
@@ -9633,7 +9645,7 @@ public final class ViewRootImpl implements ViewParent,
         final int requestedHeight = (int) (measuredHeight * appScale + 0.5f);
         int relayoutResult = 0;
         mRelayoutSeq++;
-        final int seqId = alwaysSeqIdLayout() ? mSeqId : mLastSyncSeqId;
+        final int seqId = NoPreloadHolder.sAlwaysSeqId ? mSeqId : mLastSyncSeqId;
         if (relayoutAsync) {
             mWindowSession.relayoutAsync(mWindow, params,
                     requestedWidth, requestedHeight, viewVisibility,
@@ -9655,7 +9667,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
             final int maybeSyncSeqId = mRelayoutResult.syncSeqId;
-            if (maybeSyncSeqId > (alwaysSeqIdLayout() ? mSyncSeqId : 0)) {
+            if (maybeSyncSeqId > (NoPreloadHolder.sAlwaysSeqId ? mSyncSeqId : 0)) {
                 mSyncSeqId = maybeSyncSeqId;
             }
 
@@ -10305,7 +10317,7 @@ public final class ViewRootImpl implements ViewParent,
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private void dispatchResized(WindowRelayoutResult layout, boolean reportDraw,
             boolean forceLayout, int displayId, boolean syncWithBuffers, boolean dragResizing) {
-        Message msg = mHandler.obtainMessage((reportDraw && !alwaysSeqIdLayout())
+        Message msg = mHandler.obtainMessage((reportDraw && !NoPreloadHolder.sAlwaysSeqId)
                 ? MSG_RESIZED_REPORT : MSG_RESIZED);
         SomeArgs args = SomeArgs.obtain();
         args.arg1 = layout;

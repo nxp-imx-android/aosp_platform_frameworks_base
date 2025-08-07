@@ -31,8 +31,6 @@ import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.flags.Flags.disableDrawWakeLock;
 
-import static com.android.window.flags.Flags.alwaysSeqIdLayout;
-
 import android.animation.AnimationHandler;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -214,6 +212,8 @@ public abstract class WallpaperService extends Service {
 
     // TODO(b/272527315): remove this flag once shouldZoomOutWallpaper can be used instead.
     private boolean mIsWearOs;
+
+    private boolean mAlwaysSeqId;
 
     /**
      * This change disables the {@code DRAW_WAKE_LOCK}, an internal wakelock acquired per-frame
@@ -497,7 +497,7 @@ public abstract class WallpaperService extends Service {
                     boolean forceLayout, int displayId, boolean syncWithBuffers,
                     boolean dragResizing) {
                 final Message msg;
-                if (Flags.alwaysSeqIdLayout()) {
+                if (mAlwaysSeqId) {
                     msg = mCaller.obtainMessageIO(MSG_WINDOW_RESIZED, layout.syncSeqId,
                             layout.mergedConfiguration);
                     int latestSeqId = mIWallpaperEngine.mPendingSeqId.get();
@@ -1249,7 +1249,7 @@ public abstract class WallpaperService extends Service {
             final boolean typeChanged = mType != mSurfaceHolder.getRequestedType();
             final boolean flagsChanged = mCurWindowFlags != mWindowFlags ||
                     mCurWindowPrivateFlags != mWindowPrivateFlags;
-            final boolean reportDraw = Flags.alwaysSeqIdLayout() ? seqId > mSeqId : false;
+            final boolean reportDraw = mAlwaysSeqId ? seqId > mSeqId : false;
             redrawNeeded = redrawNeeded || reportDraw;
             if (forceRelayout || creating || surfaceCreating || formatChanged || sizeChanged
                     || typeChanged || flagsChanged || redrawNeeded
@@ -1333,7 +1333,7 @@ public abstract class WallpaperService extends Service {
                         mLayout.surfaceInsets.set(0, 0, 0, 0);
                     }
                     final int relayoutResult = mSession.relayout(mWindow, mLayout, mWidth, mHeight,
-                            View.VISIBLE, 0, 0, Flags.alwaysSeqIdLayout() ? seqId : 0,
+                            View.VISIBLE, 0, 0, mAlwaysSeqId ? seqId : 0,
                             mRelayoutResult, mSurfaceControl);
                     final Rect outMaxBounds = mMergedConfiguration.getMergedConfiguration()
                             .windowConfiguration.getMaxBounds();
@@ -1342,7 +1342,7 @@ public abstract class WallpaperService extends Service {
                                 + maxBounds + " -> " + outMaxBounds);
                         mSurfaceHolder.mSurfaceLock.unlock();
                         mDrawingAllowed = false;
-                        if (Flags.alwaysSeqIdLayout()) {
+                        if (mAlwaysSeqId) {
                             mCaller.sendMessage(mCaller.obtainMessageI(MSG_WINDOW_RESIZED,
                                     seqId));
                         } else {
@@ -1573,7 +1573,7 @@ public abstract class WallpaperService extends Service {
                     } finally {
                         mIsCreating = false;
                         mSurfaceCreated = true;
-                        if (Flags.alwaysSeqIdLayout()) {
+                        if (mAlwaysSeqId) {
                             if (reportDraw) {
                                 mSession.finishDrawing(mWindow, null /* postDrawTransaction */,
                                         seqId);
@@ -2795,7 +2795,7 @@ public abstract class WallpaperService extends Service {
                 case MSG_VISIBILITY_CHANGED:
                     if (DEBUG) Log.v(TAG, "Visibility change in " + mEngine
                             + ": " + message.arg1);
-                    mEngine.mVisSeqId = alwaysSeqIdLayout()
+                    mEngine.mVisSeqId = mAlwaysSeqId
                             ? Math.max(message.arg2, mEngine.mVisSeqId) : -1;
                     mEngine.doVisibilityChanged(message.arg1 != 0);
                     break;
@@ -2879,7 +2879,7 @@ public abstract class WallpaperService extends Service {
             // The config can be null when retrying for a changed config from relayout, otherwise
             // it is from IWindow#resized which always sends non-null config.
             final boolean fromResized = config != null;
-            if (!Flags.alwaysSeqIdLayout()) {
+            if (!mAlwaysSeqId) {
                 final boolean reportDraw = seqId != 0;
                 final int pendingCount = fromResized ? mPendingResizeCount.decrementAndGet() : -1;
                 if (reportDraw) {
@@ -2911,7 +2911,7 @@ public abstract class WallpaperService extends Service {
                 }
                 mEngine.mMergedConfiguration.setTo(config);
             }
-            if (Flags.alwaysSeqIdLayout()) {
+            if (mAlwaysSeqId) {
                 mEngine.updateSurface(true /* forceRelayout */, seqId, false /* redrawNeeded */);
             } else {
                 mEngine.updateSurface(true /* forceRelayout */, -1 /* seqId */, mReportDraw);
@@ -2976,6 +2976,7 @@ public abstract class WallpaperService extends Service {
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
         mIsWearOs = getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
+        mAlwaysSeqId = mIsWearOs ? Flags.alwaysSeqIdLayoutWear() : Flags.alwaysSeqIdLayout();
         super.onCreate();
         Trace.endSection();
     }

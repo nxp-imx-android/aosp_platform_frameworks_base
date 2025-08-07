@@ -51,8 +51,6 @@ import android.window.WindowContextInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -212,7 +210,7 @@ public class ClientTransactionItemTest {
 
         final ArgumentCaptor<WindowRelayoutResult> layout =
                 ArgumentCaptor.forClass(WindowRelayoutResult.class);
-        verify(mWindow).resized(layout.capture(), eq(!Flags.alwaysSeqIdLayout()) /* reportDraw */,
+        verify(mWindow).resized(layout.capture(), eq(true) /* reportDraw */,
                 eq(true) /* forceLayout */, eq(123) /* displayId */, eq(true) /* syncWithBuffers */,
                 eq(true) /* dragResizing */);
         assertEquals(frames, layout.getValue().frames);

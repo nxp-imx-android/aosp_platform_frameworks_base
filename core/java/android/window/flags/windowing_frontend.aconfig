@@ -498,3 +498,9 @@ flag {
     bug: "294925498"
 }
 
+flag {
+    name: "always_seq_id_layout_wear"
+    namespace: "windowing_frontend"
+    description: "Use seq-id for all client config changes (wearOS)"
+    bug: "385976595"
+}
