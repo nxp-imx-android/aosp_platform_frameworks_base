@@ -293,7 +293,8 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         hasNotifications: Boolean = false,
         shadeLayoutWide: Boolean? = null,
     ) {
-        val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
+        val isWideScreen by collectLastValue(shadeRepository.isWideScreen)
+        val legacyUseSplitShade by collectLastValue(shadeRepository.legacyUseSplitShade)
         val collectedClockSize by collectLastValue(keyguardClockInteractor.clockSize)
         val collectedShadeMode by collectLastValue(shadeModeInteractor.shadeMode)
         val areAnyNotificationsPresent by
@@ -320,7 +321,8 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
                 .build()
         runCurrent()
         if (shadeLayoutWide != null) {
-            assertThat(isShadeLayoutWide).isEqualTo(shadeLayoutWide)
+            assertThat(isWideScreen).isEqualTo(shadeLayoutWide)
+            assertThat(legacyUseSplitShade).isEqualTo(shadeLayoutWide)
         }
         assertThat(collectedShadeMode).isEqualTo(shadeMode)
         assertThat(collectedClockSize).isEqualTo(clockSize)

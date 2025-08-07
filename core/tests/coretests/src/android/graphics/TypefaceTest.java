@@ -27,6 +27,9 @@ import android.graphics.fonts.FontFamily;
 import android.graphics.fonts.SystemFonts;
 import android.os.SharedMemory;
 import android.platform.test.annotations.DisabledOnRavenwood;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.text.FontConfig;
 import android.util.ArrayMap;
 
@@ -37,7 +40,9 @@ import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
 import com.android.frameworks.coretests.R;
+import com.android.text.flags.Flags;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +53,9 @@ import java.util.Random;
 
 @RunWith(AndroidJUnit4.class)
 public class TypefaceTest {
+
+    @Rule
+    public CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     // create array of all std faces
     private final Typeface[] mFaces = new Typeface[] {
@@ -224,6 +232,7 @@ public class TypefaceTest {
         }
     }
 
+    @RequiresFlagsDisabled(Flags.FLAG_DO_NOT_OVERWRITE_STATIC_FINAL_FIELD)
     @SmallTest
     @Test
     public void testSetSystemFontMap() throws Exception {

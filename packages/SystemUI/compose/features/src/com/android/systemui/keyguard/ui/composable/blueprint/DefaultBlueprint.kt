@@ -20,25 +20,28 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.element.AmbientIndicationElement
 import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElement
-import com.android.systemui.keyguard.ui.composable.element.DateAndWeatherElement
 import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
-import com.android.systemui.keyguard.ui.composable.element.LargeClockElement
 import com.android.systemui.keyguard.ui.composable.element.LockElement
 import com.android.systemui.keyguard.ui.composable.element.MediaCarouselElement
 import com.android.systemui.keyguard.ui.composable.element.NotificationElement
 import com.android.systemui.keyguard.ui.composable.element.SettingsMenuElement
 import com.android.systemui.keyguard.ui.composable.element.ShortcutElement
-import com.android.systemui.keyguard.ui.composable.element.SmallClockElement
-import com.android.systemui.keyguard.ui.composable.element.SmartSpaceElement
+import com.android.systemui.keyguard.ui.composable.element.SmartspaceElementProvider
 import com.android.systemui.keyguard.ui.composable.element.StatusBarElement
 import com.android.systemui.keyguard.ui.composable.layout.LockscreenSceneLayout
+import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
+import com.android.systemui.plugins.clocks.LockscreenElementContext
+import com.android.systemui.plugins.clocks.LockscreenElementFactory
 import java.util.Optional
 import javax.inject.Inject
 
@@ -49,6 +52,8 @@ import javax.inject.Inject
 class DefaultBlueprint
 @Inject
 constructor(
+    private val keyguardClockViewModel: KeyguardClockViewModel,
+    private val aodBurnInViewModel: AodBurnInViewModel,
     private val statusBarElement: StatusBarElement,
     private val lockElement: LockElement,
     private val ambientIndicationElementOptional: Optional<AmbientIndicationElement>,
@@ -57,11 +62,7 @@ constructor(
     private val settingsMenuElement: SettingsMenuElement,
     private val notificationsElement: NotificationElement,
     private val aodPromotedNotificationAreaElement: AodPromotedNotificationAreaElement,
-    private val smallClockElement: SmallClockElement,
-    private val largeClockElement: LargeClockElement,
-    private val keyguardClockViewModel: KeyguardClockViewModel,
-    private val smartSpaceElement: SmartSpaceElement,
-    private val dateAndWeatherElement: DateAndWeatherElement,
+    private val smartspaceElementProvider: SmartspaceElementProvider,
     private val mediaCarouselElement: MediaCarouselElement,
 ) : ComposableLockscreenSceneBlueprint {
 
@@ -69,43 +70,36 @@ constructor(
 
     @Composable
     override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
+        val currentClock = keyguardClockViewModel.currentClock.collectAsStateWithLifecycle()
+        val elementFactory =
+            remember(currentClock, smartspaceElementProvider.elements) {
+                LockscreenElementFactory.build { putAll ->
+                    putAll(smartspaceElementProvider.elements)
+                    currentClock.value?.apply {
+                        putAll(largeClock.layout.elements)
+                        putAll(smallClock.layout.elements)
+                    }
+                }
+            }
+
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
+        val elementContext =
+            LockscreenElementContext(
+                scope = this,
+                burnInModifier =
+                    Modifier.burnInAware(viewModel = aodBurnInViewModel, params = burnIn.parameters),
+            )
+
         LockscreenTouchHandling(
             viewModelFactory = viewModel.touchHandlingFactory,
             modifier = modifier,
         ) { onSettingsMenuPlaced ->
-            val burnIn = rememberBurnIn(keyguardClockViewModel)
-
             LockscreenSceneLayout(
                 viewModel = viewModel.layout,
+                elementFactory = elementFactory,
+                elementContext = elementContext,
                 statusBar = {
                     with(statusBarElement) { StatusBar(modifier = Modifier.fillMaxWidth()) }
-                },
-                smallClock = {
-                    with(smallClockElement) {
-                        SmallClock(
-                            burnInParams = burnIn.parameters,
-                            onTopChanged = burnIn.onSmallClockTopChanged,
-                            onBottomChanged = { bottom -> viewModel.setSmallClockBottom(bottom) },
-                        )
-                    }
-                },
-                largeClock = {
-                    with(largeClockElement) { LargeClock(burnInParams = burnIn.parameters) }
-                },
-                dateAndWeather = { orientation ->
-                    with(dateAndWeatherElement) { DateAndWeather(orientation) }
-                },
-                smartSpace = {
-                    with(smartSpaceElement) {
-                        SmartSpace(
-                            burnInParams = burnIn.parameters,
-                            onTopChanged = burnIn.onSmartspaceTopChanged,
-                            onBottomChanged = { bottom ->
-                                viewModel.setSmartspaceCardBottom(bottom)
-                            },
-                            smartSpacePaddingTop = { 0 },
-                        )
-                    }
                 },
                 media = {
                     with(mediaCarouselElement) {

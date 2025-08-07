@@ -34,6 +34,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel
 import com.android.systemui.util.kotlin.FlowDumperImpl
+import com.android.systemui.util.kotlin.buildDisposableHandle
 import com.android.systemui.util.kotlin.launchAndDispose
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -134,29 +135,25 @@ constructor(
             }
 
             launchAndDispose {
-                view.setSyntheticScrollConsumer(viewModel.syntheticScrollConsumer)
-                view.setCurrentGestureExpandingNotificationConsumer(
-                    viewModel.currentGestureExpandingNotifConsumer
-                )
-                view.setCurrentGestureInGutsConsumer(viewModel.currentGestureInGutsConsumer)
-                view.setRemoteInputRowBottomBoundConsumer(
-                    viewModel.remoteInputRowBottomBoundConsumer
-                )
-                view.setAccessibilityScrollEventConsumer(viewModel.accessibilityScrollEventConsumer)
-                viewModel.setQsScrimShapeConsumer { shape ->
-                    view.setNegativeClippingShape(
-                        shape?.let {
-                            it.copy(bounds = it.bounds.minus(leftOffset = view.asView().left))
+                buildDisposableHandle {
+                    bind(viewModel.syntheticScrollConsumer) { view.setSyntheticScrollConsumer(it) }
+                    bind(viewModel.currentGestureExpandingNotifConsumer) {
+                        view.setCurrentGestureExpandingNotificationConsumer(it)
+                    }
+                    bind(viewModel.currentGestureInGutsConsumer) {
+                        view.setCurrentGestureInGutsConsumer(it)
+                    }
+                    bind(viewModel.remoteInputRowBottomBoundConsumer) {
+                        view.setRemoteInputRowBottomBoundConsumer(it)
+                    }
+                    bind(viewModel.accessibilityScrollEventConsumer) {
+                        view.setAccessibilityScrollEventConsumer(it)
+                    }
+                    register(
+                        viewModel.getQsScrimShape(view.observableLeft).observe { shape ->
+                            view.setNegativeClippingShape(shape)
                         }
                     )
-                }
-                DisposableHandle {
-                    view.setSyntheticScrollConsumer(null)
-                    view.setCurrentGestureExpandingNotificationConsumer(null)
-                    view.setCurrentGestureInGutsConsumer(null)
-                    view.setRemoteInputRowBottomBoundConsumer(null)
-                    view.setAccessibilityScrollEventConsumer(null)
-                    viewModel.setQsScrimShapeConsumer(null)
                 }
             }
         }

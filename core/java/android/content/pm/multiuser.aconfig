@@ -335,16 +335,6 @@ flag {
 }
 
 flag {
-  name: "fix_large_display_private_space_settings"
-  namespace: "profile_experiences"
-  description: "Fix tablet and foldable specific bugs for private space"
-  bug: "342563741"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "unicorn_mode_refactoring_for_hsum_read_only"
   namespace: "multiuser"
   description: "Refactorings related to unicorn mode to work on HSUM mode (Read only flag)"

@@ -19,7 +19,6 @@ package com.android.systemui.qs.panels.ui.viewmodel
 import android.content.res.Configuration
 import android.content.res.Resources
 import androidx.compose.runtime.getValue
-import com.android.systemui.Flags
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -27,6 +26,7 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarou
 import com.android.systemui.media.controls.ui.controller.MediaHostStatesManager
 import com.android.systemui.media.controls.ui.controller.MediaLocation
 import com.android.systemui.media.controls.ui.view.MediaHostState
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.qs.composefragment.dagger.QSFragmentComposeModule
@@ -84,7 +84,7 @@ constructor(
             traceName = "isMediaVisible",
             initialValue = false,
             source =
-                if (Flags.mediaControlsInCompose()) {
+                if (MediaControlsInComposeFlag.isEnabled) {
                     if (
                         mediaUiBehavior.carouselVisibility ==
                             MediaCarouselVisibility.WhenAnyCardIsActive

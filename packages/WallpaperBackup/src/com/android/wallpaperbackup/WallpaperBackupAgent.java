@@ -262,7 +262,7 @@ public class WallpaperBackupAgent extends BackupAgent {
             throws IOException {
         final File deviceInfoStage = new File(getFilesDir(), WALLPAPER_BACKUP_DEVICE_INFO_STAGE);
 
-        if (isDeviceConfigChanged) {
+        if (isDeviceConfigChanged || (fixWallpaperCropsOnRestore() && !deviceInfoStage.exists())) {
             deviceInfoStage.createNewFile();
 
             // save the dimensions of the device with xml formatting
@@ -660,7 +660,8 @@ public class WallpaperBackupAgent extends BackupAgent {
                     Point bitmapSize = getBitmapSize(stage);
                     newCropHints = adjustCropHints(cropHints, bitmapSize, sourceDeviceDimensions);
                 }
-                cropHints = fixWallpaperCropsOnRestore() ? newCropHints : cropHints;
+                cropHints = fixWallpaperCropsOnRestore() && newCropHints != null
+                        ? newCropHints : cropHints;
                 if (cropHints != null) {
                     Slog.i(TAG, "Got restored wallpaper; applying which=" + which
                             + "; cropHints = " + cropHints);
@@ -751,7 +752,8 @@ public class WallpaperBackupAgent extends BackupAgent {
      * device dimensions. Overall, the goal is to preserve the same center of the image for the
      * left-most launcher page (or right-most if the device is RTL). If possible, this adjustment is
      * made by enlarging the crop, not reducing it, and parallax is preserved. Refer to
-     * {@link #findNewCropfromOldCrop} for the details.
+     * {@link #findNewCropfromOldCrop} for the details. Return null if one of the supplied argument
+     * is null.
      *
      * @param cropHints for the previous device, map from {@link WallpaperManager.ScreenOrientation}
      *                  to a sub-region of the image to display for that screen orientation
@@ -761,9 +763,24 @@ public class WallpaperBackupAgent extends BackupAgent {
      */
     private SparseArray<Rect> adjustCropHints(SparseArray<Rect> cropHints, Point bitmapSize,
             Pair<Point, Point> sourceDeviceDimensions) {
-        if (cropHints == null || bitmapSize == null) {
+        if (cropHints == null || bitmapSize == null || sourceDeviceDimensions == null) {
             return null;
         }
+
+        boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
+                == View.LAYOUT_DIRECTION_RTL;
+
+        // If the map contains ORIENTATION_UNKNOWN, the map is a singleton and only an overall crop
+        // is specified. Adjust this overall crop based on the largest screens of both devices.
+        Rect totalCropHint = cropHints.get(ORIENTATION_UNKNOWN);
+        if (totalCropHint != null) {
+            SparseArray<Rect> result = new SparseArray<>();
+            Rect adjustedTotalCropHint = findNewCropfromOldCrop(totalCropHint,
+                    sourceDeviceDimensions.first, getScreenDimensions(), bitmapSize, rtl);
+            result.put(ORIENTATION_UNKNOWN, adjustedTotalCropHint);
+            return result;
+        }
+
         boolean hasLargeScreen = false;
         SparseArray<Point> allCurrentDimensions = new SparseArray<>();
         for (WallpaperDisplayInfo displayInfo: getInternalDisplays()) {
@@ -783,9 +800,6 @@ public class WallpaperBackupAgent extends BackupAgent {
             Point rotated = new Point(size.y, size.x);
             allSourceDimensions.put(getOrientation(rotated), rotated);
         }
-
-        boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
-                == View.LAYOUT_DIRECTION_RTL;
 
         SparseArray<Rect> adjustedCropHints = new SparseArray<>();
         for (int i = 0; i < cropHints.size(); i++) {
@@ -1124,13 +1138,30 @@ public class WallpaperBackupAgent extends BackupAgent {
                     if (!cropHint.isEmpty()) cropHints.put(pair.first, cropHint);
                 }
                 if (cropHints.size() == 0) {
-                    // migration case: the crops per screen orientation are not specified.
-                    // use the old attributes to restore the crop for one screen orientation.
-                    Rect cropHint = new Rect(
-                            getAttributeInt(parser, "cropLeft", 0),
-                            getAttributeInt(parser, "cropTop", 0),
-                            getAttributeInt(parser, "cropRight", 0),
-                            getAttributeInt(parser, "cropBottom", 0));
+
+                    Rect cropHint = null;
+                    // It's possible to have a total crop but no crop hints per screen orientation,
+                    // for example with overloads of setBitmap taking a single Rect as parameter.
+                    if (fixWallpaperCropsOnRestore()) {
+                        cropHint = new Rect(
+                                getAttributeInt(parser, "totalCropLeft", 0),
+                                getAttributeInt(parser, "totalCropTop", 0),
+                                getAttributeInt(parser, "totalCropRight", 0),
+                                getAttributeInt(parser, "totalCropBottom", 0));
+                    }
+
+                    // Migration case: the crops per orientation and total crop are not specified.
+                    // Use the old attributes to restore the crop for one screen orientation.
+                    if (cropHint == null) {
+                        cropHint = new Rect(
+                                getAttributeInt(parser, "cropLeft", 0),
+                                getAttributeInt(parser, "cropTop", 0),
+                                getAttributeInt(parser, "cropRight", 0),
+                                getAttributeInt(parser, "cropBottom", 0));
+                    }
+                    // Note: When ORIENTATION_UNKNOWN is used, cropHint is treated as a total crop.
+                    // The system will first crop the image, and for all screen orientations, the
+                    // part of the image that is displayed will be within the crop.
                     if (!cropHint.isEmpty()) cropHints.put(ORIENTATION_UNKNOWN, cropHint);
                 }
             } while (type != XmlPullParser.END_DOCUMENT);

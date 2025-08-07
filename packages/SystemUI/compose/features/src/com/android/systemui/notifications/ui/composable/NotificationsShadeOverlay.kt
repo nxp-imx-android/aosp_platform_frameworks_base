@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -30,17 +29,10 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
-import com.android.systemui.keyguard.ui.composable.element.SmallClockElement
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.controls.ui.composable.MediaCarousel
-import com.android.systemui.media.controls.ui.composable.isLandscape
-import com.android.systemui.media.controls.ui.controller.MediaCarouselController
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.COLLAPSED
-import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.EXPANDED
-import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
+import com.android.systemui.media.remedia.ui.compose.Media
+import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayActionsViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
 import com.android.systemui.res.R
@@ -54,7 +46,6 @@ import com.android.systemui.shade.ui.composable.isFullWidthShade
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import dagger.Lazy
 import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.flow.Flow
 
 @SysUISingleton
@@ -65,10 +56,7 @@ constructor(
     private val contentViewModelFactory: NotificationsShadeOverlayContentViewModel.Factory,
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
-    private val smallClockElement: SmallClockElement,
     private val keyguardClockViewModel: KeyguardClockViewModel,
-    private val mediaCarouselController: MediaCarouselController,
-    @Named(QUICK_QS_PANEL) private val mediaHost: Lazy<MediaHost>,
     private val jankMonitor: InteractionJankMonitor,
 ) : Overlay {
     override val key = Overlays.NotificationsShade
@@ -98,11 +86,6 @@ constructor(
                 viewModel.notificationsPlaceholderViewModelFactory.create()
             }
 
-        val usingCollapsedLandscapeMedia =
-            LocalResources.current.getBoolean(R.bool.config_quickSettingsMediaLandscapeCollapsed)
-        mediaHost.get().expansion =
-            if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
-
         val isFullWidth = isFullWidthShade()
 
         OverlayShade(
@@ -120,7 +103,7 @@ constructor(
                     OverlayShadeHeader(
                         viewModel = headerViewModel,
                         notificationsHighlight = ShadeHeader.ChipHighlight.Strong,
-                        quickSettingsHighlight = ShadeHeader.ChipHighlight.Weak,
+                        quickSettingsHighlight = headerViewModel.inactiveChipHighlight,
                         showClock = !isFullWidth,
                         modifier = Modifier.element(NotificationsShade.Elements.StatusBar),
                     )
@@ -129,28 +112,27 @@ constructor(
         ) {
             Column {
                 if (isFullWidth) {
-                    val burnIn = rememberBurnIn(keyguardClockViewModel)
+                    // TODO(b/432451019): Integrate with smallClock for correct transition
+                }
 
-                    with(smallClockElement) {
-                        SmallClock(
-                            burnInParams = burnIn.parameters,
-                            onTopChanged = burnIn.onSmallClockTopChanged,
+                if (viewModel.showMedia) {
+                    Element(
+                        key = Media.Elements.mediaCarousel,
+                        modifier =
+                            Modifier.padding(
+                                top = notificationStackPadding,
+                                start = notificationStackPadding,
+                                end = notificationStackPadding,
+                            ),
+                    ) {
+                        Media(
+                            viewModelFactory = viewModel.mediaViewModelFactory,
+                            presentationStyle = MediaPresentationStyle.Default,
+                            behavior = viewModel.mediaUiBehavior,
+                            onDismissed = viewModel::onMediaSwipeToDismiss,
                         )
                     }
                 }
-
-                MediaCarousel(
-                    isVisible = viewModel.showMedia,
-                    mediaHost = mediaHost.get(),
-                    carouselController = mediaCarouselController,
-                    usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
-                    modifier =
-                        Modifier.padding(
-                            top = notificationStackPadding,
-                            start = notificationStackPadding,
-                            end = notificationStackPadding,
-                        ),
-                )
 
                 NotificationScrollingStack(
                     shadeSession = shadeSession,

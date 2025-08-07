@@ -19,12 +19,14 @@ package com.android.systemui.shade.ui.composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,11 +42,14 @@ import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddi
 fun ShadeHighlightChip(
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color.Unspecified,
+    onHoveredBackgroundColor: Color = Color.Unspecified,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onClick: () -> Unit = {},
     content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = horizontalArrangement,
@@ -57,7 +62,13 @@ fun ShadeHighlightChip(
                     onClick = onClick,
                 )
                 .thenIf(backgroundColor != Color.Unspecified) {
-                    Modifier.background(backgroundColor)
+                    Modifier.background(
+                            if (isHovered) {
+                                onHoveredBackgroundColor
+                            } else {
+                                backgroundColor
+                            }
+                        )
                         .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
                 },
         content = content,

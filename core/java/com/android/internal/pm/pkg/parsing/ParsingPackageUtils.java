@@ -139,6 +139,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1506,10 +1507,9 @@ public class ParsingPackageUtils {
             // Quietly ignore duplicate permission requests, but fail loudly if
             // the two requests have conflicting flags or purposes.
             boolean found = false;
-            final List<ParsedUsesPermission> usesPermissions = pkg.getUsesPermissions();
-            final int size = usesPermissions.size();
-            for (int i = 0; i < size; i++) {
-                final ParsedUsesPermission usesPermission = usesPermissions.get(i);
+            final Collection<ParsedUsesPermission> usesPermissions =
+                    pkg.getUsesPermissionMapping().values();
+            for (ParsedUsesPermission usesPermission : usesPermissions) {
                 if (Objects.equals(usesPermission.getName(), name)) {
                     if (usesPermission.getUsesPermissionFlags() != usesPermissionFlags) {
                         return input.error("Conflicting uses-permissions flags: "

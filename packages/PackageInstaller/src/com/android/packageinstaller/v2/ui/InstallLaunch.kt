@@ -312,6 +312,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
             Log.d(LOG_TAG, "Negative button clicked. StageCode: $stageCode")
         }
         var resultCode = RESULT_CANCELED
+        var shouldFinish = true
         when (stageCode) {
             InstallStage.STAGE_USER_ACTION_REQUIRED -> installViewModel!!.cleanupInstall()
             InstallStage.STAGE_STAGING -> installViewModel!!.abortStaging()
@@ -320,9 +321,11 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                 // the installation. Don't abandon the session. Let the installation fail through.
                 resultCode = RESULT_OK
                 installViewModel!!.onNegativeVerificationUserResponse()
+                // Don't finish the activity at this time, it shows App not installed dialog later
+                shouldFinish = false
             }
         }
-        setResult(resultCode, null, true)
+        setResult(resultCode, null, shouldFinish)
     }
 
     override fun onNegativeResponse(resultCode: Int, data: Intent?) {

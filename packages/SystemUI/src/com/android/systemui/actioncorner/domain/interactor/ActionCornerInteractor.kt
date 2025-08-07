@@ -79,11 +79,13 @@ constructor(
             }
             .flatMapLatest { shouldMonitorActionCorner ->
                 if (shouldMonitorActionCorner) {
-                    repository.actionCornerState.filterIsInstance<ActiveActionCorner>()
+                    repository.actionCornerState
                 } else {
                     emptyFlow()
                 }
             }
+            .distinctUntilChanged()
+            .filterIsInstance<ActiveActionCorner>()
             .collect {
                 val action = getAction(it.region)
                 when (action) {

@@ -53,7 +53,7 @@ constructor(
      * called on a binder thread from [com.android.systemui.keyguard.KeyguardService].
      */
     @BinderThread
-    fun onScreenTurningOn(onDrawn: Runnable) {
+    fun onScreenTurningOn(reason: Int, onDrawn: Runnable) {
         Trace.beginSection("ScreenOnCoordinator#onScreenTurningOn")
 
         pendingTasks.reset()

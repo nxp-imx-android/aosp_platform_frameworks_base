@@ -1384,7 +1384,7 @@ public class UserManagerService extends IUserManager.Stub {
         int userSize = mUsers.size();
         for (int i = 0; i < userSize; i++) {
             UserInfo user = mUsers.valueAt(i).info;
-            if (user.isMain() && !mRemovingUserIds.get(user.id)) {
+            if (user.isMainUnlogged() && !mRemovingUserIds.get(user.id)) {
                 return user;
             }
         }
@@ -1926,8 +1926,17 @@ public class UserManagerService extends IUserManager.Stub {
         availabilityIntent.putExtra(Intent.EXTRA_USER_HANDLE,
                 profileInfo.getUserHandle().getIdentifier());
         if (profileInfo.isManagedProfile()) {
-            getDevicePolicyManagerInternal().broadcastIntentToManifestReceivers(
-                    availabilityIntent, parentHandle, /* requiresPermission= */ true);
+            var dpmi = getDevicePolicyManagerInternal();
+            if (dpmi == null) {
+                // This should never happen because the profile is a managed profile, but it doesn't
+                // hurt to check...
+                Slogf.wtf(LOG_TAG, "broadcastProfileAvailabilityChanges(profile=%s, parent=%s): "
+                        + "not calling dmpi.broadcastIntentToManifestReceivers() because dpmi is "
+                        + "null", profileInfo, parentHandle);
+            } else {
+                dpmi.broadcastIntentToManifestReceivers(availabilityIntent, parentHandle,
+                    /* requiresPermission= */ true);
+            }
         }
         availabilityIntent.addFlags(
                 Intent.FLAG_RECEIVER_REGISTERED_ONLY | Intent.FLAG_RECEIVER_FOREGROUND);
@@ -2527,7 +2536,7 @@ public class UserManagerService extends IUserManager.Stub {
             }
             return getOwnerName();
         }
-        if (user.isMain()) {
+        if (user.isMainUnlogged()) {
             return getOwnerName();
         }
         if (user.isGuest()) {
@@ -3229,7 +3238,8 @@ public class UserManagerService extends IUserManager.Stub {
                 return false;
             }
         }
-        return !getDevicePolicyManagerInternal().isUserOrganizationManaged(userId);
+        var dpmi = getDevicePolicyManagerInternal();
+        return dpmi == null || !dpmi.isUserOrganizationManaged(userId);
     }
 
     @Override
@@ -7314,13 +7324,22 @@ public class UserManagerService extends IUserManager.Stub {
         mContext.sendBroadcastAsUser(intent, parentHandle, /* receiverPermission= */null);
     }
 
-    private void sendManagedProfileRemovedBroadcast(int parentUserId, int removedUserId) {
+    private void sendManagedProfileRemovedBroadcast(@UserIdInt int parentUserId,
+            @UserIdInt int removedUserId) {
+        var dpmi = getDevicePolicyManagerInternal();
+        if (dpmi == null) {
+            // This should never happen (because current caller checks if removed used is of type
+            // UserManager.USER_TYPE_PROFILE_MANAGED), but it doesn't hurt to check...
+            Slogf.wtf(LOG_TAG, "sendManagedProfileRemovedBroadcast(parent=%d, removed=%d): ignoring"
+                    + " as device doesn't have DPMI", parentUserId, removedUserId);
+            return;
+        }
         Intent managedProfileIntent = new Intent(Intent.ACTION_MANAGED_PROFILE_REMOVED);
         managedProfileIntent.putExtra(Intent.EXTRA_USER, UserHandle.of(removedUserId));
         managedProfileIntent.putExtra(Intent.EXTRA_USER_HANDLE, removedUserId);
         final UserHandle parentHandle = UserHandle.of(parentUserId);
-        getDevicePolicyManagerInternal().broadcastIntentToManifestReceivers(
-                managedProfileIntent, parentHandle, /* requiresPermission= */ false);
+        dpmi.broadcastIntentToManifestReceivers(managedProfileIntent, parentHandle,
+                /* requiresPermission= */ false);
         managedProfileIntent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY
                 | Intent.FLAG_RECEIVER_FOREGROUND);
         mContext.sendBroadcastAsUser(managedProfileIntent, parentHandle,
@@ -7338,23 +7357,27 @@ public class UserManagerService extends IUserManager.Stub {
                 || !UserHandle.isSameApp(Binder.getCallingUid(), getUidForPackage(packageName))) {
             checkSystemOrRoot("get application restrictions for other user/app " + packageName);
         }
+
         if (android.app.admin.flags.Flags.appRestrictionsCoexistence()) {
-            List<Bundle> restrictions =
-                    getDevicePolicyManagerInternal().getApplicationRestrictionsPerAdminForUser(
-                            packageName, userId);
-            if (restrictions.isEmpty()) {
+            List<Bundle> restrictions = null;
+            var dpmi = getDevicePolicyManagerInternal();
+            if (dpmi != null) {
+                restrictions = dpmi.getApplicationRestrictionsPerAdminForUser(packageName, userId);
+            }
+            if (restrictions == null || restrictions.isEmpty()) {
                 return Bundle.EMPTY;
-            } else {
-                if (restrictions.size() > 1) {
-                    Slog.w(LOG_TAG, "Application restriction list contains more than one element.");
-                }
-                return restrictions.getFirst();
             }
-        } else {
-            synchronized (mAppRestrictionsLock) {
-                // Read the restrictions from XML
-                return readApplicationRestrictionsLAr(packageName, userId);
+            int size = restrictions.size();
+            if (size > 1) {
+                Slogf.w(LOG_TAG, "Application restriction list contains more than one (%d) element;"
+                        + " returning first", size);
             }
+            return restrictions.getFirst();
+        }
+
+        synchronized (mAppRestrictionsLock) {
+            // Read the restrictions from XML
+            return readApplicationRestrictionsLAr(packageName, userId);
         }
     }
 
@@ -8789,6 +8812,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public @UserIdInt int getMainUserId() {
+            UserManager.logStaticDeprecation();
             return getMainUserIdUnchecked();
         }
 
@@ -8961,8 +8985,13 @@ public class UserManagerService extends IUserManager.Stub {
         return mPmInternal;
     }
 
-    /** Returns the internal device policy manager interface. */
-    private DevicePolicyManagerInternal getDevicePolicyManagerInternal() {
+    /**
+     * Returns the internal device policy manager interface.
+     *
+     * <p>NOTE: it's {@code null} when the device doesn't have the
+     * {@code android.software.device_admin} feature.
+     */
+    private @Nullable DevicePolicyManagerInternal getDevicePolicyManagerInternal() {
         if (mDevicePolicyManagerInternal == null) {
             mDevicePolicyManagerInternal =
                     LocalServices.getService(DevicePolicyManagerInternal.class);

@@ -33,6 +33,7 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.settings.userTracker
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.policy.keyguardStateController
@@ -51,6 +52,7 @@ var Kosmos.keyguardQuickAffordanceInteractor by Fixture {
         launchAnimator = dialogTransitionAnimator,
         logger = mock<KeyguardQuickAffordancesLogger>(),
         metricsLogger = mock<KeyguardQuickAffordancesMetricsLogger>(),
+        secureLockDeviceInteractor = { secureLockDeviceInteractor },
         devicePolicyManager = devicePolicyManager,
         dockManager = dockManager,
         biometricSettingsRepository = biometricSettingsRepository,

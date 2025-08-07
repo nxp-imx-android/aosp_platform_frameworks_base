@@ -1001,20 +1001,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
-    // TODO(b/416297506) remove this code too
-    private void showBubbleBarExpandedViewDropTarget(BubbleBarLocation bubbleBarLocation) {
-        ensureBubbleViewsAndWindowCreated();
-        if (mLayerView != null) {
-            mLayerView.showBubbleBarExtendedViewDropTarget(bubbleBarLocation);
-        }
-    }
-
-    private void hideBubbleBarExpandedViewDropTarget() {
-        if (mLayerView != null) {
-            mLayerView.hideBubbleBarExpandedViewDropTarget();
-        }
-    }
-
     /** Whether this userId belongs to the current user. */
     private boolean isCurrentProfile(int userId) {
         return userId == UserHandle.USER_ALL

@@ -225,10 +225,10 @@ public class ScreenRecordTileTest extends SysuiTestCase {
         verify(mController, times(1)).cancelCountdown();
     }
 
-    // Test that clicking the tile is NOP if opened from desktop.
+    // Test that clicking the tile is NOP if opened from large screen.
     @Test
-    @EnableFlags({Flags.FLAG_DESKTOP_SCREEN_CAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR})
-    public void testClickFromDesktop() {
+    @EnableFlags({Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR})
+    public void testClickFromLargeScreen() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
 
@@ -240,7 +240,7 @@ public class ScreenRecordTileTest extends SysuiTestCase {
         verify(mController, never()).createScreenRecordDialog(null);
     }
 
-    // Test that clicking the tile in desktop opens the recording dialog if flag is disabled.
+    // Test that clicking the tile opens the recording dialog if flag is disabled.
     @Test
     @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     public void testClickNewToolbarFlagDisabled() {

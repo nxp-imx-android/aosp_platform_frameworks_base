@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar;
+package com.android.systemui.dreams.suppression.dagger
 
-import android.content.BroadcastReceiver;
+import com.android.systemui.CoreStartable
+import com.android.systemui.dreams.suppression.DreamSuppressionStartable
+import dagger.Binds
+import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
-import dagger.Binds;
-import dagger.Module;
-import dagger.multibindings.ClassKey;
-import dagger.multibindings.IntoMap;
-
-/**
- * Module for {@link com.android.systemui.KeyboardShortcutsReceiver}.
- */
 @Module
-public abstract class KeyboardShortcutsModule {
-
-    /**
-     *
-     */
+interface DreamSuppressionStartableModule {
     @Binds
     @IntoMap
-    @ClassKey(KeyboardShortcutsReceiver.class)
-    public abstract BroadcastReceiver bindKeyboardShortcutsReceiver(
-            KeyboardShortcutsReceiver broadcastReceiver);
+    @ClassKey(DreamSuppressionStartable::class)
+    fun bindDreamSuppressionStartable(impl: DreamSuppressionStartable): CoreStartable
 }

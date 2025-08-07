@@ -87,8 +87,6 @@ public final class MessageStack {
         Message quittingMsg = Message.obtain();
         quittingMsg.obj = QUITTING_NODE_OBJ;
         quittingMsg.when = when;
-        /* Should never go into the heap, initialize idx to an impossible value */
-        quittingMsg.heapIndex = -1;
         final boolean ret = pushMessage(quittingMsg);
         if (!ret) {
             quittingMsg.recycleUnchecked();
@@ -334,10 +332,12 @@ public final class MessageStack {
             if (!m.isRemoved()) {
                 return m;
             }
-            if (async) {
-                mAsyncHeap.removeMessage(m);
-            } else {
-                mSyncHeap.removeMessage(m);
+            if (m.heapIndex >= 0) {
+                if (async) {
+                    mAsyncHeap.removeMessage(m);
+                } else {
+                    mSyncHeap.removeMessage(m);
+                }
             }
         }
     }

@@ -3054,6 +3054,8 @@
     <string name="keyguard_accessibility_sim_puk_unlock">Sim Puk unlock.</string>
     <!-- Accessibility description of the password lock. [CHAR_LIMIT=none] -->
     <string name="keyguard_accessibility_password_unlock">Password unlock.</string>
+    <!-- Accessibility description of the secure lock device biometric unlock. [CHAR_LIMIT=none] -->
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock">Biometric unlock for secure lock device.</string>
     <!-- Accessibility description of the unlock pattern area. [CHAR_LIMIT=none] -->
     <string name="keyguard_accessibility_pattern_area">Pattern area.</string>
     <!-- Accessibility description of the unlock slide area. [CHAR_LIMIT=none] -->

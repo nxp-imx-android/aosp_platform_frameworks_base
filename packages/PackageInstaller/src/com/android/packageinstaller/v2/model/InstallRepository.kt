@@ -873,7 +873,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT
         )
         return InstallAborted(
-            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+            ABORT_REASON_DONE,
+            activityResultCode = Activity.RESULT_OK,
+            // Set the errorDialogType to show the error dialog for the user
+            errorDialogType = DLG_PACKAGE_ERROR
         )
     }
 

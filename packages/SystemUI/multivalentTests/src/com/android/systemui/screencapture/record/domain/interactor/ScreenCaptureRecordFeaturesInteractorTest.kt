@@ -47,14 +47,14 @@ class ScreenCaptureRecordFeaturesInteractorTest : SysuiTestCase() {
             val isLargeScreen by collectLastValue(underTest.isLargeScreen)
 
             testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_enableDesktopScreenCapture,
+                R.bool.config_enableLargeScreenScreencapture,
                 true,
             )
             configurationController.onConfigurationChanged(testableContext.resources.configuration)
             assertThat(isLargeScreen).isTrue()
 
             testableContext.orCreateTestableResources.addOverride(
-                R.bool.config_enableDesktopScreenCapture,
+                R.bool.config_enableLargeScreenScreencapture,
                 false,
             )
             configurationController.onConfigurationChanged(testableContext.resources.configuration)

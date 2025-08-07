@@ -14189,8 +14189,12 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             proc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_BACKUP);
 
-            // Try not to kill the process during backup
-            updateOomAdjLocked(proc, OOM_ADJ_REASON_BACKUP);
+            if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+                // Do nothing, ProcessStateController will handle the update in setBackupTarget.
+            } else {
+                // Try not to kill the process during backup
+                updateOomAdjLocked(proc, OOM_ADJ_REASON_BACKUP);
+            }
 
             // If the process is already attached, schedule the creation of the backup agent now.
             // If it is not yet live, this will be done when it attaches to the framework.
@@ -14316,9 +14320,15 @@ public class ActivityManagerService extends IActivityManager.Stub
 
                 // Not backing this app up any more; reset its OOM adjustment
                 final ProcessRecord proc = backupTarget.app;
-                // TODO(b/369300367): Triggering the update before the state is actually set
-                //  seems wrong.
-                updateOomAdjLocked(proc, OOM_ADJ_REASON_BACKUP);
+
+                if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+                    // Do nothing.
+                    // ProcessStateController will handle the update in stopBackupTarget.
+                } else {
+                    // TODO(b/369300367): Triggering the update before the state is actually set
+                    //  seems wrong.
+                    updateOomAdjLocked(proc, OOM_ADJ_REASON_BACKUP);
+                }
                 proc.setInFullBackup(false);
                 proc.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BACKUP);
 

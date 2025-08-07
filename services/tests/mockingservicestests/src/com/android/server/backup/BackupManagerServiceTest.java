@@ -85,6 +85,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -573,6 +574,31 @@ public class BackupManagerServiceTest {
         mService.setBackupServiceActive(NON_SYSTEM_USER, false);
 
         assertFalse(getFakeActivatedFileForUser(NON_SYSTEM_USER).exists());
+    }
+
+    @Test
+    public void setBackupServiceActive_globallyToggled_restartsUserService() {
+        // Start with a non-system user's backup service running.
+        createBackupManagerServiceAndUnlockSystemUser();
+        mService.setBackupServiceActive(NON_SYSTEM_USER, true);
+        simulateUserUnlocked(NON_SYSTEM_USER);
+        assertTrue(mService.isUserReadyForBackup(NON_SYSTEM_USER));
+
+        // Mock the running users for the global toggle.
+        UserInfo systemUserInfo = new UserInfo(UserHandle.USER_SYSTEM, "system", 0);
+        UserInfo nonSystemUserInfo = new UserInfo(NON_SYSTEM_USER, "non-system", 0);
+        when(mUserManagerInternalMock.getUsers(true))
+                .thenReturn(Arrays.asList(systemUserInfo, nonSystemUserInfo));
+        when(mUserManagerInternalMock.isUserRunning(UserHandle.USER_SYSTEM)).thenReturn(true);
+        when(mUserManagerInternalMock.isUserRunning(NON_SYSTEM_USER)).thenReturn(true);
+
+        // Disable backup globally. This should stop the user's service.
+        mService.setBackupServiceActive(UserHandle.USER_SYSTEM, false);
+        assertFalse(mService.isUserReadyForBackup(NON_SYSTEM_USER));
+
+        // Re-enable backup globally. This should restart the user's service.
+        mService.setBackupServiceActive(UserHandle.USER_SYSTEM, true);
+        assertTrue(mService.isUserReadyForBackup(NON_SYSTEM_USER));
     }
 
     @Test

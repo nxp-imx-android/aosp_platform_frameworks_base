@@ -29,6 +29,7 @@ import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -61,7 +62,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
         }
 
     @Test
-    fun updateBounds() =
+    fun updateBoundsWithSingleShade() =
         kosmos.runTest {
             enableSingleShade()
             val radius = MutableStateFlow(32)
@@ -112,10 +113,99 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
             sceneInteractor.setTransitionState(transitionState)
             // Then: shape is null
             assertThat(shape).isNull()
+        }
 
-            // Same scenario on Dual Shade, shape should have clipping bounds
+    @Test
+    fun updateBoundsWithDualShade() =
+        kosmos.runTest {
             enableDualShade()
+            val radius = MutableStateFlow(32)
+            val leftOffset = MutableStateFlow(0)
+            val shape by
+                collectLastValue(
+                    notificationScrollViewModel.notificationScrimShape(radius, leftOffset)
+                )
+
+            // When: receive scrim bounds
+            val fullyOpenScrimBounds =
+                ShadeScrimBounds(left = 0f, top = 200f, right = 100f, bottom = 550f)
+            notificationsPlaceholderViewModel.onScrimBoundsChanged(fullyOpenScrimBounds)
+            // Then: shape is updated
+            assertThat(shape)
+                .isEqualTo(
+                    ShadeScrimShape(
+                        bounds = fullyOpenScrimBounds,
+                        topRadius = 32,
+                        bottomRadius = 32,
+                    )
+                )
+
+            // When: receive new scrim bounds with an offset
+            val offset = 200
+            val shortScrimBounds = fullyOpenScrimBounds.copy(bottom = 300f)
+            leftOffset.value = offset
+            radius.value = 24
+            notificationsPlaceholderViewModel.onScrimBoundsChanged(shortScrimBounds)
+            // Then: shape is updated
+            assertThat(shape)
+                .isEqualTo(
+                    ShadeScrimShape(
+                        bounds = shortScrimBounds.minus(leftOffset = offset),
+                        topRadius = 24,
+                        bottomRadius = 24,
+                    )
+                )
+
+            // When: Idle on the Lockscreen
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.KEYGUARD)
+            sceneInteractor.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Lockscreen))
+            )
+            // And: The Scrim disappears.
+            notificationsPlaceholderViewModel.onScrimBoundsChanged(null)
+            // Then: shape is null
             assertThat(shape).isNull()
+
+            // When: Shade starts to open over Lockscreen
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Transition.showOverlay(
+                        overlay = Overlays.NotificationsShade,
+                        fromScene = Scenes.Lockscreen,
+                        currentOverlays = flowOf(emptySet()),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(true),
+                        progress = flowOf(0.5f),
+                    )
+                )
+            )
+            // And: the scrim starts to show
+            val halfOpenScrimBounds =
+                ShadeScrimBounds(left = 0f, top = 200f, right = 100f, bottom = 200f)
+            notificationsPlaceholderViewModel.onScrimBoundsChanged(halfOpenScrimBounds)
+            // Then: shape is null
+            assertThat(shape).isNull()
+
+            // When: shade is fully open over lockscreen
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Idle(
+                        currentScene = Scenes.Lockscreen,
+                        currentOverlays = setOf(Overlays.NotificationsShade),
+                    )
+                )
+            )
+            // And: the full scrim shows
+            notificationsPlaceholderViewModel.onScrimBoundsChanged(fullyOpenScrimBounds)
+            // Then: shape clips again
+            assertThat(shape)
+                .isEqualTo(
+                    ShadeScrimShape(
+                        bounds = fullyOpenScrimBounds.minus(leftOffset = offset),
+                        topRadius = 24,
+                        bottomRadius = 24,
+                    )
+                )
         }
 
     @Test

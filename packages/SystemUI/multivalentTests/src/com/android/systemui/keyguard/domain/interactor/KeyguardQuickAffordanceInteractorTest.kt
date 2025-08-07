@@ -20,6 +20,7 @@ package com.android.systemui.keyguard.domain.interactor
 import android.app.admin.DevicePolicyManager
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
@@ -27,7 +28,6 @@ import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
-import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -49,6 +49,7 @@ import com.android.systemui.keyguard.data.quickaffordance.KeyguardQuickAffordanc
 import com.android.systemui.keyguard.data.repository.FakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.KeyguardQuickAffordanceRepository
+import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.domain.model.KeyguardQuickAffordanceModel
 import com.android.systemui.keyguard.shared.model.KeyguardQuickAffordancePickerRepresentation
 import com.android.systemui.keyguard.shared.quickaffordance.ActivationState
@@ -59,6 +60,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.settings.UserFileManager
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.cameraLauncher
@@ -143,7 +146,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
             FakeKeyguardQuickAffordanceConfig(BuiltInKeyguardQuickAffordanceKeys.QR_CODE_SCANNER)
 
         dockManager = DockManagerFake()
-        biometricSettingsRepository = FakeBiometricSettingsRepository()
+        biometricSettingsRepository = kosmos.biometricSettingsRepository
 
         val localUserSelectionManager =
             KeyguardQuickAffordanceLocalUserSelectionManager(
@@ -185,6 +188,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
 
         val withDeps =
             KeyguardInteractorFactory.create(featureFlags = featureFlags, repository = repository)
+
         underTest =
             KeyguardQuickAffordanceInteractor(
                 keyguardInteractor = withDeps.keyguardInteractor,
@@ -198,6 +202,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
                 launchAnimator = launchAnimator,
                 logger = logger,
                 metricsLogger = metricsLogger,
+                secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
                 devicePolicyManager = devicePolicyManager,
                 dockManager = dockManager,
                 biometricSettingsRepository = biometricSettingsRepository,
@@ -311,6 +316,27 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
                     underTest.quickAffordance(KeyguardQuickAffordancePosition.BOTTOM_END)
                 )
 
+            assertThat(collectedValue).isEqualTo(KeyguardQuickAffordanceModel.Hidden)
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun quickAffordance_hiddenWhenUserIsInSecureLockDeviceMode() =
+        testScope.runTest {
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            val isSecureLockDeviceEnabled by
+                collectLastValue(kosmos.secureLockDeviceInteractor.isSecureLockDeviceEnabled)
+
+            assertThat(isSecureLockDeviceEnabled).isEqualTo(true)
+
+            quickAccessWallet.setState(
+                KeyguardQuickAffordanceConfig.LockScreenState.Visible(icon = ICON)
+            )
+
+            val collectedValue by
+                collectLastValue(
+                    underTest.quickAffordance(KeyguardQuickAffordancePosition.BOTTOM_END)
+                )
             assertThat(collectedValue).isEqualTo(KeyguardQuickAffordanceModel.Hidden)
         }
 

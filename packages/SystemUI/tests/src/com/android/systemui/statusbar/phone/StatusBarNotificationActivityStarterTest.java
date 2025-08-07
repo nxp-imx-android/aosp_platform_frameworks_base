@@ -48,6 +48,8 @@ import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.service.dreams.IDreamManager;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
@@ -61,11 +63,11 @@ import com.android.internal.statusbar.NotificationVisibility;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.ActivityIntentHelper;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.classifier.FalsingCollectorFake;
-import com.android.systemui.flags.FakeFeatureFlags;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
@@ -158,8 +160,6 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     @Mock
     private Runnable mFutureDismissalRunnable;
     @Mock
-    private StatusBarNotificationActivityStarter mNotificationActivityStarter;
-    @Mock
     private ActivityTransitionAnimator mActivityTransitionAnimator;
     @Mock
     private InteractionJankMonitor mJankMonitor;
@@ -174,6 +174,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     private NotificationEntry mBubbleNotificationEntry;
     private ExpandableNotificationRow mBubbleNotificationRow;
     private FakeShadeDialogContextInteractor mContextInteractor;
+    private StatusBarNotificationActivityStarter mUnderTest;
+
 
     private final Answer<Void> mCallOnDismiss = answerVoid(
             (OnDismissAction dismissAction, Runnable cancel,
@@ -227,12 +229,13 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                         mock(NotificationListContainer.class),
                         mHeadsUpManager,
                         mJankMonitor);
-        mNotificationActivityStarter =
+        mUnderTest =
                 new StatusBarNotificationActivityStarter(
                         getContext(),
                         mContextInteractor,
                         mHandler,
                         mUiBgExecutor,
+                        mKosmos.getTestScope(),
                         mVisibilityProvider,
                         mHeadsUpManager,
                         mActivityStarter,
@@ -285,6 +288,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                 .when(mHandler).post(any(Runnable.class));
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     public void testOnNotificationClicked_keyGuardShowing()
             throws PendingIntent.CanceledException, RemoteException {
@@ -301,7 +305,47 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         when(mKeyguardStateController.isOccluded()).thenReturn(true);
 
         // When
-        mNotificationActivityStarter.onNotificationClicked(mNotificationEntry, mNotificationRow);
+        mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
+        // Run the collected runnables in fifo order, the way post() really does.
+        while (!runnables.isEmpty()) runnables.remove(0).run();
+
+        // Then
+        verify(mShadeController, atLeastOnce()).collapseShade();
+
+        verify(mActivityTransitionAnimator).startPendingIntentWithAnimation(any(), any(),
+                eq(false) /* animate */,
+                any(ActivityTransitionAnimator.PendingIntentStarter.class));
+
+        verify(mAssistManager).hideAssist();
+
+        InOrder orderVerifier = Mockito.inOrder(mClickNotifier, mOnUserInteractionCallback,
+                mFutureDismissalRunnable);
+        // Notification calls dismiss callback to remove notification due to FLAG_AUTO_CANCEL
+        orderVerifier.verify(mOnUserInteractionCallback)
+                .registerFutureDismissal(eq(mNotificationEntry), eq(REASON_CLICK));
+        orderVerifier.verify(mClickNotifier).onNotificationClick(
+                eq(mNotificationEntry.getKey()), any(NotificationVisibility.class));
+        orderVerifier.verify(mFutureDismissalRunnable).run();
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    public void testOnNotificationClicked_keyGuardShowingLegacy()
+            throws PendingIntent.CanceledException, RemoteException {
+        // To get the order right, collect posted runnables and run them later
+        List<Runnable> runnables = new ArrayList<>();
+        doAnswer(answerVoid(r -> runnables.add((Runnable) r)))
+                .when(mHandler).post(any(Runnable.class));
+        // Given
+        Notification notification = mNotificationEntry.getSbn().getNotification();
+        notification.contentIntent = mContentIntent;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        when(mKeyguardStateController.isShowing()).thenReturn(true);
+        when(mKeyguardStateController.isOccluded()).thenReturn(true);
+
+        // When
+        mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
         // Run the collected runnables in fifo order, the way post() really does.
         while (!runnables.isEmpty()) runnables.remove(0).run();
 
@@ -309,7 +353,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         verify(mShadeController, atLeastOnce()).collapseShade();
 
         verify(mActivityTransitionAnimator).startPendingIntentWithAnimation(any(),
-                eq(false) /* animate */, any(), any());
+                eq(false) /* animate */, any(),
+                any(ActivityTransitionAnimator.LegacyPendingIntentStarter.class));
 
         verify(mAssistManager).hideAssist();
 
@@ -332,7 +377,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         sbn.getNotification().contentIntent = null;
 
         // When
-        mNotificationActivityStarter.onNotificationClicked(
+        mUnderTest.onNotificationClicked(
                 mBubbleNotificationEntry, mBubbleNotificationRow);
 
         // Then
@@ -366,7 +411,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         when(mKeyguardStateController.isOccluded()).thenReturn(true);
 
         // When
-        mNotificationActivityStarter.onNotificationClicked(
+        mUnderTest.onNotificationClicked(
                 mBubbleNotificationEntry, mBubbleNotificationRow);
 
         // Then
@@ -394,7 +439,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         when(mKeyguardStateController.isOccluded()).thenReturn(true);
 
         // When
-        mNotificationActivityStarter.onNotificationClicked(
+        mUnderTest.onNotificationClicked(
                 mBubbleNotificationEntry, mBubbleNotificationRow);
 
         // Then
@@ -423,7 +468,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         when(mKeyguardStateController.isOccluded()).thenReturn(true);
 
         // When
-        mNotificationActivityStarter.onNotificationBubbleIconClicked(mBubbleNotificationEntry);
+        mUnderTest.onNotificationBubbleIconClicked(mBubbleNotificationEntry);
 
         // Then
         verify(mBubblesManager).onUserChangedBubble(mBubbleNotificationEntry, false);
@@ -448,7 +493,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         when(mKeyguardStateController.isOccluded()).thenReturn(true);
 
         // When
-        mNotificationActivityStarter.onNotificationBubbleIconClicked(mNotificationEntry);
+        mUnderTest.onNotificationBubbleIconClicked(mNotificationEntry);
 
         // Then
         verify(mBubblesManager).onUserChangedBubble(mNotificationEntry, true);
@@ -481,7 +526,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
 
         // WHEN the intent is launched while dozing
         when(mStatusBarStateController.isDozing()).thenReturn(true);
-        mNotificationActivityStarter.launchFullScreenIntent(entry);
+        mUnderTest.launchFullScreenIntent(entry);
 
         // THEN display should try wake up for the full screen intent
         assertThat(mPowerRepository.getLastWakeReason()).isNotNull();
@@ -517,7 +562,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                 .startMocking();
 
         // WHEN
-        mNotificationActivityStarter.launchFullScreenIntent(entry);
+        mUnderTest.launchFullScreenIntent(entry);
 
         // THEN the full screen intent should be logged to statsd.
         verify(() -> FrameworkStatsLog.write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,

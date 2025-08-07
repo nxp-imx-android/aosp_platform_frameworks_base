@@ -16,14 +16,18 @@
 
 package android.service.persistentdata;
 
+import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.RestrictedForEnvironment;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.Build;
 import android.os.RemoteException;
 import android.service.oemlock.OemLockManager;
 
@@ -34,6 +38,8 @@ import java.lang.annotation.RetentionPolicy;
  * Interface to the persistent data partition.  Provides access to information about the state
  * of factory reset protection.
  */
+@RestrictedForEnvironment(
+        environments = ENVIRONMENT_SDK_RUNTIME, from = Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @SystemService(Context.PERSISTENT_DATA_BLOCK_SERVICE)
 public class PersistentDataBlockManager {
     private static final String TAG = PersistentDataBlockManager.class.getSimpleName();

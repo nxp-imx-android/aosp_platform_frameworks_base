@@ -21,6 +21,9 @@ import java.lang.reflect.AnnotatedElement;
  * Utilities used in the host side test environment.
  */
 public class HostTestUtils {
+    public static final String CLASS_INTERNAL_NAME = getInternalName(HostTestUtils.class);
+    public static final  String CLASS_DESCRIPTOR = "L" + CLASS_INTERNAL_NAME + ";";
+
     private HostTestUtils() {
     }
 
@@ -57,5 +60,26 @@ public class HostTestUtils {
             }
         }
         return null;
+    }
+
+    public static final String ASSERT_THAT_HOOK_RETURNED_TRUE = "assertThatHookReturnedTrue";
+    public static final String ASSERT_THAT_HOOK_RETURNED_FALSE = "assertThatHookReturnedFalse";
+
+    /**
+     * Used to assert a boolean method returned true.
+     */
+    public static void assertThatHookReturnedTrue(boolean b) {
+        if (!b) {
+            throw new IllegalStateException("The hook must return true for this method");
+        }
+    }
+
+    /**
+     * Used to assert a boolean method returned false.
+     */
+    public static void assertThatHookReturnedFalse(boolean b) {
+        if (b) {
+            throw new IllegalStateException("The hook must return false for this method");
+        }
     }
 }

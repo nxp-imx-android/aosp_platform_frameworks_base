@@ -170,7 +170,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -417,7 +416,6 @@ public class ComputerEngine implements Computer {
     private final InstantAppResolverConnection mInstantAppResolverConnection;
     private final DefaultAppProvider mDefaultAppProvider;
     private final DomainVerificationManagerInternal mDomainVerificationManager;
-    private final CompilerStats mCompilerStats;
     private final PackageManagerInternal.ExternalSourcesPolicy mExternalSourcesPolicy;
     private final CrossProfileIntentResolverEngine mCrossProfileIntentResolverEngine;
 
@@ -467,7 +465,6 @@ public class ComputerEngine implements Computer {
         mInstantAppResolverConnection = args.service.mInstantAppResolverConnection;
         mDefaultAppProvider = args.service.getDefaultAppProvider();
         mDomainVerificationManager = args.service.mDomainVerificationManager;
-        mCompilerStats = args.service.mCompilerStats;
         mExternalSourcesPolicy = args.service.mExternalSourcesPolicy;
         mCrossProfileIntentResolverEngine = new CrossProfileIntentResolverEngine(
                 mUserManager, mDomainVerificationManager, mDefaultAppProvider, mContext);
@@ -3123,42 +3120,6 @@ public class ComputerEngine implements Computer {
                 ipw.increaseIndent();
                 DexOptHelper.dumpDexoptState(ipw, packageName);
                 ipw.decreaseIndent();
-                break;
-            }
-
-            case DumpState.DUMP_COMPILER_STATS:
-            {
-                final IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
-                if (dumpState.onTitlePrinted()) {
-                    pw.println();
-                }
-                ipw.println("Compiler stats:");
-                ipw.increaseIndent();
-                Collection<? extends PackageStateInternal> pkgSettings;
-                if (setting != null) {
-                    pkgSettings = Collections.singletonList(setting);
-                } else {
-                    pkgSettings = mSettings.getPackages().values();
-                }
-
-                for (PackageStateInternal pkgSetting : pkgSettings) {
-                    final AndroidPackage pkg = pkgSetting.getPkg();
-                    if (pkg == null) {
-                        continue;
-                    }
-                    final String pkgName = pkg.getPackageName();
-                    ipw.println("[" + pkgName + "]");
-                    ipw.increaseIndent();
-
-                    final CompilerStats.PackageStats stats =
-                            mCompilerStats.getPackageStats(pkgName);
-                    if (stats == null) {
-                        ipw.println("(No recorded stats)");
-                    } else {
-                        stats.dump(ipw);
-                    }
-                    ipw.decreaseIndent();
-                }
                 break;
             }
 

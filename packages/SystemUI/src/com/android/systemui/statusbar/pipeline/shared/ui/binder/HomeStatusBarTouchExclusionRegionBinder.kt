@@ -19,9 +19,12 @@ package com.android.systemui.statusbar.pipeline.shared.ui.binder
 import android.graphics.Rect
 import android.graphics.Region
 import android.window.DesktopExperienceFlags
+import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
+import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.phone.PhoneStatusBarView
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
 
 /** Binds a [PhoneStatusBarView] to [AppHandlesViewModel]'s touch exclusion region. */
@@ -31,15 +34,38 @@ object HomeStatusBarTouchExclusionRegionBinder {
      * Reports the updated touchable region to the [PhoneStatusBarView] calculated from the touch
      * exclusion region provided.
      */
-    fun bind(view: PhoneStatusBarView, touchExclusionRegion: Region) {
+    fun bind(view: PhoneStatusBarView, appHandlesViewModel: AppHandlesViewModel): DisposableHandle {
         if (!DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue) {
-            return
+            return DisposableHandle {}
         }
+
+        // Update touchable regions when touchableExclusionRegion changes
         view.repeatWhenAttached {
             view.setSnapshotBinding {
-                view.updateTouchableRegion(calculateTouchableRegion(view, touchExclusionRegion))
+                view.updateTouchableRegion(
+                    calculateTouchableRegion(view, appHandlesViewModel.touchableExclusionRegion)
+                )
             }
             awaitCancellation()
+        }
+
+        // Update touchable region when status bar bounds change
+        return view.onLayoutChanged {
+            _,
+            left,
+            top,
+            right,
+            bottom,
+            oldLeft,
+            oldTop,
+            oldRight,
+            oldBottom ->
+            if (top == oldTop && left == oldLeft && right == oldRight && bottom == oldBottom) {
+                return@onLayoutChanged
+            }
+            view.updateTouchableRegion(
+                calculateTouchableRegion(view, appHandlesViewModel.touchableExclusionRegion)
+            )
         }
     }
 
@@ -52,7 +78,7 @@ object HomeStatusBarTouchExclusionRegionBinder {
         val touchableRegion =
             Region.obtain().apply {
                 set(outBounds)
-                op(touchExclusionRegion, android.graphics.Region.Op.DIFFERENCE)
+                op(touchExclusionRegion, Region.Op.DIFFERENCE)
             }
         return touchableRegion
     }

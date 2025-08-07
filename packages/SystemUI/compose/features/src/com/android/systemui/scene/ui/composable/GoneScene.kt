@@ -16,7 +16,6 @@
 
 package com.android.systemui.scene.ui.composable
 
-import android.graphics.RectF
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,6 +24,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toAndroidRectF
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
@@ -94,7 +96,6 @@ constructor(
                 notificationStackScrolLView.get().apply {
                     // use -headsUpInset to allow HUN translation outside bounds for snoozing
                     setStackTop(-headsUpInset)
-                    updateDrawBounds(RectF())
                 }
             }
         }
@@ -106,6 +107,22 @@ constructor(
         animateContentDpAsState(value = Default, key = MediaLandscapeTopOffset, canOverflow = false)
         Spacer(modifier.fillMaxSize())
         SnoozeableHeadsUpNotificationSpace(
+            modifier =
+                Modifier.onGloballyPositioned {
+                    // Once we are on the non-occluded Lockscreen, the regular stack is not setting
+                    // draw bounds anymore, but HUNs can still appear.
+                    if (isIdleAndNotOccluded) {
+                        notificationStackScrolLView
+                            .get()
+                            .updateDrawBounds(
+                                it.boundsInWindow().toAndroidRectF().apply {
+                                    // extend bounds to the screen top to avoid cutting off HUN
+                                    // transitions
+                                    top = 0f
+                                }
+                            )
+                    }
+                },
             stackScrollView = notificationStackScrolLView.get(),
             viewModel =
                 rememberViewModel("GoneScene") { notificationsPlaceholderViewModelFactory.create() },

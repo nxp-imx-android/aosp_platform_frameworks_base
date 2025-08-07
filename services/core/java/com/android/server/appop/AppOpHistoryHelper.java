@@ -92,6 +92,7 @@ public class AppOpHistoryHelper {
     private static final int WRITE_DATABASE_PERIODIC = 1;
     private static final int DELETE_EXPIRED_ENTRIES_PERIODIC = 2;
     private static final int WRITE_DATABASE_CACHE_FULL = 3;
+    private static final int CLOSE_DATABASE_ON_SHUTDOWN = 4;
     // Used in adding variation to periodic job interval
     private final Random mRandom = new Random();
     // time window interval for aggregation
@@ -275,13 +276,18 @@ public class AppOpHistoryHelper {
     }
 
     void shutdown() {
-        mSqliteWriteHandler.removeAllPendingMessages();
-        insertAppOpHistory(mCache.evictAll(),
-                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN);
+        persistPendingHistory();
         // Remove pending delayed message.
         mMetricHandler.removeMessages(MetricHandler.SEND_EVENTS);
         mMetricHandler.sendEmptyMessage(MetricHandler.SEND_EVENTS);
-        mDbHelper.close();
+        mSqliteWriteHandler.sendEmptyMessage(CLOSE_DATABASE_ON_SHUTDOWN);
+    }
+
+    // Write app op records from cache to the database.
+    void persistPendingHistory() {
+        mSqliteWriteHandler.removeAllPendingMessages();
+        insertAppOpHistory(mCache.evictAll(),
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN);
     }
 
     void clearHistory() {
@@ -466,6 +472,9 @@ public class AppOpHistoryHelper {
                     } finally {
                         ensurePeriodicJobsAreScheduled();
                     }
+                }
+                case CLOSE_DATABASE_ON_SHUTDOWN ->  {
+                    mDbHelper.close();
                 }
             }
         }
@@ -668,13 +677,16 @@ public class AppOpHistoryHelper {
      * 4) During shutdown.
      */
     class AppOpHistoryCache {
-        private static final String TAG = "AppOpHistoryCache";
         private final int mCapacity;
         private final ArrayMap<AppOpAccessEvent, AggregatedAppOpValues> mCache;
 
         AppOpHistoryCache(int capacity) {
             mCapacity = capacity;
-            mCache = new ArrayMap<>();
+            // The initial capacity is set to 64 as a balanced compromise between performance
+            // and memory usage for handling small bursts of app op events.
+            // For example, the capacity of 32 would require three consecutive array expansions
+            // to accommodate a 50 event burst, as the capacity grows from 32 → 48 → 72 → 108.
+            mCache = new ArrayMap<>(64);
         }
 
         /**

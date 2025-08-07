@@ -72,6 +72,7 @@ import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaCarouselViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
 import com.android.systemui.media.controls.util.MediaUiEventLogger
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.PageIndicator
@@ -387,7 +388,7 @@ constructor(
                 mediaCarouselScrollHandler.scrollToStart()
             }
             visualStabilityProvider.addPersistentReorderingAllowedListener(visualStabilityCallback)
-        } else if (!Flags.mediaControlsInCompose()) {
+        } else if (!MediaControlsInComposeFlag.isEnabled) {
             setUpListeners()
         }
         mediaFrame.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->

@@ -369,6 +369,14 @@ public class UserInfo implements Parcelable {
     @UnsupportedAppUsage
     @Deprecated
     public boolean isPrimary() {
+        UserManager.logStaticDeprecation();
+        return isPrimaryUnlogged();
+    }
+
+    /**
+     * @hide
+     */
+    public boolean isPrimaryUnlogged() {
         return (flags & FLAG_PRIMARY) == FLAG_PRIMARY;
     }
 
@@ -451,6 +459,20 @@ public class UserInfo implements Parcelable {
      * @see #FLAG_MAIN
      */
     public boolean isMain() {
+        UserManager.logStaticDeprecation();
+        return isMainUnlogged();
+    }
+
+    /**
+     * Same as {@link #isMain()}, but doesn't log the call (when logging multi-user violations is
+     * enabled).
+     *
+     * <p>Should be called by methods that don't need to log (for example, because they're internal
+     * to user infra) or already logged (to avoid duplicate entries).
+     *
+     * @hide
+     */
+    public boolean isMainUnlogged() {
         return (flags & FLAG_MAIN) == FLAG_MAIN;
     }
 
@@ -512,7 +534,7 @@ public class UserInfo implements Parcelable {
         // NOTE: profiles used to be restricted just to the system user (and later to the main
         // user), but from the framework point of view there is no need for such restriction, hence
         // it's lifted
-        return isMain()
+        return isMainUnlogged()
                 || (android.multiuser.Flags.profilesForAll()
                         && Resources.getSystem().getBoolean(
                                 com.android.internal.R.bool.config_supportProfilesOnNonMainUser));
@@ -529,7 +551,7 @@ public class UserInfo implements Parcelable {
         if (UserManager.isUserTypePrivateProfile(userType)) {
             // Even if we eventually allow other users to have profiles too, only MainUsers are
             // eligible to have a Private Space, for some reason.
-            return isMain();
+            return isMainUnlogged();
         }
         return true;
     }

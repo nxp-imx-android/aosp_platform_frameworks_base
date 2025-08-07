@@ -16,41 +16,25 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
-import android.content.Context
-import android.media.AudioManager
 import android.view.Display
 import androidx.compose.runtime.getValue
-import com.android.settingslib.volume.shared.model.AudioStream
-import com.android.systemui.Flags
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
-import com.android.systemui.media.controls.ui.controller.MediaCarouselController
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
-import com.android.systemui.qs.flags.QsDetailedView
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
-import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
-import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
-import com.android.systemui.res.R
-import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
-import com.android.systemui.volume.panel.component.volume.domain.model.SliderType
-import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
-import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.Lazy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import javax.inject.Named
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flowOf
@@ -60,44 +44,18 @@ import kotlinx.coroutines.launch
 class QuickSettingsContainerViewModel
 @AssistedInject
 constructor(
-    @ShadeDisplayAware shadeContext: Context,
     brightnessSliderViewModelFactory: BrightnessSliderViewModel.Factory,
-    audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
-    val audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
     shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     tileGridViewModelFactory: TileGridViewModel.Factory,
     @Assisted private val supportsBrightnessMirroring: Boolean,
-    @Assisted private val expansion: Float?,
-    @Assisted private val volumeSliderCoroutineScope: CoroutineScope?,
     val editModeViewModel: EditModeViewModel,
     val detailsViewModel: DetailsViewModel,
-    toolbarViewModelFactory: ToolbarViewModel.Factory,
-    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
-    mediaCarouselInteractor: MediaCarouselInteractor,
-    val mediaCarouselController: MediaCarouselController,
-    @Named(MediaModule.QS_PANEL) val mediaHost: MediaHost,
     shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
+    val mediaViewModelFactory: MediaViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickSettingsContainerViewModel.hydrator")
-
-    /**
-     * Whether the shade container transparency effect should be enabled (`true`), or whether to
-     * render a fully-opaque shade container (`false`).
-     */
-    val isTransparencyEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "transparencyEnabled",
-            initialValue =
-                Flags.notificationShadeBlur() &&
-                    windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
-            source =
-                if (Flags.notificationShadeBlur()) {
-                    windowRootViewBlurInteractor.isBlurCurrentlySupported
-                } else {
-                    flowOf(false)
-                },
-        )
 
     val isBrightnessSliderVisible by
         hydrator.hydratedStateOf(
@@ -116,24 +74,6 @@ constructor(
     val brightnessSliderViewModel =
         brightnessSliderViewModelFactory.create(supportsBrightnessMirroring)
 
-    private val showVolumeSlider =
-        QsDetailedView.isEnabled &&
-            shadeContext.resources.getBoolean(R.bool.config_enableDesktopAudioTileDetailsView)
-
-    val volumeSliderViewModel =
-        if (showVolumeSlider && volumeSliderCoroutineScope != null)
-            audioStreamSliderViewModelFactory.create(
-                AudioStreamSliderViewModel.FactoryAudioStreamWrapper(
-                    SliderType.Stream(AudioStream(AudioManager.STREAM_MUSIC)).stream
-                ),
-                volumeSliderCoroutineScope,
-            )
-        else {
-            null
-        }
-
-    val toolbarViewModel = toolbarViewModelFactory.create()
-
     val shadeHeaderViewModel = shadeHeaderViewModelFactory.create()
 
     val tileGridViewModel = tileGridViewModelFactory.create()
@@ -144,12 +84,12 @@ constructor(
             source = mediaCarouselInteractor.hasAnyMedia,
         )
 
+    fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
-            expansion?.let { mediaHost.expansion = it }
             launch { hydrator.activate() }
             launch { brightnessSliderViewModel.activate() }
-            launch { toolbarViewModel.activate() }
             launch { shadeHeaderViewModel.activate() }
             launch { tileGridViewModel.activate() }
             awaitCancellation()
@@ -166,20 +106,15 @@ constructor(
         }
 
         /** Behavior of the media carousel in quick settings */
-        val mediaUiBehavior: MediaUiBehavior
-            get() =
-                MediaUiBehavior(
-                    isCarouselDismissible = false,
-                    carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
-                )
+        val mediaUiBehavior =
+            MediaUiBehavior(
+                isCarouselDismissible = false,
+                carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
+            )
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            supportsBrightnessMirroring: Boolean,
-            expansion: Float? = null,
-            volumeSliderCoroutineScope: CoroutineScope? = null,
-        ): QuickSettingsContainerViewModel
+        fun create(supportsBrightnessMirroring: Boolean): QuickSettingsContainerViewModel
     }
 }

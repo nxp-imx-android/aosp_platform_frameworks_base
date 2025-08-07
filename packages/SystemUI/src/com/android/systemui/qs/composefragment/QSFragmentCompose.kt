@@ -125,9 +125,9 @@ import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelpe
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaViewLogger
 import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
@@ -764,7 +764,7 @@ constructor(
                                     } else {
                                         MediaPresentationStyle.Default
                                     },
-                                mediaCarouselInteractor = viewModel.mediaCarouselInteractor,
+                                onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                 mediaViewModelFactory = viewModel.mediaViewModelFactory,
                                 behavior = viewModel.qqsMediaUiBehavior,
                             )
@@ -925,7 +925,7 @@ constructor(
                                         mediaLogger = mediaLogger,
                                         mediaViewModelFactory = viewModel.mediaViewModelFactory,
                                         mediaPresentationStyle = MediaPresentationStyle.Default,
-                                        mediaCarouselInteractor = viewModel.mediaCarouselInteractor,
+                                        onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                         behavior = viewModel.qsMediaUiBehavior,
                                         update = { translationY = viewModel.qsMediaTranslationY },
                                     )
@@ -1417,17 +1417,17 @@ private fun ContentScope.MediaObject(
     mediaLogger: MediaViewLogger,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaPresentationStyle: MediaPresentationStyle,
-    mediaCarouselInteractor: MediaCarouselInteractor,
+    onSwipeToDismiss: () -> Unit,
     behavior: MediaUiBehavior,
     update: UniqueObjectHostView.() -> Unit = {},
 ) {
-    if (Flags.mediaControlsInCompose()) {
+    if (MediaControlsInComposeFlag.isEnabled) {
         Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
             Media(
                 viewModelFactory = mediaViewModelFactory,
                 presentationStyle = mediaPresentationStyle,
                 behavior = behavior,
-                onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
+                onDismissed = onSwipeToDismiss,
                 modifier = Modifier,
             )
         }

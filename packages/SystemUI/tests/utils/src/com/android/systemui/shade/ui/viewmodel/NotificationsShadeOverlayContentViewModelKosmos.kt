@@ -21,6 +21,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
+import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -42,5 +43,6 @@ val Kosmos.notificationsShadeOverlayContentViewModel:
         mediaCarouselInteractor = mediaCarouselInteractor,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
         desktopInteractor = desktopInteractor,
+        mediaViewModelFactory = mediaViewModelFactory,
     )
 }

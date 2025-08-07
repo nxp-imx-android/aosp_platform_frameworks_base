@@ -295,12 +295,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         if (modeValue != null) {
             int oldMode = mMode;
             mMode = AppOpsManager.parseHistoricalMode(modeValue);
-            if (oldMode != mMode && mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
-                mIsReady = true;
-            }
             if (oldMode != mMode && mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+                Slog.i(TAG, "Historical registry mode is disabled, clearing history.");
                 clearAllHistory();
-                mIsReady = false;
             }
         }
     }
@@ -376,7 +373,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void shutdown() {
-        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         mShortIntervalHistoryHelper.shutdown();
@@ -388,6 +385,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             @Nullable String filterAttributionTag, int filterOp, int filter,
             @NonNull SimpleDateFormat sdf, @NonNull Date date, boolean includeDiscreteOps,
             int limit, boolean dumpHistory) {
+        if (isNotReadyOrDisabled()) {
+            return;
+        }
         pw.println();
         pw.print(prefix);
         pw.print("History:");
@@ -479,7 +479,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void increaseOpAccessDuration(int op, int uid, @NonNull String packageName,
             @NonNull String deviceId, @Nullable String attributionTag, int uidState, int flags,
             long accessTime, long duration, int attributionFlags, int attributionChainId) {
-        if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         if (DEBUG) {
@@ -514,7 +514,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             @NonNull String deviceId, @Nullable String attributionTag, int uidState, int flags,
             long accessTime, int attributionFlags, int attributionChainId, int accessCount,
             boolean isStartOrResume) {
-        if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         if (DEBUG) {
@@ -549,7 +549,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
             @NonNull String deviceId, @Nullable String attributionTag, int uidState,
             int flags, long rejectTime, int rejectCount) {
-        if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         if (DEBUG) {
@@ -605,6 +605,13 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             }
             final AppOpsManager.HistoricalOps result =
                     new AppOpsManager.HistoricalOps(beginTimeMillis, endTimeMillis);
+            final Bundle payload = new Bundle();
+
+            if (isNotReadyOrDisabled()) {
+                payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
+                callback.sendResult(payload);
+                return;
+            }
 
             mShortIntervalHistoryHelper.addShortIntervalOpsToHistoricalOpsResult(result,
                     beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
@@ -614,9 +621,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                         beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
                         attributionTag, flags);
             }
-
             // Send back the result.
-            final Bundle payload = new Bundle();
             payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
             callback.sendResult(payload);
         } finally {
@@ -626,12 +631,18 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void clearHistory(int uid, String packageName) {
+        if (isNotReadyOrDisabled()) {
+            return;
+        }
         mShortIntervalHistoryHelper.clearHistory(uid, packageName);
         mLongIntervalHistoryHelper.clearHistory(uid, packageName);
     }
 
     @Override
     public void clearAllHistory() {
+        if (isNotReadyOrDisabled()) {
+            return;
+        }
         mShortIntervalHistoryHelper.clearHistory();
         mLongIntervalHistoryHelper.clearHistory();
     }
@@ -666,8 +677,11 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void persistPendingHistory() {
-        mLongIntervalHistoryHelper.shutdown();
-        mShortIntervalHistoryHelper.shutdown();
+        if (isNotReadyOrDisabled()) {
+            return;
+        }
+        mLongIntervalHistoryHelper.persistPendingHistory();
+        mShortIntervalHistoryHelper.persistPendingHistory();
     }
 
     @Override
@@ -679,9 +693,6 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         }
         if (mode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
             clearAllHistory();
-            mIsReady = false;
-        } else {
-            mIsReady = true;
         }
         mMode = mode;
     }
@@ -689,7 +700,6 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     @Override
     public void resetHistoryParameters() {
         mMode = AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE;
-        mIsReady = true;
     }
 
 
@@ -756,6 +766,10 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             Slog.d(TAG, "History retention millis: " + historyRetentionMillis);
         }
         return historyRetentionMillis;
+    }
+
+    private boolean isNotReadyOrDisabled() {
+        return !mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE;
     }
 
     @NonNull

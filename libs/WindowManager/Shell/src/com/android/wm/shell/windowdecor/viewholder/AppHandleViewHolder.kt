@@ -98,23 +98,30 @@ class AppHandleViewHolder(
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnClickListener(onCaptionButtonClickListener)
-        captionHandle.accessibilityDelegate =
-            object : View.AccessibilityDelegate() {
-                override fun sendAccessibilityEvent(host: View, eventType: Int) {
-                    when (eventType) {
-                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
-                        AccessibilityEvent.TYPE_VIEW_HOVER_EXIT -> {
-                            // Caption Handle itself can't get a11y focus because it's under the
-                            // status
-                            // bar, so pass through TYPE_VIEW_HOVER a11y events to the status bar
-                            // input layer, so that it can get a11y focus on the caption handle's
-                            // behalf
-                            statusBarInputLayer?.view?.sendAccessibilityEvent(eventType)
+        if (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue) {
+            ViewCompat.replaceAccessibilityAction(
+                captionHandle,
+                AccessibilityActionCompat.ACTION_CLICK,
+                context.getString(R.string.app_handle_chip_accessibility_announce),
+                null,
+            )
+        } else {
+            captionHandle.accessibilityDelegate =
+                object : View.AccessibilityDelegate() {
+                    override fun sendAccessibilityEvent(host: View, eventType: Int) {
+                        when (eventType) {
+                            AccessibilityEvent.TYPE_VIEW_HOVER_ENTER,
+                            AccessibilityEvent.TYPE_VIEW_HOVER_EXIT -> {
+                                // Caption Handle itself can't get a11y focus because it's under
+                                // the status bar, so pass through TYPE_VIEW_HOVER a11y events to
+                                // the status bar input layer, so that it can get a11y focus on
+                                // the caption handle's behalf
+                                statusBarInputLayer?.view?.sendAccessibilityEvent(eventType)
+                            }
                         }
-                        else -> super.sendAccessibilityEvent(host, eventType)
                     }
                 }
-            }
+        }
     }
 
     override fun bindData(data: HandleData) {

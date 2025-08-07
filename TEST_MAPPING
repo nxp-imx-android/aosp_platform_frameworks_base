@@ -1,4 +1,9 @@
 {
+  "desktop-presubmit": [
+    {
+      "name": "CfVkmsCursorTest"
+    }
+  ],
   "presubmit-large": [
     {
       "name": "FrameworksServicesTests_Presubmit"

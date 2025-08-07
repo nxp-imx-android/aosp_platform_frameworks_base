@@ -3681,7 +3681,8 @@ public class KeyguardViewMediator implements CoreStartable,
 
         // Block the panel from expanding, in case we were doing a swipe to dismiss gesture.
         mKeyguardViewControllerLazy.get().blockPanelExpansionFromCurrentTouch();
-        final boolean wasShowing = mShowing;
+        final boolean wasShowing = ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS
+                ? mKeyguardStateController.isShowing() : mShowing;
         InteractionJankMonitor.getInstance().end(CUJ_LOCKSCREEN_UNLOCK_ANIMATION);
 
         // Post layout changes to the next frame, so we don't hang at the end of the animation.

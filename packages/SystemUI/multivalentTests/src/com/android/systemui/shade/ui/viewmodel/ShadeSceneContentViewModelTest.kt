@@ -115,15 +115,15 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             enableSingleShade()
             val userMedia = MediaData(active = true)
 
-            assertThat(underTest.isMediaVisible).isFalse()
+            assertThat(underTest.showMedia).isFalse()
 
             mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
-            assertThat(underTest.isMediaVisible).isTrue()
+            assertThat(underTest.showMedia).isTrue()
 
             mediaPipelineRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
 
-            assertThat(underTest.isMediaVisible).isFalse()
+            assertThat(underTest.showMedia).isFalse()
         }
 
     @Test

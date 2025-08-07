@@ -16,12 +16,12 @@
 
 package com.android.systemui.media.remedia.data
 
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.controls.data.repository.MediaFilterRepository
 import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
 import com.android.systemui.media.remedia.data.repository.MediaRepository
 import com.android.systemui.media.remedia.data.repository.MediaRepositoryImpl
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import dagger.Module
 import dagger.Provides
 import javax.inject.Provider
@@ -37,7 +37,7 @@ interface MediaDataModule {
             oldProvider: Provider<MediaFilterRepository>,
             newProvider: Provider<MediaRepositoryImpl>,
         ): MediaPipelineRepository {
-            return if (Flags.mediaControlsInCompose()) {
+            return if (MediaControlsInComposeFlag.isEnabled) {
                 newProvider.get()
             } else {
                 oldProvider.get()

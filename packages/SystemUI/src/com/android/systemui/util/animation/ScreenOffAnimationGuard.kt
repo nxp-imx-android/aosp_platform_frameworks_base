@@ -33,6 +33,7 @@ import com.android.systemui.util.weakReference
 import java.lang.ref.WeakReference
 
 private const val LOG_TAG = "AnimationGuard"
+private const val LOTTIE_UPDATES_WHEN_SCREEN_OFF_LIMIT = 2
 
 /**
  * This observes a given animation view and reports a WTF if the animations are running while the
@@ -72,11 +73,28 @@ fun LottieAnimationView.enableScreenOffAnimationGuard() {
                         view.id.toString()
                     }
 
-                val isScreenOff = view.display?.state == Display.STATE_OFF
+                val isScreenOff = view.display?.committedState == Display.STATE_OFF
                 if (isScreenOff) {
-                    // These logs create Binder calls, so throttle them. One is enough.
-                    Log.wtf(LOG_TAG, "Lottie view $viewIdName is running while screen is off")
-                    view.setTag(R.id.screen_off_animation_guard_reported_wtf, true)
+                    if (reachedFrameThreshold()) {
+                        // These logs create Binder calls, so throttle them. One is enough.
+                        Log.wtf(
+                            LOG_TAG,
+                            "Lottie view $viewIdName is running while screen" +
+                                " is off; more than $LOTTIE_UPDATES_WHEN_SCREEN_OFF_LIMIT updates",
+                        )
+                        view.setTag(R.id.screen_off_animation_guard_reported_wtf, true)
+                    } else {
+                        val updates =
+                            (getTag(R.id.screen_off_animation_guard_screen_off_updates) as Int) + 1
+                        if (Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+                            Log.d(
+                                LOG_TAG,
+                                "Lottie view $viewIdName is running while " +
+                                    "screen is off # updates=$updates",
+                            )
+                        }
+                        setTag(R.id.screen_off_animation_guard_screen_off_updates, updates)
+                    }
                 } else if (Log.isLoggable(LOG_TAG, Log.DEBUG)) {
                     Log.d(LOG_TAG, "Lottie view $viewIdName is running while screen is on")
                 }
@@ -84,8 +102,14 @@ fun LottieAnimationView.enableScreenOffAnimationGuard() {
         }
 
     setTag(R.id.screen_off_animation_guard_reported_wtf, false)
+    setTag(R.id.screen_off_animation_guard_screen_off_updates, 0)
     lottieDrawable.addAnimatorUpdateListener(screenOffListenerGuard)
     setTag(R.id.screen_off_animation_guard_set, System.identityHashCode(lottieDrawable))
+}
+
+private fun LottieAnimationView.reachedFrameThreshold(): Boolean {
+    val framesRenderedWhenOff = getTag(R.id.screen_off_animation_guard_screen_off_updates) as Int
+    return framesRenderedWhenOff >= LOTTIE_UPDATES_WHEN_SCREEN_OFF_LIMIT
 }
 
 /**
@@ -98,7 +122,7 @@ fun ValueAnimator.enableScreenOffAnimationGuard(context: Context) {
     }
 
     val weakContext by weakReference(context)
-    enableScreenOffAnimationGuard({ weakContext?.display?.state == Display.STATE_OFF })
+    enableScreenOffAnimationGuard({ weakContext?.display?.committedState == Display.STATE_OFF })
 }
 
 /** Attaches an animation guard listener to the given ValueAnimator. */
@@ -122,7 +146,7 @@ fun androidx.core.animation.ValueAnimator.enableScreenOffAnimationGuard(context:
     }
 
     val weakContext by weakReference(context)
-    enableScreenOffAnimationGuard({ weakContext?.display?.state == Display.STATE_OFF })
+    enableScreenOffAnimationGuard({ weakContext?.display?.committedState == Display.STATE_OFF })
 }
 
 /** Attaches an animation guard listener to the given ValueAnimator. */

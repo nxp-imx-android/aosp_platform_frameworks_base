@@ -17,7 +17,6 @@
 package com.android.systemui.media.controls.domain
 
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.controls.domain.pipeline.LegacyMediaDataManagerImpl
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
@@ -25,6 +24,7 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
 import com.android.systemui.media.remedia.domain.interactor.MediaInteractorImpl
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import dagger.Binds
 import dagger.Module
@@ -55,7 +55,7 @@ interface MediaDomainModule {
             legacyProvider: Provider<LegacyMediaDataManagerImpl>,
             newProvider: Provider<MediaCarouselInteractor>,
         ): MediaDataManager {
-            return if (SceneContainerFlag.isEnabled || Flags.mediaControlsInCompose()) {
+            return if (SceneContainerFlag.isEnabled || MediaControlsInComposeFlag.isEnabled) {
                 newProvider.get()
             } else {
                 legacyProvider.get()

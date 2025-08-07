@@ -25,7 +25,6 @@ import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.AuthInteractionProperties
 import com.android.systemui.CoreStartable
 import com.android.systemui.Flags
-import com.android.systemui.Flags.mediaControlsInCompose
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -200,7 +199,6 @@ constructor(
                 printSection("Framework availability") {
                     println("isEnabled", SceneContainerFlag.isEnabled)
                     println("isEnabledOnVariant", SceneContainerFlag.isEnabledOnVariant)
-                    println("mediaControlsInCompose", mediaControlsInCompose())
                 }
 
                 if (!SceneContainerFlag.isEnabled) {
