@@ -171,7 +171,8 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
             isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
         ) { tint ->
             Icon(
-                icon = Icon.Resource(res = R.drawable.ic_volume_ringer, contentDescription = null),
+                icon =
+                    Icon.Resource(res = R.drawable.ic_notification_bell, contentDescription = null),
                 tint = tint,
                 modifier = Modifier.size(20.dp).padding(1.dp),
             )
