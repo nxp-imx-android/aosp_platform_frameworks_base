@@ -32,7 +32,7 @@ import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.C
 import com.android.systemui.media.controls.ui.controller.MediaLocation
 import com.android.systemui.media.controls.ui.controller.mediaHostStatesManager
 import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.data.repository.setHasActiveMedia
+import com.android.systemui.media.remedia.data.repository.setHasMedia
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
@@ -105,7 +105,7 @@ class MediaInRowInLandscapeViewModelTest(
                 fakeConfigurationRepository.onConfigurationChange(config)
                 mainResources.configuration.updateFrom(config)
                 if (MediaControlsInComposeFlag.isEnabled) {
-                    setHasActiveMedia(testData.mediaVisible)
+                    setHasMedia(testData.mediaVisible)
                 } else {
                     mediaHostStatesManager.updateHostState(
                         testData.mediaLocation,

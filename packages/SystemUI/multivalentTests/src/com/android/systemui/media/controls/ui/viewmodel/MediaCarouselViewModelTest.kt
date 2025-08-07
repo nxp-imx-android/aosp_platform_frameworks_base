@@ -19,11 +19,14 @@ package com.android.systemui.media.controls.ui.viewmodel
 import android.R
 import android.content.packageManager
 import android.content.pm.ApplicationInfo
+import android.platform.test.annotations.DisableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.domain.pipeline.MediaDataFilterImpl
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
@@ -49,6 +52,8 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
+@DisableSceneContainer
 class MediaCarouselViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().apply { mediaLogger = mockMediaLogger }
