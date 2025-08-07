@@ -177,7 +177,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             // Notify the task removal, but block all TaskViewTransitions during removal so we can
             // clear them without triggering
             final IBinder gate = new Binder();
-            mTaskViewTransitions.enqueueExternal(controller, () -> gate);
+            mTaskViewTransitions.enqueueRunningExternal(controller, gate);
 
             taskOrganizer.applyTransaction(wct);
             controller.notifyTaskRemovalStarted(taskInfo);
