@@ -16,6 +16,7 @@
 
 package com.android.systemui.customization.clocks
 
+import android.icu.util.TimeZone
 import android.view.View
 import android.view.View.MeasureSpec
 import com.android.systemui.log.LogcatOnlyMessageBuffer
@@ -24,6 +25,8 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VRect
+import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
+import java.util.Locale
 import kotlin.math.abs
 
 class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
@@ -47,6 +50,18 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         if (view?.isLayoutRequested() == false) {
             d("requestLayout()")
         }
+    }
+
+    fun onTimeZoneChanged(timeZone: TimeZone) {
+        d({ "onTimeZoneChanged($str1)" }) { str1 = "$timeZone" }
+    }
+
+    fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+        d({ "onTimeFormatChanged($str1)" }) { str1 = "$formatKind" }
+    }
+
+    fun onLocaleChanged(formatKind: Locale) {
+        d({ "onLocaleChanged($str1)" }) { str1 = "$formatKind" }
     }
 
     fun onMeasure(widthSpec: Int, heightSpec: Int) {
