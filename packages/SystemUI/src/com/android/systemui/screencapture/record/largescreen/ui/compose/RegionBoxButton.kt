@@ -27,30 +27,29 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
-import com.android.systemui.res.R
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
-import com.android.systemui.screencapture.common.ui.compose.loadIcon
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 
 /**
  * A composable that represents the button that is positioned inside or outside the region box.
  *
+ * @param text The button text.
+ * @param icon The button icon.
  * @param boxWidthDp The width of the region box in dp.
  * @param boxHeightDp The height of the region box in dp.
  * @param currentRect The current region box.
- * @param drawableLoaderViewModel The view model that is used to load drawables.
  * @param onClick A callback function that is invoked when this button is clicked.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
 fun RegionBoxButton(
+    text: String,
+    icon: Icon?,
     boxWidthDp: Dp,
     boxHeightDp: Dp,
     currentRect: Rect,
-    drawableLoaderViewModel: DrawableLoaderViewModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,13 +97,8 @@ fun RegionBoxButton(
                     translationX = targetTranslationX
                     translationY = targetTranslationY
                 },
-        text = stringResource(id = R.string.screen_capture_region_selection_button),
-        icon =
-            loadIcon(
-                viewModel = drawableLoaderViewModel,
-                resId = R.drawable.ic_screen_capture_camera,
-                contentDescription = null,
-            ),
+        text = text,
+        icon = icon,
         onClick = onClick,
     )
 }
