@@ -657,7 +657,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     false /* shouldSetTaskPositionAndCrop */,
                     mFocusTransitionObserver.hasGlobalFocus(taskInfo),
                     mGestureExclusionTracker.getExclusionRegion(taskInfo.displayId),
-                    /* inSyncWithTransition= */ true);
+                    /* inSyncWithTransition= */ true, taskSurface);
         }
     }
 
@@ -732,7 +732,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
                 mGestureExclusionTracker.getExclusionRegion(taskInfo.displayId),
-                /* inSyncWithTransition= */ true);
+                /* inSyncWithTransition= */ true, /* taskSurface */ null);
     }
 
     @Override
@@ -2161,7 +2161,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 false /* applyStartTransactionOnDraw */, false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
                 mGestureExclusionTracker.getExclusionRegion(taskInfo.displayId),
-                /* inSyncWithTransition= */ true);
+                /* inSyncWithTransition= */ true, taskSurface);
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             incrementEventReceiverTasks(taskInfo.displayId);
         }
