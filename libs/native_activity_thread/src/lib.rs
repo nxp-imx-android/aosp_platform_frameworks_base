@@ -25,6 +25,7 @@ mod library_loader;
 mod native_activity_thread;
 mod native_application_thread;
 mod task;
+mod utils;
 
 use crate::native_activity_thread::NativeActivityThread;
 use crate::native_application_thread::NativeApplicationThread;

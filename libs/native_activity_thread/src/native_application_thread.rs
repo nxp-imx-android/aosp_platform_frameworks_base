@@ -19,6 +19,7 @@ use native_application_thread_aidl::aidl::android::app::INativeApplicationThread
 use std::{marker::PhantomData, thread};
 
 use crate::task::Sender;
+use crate::utils::reset_time_zone;
 
 pub struct CreateServiceRequest {
     pub service_token: SpIBinder,
@@ -237,6 +238,12 @@ impl INativeApplicationThread for NativeApplicationThread {
                 Some(format!("Failed to send a task: {:?}", e)),
             )
         })?;
+        Ok(())
+    }
+
+    fn updateTimeZone(&self) -> binder::Result<()> {
+        info!("updateTimeZone thread id={:?}", thread::current().id());
+        reset_time_zone();
         Ok(())
     }
 }

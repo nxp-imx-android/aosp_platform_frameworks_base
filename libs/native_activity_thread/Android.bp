@@ -55,6 +55,13 @@ rust_bindgen {
     ],
 }
 
+rust_bindgen {
+    name: "libtime_bindgen",
+    crate_name: "time_bindgen",
+    wrapper_src: "src/bindings/time.h",
+    source_stem: "time_bindings",
+}
+
 rust_library {
     name: "libnative_activity_thread",
     crate_name: "native_activity_thread",
@@ -73,6 +80,7 @@ rust_library {
         "liblog_rust",
         "liblooper_bindgen",
         "libnative_service_bindgen",
+        "libtime_bindgen",
         "native_application_thread_aidl-rust",
         "libactivity_manager_procstate_aidl-rust",
     ],

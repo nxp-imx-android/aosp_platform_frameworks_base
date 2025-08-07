@@ -53,4 +53,7 @@ oneway interface INativeApplicationThread {
 
     @UnsupportedAppUsage
     void setProcessState(int state);
+
+    @UnsupportedAppUsage
+    void updateTimeZone();
 }
