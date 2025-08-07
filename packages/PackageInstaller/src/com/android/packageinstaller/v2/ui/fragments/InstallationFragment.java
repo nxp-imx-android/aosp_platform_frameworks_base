@@ -80,6 +80,9 @@ public class InstallationFragment extends DialogFragment {
     private boolean mIsMoreDetailsExpanded = false;
     private View mButtonPanel = null;
 
+    private TextView mInstallWithoutVerifyingTextView = null;
+    private TextView mMoreDetailsExpandedTextView = null;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -107,6 +110,9 @@ public class InstallationFragment extends DialogFragment {
                 R.id.more_details_clickable_layout);
         mMoreDetailsExpandedLayout = dialogView.requireViewById(
                 R.id.more_details_expanded_layout);
+        mInstallWithoutVerifyingTextView = dialogView.requireViewById(
+                R.id.install_without_verifying_text);
+        mMoreDetailsExpandedTextView = dialogView.requireViewById(R.id.more_details_expanded_text);
 
         String title = getString(R.string.title_install_staging);
         mDialog = UiUtil.getAlertDialog(requireContext(), title, dialogView,
@@ -721,15 +727,28 @@ public class InstallationFragment extends DialogFragment {
         }
 
         if (isVerificationBypassAllowed(verificationInfo)) {
-            if (!mIsMoreDetailsExpanded) {
+            if (installStage.isAppUpdating()) {
+                mMoreDetailsExpandedTextView.setText(
+                        R.string.more_details_expanded_update_summary);
+                mInstallWithoutVerifyingTextView.setText(R.string.update_without_verifying);
+            }
+            mInstallWithoutVerifyingTextView.setTypeface(
+                    mInstallWithoutVerifyingTextView.getTypeface(), Typeface.BOLD);
+            mInstallWithoutVerifyingTextView.setOnClickListener(view -> {
+                // Disable the text to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
+                mInstallActionListener.onPositiveResponse(
+                        InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION);
+            });
+
+            if (mIsMoreDetailsExpanded) {
+                mMoreDetailsExpandedLayout.setVisibility(View.VISIBLE);
+                mInstallWithoutVerifyingTextView.setEnabled(true);
+                mMoreDetailsClickableLayout.setVisibility(View.GONE);
+            } else {
                 mMoreDetailsClickableLayout.setVisibility(View.VISIBLE);
                 mMoreDetailsClickableLayout.setEnabled(true);
                 mMoreDetailsExpandedLayout.setVisibility(View.GONE);
-                // The color of the arrow is the same as the text color
-                TextView textView = dialog.requireViewById(R.id.more_details_text);
-                int textColor = textView.getCurrentTextColor();
-                ImageView imageView = dialog.requireViewById(R.id.keyboard_arrow_down);
-                imageView.setColorFilter(textColor);
             }
 
             mMoreDetailsClickableLayout.setOnClickListener(view -> {
@@ -738,24 +757,7 @@ public class InstallationFragment extends DialogFragment {
                 mIsMoreDetailsExpanded = true;
                 mMoreDetailsClickableLayout.setVisibility(View.GONE);
                 mMoreDetailsExpandedLayout.setVisibility(View.VISIBLE);
-                TextView installWithoutVerifyingTextView = dialog.requireViewById(
-                        R.id.install_without_verifying_text);
-                TextView moreDetailsExpandedTextView =
-                        dialog.requireViewById(R.id.more_details_expanded_text);
-                if (installStage.isAppUpdating()) {
-                    moreDetailsExpandedTextView.setText(
-                            R.string.more_details_expanded_update_summary);
-                    installWithoutVerifyingTextView.setText(R.string.update_without_verifying);
-                }
-                installWithoutVerifyingTextView.setTypeface(
-                        installWithoutVerifyingTextView.getTypeface(), Typeface.BOLD);
-                installWithoutVerifyingTextView.setEnabled(true);
-                installWithoutVerifyingTextView.setOnClickListener(view1 -> {
-                    // Disable the text to avoid the user clicks it more than once quickly
-                    view1.setEnabled(false);
-                    mInstallActionListener.onPositiveResponse(
-                            InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION);
-                });
+                mInstallWithoutVerifyingTextView.setEnabled(true);
             });
         }
     }

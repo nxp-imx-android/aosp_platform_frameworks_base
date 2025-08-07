@@ -57,17 +57,17 @@
             android:layout_marginTop="@dimen/dialog_inter_element_margin"
             android:visibility="gone" />
 
-        <!-- TODO(b/360129657): set touch area as current height does not meet a11y requirement -->
         <LinearLayout
             android:id="@+id/more_details_clickable_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minHeight="@dimen/button_min_height"
+            android:paddingTop="@dimen/alert_dialog_inner_padding"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:visibility="gone">
 
             <TextView
-                android:id="@+id/more_details_text"
                 android:text="@string/more_details"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -77,10 +77,9 @@
                 style="?attr/textAppearanceInstallerCustomMessage"/>
 
             <ImageView
-                android:id="@+id/keyboard_arrow_down"
                 android:src="@drawable/ic_keyboard_arrow_down"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/keyboard_arrow_down_height"
+                android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:selectable="false" />
         </LinearLayout>
@@ -89,6 +88,7 @@
             android:id="@+id/more_details_expanded_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/alert_dialog_inner_padding"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -104,9 +104,10 @@
                 android:id="@+id/install_without_verifying_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="start"
+                android:layout_marginTop="@dimen/dialog_inter_element_margin"
+                android:minHeight="@dimen/button_min_height"
+                android:gravity="start|center_vertical"
                 android:text="@string/install_without_verifying"
-                android:paddingTop="@dimen/install_without_verifying_text_padding"
                 android:textColor="@color/primaryColor"
                 style="?attr/textAppearanceInstallerCustomMessage"/>
 
