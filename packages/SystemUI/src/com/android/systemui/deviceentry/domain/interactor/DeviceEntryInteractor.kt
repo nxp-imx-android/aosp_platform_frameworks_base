@@ -227,7 +227,7 @@ constructor(
      *   canceled
      */
     @JvmOverloads
-    fun attemptDeviceEntry(callback: IKeyguardDismissCallback? = null) {
+    fun attemptDeviceEntry(loggingReason: String, callback: IKeyguardDismissCallback? = null) {
         callback?.let { dismissCallbackRegistry.get().addCallback(it) }
 
         // TODO (b/307768356),
@@ -245,7 +245,9 @@ constructor(
                         .get()
                         .showOverlay(
                             overlay = Overlays.Bouncer,
-                            loggingReason = "request to unlock device while authentication required",
+                            loggingReason =
+                                "request to unlock device while authentication" +
+                                    " required, original reason for request: $loggingReason",
                         )
                 }
             } else {
@@ -254,7 +256,8 @@ constructor(
                     .changeScene(
                         toScene = Scenes.Gone,
                         loggingReason =
-                            "request to unlock device while authentication isn't required",
+                            "request to unlock device while authentication isn't required," +
+                                " original reason for request: $loggingReason",
                     )
             }
         }
