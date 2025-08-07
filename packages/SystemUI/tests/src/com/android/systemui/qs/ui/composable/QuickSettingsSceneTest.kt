@@ -29,7 +29,6 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
@@ -75,13 +74,11 @@ class QuickSettingsSceneTest : SysuiTestCase() {
 
         val scene =
             QuickSettingsScene(
-                shadeSession = shadeSession,
                 notificationStackScrollView = { mock(NotificationScrollView::class.java) },
                 notificationsPlaceholderViewModelFactory =
                     kosmos.notificationsPlaceholderViewModelFactory,
                 actionsViewModelFactory = kosmos.quickSettingsUserActionsViewModelFactory,
                 contentViewModelFactory = kosmos.quickSettingsSceneContentViewModelFactory,
-                jankMonitor = kosmos.interactionJankMonitor,
             )
 
         composeTestRule.setContent {
