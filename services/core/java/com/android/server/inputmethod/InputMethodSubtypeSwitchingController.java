@@ -79,6 +79,219 @@ final class InputMethodSubtypeSwitchingController {
      */
     static final int MODE_AUTO = 2;
 
+    /**
+     * List of enabled input methods and subtypes. This is sorted according to
+     * {@link ImeSubtypeListItem#compareTo}, and also includes auxiliary subtypes.
+     *
+     * @see #getEnabledInputMethodsAndSubtypes
+     */
+    @GuardedBy("ImfLock.class")
+    private List<ImeSubtypeListItem> mEnabledItems = Collections.emptyList();
+
+    /** List of input methods and subtypes. */
+    @GuardedBy("ImfLock.class")
+    @NonNull
+    private RotationList mRotationList = new RotationList(Collections.emptyList());
+
+    /**
+     * Whether there was a user action since the last input method and subtype switch.
+     * Used to determine the switching behaviour for {@link #MODE_AUTO}.
+     */
+    @GuardedBy("ImfLock.class")
+    private boolean mUserActionSinceSwitch;
+
+    InputMethodSubtypeSwitchingController() {
+    }
+
+    /**
+     * Gets the next input method and subtype, starting from the given ones, in the given direction.
+     *
+     * <p>If the given input method and subtype are not found, this returns the most recent
+     * input method and subtype.
+     *
+     * @param imi            the input method to find the next value from.
+     * @param subtype        the input method subtype to find the next value from, if any.
+     * @param onlyCurrentIme whether to consider only subtypes of the current input method.
+     * @param forHardware    whether to consider only subtypes
+     *                       {@link InputMethodSubtype#isSuitableForPhysicalKeyboardLayoutMapping
+     *                       suitable for hardware keyboard}.
+     * @param mode           the switching mode.
+     * @param forward        whether to search search forwards or backwards in the list.
+     * @return the next input method and subtype if found, otherwise {@code null}.
+     */
+    @GuardedBy("ImfLock.class")
+    @Nullable
+    ImeSubtypeListItem getNext(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype,
+            boolean onlyCurrentIme, boolean forHardware, @SwitchMode int mode, boolean forward) {
+        return mRotationList.next(imi, subtype, onlyCurrentIme, forHardware,
+                isRecency(mode, forward), forward);
+    }
+
+    /**
+     * Gets the list of enabled input methods and subtypes.
+     *
+     * @param forMenu          whether to filter by items to be shown in the IME Switcher Menu.
+     * @param includeAuxiliary whether to include auxiliary subtypes.
+     */
+    @GuardedBy("ImfLock.class")
+    @NonNull
+    List<ImeSubtypeListItem> getItems(boolean forMenu, boolean includeAuxiliary) {
+        final var res = new ArrayList<ImeSubtypeListItem>();
+        for (int i = 0; i < mEnabledItems.size(); i++) {
+            final var item = mEnabledItems.get(i);
+            if (forMenu && !item.mShowInImeSwitcherMenu) {
+                continue;
+            }
+            if (!includeAuxiliary && item.mIsAuxiliary) {
+                continue;
+            }
+            res.add(item);
+        }
+        return res;
+    }
+
+    /**
+     * Updates the list of input methods and subtypes used for switching, from the given context
+     * and user specific settings.
+     *
+     * @param context  the context to update the list from.
+     * @param settings the user specific settings to update the list from.
+     */
+    @GuardedBy("ImfLock.class")
+    void update(@NonNull Context context, @NonNull InputMethodSettings settings) {
+        mEnabledItems = getEnabledInputMethodsAndSubtypes(context, settings);
+        update(getItems(false /* forMenu */, false /* includeAuxiliary */));
+    }
+
+    /**
+     * Updates the list of input methods and subtypes used for switching. If the given items are
+     * equal to the existing ones (regardless of recency order), the update is skipped and the
+     * current recency order is kept. Otherwise, the recency order is reset.
+     *
+     * @param enabledItems the list of enabled input methods and subtypes.
+     */
+    @GuardedBy("ImfLock.class")
+    @VisibleForTesting
+    void update(@NonNull List<ImeSubtypeListItem> enabledItems) {
+        if (!mRotationList.mItems.equals(enabledItems)) {
+            mRotationList = new RotationList(enabledItems);
+        }
+    }
+
+    /**
+     * Called when the user took an action that should update the recency of the current
+     * input method and subtype in the switching list.
+     *
+     * @param imi     the currently selected input method.
+     * @param subtype the currently selected input method subtype, if any.
+     * @return {@code true} if the recency was updated, otherwise {@code false}.
+     * @see android.inputmethodservice.InputMethodServiceInternal#notifyUserActionIfNecessary()
+     */
+    @GuardedBy("ImfLock.class")
+    boolean onUserAction(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype) {
+        final boolean recencyUpdated = mRotationList.setMostRecent(imi, subtype);
+        if (recencyUpdated) {
+            mUserActionSinceSwitch = true;
+        }
+        return recencyUpdated;
+    }
+
+    /** Called when the input method and subtype was changed. */
+    @GuardedBy("ImfLock.class")
+    void onInputMethodSubtypeChanged() {
+        mUserActionSinceSwitch = false;
+    }
+
+    @GuardedBy("ImfLock.class")
+    void dump(@NonNull Printer pw, @NonNull String prefix) {
+        pw.println(prefix + "mRotationList:");
+        mRotationList.dump(pw, prefix + "  ");
+        pw.println(prefix + "mEnabledItems:");
+        for (int i = 0; i < mEnabledItems.size(); i++) {
+            final var item = mEnabledItems.get(i);
+            pw.println(prefix + "  i=" + i + " item=" + item);
+        }
+        pw.println(prefix + "User action since last switch: " + mUserActionSinceSwitch);
+    }
+
+    /**
+     * Whether the given mode and direction result in recency or static order.
+     *
+     * <p>{@link #MODE_AUTO} resolves to the recency order for the first forwards switch
+     * after an {@link #onUserAction user action}, and otherwise to the static order.
+     *
+     * @param mode    the switching mode.
+     * @param forward the switching direction.
+     * @return {@code true} for the recency order, otherwise {@code false}.
+     */
+    @GuardedBy("ImfLock.class")
+    private boolean isRecency(@SwitchMode int mode, boolean forward) {
+        return mode == MODE_RECENT || (mode == MODE_AUTO && mUserActionSinceSwitch && forward);
+    }
+
+    /**
+     * Gets the list of enabled input methods and subtypes. This is sorted according to
+     * {@link ImeSubtypeListItem#compareTo}, and also includes auxiliary subtypes. The subtypes are
+     * de-duplicated based on the {@link InputMethodSubtype#hashCode}.
+     *
+     * @param context  the context used to resolve the IME and subtype labels.
+     * @param settings the settings used to get the list of enabled input methods and subtypes.
+     */
+    @GuardedBy("ImfLock.class")
+    @NonNull
+    private static List<ImeSubtypeListItem> getEnabledInputMethodsAndSubtypes(
+            @NonNull Context context, @NonNull InputMethodSettings settings) {
+        final int userId = settings.getUserId();
+        final Context userAwareContext = context.getUserId() == userId
+                ? context : context.createContextAsUser(UserHandle.of(userId), 0 /* flags */);
+
+        final var res = new ArrayList<ImeSubtypeListItem>();
+        final var imis = settings.getEnabledInputMethodList();
+        if (imis.isEmpty()) {
+            Slog.w(TAG, "Enabled input method list is empty.");
+            return res;
+        }
+
+        for (int i = 0; i < imis.size(); i++) {
+            final InputMethodInfo imi = imis.get(i);
+            final var imeLabel = imi.loadLabel(userAwareContext.getPackageManager());
+            final boolean showInImeSwitcherMenu = imi.shouldShowInInputMethodPicker();
+            final var subtypes = settings.getEnabledInputMethodSubtypeList(imi, true);
+            if (subtypes.isEmpty()) {
+                res.add(new ImeSubtypeListItem(imeLabel, null /* subtypeName */,
+                        null /* layoutName */, imi, NOT_A_SUBTYPE_INDEX, showInImeSwitcherMenu,
+                        false /* isAuxiliary */, true /* suitableForHardware */));
+            } else {
+                final var hashCodes = new ArraySet<Integer>();
+                for (int j = 0; j < subtypes.size(); j++) {
+                    hashCodes.add(subtypes.get(j).hashCode());
+                }
+                final int subtypeCount = imi.getSubtypeCount();
+                for (int j = 0; j < subtypeCount; j++) {
+                    final InputMethodSubtype subtype = imi.getSubtypeAt(j);
+                    final int hashCode = subtype.hashCode();
+                    if (!hashCodes.contains(hashCode)) {
+                        continue;
+                    }
+                    // Remove this subtype from the set to avoid duplicates.
+                    hashCodes.remove(hashCode);
+
+                    final var appInfo = imi.getServiceInfo().applicationInfo;
+                    final var subtypeLabel = subtype.overridesImplicitlyEnabledSubtype() ? null
+                            : subtype.getDisplayName(userAwareContext, imi.getPackageName(),
+                                    appInfo);
+                    final var layoutName = subtype.overridesImplicitlyEnabledSubtype() ? null
+                            : subtype.getLayoutDisplayName(userAwareContext, appInfo);
+                    res.add(new ImeSubtypeListItem(imeLabel, subtypeLabel, layoutName,
+                            imi, j, showInImeSwitcherMenu, subtype.isAuxiliary(),
+                            subtype.isSuitableForPhysicalKeyboardLayoutMapping()));
+                }
+            }
+        }
+        Collections.sort(res);
+        return res;
+    }
+
     static class ImeSubtypeListItem implements Comparable<ImeSubtypeListItem> {
 
         /** The input method's name. */
@@ -216,92 +429,6 @@ final class InputMethodSubtypeSwitchingController {
             }
             return CharSequence.compare(cs1, cs2);
         }
-    }
-
-    /**
-     * Gets the list of enabled input methods and subtypes.
-     *
-     * @param forMenu          whether to filter by items to be shown in the IME Switcher Menu.
-     * @param includeAuxiliary whether to include auxiliary subtypes.
-     */
-    @GuardedBy("ImfLock.class")
-    @NonNull
-    List<ImeSubtypeListItem> getItems(boolean forMenu, boolean includeAuxiliary) {
-        final var res = new ArrayList<ImeSubtypeListItem>();
-        for (int i = 0; i < mEnabledItems.size(); i++) {
-            final var item = mEnabledItems.get(i);
-            if (forMenu && !item.mShowInImeSwitcherMenu) {
-                continue;
-            }
-            if (!includeAuxiliary && item.mIsAuxiliary) {
-                continue;
-            }
-            res.add(item);
-        }
-        return res;
-    }
-
-    /**
-     * Gets the list of enabled input methods and subtypes. This is sorted according to
-     * {@link ImeSubtypeListItem#compareTo}, and also includes auxiliary subtypes. The subtypes are
-     * de-duplicated based on the {@link InputMethodSubtype#hashCode}.
-     *
-     * @param context  the context used to resolve the IME and subtype labels.
-     * @param settings the settings used to get the list of enabled input methods and subtypes.
-     */
-    @GuardedBy("ImfLock.class")
-    @NonNull
-    private static List<ImeSubtypeListItem> getEnabledInputMethodsAndSubtypes(
-            @NonNull Context context, @NonNull InputMethodSettings settings) {
-        final int userId = settings.getUserId();
-        final Context userAwareContext = context.getUserId() == userId
-                ? context : context.createContextAsUser(UserHandle.of(userId), 0 /* flags */);
-
-        final var res = new ArrayList<ImeSubtypeListItem>();
-        final var imis = settings.getEnabledInputMethodList();
-        if (imis.isEmpty()) {
-            Slog.w(TAG, "Enabled input method list is empty.");
-            return res;
-        }
-
-        for (int i = 0; i < imis.size(); i++) {
-            final InputMethodInfo imi = imis.get(i);
-            final var imeLabel = imi.loadLabel(userAwareContext.getPackageManager());
-            final boolean showInImeSwitcherMenu = imi.shouldShowInInputMethodPicker();
-            final var subtypes = settings.getEnabledInputMethodSubtypeList(imi, true);
-            if (subtypes.isEmpty()) {
-                res.add(new ImeSubtypeListItem(imeLabel, null /* subtypeName */,
-                        null /* layoutName */, imi, NOT_A_SUBTYPE_INDEX, showInImeSwitcherMenu,
-                        false /* isAuxiliary */, true /* suitableForHardware */));
-            } else {
-                final var hashCodes = new ArraySet<Integer>();
-                for (int j = 0; j < subtypes.size(); j++) {
-                    hashCodes.add(subtypes.get(j).hashCode());
-                }
-                final int subtypeCount = imi.getSubtypeCount();
-                for (int j = 0; j < subtypeCount; j++) {
-                    final InputMethodSubtype subtype = imi.getSubtypeAt(j);
-                    final int hashCode = subtype.hashCode();
-                    if (!hashCodes.contains(hashCode)) {
-                        continue;
-                    }
-                    // Remove this subtype from the set to avoid duplicates.
-                    hashCodes.remove(hashCode);
-
-                    final var appInfo = imi.getServiceInfo().applicationInfo;
-                    final var subtypeLabel = subtype.overridesImplicitlyEnabledSubtype() ? null
-                            : subtype.getDisplayName(userAwareContext, imi.getPackageName(),
-                                    appInfo);
-                    final var layoutName = subtype.overridesImplicitlyEnabledSubtype() ? null
-                            : subtype.getLayoutDisplayName(userAwareContext, appInfo);
-                    res.add(new ImeSubtypeListItem(imeLabel, subtypeLabel, layoutName,
-                            imi, j, showInImeSwitcherMenu, subtype.isAuxiliary(),
-                            subtype.isSuitableForPhysicalKeyboardLayoutMapping()));
-                }
-            }
-        }
-        Collections.sort(res);
-        return res;
     }
 
     /**
@@ -451,132 +578,5 @@ final class InputMethodSubtypeSwitchingController {
                 pw.println(prefix + "  i=" + i + " item=" + item);
             }
         }
-    }
-
-    /**
-     * List of enabled input methods and subtypes. This is sorted according to
-     * {@link ImeSubtypeListItem#compareTo}, and also includes auxiliary subtypes.
-     *
-     * @see #getEnabledInputMethodsAndSubtypes
-     */
-    @GuardedBy("ImfLock.class")
-    private List<ImeSubtypeListItem> mEnabledItems = Collections.emptyList();
-
-    /** List of input methods and subtypes. */
-    @GuardedBy("ImfLock.class")
-    @NonNull
-    private RotationList mRotationList = new RotationList(Collections.emptyList());
-
-    /**
-     * Whether there was a user action since the last input method and subtype switch.
-     * Used to determine the switching behaviour for {@link #MODE_AUTO}.
-     */
-    @GuardedBy("ImfLock.class")
-    private boolean mUserActionSinceSwitch;
-
-    /**
-     * Updates the list of input methods and subtypes used for switching. If the given items are
-     * equal to the existing ones (regardless of recency order), the update is skipped and the
-     * current recency order is kept. Otherwise, the recency order is reset.
-     *
-     * @param enabledItems the list of enabled input methods and subtypes.
-     */
-    @GuardedBy("ImfLock.class")
-    @VisibleForTesting
-    void update(@NonNull List<ImeSubtypeListItem> enabledItems) {
-        if (!mRotationList.mItems.equals(enabledItems)) {
-            mRotationList = new RotationList(enabledItems);
-        }
-    }
-
-    /**
-     * Gets the next input method and subtype, starting from the given ones, in the given direction.
-     *
-     * <p>If the given input method and subtype are not found, this returns the most recent
-     * input method and subtype.
-     *
-     * @param imi            the input method to find the next value from.
-     * @param subtype        the input method subtype to find the next value from, if any.
-     * @param onlyCurrentIme whether to consider only subtypes of the current input method.
-     * @param forHardware    whether to consider only subtypes
-     *                       {@link InputMethodSubtype#isSuitableForPhysicalKeyboardLayoutMapping
-     *                       suitable for hardware keyboard}.
-     * @param mode           the switching mode.
-     * @param forward        whether to search search forwards or backwards in the list.
-     * @return the next input method and subtype if found, otherwise {@code null}.
-     */
-    @GuardedBy("ImfLock.class")
-    @Nullable
-    ImeSubtypeListItem getNext(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype,
-            boolean onlyCurrentIme, boolean forHardware, @SwitchMode int mode, boolean forward) {
-        return mRotationList.next(imi, subtype, onlyCurrentIme, forHardware,
-                isRecency(mode, forward), forward);
-    }
-
-    /**
-     * Called when the user took an action that should update the recency of the current
-     * input method and subtype in the switching list.
-     *
-     * @param imi     the currently selected input method.
-     * @param subtype the currently selected input method subtype, if any.
-     * @return {@code true} if the recency was updated, otherwise {@code false}.
-     * @see android.inputmethodservice.InputMethodServiceInternal#notifyUserActionIfNecessary()
-     */
-    @GuardedBy("ImfLock.class")
-    boolean onUserAction(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype) {
-        final boolean recencyUpdated = mRotationList.setMostRecent(imi, subtype);
-        if (recencyUpdated) {
-            mUserActionSinceSwitch = true;
-        }
-        return recencyUpdated;
-    }
-
-    /** Called when the input method and subtype was changed. */
-    @GuardedBy("ImfLock.class")
-    void onInputMethodSubtypeChanged() {
-        mUserActionSinceSwitch = false;
-    }
-
-    /**
-     * Whether the given mode and direction result in recency or static order.
-     *
-     * <p>{@link #MODE_AUTO} resolves to the recency order for the first forwards switch
-     * after an {@link #onUserAction user action}, and otherwise to the static order.
-     *
-     * @param mode    the switching mode.
-     * @param forward the switching direction.
-     * @return {@code true} for the recency order, otherwise {@code false}.
-     */
-    @GuardedBy("ImfLock.class")
-    private boolean isRecency(@SwitchMode int mode, boolean forward) {
-        return mode == MODE_RECENT || (mode == MODE_AUTO && mUserActionSinceSwitch && forward);
-    }
-
-    @GuardedBy("ImfLock.class")
-    void dump(@NonNull Printer pw, @NonNull String prefix) {
-        pw.println(prefix + "mRotationList:");
-        mRotationList.dump(pw, prefix + "  ");
-        pw.println(prefix + "mEnabledItems:");
-        for (int i = 0; i < mEnabledItems.size(); i++) {
-            final var item = mEnabledItems.get(i);
-            pw.println(prefix + "  i=" + i + " item=" + item);
-        }
-        pw.println(prefix + "User action since last switch: " + mUserActionSinceSwitch);
-    }
-
-    InputMethodSubtypeSwitchingController() {
-    }
-
-    /**
-     * Updates the list of input methods and subtypes used for switching, from the given context
-     * and user specific settings.
-     *
-     * @param context  the context to update the list from.
-     * @param settings the user specific settings to update the list from.
-     */
-    @GuardedBy("ImfLock.class")
-    void update(@NonNull Context context, @NonNull InputMethodSettings settings) {
-        mEnabledItems = getEnabledInputMethodsAndSubtypes(context, settings);
-        update(getItems(false /* forMenu */, false /* includeAuxiliary */));
     }
 }
