@@ -39,6 +39,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -49,6 +50,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -131,9 +133,12 @@ constructor(
             rememberViewModel("QuickSettingsShadeOverlayContent", key = coroutineScope) {
                 contentViewModelFactory.create(coroutineScope)
             }
+        val useBrightnessMirrorInOverlay = useBrightnessMirrorInOverlay()
         val quickSettingsContainerViewModel =
             rememberViewModel("QuickSettingsShadeOverlayContainer") {
-                quickSettingsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
+                quickSettingsContainerViewModelFactory.create(
+                    supportsBrightnessMirroring = useBrightnessMirrorInOverlay
+                )
             }
         val hunPlaceholderViewModel =
             rememberViewModel("QuickSettingsShadeOverlayPlaceholder") {
@@ -196,6 +201,14 @@ private sealed interface ShadeBodyState {
     data object TileDetails : ShadeBodyState
 
     data object Default : ShadeBodyState
+}
+
+@Composable
+@ReadOnlyComposable
+private fun useBrightnessMirrorInOverlay(): Boolean {
+    // The `config_useBrightnessMirrorInOverlay` config is true by default. If false, the Quick
+    // Settings shade overlay will remain visible during brightness adjustments.
+    return LocalResources.current.getBoolean(R.bool.config_useBrightnessMirrorInOverlay)
 }
 
 @Composable
