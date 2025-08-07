@@ -284,7 +284,6 @@ static install_status_t copyFileIfChanged(JNIEnv* env, void* arg, ZipFileRO* zip
     jboolean debuggable = *(jboolean*)args[2];
     jboolean app_compat_16kb = *(jboolean*)args[3];
     jboolean pageSizeCompatDisabled = *(jboolean*)args[4];
-    install_status_t ret = INSTALL_SUCCEEDED;
 
     ScopedUtfChars nativeLibPath(env, *javaNativeLibPath);
 
@@ -719,7 +718,6 @@ static jint checkAlignment(JNIEnv* env, jstring javaNativeLibPath, jboolean extr
     int mode = PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED;
     // Need two separate install status for APK and ELF alignment
     static const size_t kPageSize16Kb = 16384;
-    jint ret = INSTALL_SUCCEEDED;
 
     ScopedUtfChars nativeLibPath(env, javaNativeLibPath);
     if (extractNativeLibs) {
