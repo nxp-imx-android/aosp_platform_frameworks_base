@@ -11636,10 +11636,10 @@ public class Notification implements Parcelable
      * <pre class="prettyprint">
      * new Notification.Builder(context)
      *   .setStyle(new MetricStyle()
-     *       .addMetric(new Metric(new Metric.FixedInt(1979), "Steps", MEANING_HEALTH_STEPS))
+     *       .addMetric(new Metric(new Metric.FixedInt(1979), "Steps"))
      *       .addMetric(new Metric(
      *           Metric.TimeDifference.forStopwatch(startTime, FORMAT_CHRONOMETER_AUTOMATIC),
-     *           "Time elapsed", MEANING_CHRONOMETER_STOPWATCH)))
+     *           "Time elapsed")))
      * </pre>
      *
      * <p>A MetricStyle must contain at least one {@link Metric} object to be valid; an invalid
@@ -11902,328 +11902,27 @@ public class Notification implements Parcelable
     }
 
     /**
-     * A metric, used with {@link MetricStyle}, and which has a value, a meaning, and a label.
-     *
-     * <p>The meaning can be used by the platform and notification listeners to make inferences of
-     * relative importance, freshness, necessary precision, etc. It may also be used to optimize the
-     * experience for the user across different form factors. If unspecified, the system may pick a
-     * default meaning based on the provided {@link MetricValue}.
+     * A metric, used with {@link MetricStyle}, and which has a value and a label.
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     public static final class Metric {
 
-        /**
-         * The default meaning. As this provides no semantic information to the system, it makes
-         * the metric lower priority, and may affect synchronization and data freshness in
-         * power-sensitive modes or platforms.
-         */
-        public static final int MEANING_UNKNOWN = 0;
-
-        // Movement meanings.
-
-        /**
-         * General movement-related metric in varied contexts (such as fitness or transportation).
-         * Use when none of the specific {@code MEANING_MOVEMENT_} options are a good fit.
-         */
-        public static final int MEANING_MOVEMENT = 1 << 16;
-
-        /** Distance traveled (e.g. flight, car ride, run). */
-        public static final int MEANING_MOVEMENT_DISTANCE_TRAVELED = MEANING_MOVEMENT + 1;
-
-        /** Distance remaining (e.g. flight, car ride, run).  */
-        public static final int MEANING_MOVEMENT_DISTANCE_REMAINING = MEANING_MOVEMENT + 2;
-
-        /** Speed (e.g. car ride, run).  */
-        public static final int MEANING_MOVEMENT_SPEED = MEANING_MOVEMENT + 3;
-
-        // Chronometer meanings.
-
-        /**
-         * Time-measurement-related metric. Generally associated with {@link TimeDifference}
-         * values. Use when none of the specific {@code MEANING_CHRONOMETER_} options are a good
-         * fit.
-         */
-        public static final int MEANING_CHRONOMETER = 2 << 16;
-
-        /**
-         * Used with {@link TimeDifference#forTimer} to indicate a timer that is counting
-         * down to a precise moment. This expects that the {@code zeroTime} will only change
-         * in response to user interaction.
-         *
-         * <p>Examples: a literal timer
-         */
-        public static final int MEANING_CHRONOMETER_TIMER = MEANING_CHRONOMETER + 1;
-
-        /**
-         * Used with {@link TimeDifference#forTimer} to indicate a timer that is counting
-         * down to an estimated moment. This expects that the {@code zeroTime} may change
-         * regularly based on external factors.
-         *
-         * <p>Examples: expected arrival of food
-         */
-        public static final int MEANING_CHRONOMETER_EVENT_COUNTDOWN = MEANING_CHRONOMETER + 2;
-
-        /**
-         * Used with {@link TimeDifference#forStopwatch} to indicate a time that counts up.
-         *
-         * <p>Examples: a literal stopwatch; elapsed travel time.
-         */
-        public static final int MEANING_CHRONOMETER_STOPWATCH = MEANING_CHRONOMETER + 3;
-
-        /**
-         * Used with {@link TimeDifference#forStopwatch} to indicate a time that counts up,
-         * and represents the elapsed time for an event.
-         *
-         * <p>Examples: a soccer game clock.
-         */
-        public static final int MEANING_CHRONOMETER_ELAPSED_DURATION = MEANING_CHRONOMETER + 4;
-
-        // Fixed-time-related meanings.
-
-        /**
-         * Point-in-time-related metric. Generally associated with {@link FixedDate} or
-         * {@link FixedTime} values. Use when none of the specific {@code MEANING_EVENT_} options
-         * are a good fit.
-         */
-        public static final int MEANING_EVENT = 3 << 16;
-
-        /**
-         * The time until an event in days, e.g. "tomorrow".
-         */
-        public static final int MEANING_EVENT_DATE_COUNTDOWN = MEANING_EVENT + 1;
-
-        /** A static future date, such as the date of a sports events. */
-        public static final int MEANING_EVENT_DATE = MEANING_EVENT + 2;
-
-        /** A static future time, such as takeoff of a flight, an upcoming alarm, etc. */
-        public static final int MEANING_EVENT_TIME = MEANING_EVENT + 3;
-
-        // Health/fitness-related meanings.
-
-        /**
-         * Health- and fitness-related metric, for example data coming from fitness trackers. Use
-         * when none of the specific {@code MEANING_HEALTH_} options are a good fit.
-         */
-        public static final int MEANING_HEALTH = 4 << 16;
-
-        /** Current heart rate (BPM). */
-        public static final int MEANING_HEALTH_HEART_RATE_CURRENT = MEANING_HEALTH + 1;
-
-        /** Resting heart rate (BPM). */
-        public static final int MEANING_HEALTH_HEART_RATE_RESTING = MEANING_HEALTH + 2;
-
-        /** Variability in heart rate. */
-        public static final int MEANING_HEALTH_HEART_RATE_VARIABILITY = MEANING_HEALTH + 3;
-
-        /** Blood pressure. */
-        public static final int MEANING_HEALTH_BLOOD_PRESSURE = MEANING_HEALTH + 4;
-
-        /** Number of steps, for example as measured by a fitness tracker. */
-        public static final int MEANING_HEALTH_STEPS = MEANING_HEALTH + 5;
-
-        /** Goal for the number of steps (e.g. per day). */
-        public static final int MEANING_HEALTH_STEP_GOAL = MEANING_HEALTH + 6;
-
-        /** Number of calories. */
-        public static final int MEANING_HEALTH_CALORIES = MEANING_HEALTH + 7;
-
-        /** Fitness readiness of the body, such as for exercise. */
-        public static final int MEANING_HEALTH_READINESS = MEANING_HEALTH + 8;
-
-        /** Active time. */
-        public static final int MEANING_HEALTH_ACTIVE_TIME = MEANING_HEALTH + 9;
-
-        /** Water consumption. */
-        public static final int MEANING_HEALTH_WATER_CONSUMPTION = MEANING_HEALTH + 10;
-
-        /** Goal for water consumption (e.g. liters per day). */
-        public static final int MEANING_HEALTH_WATER_GOAL = MEANING_HEALTH + 11;
-
-        /** A measurement of sleep quality. */
-        public static final int MEANING_HEALTH_SLEEP_SCORE = MEANING_HEALTH + 12;
-
-        /** Sleep stage. */
-        public static final int MEANING_HEALTH_SLEEP_STAGE = MEANING_HEALTH + 13;
-
-        /** Sleep duration, e.g. as measured overnight by a sleep tracker. */
-        public static final int MEANING_HEALTH_SLEEP_DURATION = MEANING_HEALTH + 14;
-
-        /** Oxygen saturation, e.g. SpO2 as measured by a pulse oximeter. */
-        public static final int MEANING_HEALTH_BLOOD_OXYGEN_SATURATION = MEANING_HEALTH + 15;
-
-        /** Skin temperature. */
-        public static final int MEANING_HEALTH_SKIN_TEMPERATURE = MEANING_HEALTH + 16;
-
-        /** Breathing rate. */
-        public static final int MEANING_HEALTH_BREATHING_RATE = MEANING_HEALTH + 17;
-
-        // Weather-related meanings.
-
-        /**
-         * Weather and atmospheric conditions metrics. Use when none of the specific
-         * {@code MEANING_WEATHER_} options are a good fit.
-         */
-        public static final int MEANING_WEATHER = 5 << 16;
-
-        /** A weather forecast. */
-        public static final int MEANING_WEATHER_FORECAST = MEANING_WEATHER + 1;
-
-        /** Strength of UV radiation. */
-        public static final int MEANING_WEATHER_UV_INDEX = MEANING_WEATHER + 2;
-
-        /** Air Quality. */
-        public static final int MEANING_WEATHER_AIR_QUALITY_INDEX = MEANING_WEATHER + 3;
-
-        /** Air pollutants, such as VOCs, PM2.5, or PM10. */
-        public static final int MEANING_WEATHER_POLLUTANT = MEANING_WEATHER + 4;
-
-        /** Ambient temperature, as measured outdoors. */
-        public static final int MEANING_WEATHER_TEMPERATURE_OUTDOOR = MEANING_WEATHER + 5;
-
-        /** Ambient temperature, as measured indoors. */
-        public static final int MEANING_WEATHER_TEMPERATURE_INDOOR = MEANING_WEATHER + 6;
-
-        /** Relative humidity (percentage) */
-        public static final int MEANING_WEATHER_RELATIVE_HUMIDITY = MEANING_WEATHER + 7;
-
-        /** Precipitation amount, (e.g. mm or inches). */
-        public static final int MEANING_WEATHER_PRECIPITATION = MEANING_WEATHER + 8;
-
-        /** Atmospheric pressure. */
-        public static final int MEANING_WEATHER_ATMOSPHERIC_PRESSURE = MEANING_WEATHER + 9;
-
-        // Celestial meanings.
-
-        /**
-         * Astronomical and celestial data metrics. Use when none of the specific
-         * {@code MEANING_CELESTIAL_} options are a good fit.
-         */
-        public static final int MEANING_CELESTIAL = 6 << 16;
-
-        /** Phase of the moon. */
-        public static final int MEANING_CELESTIAL_MOON_PHASE = MEANING_CELESTIAL + 1;
-
-        /** Information about tides, e.g. height at a particular location. */
-        public static final int MEANING_CELESTIAL_TIDE = MEANING_CELESTIAL + 2;
-
-        /** The time at which sunrise occurs. */
-        public static final int MEANING_CELESTIAL_SUNRISE = MEANING_CELESTIAL + 3;
-
-        /** The time at which sunset occurs. */
-        public static final int MEANING_CELESTIAL_SUNSET = MEANING_CELESTIAL + 4;
-
-        /**
-         * Travel-related metrics. Use when none of the specific {@code MEANING_TRAVEL_} options
-         * are a good fit.
-         */
-        public static final int MEANING_TRAVEL = 7 << 16;
-
-        /** Travel port, such as airport, train station, or harbor. */
-        public static final int MEANING_TRAVEL_PORT = MEANING_TRAVEL + 1;
-
-        /** Terminal within the port, e.g. airport terminal, wharf. */
-        public static final int MEANING_TRAVEL_TERMINAL = MEANING_TRAVEL + 2;
-
-        /** Boarding location within a port of terminal, e.g. gate, track, or dock. */
-        public static final int MEANING_TRAVEL_BOARDING_LOCATION = MEANING_TRAVEL + 3;
-
-        /** @hide */
-        @IntDef(prefix = { "MEANING_" }, value = {
-                // Generic
-                MEANING_UNKNOWN,
-                // Movement:
-                MEANING_MOVEMENT,
-                MEANING_MOVEMENT_DISTANCE_TRAVELED, MEANING_MOVEMENT_DISTANCE_REMAINING,
-                MEANING_MOVEMENT_SPEED,
-                // Chronometer:
-                MEANING_CHRONOMETER,
-                MEANING_CHRONOMETER_STOPWATCH, MEANING_CHRONOMETER_TIMER,
-                MEANING_CHRONOMETER_EVENT_COUNTDOWN, MEANING_CHRONOMETER_ELAPSED_DURATION,
-                // Time:
-                MEANING_EVENT,
-                MEANING_EVENT_DATE_COUNTDOWN, MEANING_EVENT_DATE, MEANING_EVENT_TIME,
-                // Health & fitness:
-                MEANING_HEALTH,
-                MEANING_HEALTH_HEART_RATE_CURRENT, MEANING_HEALTH_HEART_RATE_RESTING,
-                MEANING_HEALTH_HEART_RATE_VARIABILITY, MEANING_HEALTH_BLOOD_PRESSURE,
-                MEANING_HEALTH_STEPS, MEANING_HEALTH_STEP_GOAL, MEANING_HEALTH_CALORIES,
-                MEANING_HEALTH_READINESS, MEANING_HEALTH_ACTIVE_TIME,
-                MEANING_HEALTH_WATER_CONSUMPTION, MEANING_HEALTH_WATER_GOAL,
-                MEANING_HEALTH_SLEEP_SCORE, MEANING_HEALTH_SLEEP_STAGE,
-                MEANING_HEALTH_SLEEP_DURATION, MEANING_HEALTH_BLOOD_OXYGEN_SATURATION,
-                MEANING_HEALTH_SKIN_TEMPERATURE, MEANING_HEALTH_BREATHING_RATE,
-                // Weather & atmospheric:
-                MEANING_WEATHER,
-                MEANING_WEATHER_FORECAST, MEANING_WEATHER_UV_INDEX,
-                MEANING_WEATHER_AIR_QUALITY_INDEX, MEANING_WEATHER_POLLUTANT,
-                MEANING_WEATHER_TEMPERATURE_OUTDOOR, MEANING_WEATHER_TEMPERATURE_INDOOR,
-                MEANING_WEATHER_RELATIVE_HUMIDITY, MEANING_WEATHER_PRECIPITATION,
-                MEANING_WEATHER_ATMOSPHERIC_PRESSURE,
-                // Astronomical & celestial:
-                MEANING_CELESTIAL,
-                MEANING_CELESTIAL_MOON_PHASE, MEANING_CELESTIAL_TIDE, MEANING_CELESTIAL_SUNRISE,
-                MEANING_CELESTIAL_SUNSET,
-                // Travel:
-                MEANING_TRAVEL,
-                MEANING_TRAVEL_PORT, MEANING_TRAVEL_TERMINAL, MEANING_TRAVEL_BOARDING_LOCATION
-        })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface Meaning {}
-
-        private static final int CATEGORY_MEANING_MASK = 0xffff0000;
-
-        private static final Set<Integer> CATEGORY_MEANINGS = Set.of(
-                MEANING_UNKNOWN, MEANING_MOVEMENT, MEANING_CHRONOMETER, MEANING_EVENT,
-                MEANING_HEALTH, MEANING_WEATHER, MEANING_CELESTIAL, MEANING_TRAVEL);
-
         private static final String KEY_VALUE = "value";
-        private static final String KEY_MEANING = "meaning";
         private static final String KEY_LABEL = "label";
 
         private final MetricValue mValue;
         private final String mLabel;
-        @Meaning private final int mMeaning;
 
         /**
-         * Creates a Metric with the specified value, meaning, and label.
+         * Creates a Metric with the specified value and label.
          *
-         * @param value   one of the subclasses of {@link MetricValue}, such as {@link FixedInt}
-         * @param label   metric label -- should be 10 characters or fewer
-         * @param meaning recommended so that Notification Listeners can judge the importance
-         *                (and required freshness) of the metric
+         * @param value one of the subclasses of {@link MetricValue}, such as {@link FixedInt}
+         * @param label metric label -- should be 10 characters or fewer
          */
-        public Metric(@NonNull MetricValue value, @NonNull String label, @Meaning int meaning) {
+        public Metric(@NonNull MetricValue value, @NonNull String label) {
             mValue = requireNonNull(value);
             mLabel = safeString(requireNonNull(label));
-            mMeaning = maybeAdjustMeaningFromValue(value, meaning);
             checkArgument(!mLabel.isBlank(), "Metric label is required");
-        }
-
-        @Meaning
-        private static int maybeAdjustMeaningFromValue(@NonNull MetricValue value,
-                @Meaning int originalMeaning) {
-            if (originalMeaning != MEANING_UNKNOWN) {
-                // Respect what the calling package supplied.
-                return originalMeaning;
-            }
-            if (value instanceof TimeDifference td) {
-                if (td.isTimer()) {
-                    return MEANING_CHRONOMETER_TIMER;
-                } else if (td.isStopwatch()) {
-                    return MEANING_CHRONOMETER_STOPWATCH;
-                }
-            }
-            return originalMeaning;
-        }
-
-        /** @hide */
-        @Meaning
-        public static int getMeaningCategory(@Meaning int meaning) {
-            int category = meaning & CATEGORY_MEANING_MASK;
-            if (!CATEGORY_MEANINGS.contains(category)) {
-                category = MEANING_UNKNOWN;
-            }
-            return category;
         }
 
         @Nullable
@@ -12237,8 +11936,7 @@ public class Notification implements Parcelable
                 return null;
             }
             String label = bundle.getString(KEY_LABEL);
-            int meaning = bundle.getInt(KEY_MEANING, MEANING_UNKNOWN);
-            return new Metric(value, label, meaning);
+            return new Metric(value, label);
         }
 
         @NonNull
@@ -12246,7 +11944,6 @@ public class Notification implements Parcelable
             Bundle bundle = new Bundle();
             bundle.putBundle(KEY_VALUE, MetricValue.toBundle(metric.mValue));
             bundle.putString(KEY_LABEL, metric.mLabel);
-            bundle.putInt(KEY_MEANING, metric.mMeaning);
             return bundle;
         }
 
@@ -12255,13 +11952,12 @@ public class Notification implements Parcelable
             if (!(obj instanceof Metric that)) return false;
             if (this == that) return true;
             return Objects.equals(this.mValue, that.mValue)
-                    && Objects.equals(this.mLabel, that.mLabel)
-                    && this.mMeaning == that.mMeaning;
+                    && Objects.equals(this.mLabel, that.mLabel);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mValue, mLabel, mMeaning);
+            return Objects.hash(mValue, mLabel);
         }
 
         @Override
@@ -12269,7 +11965,6 @@ public class Notification implements Parcelable
             return "Metric{"
                     + "mValue=" + mValue
                     + ", mLabel=" + mLabel
-                    + ", mMeaning=" + mMeaning
                     + "}";
         }
 
@@ -12277,18 +11972,6 @@ public class Notification implements Parcelable
         @NonNull
         public MetricValue getValue() {
             return mValue;
-        }
-
-        /**
-         * A semantic meaning. This can be used by the platform and notification listeners to
-         * make inferences of relative importance, freshness, necessary precision, etc. It may
-         * also be used to optimize the experience for the user across different form factors.
-         *
-         * <p>NOTE: If unspecified, the system may pick a default meaning based on the
-         * provided {@link MetricValue}.
-         */
-        public @Meaning int getMeaning() {
-            return mMeaning;
         }
 
         /**
@@ -12388,7 +12071,7 @@ public class Notification implements Parcelable
          * <p>The zero time can be specified as an {@link Instant} (in which case it corresponds
          * to a "real-world" point in time, from {@link InstantSource#system}), or as milliseconds
          * since boot (from {@link SystemClock#elapsedRealtime()}). The latter might be suitable
-         * when the timer is tied to {@link AlarmManager#ELAPSED_REALTIME} alarm in
+         * when the timer is tied to an {@link AlarmManager#ELAPSED_REALTIME} alarm in
          * {@link AlarmManager}.
          *
          * <p>When representing a <em>paused</em> timer (or stopwatch, etc), this value specifies
