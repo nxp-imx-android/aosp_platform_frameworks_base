@@ -3659,9 +3659,25 @@ public class com.android.hoststubgen.test.tinyframework.exp.A
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/exp/A
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 2, attributes: 1
+  interfaces: 0, fields: 4, methods: 3, attributes: 1
 Constant pool:
 {
+  static final java.lang.Object sStatic;
+    descriptor: Ljava/lang/Object;
+    flags: (0x0018) ACC_STATIC, ACC_FINAL
+
+  static final java.lang.String sString1;
+    descriptor: Ljava/lang/String;
+    flags: (0x0018) ACC_STATIC, ACC_FINAL
+
+  static final java.lang.String sString2;
+    descriptor: Ljava/lang/String;
+    flags: (0x0018) ACC_STATIC, ACC_FINAL
+
+  static final java.lang.String sString3;
+    descriptor: Ljava/lang/String;
+    flags: (0x0018) ACC_STATIC, ACC_FINAL
+
   public com.android.hoststubgen.test.tinyframework.exp.A();
     descriptor: ()V
     flags: (0x0001) ACC_PUBLIC
@@ -3685,6 +3701,66 @@ Constant pool:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
             0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
+
+  static {};
+    descriptor: ()V
+    flags: (0x0008) ACC_STATIC
+    Code:
+      stack=2, locals=3, args_size=0
+         x: new           #x                  // class java/lang/Object
+         x: dup
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: putstatic     #x                  // Field sStatic:Ljava/lang/Object;
+        x: iconst_1
+        x: istore_0
+        x: ldc           #x                 // String test.prop.1
+        x: invokestatic  #x                 // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+        x: putstatic     #x                 // Field sString1:Ljava/lang/String;
+        x: ldc           #x                 // String test.prop.2
+        x: invokestatic  #x                 // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+        x: putstatic     #x                 // Field sString2:Ljava/lang/String;
+        x: new           #x                 // class java/lang/StringBuilder
+        x: dup
+        x: invokespecial #x                 // Method java/lang/StringBuilder."<init>":()V
+        x: getstatic     #x                 // Field sString1:Ljava/lang/String;
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+        x: getstatic     #x                 // Field sString2:Ljava/lang/String;
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+        x: astore_1
+        x: new           #x                 // class java/lang/StringBuilder
+        x: dup
+        x: invokespecial #x                 // Method java/lang/StringBuilder."<init>":()V
+        x: getstatic     #x                 // Field sString1:Ljava/lang/String;
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+        x: getstatic     #x                 // Field sString2:Ljava/lang/String;
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+        x: iload_0
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+        x: invokevirtual #x                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+        x: astore_2
+        x: ldc           #x                 // String
+        x: aload_1
+        x: invokevirtual #x                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+        x: ifeq          95
+        x: ldc           #x                 // String case1
+        x: putstatic     #x                 // Field sString3:Ljava/lang/String;
+        x: goto          100
+        x: ldc           #x                 // String case2
+        x: putstatic     #x                 // Field sString3:Ljava/lang/String;
+       x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           12      88     0     x   I
+           51      49     1 temp1   Ljava/lang/String;
+           78      22     2 temp2   Ljava/lang/String;
+      StackMapTable: number_of_entries = 2
+        frame_type = 254 /* append */
+          offset_delta = 95
+          locals = [ int, class java/lang/String, class java/lang/String ]
+        frame_type = 248 /* chop */
+          offset_delta = 4
 }
 SourceFile: "A.java"
 ## Class: com/android/hoststubgen/test/tinyframework/exp/B.class
