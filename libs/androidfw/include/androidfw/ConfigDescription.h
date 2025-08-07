@@ -150,7 +150,7 @@ struct ConfigDescription : public ResTable_config {
 };
 
 inline ConfigDescription::ConfigDescription() {
-  memset(this, 0, sizeof(*this));
+  memset(static_cast<void*>(this), 0, sizeof(*this));
   size = sizeof(android::ResTable_config);
 }
 
