@@ -19,7 +19,6 @@ package android.app;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT;
-import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 
@@ -2146,7 +2145,6 @@ public class WallpaperManager {
      * @hide
      */
     @Nullable
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @RequiresPermission(READ_WALLPAPER_INTERNAL)
     @SystemApi
     public WallpaperInstance getWallpaperInstance(@SetWallpaperFlags int which) {
@@ -2165,7 +2163,6 @@ public class WallpaperManager {
      * @hide
      */
     @Nullable
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @RequiresPermission(READ_WALLPAPER_INTERNAL)
     public WallpaperInstance getWallpaperInstance(@SetWallpaperFlags int which,
             boolean createMissingId) {
@@ -2836,7 +2833,6 @@ public class WallpaperManager {
      * @return An integer ID assigned to the newly active wallpaper; or zero on failure.
      * @hide
      */
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @SystemApi
     @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
     public int setStreamWithDescription(@NonNull InputStream bitmapData,
@@ -3255,7 +3251,6 @@ public class WallpaperManager {
      *
      * @hide
      */
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @SystemApi
     @RequiresPermission(allOf = {android.Manifest.permission.SET_WALLPAPER_COMPONENT,
             Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional = true)
@@ -3280,7 +3275,6 @@ public class WallpaperManager {
      *
      * @hide
      */
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @RequiresPermission(allOf = {android.Manifest.permission.SET_WALLPAPER_COMPONENT,
             Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional = true)
     public boolean setWallpaperComponentWithDescription(@NonNull WallpaperDescription description,

@@ -21,7 +21,6 @@ import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.Flags.fixGetBitmapCrops;
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.Flags.updateRecentsFromSystem;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
@@ -794,18 +793,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             final DisplayData wpdData =
                     mWallpaperDisplayHelper.getDisplayDataOrCreate(mDisplayId);
             try {
-                if (liveWallpaperContentHandling()) {
-                    connection.mService.attach(connection, mToken, TYPE_WALLPAPER, false,
-                            wpdData.mWidth, wpdData.mHeight, wpdData.mPadding, mDisplayId, which,
-                            connection.mInfo, wallpaper.getDescription());
-                } else {
-                    WallpaperDescription desc = new WallpaperDescription.Builder().setComponent(
-                            (connection.mInfo != null) ? connection.mInfo.getComponent()
-                                    : null).build();
-                    connection.mService.attach(connection, mToken, TYPE_WALLPAPER, false,
-                            wpdData.mWidth, wpdData.mHeight, wpdData.mPadding, mDisplayId, which,
-                            connection.mInfo, desc);
-                }
+                connection.mService.attach(connection, mToken, TYPE_WALLPAPER, false,
+                        wpdData.mWidth, wpdData.mHeight, wpdData.mPadding, mDisplayId, which,
+                        connection.mInfo, wallpaper.getDescription());
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failed attaching wallpaper on display", e);
                 if (wallpaper != null && !wallpaper.wallpaperUpdating
@@ -1055,15 +1045,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 // The broadcast of package update could be delayed after service disconnected. Try
                 // to re-bind the service for 10 seconds.
                 mWallpaper.mBindSource = BindSource.CONNECTION_TRY_TO_REBIND;
-                boolean success;
-                if (liveWallpaperContentHandling()) {
-                    success = bindWallpaperDescriptionLocked(
-                            mWallpaper.getDescription(), /* force= */ true,
-                            /* fromUser= */ false, mWallpaper, /* reply= */ null);
-                } else {
-                    success = bindWallpaperComponentLocked(mWallpaper.getComponent(), /* force= */
-                            true, /* fromUser= */false, mWallpaper, /* reply= */ null);
-                }
+                boolean success = bindWallpaperDescriptionLocked(
+                        mWallpaper.getDescription(), /* force= */ true,
+                        /* fromUser= */ false, mWallpaper, /* reply= */ null);
                 if (success) {
                     mWallpaper.connection.scheduleTimeoutLocked();
                 } else if (SystemClock.uptimeMillis() - mWallpaper.lastDiedTime
@@ -1291,11 +1275,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                             if (DEBUG) {
                                 Slog.v(TAG, "static system+lock to system success");
                             }
-                            if (liveWallpaperContentHandling()) {
-                                lockWp.setDescription(mOriginalSystem.getDescription());
-                            } else {
-                                lockWp.setComponent(mOriginalSystem.getComponent());
-                            }
+                            lockWp.setDescription(mOriginalSystem.getDescription());
                             lockWp.connection = mOriginalSystem.connection;
                             lockWp.connection.mWallpaper = lockWp;
                             mOriginalSystem.mWhich = FLAG_LOCK;
@@ -1885,30 +1865,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             if ((wallpaper.mWhich & FLAG_SYSTEM) != 0) mHomeWallpaperWaitingForUnlock = false;
             if ((wallpaper.mWhich & FLAG_LOCK) != 0) mLockWallpaperWaitingForUnlock = false;
 
-            if (liveWallpaperContentHandling()) {
-                final WallpaperDescription description = wallpaper.getDescription();
-                if (!bindWallpaperDescriptionLocked(description, true, false, wallpaper, reply)) {
-                    // We failed to bind the desired wallpaper, but that might
-                    // happen if the wallpaper isn't direct-boot aware
-                    ServiceInfo si = null;
-                    try {
-                        si = mIPackageManager.getServiceInfo(description.getComponent(),
-                                PackageManager.MATCH_DIRECT_BOOT_UNAWARE, wallpaper.userId);
-                    } catch (RemoteException e) {
-                        Slog.w(TAG, "Failure starting previous wallpaper; clearing", e);
-                    }
-                    onSwitchWallpaperFailLocked(wallpaper, reply, si);
-                }
-                return;
-            }
-
-            final ComponentName cname = wallpaper.getComponent();
-            if (!bindWallpaperComponentLocked(cname, true, false, wallpaper, reply)) {
+            final WallpaperDescription description = wallpaper.getDescription();
+            if (!bindWallpaperDescriptionLocked(description, true, false, wallpaper, reply)) {
                 // We failed to bind the desired wallpaper, but that might
                 // happen if the wallpaper isn't direct-boot aware
                 ServiceInfo si = null;
                 try {
-                    si = mIPackageManager.getServiceInfo(cname,
+                    si = mIPackageManager.getServiceInfo(description.getComponent(),
                             PackageManager.MATCH_DIRECT_BOOT_UNAWARE, wallpaper.userId);
                 } catch (RemoteException e) {
                     Slog.w(TAG, "Failure starting previous wallpaper; clearing", e);
@@ -2002,25 +1965,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             final WallpaperDescription description;
             final int finalWhich;
 
-            if (liveWallpaperContentHandling()) {
-                if (which == FLAG_LOCK) {
-                    // lock only case: set the system wallpaper component to both screens
-                    description = wallpaper.getDescription();
-                    finalWhich = FLAG_LOCK | FLAG_SYSTEM;
-                } else {
-                    description = new WallpaperDescription.Builder().build();
-                    finalWhich = which;
-                }
+            if (which == FLAG_LOCK) {
+                // lock only case: set the system wallpaper component to both screens
+                description = wallpaper.getDescription();
+                finalWhich = FLAG_LOCK | FLAG_SYSTEM;
             } else {
-                if (which == FLAG_LOCK) {
-                    // lock only case: set the system wallpaper component to both screens
-                    description = new WallpaperDescription.Builder().setComponent(
-                            wallpaper.getComponent()).build();
-                    finalWhich = FLAG_LOCK | FLAG_SYSTEM;
-                } else {
-                    description = new WallpaperDescription.Builder().build();
-                    finalWhich = which;
-                }
+                description = new WallpaperDescription.Builder().build();
+                finalWhich = which;
             }
 
             // except for the lock case (for which we keep the system wallpaper as-is), force rebind
@@ -2463,28 +2414,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
     @Override
     public WallpaperInfo getWallpaperInfoWithFlags(@SetWallpaperFlags int which, int userId) {
-        if (liveWallpaperContentHandling()) {
-            WallpaperInstance instance = getWallpaperInstance(which, userId, false);
-            return (instance != null) ? instance.getInfo() : null;
-        }
-
-        userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
-                Binder.getCallingUid(), userId, false, true, "getWallpaperInfo", null);
-        synchronized (mLock) {
-            WallpaperData wallpaper = (which == FLAG_LOCK) ? mLockWallpaperMap.get(userId)
-                    : mWallpaperMap.get(userId);
-            if (wallpaper == null
-                    || wallpaper.connection == null
-                    || wallpaper.connection.mInfo == null) return null;
-
-            WallpaperInfo info = wallpaper.connection.mInfo;
-            if (hasPermission(READ_WALLPAPER_INTERNAL)
-                    || mPackageManagerInternal.canQueryPackage(
-                    Binder.getCallingUid(), info.getComponent().getPackageName())) {
-                return info;
-            }
-        }
-        return null;
+        WallpaperInstance instance = getWallpaperInstance(which, userId, false);
+        return (instance != null) ? instance.getInfo() : null;
     }
 
     @Nullable
@@ -3364,14 +3295,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 final WallpaperDestinationChangeHandler
                         liveSync = new WallpaperDestinationChangeHandler(
                         newWallpaper);
-                boolean same;
-                if (liveWallpaperContentHandling()) {
-                    same = changingToSame(description, newWallpaper.connection,
+                boolean same = changingToSame(description, newWallpaper.connection,
                             newWallpaper.getDescription());
-                } else {
-                    same = changingToSame(name, newWallpaper.connection,
-                            newWallpaper.getComponent());
-                }
 
                 /*
                  * If we have a shared system+lock wallpaper, and we reapply the same wallpaper
@@ -3382,13 +3307,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
                 newWallpaper.mBindSource =
                         (name == null) ? BindSource.SET_LIVE_TO_CLEAR : BindSource.SET_LIVE;
-                if (liveWallpaperContentHandling()) {
-                    bindSuccess = bindWallpaperDescriptionLocked(description, forceRebind,
-                            /* fromUser */ true, newWallpaper, reply);
-                } else {
-                    bindSuccess = bindWallpaperComponentLocked(name, forceRebind,
-                            /* fromUser */ true, newWallpaper, reply);
-                }
+                bindSuccess = bindWallpaperDescriptionLocked(description, forceRebind,
+                        /* fromUser */ true, newWallpaper, reply);
                 if (bindSuccess) {
                     if (!same || forceRebind) {
                         newWallpaper.primaryColors = null;
@@ -3514,23 +3434,14 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 fromUser, wallpaper, reply);
     }
 
-    // When `liveWallpaperContentHandling()` is false this acts exactly like the version which takes
-    // a ComponentName argument did: it uses the ComponentName from `description`, it binds the
-    // service given by that component, and updates WallpaperData with that component on success.
     boolean bindWallpaperDescriptionLocked(WallpaperDescription description, boolean force,
             boolean fromUser, WallpaperData wallpaper, IRemoteCallback reply) {
         ComponentName componentName = description.getComponent();
         if (DEBUG_LIVE) {
             Slog.v(TAG, "bindWallpaperComponentLocked: componentName=" + componentName);
         }
-        boolean skipBinding;
-        if (liveWallpaperContentHandling()) {
-            skipBinding = !force && changingToSame(description, wallpaper.connection,
+        boolean skipBinding = !force && changingToSame(description, wallpaper.connection,
                     wallpaper.getDescription());
-        } else {
-            skipBinding = !force && changingToSame(componentName, wallpaper.connection,
-                    wallpaper.getComponent());
-        }
         if (skipBinding) {
             try {
                 if (DEBUG_LIVE) {
@@ -3548,9 +3459,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         try {
             if (componentName == null) {
                 componentName = mDefaultWallpaperComponent;
-                if (liveWallpaperContentHandling()) {
-                    description = description.toBuilder().setComponent(componentName).build();
-                }
+                description = description.toBuilder().setComponent(componentName).build();
             }
             int serviceUserId = wallpaper.userId;
             ServiceInfo si = mIPackageManager.getServiceInfo(componentName,
@@ -3678,11 +3587,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 return false;
             }
             maybeDetachLastWallpapers(wallpaper);
-            if (liveWallpaperContentHandling()) {
-                wallpaper.setDescription(description);
-            } else {
-                wallpaper.setComponent(componentName);
-            }
+            wallpaper.setDescription(description);
             wallpaper.connection = newConn;
             newConn.mReply = reply;
             updateCurrentWallpapers(wallpaper);
@@ -4168,57 +4073,11 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             wallpaper.allowBackup = true;   // by definition if it was restored
             ComponentName componentName = wallpaper.getComponent();
 
-            if (liveWallpaperContentHandling()) {
-                // Per b/373875373 this method should be removed, so we just set wallpapers to
-                // default.
-                bindWallpaperDescriptionLocked(new WallpaperDescription.Builder().build(), false,
-                        false, wallpaper, null);
-                return;
-            }
-            if (componentName != null && !componentName.equals(mImageWallpaper)) {
-                wallpaper.mBindSource = BindSource.RESTORE_SETTINGS_LIVE_SUCCESS;
-                if (!bindWallpaperComponentLocked(componentName, false, false,
-                        wallpaper, null)) {
-                    // No such live wallpaper or other failure; fall back to the default
-                    // live wallpaper (since the profile being restored indicated that the
-                    // user had selected a live rather than static one).
-                    wallpaper.mBindSource = BindSource.RESTORE_SETTINGS_LIVE_FAILURE;
-                    bindWallpaperComponentLocked(null, false, false, wallpaper, null);
-                }
-                success = true;
-            } else {
-                // If there's a wallpaper name, we use that.  If that can't be loaded, then we
-                // use the default.
-                if ("".equals(wallpaper.name)) {
-                    if (DEBUG) Slog.v(TAG, "settingsRestored: name is empty");
-                    success = true;
-                } else {
-                    if (DEBUG) {
-                        Slog.v(TAG, "settingsRestored: attempting to restore named resource");
-                    }
-                    success = mWallpaperDataParser.restoreNamedResourceLocked(wallpaper);
-                }
-                if (DEBUG) {
-                    Slog.v(TAG, "settingsRestored: success=" + success + " id="
-                            + wallpaper.wallpaperId);
-                }
-                if (success) {
-                    mWallpaperCropper.generateCrop(
-                            wallpaper); // based on the new image + metadata
-                    wallpaper.mBindSource = BindSource.RESTORE_SETTINGS_STATIC;
-                    bindWallpaperComponentLocked(null, true, false, wallpaper, null);
-                }
-            }
-        }
-
-        if (!success) {
-            Slog.e(TAG, "Failed to restore wallpaper: '" + wallpaper.name + "'");
-            wallpaper.name = "";
-            getWallpaperDir(UserHandle.USER_SYSTEM).delete();
-        }
-
-        synchronized (mLock) {
-            saveSettingsLocked(UserHandle.USER_SYSTEM);
+            // Per b/373875373 this method should be removed, so we just set wallpapers to
+            // default.
+            bindWallpaperDescriptionLocked(new WallpaperDescription.Builder().build(), false,
+                    false, wallpaper, null);
+            return;
         }
     }
 

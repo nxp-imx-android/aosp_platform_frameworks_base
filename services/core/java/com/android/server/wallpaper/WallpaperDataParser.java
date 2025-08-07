@@ -16,7 +16,6 @@
 
 package com.android.server.wallpaper;
 
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
@@ -244,9 +243,6 @@ public class WallpaperDataParser {
                     }
 
                     ComponentName comp = parseComponentName(parser);
-                    if (!liveWallpaperContentHandling()) {
-                        wallpaperToParse.setComponent(comp);
-                    }
                     if (multiCrop()) {
                         parseWallpaperAttributes(parser, wallpaperToParse, keepDimensionHints);
                     }
@@ -327,15 +323,13 @@ public class WallpaperDataParser {
             // Always read the description if it's there - there may be one from a previous save
             // with content handling enabled even if it's enabled now
             WallpaperDescription description = WallpaperDescription.restoreFromXml(parser);
-            if (liveWallpaperContentHandling()) {
-                // null component means that wallpaper was last saved without content handling, so
-                // populate description from saved component
-                if (description.getComponent() == null) {
-                    description = description.toBuilder().setComponent(
-                            parseComponentName(parser)).build();
-                }
-                wallpaper.setDescription(description);
+            // null component means that wallpaper was last saved without content handling, so
+            // populate description from saved component
+            if (description.getComponent() == null) {
+                description = description.toBuilder().setComponent(
+                        parseComponentName(parser)).build();
             }
+            wallpaper.setDescription(description);
         }
     }
 
@@ -451,7 +445,7 @@ public class WallpaperDataParser {
         wallpaper.allowBackup = parser.getAttributeBoolean(null, "backup", false);
 
         parseWallpaperDescription(parser, wallpaper);
-        if (liveWallpaperContentHandling() && wallpaper.getDescription().getComponent() == null) {
+        if (wallpaper.getDescription().getComponent() == null) {
             // The last save was done before the content handling flag was enabled and has no
             // WallpaperDescription, so create a default one with the correct component.
             // CSP: log boot after flag change to false -> true
@@ -634,18 +628,16 @@ public class WallpaperDataParser {
 
     void writeWallpaperDescription(TypedXmlSerializer out, WallpaperData wallpaper)
             throws IOException {
-        if (liveWallpaperContentHandling()) {
-            WallpaperDescription description = wallpaper.getDescription();
-            if (description != null) {
-                String descriptionTag = "description";
-                out.startTag(null, descriptionTag);
-                try {
-                    description.saveToXml(out);
-                } catch (XmlPullParserException e) {
-                    Slog.e(TAG, "Error writing wallpaper description", e);
-                }
-                out.endTag(null, descriptionTag);
+        WallpaperDescription description = wallpaper.getDescription();
+        if (description != null) {
+            String descriptionTag = "description";
+            out.startTag(null, descriptionTag);
+            try {
+                description.saveToXml(out);
+            } catch (XmlPullParserException e) {
+                Slog.e(TAG, "Error writing wallpaper description", e);
             }
+            out.endTag(null, descriptionTag);
         }
     }
     // Restore the named resource bitmap to both source + crop files

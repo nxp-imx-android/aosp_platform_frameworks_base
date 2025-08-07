@@ -16,9 +16,6 @@
 
 package android.app.wallpaper;
 
-import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
-
-import android.annotation.FlaggedApi;
 import android.annotation.SystemApi;
 import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
@@ -65,7 +62,6 @@ import java.util.Objects;
  * component. Each {@link WallpaperDescription} can have distinct metadata.
  * </p>
  */
-@FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
 public final class WallpaperDescription implements Parcelable {
     private static final String TAG = "WallpaperDescription";
     private static final  String XML_TAG_CONTENT = "content";
