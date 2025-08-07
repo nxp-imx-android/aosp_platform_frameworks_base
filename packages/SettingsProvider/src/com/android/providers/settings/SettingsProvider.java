@@ -3206,8 +3206,8 @@ public class SettingsProvider extends ContentProvider {
 
     private int getDeviceId() {
         int deviceId = android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()
-                && canUidAccessDeviceAwareSettings(Binder.getCallingUid())
-                ? getCallingDeviceId() : Context.DEVICE_ID_DEFAULT;
+                && canAccessDeviceAwareSettings(Binder.getCallingUid(),
+                getCallingPackageUnchecked()) ? getCallingDeviceId() : Context.DEVICE_ID_DEFAULT;
         if (deviceId != Context.DEVICE_ID_DEFAULT) {
             // We have received a call for a non-default device id, so now would be a good time
             // to initialize a virtual device listener.
@@ -3268,10 +3268,13 @@ public class SettingsProvider extends ContentProvider {
                 ? getContext().getSystemService(VirtualDeviceManager.class) : null;
     }
 
-    private static boolean canUidAccessDeviceAwareSettings(int uid) {
-        // Allow root, system and shell (for testing) to access device-aware settings (i.e.,
-        // settings for virtual devices).
-        return uid == ROOT_UID || uid == SYSTEM_UID || uid == SHELL_UID;
+    private static boolean canAccessDeviceAwareSettings(int uid, String packageName) {
+        // Allow system_server to access device-aware settings (i.e., settings for virtual devices).
+        if (uid == SYSTEM_UID && "android".equals(packageName)) {
+            return true;
+        }
+        // Otherwise, allow root and shell (for testing purposes).
+        return uid == ROOT_UID || uid == SHELL_UID;
     }
 
     final class SettingsRegistry {
