@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -408,6 +409,22 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             // Fullscreen relaunch is not a target of desktop-first policy.
             appendLog("desktop-first-but-fullscreen-relaunch");
             return WINDOWING_MODE_FULLSCREEN;
+        }
+
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue()) {
+            final Task launchRootCandidate = taskDisplayArea.getLaunchRootTask(
+                    WINDOWING_MODE_FREEFORM, ACTIVITY_TYPE_STANDARD,
+                    /* options= */ null, /* sourceTask= */ null, /* launchFlags= */ 0
+            );
+            final boolean isAnyDeskActive = launchRootCandidate != null
+                    && launchRootCandidate.mCreatedByOrganizer
+                    && launchRootCandidate.getWindowingMode() == WINDOWING_MODE_FREEFORM;
+            final boolean isHomeVisible = taskDisplayArea.getDisplayContent()
+                    .getTask(t -> t.isActivityTypeHome() && t.isVisibleRequested()) != null;
+            if (!isAnyDeskActive && !isHomeVisible) {
+                appendLog("desktop-first-but-fullscreen-visible");
+                return WINDOWING_MODE_FULLSCREEN;
+            }
         }
 
         appendLog("forced-freeform-in-desktop-first");
