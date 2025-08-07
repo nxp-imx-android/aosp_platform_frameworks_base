@@ -71,6 +71,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * atest FrameworksServicesTests:SyntheticPasswordTests
@@ -136,6 +137,13 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     private void initSpAndSetCredential(int userId, LockscreenCredential credential)
             throws RemoteException {
         mService.initializeSyntheticPassword(userId);
+        List<UserInfo> profiles = mUserManager.getProfiles(userId);
+        if (profiles != null) {
+            // Ensure that any managed profiles have initialized SPs.
+            profiles.stream()
+                    .filter(userInfo -> userInfo.isManagedProfile())
+                    .forEach(userInfo -> mService.initializeSyntheticPassword(userInfo.id));
+        }
         assertTrue(mService.setLockCredential(credential, nonePassword(), userId));
         assertEquals(credential.getType(), mService.getCredentialType(userId));
     }
