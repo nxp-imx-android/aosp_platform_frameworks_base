@@ -1736,9 +1736,9 @@ flag {
 }
 
 flag {
-    name: "show_biometric_prompt_secondary_display_toast"
+    name: "show_biometric_prompt_secondary_display_message"
     namespace: "lse_desktop_experience"
-    description: "Shows a toast on secondary screens to direct users to use their device to finish biometric authorization"
+    description: "Shows a message on secondary screens to direct users to use their device to finish biometric authorization"
     bug: "419799860"
     metadata {
          purpose: PURPOSE_BUGFIX
