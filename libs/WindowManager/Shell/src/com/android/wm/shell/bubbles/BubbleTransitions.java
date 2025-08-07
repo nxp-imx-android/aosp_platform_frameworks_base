@@ -1784,6 +1784,13 @@ public class BubbleTransitions {
             final SurfaceControl taskViewSurface = mBubble.getTaskView().getSurfaceControl();
             final TaskViewRepository.TaskViewState state = mRepository.byTaskView(tvc);
             if (state == null) return;
+            final View bubbleBarExpandedView = mBubble.getBubbleBarExpandedView();
+            if (bubbleBarExpandedView == null) {
+                ProtoLog.e(WM_SHELL_BUBBLES,
+                        "BubbleTransition#updateBubbleTask %s bubbleBarExpandedView is null",
+                        mBubble.getKey());
+                return;
+            }
             state.mVisible = true;
             state.mBounds.set(mBounds);
             final SurfaceControl.Transaction startT = mTransactionProvider.get();
@@ -1791,9 +1798,7 @@ public class BubbleTransitions {
             // since the task view is switching windows, its surface needs to be moved over to the
             // new bubble window surface
             startT.reparent(taskViewSurface,
-                    mBubble.getBubbleBarExpandedView()
-                            .getViewRootImpl()
-                            .updateAndGetBoundsLayer(startT));
+                    bubbleBarExpandedView.getViewRootImpl().updateAndGetBoundsLayer(startT));
 
             startT.reparent(mTaskLeash, taskViewSurface);
             startT.setPosition(mTaskLeash, 0, 0);

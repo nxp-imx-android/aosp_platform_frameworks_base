@@ -672,7 +672,6 @@ public class Bubble implements BubbleViewProvider {
      * Call when all the views should be removed/cleaned up.
      */
     public void cleanupViews() {
-        ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#cleanupViews=%s", getKey());
         cleanupViews(true);
     }
 
@@ -683,6 +682,8 @@ public class Bubble implements BubbleViewProvider {
      * {@code cleanupTaskView} to avoid recreating it in the new mode.
      */
     public void cleanupViews(boolean cleanupTaskView) {
+        ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#cleanupViews=%s cleanupTaskView=%b", getKey(),
+                cleanupTaskView);
         cleanupExpandedView(cleanupTaskView);
         mIconView = null;
     }
@@ -789,6 +790,8 @@ public class Bubble implements BubbleViewProvider {
         if (!isInflated()) {
             mIconView = info.imageView;
             mExpandedView = info.expandedView;
+            ProtoLog.d(WM_SHELL_BUBBLES, "Bubble#setViewInfo %s setting expanded view to %s",
+                    mKey, info.bubbleBarExpandedView);
             mBubbleBarExpandedView = info.bubbleBarExpandedView;
         }
 
