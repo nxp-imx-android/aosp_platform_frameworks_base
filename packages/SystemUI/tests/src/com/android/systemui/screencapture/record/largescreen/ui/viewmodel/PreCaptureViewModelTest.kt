@@ -30,6 +30,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.ui.mockScreenCaptureActivity
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
@@ -128,7 +129,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
-    fun updateCaptureRegion_updatesSelectedCaptureRegionButtonViewModel() =
+    fun updateCaptureRegion_updatesSelectedCaptureRegionButton() =
         testScope.runTest {
             // Default region is fullscreen
             val (appWindowButton, partialButton, fullscreenButton) =
@@ -284,6 +285,56 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
             viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             assertThat(viewModel.captureRegionButtonViewModels.count { it.isSelected }).isEqualTo(1)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
+    fun captureRegionButtonViewModels_hasScreenshotContentDescriptions_byDefault() =
+        testScope.runTest {
+            val (appWindowButton, partialButton, fullscreenButton) =
+                viewModel.captureRegionButtonViewModels
+
+            // Default capture type is SCREENSHOT.
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
+            assertThat(appWindowButton.contentDescription)
+                .isEqualTo(
+                    context.getString(
+                        R.string.screen_capture_toolbar_app_window_button_screenshot_a11y
+                    )
+                )
+            assertThat(partialButton.contentDescription)
+                .isEqualTo(
+                    context.getString(R.string.screen_capture_toolbar_region_button_screenshot_a11y)
+                )
+            assertThat(fullscreenButton.contentDescription)
+                .isEqualTo(
+                    context.getString(
+                        R.string.screen_capture_toolbar_fullscreen_button_screenshot_a11y
+                    )
+                )
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
+    fun captureRegionButtonViewModels_hasRecordContentDescriptions_whenCaptureTypeIsRecord() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
+
+            val (appWindowButton, partialButton, fullscreenButton) =
+                viewModel.captureRegionButtonViewModels
+
+            assertThat(appWindowButton.contentDescription)
+                .isEqualTo(
+                    context.getString(R.string.screen_capture_toolbar_app_window_button_record_a11y)
+                )
+            assertThat(partialButton.contentDescription)
+                .isEqualTo(
+                    context.getString(R.string.screen_capture_toolbar_region_button_record_a11y)
+                )
+            assertThat(fullscreenButton.contentDescription)
+                .isEqualTo(
+                    context.getString(R.string.screen_capture_toolbar_fullscreen_button_record_a11y)
+                )
         }
 
     @Test
