@@ -91,24 +91,6 @@ constructor(val promptSelectorInteractor: PromptSelectorInteractor) {
             credentialAllowed && identityCheckActive
         }
 
-    /**
-     * Total option count for the fallback view
-     *
-     * This includes all options added by prompt caller. If Credential is allowed, it counts as an
-     * option. If credential is allowed and identity Check is enabled, this counts as another option
-     */
-    val optionCount: Flow<Int> =
-        combine(showCredential, identityCheckActive, fallbackOptions) {
-            showCredential,
-            identityCheckEnabled,
-            fallbackOptions ->
-            var total = 0
-            if (showCredential) total++
-            if (identityCheckEnabled && showCredential) total++
-            total += fallbackOptions.size
-            total
-        }
-
     /** Icon to be used for the credential kind */
     val credentialKindIcon: Flow<ImageVector> =
         credentialKind.map { kind ->

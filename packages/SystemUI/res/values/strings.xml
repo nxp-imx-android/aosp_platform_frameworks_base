@@ -527,13 +527,13 @@
     <!-- Content description for the more options button on biometric prompt content view. [CHAR LIMIT=60] -->
     <string name="biometric_dialog_content_view_more_options_button">More Options</string>
 
-    <string name="biometric_dialog_fallback_title">More Options</string>
+    <string name="biometric_dialog_fallback_title">Verify another way</string>
     <string name="biometric_dialog_fallback_button">Verify another way</string>
     <string name="biometric_dialog_manage_identity_check">Manage Identity Check</string>
-    <string name="biometric_dialog_identity_check_pin_footer">PIN can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
-    <string name="biometric_dialog_identity_check_pattern_footer">Pattern can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
-    <string name="biometric_dialog_identity_check_password_footer">Password can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
-    <string name="biometric_dialog_identity_check_watch_ranging">Assessing risk...</string>
+    <string name="biometric_dialog_identity_check_footer_link_text">Learn more about Identity Check</string>
+    <string name="biometric_dialog_identity_check_learn_more_link" translatable="false">https://support.google.com/android?p=identity_check</string>
+    <string name="biometric_dialog_identity_check_footer">Identity Check is on and can verify you only by your fingerprint or face. %1$s</string>
+    <string name="biometric_dialog_identity_check_watch_ranging">Assessing risk…</string>
     <string name="biometric_dialog_unavailable">Unavailable</string>
 
     <!-- Button text shown on BiometricPrompt giving the user the option to use an alternate form of authentication (Pin) [CHAR LIMIT=30] -->
