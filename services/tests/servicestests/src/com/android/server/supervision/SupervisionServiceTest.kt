@@ -383,8 +383,9 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
-        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         verify(mockDpmInternal)
@@ -562,12 +563,13 @@ class SupervisionServiceTest {
     @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo_supervisionEnabled_hasSupervisionRoleHolders_doesNotRestrictFactoryReset() {
         addDefaultAndTestUsers()
-        setSupervisionEnabledForUser(USER_ID, true)
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
+        clearInvocations(mockDpmInternal)
+        setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
 
         // Once for the initial setSupervisionEnabledForUser, and again for the
@@ -634,6 +636,21 @@ class SupervisionServiceTest {
         listeners.forEach { userId, (listener, binder) ->
             unregisterSupervisionListener(listener, binder)
         }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
+    fun onRoleHoldersChanged_removesPackageSuspensionForRemovedRoleHolder() {
+        val packageName = "com.example.supervisionapp"
+        val roleName = RoleManager.ROLE_SUPERVISION
+        injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), listOf(packageName,
+            "com.example.supervisionapp2", "com.example.supervisionapp3"))
+
+        injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), emptyList())
+        injector.awaitServiceThreadIdle()
+
+        verify(mockPackageManagerInternal)
+            .unsuspendForSuspendingPackage(eq(packageName), eq(USER_ID), eq(USER_ID))
     }
 
     private fun registerSupervisionListenerForUser(
@@ -814,12 +831,15 @@ typealias SupervisionListenerMap = Map<Int, Pair<ISupervisionListener, IBinder>>
 private class TestInjector(val context: Context, private val serviceThread: ServiceThread) :
     SupervisionService.Injector(context) {
     private val roleHolders = mutableMapOf<Pair<String, UserHandle>, List<String>>()
+    private var roleHoldersChangedListener: OnRoleHoldersChangedListener? = null
 
     override fun addOnRoleHoldersChangedListenerAsUser(
         executor: Executor,
         listener: OnRoleHoldersChangedListener,
         user: UserHandle,
-    ) {}
+    ) {
+        this.roleHoldersChangedListener = listener
+    }
 
     override fun getRoleHoldersAsUser(roleName: String, user: UserHandle): List<String> {
         return roleHolders[Pair(roleName, user)] ?: emptyList()
@@ -827,6 +847,7 @@ private class TestInjector(val context: Context, private val serviceThread: Serv
 
     fun setRoleHoldersAsUser(roleName: String, user: UserHandle, packages: List<String>) {
         roleHolders[Pair(roleName, user)] = packages
+        roleHoldersChangedListener?.onRoleHoldersChanged(roleName, user)
     }
 
     override fun getServiceThread(): ServiceThread {

@@ -69,7 +69,6 @@ import android.util.SparseArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
@@ -491,11 +490,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             List<String> supervisionPackagesPerRole =
                     mInjector.getRoleHoldersAsUser(role, UserHandle.of(userId));
             supervisionPackages.addAll(supervisionPackagesPerRole);
-            // TODO(b/432705581): Consider adding a method that takes a list of packages to clear
-            // suspension for, instead of calling for each package in a loop.
-            for (String supervisionPackage : supervisionPackagesPerRole) {
-                clearSuspendedPackagesFor(userId, supervisionPackage, role);
-            }
+            clearSuspendedPackagesFor(userId, supervisionPackagesPerRole, role);
         }
 
         DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
@@ -512,13 +507,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
     }
 
-    private void clearSuspendedPackagesFor(int userId, String supervisionPackage, String roleName) {
+    private void clearSuspendedPackagesFor(int userId, List<String> supervisionPackages,
+            @Nullable String role) {
         PackageManagerInternal pmi = mInjector.getPackageManagerInternal();
-        if (pmi != null) {
-            pmi.unsuspendForSuspendingPackage(supervisionPackage, userId, userId);
+        for (String supervisionPackage: supervisionPackages) {
+            if (pmi != null) {
+                pmi.unsuspendForSuspendingPackage(supervisionPackage, userId, userId);
+            }
+            if (RoleManager.ROLE_SUPERVISION.equals(role)) {
+                mInjector.removeRoleHoldersAsUser(role, supervisionPackage, UserHandle.of(userId));
+            }
         }
-
-        mInjector.removeRoleHoldersAsUser(roleName, supervisionPackage, UserHandle.of(userId));
     }
 
     private void maybeApplyUserRestrictions() {
@@ -657,6 +656,37 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     private boolean isCallerSystem() {
         return UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID);
+    }
+
+    private void updateSupervisionRoleHolders(@UserIdInt int userId) {
+        List<String> roleHolders =
+                mInjector.getRoleHoldersAsUser(RoleManager.ROLE_SUPERVISION, UserHandle.of(userId));
+
+        synchronized (getLockObject()) {
+            SupervisionUserData data = getUserDataLocked(userId);
+            data.supervisionRoleHolders.clear();
+            data.supervisionRoleHolders.addAll(roleHolders);
+            if (Flags.persistentSupervisionSettings()) {
+                mSupervisionSettings.saveUserData();
+            }
+        }
+    }
+
+    private List<String> getRemovedSupervisionRoleHolders(@UserIdInt int userId) {
+        List<String> newRoleHolders =
+                mInjector.getRoleHoldersAsUser(RoleManager.ROLE_SUPERVISION, UserHandle.of(userId));
+
+        synchronized (getLockObject()) {
+            SupervisionUserData data = getUserDataLocked(userId);
+            List<String> removedRoleHolders = new ArrayList<>(data.supervisionRoleHolders);
+            removedRoleHolders.removeAll(newRoleHolders);
+            data.supervisionRoleHolders.clear();
+            data.supervisionRoleHolders.addAll(newRoleHolders);
+            if (Flags.persistentSupervisionSettings()) {
+                mSupervisionSettings.saveUserData();
+            }
+            return removedRoleHolders;
+        }
     }
 
     /** Provides local services in a lazy manner. */
@@ -799,6 +829,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         @Override
         public void onUserStarting(@NonNull TargetUser user) {
+            mSupervisionService.updateSupervisionRoleHolders(user.getUserIdentifier());
             if (Flags.enableSyncWithDpm() && !user.isPreCreated()) {
                 mSupervisionService.syncStateWithDevicePolicyManager(user.getUserIdentifier());
             }
@@ -869,13 +900,16 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         void register() {
             mInjector.addOnRoleHoldersChangedListenerAsUser(
-                    BackgroundThread.getExecutor(), this, UserHandle.ALL);
+                    mServiceThread.getThreadExecutor(), this, UserHandle.ALL);
         }
 
         @Override
         public void onRoleHoldersChanged(@NonNull String roleName, @NonNull UserHandle user) {
             if (RoleManager.ROLE_SUPERVISION.equals(roleName)) {
                 maybeApplyUserRestrictionsFor(user);
+                List<String> removedRoleHolders =
+                        getRemovedSupervisionRoleHolders(user.getIdentifier());
+                clearSuspendedPackagesFor(user.getIdentifier(), removedRoleHolders, null);
             }
         }
     }
