@@ -16,13 +16,20 @@
 
 package com.android.server.security.authenticationpolicy;
 
+import static com.android.server.security.authenticationpolicy.IdentityCheckWatchRangingLogger.ACTION_LOG_WATCH_RANGING_STATUS;
+
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.os.Handler;
 import android.os.IBinder;
@@ -46,6 +53,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -73,6 +81,8 @@ public class WatchRangingServiceTest {
     private IBinder mBinder;
     @Mock
     private ICancellationSignal mCancellationSignal;
+    @Mock
+    private AlarmManager mAlarmManager;
 
     private TestableLooper mTestableLooper;
     private WatchRangingService mWatchRangingService;
@@ -90,11 +100,23 @@ public class WatchRangingServiceTest {
         mTestableContext.getOrCreateTestableResources().addOverride(R
                 .string.proximity_provider_service_class_name,
                 PROXIMITY_PROVIDER_SERVICE_COMPONENT_NAME);
+        mTestableContext.addMockSystemService(AlarmManager.class, mAlarmManager);
         mTestableContext.addMockService(new ComponentName(PROXIMITY_PROVIDER_SERVICE_COMPONENT_NAME,
                         PROXIMITY_PROVIDER_SERVICE_COMPONENT_NAME), mBinder);
 
         mWatchRangingService = new WatchRangingService(mTestableContext,
                 (binder) -> mProximityProviderService, new Handler(mTestableLooper.getLooper()));
+    }
+
+    @Test
+    public void testScheduleDailyWatchStatusLogger() {
+        final ArgumentCaptor<PendingIntent> pendingIntentArgumentCaptor = ArgumentCaptor.forClass(
+                PendingIntent.class);
+
+        verify(mAlarmManager).setRepeating(eq(AlarmManager.RTC_WAKEUP), anyLong(),
+                eq(AlarmManager.INTERVAL_DAY), pendingIntentArgumentCaptor.capture());
+        assertThat(pendingIntentArgumentCaptor.getValue().getIntent().getAction())
+                .isEqualTo(ACTION_LOG_WATCH_RANGING_STATUS);
     }
 
     @Test
