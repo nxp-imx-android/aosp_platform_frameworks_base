@@ -34,6 +34,9 @@ import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_SPLIT_SCRE
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.provider.DeviceConfig.NAMESPACE_CONSTRAIN_DISPLAY_APIS;
+import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.TYPE_EXTERNAL;
+import static android.view.Display.TYPE_INTERNAL;
 import static android.view.InsetsSource.FLAG_INSETS_ROUNDED_CORNER;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_180;
@@ -67,7 +70,6 @@ import static com.android.server.wm.ActivityRecord.State.STOPPED;
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_POSITION_MULTIPLIER_CENTER;
 import static com.android.server.wm.AppCompatUtils.computeAspectRatio;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
-import static com.android.window.flags.Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -564,7 +566,7 @@ public class SizeCompatTests extends WindowTestsBase {
         assertDownScaled();
     }
 
-    @EnableFlags(FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS)
+    @EnableFlags(Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testFixedMiscConfigurationWhenMovingToDisplay() {
         setUpDisplaySizeWithApp(1000, 2500);
@@ -4592,6 +4594,60 @@ public class SizeCompatTests extends WindowTestsBase {
         // Bounds are not sandboxed to appBounds.
         assertNotEquals(appBounds, bounds);
         assertEquals(notchHeight, appBounds.top - bounds.top);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX)
+    public void testUpscaling_boundsUpscaledWithWindowingModeChange() {
+        allowDesktopMode();
+
+        // Launch an SCM app in freeform on an external display.
+        final int dw = 2000;
+        final int dh = 1600;
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        displayInfo.type = TYPE_EXTERNAL;
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.logicalWidth = dw;
+        displayInfo.logicalHeight = dh;
+        final DisplayContent display = new TestDisplayContent.Builder(mAtm, displayInfo).build();
+        display.getDefaultTaskDisplayArea()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM);
+        final TaskBuilder taskBuilder =
+                new TaskBuilder(mSupervisor).setWindowingMode(WINDOWING_MODE_FREEFORM);
+        setUpApp(display, null /* appBuilder */, taskBuilder);
+        Rect bounds = new Rect(0, 0, 600, 800);
+        mTask.setBounds(bounds);
+        mTask.onConfigurationChanged(mTask.getDisplayArea().getConfiguration());
+        prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(WindowConfiguration.WINDOWING_MODE_FREEFORM, mTask.getWindowingMode());
+        assertFitted();
+
+        // Exit freeform into fullscreen.
+        display.getDefaultTaskDisplayArea()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
+        mTask.setBounds(null);
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        assertUpScaled();
+
+        // Move to a fullscreen, ignore-orientation-request, internal display.
+        final DisplayInfo internalDisplayInfo = new DisplayInfo();
+        internalDisplayInfo.copyFrom(display.getDisplayInfo());
+        internalDisplayInfo.type = TYPE_INTERNAL;
+        internalDisplayInfo.displayId = display.getDisplayInfo().displayId + 1;
+        final DisplayContent internalDisplay =
+                new TestDisplayContent.Builder(mAtm, internalDisplayInfo).build();
+        mTask.mWmService.mRoot.moveRootTaskToDisplay(mTask.mTaskId, internalDisplay.mDisplayId,
+                true /* onTop */);
+        internalDisplay.setIgnoreOrientationRequest(true);
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        assertTrue(mActivity.inSizeCompatMode());
+        assertEquals(1f, mActivity.getCompatScale(), 1e7);
+
+        // Make the display not ignore-orientation-request.
+        internalDisplay.setIgnoreOrientationRequest(false);
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        assertUpScaled();
     }
 
 

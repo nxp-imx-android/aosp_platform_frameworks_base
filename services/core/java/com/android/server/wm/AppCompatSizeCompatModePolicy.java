@@ -24,6 +24,7 @@ import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.IN_SIZE_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
+import static android.window.DesktopExperienceFlags.ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX;
 
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
@@ -33,6 +34,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.util.proto.ProtoOutputStream;
+import android.view.Display;
 
 import java.io.PrintWriter;
 import java.util.function.DoubleSupplier;
@@ -572,12 +574,44 @@ class AppCompatSizeCompatModePolicy {
         final int contentH = resolvedAppBounds.height();
         final int viewportW = containerAppBounds.width();
         final int viewportH = containerAppBounds.height();
-        // Allow an application to be up-scaled if its window is smaller than its
-        // original container or if it's a freeform window in desktop mode.
-        boolean shouldAllowUpscaling = !(contentW <= viewportW && contentH <= viewportH)
-                || isInDesktopMode(mActivityRecord.mAtmService.mContext,
+        final boolean isInDesktopMode = isInDesktopMode(mActivityRecord.mAtmService.mContext,
                 newParentConfig.windowConfiguration.getWindowingMode());
+        // Allow an application to be up-scaled if its window is smaller than its
+        // original container, if it's a freeform window in desktop mode, or if display or windowing
+        // mode has changed in some special conditions.
+        final boolean shouldAllowUpscaling = !(contentW <= viewportW && contentH <= viewportH)
+                || isInDesktopMode
+                || shouldAllowUpscalingForDisplayOrWindowingModeChange(isInDesktopMode);
         return shouldAllowUpscaling ? Math.min(
                 (float) viewportW / contentW, (float) viewportH / contentH) : 1f;
+    }
+
+    /**
+     * Returns whether the activity should be upscaled due to a change in display or windowing
+     * mode. Upscaling is generally disabled in fullscreen to avoid pixelation etc. However, it is
+     * enabled in specific scenarios to prevent the app from becoming too small in a parent window,
+     * such as when:
+     * - Moving from an external display to a smaller phone screen.
+     * - Transitioning from desktop mode to fullscreen.
+     * This treatment is not applied to internal displays that ignore orientation requests to
+     * maintain consistent scaling behavior with orientation changes on those displays.
+     */
+    private boolean shouldAllowUpscalingForDisplayOrWindowingModeChange(boolean isInDesktopMode) {
+        final boolean launchedInAndExitedFromDesktop  = getAppCompatDisplayInsets() != null
+                && getAppCompatDisplayInsets().mInDesktopMode && !isInDesktopMode;
+        final boolean hasMovedBetweenDisplays = mActivityRecord.mAppCompatController
+                .getDisplayCompatModePolicy().getDisplayChangedWithoutRestart();
+        final boolean isOnIgnoreOrientationRequestInternalDisplay = isOnInternalDisplay()
+                && mActivityRecord.getDisplayContent().getIgnoreOrientationRequest();
+
+        // TODO(b/432329483): Polish the policy for desktop-first devices.
+        return ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX.isTrue()
+                && (launchedInAndExitedFromDesktop || hasMovedBetweenDisplays)
+                && !isOnIgnoreOrientationRequestInternalDisplay;
+    }
+
+    /** Returns whether the activity is on an internal display. */
+    private boolean isOnInternalDisplay() {
+        return mActivityRecord.getDisplayContent().getDisplay().getType() == Display.TYPE_INTERNAL;
     }
 }
