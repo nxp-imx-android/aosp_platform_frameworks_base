@@ -40,14 +40,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
@@ -56,7 +53,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.SceneKey
@@ -71,26 +67,19 @@ import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
-import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.remedia.ui.compose.Media
-import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.EditMode
-import com.android.systemui.qs.panels.ui.compose.TileGrid
-import com.android.systemui.qs.shared.ui.ElementKeys
 import com.android.systemui.qs.ui.composable.QuickSettingsScene.Companion.InternalScenes.Edit
 import com.android.systemui.qs.ui.composable.QuickSettingsScene.Companion.InternalScenes.QS
-import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsSceneContentViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsUserActionsViewModel
 import com.android.systemui.res.R
@@ -356,65 +345,7 @@ private fun ContentScope.QuickSettingsContent(
                             CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    var listening by remember { mutableStateOf(false) }
-                    LifecycleStartEffect(Unit) {
-                        listening = true
-
-                        onStopOrDispose { listening = false }
-                    }
-
-                    QuickSettingsPanelLayout(
-                        brightness =
-                            @Composable {
-                                BrightnessSliderContainer(
-                                    viewModel.qsContainerViewModel.brightnessSliderViewModel,
-                                    containerColors =
-                                        ContainerColors(
-                                            Color.Transparent,
-                                            ContainerColors.defaultContainerColor,
-                                        ),
-                                    modifier =
-                                        Modifier.padding(
-                                            vertical =
-                                                dimensionResource(
-                                                    id = R.dimen.qs_brightness_margin_top
-                                                )
-                                        ),
-                                )
-                            },
-                        tiles =
-                            @Composable {
-                                Box {
-                                    GridAnchor()
-                                    TileGrid(
-                                        viewModel.qsContainerViewModel.tileGridViewModel,
-                                        listening = { listening },
-                                    )
-                                }
-                            },
-                        media =
-                            @Composable {
-                                Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
-                                    Media(
-                                        viewModelFactory =
-                                            viewModel.qsContainerViewModel.mediaViewModelFactory,
-                                        presentationStyle = MediaPresentationStyle.Default,
-                                        behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
-                                        onDismissed =
-                                            viewModel.qsContainerViewModel::onMediaSwipeToDismiss,
-                                    )
-                                }
-                            },
-                        mediaInRow = mediaInRow,
-                        modifier =
-                            Modifier.element(ElementKeys.QuickSettingsContent)
-                                .padding(
-                                    horizontal =
-                                        dimensionResource(id = R.dimen.qs_horizontal_margin)
-                                )
-                                .sysuiResTag("quick_settings_panel"),
-                    )
+                    QuickSettingsContent(viewModel.qsContainerViewModel, mediaInRow)
                 }
             }
 

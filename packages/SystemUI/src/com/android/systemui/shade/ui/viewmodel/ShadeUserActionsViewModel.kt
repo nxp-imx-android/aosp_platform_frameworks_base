@@ -20,7 +20,7 @@ import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.systemui.qs.ui.adapter.QSSceneAdapter
+import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.map
 class ShadeUserActionsViewModel
 @AssistedInject
 constructor(
-    private val qsSceneAdapter: QSSceneAdapter,
+    private val editModeViewModel: EditModeViewModel,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val sceneBackInteractor: SceneBackInteractor,
 ) : UserActionsViewModel() {
@@ -50,7 +50,7 @@ constructor(
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
         combine(
                 shadeModeInteractor.shadeMode,
-                qsSceneAdapter.isCustomizerShowing,
+                editModeViewModel.isEditing,
                 sceneBackInteractor.backScene
                     .filter { it != Scenes.Shade }
                     .map { it ?: SceneFamilies.Home },
