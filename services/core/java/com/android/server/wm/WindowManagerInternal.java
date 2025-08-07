@@ -1190,9 +1190,10 @@ public abstract class WindowManagerInternal {
      * services - such as the cursor or any current contextual search window.
      *
      * @param uid the UID of the contextual search application. System alert windows belonging
-     * to this UID will be excluded from the screenshot.
+     *            to this UID will be excluded from the screenshot.
+     * @param displayId the display ID of the display to capture the screenshot of
      */
-    public abstract ScreenshotHardwareBuffer takeContextualSearchScreenshot(int uid);
+    public abstract ScreenshotHardwareBuffer takeContextualSearchScreenshot(int uid, int displayId);
 
     /**
      * Used only for assist -- request a screenshot of the current application on the display of

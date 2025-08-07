@@ -2,18 +2,18 @@ package: "android.app.contextualsearch.flags"
 container: "system"
 
 flag {
-  name: "enable_service"
-  namespace: "machine_learning"
-  description: "Flag to enable the service"
-  bug: "309689654"
-  is_exported: true
+    name: "enable_service"
+    namespace: "machine_learning"
+    description: "Flag to enable the service"
+    bug: "309689654"
+    is_exported: true
 }
 
 flag {
-  name: "enable_token_refresh"
-  namespace: "machine_learning"
-  description: "Flag to refresh the token to the callback"
-  bug: "309689654"
+    name: "enable_token_refresh"
+    namespace: "machine_learning"
+    description: "Flag to refresh the token to the callback"
+    bug: "309689654"
 }
 
 flag {
@@ -51,9 +51,12 @@ flag {
 }
 
 flag {
-  name: "self_invocation"
-  namespace: "sysui_integrations"
-  description: "Enable apps to self-invoke Contextual Search."
-  bug: "368653769"
-  is_exported: true
+    name: "config_parameters"
+    namespace: "sysui_integrations"
+    description: "Allow invocation parameters to be passed to Contextual Search, including from apps."
+    bug: "371552433"
+    is_exported: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

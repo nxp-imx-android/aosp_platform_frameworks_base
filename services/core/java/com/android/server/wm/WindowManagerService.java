@@ -8991,7 +8991,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public ScreenshotHardwareBuffer takeContextualSearchScreenshot(int uid) {
+        public ScreenshotHardwareBuffer takeContextualSearchScreenshot(int uid, int displayId) {
             // WMS.takeAssistScreenshot takes care of the locking.
             return WindowManagerService.this.takeAssistScreenshot(win -> {
                 switch (win.getWindowType()) {
@@ -9005,7 +9005,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     default:
                         return true;
                 }
-            }, DEFAULT_DISPLAY);
+            }, displayId);
         }
 
         @Override
