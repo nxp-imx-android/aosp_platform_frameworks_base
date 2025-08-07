@@ -746,6 +746,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             PackageManager.corkPackageInfoCache();
             ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
             ApplicationPackageManager.disableQueryIntentActivitiesCacheForCurrentProcess();
+            AppOpsManager.disableCheckPackageCache();
         }
 
         @Override
@@ -7645,6 +7646,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         if (accessGranted) {
             invalidateGetPackagesForUidCache(
                     PackageMetrics.INVALIDATION_REASON_GRANT_IMPLICIT_ACCESS);
+            AppOpsManager.invalidateCheckPackageCache();
         }
     }
 

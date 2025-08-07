@@ -2528,6 +2528,7 @@ final class InstallPackageHelper {
         }
         PackageManagerService.invalidateGetPackagesForUidCache(
                 PackageMetrics.INVALIDATION_REASON_INSTALL_PACKAGE);
+        AppOpsManager.invalidateCheckPackageCache();
     }
 
     @GuardedBy("mPm.mLock")
