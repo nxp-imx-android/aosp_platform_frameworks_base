@@ -15,6 +15,7 @@
  */
 package android.view.contentcapture;
 
+import static android.view.contentcapture.ContentCaptureCondition.CONDITION_ENABLE_EXPORTING_VIRTUAL_CHILDREN;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_CONTEXT_UPDATED;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FINISHED;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FLUSH;
@@ -1032,7 +1033,9 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     view.onProvideContentCaptureStructure(structure, /* flags= */ 0);
                     if (Flags.enableExportAssistVirtualNodeToCcapi()
                             && view.getAccessibilityNodeProvider() != null
-                            && structure.getAutofillId() != null) {
+                            && structure.getAutofillId() != null
+                            && mManager.isContentCaptureConditionEnabled(
+                                    CONDITION_ENABLE_EXPORTING_VIRTUAL_CHILDREN)) {
                         // TODO: Move this to a background thread to improve performance.
                         Trace.beginSection("notifyVirtualChildrenAppeared");
                         notifyVirtualChildrenAppeared(session, structure.getAutofillId(),
