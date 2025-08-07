@@ -622,6 +622,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 }
                 shouldDeliverToMenu = !mTouchState.startedDragging() && !mTouchState.isDragging();
                 mTouchState.reset();
+                mPipDismissTargetHandler.cleanUpDismissTarget();
                 break;
             }
             case MotionEvent.ACTION_HOVER_ENTER: {
