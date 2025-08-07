@@ -21,3 +21,10 @@ flag {
   description: "Remove WIU allowlisting from MediaController.sendCommand"
   bug: "339637822"
 }
+
+flag {
+  name: "deprecate_platform_mediasession2_apis"
+  namespace: "media_solutions"
+  description: "Deprecate platform MediaSession2 APIs"
+  bug: "436849846"
+}
