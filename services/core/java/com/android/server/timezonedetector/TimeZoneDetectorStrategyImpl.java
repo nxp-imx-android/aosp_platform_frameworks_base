@@ -518,7 +518,8 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
                 findBestTelephonySuggestion();
         TelephonyTimeZoneSuggestion telephonySuggestion =
                 bestQualifiedTelephonySuggestion == null
-                        ? null : bestQualifiedTelephonySuggestion.suggestion;
+                        ? null
+                        : bestQualifiedTelephonySuggestion.suggestion();
         // A new generator is created each time: we don't want / require consistency.
         OrdinalGenerator<String> tzIdOrdinalGenerator =
                 new OrdinalGenerator<>(new TimeZoneCanonicalizer());
@@ -739,7 +740,7 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
         }
 
         boolean suggestionGoodEnough =
-                bestTelephonySuggestion.score >= TELEPHONY_SCORE_USAGE_THRESHOLD;
+                bestTelephonySuggestion.score() >= TELEPHONY_SCORE_USAGE_THRESHOLD;
         if (!suggestionGoodEnough) {
             if (DBG) {
                 Slog.d(LOG_TAG, "Best suggestion not good enough:"
@@ -751,7 +752,7 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
 
         // Paranoia: Every suggestion above the SCORE_USAGE_THRESHOLD should have a non-null time
         // zone ID.
-        String timeZoneId = bestTelephonySuggestion.suggestion.getZoneId();
+        String timeZoneId = bestTelephonySuggestion.suggestion().getZoneId();
         if (timeZoneId == null) {
             Slog.w(LOG_TAG, "Empty zone suggestion scored higher than expected. This is an error:"
                     + " bestTelephonySuggestion=" + bestTelephonySuggestion
@@ -834,12 +835,12 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
 
             if (bestSuggestion == null) {
                 bestSuggestion = candidateSuggestion;
-            } else if (candidateSuggestion.score > bestSuggestion.score) {
+            } else if (candidateSuggestion.score() > bestSuggestion.score()) {
                 bestSuggestion = candidateSuggestion;
-            } else if (candidateSuggestion.score == bestSuggestion.score) {
+            } else if (candidateSuggestion.score() == bestSuggestion.score()) {
                 // Tie! Use the suggestion with the lowest slotIndex.
-                int candidateSlotIndex = candidateSuggestion.suggestion.getSlotIndex();
-                int bestSlotIndex = bestSuggestion.suggestion.getSlotIndex();
+                int candidateSlotIndex = candidateSuggestion.suggestion().getSlotIndex();
+                int bestSlotIndex = bestSuggestion.suggestion().getSlotIndex();
                 if (candidateSlotIndex < bestSlotIndex) {
                     bestSuggestion = candidateSuggestion;
                 }
@@ -979,56 +980,6 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
     @VisibleForTesting
     public synchronized TimeZoneDetectorStatus getCachedDetectorStatusForTests() {
         return mDetectorStatus;
-    }
-
-    /**
-     * A {@link TelephonyTimeZoneSuggestion} with additional qualifying metadata.
-     */
-    @VisibleForTesting
-    public static final class QualifiedTelephonyTimeZoneSuggestion {
-
-        @VisibleForTesting
-        public final TelephonyTimeZoneSuggestion suggestion;
-
-        /**
-         * The score the suggestion has been given. This can be used to rank against other
-         * suggestions of the same type.
-         */
-        @VisibleForTesting
-        public final int score;
-
-        @VisibleForTesting
-        public QualifiedTelephonyTimeZoneSuggestion(
-                TelephonyTimeZoneSuggestion suggestion, int score) {
-            this.suggestion = suggestion;
-            this.score = score;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            QualifiedTelephonyTimeZoneSuggestion that = (QualifiedTelephonyTimeZoneSuggestion) o;
-            return score == that.score
-                    && suggestion.equals(that.suggestion);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(score, suggestion);
-        }
-
-        @Override
-        public String toString() {
-            return "QualifiedTelephonyTimeZoneSuggestion{"
-                    + "suggestion=" + suggestion
-                    + ", score=" + score
-                    + '}';
-        }
     }
 
     private static String formatDebugString(TimestampedValue<?> value) {
