@@ -99,6 +99,7 @@ public class RestrictedLockUtilsTest {
                 .thenReturn(mDevicePolicyManager);
         when(mContext.getSystemService(Context.USER_SERVICE))
                 .thenReturn(mUserManager);
+        when(mContext.getSystemService(UserManager.class)).thenReturn(mUserManager);
         when(mContext.getPackageManager())
                 .thenReturn(mPackageManager);
 
@@ -453,6 +454,31 @@ public class RestrictedLockUtilsTest {
     @Test
     public void sendShowAdminSupportDetailsIntent_noExtraRestriction() {
         RestrictedLockUtils.sendShowAdminSupportDetailsIntent(mContext, null);
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mContext).startActivityAsUser(intentCaptor.capture(), any());
+        assertThat(intentCaptor.getValue().getExtra(EXTRA_RESTRICTION)).isNull();
+    }
+
+    @Test
+    public void sendShowAdminSupportDetailsIntent_withEnforcingAdmin_extraRestrictionProvided() {
+        when(mUserManager.getUserProfiles()).thenReturn(
+                Collections.singletonList(UserHandle.of(mUserId)));
+        EnforcingAdmin enforcingAdmin = new EnforcingAdmin(mPackage,
+                UnknownAuthority.UNKNOWN_AUTHORITY, UserHandle.of(mUserId), mAdmin1);
+        final String restriction = "fake";
+
+        RestrictedLockUtils.sendShowAdminSupportDetailsIntent(mContext, enforcingAdmin,
+                restriction);
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mContext).startActivityAsUser(intentCaptor.capture(), any());
+        assertThat(intentCaptor.getValue().getExtra(EXTRA_RESTRICTION)).isEqualTo(restriction);
+    }
+
+    @Test
+    public void sendShowAdminSupportDetailsIntent_withEnforcingAdmin_noExtraRestriction() {
+        RestrictedLockUtils.sendShowAdminSupportDetailsIntent(mContext, null, null);
 
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mContext).startActivityAsUser(intentCaptor.capture(), any());

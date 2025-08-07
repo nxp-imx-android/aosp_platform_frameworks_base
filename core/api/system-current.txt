@@ -1552,6 +1552,7 @@ package android.app.admin {
     ctor public EnforcingAdmin(@NonNull String, @NonNull android.app.admin.Authority, @NonNull android.os.UserHandle);
     method public int describeContents();
     method @NonNull public android.app.admin.Authority getAuthority();
+    method @FlaggedApi("android.app.admin.flags.enforcing_admin_get_component_name_enabled") @Nullable public android.content.ComponentName getComponentName();
     method @NonNull public String getPackageName();
     method @NonNull public android.os.UserHandle getUserHandle();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
