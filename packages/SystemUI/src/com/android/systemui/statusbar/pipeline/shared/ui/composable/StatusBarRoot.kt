@@ -70,6 +70,7 @@ import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.POPUP
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
@@ -300,7 +301,11 @@ fun StatusBarRoot(
                                 )
 
                             setViewCompositionStrategy(
-                                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                                if (SceneContainerFlag.isEnabled) {
+                                    ViewCompositionStrategy.Default
+                                } else {
+                                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                                }
                             )
 
                             setContent {
@@ -308,7 +313,8 @@ fun StatusBarRoot(
                                     chips = statusBarViewModel.popupChips,
                                     mediaHost = mediaHost,
                                     onMediaControlPopupVisibilityChanged = { popupShowing ->
-                                        mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
+                                        mediaHierarchyManager.isMediaControlPopupShowing =
+                                            popupShowing
                                     },
                                 )
                             }
@@ -319,7 +325,8 @@ fun StatusBarRoot(
                 // If the flag is enabled, create and add a compose section to the end
                 // of the system_icons container
                 if (SystemStatusIconsInCompose.isEnabled) {
-                    phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility = View.GONE
+                    phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility =
+                        View.GONE
                     addSystemStatusIconsComposable(phoneStatusBarView, statusBarViewModel)
                 } else {
                     val statusIconContainer =
@@ -347,7 +354,10 @@ fun StatusBarRoot(
                     }
                 }
 
-                notificationIconsBinder.bindWhileAttached(notificationIconContainer, context.displayId)
+                notificationIconsBinder.bindWhileAttached(
+                    notificationIconContainer,
+                    context.displayId,
+                )
 
                 if (StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled) {
                     bindRegionSamplingViewModel(
