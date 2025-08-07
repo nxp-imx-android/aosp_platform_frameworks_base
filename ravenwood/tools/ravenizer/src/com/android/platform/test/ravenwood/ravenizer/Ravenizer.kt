@@ -122,13 +122,20 @@ class Ravenizer {
 
                     if (className?.shouldBypass() == false) {
                         stats.processedClasses.incrementAndGet()
+
+                        val entryInfo = processor.applyFilterOnClass(entry)
+                            ?: return@process null
+
+                        log.v("Creating class: %s Policy: %s",
+                            entryInfo.classInternalName, entryInfo.policy)
+
                         var classBytes = entry.data
                         if (RunnerRewritingAdapter.shouldProcess(processor.allClasses, className)) {
                             classBytes = ravenizeSingleClass(classBytes, processor.allClasses)
                         }
                         classBytes = processor.processClassBytecode(classBytes)
                         // Create a new entry
-                        ZipEntryData.fromBytes(entry.name, classBytes)
+                        ZipEntryData.fromBytes(entryInfo.renamedEntryName, classBytes)
                     } else {
                         // Do not process and return the original entry
                         entry
