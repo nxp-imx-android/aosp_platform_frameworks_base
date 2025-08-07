@@ -2204,11 +2204,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mBackgroundHandler = BackgroundThread.getHandler();
 
         // Add the health permission to the list of restricted permissions.
-        if (android.permission.flags.Flags.replaceBodySensorPermissionEnabled()) {
-            Set<String> healthPermissions = HealthConnectManager.getHealthPermissions(mContext);
-            for (String permission : healthPermissions) {
-                SENSOR_PERMISSIONS.add(permission);
-            }
+        Set<String> healthPermissions = HealthConnectManager.getHealthPermissions(mContext);
+        for (String permission : healthPermissions) {
+            SENSOR_PERMISSIONS.add(permission);
         }
 
         // Needed when mHasFeature == false, because it controls the certificate warning text.
