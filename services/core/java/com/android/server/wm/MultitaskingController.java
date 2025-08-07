@@ -51,7 +51,7 @@ class MultitaskingController extends IMultitaskingController.Stub {
 
     private static final String TAG = MultitaskingController.class.getSimpleName();
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     // All proxies indexed by calling process id.
     private final SparseArray<MultitaskingControllerProxy> mProxies = new SparseArray<>();

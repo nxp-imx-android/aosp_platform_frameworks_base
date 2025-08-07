@@ -42,7 +42,7 @@ import java.util.concurrent.Executor;
  */
 public class AmbientVolumeController implements LocalBluetoothProfileManager.ServiceListener {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final String TAG = "AmbientController";
 
     private final LocalBluetoothProfileManager mProfileManager;
