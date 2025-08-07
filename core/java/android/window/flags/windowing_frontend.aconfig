@@ -153,17 +153,6 @@ flag {
 }
 
 flag {
-  name: "bg_priority_for_occluded_freeform_tasks"
-  namespace: "windowing_frontend"
-  description: "Background priority for occluded freeform tasks"
-  bug: "325594711"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
