@@ -837,7 +837,8 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Perform a partial update on the target processes and their reachable processes.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private void partialUpdateLSP(@OomAdjReason int oomAdjReason, ArraySet<ProcessRecord> targets) {
+    private void partialUpdateLSP(@OomAdjReason int oomAdjReason,
+            ArraySet<ProcessRecordInternal> targets) {
         final ProcessRecord topApp = getTopProcess();
         final long now = mInjector.getUptimeMillis();
         final long nowElapsed = mInjector.getElapsedRealtimeMillis();
@@ -853,7 +854,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         reachables.clear();
 
         for (int i = 0, size = targets.size(); i < size; i++) {
-            final ProcessRecord target = targets.valueAtUnchecked(i);
+            final ProcessRecordInternal target = targets.valueAtUnchecked(i);
             target.resetCachedInfo();
             target.setReachable(true);
             reachables.add(target);

@@ -355,7 +355,7 @@ public abstract class OomAdjuster {
     protected final ActiveUids mTmpUidRecords;
     protected final ArrayDeque<ProcessRecordInternal> mTmpQueue;
     protected final ArraySet<ProcessRecordInternal> mTmpProcessSet = new ArraySet<>();
-    protected final ArraySet<ProcessRecord> mPendingProcessSet = new ArraySet<>();
+    protected final ArraySet<ProcessRecordInternal> mPendingProcessSet = new ArraySet<>();
 
     /**
      * List of processes that we want to batch for LMKD to adjust their respective
@@ -395,7 +395,7 @@ public abstract class OomAdjuster {
     protected int mProcessStateCurTop = PROCESS_STATE_TOP;
 
     @GuardedBy("mService")
-    private final ArraySet<ProcessRecord> mFollowUpUpdateSet = new ArraySet<>();
+    private final ArraySet<ProcessRecordInternal> mFollowUpUpdateSet = new ArraySet<>();
 
     protected static final long NO_FOLLOW_UP_TIME = Long.MAX_VALUE;
     @GuardedBy("mService")
@@ -888,7 +888,7 @@ public abstract class OomAdjuster {
         long nextFollowUpUptimeMs = Long.MAX_VALUE;
         mNextFollowUpUpdateUptimeMs = NO_FOLLOW_UP_TIME;
         for (int i = mFollowUpUpdateSet.size() - 1; i >= 0; i--) {
-            final ProcessRecord proc = mFollowUpUpdateSet.valueAtUnchecked(i);
+            final ProcessRecordInternal proc = mFollowUpUpdateSet.valueAtUnchecked(i);
             final long followUpUptimeMs = proc.getFollowupUpdateUptimeMs();
 
             if (proc.isKilled()) {
@@ -2958,7 +2958,7 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    protected void maybeSetProcessFollowUpUpdateLocked(ProcessRecord proc,
+    protected void maybeSetProcessFollowUpUpdateLocked(ProcessRecordInternal proc,
             long updateUptimeMs, long now) {
         if (updateUptimeMs <= now) {
             // Time sensitive period has already passed. No need to schedule a follow up.

@@ -261,6 +261,10 @@ public abstract class ProcessRecordInternal {
     // The ActivityManagerGlobalLock object, which can only be used as a lock object.
     private final Object mProcLock;
 
+    /** True once we know the process has been killed. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mKilled;
+
     /**
      * Maximum OOM adjustment for this process.
      */
@@ -705,6 +709,16 @@ public abstract class ProcessRecordInternal {
         mObserver = observer;
         mStartedServiceObserver = startedServiceObserver;
         mLastStateTime = now;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean isKilled() {
+        return mKilled;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setKilled(boolean killed) {
+        mKilled = killed;
     }
 
     @GuardedBy("mServiceLock")

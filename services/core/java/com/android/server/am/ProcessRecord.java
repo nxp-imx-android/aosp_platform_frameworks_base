@@ -285,12 +285,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private boolean mKilledByAm;
 
     /**
-     * True once we know the process has been killed.
-     */
-    @CompositeRWLock({"mService", "mProcLock"})
-    private boolean mKilled;
-
-    /**
      * The timestamp in uptime when this process was killed.
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -529,8 +523,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         pw.print(prefix); pw.print("startSeq="); pw.println(mStartSeq);
         pw.print(prefix); pw.print("mountMode="); pw.println(
                 DebugUtils.valueToString(Zygote.class, "MOUNT_EXTERNAL_", mMountMode));
-        if (mKilled || mKilledByAm || mWaitingToKill != null) {
-            pw.print(prefix); pw.print("killed="); pw.print(mKilled);
+        if (isKilled() || mKilledByAm || mWaitingToKill != null) {
+            pw.print(prefix); pw.print("killed="); pw.print(isKilled());
             pw.print(" killedByAm="); pw.print(mKilledByAm);
             pw.print(" waitingToKill="); pw.println(mWaitingToKill);
         }
@@ -999,16 +993,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    boolean isKilled() {
-        return mKilled;
-    }
-
-    @GuardedBy({"mService", "mProcLock"})
-    void setKilled(boolean killed) {
-        mKilled = killed;
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     long getKillTime() {
         return mKillTime;
     }
@@ -1344,7 +1328,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             }
             if (!mPersistent) {
                 synchronized (mProcLock) {
-                    mKilled = true;
+                    setKilled(true);
                     mKilledByAm = true;
                     mKillTime = SystemClock.uptimeMillis();
                 }
