@@ -23,5 +23,17 @@ package com.android.server;
  */
 public abstract class UiModeManagerInternal {
 
-    public abstract boolean isNightMode();
+    /** Returns whether night mode is enabled on the given display. */
+    public abstract boolean isNightMode(int displayId);
+
+    /**
+     * Sets the UI mode for the given display.
+     *
+     * <p>UiModeManagerService does not track displays. It is the caller's responsibility to clear
+     * any existing overrides when a display becomes removed/invalid/inactive.</p>
+     */
+    public abstract void setDisplayUiMode(int displayId, int uiMode);
+
+    /** Returns the UI mode for the given display. */
+    public abstract int getDisplayUiMode(int displayId);
 }

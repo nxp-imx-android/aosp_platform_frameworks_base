@@ -924,6 +924,13 @@ public abstract class WindowManagerInternal {
     public abstract @DisplayImePolicy int getDisplayImePolicy(int displayId);
 
     /**
+     * Called by UiModeManager when the UI mode for the given display has changed.
+     *
+     * @param displayId The id of the display
+     */
+    public abstract void onDisplayUiModeChanged(int displayId);
+
+    /**
      * Tell window manager about a package that should be running with a restricted range of
      * refresh rate setting until removeRefreshRateRangeForPackage is called for the same package.
      *

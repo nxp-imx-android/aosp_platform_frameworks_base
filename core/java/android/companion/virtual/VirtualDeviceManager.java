@@ -48,6 +48,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
@@ -1133,6 +1134,33 @@ public final class VirtualDeviceManager {
          */
         public void setDisplayImePolicy(int displayId, @WindowManager.DisplayImePolicy int policy) {
             mVirtualDeviceInternal.setDisplayImePolicy(displayId, policy);
+        }
+
+        /**
+         * Specifies the UI mode on the given display.
+         *
+         * <p>By default, all displays created by virtual devices have
+         * {@link Configuration#UI_MODE_TYPE_UNDEFINED} and
+         * {@link Configuration#UI_MODE_NIGHT_UNDEFINED}, meaning that they follow the global UI
+         * mode type and night mode. These constants can also be used to unset a previously set
+         * UI mode.</p>
+         *
+         * @param displayId the ID of the display to change the UI mode for. It must be a trusted
+         *   non-mirror display, owned by this virtual device.
+         * @param uiMode the UI mode to use on that display, a combination of the UI mode type
+         *   given by the {@link Configuration#UI_MODE_TYPE_MASK} bits, and the night mode given by
+         *   the {@link Configuration#UI_MODE_NIGHT_MASK} bits.
+         * @throws SecurityException if the display is not owned by this device, is not
+         *   {@link DisplayManager#VIRTUAL_DISPLAY_FLAG_TRUSTED trusted}, or is a
+         *   {@link DisplayManager#VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR mirror} display.
+         * @see Configuration#uiMode
+         */
+        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_UI_MODE)
+        public void setDisplayUiMode(int displayId, int uiMode) {
+            if (!Flags.deviceAwareUiMode()) {
+                throw new UnsupportedOperationException("Required flag is not enabled");
+            }
+            mVirtualDeviceInternal.setDisplayUiMode(displayId, uiMode);
         }
 
         /**

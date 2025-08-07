@@ -206,6 +206,9 @@ interface IVirtualDevice {
     /** Sets an IME policy for the given display. */
     void setDisplayImePolicy(int displayId, int policy);
 
+    /** Sets the UI mode for the given display. */
+    void setDisplayUiMode(int displayId, int uiMode);
+
     /**
      * Registers an intent interceptor that will intercept an intent attempting to launch
      * when matching the provided IntentFilter and calls the callback with the intercepted

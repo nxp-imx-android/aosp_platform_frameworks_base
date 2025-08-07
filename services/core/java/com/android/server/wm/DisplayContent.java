@@ -2526,6 +2526,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         config.densityDpi = displayInfo.logicalDensityDpi;
 
+        config.uiMode = mDisplayPolicy.getDisplayUiMode();
+
         config.colorMode =
                 ((displayInfo.isHdr() && mWmService.hasHdrSupport())
                         ? Configuration.COLOR_MODE_HDR_YES

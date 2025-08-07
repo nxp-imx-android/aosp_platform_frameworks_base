@@ -71,6 +71,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.DisplayManagerInternal;
@@ -114,6 +115,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppStreamingActivity;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
+import com.android.server.UiModeManagerInternal;
 import com.android.server.companion.virtual.GenericWindowPolicyController.RunningAppsChangedListener;
 import com.android.server.companion.virtual.audio.VirtualAudioController;
 import com.android.server.companion.virtual.camera.VirtualCameraController;
@@ -213,6 +215,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     private IVirtualDeviceSoundEffectListener mSoundEffectListener;
     private final DisplayManagerGlobal mDisplayManager;
     private final DisplayManagerInternal mDisplayManagerInternal;
+    private final UiModeManagerInternal mUiModeManagerInternal;
     private final PowerManager mPowerManager;
     @GuardedBy("mIntentInterceptors")
     private final Map<IBinder, IntentFilter> mIntentInterceptors = new ArrayMap<>();
@@ -456,6 +459,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         mDevicePolicies = params.getDevicePolicies();
         mDisplayManager = displayManager;
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
+        mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
         mPowerManager = context.getSystemService(PowerManager.class);
 
         if (mDevicePolicies.get(POLICY_TYPE_CLIPBOARD, DEVICE_POLICY_DEFAULT)
@@ -1104,6 +1108,26 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
+    public void setDisplayUiMode(int displayId, int uiMode) {
+        checkCallerIsDeviceOwner();
+        if ((uiMode & Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_CAR
+                && !AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(
+                        getDeviceProfile())) {
+            throw new SecurityException("Setting car UI mode requires "
+                    + AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
+        }
+        synchronized (mVirtualDeviceLock) {
+            checkDisplayOwnedByVirtualDeviceLocked(displayId);
+            VirtualDisplayWrapper wrapper = mVirtualDisplays.get(displayId);
+            if (!wrapper.isTrusted() || wrapper.isMirror()) {
+                throw new SecurityException("Cannot set UI mode on untrusted or mirror display");
+            }
+        }
+        Binder.withCleanCallingIdentity(
+                () -> mUiModeManagerInternal.setDisplayUiMode(displayId, uiMode));
+    }
+
+    @Override // Binder call
     @Nullable
     public List<VirtualSensor> getVirtualSensorList() {
         checkCallerIsDeviceOwner();
@@ -1447,8 +1471,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                 Slog.wtf(TAG, "Virtual device already has a virtual display with ID " + displayId);
                 return;
             }
-            mVirtualDisplays.put(displayId, new VirtualDisplayWrapper(callback, gwpc, wakeLock,
-                    isTrustedDisplay, isMirrorDisplay));
+            mVirtualDisplays.put(displayId, new VirtualDisplayWrapper(callback, displayId, gwpc,
+                    wakeLock, isTrustedDisplay, isMirrorDisplay));
         }
     }
 
@@ -1563,6 +1587,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         virtualDisplayWrapper.releaseWakeLock();
         virtualDisplayWrapper.getWindowPolicyController().unregisterRunningAppsChangedListener(
                 this);
+        // UiModeManagerService keeps all UI mode overrides in a map, so this call effectively
+        // removes the entry for this display.
+        mUiModeManagerInternal.setDisplayUiMode(
+                virtualDisplayWrapper.getDisplayId(),
+                Configuration.UI_MODE_TYPE_UNDEFINED | Configuration.UI_MODE_NIGHT_UNDEFINED);
     }
 
     int getOwnerUid() {
@@ -1735,8 +1764,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         private final PowerManager.WakeLock mWakeLock;
         private final boolean mIsTrusted;
         private final boolean mIsMirror;
+        private final int mDisplayId;
 
-        VirtualDisplayWrapper(@NonNull IVirtualDisplayCallback token,
+        VirtualDisplayWrapper(@NonNull IVirtualDisplayCallback token, int displayId,
                 @NonNull GenericWindowPolicyController windowPolicyController,
                 @Nullable PowerManager.WakeLock wakeLock, boolean isTrusted, boolean isMirror) {
             mToken = Objects.requireNonNull(token);
@@ -1744,6 +1774,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             mWakeLock = wakeLock;
             mIsTrusted = isTrusted;
             mIsMirror = isMirror;
+            mDisplayId = displayId;
         }
 
         GenericWindowPolicyController getWindowPolicyController() {
@@ -1772,6 +1803,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
         IVirtualDisplayCallback getToken() {
             return mToken;
+        }
+
+        int getDisplayId() {
+            return mDisplayId;
         }
     }
 

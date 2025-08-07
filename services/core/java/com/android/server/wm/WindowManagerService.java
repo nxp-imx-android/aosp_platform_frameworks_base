@@ -8621,6 +8621,23 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void onDisplayUiModeChanged(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent displayContent = getDisplayContentOrCreate(displayId, null);
+                if (displayContent == null) {
+                    ProtoLog.w(WM_ERROR,
+                            "Received UI mode change on a display that does not exist: %d",
+                            displayId);
+                    return;
+                }
+
+                displayContent.getDisplayPolicy().onDisplayUiModeChanged();
+                // Trigger a configuration change.
+                displayContent.reconfigureDisplayLocked();
+            }
+        }
+
+        @Override
         public void addRefreshRateRangeForPackage(@NonNull String packageName,
                 float minRefreshRate, float maxRefreshRate) {
             synchronized (mGlobalLock) {
