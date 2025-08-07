@@ -21,6 +21,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALI
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.system.OsConstants.EACCES;
+import static android.system.OsConstants.EINVAL;
 import static android.system.OsConstants.ENODEV;
 
 import android.annotation.NonNull;
@@ -35,6 +36,7 @@ import android.companion.virtual.VirtualDeviceManager;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.AttributionSource.ScopedParcelState;
 import android.content.Context;
+import android.content.res.CameraCompatibilityInfo;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -315,8 +317,8 @@ public class Camera {
      */
     public static void getCameraInfo(int cameraId, CameraInfo cameraInfo) {
         Context context = ActivityThread.currentApplication().getApplicationContext();
-        final int rotationOverride = CameraManager.getRotationOverride(context);
-        getCameraInfo(cameraId, context, rotationOverride, cameraInfo);
+        final CameraCompatibilityInfo compatInfo = CameraManager.getRotationOverride(context);
+        getCameraInfo(cameraId, context, compatInfo, cameraInfo);
     }
 
     /**
@@ -327,12 +329,12 @@ public class Camera {
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
     public static void getCameraInfo(int cameraId, @NonNull Context context,
-            int rotationOverride, CameraInfo cameraInfo) {
+            CameraCompatibilityInfo compatInfo, CameraInfo cameraInfo) {
         try (ScopedParcelState clientAttribution =
                 context.getAttributionSource().asScopedParcelState()) {
             _getCameraInfo(
                     cameraId,
-                    rotationOverride,
+                    compatInfo,
                     clientAttribution.getParcel(),
                     getDevicePolicyFromContext(context),
                     cameraInfo);
@@ -353,7 +355,7 @@ public class Camera {
 
     private native static void _getCameraInfo(
             int cameraId,
-            int rotationOverride,
+            CameraCompatibilityInfo compatInfo,
             Parcel clientAttributionParcel,
             int devicePolicy,
             CameraInfo cameraInfo);
@@ -461,8 +463,8 @@ public class Camera {
      */
     public static Camera open(int cameraId) {
         Context context = ActivityThread.currentApplication().getApplicationContext();
-        final int rotationOverride = CameraManager.getRotationOverride(context);
-        return open(cameraId, context, rotationOverride);
+        final CameraCompatibilityInfo compatInfo = CameraManager.getRotationOverride(context);
+        return open(cameraId, context, compatInfo);
     }
 
     /**
@@ -472,8 +474,9 @@ public class Camera {
      */
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
-    public static Camera open(int cameraId, @NonNull Context context, int rotationOverride) {
-        return new Camera(cameraId, context, rotationOverride);
+    public static Camera open(int cameraId, @NonNull Context context,
+            @NonNull CameraCompatibilityInfo compatInfo) {
+        return new Camera(cameraId, context, compatInfo);
     }
 
     /**
@@ -544,7 +547,7 @@ public class Camera {
         return open(cameraId);
     }
 
-    private int cameraInit(int cameraId, Context context, int rotationOverride) {
+    private int cameraInit(int cameraId, Context context, CameraCompatibilityInfo compatInfo) {
         mShutterCallback = null;
         mRawImageCallback = null;
         mJpegCallback = null;
@@ -569,7 +572,7 @@ public class Camera {
             return native_setup(
                     new WeakReference<>(this),
                     cameraId,
-                    rotationOverride,
+                    compatInfo,
                     forceSlowJpegMode,
                     clientAttribution.getParcel(),
                     getDevicePolicyFromContext(context));
@@ -590,11 +593,13 @@ public class Camera {
     }
 
     /** used by Camera#open, Camera#open(int) */
-    Camera(int cameraId, @NonNull Context context, int rotationOverride) {
+    Camera(int cameraId, @NonNull Context context, CameraCompatibilityInfo compatInfo) {
         Objects.requireNonNull(context);
-        final int err = cameraInit(cameraId, context, rotationOverride);
+        final int err = cameraInit(cameraId, context, compatInfo);
         if (checkInitErrors(err)) {
-            if (err == -EACCES) {
+            if (err == -EINVAL) {
+                throw new RuntimeException("Parsing arguments failed");
+            } else if (err == -EACCES) {
                 throw new RuntimeException("Fail to connect to camera service");
             } else if (err == -ENODEV) {
                 throw new RuntimeException("Camera initialization failed");
@@ -659,7 +664,7 @@ public class Camera {
     private native int native_setup(
             Object cameraThis,
             int cameraId,
-            int rotationOverride,
+            CameraCompatibilityInfo compatMode,
             boolean forceSlowJpegMode,
             Parcel clientAttributionParcel,
             int devicePolicy);

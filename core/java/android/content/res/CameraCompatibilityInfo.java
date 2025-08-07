@@ -20,10 +20,10 @@ import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
-
 
 import java.util.Objects;
 
@@ -44,6 +44,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@TestApi
 @RavenwoodKeepWholeClass
 public final class CameraCompatibilityInfo implements Parcelable {
     private final int mRotateAndCropRotation;
