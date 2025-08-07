@@ -18,6 +18,7 @@
 
 package com.android.systemui.bouncer.ui.composable
 
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.IconButtonDefaults
@@ -40,6 +41,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onInterceptKeyBeforeSoftKeyboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -95,6 +97,7 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
             onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
             modifier =
                 modifier
+                    .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
                     .sysuiResTag("bouncer_text_entry")
                     .focusRequester(focusRequester)
                     .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }

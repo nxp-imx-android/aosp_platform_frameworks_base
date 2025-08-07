@@ -22,9 +22,10 @@ import org.junit.Test
 /**
  * The set to verify launching bubble to the expanded state, which verifies
  * - [BubbleAppBecomesExpandedTestCases]
+ * - [LauncherAlwaysVisibleTestCases]
  * - Bubble becomes visible
  */
-interface EnterBubbleTestCases : BubbleAppBecomesExpandedTestCases {
+interface EnterBubbleTestCases : BubbleAppBecomesExpandedTestCases, LauncherAlwaysVisibleTestCases {
 
 // region Bubble related tests
 

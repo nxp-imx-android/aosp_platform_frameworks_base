@@ -1282,7 +1282,7 @@ com.android.hoststubgen.test.tinyframework.exp
   <clinit>()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override [package - 'experimental'] (#test-package-policy)]
   0
   0
 com.android.hoststubgen.test.tinyframework.exp

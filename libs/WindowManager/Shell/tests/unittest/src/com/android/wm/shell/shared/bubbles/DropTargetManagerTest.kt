@@ -388,7 +388,7 @@ class DropTargetManagerTest {
     @Test
     fun onDragStarted_noInitialDragZone_notifiesInitialDragZoneNull() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false),
             listOf(bubbleLeftDragZone, bubbleRightDragZone)
         )
         assertThat(dragZoneChangedListener.initialDragZone).isNull()
@@ -397,15 +397,15 @@ class DropTargetManagerTest {
     @Test
     fun onDragStartedMultipleTimes_secondDropViewRemoved() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false),
             listOf(bubbleLeftDragZone, bubbleRightDragZone)
         )
         assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT)
@@ -414,7 +414,7 @@ class DropTargetManagerTest {
     @Test
     fun onDragUpdated_noZoneToZoneWithDropTargetView_listenerNotified() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false),
             listOf(bubbleLeftDragZone, bubbleRightDragZone)
         )
 
@@ -432,7 +432,7 @@ class DropTargetManagerTest {
     @Test
     fun onDragUpdated_noZoneToZoneWithDropTargetView_dropTargetShown() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false),
             listOf(bubbleLeftDragZone, bubbleRightDragZone)
         )
 
@@ -455,7 +455,7 @@ class DropTargetManagerTest {
     @Test
     fun onDragUpdated_noZoneToZoneWithTwoDropTargetViews_dropTargetsShown() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
 
@@ -481,7 +481,7 @@ class DropTargetManagerTest {
     @Test
     fun onDragUpdated_noZoneToZoneWithOnlySecondDropTargetView_secondDropTargetShown() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneOnlySecondDropTarget, bubbleRightDragZoneOnlySecondDropTarget)
         )
 
@@ -508,7 +508,7 @@ class DropTargetManagerTest {
         var runnableExecuted = false
         val action = Runnable { runnableExecuted = true }
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
         assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
@@ -551,7 +551,7 @@ class DropTargetManagerTest {
     @Test
     fun onDragUpdated_reEnterZoneWithMultipleDropTargetViews_dropTargetsShown() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
         val pointX = 200
@@ -607,7 +607,7 @@ class DropTargetManagerTest {
 
         // First manager starts a drag, adds its views
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget)
         )
         assertThat(container.childCount)
@@ -617,7 +617,7 @@ class DropTargetManagerTest {
 
         // Second manager starts a drag, adds its views
         secondDropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleRightDragZoneWithSecondDropTarget)
         )
         // Now container has views from both managers
@@ -654,7 +654,7 @@ class DropTargetManagerTest {
     @Test
     fun hideDropTargets_whenInAZone_notifiesAndHidesDropTarget() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false),
             listOf(bubbleLeftDragZone, bubbleRightDragZone)
         )
         // Initially, drag into the left zone
@@ -686,7 +686,7 @@ class DropTargetManagerTest {
     @Test
     fun hideDropTargets_whenInAZoneWithSecondDropTarget_notifiesAndHidesBothDropTargets() {
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false),
+            DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true),
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
         // Initially, drag into the left zone

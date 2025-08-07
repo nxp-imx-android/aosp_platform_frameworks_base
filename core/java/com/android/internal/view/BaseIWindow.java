@@ -33,7 +33,6 @@ import android.view.WindowRelayoutResult;
 import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.os.IResultReceiver;
-import com.android.window.flags.Flags;
 
 import java.io.IOException;
 
@@ -53,20 +52,11 @@ public class BaseIWindow extends IWindow.Stub {
     @Override
     public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
             int displayId, boolean syncWithBuffers, boolean dragResizing) {
-        if (Flags.alwaysSeqIdLayout()) {
-            if (layout.syncSeqId > mLastSeqId) {
-                mLastSeqId = layout.syncSeqId;
-                try {
-                    mSession.finishDrawing(this, null /* postDrawTransaction */, layout.syncSeqId);
-                } catch (RemoteException e) {
-                }
-            }
-        } else {
-            if (reportDraw) {
-                try {
-                    mSession.finishDrawing(this, null /* postDrawTransaction */, layout.syncSeqId);
-                } catch (RemoteException e) {
-                }
+        if (layout.syncSeqId > mLastSeqId || reportDraw) {
+            mLastSeqId = layout.syncSeqId;
+            try {
+                mSession.finishDrawing(this, null /* postDrawTransaction */, layout.syncSeqId);
+            } catch (RemoteException e) {
             }
         }
     }

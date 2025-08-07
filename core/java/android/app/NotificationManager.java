@@ -685,10 +685,8 @@ public class NotificationManager {
 
     private final InstantSource mClock;
     private final RateLimiter mUpdateRateLimiter = new RateLimiter("notify (update)",
-            "notifications.value_client_throttled_notify_update",
             MAX_NOTIFICATION_UPDATE_RATE);
     private final RateLimiter mUnnecessaryCancelRateLimiter = new RateLimiter("cancel (dupe)",
-            "notifications.value_client_throttled_cancel_duplicate",
             MAX_NOTIFICATION_UNNECESSARY_CANCEL_RATE);
     // KnownStatus is KNOWN_STATUS_ENQUEUED/_CANCELLED
     private record KnownNotification(int knownStatus, OptionalInt progressState) {}
@@ -893,16 +891,14 @@ public class NotificationManager {
         private final RateEstimator mInputRateEstimator;
         private final RateEstimator mOutputRateEstimator;
         private final String mName;
-        private final String mCounterName;
         private final float mLimitRate;
 
         private Instant mLogSilencedUntil;
 
-        private RateLimiter(String name, String counterName, float limitRate) {
+        private RateLimiter(String name, float limitRate) {
             mInputRateEstimator = new RateEstimator();
             mOutputRateEstimator = new RateEstimator();
             mName = name;
-            mCounterName = counterName;
             mLimitRate = limitRate;
         }
 
@@ -920,14 +916,6 @@ public class NotificationManager {
             Instant now = mClock.instant();
             if (mLogSilencedUntil != null && now.isBefore(mLogSilencedUntil)) {
                 return;
-            }
-
-            if (Flags.nmBinderPerfLogNmThrottling()) {
-                try {
-                    service().incrementCounter(mCounterName);
-                } catch (RemoteException e) {
-                    Slog.w(TAG, "Ignoring error while trying to log " + mCounterName, e);
-                }
             }
 
             long nowMillis = now.toEpochMilli();

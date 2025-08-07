@@ -484,3 +484,19 @@ flag {
   description: "Enable the policy streamlining APIs."
   bug: "434919316"
 }
+
+flag {
+  name: "enforcing_admin_get_component_name_enabled"
+  namespace: "enterprise"
+  description: "Enables the getter API for componentName field of EnforcingAdmin"
+  bug: "414733570"
+  is_exported: true
+}
+
+flag {
+  name: "enforcing_admin_extra_enabled"
+  namespace: "enterprise"
+  description: "Adds a new API for extra that contains EnforcingAdmin"
+  bug: "414733570"
+  is_exported: true
+}

@@ -85,6 +85,7 @@ import com.android.server.AnimationThread;
 import com.android.server.DisplayThread;
 import com.android.server.LocalServices;
 import com.android.server.LockGuard;
+import com.android.server.UiModeManagerInternal;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService;
@@ -351,6 +352,10 @@ public class SystemServicesTestRule implements TestRule {
         final StatusBarManagerInternal sbmi = mock(StatusBarManagerInternal.class);
         doReturn(sbmi).when(() -> LocalServices.getService(eq(StatusBarManagerInternal.class)));
 
+        // UiModeManagerInternal
+        final UiModeManagerInternal ummi = mock(UiModeManagerInternal.class);
+        doReturn(ummi).when(() -> LocalServices.getService(eq(UiModeManagerInternal.class)));
+
         // UserManagerInternal
         final UserManagerInternal umi = mock(UserManagerInternal.class);
         doReturn(umi).when(() -> LocalServices.getService(UserManagerInternal.class));
@@ -502,6 +507,7 @@ public class SystemServicesTestRule implements TestRule {
         LocalServices.removeServiceForTest(ColorDisplayService.ColorDisplayServiceInternal.class);
         LocalServices.removeServiceForTest(UsageStatsManagerInternal.class);
         LocalServices.removeServiceForTest(StatusBarManagerInternal.class);
+        LocalServices.removeServiceForTest(UiModeManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.removeServiceForTest(GrammaticalInflectionManagerInternal.class);
     }

@@ -71,7 +71,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         implements MediaSwitchingController.Callback, Window.Callback {
 
     private static final String TAG = "MediaOutputDialog";
-    private static final boolean DEBUG = true;
 
     protected final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
     private final LinearLayoutManager mLayoutManager;

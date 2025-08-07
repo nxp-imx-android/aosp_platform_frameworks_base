@@ -151,6 +151,7 @@ import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.TaskFragment.EmbeddingCheckResult;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -200,7 +201,8 @@ class ActivityStarter {
 
     // If the code is BAL_BLOCK, background activity can only be started in an existing task that
     // contains an activity with same uid, or if activity starts are enabled in developer options.
-    private BalVerdict mBalVerdict;
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    BalVerdict mBalVerdict;
 
     private int mLaunchMode;
     private boolean mLaunchTaskBehind;
@@ -2020,7 +2022,7 @@ class ActivityStarter {
             recordTransientLaunchIfNeeded(targetTaskTop);
             // Recycle the target task for this launch.
             startResult =
-                    recycleTask(targetTask, targetTaskTop, reusedTask, intentGrants, balVerdict);
+                    recycleTask(targetTask, targetTaskTop, reusedTask, intentGrants);
             if (startResult != START_SUCCESS) {
                 return startResult;
             }
@@ -2383,7 +2385,7 @@ class ActivityStarter {
      */
     @VisibleForTesting
     int recycleTask(Task targetTask, ActivityRecord targetTaskTop, Task reusedTask,
-            NeededUriGrants intentGrants, BalVerdict balVerdict) {
+            NeededUriGrants intentGrants) {
         // Should not recycle task which is from a different user, just adding the starting
         // activity to the task.
         if (targetTask.mUserId != mStartActivity.mUserId) {
@@ -3078,11 +3080,19 @@ class ActivityStarter {
         Task intentTask = intentActivity.getTask();
         // The intent task might be reparented while in getOrCreateRootTask, caches the original
         // root task to distinguish if it is moving to front or not.
-        final Task origRootTask = intentTask != null ? intentTask.getRootTask() : null;
+        final Task origRootTask;
+        if (Flags.fixBalReparentExistingTask()) {
+            origRootTask = intentTask.getRootTask();
+        } else {
+            origRootTask = intentTask != null ? intentTask.getRootTask() : null;
+        }
 
+        // Update launch target task when it is not indicated.
         if (mTargetRootTask == null) {
-            // Update launch target task when it is not indicated.
-            if (mSourceRecord != null && mSourceRecord.mLaunchRootTask != null) {
+            if (Flags.fixBalReparentExistingTask() && mBalVerdict.blocks()) {
+                // Stays on the same root task if the activity launch is not allowed.
+                mTargetRootTask = origRootTask;
+            } else if (mSourceRecord != null && mSourceRecord.mLaunchRootTask != null) {
                 // Inherit the target-root-task from source to ensure trampoline activities will be
                 // launched into the same root task.
                 mTargetRootTask = Task.fromWindowContainerToken(mSourceRecord.mLaunchRootTask);
@@ -3388,7 +3398,8 @@ class ActivityStarter {
         return launchFlags;
     }
 
-    private Task getOrCreateRootTask(ActivityRecord r, int launchFlags, Task task,
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    Task getOrCreateRootTask(ActivityRecord r, int launchFlags, Task task,
             ActivityOptions aOptions) {
         final boolean onTop =
                 (aOptions == null || !aOptions.getAvoidMoveToFront()) && !mLaunchTaskBehind;

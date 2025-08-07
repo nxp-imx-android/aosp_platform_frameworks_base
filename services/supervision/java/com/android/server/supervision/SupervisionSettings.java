@@ -21,6 +21,7 @@ import android.annotation.UserIdInt;
 import android.app.supervision.SupervisionRecoveryInfo;
 import android.os.Environment;
 import android.os.PersistableBundle;
+import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -62,6 +63,8 @@ public class SupervisionSettings {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_ENABLED = "supervision_enabled";
     private static final String KEY_APP_PACKAGE = "supervision_app_package";
+    private static final String KEY_ROLE_HOLDERS_LIST = "supervision_role_holders_list";
+    private static final String KEY_ROLE_HOLDER = "supervision_role_holder";
     private static final String KEY_LOCK_SCREEN_ENABLED = "supervision_lockscreen_enabled";
     private static final String KEY_LOCK_SCREEN_OPTIONS = "supervision_lockscreen_options";
 
@@ -138,6 +141,7 @@ public class SupervisionSettings {
                 if (parser.getName().equals(PREF_USER_DATA)) {
                     int userId = parser.getAttributeInt(null, KEY_USER_ID);
                     SupervisionUserData data = getUserData(userId);
+                    data.supervisionRoleHolders = new ArraySet<>();
                     data.supervisionEnabled = parser.getAttributeBoolean(null, KEY_ENABLED);
                     data.supervisionAppPackage = parser.getAttributeValue(null, KEY_APP_PACKAGE);
                     if (data.supervisionAppPackage.isEmpty()) {
@@ -149,6 +153,14 @@ public class SupervisionSettings {
                         if (parser.getName().equals(KEY_LOCK_SCREEN_OPTIONS)) {
                             data.supervisionLockScreenOptions =
                                     PersistableBundle.restoreFromXml(parser);
+                        } else if (parser.getName().equals(KEY_ROLE_HOLDERS_LIST)) {
+                            final int roleHoldersDepth = parser.getDepth();
+                            while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
+                                if (parser.getName().equals(KEY_ROLE_HOLDER)) {
+                                    String roleHolder = parser.getAttributeValue(null, "package");
+                                    data.supervisionRoleHolders.add(roleHolder);
+                                }
+                            }
                         }
                     }
                 }
@@ -179,6 +191,15 @@ public class SupervisionSettings {
                         data.supervisionAppPackage == null ? "" : data.supervisionAppPackage);
                 xml.attributeBoolean(
                         null, KEY_LOCK_SCREEN_ENABLED, data.supervisionLockScreenEnabled);
+                if (data.supervisionRoleHolders != null && !data.supervisionRoleHolders.isEmpty()) {
+                    xml.startTag(null, KEY_ROLE_HOLDERS_LIST);
+                    for (String roleHolder : data.supervisionRoleHolders) {
+                        xml.startTag(null, KEY_ROLE_HOLDER);
+                        xml.attribute(null, "package", roleHolder);
+                        xml.endTag(null, KEY_ROLE_HOLDER);
+                    }
+                    xml.endTag(null, KEY_ROLE_HOLDERS_LIST);
+                }
                 if (data.supervisionLockScreenOptions != null) {
                     xml.startTag(null, KEY_LOCK_SCREEN_OPTIONS);
                     data.supervisionLockScreenOptions.saveToXml(xml);

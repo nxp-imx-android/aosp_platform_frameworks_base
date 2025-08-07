@@ -465,7 +465,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_INSETS_DECOUPLED_CONFIGURATION)
     public void testOverrideConfigurationApplied() {
         final DisplayContent displayContent = new TestDisplayContent.Builder(mAtm, 1000, 1500)
                 .setSystemDecorations(true).setDensityDpi(160).build();

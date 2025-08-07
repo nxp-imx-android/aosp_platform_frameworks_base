@@ -3261,43 +3261,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertFalse(transition.allReady());
     }
 
-
-    @Test
-    public void testCloseToSquareFixedOrientation() {
-        if (Flags.insetsDecoupledConfiguration()) {
-            // No test needed as decor insets no longer affects orientation.
-            return;
-        }
-        // create a square display
-        final DisplayContent squareDisplay = new TestDisplayContent.Builder(mAtm, 2000, 2000)
-                .setSystemDecorations(true).build();
-        // Add a decor insets provider window.
-        final WindowState navbar = createNavBarWithProvidedInsets(squareDisplay);
-        assertTrue(navbar.providesDisplayDecorInsets()
-                && squareDisplay.getDisplayPolicy().updateDecorInsetsInfo());
-        squareDisplay.sendNewConfiguration();
-        final Task task = new TaskBuilder(mSupervisor).setDisplay(squareDisplay).build();
-
-        // create a fixed portrait activity
-        ActivityRecord activity = new ActivityBuilder(mAtm).setTask(task)
-                .setScreenOrientation(SCREEN_ORIENTATION_PORTRAIT).build();
-
-        // The available space could be landscape because of decor insets, but the configuration
-        // should still respect the requested portrait orientation.
-        assertEquals(ORIENTATION_PORTRAIT, activity.getConfiguration().orientation);
-        assertTrue(activity.getConfiguration().windowConfiguration.getAppBounds().width()
-                <= activity.getConfiguration().windowConfiguration.getAppBounds().height());
-
-        // create a fixed landscape activity
-        activity = new ActivityBuilder(mAtm).setTask(task)
-                .setScreenOrientation(SCREEN_ORIENTATION_LANDSCAPE).build();
-
-        // check that both the configuration and app bounds are landscape
-        assertEquals(ORIENTATION_LANDSCAPE, activity.getConfiguration().orientation);
-        assertTrue(activity.getConfiguration().windowConfiguration.getAppBounds().width()
-                > activity.getConfiguration().windowConfiguration.getAppBounds().height());
-    }
-
     @SetupWindows(addWindows = W_ACTIVITY)
     @Test
     public void testSetVisibility_visibleToInvisible() {

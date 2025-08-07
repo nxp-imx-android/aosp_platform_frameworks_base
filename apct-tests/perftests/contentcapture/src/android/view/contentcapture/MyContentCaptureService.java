@@ -16,14 +16,18 @@
 package android.view.contentcapture;
 
 import android.content.ComponentName;
+import android.content.LocusId;
 import android.service.contentcapture.ActivityEvent;
 import android.service.contentcapture.ContentCaptureService;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.Pair;
+import android.view.contentcapture.ContentCaptureCondition;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.common.collect.ImmutableSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +87,13 @@ public class MyContentCaptureService extends ContentCaptureService {
             Log.e(TAG, "onConnected(): already created: " + sServiceWatcher);
             return;
         }
+
+        int enableVirtualChildrenConditionFlag = 0x4;
+        ContentCaptureCondition condition =
+                new ContentCaptureCondition(
+                        new LocusId("__NOT_EXIST"), enableVirtualChildrenConditionFlag);
+        setContentCaptureConditions(
+                "com.android.perftests.contentcapture", ImmutableSet.of(condition));
 
         sServiceWatcher.mService = this;
         sServiceWatcher.mCreated.countDown();

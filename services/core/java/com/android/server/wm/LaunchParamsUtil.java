@@ -453,9 +453,16 @@ class LaunchParamsUtil {
         }
 
         if (com.android.window.flags.Flags.fallbackToFocusedDisplay()) {
-            // Select the TDA from the top focused display.
-            final TaskDisplayArea defaultTaskDisplayArea = supervisor.mRootWindowContainer
-                    .getTopFocusedDisplayContent().getDefaultTaskDisplayArea();
+            // Select the TDA from the top focused display if possible.
+            final DisplayContent focusedDisplay =
+                    supervisor.mRootWindowContainer.getTopFocusedDisplayContent();
+            final TaskDisplayArea defaultTaskDisplayArea;
+            if (focusedDisplay.mDisplay.canHostTasks()) {
+                defaultTaskDisplayArea = focusedDisplay.getDefaultTaskDisplayArea();
+            } else {
+                defaultTaskDisplayArea =
+                        supervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
+            }
             logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
             return defaultTaskDisplayArea;
         } else {

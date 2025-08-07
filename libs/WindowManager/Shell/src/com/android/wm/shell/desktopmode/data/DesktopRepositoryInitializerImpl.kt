@@ -18,9 +18,11 @@ package com.android.wm.shell.desktopmode.data
 
 import android.content.Context
 import android.view.Display
+import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.desktopmode.data.persistence.Desktop
@@ -49,6 +51,7 @@ class DesktopRepositoryInitializerImpl(
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
     private val desktopConfig: DesktopConfig,
     private val desktopState: DesktopState,
+    private val displayController: DisplayController,
 ) : DesktopRepositoryInitializer {
 
     override var deskRecreationFactory: DeskRecreationFactory = DefaultDeskRecreationFactory()
@@ -68,6 +71,7 @@ class DesktopRepositoryInitializerImpl(
         //  TODO: b/365962554 - Handle the case that user moves to desktop before it's initialized
         mainCoroutineScope.launch {
             try {
+                val uniqueIdToDisplayIdMap = displayController.getAllDisplaysByUniqueId()
                 val desktopUserPersistentRepositoryMap =
                     persistentRepository.getUserDesktopRepositoryMap() ?: return@launch
                 for (userId in desktopUserPersistentRepositoryMap.keys) {
@@ -82,10 +86,10 @@ class DesktopRepositoryInitializerImpl(
                     )
                     for (persistentDesktop in desksToRestore) {
                         val maxTasks = getTaskLimit(persistentDesktop)
-                        val displayId = persistentDesktop.displayId
+                        val uniqueDisplayId = persistentDesktop.uniqueDisplayId
+                        val newDisplayId =
+                            uniqueIdToDisplayIdMap?.get(uniqueDisplayId) ?: DEFAULT_DISPLAY
                         val deskId = persistentDesktop.desktopId
-                        // TODO: b/401107440 - Implement desk restoration to other displays.
-                        val newDisplayId = Display.DEFAULT_DISPLAY
                         val newDeskId =
                             deskRecreationFactory.recreateDesk(
                                 userId = userId,
@@ -94,23 +98,24 @@ class DesktopRepositoryInitializerImpl(
                             )
                         if (newDeskId != null) {
                             logV(
-                                "Re-created desk=%d in display=%d using new" +
+                                "Re-created desk=%d in uniqueDisplayId=%d using new" +
                                     " deskId=%d and displayId=%d",
                                 deskId,
-                                displayId,
+                                uniqueDisplayId,
                                 newDeskId,
                                 newDisplayId,
                             )
                         }
-                        if (newDeskId == null || newDeskId != deskId || newDisplayId != displayId) {
+                        if (newDeskId == null || newDeskId != deskId) {
                             logV("Removing obsolete desk from persistence under deskId=%d", deskId)
                             persistentRepository.removeDesktop(userId, deskId)
                         }
                         if (newDeskId == null) {
                             logW(
-                                "Could not re-create desk=%d from display=%d in displayId=%d",
+                                "Could not re-create desk=%d from uniqueDisplayId=%d " +
+                                    "in displayId=%d",
                                 deskId,
-                                displayId,
+                                uniqueDisplayId,
                                 newDisplayId,
                             )
                             continue
@@ -119,7 +124,11 @@ class DesktopRepositoryInitializerImpl(
                         // TODO: b/393961770 - [DesktopRepository] doesn't save desks to the
                         //  persistent repository until a task is added to them. Update it so that
                         //  empty desks can be restored too.
-                        repository.addDesk(displayId = displayId, deskId = newDeskId)
+                        repository.addDesk(
+                            displayId = newDisplayId,
+                            deskId = newDeskId,
+                            uniqueDisplayId = uniqueDisplayId,
+                        )
                         var visibleTasksCount = 0
                         persistentDesktop.zOrderedTasksList
                             // Reverse it so we initialize the repo from bottom to top.
@@ -134,7 +143,7 @@ class DesktopRepositoryInitializerImpl(
                                         visibleTasksCount < maxTasks
 
                                 repository.addTaskToDesk(
-                                    displayId = displayId,
+                                    displayId = newDisplayId,
                                     deskId = newDeskId,
                                     taskId = task.taskId,
                                     isVisible = false,
@@ -145,7 +154,7 @@ class DesktopRepositoryInitializerImpl(
                                     visibleTasksCount++
                                 } else {
                                     repository.minimizeTaskInDesk(
-                                        displayId = displayId,
+                                        displayId = newDisplayId,
                                         deskId = newDeskId,
                                         taskId = task.taskId,
                                     )

@@ -180,7 +180,6 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
             shadeRepository.setShadeLayoutWide(!isNarrowScreen)
-            shadeRepository.setLargeScreen(!isNarrowScreen)
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )

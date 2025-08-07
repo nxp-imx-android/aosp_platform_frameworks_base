@@ -36,6 +36,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -413,6 +414,12 @@ public class PackageUtil {
     public static boolean isVersionTwoEnabled(@NonNull Context context) {
         if (isAuto(context) || isTV(context) || isWatch(context)) {
             Log.d(LOG_TAG, "The device doesn't support PIA version 2");
+            return false;
+        }
+
+        // Only enable PIA V2 on the version that is newer than BAKLAVA
+        if (Build.VERSION.SDK_INT_FULL <= Build.VERSION_CODES_FULL.BAKLAVA) {
+            Log.d(LOG_TAG, "The OS version doesn't support PIA version 2");
             return false;
         }
 

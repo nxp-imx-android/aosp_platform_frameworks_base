@@ -21,6 +21,9 @@ import static android.app.admin.DevicePolicyResources.Strings.Settings.CONTROLLE
 import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
 
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.EnforcingAdmin;
+import android.app.admin.UnknownAuthority;
+import android.app.admin.flags.Flags;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -37,6 +40,8 @@ import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
+import java.util.Objects;
+
 /**
  * Helper class for managing settings preferences that can be disabled
  * by device admins via user restrictions.
@@ -45,6 +50,9 @@ public class RestrictedPreferenceHelper {
     private static final String TAG = "RestrictedPreferenceHelper";
 
     private static final String REASON_PHONE_STATE = "phone_state";
+    // For the admin components that don't have any package name defined, we use default one as
+    // empty string.
+    private static final String DEFAULT_ADMIN_PACKAGE_NAME = "";
 
     private final Context mContext;
     private final Preference mPreference;
@@ -58,7 +66,10 @@ public class RestrictedPreferenceHelper {
     int uid;
 
     private boolean mDisabledByAdmin;
+    private EnforcingAdmin mEnforcingAdmin;
     @VisibleForTesting
+    // TODO(b/414733570): Remove when feature is enabled and all calls have moved to use
+    //  mEnforcingAdmin.
     EnforcedAdmin mEnforcedAdmin;
     private String mAttrUserRestriction = null;
     private boolean mDisabledSummary = false;
@@ -146,9 +157,17 @@ public class RestrictedPreferenceHelper {
     }
 
     public boolean isRestrictionEnforcedByAdvancedProtection() {
-        return mEnforcedAdmin != null && RestrictedLockUtilsInternal
-                .isPolicyEnforcedByAdvancedProtection(mContext, mEnforcedAdmin.enforcedRestriction,
-                        UserHandle.myUserId());
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            return mEnforcingAdmin != null
+                    && RestrictedLockUtilsInternal.isPolicyEnforcedByAdvancedProtection(mContext,
+                    // When the feature is enabled and we're using mEnforcingAdmin, the user
+                    // restriction is always stored on mAttrUserRestriction.
+                    mAttrUserRestriction, UserHandle.myUserId());
+        } else {
+            return mEnforcedAdmin != null
+                    && RestrictedLockUtilsInternal.isPolicyEnforcedByAdvancedProtection(mContext,
+                    mEnforcedAdmin.enforcedRestriction, UserHandle.myUserId());
+        }
     }
 
     /**
@@ -158,8 +177,8 @@ public class RestrictedPreferenceHelper {
      */
     public void setUserRestriction(@Nullable String userRestriction) {
         mAttrUserRestriction = userRestriction == null ||
-            RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext, userRestriction,
-                UserHandle.myUserId()) ? null : userRestriction;
+                RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext, userRestriction,
+                        UserHandle.myUserId()) ? null : userRestriction;
         setDisabledByAdmin(checkRestrictionEnforced());
     }
 
@@ -175,7 +194,12 @@ public class RestrictedPreferenceHelper {
     @SuppressWarnings("NewApi")
     public boolean performClick() {
         if (mDisabledByAdmin) {
-            RestrictedLockUtils.sendShowAdminSupportDetailsIntent(mContext, mEnforcedAdmin);
+            if (Flags.policyTransparencyRefactorEnabled()) {
+                RestrictedLockUtils.sendShowAdminSupportDetailsIntent(
+                        mContext, mEnforcingAdmin, mAttrUserRestriction);
+            } else {
+                RestrictedLockUtils.sendShowAdminSupportDetailsIntent(mContext, mEnforcedAdmin);
+            }
             return true;
         }
         if (mDisabledByEcm) {
@@ -258,12 +282,23 @@ public class RestrictedPreferenceHelper {
     /**
      * Disable this preference based on the enforce admin.
      *
-     * @param admin details of the admin who enforced the restriction. If it is
-     * {@code null}, then this preference will be enabled. Otherwise, it will be disabled.
-     * Only gray out the preference which is not {@link RestrictedTopLevelPreference}.
+     * @param admin details of the admin who enforced the restriction. If it is {@code null}, then
+     *     this preference will be enabled. Otherwise, it will be disabled. Only gray out the
+     *     preference which is not {@link RestrictedTopLevelPreference}.
      * @return true if the disabled state was changed.
      */
     public boolean setDisabledByAdmin(EnforcedAdmin admin) {
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            EnforcingAdmin enforcingAdmin = getEnforcingAdminFromEnforcedAdmin(admin);
+            // Ensure that mAttrUserRestriction is set to the value passed in admin if it's unset.
+            // If it's already set, we don't need to update the value.
+            if (admin != null && mAttrUserRestriction == null) {
+                mAttrUserRestriction = admin.enforcedRestriction;
+            }
+            return setDisabledByEnforcingAdmin(enforcingAdmin);
+        }
+        // TODO(b/414733570): Cleanup when Flags.policyTransparencyRefactorEnabled() is fully
+        //  rolled out.
         boolean disabled = false;
         boolean changed = false;
         EnforcedAdmin previousAdmin = mEnforcedAdmin;
@@ -282,6 +317,34 @@ public class RestrictedPreferenceHelper {
             changed = true;
         }
 
+        if (changed) {
+            updateDisabledState();
+        }
+
+        return changed;
+    }
+
+    /**
+     * Disable this preference based on the enforcing admin. Note that this doesn't set the
+     * restriction that this preference tracks. To set the restriction, call
+     * {@link #setUserRestriction} or set it through XML attribute
+     * {@link R.styleable#RestrictedPreference_userRestriction}.
+     *
+     * @param admin details of the admin who enforced the restriction. If it is {@code null}, then
+     *              this preference will be enabled. Otherwise, it will be disabled. Only gray out
+     *              the
+     *              preference which is not {@link RestrictedTopLevelPreference}.
+     * @return true if the disabled state was changed.
+     */
+    public boolean setDisabledByEnforcingAdmin(@Nullable EnforcingAdmin admin) {
+        final boolean disabled = (admin != null);
+        final boolean adminChanged = !Objects.equals(mEnforcingAdmin, admin);
+        final boolean disabledStateChanged = mDisabledByAdmin != disabled;
+
+        mEnforcingAdmin = admin;
+        mDisabledByAdmin = disabled;
+
+        final boolean changed = adminChanged || disabledStateChanged;
         if (changed) {
             updateDisabledState();
         }
@@ -367,5 +430,16 @@ public class RestrictedPreferenceHelper {
         }
 
         return changed;
+    }
+
+    private EnforcingAdmin getEnforcingAdminFromEnforcedAdmin(EnforcedAdmin admin) {
+        // Check the nullable fields of EnforcedAdmin and replace with appropriate values for null
+        // as EnforcingAdmin has non-null fields.
+        return admin == null ? null : new EnforcingAdmin(
+                admin.component == null ? DEFAULT_ADMIN_PACKAGE_NAME
+                        : admin.component.getPackageName(),
+                UnknownAuthority.UNKNOWN_AUTHORITY,
+                admin.user == null ? UserHandle.of(UserHandle.myUserId()) : admin.user,
+                admin.component);
     }
 }

@@ -242,7 +242,11 @@ class DesksTransitionObserver(
         val deskChange = info.changes.find { change -> desksOrganizer.isDeskChange(change, deskId) }
         if (deskChange != null) {
             desktopUserRepositories.getRepositoriesWithDeskId(deskId).forEach { desktopRepository ->
-                desktopRepository.onDeskDisplayChanged(deskId, deskTransition.displayId)
+                desktopRepository.onDeskDisplayChanged(
+                    deskId,
+                    deskTransition.displayId,
+                    deskTransition.uniqueDisplayId,
+                )
             }
         }
     }

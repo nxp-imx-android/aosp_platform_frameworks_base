@@ -206,6 +206,11 @@ interface ITelecomService {
     boolean isInManagedCall(String callingPackage, String callingFeatureId);
 
     /**
+     * @see TelecomServiceImpl#isInExternalCall
+     */
+    boolean isInExternalCall(String callingPackage, String callingFeatureId);
+
+    /**
      * @see TelecomServiceImpl#isRinging
      */
     boolean isRinging(String callingPackage);

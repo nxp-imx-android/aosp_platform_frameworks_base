@@ -1412,7 +1412,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final WindowStateAnimator winAnimator = mWinAnimator;
         final boolean didFrameInsetsChange = setReportResizeHints();
         final boolean configChanged;
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             configChanged = !mLastConfigReportedToClient;
         } else {
             // The latest configuration will be returned by the out parameter of relayout, so it is
@@ -1434,7 +1434,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final boolean contentChanged = didFrameInsetsChange || configChanged
                 || dragResizingChanged || attachedFrameChanged;
 
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             // Cancel unchanged non-sync-buffer redraw request to avoid unnecessary reportResized().
             if (!contentChanged && !mRedrawForSyncReported && mPrepareSyncSeqId <= 0
                     && mDrawHandlers.isEmpty()) {
@@ -1443,7 +1443,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         // If a buffer is requested (BLAST) then we must redraw to produce that buffer.
-        final boolean requireRedraw = Flags.alwaysSeqIdLayout() ? mBufferSeqId > mSyncSeqId
+        final boolean requireRedraw = mWmService.mAlwaysSeqId ? mBufferSeqId > mSyncSeqId
                 : shouldSendRedrawForSync();
 
         if (contentChanged || insetsChanged || requireRedraw) {
@@ -1470,7 +1470,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             if (!mWmService.mResizingWindows.contains(this)) {
                 ProtoLog.v(WM_DEBUG_RESIZE, "Resizing window %s", this);
                 mWmService.mResizingWindows.add(this);
-                if (Flags.alwaysSeqIdLayout()) {
+                if (mWmService.mAlwaysSeqId) {
                     if (mSyncState != SYNC_STATE_NONE && !getSyncGroup().mReady) {
                         mPendingSyncResize = true;
                     }
@@ -1746,11 +1746,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mInsetsSourceProviders == null) {
             return false;
         }
-        final @InsetsType int decorInsetsTypes =
-                mWmService.mConfigTypes | mWmService.mOverrideConfigTypes;
         for (int i = mInsetsSourceProviders.size() - 1; i >= 0; i--) {
             final InsetsSource source = mInsetsSourceProviders.valueAt(i).getSource();
-            if ((source.getType() & decorInsetsTypes) != 0) {
+            if ((source.getType() & DisplayPolicy.DecorInsets.OVERRIDE_CONFIG_TYPES) != 0) {
                 return true;
             }
         }
@@ -2108,7 +2106,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mHasSurface && !isGoneForLayout() && !resizingWindows.contains(this)) {
             ProtoLog.d(WM_DEBUG_RESIZE, "onResize: Resizing %s", this);
             resizingWindows.add(this);
-            if (Flags.alwaysSeqIdLayout()) {
+            if (mWmService.mAlwaysSeqId) {
                 if (mSyncState != SYNC_STATE_NONE && !getSyncGroup().mReady) {
                     mPendingSyncResize = true;
                 }
@@ -2224,7 +2222,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * @return the seqId.
      */
     int incrementSeqForRelayout() {
-        if (!Flags.alwaysSeqIdLayout()) return -1;
+        if (!mWmService.mAlwaysSeqId) return -1;
         ++mSyncSeqId;
         mLastConfigReportedToClient = true;
         return mSyncSeqId;
@@ -2278,7 +2276,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         mRemoved = true;
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             mPendingSyncResize = false;
         }
         // Destroy surface before super call. The general pattern is that the children need
@@ -3669,7 +3667,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 outActivityWindowInfo.set(mLastReportedActivityWindowInfo);
             }
         }
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             mLastConfigReportedToClient = true;
         }
     }
@@ -3735,7 +3733,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final boolean syncWithBuffers;
         final boolean reportDraw;
         final int seqIdToSend;
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             final boolean syncRedraw = shouldSendRedrawForSync();
             syncWithBuffers = syncRedraw && shouldSyncWithBuffers();
             reportDraw = syncRedraw || drawPending;
@@ -3759,7 +3757,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 }
                 mSyncSeqId = mBufferSeqId;
             } else if (!mLastConfigReportedToClient
-                    || mWindowFrames.isFrameSizeChanged()
                     || mWindowFrames.isForceReportingResized()
                     || mSyncState == SYNC_STATE_WAITING_FOR_DRAW) {
                 ++mSyncSeqId;
@@ -3783,7 +3780,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         mDragResizingChangeReported = true;
         mWindowFrames.clearReportResizeHints();
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             markRedrawForSyncReported();
         }
         getProcess().scheduleClientTransactionItem(
@@ -3792,7 +3789,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                         displayId, seqIdToSend, syncWithBuffers, isDragResizing,
                         mLastReportedActivityWindowInfo));
         onResizePostDispatched(drawPending, prevRotation, displayId);
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             mLastConfigReportedToClient = true;
         }
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -4101,7 +4098,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
         }
         proto.write(SYNC_SEQ_ID, mSyncSeqId);
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             proto.write(BUFFER_SEQ_ID, mBufferSeqId);
         } else {
             proto.write(BUFFER_SEQ_ID, mPrepareSyncSeqId);
@@ -5740,7 +5737,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // in WAITING state rather than READY.
         mSyncState = SYNC_STATE_WAITING_FOR_DRAW;
 
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             if (mPrepareSyncSeqId > 0) {
                 // another prepareSync during existing sync (eg. reparented), so pre-emptively
                 // drop buffer (if exists). If the buffer hasn't been received yet, it will be
@@ -5772,7 +5769,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return true;
         }
         if (mSyncState == SYNC_STATE_WAITING_FOR_DRAW && mLastConfigReportedToClient && isDrawn()
-                && (Flags.alwaysSeqIdLayout()
+                && (mWmService.mAlwaysSeqId
                         ? mBufferSeqId <= mSyncSeqId : mPrepareSyncSeqId <= 0)) {
             // Complete the sync state immediately for a drawn window that doesn't need to redraw.
             onSyncFinishedDrawing();
@@ -5784,7 +5781,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     void finishSync(Transaction outMergedTransaction, BLASTSyncEngine.SyncGroup group,
             boolean cancel) {
         if (isDifferentSyncGroup(group)) return;
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             mPrepareSyncSeqId = 0;
         }
         if (cancel) {
@@ -5816,7 +5813,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final boolean syncActive;
         final boolean syncStillPending;
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             syncStillPending = false;
             syncActive = mSyncState == SYNC_STATE_WAITING_FOR_DRAW;
             final boolean syncBuffersPending = syncActive && mBufferSeqId > syncSeqId;
@@ -5857,17 +5854,17 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             skipLayout = true;
         } else if (syncActive) {
             // Currently in a Sync.
-            if (Flags.alwaysSeqIdLayout() ? syncSeqId >= mSyncSeqId : !syncStillPending) {
+            if (mWmService.mAlwaysSeqId ? syncSeqId >= mSyncSeqId : !syncStillPending) {
                 layoutNeeded = onSyncFinishedDrawing();
             }
             if (postDrawTransaction != null
-                    && (!Flags.alwaysSeqIdLayout()
+                    && (!mWmService.mAlwaysSeqId
                             || getSyncMethod() == BLASTSyncEngine.METHOD_BLAST)) {
                 mSyncTransaction.merge(postDrawTransaction);
                 // Consume the transaction because the sync group will merge it.
                 postDrawTransaction = null;
             }
-        } else if (!Flags.alwaysSeqIdLayout() && syncNextBuffer()) {
+        } else if (!mWmService.mAlwaysSeqId && syncNextBuffer()) {
             // Sync that is not using BLAST
             layoutNeeded = onSyncFinishedDrawing();
         }
@@ -5955,7 +5952,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * See {@link WindowState#mDrawHandlers}
      */
     boolean syncNextBuffer() {
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             return (mSyncState == SYNC_STATE_WAITING_FOR_DRAW) || !mDrawHandlers.isEmpty();
         }
         return mSyncState != SYNC_STATE_NONE || !mDrawHandlers.isEmpty();
@@ -5977,7 +5974,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             Slog.w(TAG, "applyWithNextDraw with mSyncState=" + mSyncState + ", " + this
                     + ", " + Debug.getCallers(8));
         }
-        if (Flags.alwaysSeqIdLayout()) {
+        if (mWmService.mAlwaysSeqId) {
             // Draw handlers require buffer.
             if (mBufferSeqId <= mSyncSeqId) {
                 mBufferSeqId = mSyncSeqId + 1;
@@ -6122,7 +6119,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     public boolean cancelAndRedraw(int seqId) {
         // Cancel any draw requests during a sync.
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWmService.mAlwaysSeqId) {
             return mPrepareSyncSeqId > 0;
         }
         final boolean cancel = Math.max(mSyncSeqId, mBufferSeqId) > seqId;

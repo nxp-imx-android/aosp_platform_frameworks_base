@@ -30,8 +30,6 @@ import android.view.WindowRelayoutResult;
 import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 
-import com.android.window.flags.Flags;
-
 import java.util.Objects;
 
 /**
@@ -67,7 +65,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         } else {
             mLayout.activityWindowInfo = null;
         }
-        mReportDraw = Flags.alwaysSeqIdLayout() ? false : reportDraw;
+        mReportDraw = reportDraw;
         mForceLayout = forceLayout;
         mDisplayId = displayId;
         mLayout.syncSeqId = syncSeqId;

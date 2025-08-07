@@ -138,7 +138,7 @@ public class AuthController implements
         DozeReceiver {
 
     private static final String TAG = "AuthController";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final int SENSOR_PRIVACY_DELAY = 500;
 
     private final Handler mHandler;

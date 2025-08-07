@@ -19,12 +19,14 @@ package com.android.wm.shell.desktopmode.data
 import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_HSUM
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.persistence.Desktop
@@ -70,6 +72,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     private val userManager = mock<UserManager>()
     private val testExecutor = mock<ShellExecutor>()
     private val shellController = mock<ShellController>()
+    private val displayController = mock<DisplayController>()
 
     @Before
     fun setUp() {
@@ -85,6 +88,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 datastoreScope,
                 desktopConfig,
                 desktopState,
+                displayController,
             )
         desktopUserRepositories =
             DesktopUserRepositories(
@@ -325,6 +329,31 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 .isEmpty()
         }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun initWithPersistence_persistedExternalDisplay_addedCorrectly() =
+        runTest(StandardTestDispatcher()) {
+            val mockDisplay = mock<Display>()
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState3))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(desktopRepositoryState3)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_4)).thenReturn(desktop4)
+            whenever(displayController.getAllDisplaysByUniqueId())
+                .thenReturn(mapOf(UNIQUE_DISPLAY_ID to SECOND_DISPLAY_ON_REBOOT))
+
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_4)
+                )
+                .containsExactly(7, 8)
+                .inOrder()
+        }
+
     @After
     fun tearDown() {
         datastoreScope.cancel()
@@ -336,12 +365,15 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         const val DESKTOP_ID_1 = 2
         const val DESKTOP_ID_2 = 3
         const val DESKTOP_ID_3 = 4
+        const val DESKTOP_ID_4 = 5
+        const val SECOND_DISPLAY = 5
+        const val SECOND_DISPLAY_ON_REBOOT = 2
+        const val UNIQUE_DISPLAY_ID = "unique_display_id"
 
         val freeformTasksInZOrder1 = listOf(1, 3)
         val desktop1: Desktop =
             Desktop.newBuilder()
                 .setDesktopId(DESKTOP_ID_1)
-                .setDisplayId(DEFAULT_DISPLAY)
                 .addAllZOrderedTasks(freeformTasksInZOrder1)
                 .putTasksByTaskId(
                     1,
@@ -363,7 +395,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         val desktop2: Desktop =
             Desktop.newBuilder()
                 .setDesktopId(DESKTOP_ID_2)
-                .setDisplayId(DEFAULT_DISPLAY)
                 .addAllZOrderedTasks(freeformTasksInZOrder2)
                 .putTasksByTaskId(
                     4,
@@ -387,7 +418,26 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         val desktop3: Desktop =
             Desktop.newBuilder()
                 .setDesktopId(DESKTOP_ID_3)
-                .setDisplayId(DEFAULT_DISPLAY)
+                .addAllZOrderedTasks(freeformTasksInZOrder3)
+                .putTasksByTaskId(
+                    7,
+                    DesktopTask.newBuilder()
+                        .setTaskId(7)
+                        .setDesktopTaskState(DesktopTaskState.VISIBLE)
+                        .build(),
+                )
+                .putTasksByTaskId(
+                    8,
+                    DesktopTask.newBuilder()
+                        .setTaskId(8)
+                        .setDesktopTaskState(DesktopTaskState.MINIMIZED)
+                        .build(),
+                )
+                .build()
+        val desktop4: Desktop =
+            Desktop.newBuilder()
+                .setDesktopId(DESKTOP_ID_4)
+                .setUniqueDisplayId(UNIQUE_DISPLAY_ID)
                 .addAllZOrderedTasks(freeformTasksInZOrder3)
                 .putTasksByTaskId(
                     7,
@@ -411,5 +461,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 .build()
         val desktopRepositoryState2: DesktopRepositoryState =
             DesktopRepositoryState.newBuilder().putDesktop(DESKTOP_ID_3, desktop3).build()
+        val desktopRepositoryState3: DesktopRepositoryState =
+            DesktopRepositoryState.newBuilder().putDesktop(DESKTOP_ID_4, desktop4).build()
     }
 }

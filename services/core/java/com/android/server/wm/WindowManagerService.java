@@ -34,6 +34,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED;
 import static android.content.pm.PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT;
 import static android.content.pm.PackageManager.FEATURE_PC;
+import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerServiceDumpProto.BACK_NAVIGATION;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerServiceDumpProto.FOCUSED_APP;
@@ -586,16 +587,6 @@ public class WindowManagerService extends IWindowManager.Stub
     @VisibleForTesting
     boolean mSkipActivityRelaunchWhenDocking;
 
-    /** Device default insets types provided non-decor insets. */
-    final int mDecorTypes;
-
-    /** Device default insets types shall be excluded from config app sizes. */
-    final int mConfigTypes;
-
-    final int mOverrideConfigTypes;
-
-    final int mOverrideDecorTypes;
-
     final boolean mLimitedAlphaCompositing;
     final int mMaxUiWidth;
 
@@ -733,6 +724,8 @@ public class WindowManagerService extends IWindowManager.Stub
      * - TODO: Show mouse pointer on external screen.
      */
     boolean mForceDesktopModeOnExternalDisplays;
+
+    public boolean mAlwaysSeqId;
 
     boolean mDisableTransitionAnimation;
 
@@ -1312,6 +1305,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mContext = context;
         mFlags = new WindowManagerFlags();
         mIsPc = mContext.getPackageManager().hasSystemFeature(FEATURE_PC);
+        mAlwaysSeqId = mContext.getPackageManager().hasSystemFeature(FEATURE_WATCH)
+                ? Flags.alwaysSeqIdLayoutWear() : Flags.alwaysSeqIdLayout();
         mAllowBootMessages = showBootMsgs;
         mLimitedAlphaCompositing = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_sf_limitedAlpha);
@@ -1333,29 +1328,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 com.android.internal.R.bool.config_assistantOnTopOfDream);
         mSkipActivityRelaunchWhenDocking = context.getResources()
                 .getBoolean(R.bool.config_skipActivityRelaunchWhenDocking);
-        final boolean isScreenSizeDecoupledFromStatusBarAndCutout = context.getResources()
-                .getBoolean(R.bool.config_decoupleStatusBarAndDisplayCutoutFromScreenSize)
-                && mFlags.mAllowsScreenSizeDecoupledFromStatusBarAndCutout;
-
-        if (mFlags.mInsetsDecoupledConfiguration) {
-            mDecorTypes = 0;
-            mConfigTypes = 0;
-        } else {
-            mDecorTypes = WindowInsets.Type.displayCutout() | WindowInsets.Type.navigationBars();
-            mConfigTypes = WindowInsets.Type.displayCutout() | WindowInsets.Type.statusBars()
-                    | WindowInsets.Type.navigationBars();
-        }
-        if (isScreenSizeDecoupledFromStatusBarAndCutout && !mFlags.mInsetsDecoupledConfiguration) {
-            // If the global new behavior is not there, but the partial decouple flag is on.
-            mOverrideConfigTypes = 0;
-            mOverrideDecorTypes = 0;
-        } else {
-            mOverrideConfigTypes =
-                    WindowInsets.Type.displayCutout() | WindowInsets.Type.statusBars()
-                            | WindowInsets.Type.navigationBars();
-            mOverrideDecorTypes = WindowInsets.Type.displayCutout()
-                    | WindowInsets.Type.navigationBars();
-        }
 
         mAppCompatConfiguration = appCompat;
 
@@ -2492,7 +2464,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (win.cancelAndRedraw(syncSeqId)
-                    && (Flags.alwaysSeqIdLayout() || (win.mPrepareSyncSeqId <= syncSeqId))) {
+                    && (mAlwaysSeqId || (win.mPrepareSyncSeqId <= syncSeqId))) {
                 // The client has reported the sync draw, but we haven't finished it yet.
                 // Don't let the client perform a non-sync draw at this time.
                 result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
@@ -2642,6 +2614,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             final int oldVisibility = win.mViewVisibility;
+            final int oldBufferSeqId = win.mBufferSeqId;
 
             // If the window is becoming visible, visibleOrAdding may change which may in turn
             // change the IME layering target.
@@ -2862,7 +2835,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (outRelayoutResult != null) {
-                if (!Flags.alwaysSeqIdLayout()
+                if (!mAlwaysSeqId
                         && win.syncNextBuffer() && viewVisibility == View.VISIBLE
                         && win.mSyncSeqId > syncSeqId && !displayContent.mWaitingForConfig) {
                     outRelayoutResult.syncSeqId = win.shouldSyncWithBuffers()
@@ -2870,6 +2843,11 @@ public class WindowManagerService extends IWindowManager.Stub
                             : -1;
                     win.markRedrawForSyncReported();
                 } else {
+                    if (win.mBufferSeqId > oldBufferSeqId) {
+                        // A sync was started so this current layout is invalid until subsequent
+                        // reportResized.
+                        result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
+                    }
                     outRelayoutResult.syncSeqId = -1;
                 }
             }
@@ -8651,6 +8629,23 @@ public class WindowManagerService extends IWindowManager.Stub
         @Override
         public @DisplayImePolicy int getDisplayImePolicy(int displayId) {
             return WindowManagerService.this.getDisplayImePolicy(displayId);
+        }
+
+        @Override
+        public void onDisplayUiModeChanged(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent displayContent = getDisplayContentOrCreate(displayId, null);
+                if (displayContent == null) {
+                    ProtoLog.w(WM_ERROR,
+                            "Received UI mode change on a display that does not exist: %d",
+                            displayId);
+                    return;
+                }
+
+                displayContent.getDisplayPolicy().onDisplayUiModeChanged();
+                // Trigger a configuration change.
+                displayContent.reconfigureDisplayLocked();
+            }
         }
 
         @Override

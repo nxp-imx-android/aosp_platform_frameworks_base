@@ -99,6 +99,7 @@ import android.service.dreams.DreamManagerInternal;
 import android.test.mock.MockContentResolver;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
+import android.view.Display;
 
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.twilight.TwilightListener;
@@ -716,7 +717,7 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
         try {
             mService.setNightModeActivated(false);
         } catch (SecurityException e) { /* we should ignore this update config exception*/ }
-        assertEquals(MODE_NIGHT_NO, mService.getNightMode());
+        assertEquals(MODE_NIGHT_NO, mService.getNightMode(Display.DEFAULT_DISPLAY));
     }
 
     @Test
@@ -727,7 +728,7 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
         try {
             mService.setNightModeActivated(true);
         } catch (SecurityException e) { /* we should ignore this update config exception*/ }
-        assertEquals(MODE_NIGHT_YES, mService.getNightMode());
+        assertEquals(MODE_NIGHT_YES, mService.getNightMode(Display.DEFAULT_DISPLAY));
     }
 
     @Test
@@ -738,7 +739,7 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
         try {
             mService.setNightModeActivated(true);
         } catch (SecurityException e) { /* we should ignore this update config exception*/ }
-        assertEquals(MODE_NIGHT_AUTO, mService.getNightMode());
+        assertEquals(MODE_NIGHT_AUTO, mService.getNightMode(Display.DEFAULT_DISPLAY));
     }
 
     @Test
@@ -1381,7 +1382,8 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
                 .thenReturn(TestInjector.DEFAULT_CALLING_UID + 1);
 
         assertThrows(SecurityException.class, () -> mService.enableCarMode(0, 0, PACKAGE_NAME));
-        assertThat(mService.getCurrentModeType()).isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
     }
 
     @Test
@@ -1394,7 +1396,8 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
         mService = mUiManagerService.getService();
 
         mService.enableCarMode(0, 0, PACKAGE_NAME);
-        assertThat(mService.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isEqualTo(Configuration.UI_MODE_TYPE_CAR);
     }
 
     @Test
@@ -1402,19 +1405,22 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
         when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
                 .thenReturn(TestInjector.DEFAULT_CALLING_UID);
         mService.enableCarMode(0, 0, PACKAGE_NAME);
-        assertThat(mService.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isEqualTo(Configuration.UI_MODE_TYPE_CAR);
         when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
                 .thenReturn(TestInjector.DEFAULT_CALLING_UID + 1);
 
         assertThrows(SecurityException.class,
                 () -> mService.disableCarModeByCallingPackage(0, PACKAGE_NAME));
-        assertThat(mService.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isEqualTo(Configuration.UI_MODE_TYPE_CAR);
 
         // Clean up
         when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
                 .thenReturn(TestInjector.DEFAULT_CALLING_UID);
         mService.disableCarModeByCallingPackage(0, PACKAGE_NAME);
-        assertThat(mService.getCurrentModeType()).isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
     }
 
     @Test
@@ -1427,10 +1433,12 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
         mService = mUiManagerService.getService();
 
         mService.enableCarMode(0, 0, PACKAGE_NAME);
-        assertThat(mService.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isEqualTo(Configuration.UI_MODE_TYPE_CAR);
 
         mService.disableCarModeByCallingPackage(0, PACKAGE_NAME);
-        assertThat(mService.getCurrentModeType()).isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
+        assertThat(mService.getCurrentModeType(Display.DEFAULT_DISPLAY))
+                .isNotEqualTo(Configuration.UI_MODE_TYPE_CAR);
     }
 
     @Test

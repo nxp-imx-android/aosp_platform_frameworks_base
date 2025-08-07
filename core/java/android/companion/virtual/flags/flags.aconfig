@@ -213,6 +213,13 @@ flag {
 }
 
 flag {
+    name: "device_aware_ui_mode"
+    namespace: "virtual_devices"
+    description: "Device and display awareness for UiModeManager"
+    bug: "340667076"
+}
+
+flag {
     name: "fix_vdm_opt_out_on_mirror_displays"
     namespace: "virtual_devices"
     description: "Do not show content from opted out activities on mirror displays"

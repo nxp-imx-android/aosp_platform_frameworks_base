@@ -64,7 +64,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import android.widget.flags.Flags;
 
 import com.android.internal.R;
 import com.android.internal.widget.ConversationAvatarData.GroupConversationAvatarData;
@@ -724,7 +723,9 @@ public class ConversationLayout extends FrameLayout
                 mRightIconView.setVisibility(GONE);
             }
         }
-        adjustSpacingForImage();
+        if (isShowingImage) {
+            adjustSpacingForImage();
+        }
     }
 
     /**

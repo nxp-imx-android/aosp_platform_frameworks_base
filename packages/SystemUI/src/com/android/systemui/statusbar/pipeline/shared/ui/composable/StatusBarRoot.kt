@@ -94,7 +94,6 @@ import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernizat
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
-import com.android.systemui.statusbar.phone.ui.TintedIconManager.Factory
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithChargeStatus
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercentMode
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
@@ -214,6 +213,17 @@ fun StatusBarRoot(
         }
     lateinit var touchableExclusionRegionDisposableHandle: DisposableHandle
 
+    if (StatusBarPopupChips.isEnabled) {
+        with(mediaHost) {
+            expansion = MediaHostState.EXPANDED
+            expandedMatchesParentHeight = true
+            showsOnlyActiveMedia = true
+            falsingProtectionNeeded = false
+            disableScrolling = true
+            init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
+        }
+    }
+
     // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
     if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
         DesktopStatusBar(
@@ -221,6 +231,8 @@ fun StatusBarRoot(
             clockViewModelFactory = clockViewModelFactory,
             statusBarIconController = iconController,
             iconManagerFactory = tintedIconManagerFactory,
+            mediaHierarchyManager = mediaHierarchyManager,
+            mediaHost = mediaHost,
         )
         return
     }
@@ -274,15 +286,6 @@ fun StatusBarRoot(
 
                 // Add a composable container for `StatusBarPopupChip`s
                 if (StatusBarPopupChips.isEnabled) {
-                    with(mediaHost) {
-                        expansion = MediaHostState.EXPANDED
-                        expandedMatchesParentHeight = true
-                        showsOnlyActiveMedia = true
-                        falsingProtectionNeeded = false
-                        disableScrolling = true
-                        init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
-                    }
-
                     val endSideContent =
                         phoneStatusBarView.requireViewById<AlphaOptimizedLinearLayout>(
                             R.id.status_bar_end_side_content

@@ -481,10 +481,10 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 info.getDebugId());
 
         final Transitions.TransitionFinishCallback finishCB = (wct) -> {
+            mBubbleTransitions.notifyUnfoldTransitionFinished(transition);
             mInFlightSubAnimations--;
             if (mInFlightSubAnimations > 0) return;
             finishCallback.onTransitionFinished(wct);
-            mBubbleTransitions.notifyUnfoldTransitionFinished(transition);
         };
         mInFlightSubAnimations = 1;
         // Sync pip state.

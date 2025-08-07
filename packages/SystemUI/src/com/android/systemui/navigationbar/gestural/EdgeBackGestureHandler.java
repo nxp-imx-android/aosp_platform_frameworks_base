@@ -19,8 +19,10 @@ import static android.content.pm.ActivityInfo.CONFIG_FONT_SCALE;
 import static android.view.InputDevice.SOURCE_MOUSE;
 import static android.view.InputDevice.SOURCE_TOUCHPAD;
 import static android.view.MotionEvent.TOOL_TYPE_FINGER;
+import static android.view.MotionEvent.TOOL_TYPE_MOUSE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION;
 
+import static com.android.systemui.Flags.blockMouseEdgeBackGesture;
 import static com.android.systemui.Flags.edgebackGestureHandlerGetRunningTasksBackground;
 import static com.android.window.flags.Flags.predictiveBackDelayWmTransition;
 import static com.android.systemui.classifier.Classifier.BACK_GESTURE;
@@ -1214,6 +1216,9 @@ public class EdgeBackGestureHandler {
             } else {
                 mAllowGesture = isBackAllowedCommon && !mUsingThreeButtonNav && isWithinInsets
                         && isWithinTouchRegion(ev) && !isButtonPressFromTrackpad(ev);
+                if (blockMouseEdgeBackGesture()) {
+                    mAllowGesture = mAllowGesture && !isButtonPressFromMouse(ev);
+                }
             }
             if (mAllowGesture) {
                 if (DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()) {
@@ -1363,6 +1368,11 @@ public class EdgeBackGestureHandler {
     private boolean isButtonPressFromTrackpad(MotionEvent ev) {
         return ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD)
                 && ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
+    }
+
+    private boolean isButtonPressFromMouse(MotionEvent ev) {
+        return ev.getSource() == (SOURCE_MOUSE)
+                && ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_MOUSE;
     }
 
     private void dispatchToBackAnimation(MotionEvent event) {

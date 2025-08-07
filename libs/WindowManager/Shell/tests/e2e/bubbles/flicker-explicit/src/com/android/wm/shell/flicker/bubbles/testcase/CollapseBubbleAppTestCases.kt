@@ -22,9 +22,10 @@ import org.junit.Test
  * Verifies collapsing a bubble, which verifies:
  * - [BubbleAlwaysVisibleTestCases]
  * - [BubbleAppBecomesNotExpandedTestCases]
+ * - [LauncherAlwaysVisibleTestCases]
  */
 interface CollapseBubbleAppTestCases : BubbleAlwaysVisibleTestCases,
-    BubbleAppBecomesNotExpandedTestCases
+    BubbleAppBecomesNotExpandedTestCases, LauncherAlwaysVisibleTestCases
 {
 
     /**

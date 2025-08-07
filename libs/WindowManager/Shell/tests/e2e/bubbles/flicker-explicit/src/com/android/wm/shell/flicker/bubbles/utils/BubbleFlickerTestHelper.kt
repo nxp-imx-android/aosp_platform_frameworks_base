@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.bubbles.utils
 
+import android.content.Context
 import android.platform.systemui_tapl.ui.Bubble
 import android.platform.systemui_tapl.ui.Root
 import android.tools.device.apphelpers.BrowserAppHelper
@@ -27,6 +28,8 @@ import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.annotation.IntRange
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
@@ -38,6 +41,9 @@ import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import com.google.common.truth.Truth.assertWithMessage
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 /**
  * A helper to build the bubble operations.
@@ -314,6 +320,27 @@ internal object BubbleFlickerTestHelper {
      */
     fun dismissMultipleBubbles() {
         bubbleApps.forEach { app -> app.exit() }
+    }
+
+    /**
+     * Dumps the current window hierarchy to a file.
+     *
+     * It's useful to debug view hierarchy issue.
+     */
+    fun dumpViewHierarchy() {
+        val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        val dumpFile = File(
+            ApplicationProvider.getApplicationContext<Context>().cacheDir,
+            "hierarchy_dump.xml"
+        )
+
+        try {
+            FileOutputStream(dumpFile).use { outputStream ->
+                uiDevice.dumpWindowHierarchy(outputStream)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     private fun assertBubbleIconsAligned(tapl: LauncherInstrumentation) {

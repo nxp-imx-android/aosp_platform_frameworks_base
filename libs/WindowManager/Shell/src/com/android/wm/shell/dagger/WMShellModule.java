@@ -1781,9 +1781,10 @@ public abstract class WMShellModule {
             DesktopPersistentRepository desktopPersistentRepository,
             @ShellMainThread CoroutineScope mainScope,
             DesktopConfig desktopConfig,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            DisplayController displayController) {
         return new DesktopRepositoryInitializerImpl(context, desktopPersistentRepository,
-                mainScope, desktopConfig, desktopState);
+                mainScope, desktopConfig, desktopState, displayController);
     }
 
     @WMSingleton

@@ -153,17 +153,6 @@ flag {
 }
 
 flag {
-  name: "bg_priority_for_occluded_freeform_tasks"
-  namespace: "windowing_frontend"
-  description: "Background priority for occluded freeform tasks"
-  bug: "325594711"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
@@ -193,14 +182,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-  name: "insets_decoupled_configuration"
-  namespace: "windowing_frontend"
-  description: "Configuration decoupled from insets"
-  bug: "151861875"
-  is_fixed_read_only: true
 }
 
 flag {
@@ -517,3 +498,9 @@ flag {
     bug: "294925498"
 }
 
+flag {
+    name: "always_seq_id_layout_wear"
+    namespace: "windowing_frontend"
+    description: "Use seq-id for all client config changes (wearOS)"
+    bug: "385976595"
+}

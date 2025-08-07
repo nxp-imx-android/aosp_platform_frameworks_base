@@ -49,7 +49,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
-import android.widget.flags.Flags;
 
 import com.android.internal.R;
 
@@ -435,7 +434,9 @@ public class MessagingLayout extends FrameLayout
                 mRightIconView.setVisibility(GONE);
             }
         }
-        adjustSpacingForImage();
+        if (isShowingImage) {
+            adjustSpacingForImage();
+        }
     }
 
     /**

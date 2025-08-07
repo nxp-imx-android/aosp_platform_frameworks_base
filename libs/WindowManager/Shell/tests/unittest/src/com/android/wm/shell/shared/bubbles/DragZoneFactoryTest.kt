@@ -386,7 +386,7 @@ class DragZoneFactoryTest {
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
-                DraggedObject.LauncherIcon(bubbleBarHasBubbles = true)
+                DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false)
             )
         val expectedZones: List<DragZoneVerifier> =
             listOf(verifyInstance<DragZone.Bubble.Left>(), verifyInstance<DragZone.Bubble.Right>())
@@ -409,7 +409,7 @@ class DragZoneFactoryTest {
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
-                DraggedObject.LauncherIcon(bubbleBarHasBubbles = false)
+                DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true)
             )
         val expectedZones: List<DragZoneVerifier> =
             listOf(verifyInstance<DragZone.Bubble.Left>(), verifyInstance<DragZone.Bubble.Right>())
@@ -432,7 +432,10 @@ class DragZoneFactoryTest {
             )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
-                DraggedObject.LauncherIcon(showDropTarget = false, bubbleBarHasBubbles = false)
+                DraggedObject.LauncherIcon(
+                    showExpandedViewDropTarget = false,
+                    showBubbleBarPillowDropTarget = true
+                )
             )
         val expectedZones: List<DragZoneVerifier> =
             listOf(verifyInstance<DragZone.Bubble.Left>(), verifyInstance<DragZone.Bubble.Right>())

@@ -25,8 +25,7 @@ import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.MultipleBubbleExpandBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissMultipleBubbles
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
@@ -58,8 +57,7 @@ import org.junit.runners.Parameterized
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleAlwaysVisibleTestCases]
- * - [BubbleAppBecomesExpandedTestCases]
+ * - [MultipleBubbleExpandBubbleAppTestCases]
  */
 @FlakyTest(bugId = 430273288)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -68,7 +66,7 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class LaunchMultipleBubbleTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases, BubbleAppBecomesExpandedTestCases {
+    MultipleBubbleExpandBubbleAppTestCases {
 
     companion object : FlickerPropertyInitializer() {
 

@@ -82,7 +82,7 @@ import android.util.IndentingPrintWriter;
 
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.flags.Flags;
-import com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.QualifiedTelephonyTimeZoneSuggestion;
+import com.android.server.timezonedetector.QualifiedTelephonyTimeZoneSuggestion;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -2073,8 +2073,9 @@ public class TimeZoneDetectorStrategyImplTest {
 
         Script verifyLatestTelephonySuggestionReceived(int slotIndex,
                 TelephonyTimeZoneSuggestion expectedSuggestion) {
-            assertEquals(expectedSuggestion,
-                    mTimeZoneDetectorStrategy.getLatestTelephonySuggestion(slotIndex).suggestion);
+            assertEquals(
+                    expectedSuggestion,
+                    mTimeZoneDetectorStrategy.getLatestTelephonySuggestion(slotIndex).suggestion());
             return this;
         }
 

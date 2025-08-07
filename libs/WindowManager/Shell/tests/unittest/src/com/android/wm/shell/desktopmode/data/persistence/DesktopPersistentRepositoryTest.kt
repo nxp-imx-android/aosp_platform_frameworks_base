@@ -313,6 +313,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                     visibleTasks = visibleTasks,
                     minimizedTasks = minimizedTasks,
                     freeformTasksInZOrder = freeformTasksInZOrder,
+                    uniqueDisplayId = UNIQUE_DISPLAY_ID,
                 )
 
             // Update with new state
@@ -324,6 +325,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
             assertThat(actualDesktop?.tasksByTaskIdMap).hasSize(2)
             assertThat(actualDesktop?.getZOrderedTasks(0)).isEqualTo(2)
+            assertThat(actualDesktop?.getUniqueDisplayId()).isEqualTo(UNIQUE_DISPLAY_ID)
         }
     }
 
@@ -344,6 +346,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                     visibleTasks = visibleTasks,
                     freeformTasksInZOrder = freeformTasksInZOrder,
                     leftTiledTaskId = 1,
+                    uniqueDisplayId = UNIQUE_DISPLAY_ID,
                 )
 
             // Update with new state
@@ -357,6 +360,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 .isEqualTo(DesktopTaskTilingState.LEFT)
             assertThat(actualDesktop?.tasksByTaskIdMap?.get(2)?.desktopTaskTilingState)
                 .isEqualTo(DesktopTaskTilingState.NONE)
+            assertThat(actualDesktop?.getUniqueDisplayId()).isEqualTo(UNIQUE_DISPLAY_ID)
 
             desk.rightTiledTaskId = 2
             desk.leftTiledTaskId = null
@@ -392,6 +396,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                     visibleTasks = visibleTasks,
                     minimizedTasks = minimizedTasks,
                     freeformTasksInZOrder = freeformTasksInZOrder,
+                    uniqueDisplayId = UNIQUE_DISPLAY_ID,
                 )
 
             // Update with new state
@@ -403,6 +408,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
             assertThat(actualDesktop?.tasksByTaskIdMap?.get(task.taskId)?.desktopTaskState)
                 .isEqualTo(DesktopTaskState.MINIMIZED)
+            assertThat(actualDesktop?.getUniqueDisplayId()).isEqualTo(UNIQUE_DISPLAY_ID)
         }
     }
 
@@ -477,6 +483,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
         const val DEFAULT_USER_ID = 1000
         const val USER_ID_2 = 2000
         const val DEFAULT_DESKTOP_ID = 0
+        const val UNIQUE_DISPLAY_ID = "unique_display_id"
 
         fun createRepositoryWithOneDesk(
             tasks: ArrayList<DesktopTask>

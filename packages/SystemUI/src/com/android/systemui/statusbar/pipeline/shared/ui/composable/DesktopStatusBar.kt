@@ -39,9 +39,13 @@ import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
+import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.shade.ui.composable.VariableDayDate
+import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
+import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
@@ -68,6 +72,8 @@ fun DesktopStatusBar(
     clockViewModelFactory: ClockViewModel.Factory,
     statusBarIconController: StatusBarIconController,
     iconManagerFactory: TintedIconManager.Factory,
+    mediaHierarchyManager: MediaHierarchyManager,
+    mediaHost: MediaHost,
     modifier: Modifier = Modifier,
 ) {
     // TODO(433589833): Update padding values to match UX specs.
@@ -96,6 +102,16 @@ fun DesktopStatusBar(
             horizontalArrangement =
                 Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.End)
         ) {
+            if (StatusBarPopupChips.isEnabled) {
+                StatusBarPopupChipsContainer(
+                    chips = viewModel.popupChips,
+                    mediaHost = mediaHost,
+                    onMediaControlPopupVisibilityChanged = { popupShowing ->
+                        mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
+                    },
+                )
+            }
+
             NotificationsChip(viewModel = viewModel)
 
             QuickSettingsChip(

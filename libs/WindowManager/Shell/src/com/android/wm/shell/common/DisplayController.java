@@ -46,7 +46,9 @@ import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -112,6 +114,30 @@ public class DisplayController {
      */
     public Display getDisplay(int displayId) {
         return mDisplayManager.getDisplay(displayId);
+    }
+
+    /**
+     * Gets the uniqueId associated with the provided displayId, if it is associated with one.
+     */
+    @Nullable
+    public String getDisplayUniqueId(int displayId) {
+        final DisplayRecord r = mDisplays.get(displayId);
+        return r != null ? r.mUniqueId : null;
+    }
+
+    /**
+     * Gets a map of all displays by uniqueId from DisplayManager.
+     */
+    @Nullable
+    public Map<String, Integer> getAllDisplaysByUniqueId() {
+        HashMap<String, Integer> map = new HashMap<>();
+        for (int i = 0; i < mDisplays.size(); i++) {
+            final String uniqueId = mDisplays.valueAt(i).mUniqueId;
+            if (uniqueId != null) {
+                map.put(uniqueId, mDisplays.keyAt(i));
+            }
+        }
+        return map;
     }
 
     /**
@@ -218,6 +244,10 @@ public class DisplayController {
             final DisplayRecord record = new DisplayRecord(displayId, hasStatusAndNavBars);
             DisplayLayout displayLayout = record.createLayout(context, display);
             record.setDisplayLayout(context, displayLayout);
+            final String uniqueId = display.getUniqueId();
+            if (uniqueId != null) {
+                record.setUniqueId(uniqueId);
+            }
             mDisplays.put(displayId, record);
             for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
                 mDisplayChangedListeners.get(i).onDisplayAdded(displayId);
@@ -383,6 +413,7 @@ public class DisplayController {
 
     private class DisplayRecord {
         private final int mDisplayId;
+        private String mUniqueId;
         private Context mContext;
         private DisplayLayout mDisplayLayout;
         private InsetsState mInsetsState = new InsetsState();
@@ -426,6 +457,10 @@ public class DisplayController {
             mContext = context;
             mDisplayLayout = displayLayout;
             mDisplayLayout.setInsets(mContext.getResources(), mInsetsState);
+        }
+
+        private void setUniqueId(String uniqueId) {
+            mUniqueId = uniqueId;
         }
 
         private void setInsets(InsetsState state) {

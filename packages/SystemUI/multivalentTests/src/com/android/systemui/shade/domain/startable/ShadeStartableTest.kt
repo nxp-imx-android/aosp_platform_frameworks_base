@@ -29,7 +29,6 @@ import com.android.systemui.display.data.repository.createFakeDisplaySubcomponen
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.display.domain.interactor.createDisplayStateInteractor
-import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.parameterizeSceneContainerFlag
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
@@ -279,34 +278,6 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(scrimController.clipQsScrim).isFalse()
             assertThat(isWideScreen).isTrue()
             assertThat(legacyUseSplitShade).isFalse()
-        }
-
-    @Test
-    @EnableSceneContainer
-    fun hydrateLargeScreen_sceneContainer() =
-        kosmos.runTest {
-            val isLargeScreen by collectLastValue(shadeRepository.isLargeScreen)
-            underTest.start()
-
-            displayStateRepository.setIsLargeScreen(false)
-            assertThat(isLargeScreen).isFalse()
-
-            displayStateRepository.setIsLargeScreen(true)
-            assertThat(isLargeScreen).isTrue()
-        }
-
-    @Test
-    @DisableSceneContainer
-    fun hydrateLargeScreen_nonSceneContainer() =
-        kosmos.runTest {
-            val isLargeScreen by collectLastValue(shadeRepository.isLargeScreen)
-            underTest.start()
-
-            displayStateRepository.setIsLargeScreen(false)
-            assertThat(isLargeScreen).isFalse()
-
-            displayStateRepository.setIsLargeScreen(true)
-            assertThat(isLargeScreen).isTrue()
         }
 
     private fun Kosmos.changeScene(

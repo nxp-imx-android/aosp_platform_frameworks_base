@@ -2060,6 +2060,28 @@ public class TelecomManager {
     }
 
     /**
+     * Returns whether there is an ongoing phone call (can be in dialing, ringing, active or holding
+     * states) that is an external call.
+     *
+     * @return {@code true} if there is an ongoing call that is external, {@code false} otherwise.
+     */
+    @FlaggedApi(Flags.FLAG_IS_IN_EXTERNAL_CALL)
+    @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
+    public boolean isInExternalCall() {
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                return service.isInExternalCall(mContext.getOpPackageName(),
+                        mContext.getAttributionTag());
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException calling isInCall().", e);
+              e.rethrowFromSystemServer();
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns whether the caller has {@link android.Manifest.permission#MANAGE_ONGOING_CALLS}
      * permission. The permission can be obtained by associating with a physical wearable device
      * via the {@link android.companion.CompanionDeviceManager} API as a companion app. If the
