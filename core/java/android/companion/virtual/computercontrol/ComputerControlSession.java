@@ -16,15 +16,22 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
+import android.os.Binder;
 import android.os.RemoteException;
 import android.view.Surface;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * A session for automated control of applications.
@@ -35,6 +42,23 @@ import java.util.Objects;
  * @hide
  */
 public final class ComputerControlSession implements AutoCloseable {
+
+    /**
+     * Error code indicating that a new session cannot be created because the maximum number of
+     * allowed concurrent sessions has been reached.
+     *
+     * <p>This is a transient error and the session creation request can be retried later.</p>
+     */
+    public static final int ERROR_SESSION_LIMIT_REACHED = -1;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = "ERROR_",
+            value = {ERROR_SESSION_LIMIT_REACHED})
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface SessionCreationError {
+    }
 
     private final IComputerControlSession mSession;
 
@@ -97,6 +121,41 @@ public final class ComputerControlSession implements AutoCloseable {
             mSession.close();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** Callback for computer control session events. */
+    public interface Callback {
+
+        /** Called when the session request was successfully fulfilled. */
+        void onSessionCreated(@NonNull ComputerControlSession session);
+
+        /** Called when the session failed to be created. */
+        void onSessionCreationFailed(@SessionCreationError int errorCode);
+    }
+
+    /** @hide */
+    public static class CallbackProxy extends IComputerControlSessionCallback.Stub {
+
+        private final Callback mCallback;
+        private final Executor mExecutor;
+
+        public CallbackProxy(@NonNull Executor executor, @NonNull Callback callback) {
+            mExecutor = executor;
+            mCallback = callback;
+        }
+
+        @Override
+        public void onSessionCreated(IComputerControlSession session) {
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() ->
+                            mCallback.onSessionCreated(new ComputerControlSession(session))));
+        }
+
+        @Override
+        public void onSessionCreationFailed(@SessionCreationError int errorCode) {
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mCallback.onSessionCreationFailed(errorCode)));
         }
     }
 }

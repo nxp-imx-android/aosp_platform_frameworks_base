@@ -41,7 +41,7 @@ import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
-import android.companion.virtual.computercontrol.IComputerControlSession;
+import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
@@ -209,17 +209,31 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * Requests the creation of a new {@link ComputerControlSession}.
+     *
+     * @param params The configuration of the session.
+     * @param executor An executor to run the callback on.
+     * @param callback A callback to get notified about the result of this operation.
+     *
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
-    @NonNull
-    public ComputerControlSession createComputerControlSession(
-            @NonNull ComputerControlSessionParams params) {
+    public void requestComputerControlSession(
+            @NonNull ComputerControlSessionParams params,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull ComputerControlSession.Callback callback) {
+        if (mService == null) {
+            Log.w(TAG, "Failed to request a new session; no virtual device manager service.");
+            return;
+        }
         Objects.requireNonNull(params, "params must not be null");
+        Objects.requireNonNull(executor, "executor must not be null");
+        Objects.requireNonNull(callback, "callback must not be null");
         try {
-            IComputerControlSession session = mService.createComputerControlSession(
-                    new Binder(), mContext.getAttributionSource(), params);
-            return new ComputerControlSession(session);
+            IComputerControlSessionCallback callbackProxy =
+                    new ComputerControlSession.CallbackProxy(executor, callback);
+            mService.requestComputerControlSession(
+                    mContext.getAttributionSource(), params, callbackProxy);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

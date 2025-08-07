@@ -42,7 +42,7 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
-import android.companion.virtual.computercontrol.IComputerControlSession;
+import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
 import android.companion.virtualnative.IVirtualDeviceManagerNative;
@@ -416,22 +416,22 @@ public class VirtualDeviceManagerService extends SystemService {
 
         @EnforcePermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
         @Override // Binder call
-        public IComputerControlSession createComputerControlSession(
-                @NonNull IBinder token,
+        public void requestComputerControlSession(
                 @NonNull AttributionSource attributionSource,
-                @NonNull ComputerControlSessionParams params) {
+                @NonNull ComputerControlSessionParams params,
+                @NonNull IComputerControlSessionCallback callback) {
             // TODO(b/432678187): Replace the permission check with an alternative
-            createComputerControlSession_enforcePermission();
+            requestComputerControlSession_enforcePermission();
             if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
                 throw new IllegalStateException(
                         "Cannot create ComputerControlSession - flag disabled");
             }
-            Objects.requireNonNull(token);
             Objects.requireNonNull(attributionSource);
             Objects.requireNonNull(params);
+            Objects.requireNonNull(callback);
 
-            return mComputerControlSessionProcessor.processNewSession(
-                    token, attributionSource, params);
+            mComputerControlSessionProcessor.processNewSessionRequest(
+                    attributionSource, params, callback);
         }
 
         @EnforcePermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
