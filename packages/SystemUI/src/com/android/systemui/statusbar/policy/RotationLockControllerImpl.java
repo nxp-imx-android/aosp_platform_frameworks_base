@@ -31,6 +31,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.rotation.RotationPolicyWrapper;
+import com.android.systemui.util.wrapper.CameraRotationSettingProvider;
 
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -55,6 +56,7 @@ public final class RotationLockControllerImpl implements RotationLockController 
     };
 
     private final RotationPolicyWrapper mRotationPolicy;
+    private final CameraRotationSettingProvider mCameraRotationSettingProvider;
     private final Optional<DeviceStateRotationLockSettingController>
             mDeviceStateRotationLockSettingController;
     private final boolean mIsPerDeviceStateRotationLockEnabled;
@@ -64,6 +66,7 @@ public final class RotationLockControllerImpl implements RotationLockController 
     @Inject
     public RotationLockControllerImpl(
             RotationPolicyWrapper rotationPolicyWrapper,
+            CameraRotationSettingProvider cameraRotationSettingProvider,
             Optional<DeviceStateRotationLockSettingController>
                     deviceStateRotationLockSettingController,
             @Named(DEVICE_STATE_ROTATION_LOCK_DEFAULTS) String[] deviceStateRotationLockDefaults,
@@ -71,6 +74,7 @@ public final class RotationLockControllerImpl implements RotationLockController 
             @Main Executor mainExecutor
     ) {
         mRotationPolicy = rotationPolicyWrapper;
+        mCameraRotationSettingProvider = cameraRotationSettingProvider;
         mIsPerDeviceStateRotationLockEnabled = deviceStateRotationLockDefaults.length > 0;
         mDeviceStateRotationLockSettingController =
                 deviceStateRotationLockSettingController;
@@ -105,7 +109,7 @@ public final class RotationLockControllerImpl implements RotationLockController 
     }
 
     public boolean isCameraRotationEnabled() {
-        return mRotationPolicy.isCameraRotationEnabled();
+        return mCameraRotationSettingProvider.isCameraRotationEnabled();
     }
 
     public void setRotationLocked(boolean locked, String caller) {

@@ -42,7 +42,6 @@ java_library {
     static_libs: [
         "//frameworks/libs/systemui:tracinglib-platform",
         "com.android.systemui.rotation-api",
-        "com.android.systemui.util.settings-api",
     ],
     defaults: [
         "SystemUI_pod_defaults_impl",
