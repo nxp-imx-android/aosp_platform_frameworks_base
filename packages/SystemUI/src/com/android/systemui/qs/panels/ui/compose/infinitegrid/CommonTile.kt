@@ -114,6 +114,8 @@ import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
 
 private const val TEST_TAG_TOGGLE = "qs_tile_toggle_target"
+private const val TEST_TAG_SMALL = "qs_tile_small"
+private const val TEST_TAG_LARGE = "qs_tile_large"
 
 @Composable
 fun LargeTileContent(
@@ -363,6 +365,10 @@ private fun TileLabel(
                     initialDelayMillis = TILE_INITIAL_DELAY_MILLIS,
                 ),
     )
+}
+
+fun Modifier.tileTestTag(iconOnly: Boolean): Modifier {
+    return sysuiResTag(if (iconOnly) TEST_TAG_SMALL else TEST_TAG_LARGE)
 }
 
 /**

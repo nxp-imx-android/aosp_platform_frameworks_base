@@ -86,7 +86,6 @@ import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
 import com.android.systemui.lifecycle.rememberViewModel
@@ -110,9 +109,6 @@ import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import kotlinx.coroutines.CoroutineScope
-
-private const val TEST_TAG_SMALL = "qs_tile_small"
-private const val TEST_TAG_LARGE = "qs_tile_large"
 
 @Composable
 fun TileLazyGrid(
@@ -401,7 +397,7 @@ fun TileContainer(
                     isDualTarget = isDualTarget,
                     interactionSource = interactionSource,
                 )
-                .sysuiResTag(if (iconOnly) TEST_TAG_SMALL else TEST_TAG_LARGE),
+                .tileTestTag(iconOnly),
         content = content,
     )
 }
