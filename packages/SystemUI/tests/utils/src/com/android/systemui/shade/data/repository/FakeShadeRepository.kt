@@ -24,7 +24,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** Fake implementation of [ShadeRepository] */
@@ -73,9 +72,6 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
 
     @Deprecated("Use ShadeInteractor.isUserInteractingWithShade instead")
     override val legacyLockscreenShadeTracking = MutableStateFlow(false)
-
-    private var _isLargeScreen = MutableStateFlow(false)
-    override val isLargeScreen: StateFlow<Boolean> = _isLargeScreen.asStateFlow()
 
     @Deprecated("Use ShadeInteractor instead")
     override fun setLegacyIsQsExpanded(legacyIsQsExpanded: Boolean) {
@@ -160,10 +156,6 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
     override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
         legacyUseSplitShade.value = isShadeLayoutWide
         isWideScreen.value = isShadeLayoutWide
-    }
-
-    override fun setLargeScreen(isLargeScreen: Boolean) {
-        _isLargeScreen.value = isLargeScreen
     }
 }
 

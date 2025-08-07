@@ -78,7 +78,6 @@ constructor(
     override fun start() {
         hydrateShadeLayoutWidth()
         hydrateFullWidth()
-        hydrateLargeScreen()
         hydrateShadeExpansionStateManager()
         logTouchesTo(touchLog)
         scrimShadeTransitionController.init()
@@ -143,12 +142,6 @@ constructor(
                     }
                 }
                 .collect { shadeRepository.legacyUseSplitShade.value = it }
-        }
-    }
-
-    private fun hydrateLargeScreen() {
-        applicationScope.launch {
-            shadeDisplayStateInteractor.isLargeScreen.collect(shadeRepository::setLargeScreen)
         }
     }
 
