@@ -1756,17 +1756,6 @@ flag {
 }
 
 flag {
-    name: "notifications_launch_radius"
-    namespace: "systemui"
-    description: "Fixes a discrepancy in corner radius between expanding notification and opening window during launch animations."
-    bug: "396054791"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-
-flag {
     name: "lockscreen_font"
     namespace: "systemui"
     description: "Read-only flag for lockscreen font"
