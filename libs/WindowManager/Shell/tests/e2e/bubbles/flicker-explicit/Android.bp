@@ -48,20 +48,13 @@ android_test {
 }
 
 // Auto generated section, don't update it manually
-
-test_module_config {
-    name: "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest",
-    base: "WMShellExplicitFlickerTestsBubbles",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest"],
-}
-
 test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-CatchAll",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     exclude_filters: [
         "com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest",
+        "com.android.wm.shell.flicker.bubbles.BubbleBarVisibilityTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaTouchOutsideTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarHandleTest",
@@ -76,6 +69,20 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
     ],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-BubbleBarVisibilityTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.BubbleBarVisibilityTest"],
 }
 
 test_module_config {

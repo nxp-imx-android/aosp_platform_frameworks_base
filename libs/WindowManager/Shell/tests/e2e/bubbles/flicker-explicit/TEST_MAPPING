@@ -4,6 +4,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarVisibilityTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
     },
     {

@@ -20,5 +20,7 @@ package com.android.wm.shell.flicker.bubbles.testcase
  * The set to verify bubble expands from collapsed state, which verifies
  * - [BubbleAlwaysVisibleTestCases]
  * - [BubbleAppBecomesExpandedTestCases]
+ * - [LauncherAlwaysVisibleTestCases]
  */
-interface ExpandBubbleTestCases : BubbleAlwaysVisibleTestCases, BubbleAppBecomesExpandedTestCases
+interface ExpandBubbleTestCases : BubbleAlwaysVisibleTestCases, BubbleAppBecomesExpandedTestCases,
+        LauncherAlwaysVisibleTestCases
