@@ -59,6 +59,24 @@ public class BouncyBallActivity extends AppCompatActivity {
     // down.
     private static final float INITIAL_TIME_TO_IGNORE_IN_SECONDS = 0.1f;
 
+    // The app itself can run "forever".  But for automated testing, we want
+    // a consistent testing time.  We don't want to take too long, but we want
+    // to wait sufficiently for CPUs/GPU to clock down to save power under our
+    // basic load.
+    private static final int AUTOMATED_TEST_DURATION_IN_SECONDS = 120;
+
+    // We use a trace counter to let trace analysis know if a frame is relevant.
+    private static final String TRACE_COUNTER_RELEVANT_FRAME = "relevant_frame";
+
+    // This is before INITIAL_TIME_TO_IGNORE_IN_SECONDS have passed.
+    private static final int TRACE_STATE_TOO_EARLY = 1;
+
+    // These are the relevant frames for automated testing.
+    private static final int TRACE_STATE_IN_TEST_TIME = 2;
+
+    // This is after the time span for automated testing.
+    private static final int TRACE_STATE_POST_TEST_TIME = 3;
+
     private int mDisplayId = -1;
     private boolean mHasFocus = false;
     private boolean mWarmedUp = false;
@@ -66,7 +84,9 @@ public class BouncyBallActivity extends AppCompatActivity {
     private long mFrameMaxDurationNanos;
     private int mFrameCount = 0;
     private int mFirstAutomatedTestFrame = -1;
+    private int mEndingAutomatedTestFrame = -1;
     private int mNumFramesDropped = 0;
+    private int mTraceState = TRACE_STATE_TOO_EARLY;
     private Choreographer mChoreographer;
 
     private final DisplayManager.DisplayListener mDisplayListener =
@@ -97,11 +117,17 @@ public class BouncyBallActivity extends AppCompatActivity {
                 public void doFrame(long frameTimeNanos) {
                     if (mFrameCount == mFirstAutomatedTestFrame) {
                         mWarmedUp = true;
+                        mTraceState = TRACE_STATE_IN_TEST_TIME;
+                        // We chose not to log this state change to minimize
+                        // system load during testing time.
                         if (!mHasFocus) {
                             String msg = "App does not have focus after "
                                     + mFrameCount + " frames";
                             reportAssumptionFailure(msg);
                         }
+                    } else if (mFrameCount == mEndingAutomatedTestFrame) {
+                        mTraceState = TRACE_STATE_POST_TEST_TIME;
+                        Log.i(LOG_TAG, "Done with frames for automated testing.");
                     }
                     if (mWarmedUp) {
                         long elapsedNanos = frameTimeNanos - mLastFrameTimeNanos;
@@ -115,6 +141,7 @@ public class BouncyBallActivity extends AppCompatActivity {
                                     + nanosToMillis(elapsedNanos) + "ms");
                         }
                     }
+                    Trace.setCounter(TRACE_COUNTER_RELEVANT_FRAME, mTraceState);
                     mLastFrameTimeNanos = frameTimeNanos;
                     mFrameCount++;
                     if (FORCE_DROPPED_FRAMES) {
@@ -139,6 +166,7 @@ public class BouncyBallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Trace.setCounter(TRACE_COUNTER_RELEVANT_FRAME, mTraceState);
         Trace.beginSection("BouncyBallActivity onCreate");
         setContentView(R.layout.activity_bouncy_ball);
 
@@ -228,10 +256,19 @@ public class BouncyBallActivity extends AppCompatActivity {
         // the common case.
         mFrameMaxDurationNanos = ((long) frameMaxDurationMillis) * 1_000_000;
 
+        if (mTraceState != TRACE_STATE_TOO_EARLY) {
+            String msg = "Got new frame rate (" + frameRate + ") after "
+                    + mFrameCount + " frames, later than max of " + mFirstAutomatedTestFrame;
+            reportAssumptionFailure(msg);
+        }
         Log.i(LOG_TAG, "Running at frame rate " + mFrameRate + "Hz");
 
         mFirstAutomatedTestFrame =
             Math.round(INITIAL_TIME_TO_IGNORE_IN_SECONDS * mFrameRate);
+
+        // We'll stop our automated test tracking on this frame.
+        mEndingAutomatedTestFrame =
+            mFirstAutomatedTestFrame + (AUTOMATED_TEST_DURATION_IN_SECONDS * (int) mFrameRate);
     }
 
     private float nanosToMillis(long nanos) {
