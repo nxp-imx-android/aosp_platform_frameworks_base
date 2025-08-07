@@ -16,13 +16,11 @@
 
 package android.app.admin;
 
-import static java.util.function.Predicate.not;
-
 import android.annotation.Nullable;
 import android.app.role.RoleManager;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Class that contains information about the admins that are enforcing a specific policy.
@@ -30,22 +28,23 @@ import java.util.stream.Stream;
  * @hide
  */
 public class PolicyEnforcementInfo {
-    // Contains all admins who has enforced the policy. The supervision admin will be first on
-    // the list, if there's any.
+    // Contains all admins who has enforced the policy. The admins will be ordered as
+    // supervision, DPC admin then any other admin if they exist in the list.
     private final List<EnforcingAdmin> mAllAdmins;
 
     /**
      * @hide
      */
     public PolicyEnforcementInfo(List<EnforcingAdmin> enforcingAdmins) {
-        // Add any supervisor admins first.
-        Stream<EnforcingAdmin> supervisorAdmins = enforcingAdmins.stream().filter(
-                PolicyEnforcementInfo::isSupervisionRole);
-        // Add all other admins afterwards. Only supervisor admin will be added first, for others
-        // the order doesn't matter.
-        Stream<EnforcingAdmin> otherAdmins = enforcingAdmins.stream().filter(
-                not(PolicyEnforcementInfo::isSupervisionRole));
-        mAllAdmins = Stream.concat(supervisorAdmins, otherAdmins).toList();
+        mAllAdmins = enforcingAdmins.stream().sorted(Comparator.comparingInt(admin -> {
+            if (isSupervisionRole(admin)) {
+                return 0; // Supervision role holders have the highest priority.
+            }
+            if (isDpcAdmin(admin)) {
+                return 1; // DPC are next.
+            }
+            return 2; // All other admins at the end.
+        })).toList();
     }
 
     /**
@@ -87,5 +86,9 @@ public class PolicyEnforcementInfo {
         }
         return ((RoleAuthority) enforcingAdmin.getAuthority()).getRoles().contains(
                 RoleManager.ROLE_SYSTEM_SUPERVISION);
+    }
+
+    private static boolean isDpcAdmin(EnforcingAdmin enforcingAdmin) {
+        return enforcingAdmin.getAuthority() instanceof DpcAuthority;
     }
 }
