@@ -35,7 +35,6 @@ import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.lifecycle.viewModel
-import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
@@ -48,7 +47,6 @@ import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
-import javax.inject.Provider
 import kotlinx.coroutines.awaitCancellation
 
 /** View binder that wires up scene container specific view bindings. */
@@ -66,7 +64,6 @@ object SceneWindowRootViewBinder {
         overlays: Set<Overlay>,
         onVisibilityChangedInternal: (isVisible: Boolean) -> Unit,
         dataSourceDelegator: SceneDataSourceDelegator,
-        qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         tintedIconManagerFactory: TintedIconManager.Factory,
     ) {
@@ -117,7 +114,6 @@ object SceneWindowRootViewBinder {
                                 sceneByKey = sortedSceneByKey,
                                 overlayByKey = sortedOverlayByKey,
                                 dataSourceDelegator = dataSourceDelegator,
-                                qsSceneAdapter = qsSceneAdapter,
                                 containerConfig = containerConfig,
                                 sceneJankMonitorFactory = sceneJankMonitorFactory,
                                 tintedIconManagerFactory = tintedIconManagerFactory,
@@ -163,7 +159,6 @@ object SceneWindowRootViewBinder {
         sceneByKey: Map<SceneKey, Scene>,
         overlayByKey: Map<OverlayKey, Overlay>,
         dataSourceDelegator: SceneDataSourceDelegator,
-        qsSceneAdapter: Provider<QSSceneAdapter>,
         containerConfig: SceneContainerConfig,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         tintedIconManagerFactory: TintedIconManager.Factory,
@@ -180,7 +175,6 @@ object SceneWindowRootViewBinder {
                                 initialSceneKey = containerConfig.initialSceneKey,
                                 transitionsBuilder = containerConfig.transitionsBuilder,
                                 dataSourceDelegator = dataSourceDelegator,
-                                qsSceneAdapter = qsSceneAdapter,
                                 sceneJankMonitorFactory = sceneJankMonitorFactory,
                                 modifier = Modifier.sysUiResTagContainer(),
                             )

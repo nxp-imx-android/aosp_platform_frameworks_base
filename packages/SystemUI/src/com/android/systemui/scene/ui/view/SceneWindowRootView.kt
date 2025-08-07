@@ -7,7 +7,6 @@ import android.view.View
 import android.view.WindowInsets
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.Overlay
@@ -16,7 +15,6 @@ import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.TouchLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
-import javax.inject.Provider
 
 /** A root view of the main SysUI window that supports scenes. */
 class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootView(context, attrs) {
@@ -33,7 +31,6 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         overlays: Set<Overlay>,
         layoutInsetController: LayoutInsetsController,
         sceneDataSourceDelegator: SceneDataSourceDelegator,
-        qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
         tintedIconManagerFactory: TintedIconManager.Factory,
@@ -54,7 +51,6 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
                 super.setVisibility(if (isVisible) View.VISIBLE else View.INVISIBLE)
             },
             dataSourceDelegator = sceneDataSourceDelegator,
-            qsSceneAdapter = qsSceneAdapter,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
             tintedIconManagerFactory = tintedIconManagerFactory,
         )

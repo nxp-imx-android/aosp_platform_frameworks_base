@@ -31,7 +31,6 @@ import androidx.compose.ui.platform.LocalDensity
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.compose.animation.scene.animateContentDpAsState
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.dagger.SysUISingleton
@@ -40,8 +39,6 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
 import com.android.systemui.notifications.ui.composable.headsUpTopInset
 import com.android.systemui.qs.shared.ui.QuickSettings
-import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaLandscapeTopOffset
-import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaOffset.Default
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
@@ -104,7 +101,6 @@ constructor(
             value = QuickSettings.SharedValues.SquishinessValues.GoneSceneStarting,
             key = QuickSettings.SharedValues.TilesSquishiness,
         )
-        animateContentDpAsState(value = Default, key = MediaLandscapeTopOffset, canOverflow = false)
         Spacer(modifier.fillMaxSize())
         SnoozeableHeadsUpNotificationSpace(
             modifier =
