@@ -305,6 +305,24 @@ class ResolutionMechanismTest {
         }
     }
 
+    @Test
+    fun isPolicyApplied_topPriority_sameValues_returnsTrue() {
+        val resolutionMechanism = TopPriority<Int>(listOf())
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_topPriority_differentValues_returnsFalse() {
+        val resolutionMechanism = TopPriority<Int>(listOf())
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB)
+        }
+    }
+
 
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
