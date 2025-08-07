@@ -83,6 +83,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.dozeInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.FailFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -419,6 +420,37 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
             // THEN scenes are visible
             assertThat(isVisible).isTrue()
+        }
+
+    @Test
+    fun hydrateVisibility_surfaceBehindAnimating() =
+        kosmos.runTest {
+            val isVisible by collectLastValue(sceneInteractor.isVisible)
+
+            val transitionState = prepareState(
+                isDeviceUnlocked = true,
+                initialSceneKey = Scenes.Lockscreen,
+            )
+            underTest.start()
+            assertThat(isVisible).isTrue()
+
+            // Unlock, leaving the surface behind animation running even after the transition ends.
+            sceneInteractor.changeScene(
+                Scenes.Gone, "unlocking for test", forceSettleToTargetScene = true)
+            transitionState.value = ObservableTransitionState.Idle(Scenes.Gone)
+            keyguardSurfaceBehindInteractor.setAnimatingSurface(true)
+            runCurrent()
+
+            // Scene container should remain visible so the flows controlling the surface behind
+            // animation continue emitting.
+            assertThat(isVisible).isTrue()
+
+            // Once the animation settles...
+            keyguardSurfaceBehindInteractor.setAnimatingSurface(false)
+            runCurrent()
+
+            // ...we no longer need to be visible.
+            assertThat(isVisible).isFalse()
         }
 
     @Test
