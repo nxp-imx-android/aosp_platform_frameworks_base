@@ -1746,11 +1746,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mInsetsSourceProviders == null) {
             return false;
         }
-        final @InsetsType int decorInsetsTypes =
-                mWmService.mConfigTypes | mWmService.mOverrideConfigTypes;
         for (int i = mInsetsSourceProviders.size() - 1; i >= 0; i--) {
             final InsetsSource source = mInsetsSourceProviders.valueAt(i).getSource();
-            if ((source.getType() & decorInsetsTypes) != 0) {
+            if ((source.getType() & DisplayPolicy.DecorInsets.OVERRIDE_CONFIG_TYPES) != 0) {
                 return true;
             }
         }

@@ -18,7 +18,6 @@ package com.android.server.wm;
 
 import static android.view.DisplayCutout.NO_CUTOUT;
 import static android.view.InsetsSource.ID_IME;
-import static android.view.Surface.ROTATION_0;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
@@ -42,7 +41,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -57,16 +55,11 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
-import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsState;
-import android.view.Surface;
-import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Assume;
 import org.junit.Test;
@@ -445,83 +438,16 @@ public class DisplayPolicyTests extends WindowTestsBase {
         final WindowState navbar = createNavBarWithProvidedInsets(mDisplayContent);
         final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
         final DisplayInfo di = mDisplayContent.getDisplayInfo();
-        final int prevScreenHeightDp = mDisplayContent.getConfiguration().screenHeightDp;
-        if (Flags.insetsDecoupledConfiguration()) {
-            // No configuration update when flag enables.
-            assertFalse(displayPolicy.updateDecorInsetsInfo());
-            assertEquals(NAV_BAR_HEIGHT, displayPolicy.getDecorInsetsInfo(di.rotation,
-                    di.logicalHeight, di.logicalWidth).mOverrideConfigInsets.bottom);
-
-            final int barHeight = 2 * NAV_BAR_HEIGHT;
-            navbar.mAttrs.providedInsets[0].setInsetsSize(Insets.of(0, 0, 0, barHeight));
-            assertFalse(displayPolicy.updateDecorInsetsInfo());
-            assertEquals(barHeight, displayPolicy.getDecorInsetsInfo(di.rotation,
-                    di.logicalHeight, di.logicalWidth).mOverrideConfigInsets.bottom);
-            return;
-        }
-
-        assertTrue(navbar.providesDisplayDecorInsets() && displayPolicy.updateDecorInsetsInfo());
+        // No configuration update when flag enables.
+        assertFalse(displayPolicy.updateDecorInsetsInfo());
         assertEquals(NAV_BAR_HEIGHT, displayPolicy.getDecorInsetsInfo(di.rotation,
-                di.logicalWidth, di.logicalHeight).mConfigInsets.bottom);
-        mDisplayContent.sendNewConfiguration();
-        assertNotEquals(prevScreenHeightDp, mDisplayContent.getConfiguration().screenHeightDp);
-        assertFalse(navbar.providesDisplayDecorInsets() && displayPolicy.updateDecorInsetsInfo());
+                di.logicalHeight, di.logicalWidth).mOverrideConfigInsets.bottom);
 
-        final WindowState statusBar = createStatusBarWithProvidedInsets(mDisplayContent);
-        if (mWm.mConfigTypes == WindowInsets.Type.navigationBars()) {
-            assertFalse(statusBar.providesDisplayDecorInsets()
-                    && displayPolicy.updateDecorInsetsInfo());
-            assertEquals(0, displayPolicy.getDecorInsetsInfo(di.rotation,
-                    di.logicalWidth, di.logicalHeight).mConfigInsets.top);
-        } else {
-            assertTrue(statusBar.providesDisplayDecorInsets()
-                    && displayPolicy.updateDecorInsetsInfo());
-            assertEquals(STATUS_BAR_HEIGHT, displayPolicy.getDecorInsetsInfo(di.rotation,
-                    di.logicalWidth, di.logicalHeight).mConfigInsets.top);
-        }
-
-        // Flush the pending change (DecorInsets.Info#mNeedUpdate) for the rotation to be tested.
-        displayPolicy.getDecorInsetsInfo(Surface.ROTATION_90, di.logicalHeight, di.logicalWidth);
-        // Add a window that provides the same insets in current rotation. But it specifies
-        // different insets in other rotations.
-        final WindowState bar2 = newWindowBuilder("bar2", navbar.mAttrs.type).build();
-        bar2.mAttrs.providedInsets = new InsetsFrameProvider[] {
-                new InsetsFrameProvider(bar2, 0, WindowInsets.Type.navigationBars())
-                        .setInsetsSize(Insets.of(0, 0, 0, NAV_BAR_HEIGHT))
-        };
-        bar2.mAttrs.setFitInsetsTypes(0);
-        bar2.mAttrs.paramsForRotation = new WindowManager.LayoutParams[4];
-        final int doubleHeightFor90 = NAV_BAR_HEIGHT * 2;
-        for (int i = ROTATION_0; i <= Surface.ROTATION_270; i++) {
-            final WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-            params.setFitInsetsTypes(0);
-            if (i == Surface.ROTATION_90) {
-                params.providedInsets = new InsetsFrameProvider[] {
-                        new InsetsFrameProvider(bar2, 0, WindowInsets.Type.navigationBars())
-                                .setInsetsSize(Insets.of(0, 0, 0, doubleHeightFor90))
-                };
-            } else {
-                params.providedInsets = bar2.mAttrs.providedInsets;
-            }
-            bar2.mAttrs.paramsForRotation[i] = params;
-        }
-        displayPolicy.addWindowLw(bar2, bar2.mAttrs);
-        // Current rotation is 0 and the top insets is still STATUS_BAR_HEIGHT, so no change.
+        final int barHeight = 2 * NAV_BAR_HEIGHT;
+        navbar.mAttrs.providedInsets[0].setInsetsSize(Insets.of(0, 0, 0, barHeight));
         assertFalse(displayPolicy.updateDecorInsetsInfo());
-        // The insets in other rotations should be still updated.
-        assertEquals(doubleHeightFor90, displayPolicy.getDecorInsetsInfo(Surface.ROTATION_90,
-                di.logicalHeight, di.logicalWidth).mConfigInsets.bottom);
-        // Restore to previous height and the insets can still be updated.
-        bar2.mAttrs.paramsForRotation[Surface.ROTATION_90].providedInsets[0].setInsetsSize(
-                Insets.of(0, 0, 0, NAV_BAR_HEIGHT));
-        assertFalse(displayPolicy.updateDecorInsetsInfo());
-        assertEquals(NAV_BAR_HEIGHT, displayPolicy.getDecorInsetsInfo(Surface.ROTATION_90,
-                di.logicalHeight, di.logicalWidth).mConfigInsets.bottom);
-
-        navbar.removeIfPossible();
-        bar2.removeIfPossible();
-        assertEquals(0, displayPolicy.getDecorInsetsInfo(di.rotation, di.logicalWidth,
-                di.logicalHeight).mNonDecorInsets.bottom);
+        assertEquals(barHeight, displayPolicy.getDecorInsetsInfo(di.rotation,
+                di.logicalHeight, di.logicalWidth).mOverrideConfigInsets.bottom);
     }
 
     @SetupWindows(addWindows = W_INPUT_METHOD)

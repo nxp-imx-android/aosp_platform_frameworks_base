@@ -586,16 +586,6 @@ public class WindowManagerService extends IWindowManager.Stub
     @VisibleForTesting
     boolean mSkipActivityRelaunchWhenDocking;
 
-    /** Device default insets types provided non-decor insets. */
-    final int mDecorTypes;
-
-    /** Device default insets types shall be excluded from config app sizes. */
-    final int mConfigTypes;
-
-    final int mOverrideConfigTypes;
-
-    final int mOverrideDecorTypes;
-
     final boolean mLimitedAlphaCompositing;
     final int mMaxUiWidth;
 
@@ -1333,29 +1323,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 com.android.internal.R.bool.config_assistantOnTopOfDream);
         mSkipActivityRelaunchWhenDocking = context.getResources()
                 .getBoolean(R.bool.config_skipActivityRelaunchWhenDocking);
-        final boolean isScreenSizeDecoupledFromStatusBarAndCutout = context.getResources()
-                .getBoolean(R.bool.config_decoupleStatusBarAndDisplayCutoutFromScreenSize)
-                && mFlags.mAllowsScreenSizeDecoupledFromStatusBarAndCutout;
-
-        if (mFlags.mInsetsDecoupledConfiguration) {
-            mDecorTypes = 0;
-            mConfigTypes = 0;
-        } else {
-            mDecorTypes = WindowInsets.Type.displayCutout() | WindowInsets.Type.navigationBars();
-            mConfigTypes = WindowInsets.Type.displayCutout() | WindowInsets.Type.statusBars()
-                    | WindowInsets.Type.navigationBars();
-        }
-        if (isScreenSizeDecoupledFromStatusBarAndCutout && !mFlags.mInsetsDecoupledConfiguration) {
-            // If the global new behavior is not there, but the partial decouple flag is on.
-            mOverrideConfigTypes = 0;
-            mOverrideDecorTypes = 0;
-        } else {
-            mOverrideConfigTypes =
-                    WindowInsets.Type.displayCutout() | WindowInsets.Type.statusBars()
-                            | WindowInsets.Type.navigationBars();
-            mOverrideDecorTypes = WindowInsets.Type.displayCutout()
-                    | WindowInsets.Type.navigationBars();
-        }
 
         mAppCompatConfiguration = appCompat;
 
