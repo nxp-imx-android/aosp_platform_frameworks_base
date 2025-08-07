@@ -57,3 +57,6 @@ class android.hardware.display.DisplayManagerGlobal allow-annotation
 # For testing experimental API
 class com.android.internal.ravenwood.RavenwoodHelperBridge
     method forExperimentalApiTest exp
+
+class android.content.Context exp
+class android.app.ContextImpl exp

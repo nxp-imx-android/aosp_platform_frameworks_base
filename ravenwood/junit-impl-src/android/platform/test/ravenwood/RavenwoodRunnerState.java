@@ -154,7 +154,8 @@ public final class RavenwoodRunnerState {
                 || sActiveProperties.stream().anyMatch(p -> p.second.isKeyAccessible(key, write));
 
         if (!result) {
-            if (RavenwoodEnvironment.getInstance().getBoolEnvVar(ALLOW_ALL_SYSPROP_READ_ENV)
+            if ((RavenwoodExperimentalApiChecker.isExperimentalApiEnabled()
+                    || RavenwoodEnvironment.getInstance().getBoolEnvVar(ALLOW_ALL_SYSPROP_READ_ENV))
                     && !write) {
                 Log.w(TAG, "Unallow-listed property read detected: key=" + key);
                 return;
