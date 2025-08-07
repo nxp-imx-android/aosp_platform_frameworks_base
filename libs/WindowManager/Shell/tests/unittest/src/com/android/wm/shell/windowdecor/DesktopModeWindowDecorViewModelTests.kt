@@ -232,6 +232,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testBackEventHasRightDisplayId() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         val secondaryDisplay = createVirtualDisplay() ?: return
         val secondaryDisplayId = secondaryDisplay.display.displayId
         val task =
@@ -249,10 +252,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val inputManager = mock<InputManager>()
         spyContext.addMockSystemService(InputManager::class.java, inputManager)
 
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
-
         onClickListener.onClick(view)
 
         val eventCaptor = argumentCaptor<KeyEvent>()
@@ -265,6 +264,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testCloseButtonInFreeform_closeWindow() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -273,10 +275,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         val view = mock<View> { on { id } doReturn R.id.close_window }
-
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
 
         onClickListenerCaptor.firstValue.onClick(view)
 
@@ -295,6 +293,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testCloseButtonInFreeform_withStateChangeAnnouncementFlag_closeWindow() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -303,10 +304,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         val view = mock<View> { on { id } doReturn R.id.close_window }
-
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
 
         onClickListenerCaptor.firstValue.onClick(view)
 
@@ -326,6 +323,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @EnableFlags(Flags.FLAG_ENABLE_MINIMIZE_BUTTON)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testMinimizeButtonInFreeform_minimizeWindow() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -334,10 +334,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         val view = mock<View> { on { id } doReturn R.id.minimize_window }
-
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
 
         onClickListenerCaptor.firstValue.onClick(view)
 
@@ -352,6 +348,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS,
     )
     fun testMinimizeButtonInFreeform_withStateChangeAnnouncementFlag_minimizeWindow() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
             createOpenTaskDecoration(
@@ -360,10 +359,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         val view = mock<View> { on { id } doReturn R.id.minimize_window }
-
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
 
         onClickListenerCaptor.firstValue.onClick(view)
 
@@ -499,6 +494,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         windowDecorationActions.onMaximizeOrRestore(
             decor.taskInfo.taskId,
+            ToggleTaskSizeInteraction.AmbiguousSource.HEADER_BUTTON,
             InputMethod.UNKNOWN_INPUT_METHOD,
         )
 
@@ -507,7 +503,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 decor.taskInfo,
                 ToggleTaskSizeInteraction(
                     ToggleTaskSizeInteraction.Direction.MAXIMIZE,
-                    ToggleTaskSizeInteraction.Source.MAXIMIZE_MENU_TO_MAXIMIZE,
+                    ToggleTaskSizeInteraction.Source.HEADER_BUTTON_TO_MAXIMIZE,
                     InputMethod.UNKNOWN_INPUT_METHOD,
                 ),
             )
@@ -523,6 +519,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         windowDecorationActions.onMaximizeOrRestore(
             decor.taskInfo.taskId,
+            ToggleTaskSizeInteraction.AmbiguousSource.HEADER_BUTTON,
             InputMethod.UNKNOWN_INPUT_METHOD,
         )
 
@@ -531,7 +528,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 decor.taskInfo,
                 ToggleTaskSizeInteraction(
                     ToggleTaskSizeInteraction.Direction.MAXIMIZE,
-                    ToggleTaskSizeInteraction.Source.MAXIMIZE_MENU_TO_MAXIMIZE,
+                    ToggleTaskSizeInteraction.Source.HEADER_BUTTON_TO_MAXIMIZE,
                     InputMethod.UNKNOWN_INPUT_METHOD,
                 ),
             )
@@ -545,6 +542,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         windowDecorationActions.onMaximizeOrRestore(
             decor.taskInfo.taskId,
+            ToggleTaskSizeInteraction.AmbiguousSource.HEADER_BUTTON,
             InputMethod.UNKNOWN_INPUT_METHOD,
         )
 
@@ -553,7 +551,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 decor.taskInfo,
                 ToggleTaskSizeInteraction(
                     ToggleTaskSizeInteraction.Direction.RESTORE,
-                    ToggleTaskSizeInteraction.Source.MAXIMIZE_MENU_TO_RESTORE,
+                    ToggleTaskSizeInteraction.Source.HEADER_BUTTON_TO_RESTORE,
                     InputMethod.UNKNOWN_INPUT_METHOD,
                 ),
             )
@@ -1011,6 +1009,9 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testCloseButtonInFreeform_closeWindow_ignoreMoveEventsWithoutBoundsChange() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
@@ -1032,10 +1033,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 on { id } doReturn R.id.close_window
                 on { getViewRootImpl() } doReturn viewRootImpl
             }
-
-        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
-            mockFreeformTaskTransitionStarter
-        )
 
         onTouchListenerCaptor.firstValue.onTouch(
             view,
