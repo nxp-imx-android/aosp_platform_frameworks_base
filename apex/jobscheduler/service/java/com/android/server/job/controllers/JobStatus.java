@@ -2567,18 +2567,21 @@ public final class JobStatus {
     }
 
     private boolean hasMediaBackupExemption() {
-        if (Flags.updateMediaBackupExemptionPolicy()) {
-            return getEffectivePriority() == JobInfo.PRIORITY_HIGH
-                    && sourcePackageName.equals(
-                            mJobSchedulerInternal.getCloudMediaProviderPackage(sourceUserId));
-        } else {
-            return mHasExemptedMediaUrisOnly
-                    && !job.hasLateConstraint()
-                    && job.getRequiredNetwork() != null
-                    && getEffectivePriority() >= JobInfo.PRIORITY_DEFAULT
-                    && sourcePackageName.equals(
-                            mJobSchedulerInternal.getCloudMediaProviderPackage(sourceUserId));
+        // Check the legacy policy first.
+        if (mHasExemptedMediaUrisOnly
+                && !job.hasLateConstraint()
+                && job.getRequiredNetwork() != null
+                && getEffectivePriority() >= JobInfo.PRIORITY_DEFAULT
+                && sourcePackageName.equals(
+                        mJobSchedulerInternal.getCloudMediaProviderPackage(sourceUserId))) {
+            return true;
         }
+
+        // Check the new policy.
+        return Flags.updateMediaBackupExemptionPolicy()
+                && getEffectivePriority() == JobInfo.PRIORITY_HIGH
+                && sourcePackageName.equals(
+                        mJobSchedulerInternal.getCloudMediaProviderPackage(sourceUserId));
     }
 
     /**
