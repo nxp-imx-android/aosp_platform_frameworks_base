@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -45,6 +46,8 @@ import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel.
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.icuMessageFormat
 import javax.inject.Inject
 import javax.inject.Named
@@ -76,7 +79,7 @@ class FooterActionsViewModel(
     val userSwitcher: Flow<FooterActionsButtonViewModel?>,
 
     /** The model for the settings button. */
-    val settings: FooterActionsButtonViewModel,
+    val settings: Flow<FooterActionsButtonViewModel?>,
 
     /** The model for the power button. */
     val power: FooterActionsButtonViewModel?,
@@ -128,6 +131,8 @@ class FooterActionsViewModel(
         private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
         private val activityStarter: ActivityStarter,
         private val textFeedbackInteractor: TextFeedbackInteractor,
+        private val selectedUserInteractor: SelectedUserInteractor,
+        private val hsum: HeadlessSystemUserMode,
         @Named(PM_LITE_ENABLED) private val showPowerButton: Boolean,
     ) {
         /** Create a [FooterActionsViewModel] bound to the lifecycle of [lifecycleOwner]. */
@@ -156,6 +161,8 @@ class FooterActionsViewModel(
                 globalActionsDialogLite,
                 activityStarter,
                 showPowerButton,
+                selectedUserInteractor,
+                hsum,
             )
         }
 
@@ -181,6 +188,8 @@ class FooterActionsViewModel(
                 globalActionsDialogLite,
                 activityStarter,
                 showPowerButton,
+                selectedUserInteractor,
+                hsum,
             )
         }
     }
@@ -194,6 +203,8 @@ fun createFooterActionsViewModel(
     globalActionsDialogLite: GlobalActionsDialogLite,
     activityStarter: ActivityStarter,
     showPowerButton: Boolean,
+    selectedUserInteractor: SelectedUserInteractor,
+    hsum: HeadlessSystemUserMode,
 ): FooterActionsViewModel {
     suspend fun observeDeviceMonitoringDialogRequests(quickSettingsContext: Context) {
         footerActionsInteractor.deviceMonitoringDialogRequests.collect {
@@ -285,7 +296,14 @@ fun createFooterActionsViewModel(
     val userSwitcher =
         userSwitcherViewModel(qsThemedContext, footerActionsInteractor, ::onUserSwitcherClicked)
 
-    val settings = SettingsActionViewModel(qsThemedContext, ::onSettingsButtonClicked)
+    val settings =
+        selectedUserInteractor.selectedUser
+            .map { selectedUserId ->
+                SettingsActionViewModel(qsThemedContext, ::onSettingsButtonClicked).takeUnless {
+                    hsuQsChanges() && hsum.isHeadlessSystemUser(selectedUserId)
+                }
+            }
+            .distinctUntilChanged()
 
     val power =
         if (showPowerButton) {
