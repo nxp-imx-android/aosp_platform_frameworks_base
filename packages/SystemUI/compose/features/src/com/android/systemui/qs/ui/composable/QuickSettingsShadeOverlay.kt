@@ -83,10 +83,10 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayContentView
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.Overlay
+import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.OverlayShadeHeader
 import com.android.systemui.shade.ui.composable.QuickSettingsOverlayHeader
-import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.shade.ui.composable.isFullWidthShade
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
@@ -169,7 +169,7 @@ constructor(
                         OverlayShadeHeader(
                             viewModel = headerViewModel,
                             notificationsHighlight = headerViewModel.inactiveChipHighlight,
-                            quickSettingsHighlight = ShadeHeader.ChipHighlight.Strong,
+                            quickSettingsHighlight = ChipHighlightModel.Strong,
                             showClock = true,
                             modifier = Modifier.element(QuickSettingsShade.Elements.StatusBar),
                         )

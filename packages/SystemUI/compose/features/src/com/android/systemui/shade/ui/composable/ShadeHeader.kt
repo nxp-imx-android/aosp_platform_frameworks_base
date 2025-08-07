@@ -39,7 +39,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -145,51 +144,6 @@ object ShadeHeader {
         const val Root = "shade_header_root"
         const val BatteryTestTag = "battery_meter_composable_view"
         const val BatteryTestTagLegacy = "battery_percentage_view"
-    }
-
-    /** Represents the background highlighting of a header icons chip. */
-    sealed interface ChipHighlight {
-        val backgroundColor: Color
-            @Composable @ReadOnlyComposable get
-
-        val foregroundColor: Color
-            @Composable @ReadOnlyComposable get
-
-        val onHoveredBackgroundColor: Color
-            @Composable @ReadOnlyComposable get
-
-        data object Weak : ChipHighlight {
-            override val backgroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-
-            override val foregroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.onSurface
-
-            override val onHoveredBackgroundColor: Color
-                @Composable get() = backgroundColor
-        }
-
-        data object Strong : ChipHighlight {
-            override val backgroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.secondary
-
-            override val foregroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.onSecondary
-
-            override val onHoveredBackgroundColor: Color
-                @Composable get() = backgroundColor
-        }
-
-        data object Transparent : ChipHighlight {
-            override val backgroundColor: Color
-                @Composable get() = Color.Transparent
-
-            override val foregroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.onSurface
-
-            override val onHoveredBackgroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-        }
     }
 }
 
@@ -362,8 +316,8 @@ fun ContentScope.ExpandedShadeHeader(
 @Composable
 fun ContentScope.OverlayShadeHeader(
     viewModel: ShadeHeaderViewModel,
-    notificationsHighlight: ShadeHeader.ChipHighlight,
-    quickSettingsHighlight: ShadeHeader.ChipHighlight,
+    notificationsHighlight: ChipHighlightModel,
+    quickSettingsHighlight: ChipHighlightModel,
     showClock: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -428,7 +382,7 @@ fun ContentScope.OverlayShadeHeader(
                         with(LocalDensity.current) {
                             (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
                         }
-                    val isHighlighted = quickSettingsHighlight is ShadeHeader.ChipHighlight.Strong
+                    val isHighlighted = quickSettingsHighlight is ChipHighlightModel.Strong
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = false,

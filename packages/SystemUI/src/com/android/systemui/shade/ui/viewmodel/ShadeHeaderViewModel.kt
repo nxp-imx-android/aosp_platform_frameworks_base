@@ -44,7 +44,7 @@ import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShad
 import com.android.systemui.shade.domain.interactor.PrivacyChipInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.ui.composable.ShadeHeader
+import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractor
@@ -179,12 +179,12 @@ constructor(
                 },
         )
 
-    val inactiveChipHighlight: ShadeHeader.ChipHighlight
+    val inactiveChipHighlight: ChipHighlightModel
         get() =
             if (isDesktopFeatureSetEnabled) {
-                ShadeHeader.ChipHighlight.Transparent
+                ChipHighlightModel.Transparent
             } else {
-                ShadeHeader.ChipHighlight.Weak
+                ChipHighlightModel.Weak
             }
 
     private val isDesktopFeatureSetEnabled: Boolean by
