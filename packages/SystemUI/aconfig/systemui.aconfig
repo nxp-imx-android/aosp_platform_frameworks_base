@@ -485,6 +485,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_show_icons_in_secure_camera"
+    namespace: "systemui"
+    description: "Show status bar icons in secure camera if user swipes down from top of screen"
+    bug: "435653753"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_always_use_region_sampling"
     namespace: "systemui"
     description: "Have the status bar *always* use region sampling to calculate icon contrast"
