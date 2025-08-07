@@ -552,3 +552,11 @@ flag {
   description: "Redirect set/getScreenCaptureDisabled to the generic set/getPolicy APIs"
   bug: "434919316"
 }
+
+flag {
+  name: "common_criteria_mode_coexistence"
+  namespace: "enterprise"
+  description: "Enables coexistence support for setCommonCriteriaModeEnabled"
+  bug: "436799232"
+  is_exported: true
+}

@@ -17279,6 +17279,29 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Specifies enabled Common Criteria Mode.
+     * When the device is in Common Criteria mode, certain device functionalities are tuned to meet
+     * the higher security level required by Common Criteria certification.
+     *
+     * @hide
+     */
+    public static final int COMMON_CRITERIA_MODE_ENABLED = 0;
+
+    /**
+     * Specifies disabled Common Criteria Mode.
+     *
+     * @hide
+     */
+    public static final int COMMON_CRITERIA_MODE_DISABLED = 1;
+
+    /** @hide */
+    @IntDef(
+            prefix = {"COMMON_CRITERIA_MODE_"},
+            value = {COMMON_CRITERIA_MODE_ENABLED, COMMON_CRITERIA_MODE_DISABLED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CommonCriteriaMode {}
+
+    /**
      * Called by device owner or profile owner of an organization-owned managed profile to toggle
      * Common Criteria mode for the device. When the device is in Common Criteria mode,
      * certain device functionalities are tuned to meet the higher

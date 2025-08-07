@@ -8267,6 +8267,7 @@ package android.app.admin {
     field public static final String AUTO_TIME_POLICY = "autoTime";
     field public static final String BACKUP_SERVICE_POLICY = "backupService";
     field public static final String CAMERA_DISABLED_POLICY = "cameraDisabled";
+    field @FlaggedApi("android.app.admin.flags.common_criteria_mode_coexistence") public static final String COMMON_CRITERIA_MODE_POLICY = "commonCriteriaMode";
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
