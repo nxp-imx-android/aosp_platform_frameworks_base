@@ -158,6 +158,7 @@ class SupervisionServiceTest {
             .thenReturn(ComponentName(systemSupervisionPackage, "MainActivity"))
 
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         assertThat(service.getActiveSupervisionAppPackage(USER_ID))
@@ -213,6 +214,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction not enabled.
         verify(mockDpmInternal)
@@ -234,6 +236,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction not enabled.
         verify(mockDpmInternal)
@@ -260,6 +263,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction not enabled.
         verify(mockDpmInternal)
@@ -280,6 +284,7 @@ class SupervisionServiceTest {
 
         // Starts the user.
         simulateUserStarting(USER_ID)
+        injector.awaitServiceThreadIdle()
 
         // Verifies restriction is enabled.
         verify(mockDpmInternal)
@@ -469,9 +474,11 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
+        injector.awaitServiceThreadIdle()
         clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        injector.awaitServiceThreadIdle()
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         verify(mockDpmInternal)
@@ -654,12 +661,14 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
+        injector.awaitServiceThreadIdle()
         clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        injector.awaitServiceThreadIdle()
 
-        // Once for the initial setSupervisionEnabledForUser, and again for the
-        // setSupervisionRecoveryInfo.
+        // Once for the initial setSupervisionEnabledForUser, again for the
+        // setSupervisionRecoveryInfo, and a third time for onRoleHoldersChanged
         verify(mockDpmInternal, times(2))
             .setUserRestrictionForUser(
                 SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
@@ -729,8 +738,12 @@ class SupervisionServiceTest {
     fun onRoleHoldersChanged_removesPackageSuspensionForRemovedRoleHolder() {
         val packageName = "com.example.supervisionapp"
         val roleName = RoleManager.ROLE_SUPERVISION
-        injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), listOf(packageName,
-            "com.example.supervisionapp2", "com.example.supervisionapp3"))
+        injector.setRoleHoldersAsUser(
+            roleName,
+            UserHandle.of(USER_ID),
+            listOf(packageName, "com.example.supervisionapp2", "com.example.supervisionapp3"),
+        )
+        injector.awaitServiceThreadIdle()
 
         injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), emptyList())
         injector.awaitServiceThreadIdle()
