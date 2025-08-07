@@ -151,6 +151,7 @@ constructor(
             launch {
                 shadeModeInteractor.shadeMode
                     .filter { it !is ShadeMode.Dual }
+                    .distinctUntilChanged()
                     .collect {
                         withContext(mainDispatcher) {
                             sceneInteractor.snapToScene(
