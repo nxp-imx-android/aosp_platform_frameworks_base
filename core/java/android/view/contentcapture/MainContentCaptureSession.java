@@ -1036,11 +1036,12 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                             && structure.getAutofillId() != null
                             && mManager.isContentCaptureConditionEnabled(
                                     CONDITION_ENABLE_EXPORTING_VIRTUAL_CHILDREN)) {
-                        // TODO: Move this to a background thread to improve performance.
-                        Trace.beginSection("notifyVirtualChildrenAppeared");
-                        notifyVirtualChildrenAppeared(session, structure.getAutofillId(),
-                                view.getAccessibilityNodeProvider());
-                        Trace.endSection();
+                        runOnContentCaptureThread(() -> {
+                            Trace.beginSection("notifyVirtualChildrenAppeared");
+                            notifyVirtualChildrenAppeared(session, structure.getAutofillId(),
+                                    view.getAccessibilityNodeProvider());
+                            Trace.endSection();
+                        });
                     }
                     structureSession.setSession(session);
                     structureSession.setStructure(structure);
