@@ -225,6 +225,15 @@ public abstract class ProcessRecordInternal {
     /** Returns the internal broadcast receiver related record for this process. */
     public abstract ProcessReceiverRecordInternal getReceivers();
 
+    /** Returns the process ID. */
+    public abstract int getPid();
+
+    /** Determines if UI scheduling for this process should use FIFO priority. */
+    public abstract boolean useFifoUiScheduling();
+
+    /** Notifies the window process controller about a change in top process status. */
+    public abstract void notifyTopProcChanged();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 

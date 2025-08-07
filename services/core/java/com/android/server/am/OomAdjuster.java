@@ -2215,7 +2215,7 @@ public abstract class OomAdjuster {
                 if (curSchedGroup == SCHED_GROUP_TOP_APP) {
                     // do nothing if we already switched to RT
                     if (oldSchedGroup != SCHED_GROUP_TOP_APP) {
-                        app.getWindowProcessController().onTopProcChanged();
+                        app.notifyTopProcChanged();
                         if (app.useFifoUiScheduling()) {
                             // Switch UI pipeline for app to SCHED_FIFO
                             state.setSavedPriority(Process.getThreadPriority(app.getPid()));
@@ -2236,7 +2236,7 @@ public abstract class OomAdjuster {
                     }
                 } else if (oldSchedGroup == SCHED_GROUP_TOP_APP
                         && curSchedGroup != SCHED_GROUP_TOP_APP) {
-                    app.getWindowProcessController().onTopProcChanged();
+                    app.notifyTopProcChanged();
                     if (app.useFifoUiScheduling()) {
                         // Reset UI pipeline to SCHED_OTHER
                         ActivityManagerService.setFifoPriority(app, false /* enable */);
@@ -2409,28 +2409,27 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    void setAttachingProcessStatesLSP(ProcessRecord app) {
+    void setAttachingProcessStatesLSP(ProcessRecordInternal app) {
         int initialSchedGroup = SCHED_GROUP_DEFAULT;
         int initialProcState = PROCESS_STATE_CACHED_EMPTY;
             // Avoid freezing a freshly attached process.
         int initialCapability = ALL_CPU_TIME_CAPABILITIES;
-        final ProcessRecordInternal state = app;
-        final int prevProcState = state.getCurProcState();
-        final int prevAdj = state.getCurRawAdj();
+        final int prevProcState = app.getCurProcState();
+        final int prevAdj = app.getCurRawAdj();
         // If the process has been marked as foreground, it is starting as the top app (with
         // Zygote#START_AS_TOP_APP_ARG), so boost the thread priority of its default UI thread.
-        if (state.getHasForegroundActivities()) {
+        if (app.getHasForegroundActivities()) {
             try {
                 // The priority must be the same as how does {@link #applyOomAdjLSP} set for
                 // {@link SCHED_GROUP_TOP_APP}. We don't check render thread because it
                 // is not ready when attaching.
-                app.getWindowProcessController().onTopProcChanged();
+                app.notifyTopProcChanged();
                 if (app.useFifoUiScheduling()) {
                     mService.scheduleAsFifoPriority(app.getPid(), true);
                 } else {
                     mInjector.setThreadPriority(app.getPid(), THREAD_PRIORITY_TOP_APP_BOOST);
                 }
-                if (isScreenOnOrAnimatingLocked(state)) {
+                if (isScreenOnOrAnimatingLocked(app)) {
                     initialSchedGroup = SCHED_GROUP_TOP_APP;
                     initialProcState = PROCESS_STATE_TOP;
                 }
@@ -2440,17 +2439,17 @@ public abstract class OomAdjuster {
             }
         }
 
-        state.setCurrentSchedulingGroup(initialSchedGroup);
-        state.setCurProcState(initialProcState);
-        state.setCurRawProcState(initialProcState);
-        state.setCurCapability(initialCapability);
-        state.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
-        state.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
+        app.setCurrentSchedulingGroup(initialSchedGroup);
+        app.setCurProcState(initialProcState);
+        app.setCurRawProcState(initialProcState);
+        app.setCurCapability(initialCapability);
+        app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
+        app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
 
-        state.setCurAdj(ProcessList.FOREGROUND_APP_ADJ);
-        state.setCurRawAdj(ProcessList.FOREGROUND_APP_ADJ);
-        state.setForcingToImportant(null);
-        state.setHasShownUi(false);
+        app.setCurAdj(ProcessList.FOREGROUND_APP_ADJ);
+        app.setCurRawAdj(ProcessList.FOREGROUND_APP_ADJ);
+        app.setForcingToImportant(null);
+        app.setHasShownUi(false);
 
         onProcessStateChanged(app, prevProcState);
         onProcessOomAdjChanged(app, prevAdj);

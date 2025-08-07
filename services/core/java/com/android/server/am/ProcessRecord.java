@@ -675,8 +675,9 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mPkgDeps = pkgDeps;
     }
 
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getPid() {
+    public int getPid() {
         return mPid;
     }
 
@@ -733,11 +734,19 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mProfile.onProcessInactive(tracker);
     }
 
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    boolean useFifoUiScheduling() {
+    public boolean useFifoUiScheduling() {
+        // TODO: b/439611239 - Migrate control of mAllowSpecifiedFifoScheduling to
+        //  ProcessStateController.
         return mService.mUseFifoUiScheduling
                 || (mService.mAllowSpecifiedFifoScheduling
                         && mWindowProcessController.useFifoUiScheduling());
+    }
+
+    @Override
+    public void notifyTopProcChanged() {
+        mWindowProcessController.onTopProcChanged();
     }
 
     @GuardedBy("mService")
