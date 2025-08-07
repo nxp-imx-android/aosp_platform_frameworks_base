@@ -3757,7 +3757,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 }
                 mSyncSeqId = mBufferSeqId;
             } else if (!mLastConfigReportedToClient
-                    || mWindowFrames.isFrameSizeChanged()
                     || mWindowFrames.isForceReportingResized()
                     || mSyncState == SYNC_STATE_WAITING_FOR_DRAW) {
                 ++mSyncSeqId;
