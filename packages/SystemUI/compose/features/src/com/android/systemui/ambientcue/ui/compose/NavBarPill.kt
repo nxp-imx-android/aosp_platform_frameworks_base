@@ -19,6 +19,7 @@ package com.android.systemui.ambientcue.ui.compose
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
@@ -97,7 +98,7 @@ fun NavBarPill(
 ) {
     val maxPillWidth = 248.dp
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
-    val scrimColor = MaterialTheme.colorScheme.primary
+    val smartScrimColor = MaterialTheme.colorScheme.primaryFixedDim
 
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
@@ -133,7 +134,7 @@ fun NavBarPill(
                         0f at 0
                         0.2f at 500
                         0.2f at 1500
-                        0f at 2000
+                        0.4f at 2000
                     }
                 } else {
                     tween(500)
@@ -141,7 +142,7 @@ fun NavBarPill(
             },
             label = "smartScrimAlphaBoost",
         ) {
-            if (it) 0f else 0f
+            if (it) 0.4f else 0f
         }
     val expansionAlpha by
         animateFloatAsState(
@@ -149,6 +150,13 @@ fun NavBarPill(
             animationSpec = tween(250, delayMillis = 200),
             label = "expansion",
         )
+    val smartScrimOffset by
+        animateIntAsState(
+            if (expanded) -18 else 10,
+            animationSpec = tween(250, delayMillis = 200),
+            label = "smartScrimOffset",
+        )
+
     val config = LocalConfiguration.current
     val isBoldTextEnabled = config.fontWeightAdjustment > 0
     val fontScale = config.fontScale
@@ -167,20 +175,23 @@ fun NavBarPill(
         modifier =
             modifier.defaultMinSize(minWidth = 412.dp, minHeight = 50.dp).drawBehind {
                 // SmartScrim
-                val radius = size.width / 2f
-                if (!(radius > 0)) return@drawBehind
-                val scrimBrush =
+                val smartScrimRadius = 50.dp.toPx()
+                val smartScrimBrush =
                     Brush.radialGradient(
-                        colors = listOf(scrimColor, scrimColor.copy(alpha = 0f)),
+                        colors = listOf(smartScrimColor, smartScrimColor.copy(alpha = 0f)),
                         center = Offset.Zero,
-                        radius = radius,
+                        radius = smartScrimRadius * 0.9f,
                     )
-                translate(radius, size.height) {
-                    scale(scaleX = 1f, scaleY = size.height / size.width * 2, pivot = Offset.Zero) {
+                translate(size.width / 2f, size.height + smartScrimOffset.dp.toPx()) {
+                    scale(
+                        scaleX = size.width / (smartScrimRadius * 2),
+                        scaleY = 1f,
+                        pivot = Offset.Zero,
+                    ) {
                         drawCircle(
-                            brush = scrimBrush,
+                            brush = smartScrimBrush,
                             alpha = smartScrimAlpha + smartScrimAlphaBoost,
-                            radius = radius,
+                            radius = smartScrimRadius,
                             center = Offset.Zero,
                         )
                     }
