@@ -127,8 +127,7 @@ static void init() {
     constexpr int INDIC_MIN_PREFIX = 2;
     constexpr int INDIC_MIN_SUFFIX = 2;
 
-    addHyphenator("af", 1, 1);  // Afrikaans
-    addHyphenator("am", 1, 1);  // Amharic
+    addHyphenator("af", 1, 1);                                // Afrikaans
     addHyphenator("as", INDIC_MIN_PREFIX, INDIC_MIN_SUFFIX);  // Assamese
     addHyphenator("be", 2, 2);  // Belarusian
     addHyphenator("bg", 2, 2);  // Bulgarian
