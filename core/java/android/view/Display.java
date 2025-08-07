@@ -2652,7 +2652,8 @@ public final class Display {
          * @hide
          */
         public boolean equalsExceptRefreshRate(@Nullable Display.Mode other) {
-            return mWidth == other.mWidth && mHeight == other.mHeight;
+            return mWidth == other.mWidth && mHeight == other.mHeight
+                    && mSupportedHdrTypes == other.mSupportedHdrTypes;
         }
 
         /**

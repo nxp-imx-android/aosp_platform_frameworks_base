@@ -4714,7 +4714,7 @@ public class DisplayManagerServiceTest {
         if (compatChangeEnabled) {
             expectedMode = new Display.Mode(1, 100, 200, 60f);
         } else {
-            expectedMode = new Display.Mode(3, 100, 200, 20f);
+            expectedMode = new Display.Mode(255, 100, 200, 20f);
         }
         assertEquals(expectedMode, displayInfo.getMode());
     }
@@ -4741,7 +4741,7 @@ public class DisplayManagerServiceTest {
         if (compatChangeEnabled) {
             expectedMode = new Display.Mode(1, 100, 200, 60f);
         } else {
-            expectedMode = new Display.Mode(3, 100, 200, 20f);
+            expectedMode = new Display.Mode(255, 100, 200, 20f);
         }
         assertEquals(expectedMode, displayInfo.getMode());
     }
