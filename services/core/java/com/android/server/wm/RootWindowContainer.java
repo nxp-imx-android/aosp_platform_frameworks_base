@@ -2249,6 +2249,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     rootTask.getSyncTransaction().hide(task.getSurfaceControl());
                 }
             }
+            // Take snapshot, this is to make sure we have valid thumbnail after exit-PiP.
+            // When it's a multi-activity case, the snapshot is taken for the original task,
+            // it will otherwise be empty.
+            mWindowManager.mTaskSnapshotController.recordSnapshot(task);
 
             // TODO(remove-legacy-transit): Move this to the `singleActivity` case when removing
             //                              legacy transit.
@@ -2256,10 +2260,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
             // Set the launch bounds for launch-into-pip Activity on the root task.
             if (r.getOptions() != null && r.getOptions().isLaunchIntoPip()) {
-                // Record the snapshot now, it will be later fetched for content-pip animation.
-                // We do this early in the process to make sure the right snapshot is used for
-                // entering content-pip animation.
-                mWindowManager.mTaskSnapshotController.recordSnapshot(task);
                 if (!isPip2ExperimentEnabled()) {
                     // PiP2 always supplies bounds from Shell, so we can skip this.
                     rootTask.setBounds(r.pictureInPictureArgs.getSourceRectHint());
