@@ -153,11 +153,11 @@
     <!-- Message presented in a dialog box when the verifier blocked an app from being installed. [CHAR LIMIT=none]-->
     <string name="cannot_install_app_blocked_summary">&lt;p>This app was blocked. To help keep your
         device and data safe, only apps from verified developers can be installed.&lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
     <!-- Message presented in a dialog box when the verifier blocked an app from being updated. [CHAR LIMIT=none]-->
     <string name="cannot_update_app_blocked_summary">&lt;p>This app was not updated. To help keep your
         device and data safe, only updates from verified developers can be installed.&lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p>
+        &lt;a href="">Learn more about developer verification&lt;/a>
     </string>
     <!-- Message presented in a dialog box when verification failed due to problems with the network during installation. [CHAR LIMIT=none]-->
     <string name="cannot_install_verification_no_internet_summary">&lt;p>This app was not installed.
@@ -165,35 +165,35 @@
         &lt;p>An internet connection is required to verify the app developer.
             Make sure your device is connected to the internet, then try installing the app again.
         &lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
     <!-- Message presented in a dialog box when verification failed due to problems with the network during update. [CHAR LIMIT=none]-->
     <string name="cannot_update_verification_no_internet_summary">&lt;p>This app was not updated.
         Updates from unverified developers may be unsafe.&lt;/p>
         &lt;p>An internet connection is required to verify the app developer.
             Make sure your device is connected to the internet, then try updating the app again.
         &lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
 
     <!-- Message presented in a dialog box when verification failed due to internal failures during installation. [CHAR LIMIT=none]-->
     <string name="cannot_install_verification_unavailable_summary">&lt;p>There was a problem verifying
         this app\'s developer. Apps from unverified developers may be unsafe,
         so the app was not installed.&lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
     <!-- Message presented in a dialog box when verification failed due to problems with the network during update. [CHAR LIMIT=none]-->
     <string name="cannot_update_verification_unavailable_summary">&lt;p>There was a problem verifying
         this app\'s developer. Updates from unverified developers may be unsafe,
         so the app was not updated.&lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
     <!-- Message presented in a dialog box when verification failed due to internal failures during installation for fail closed policy. [CHAR LIMIT=none]-->
     <string name="cannot_install_verification_unavailable_fail_closed_summary">&lt;p>This app was blocked
         because there was a problem verifying the developer. To help keep your device and data safe,
         only apps from verified developers can be installed.&lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
     <!-- Message presented in a dialog box when verification failed due to internal failures during update for fail closed policy. [CHAR LIMIT=none]-->
     <string name="cannot_update_verification_unavailable_fail_closed_summary">&lt;p>This app was not updated
         because there was a problem verifying the developer. To help keep your device and data safe,
         only updates from verified developers can be installed.&lt;/p>
-        &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p></string>
+        &lt;a href="">Learn more about developer verification&lt;/a></string>
 
     <string name="more_details_expanded_install_summary">If you install without verifying, keep in
         mind apps from unverified developers may put your device and data at risk.</string>
