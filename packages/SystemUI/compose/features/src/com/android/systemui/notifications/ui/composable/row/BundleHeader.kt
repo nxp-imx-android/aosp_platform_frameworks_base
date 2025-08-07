@@ -172,13 +172,14 @@ private fun ContentScope.BundleHeaderContent(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.padding(vertical = 16.dp),
+        modifier = modifier.padding(vertical = 12.dp),
     ) {
         BundleIcon(
             viewModel.bundleIcon,
-            collapsed,
+            large = false, // BundleHeader is always small
             modifier =
-                Modifier.padding(horizontal = 16.dp)
+                Modifier.padding(start = 16.dp, end = 8.dp)
+                    .align(Alignment.CenterVertically)
                     // Has to be a shared element because we may have a semi-transparent background
                     .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
         )
@@ -217,7 +218,7 @@ private fun ContentScope.BundlePreviewIcons(
     modifier: Modifier = Modifier,
 ) {
     check(previewDrawables.isNotEmpty())
-    val iconSize = 32.dp
+    val iconSize = 24.dp
 
     // The design stroke width is 2.5dp but there is a ~4% padding inside app icons; ~1.25dp here.
     val borderWidth = 1.25.dp
