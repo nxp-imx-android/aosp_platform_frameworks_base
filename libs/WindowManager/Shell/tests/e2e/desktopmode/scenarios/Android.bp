@@ -106,6 +106,7 @@ test_module_config {
         "com.android.wm.shell.functional.FocusAppFromTaskbarTest",
         "com.android.wm.shell.functional.FocusAppFromTaskbarOverflowTest",
         "com.android.wm.shell.functional.MoveToNextDisplayTest",
+        "com.android.wm.shell.functional.MoveToNextDisplayProjectedTest",
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
         "com.android.wm.shell.functional.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest",
@@ -261,6 +262,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.MoveToNextDisplayTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-MoveToNextDisplayProjectedTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.MoveToNextDisplayProjectedTest"],
 }
 
 test_module_config {
