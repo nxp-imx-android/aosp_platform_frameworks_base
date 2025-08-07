@@ -1176,4 +1176,7 @@
 
     <!-- Indicates post recording flow to use flat bottom bar to save vertical space -->
     <bool name="screen_record_post_recording_flat_bottom_bar">false</bool>
+
+    <!-- Indicates whether the blurred wallpaper is supported -->
+    <bool name="config_supportBlurredWallpaper">true</bool>
 </resources>
