@@ -698,6 +698,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 userId = USER_ID_1,
                 deskId = 5,
                 displayId = DEFAULT_DISPLAY,
+                uniqueDisplayId = DEFAULT_DISPLAY_UNIQUE_ID,
             )
         repository.addDesk(SECOND_DISPLAY_ID, deskId = 5)
         repository.setActiveDesk(SECOND_DISPLAY_ID, deskId = 5)
@@ -732,6 +733,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 userId = USER_ID_1,
                 deskId = 5,
                 displayId = DEFAULT_DISPLAY,
+                uniqueDisplayId = DEFAULT_DISPLAY_UNIQUE_ID,
             )
         observer.addPendingTransition(changeDisplayTransition)
         whenever(mockDesksOrganizer.isDeskChange(deskChange, deskId = 5)).thenReturn(true)
@@ -1238,6 +1240,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     companion object {
         private const val SECOND_DISPLAY_ID = 1
+        private const val DEFAULT_DISPLAY_UNIQUE_ID = "unique_id"
         private const val USER_ID_1 = 6
         private const val USER_ID_2 = 7
     }

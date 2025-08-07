@@ -620,7 +620,11 @@ class DesktopTasksController(
             if (deskId == null) {
                 logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
             } else {
-                repository.addDesk(displayId = displayId, deskId = deskId)
+                repository.addDesk(
+                    displayId = displayId,
+                    deskId = deskId,
+                    uniqueDisplayId = displayController.getDisplayUniqueId(displayId),
+                )
                 onResult(deskId)
                 if (activateDesk) {
                     activateDesk(deskId = deskId, userId = userId, enterReason = enterReason)
@@ -638,7 +642,11 @@ class DesktopTasksController(
             logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
             return null
         }
-        repository.addDesk(displayId = displayId, deskId = deskId)
+        repository.addDesk(
+            displayId = displayId,
+            deskId = deskId,
+            uniqueDisplayId = displayController.getDisplayUniqueId(displayId),
+        )
         return deskId
     }
 
@@ -748,7 +756,7 @@ class DesktopTasksController(
         destinationDisplayId: Int,
     ): RunOnTransitStart {
         logD(
-            "onDisplayDisconnect: disconnectedDisplayId=$disconnectedDisplayId, " +
+            "addOnDisplayDisconnectChanges: disconnectedDisplayId=$disconnectedDisplayId, " +
                 "destinationDisplayId=$destinationDisplayId"
         )
         val runOnTransitStartList = mutableListOf<RunOnTransitStart>()
@@ -762,7 +770,7 @@ class DesktopTasksController(
         val destDisplayLayout = displayController.getDisplayLayout(destinationDisplayId)
         if (destDisplayLayout == null) {
             logE(
-                "onDisplayDisconnect: no display layout found for " +
+                "addOnDisplayDisconnectChanges: no display layout found for " +
                     "destinationDisplayId=$destinationDisplayId"
             )
         }
@@ -817,7 +825,11 @@ class DesktopTasksController(
             val deskTasks = desktopRepository.getActiveTaskIdsInDesk(deskId)
             // Remove desk if it's empty.
             if (deskTasks.isEmpty()) {
-                logD("onDisplayDisconnect: removing empty desk=%d of user=%d", deskId, userId)
+                logD(
+                    "handleExtendedModeDisconnect: removing empty desk=%d of user=%d",
+                    deskId,
+                    userId,
+                )
                 desksOrganizer.removeDesk(wct, deskId, userId)
                 runOnTransitStartList.add { transition ->
                     desksTransitionObserver.addPendingTransition(
@@ -835,7 +847,8 @@ class DesktopTasksController(
                 }
             } else {
                 logD(
-                    "onDisplayDisconnect: reparenting desk=%d to display=%d for user=%d",
+                    "handleExtendedModeDisconnect: " +
+                        "reparenting desk=%d to display=%d for user=%d",
                     deskId,
                     destinationDisplayId,
                     userId,
@@ -856,6 +869,8 @@ class DesktopTasksController(
                             userId = userId,
                             deskId = deskId,
                             displayId = destinationDisplayId,
+                            uniqueDisplayId =
+                                displayController.getDisplayUniqueId(destinationDisplayId),
                         )
                     )
                 }
@@ -1279,6 +1294,7 @@ class DesktopTasksController(
                 .apply {
                     launchWindowingMode = WINDOWING_MODE_FREEFORM
                     launchBounds = getInitialBounds(displayLayout, task, deskId)
+                    launchDisplayId = targetDisplayId
                 }
                 .toBundle(),
         )
@@ -2911,7 +2927,8 @@ class DesktopTasksController(
                     wct.reorder(runningTaskInfo.token, /* onTop= */ true)
                 } else if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                     // Task is not running, start it
-                    wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
+                    val startDesk = repository.getDefaultDeskId(displayId) ?: INVALID_DESK_ID
+                    wct.startTask(taskId, createActivityOptionsForStartTask(startDesk).toBundle())
                 }
             }
 
