@@ -94,7 +94,7 @@ fun ShortPill(
 ) {
     val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
-    val scrimColor = MaterialTheme.colorScheme.primary
+    val scrimColor = MaterialTheme.colorScheme.primaryFixedDim
     val minSize = 48.dp
     val closeButtonSize = 28.dp
     // (shortPillBoxWidth, shortPillBoxLength) is the smallest size to fully cover recent app area.
@@ -129,7 +129,7 @@ fun ShortPill(
                         0f at 0
                         0.2f at 500
                         0.2f at 1500
-                        0f at 2000
+                        0.4f at 2000
                     }
                 } else {
                     tween(500)
@@ -137,7 +137,7 @@ fun ShortPill(
             },
             label = "smartScrimAlphaBoost",
         ) {
-            if (it) 0f else 0f
+            if (it) 0.4f else 0f
         }
 
     // State variables to store the measured size and position of the main pill.

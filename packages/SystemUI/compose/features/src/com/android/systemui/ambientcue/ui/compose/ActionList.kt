@@ -75,6 +75,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -98,8 +99,10 @@ fun ActionList(
     padding: PaddingValues = PaddingValues(0.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     portrait: Boolean = true,
-    pillOffset: Float = 0f,
+    pillCenter: Offset = Offset.Unspecified,
+    pillWidth: Float = 0f,
     rotation: Int = 0,
+    inTaskBarOr3ButtonMode: Boolean = false,
 ) {
     val density = LocalDensity.current
     val minOverscrollDelta = (-8).dp
@@ -127,6 +130,7 @@ fun ActionList(
     var containerHeightPx by remember { mutableIntStateOf(0) }
     var radius by remember { mutableFloatStateOf(0f) }
     var wasEverExpanded by remember { mutableStateOf(false) }
+    var actionListCenterPositionX by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(expanded) {
         if (expanded) {
@@ -293,6 +297,8 @@ fun ActionList(
                 )
                 .onGloballyPositioned { layoutCoordinates ->
                     containerHeightPx = layoutCoordinates.size.height
+                    actionListCenterPositionX =
+                        layoutCoordinates.positionInWindow().x + layoutCoordinates.size.width / 2
                     anchoredDraggableState.updateAnchors(
                         DraggableAnchors {
                             Start at 0f // Hidden
@@ -301,7 +307,12 @@ fun ActionList(
                     )
                 }
                 .drawBehind {
-                    val sidePaddingPx = with(density) { scrimHorizontalPadding.toPx() }
+                    val sidePaddingPx =
+                        if (inTaskBarOr3ButtonMode && portrait) {
+                            pillCenter.x - actionListCenterPositionX
+                        } else {
+                            with(density) { scrimHorizontalPadding.toPx() }
+                        }
                     if (!(radius > 0)) return@drawBehind
 
                     val minScaleY = minGradientHeightPx / (radius * 2f)
@@ -407,12 +418,14 @@ fun ActionList(
                                 if (rotation == ROTATION_90) {
                                     translationY =
                                         (1f - translation) *
-                                            (pillOffset - chipsTotalHeightPx + appxColumnY)
+                                            (pillCenter.y - pillWidth - chipsTotalHeightPx +
+                                                appxColumnY)
                                     translationX = (1f - translation) * chipWidthPx.toFloat()
                                 } else if (rotation == ROTATION_270) {
                                     translationY =
                                         (1f - translation) *
-                                            (pillOffset - chipsTotalHeightPx + appxColumnY)
+                                            (pillCenter.y - pillWidth - chipsTotalHeightPx +
+                                                appxColumnY)
                                     translationX = (translation - 1f) * chipWidthPx.toFloat()
                                 }
                             }
