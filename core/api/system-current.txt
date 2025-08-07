@@ -1439,6 +1439,7 @@ package android.app.admin {
     field public static final int EXEMPT_FROM_HIBERNATION = 3; // 0x3
     field public static final int EXEMPT_FROM_POWER_RESTRICTIONS = 4; // 0x4
     field public static final int EXEMPT_FROM_SUSPENSION = 0; // 0x0
+    field @FlaggedApi("android.app.admin.flags.enforcing_admin_extra_enabled") public static final String EXTRA_ENFORCING_ADMIN = "android.app.extra.ENFORCING_ADMIN";
     field public static final String EXTRA_FORCE_UPDATE_ROLE_HOLDER = "android.app.extra.FORCE_UPDATE_ROLE_HOLDER";
     field public static final String EXTRA_LOST_MODE_LOCATION = "android.app.extra.LOST_MODE_LOCATION";
     field public static final String EXTRA_PROFILE_OWNER_NAME = "android.app.extra.PROFILE_OWNER_NAME";
