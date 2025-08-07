@@ -324,6 +324,7 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @After
     public void tearDown() {
+        mTestCachedAppOptimizer.throwFailure();
         mProcessStateController.getOomAdjuster().resetInternal();
         mActiveUids.clear();
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
@@ -4456,6 +4457,52 @@ public class MockingOomAdjusterTests {
         assertEquals(SCHED_GROUP_TOP_APP, host.getCurrentSchedulingGroup());
     }
 
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_repeatedFreeze() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, false);
+
+        // trigger an update that will freeze app.
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+
+        // trigger again
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_repeatedFreeze_notPendingFreeze() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, false);
+
+        // trigger an update that will freeze app.
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+
+        // Move app from pending freeze to frozen
+        app.mOptRecord.setPendingFreeze(false);
+        app.mOptRecord.setFrozen(true);
+
+        // trigger again
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+    }
+
     private ProcessRecord makeDefaultProcessRecord(int pid, int uid, String processName,
             String packageName, boolean hasShownUi) {
         return new ProcessRecordBuilder(pid, uid, processName, packageName).setHasShownUi(
@@ -4935,6 +4982,7 @@ public class MockingOomAdjusterTests {
     }
 
     private static class TestCachedAppOptimizer extends CachedAppOptimizer {
+        private AssertionError mAssertionError = null;
         private SparseBooleanArray mLastSetFreezeState = new SparseBooleanArray();
 
         TestCachedAppOptimizer(ActivityManagerService ams) {
@@ -4948,12 +4996,33 @@ public class MockingOomAdjusterTests {
 
         @Override
         public void freezeAppAsyncLSP(ProcessRecord app) {
+            try {
+                // This try-catch and throw later is a workaround for b/437137965.
+                // TODO: b/437137965 - When mid-update exceptions are no longer caught, assert here.
+                assertFalse("Should not try to freeze an already frozen process.",
+                        app.mOptRecord.isFrozen());
+                assertFalse("Should not try to freeze a process pending freeze",
+                        app.mOptRecord.isPendingFreeze());
+            } catch (AssertionError ae) {
+                if (mAssertionError == null) {
+                    // Just capture the first assert;
+                    mAssertionError = ae;
+                }
+            }
             mLastSetFreezeState.put(app.getPid(), true);
+            app.mOptRecord.setPendingFreeze(true);
         }
 
         @Override
         public void unfreezeAppLSP(ProcessRecord app, @UnfreezeReason int reason) {
             mLastSetFreezeState.put(app.getPid(), false);
+            app.mOptRecord.setPendingFreeze(false);
+            app.mOptRecord.setFrozen(false);
+        }
+
+        public void throwFailure() {
+            if (mAssertionError == null) return;
+            throw mAssertionError;
         }
     }
 
