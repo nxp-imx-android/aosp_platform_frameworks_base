@@ -55,4 +55,5 @@ enum class ActionType {
     OVERVIEW,
     NOTIFICATIONS,
     QUICK_SETTINGS,
+    LOCKSCREEN,
 }

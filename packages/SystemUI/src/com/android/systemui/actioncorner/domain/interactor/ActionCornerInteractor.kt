@@ -16,6 +16,7 @@
 
 package com.android.systemui.actioncorner.domain.interactor
 
+import android.view.IWindowManager
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_LEFT
@@ -25,6 +26,7 @@ import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_RIGHT
 import com.android.systemui.actioncorner.data.model.ActionCornerState.ActiveActionCorner
 import com.android.systemui.actioncorner.data.model.ActionType
 import com.android.systemui.actioncorner.data.model.ActionType.HOME
+import com.android.systemui.actioncorner.data.model.ActionType.LOCKSCREEN
 import com.android.systemui.actioncorner.data.model.ActionType.NONE
 import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
 import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
@@ -59,6 +61,7 @@ constructor(
     private val lockscreenVisibilityInteractor: WindowManagerLockscreenVisibilityInteractor,
     private val userSetupRepository: UserSetupRepository,
     private val commandQueue: CommandQueue,
+    private val windowManager: IWindowManager,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
@@ -99,6 +102,7 @@ constructor(
                         )
                     NOTIFICATIONS -> commandQueue.toggleNotificationsPanel()
                     QUICK_SETTINGS -> commandQueue.toggleQuickSettingsPanel()
+                    LOCKSCREEN -> windowManager.lockNow(/* bundle= */ null)
                     NONE -> {}
                 }
             }
