@@ -56,6 +56,8 @@ public class Log {
     // Generic tag for all Telecom logging
     @VisibleForTesting
     public static String TAG = "TelecomFramework";
+    // As the `TAG` field may be changed at runtime, dependent logging variables cannot be final.
+    @SuppressWarnings("DebugNonFinal")
     public static boolean DEBUG = isLoggable(android.util.Log.DEBUG);
     public static boolean INFO = isLoggable(android.util.Log.INFO);
     public static boolean VERBOSE = isLoggable(android.util.Log.VERBOSE);
