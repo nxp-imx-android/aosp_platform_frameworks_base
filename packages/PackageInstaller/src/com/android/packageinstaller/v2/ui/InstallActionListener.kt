@@ -37,6 +37,11 @@ interface InstallActionListener {
     fun onNegativeResponse(resultCode: Int, data: Intent?)
 
     /**
+     * Method to handle a retry response from the user.
+     */
+    fun onRetryResponse()
+
+    /**
      * Launch the intent to open the newly installed / updated app.
      */
     fun openInstalledApp(intent: Intent?)

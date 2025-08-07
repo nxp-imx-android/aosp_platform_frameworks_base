@@ -975,8 +975,8 @@ public class PackageInstaller {
     @SystemApi
     public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT = 1;
     /**
-     * For an incomplete developer verification, the user has asked to retry the verification.
-     * Notice that this is currently not supported.
+     * For an incomplete developer verification with network error, the user has asked to retry the
+     * verification if the developer verification policy for the session is fail_closed.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
