@@ -119,3 +119,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "update_media_backup_exemption_policy"
+    namespace: "backstage_power"
+    description: "Update the criteria for media backup job exemption"
+    bug: "436531976"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
