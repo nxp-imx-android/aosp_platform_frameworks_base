@@ -47,7 +47,7 @@ public @interface DeviceSettingType {
 
     /** Device setting type is "help" preference. */
     int DEVICE_SETTING_TYPE_HELP = 4;
-    /** Device setting type is banner preference. */
 
+    /** Device setting type is banner preference. */
     int DEVICE_SETTING_TYPE_BANNER = 5;
 }

@@ -160,7 +160,9 @@ public class DeviceSettingIcon implements Parcelable {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof DeviceSettingIcon other)) return false;
+        if (!(obj instanceof DeviceSettingIcon other)) {
+            return false;
+        }
         return mDefaultIcon == other.mDefaultIcon
                 && Objects.equals(mCustomizedIcon, other.mCustomizedIcon);
     }
