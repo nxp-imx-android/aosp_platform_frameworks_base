@@ -99,7 +99,7 @@ class CommunalWidgetRepositoryLocalImplTest(flags: FlagsParameterization) : Sysu
     private val Kosmos.backupManager by Kosmos.Fixture { mock<BackupManager>() }
 
     private val Kosmos.backupUtils: CommunalBackupUtils by
-        Kosmos.Fixture { CommunalBackupUtils(applicationContext, kosmos.testDispatcher) }
+        Kosmos.Fixture { CommunalBackupUtils(applicationContext) }
 
     private val Kosmos.logBuffer: LogBuffer by
         Kosmos.Fixture { logcatLogBuffer(name = "CommunalWidgetRepoLocalImplTest") }
