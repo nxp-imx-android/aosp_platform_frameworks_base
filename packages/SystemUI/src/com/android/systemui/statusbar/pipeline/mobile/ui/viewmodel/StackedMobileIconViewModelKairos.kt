@@ -91,6 +91,36 @@ constructor(
             initialValue = null,
         )
 
+    override val activityInVisible: Boolean by
+        hydratedComposeStateOf(
+            name = "activityInVisible",
+            source =
+                iconList.flatMap { icons ->
+                    icons.firstOrNull()?.activityInVisible ?: stateOf(false)
+                },
+            initialValue = false,
+        )
+
+    override val activityOutVisible: Boolean by
+        hydratedComposeStateOf(
+            name = "activityOutVisible",
+            source =
+                iconList.flatMap { icons ->
+                    icons.firstOrNull()?.activityOutVisible ?: stateOf(false)
+                },
+            initialValue = false,
+        )
+
+    override val activityContainerVisible: Boolean by
+        hydratedComposeStateOf(
+            name = "activityContainerVisible",
+            source =
+                iconList.flatMap { icons ->
+                    icons.firstOrNull()?.activityContainerVisible ?: stateOf(false)
+                },
+            initialValue = false,
+        )
+
     override val mobileContext: Context? by
         hydratedComposeStateOf(
             "StackedMobileIconViewModelKairos.mobileContext",
