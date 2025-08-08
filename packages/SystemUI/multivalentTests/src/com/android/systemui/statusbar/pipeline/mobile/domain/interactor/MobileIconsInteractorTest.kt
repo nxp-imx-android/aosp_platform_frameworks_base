@@ -711,6 +711,25 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
         }
 
     @Test
+    fun isSingleCarrier_twoOpportunisticSubscriptions_true() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isSingleCarrier)
+
+            val (sub3, sub4) =
+                createSubscriptionPair(
+                    subscriptionIds = Pair(SUB_3_ID, SUB_4_ID),
+                    opportunistic = Pair(true, true),
+                    grouped = true,
+                )
+            connectionsRepository.setSubscriptions(listOf(sub3, sub4))
+            connectionsRepository.setActiveMobileDataSubscriptionId(SUB_3_ID)
+            whenever(carrierConfigTracker.alwaysShowPrimarySignalBarInOpportunisticNetworkDefault)
+                .thenReturn(false)
+
+            assertThat(latest).isEqualTo(true)
+        }
+
+    @Test
     fun isSingleCarrier_updates() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isSingleCarrier)

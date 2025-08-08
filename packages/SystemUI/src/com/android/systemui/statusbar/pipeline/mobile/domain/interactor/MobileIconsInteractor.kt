@@ -376,7 +376,7 @@ constructor(
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val isSingleCarrier: StateFlow<Boolean> =
-        mobileConnectionsRepo.subscriptions
+        filteredSubscriptions
             .map { it.size == 1 }
             .logDiffsForTable(
                 tableLogger,
