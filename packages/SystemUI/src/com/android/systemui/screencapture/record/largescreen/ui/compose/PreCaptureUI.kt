@@ -74,7 +74,15 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                     contentDescription = null,
                                 )
                                 .value,
-                        text = stringResource(R.string.screen_capture_fullscreen_screenshot_button),
+                        text =
+                            stringResource(
+                                when (viewModel.captureType) {
+                                    ScreenCaptureType.SCREENSHOT ->
+                                        R.string.screen_capture_fullscreen_screenshot_button
+                                    ScreenCaptureType.SCREEN_RECORD ->
+                                        R.string.screen_capture_fullscreen_record_button
+                                }
+                            ),
                         onClick = { viewModel.takeFullscreenScreenshot() },
                     )
                 }

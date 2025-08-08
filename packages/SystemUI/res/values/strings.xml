@@ -367,6 +367,8 @@
 
     <!-- Button text for taking a fullscreen screenshot [CHAR LIMIT=50] -->
     <string name="screen_capture_fullscreen_screenshot_button">Take screenshot of entire screen</string>
+    <!-- Button text for taking a fullscreen screenshot [CHAR LIMIT=50] -->
+    <string name="screen_capture_fullscreen_record_button">Record entire screen</string>
     <!-- Button text for taking a screenshot of the selected area using the region box. [CHAR LIMIT=50] -->
     <string name="screen_capture_region_selection_button">Take screenshot of selected area</string>
     <!-- Button text in the region select box for triggering a recording of the selected area. [CHAR LIMIT=35] -->
