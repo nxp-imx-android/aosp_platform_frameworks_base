@@ -360,7 +360,8 @@ constructor(
             val wct = windowContainerTransactionSupplier.invoke()
             relayout(relayoutParams, startT, finishT, wct, taskSurface)
 
-            // After this line, taskInfo  is up-to-date and should be used instead of taskInfo
+            // After this line, [WindowDecoration2.taskInfo] is up-to-date and should be
+            // used instead of the taskInfo passed to the relayout method.
             if (!wct.isEmpty) {
                 if (
                     DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
