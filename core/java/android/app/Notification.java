@@ -12211,7 +12211,7 @@ public class Notification implements Parcelable
                         ? bundle.getLong(KEY_ZERO_ELAPSED_REALTIME) : null;
                 Duration pausedDuration = bundle.containsKey(KEY_PAUSED_DURATION)
                         ? Duration.ofMillis(bundle.getLong(KEY_PAUSED_DURATION)) : null;
-                if (zeroTime != null || pausedDuration != null) {
+                if (zeroTime != null || zeroElapsedRealtime != null || pausedDuration != null) {
                     return new TimeDifference(zeroTime, zeroElapsedRealtime, pausedDuration,
                             bundle.getBoolean(KEY_COUNT_DOWN),
                             bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC));
