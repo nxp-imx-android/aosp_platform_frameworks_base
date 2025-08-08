@@ -118,7 +118,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
                         activity.mActivityComponent, activity.isNoDisplay(),
                         !activity.occludesParent(), /* numActivities */ 1, activity.mUserId,
-                        activity.info)) {
+                        activity.info, activity.windowType)) {
                     appendLog("activity exempt from desktop, launching in fullscreen");
                     outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
                     return RESULT_DONE;
@@ -185,7 +185,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
                     targetActivity.mActivityComponent, targetActivity.isNoDisplay(),
                     isActivityStackTransparent, numActivities.get(), task.getUserId(),
-                    targetActivity.info)) {
+                    targetActivity.info, targetActivity.windowType)) {
                 appendLog("activity exempt from desktop, launching in fullscreen");
                 outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
                 return RESULT_DONE;

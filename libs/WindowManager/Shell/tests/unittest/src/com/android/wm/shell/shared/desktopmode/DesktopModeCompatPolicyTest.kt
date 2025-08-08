@@ -18,6 +18,7 @@ package com.android.wm.shell.shared.desktopmode
 
 import android.Manifest.permission.SYSTEM_ALERT_WINDOW
 import android.app.TaskInfo
+import android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM
 import android.compat.testing.PlatformCompatChangeRule
 import android.content.ComponentName
 import android.content.pm.ActivityInfo
@@ -323,6 +324,17 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION)
+    fun testIsTopActivityExemptFromDesktopWindowing_dreamActivity() {
+        assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask()
+                .apply {
+                    baseActivity = baseActivityTest
+                    topActivityType = ACTIVITY_TYPE_DREAM
+                }))
+    }
+
+    @Test
     fun testShouldDisableDesktopEntryPoints_noDisplayActivity() {
         assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
             createFullscreenTask()
@@ -379,6 +391,17 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
             createFreeformTask()
                 .apply {
                     baseActivity = configExemptActivity
+                }))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION)
+    fun testShouldDisableDesktopEntryPoints_dreamActivity() {
+        assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+            createFreeformTask()
+                .apply {
+                    baseActivity = baseActivityTest
+                    topActivityType = ACTIVITY_TYPE_DREAM
                 }))
     }
 
