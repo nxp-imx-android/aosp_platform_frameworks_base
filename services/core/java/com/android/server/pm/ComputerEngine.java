@@ -4937,26 +4937,6 @@ public class ComputerEngine implements Computer {
         return new ParceledListSlice<>(finalList);
     }
 
-    @NonNull
-    @Override
-    public List<PackageStateInternal> findSharedNonSystemLibraries(
-            @NonNull PackageStateInternal pkgSetting) {
-        List<SharedLibraryInfo> deps = SharedLibraryUtils.findSharedLibraries(pkgSetting);
-        if (!deps.isEmpty()) {
-            List<PackageStateInternal> retValue = new ArrayList<>();
-            for (SharedLibraryInfo info : deps) {
-                PackageStateInternal depPackageSetting =
-                        getPackageStateInternal(info.getPackageName());
-                if (depPackageSetting != null && depPackageSetting.getPkg() != null) {
-                    retValue.add(depPackageSetting);
-                }
-            }
-            return retValue;
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
     /**
      * Returns true if application is not found or there was an error. Otherwise it returns
      * the hidden state of the package for the given user.

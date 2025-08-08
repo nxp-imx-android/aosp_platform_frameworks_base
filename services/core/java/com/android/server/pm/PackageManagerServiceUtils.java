@@ -104,8 +104,6 @@ import com.android.server.pm.pkg.AndroidPackageSplit;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.verify.domain.DomainVerificationManagerInternal;
 
-import dalvik.system.VMRuntime;
-
 import libcore.io.IoUtils;
 
 import java.io.BufferedReader;
@@ -210,19 +208,6 @@ public class PackageManagerServiceUtils {
         } catch (ErrnoException ee) {
             throw ee.rethrowAsIOException();
         }
-    }
-
-    /**
-     * Verifies that the given string {@code isa} is a valid supported isa on
-     * the running device.
-     */
-    public static boolean checkISA(String isa) {
-        for (String abi : Build.SUPPORTED_ABIS) {
-            if (VMRuntime.getInstructionSet(abi).equals(isa)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static long getLastModifiedTime(AndroidPackage pkg) {

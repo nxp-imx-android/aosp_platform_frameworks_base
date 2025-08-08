@@ -61,7 +61,6 @@ import com.android.server.utils.WatchedLongSparseArray;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A {@link Computer} provides a set of functions that can operate on live data or snapshot
@@ -519,10 +518,6 @@ public interface Computer extends PackageDataSnapshot {
     @NonNull
     ParceledListSlice<InstrumentationInfo> queryInstrumentationAsUser(
             @NonNull String targetPackage, int flags, int userId);
-
-    @NonNull
-    List<PackageStateInternal> findSharedNonSystemLibraries(
-            @NonNull PackageStateInternal pkgSetting);
 
     boolean getApplicationHiddenSettingAsUser(@NonNull String packageName, @UserIdInt int userId);
 

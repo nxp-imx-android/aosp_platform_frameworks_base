@@ -7650,14 +7650,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
     }
 
-    boolean canHaveOatDir(@NonNull Computer snapshot, String packageName) {
-        final PackageStateInternal packageState = snapshot.getPackageStateInternal(packageName);
-        if (packageState == null || packageState.getPkg() == null) {
-            return false;
-        }
-        return AndroidPackageUtils.canHaveOatDir(packageState, packageState.getPkg());
-    }
-
     long deleteOatArtifactsOfPackage(@NonNull Computer snapshot, String packageName) {
         PackageManagerServiceUtils.enforceSystemOrRootOrShell(
                 "Only the system or shell can delete oat artifacts");

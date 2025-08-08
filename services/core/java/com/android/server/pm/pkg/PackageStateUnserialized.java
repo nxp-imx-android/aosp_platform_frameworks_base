@@ -148,19 +148,6 @@ public class PackageStateUnserialized {
         mPackageSetting.onChanged();
     }
 
-    public @NonNull List<SharedLibraryInfo> getNonNativeUsesLibraryInfos() {
-        var list = new ArrayList<SharedLibraryInfo>();
-        usesLibraryInfos = getUsesLibraryInfos();
-        for (int index = 0; index < usesLibraryInfos.size(); index++) {
-            var library = usesLibraryInfos.get(index);
-            if (!library.isNative()) {
-                list.add(library.getInfo());
-            }
-
-        }
-        return list;
-    }
-
     public PackageStateUnserialized setHiddenUntilInstalled(boolean value) {
         hiddenUntilInstalled = value;
         mPackageSetting.onChanged();
