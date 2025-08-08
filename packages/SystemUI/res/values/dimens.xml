@@ -1216,6 +1216,7 @@
     <dimen name="animated_action_button_corner_radius">24dp</dimen>
     <dimen name="animated_action_button_icon_size">20dp</dimen>
     <dimen name="animated_action_button_outline_stroke_width">1dp</dimen>
+    <dimen name="animated_action_button_outline_stroke_width_emphasized">2dp</dimen>
     <dimen name="animated_action_button_padding_horizontal">12dp</dimen>
     <!-- The "inner" padding between the chip and the text should be 8dp, but since the chip
          drawable has an 8dp inset, we set the padding to be 8dp + 8dp to account for that. -->
@@ -1224,6 +1225,8 @@
     <dimen name="animated_action_button_drawable_padding">8dp</dimen>
     <dimen name="animated_action_button_touch_target_height">48dp</dimen>
     <dimen name="animated_action_button_font_size">12sp</dimen>
+    <dimen name="animated_action_button_glow_radius">8dp</dimen>
+    <dimen name="animated_action_button_glow_radius_emphasized">7dp</dimen>
 
     <!-- A reasonable upper bound for the height of the smart reply button. The measuring code
             needs to start with a guess for the maximum size. Currently two-line smart reply buttons
