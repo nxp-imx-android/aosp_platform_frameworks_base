@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.BUBBLE
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.PEEK
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.PULSE
+import java.util.Optional
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -41,7 +42,6 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.whenever
-import java.util.Optional
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -70,7 +70,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
             Optional.of(bubbles),
             context,
             notificationManager,
-            settingsInteractor
+            settingsInteractor,
         )
     }
 
@@ -98,10 +98,16 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     // instead of VisualInterruptionDecisionProviderTestBase
     // because avalanche code is based on the suppression refactor.
 
-    private fun getAvalancheSuppressor() : AvalancheSuppressor {
+    private fun getAvalancheSuppressor(): AvalancheSuppressor {
         return AvalancheSuppressor(
-            avalancheProvider, systemClock, settingsInteractor, packageManager,
-            uiEventLogger, context, notificationManager, systemSettings
+            avalancheProvider,
+            systemClock,
+            settingsInteractor,
+            packageManager,
+            uiEventLogger,
+            context,
+            notificationManager,
+            systemSettings,
         )
     }
 
@@ -151,9 +157,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowConversationFromAfterEvent() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -170,9 +174,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_suppressConversationFromBeforeEvent() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldNotHeadsUp(
                 buildEntry {
@@ -189,9 +191,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowHighPriorityConversation() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -206,9 +206,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowCall() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -223,9 +221,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowCategoryReminder() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -240,9 +236,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowCategoryEvent() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -257,9 +251,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowCategoryAlarm() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -274,15 +266,12 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowCategoryCarEmergency() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
                     importance = NotificationManager.IMPORTANCE_HIGH
                     category = CATEGORY_CAR_EMERGENCY
-
                 }
             )
         }
@@ -292,9 +281,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowCategoryCarWarning() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -309,20 +296,14 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
     fun testAvalancheFilter_duringAvalanche_allowFsi() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
-            assertFsiNotSuppressed()
-        }
+        withFilter(getAvalancheSuppressor()) { assertFsiNotSuppressed() }
     }
 
     @Test
     fun testAvalancheFilter_duringAvalanche_allowColorized() {
         avalancheProvider.startTime = whenAgo(10)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
             assertShouldHeadsUp(
                 buildEntry {
@@ -335,11 +316,12 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
 
     private fun setAllowedEmergencyPkg(allow: Boolean) {
         `when`(
-            packageManager.checkPermission(
-                org.mockito.Mockito.eq(permission.RECEIVE_EMERGENCY_BROADCAST),
-                anyString()
+                packageManager.checkPermission(
+                    org.mockito.Mockito.eq(permission.RECEIVE_EMERGENCY_BROADCAST),
+                    anyString(),
+                )
             )
-        ).thenReturn(if (allow) PERMISSION_GRANTED else PERMISSION_DENIED)
+            .thenReturn(if (allow) PERMISSION_GRANTED else PERMISSION_DENIED)
     }
 
     @Test
@@ -348,18 +330,11 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
 
         setAllowedEmergencyPkg(true)
 
-        withFilter(
-            getAvalancheSuppressor()
-        ) {
+        withFilter(getAvalancheSuppressor()) {
             ensurePeekState()
-            assertShouldHeadsUp(
-                buildEntry {
-                    importance = NotificationManager.IMPORTANCE_HIGH
-                }
-            )
+            assertShouldHeadsUp(buildEntry { importance = NotificationManager.IMPORTANCE_HIGH })
         }
     }
-
 
     @Test
     fun testPeekCondition_suppressesOnlyPeek() {
@@ -516,14 +491,14 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
 
     private class TestCondition(
         types: Set<VisualInterruptionType>,
-        val onShouldSuppress: () -> Boolean
+        val onShouldSuppress: () -> Boolean,
     ) : VisualInterruptionCondition(types = types, reason = "test condition") {
         override fun shouldSuppress(): Boolean = onShouldSuppress()
     }
 
     private class TestFilter(
         types: Set<VisualInterruptionType>,
-        val onShouldSuppress: (NotificationEntry) -> Boolean = { true }
+        val onShouldSuppress: (NotificationEntry) -> Boolean = { true },
     ) : VisualInterruptionFilter(types = types, reason = "test filter") {
         override fun shouldSuppress(entry: NotificationEntry) = onShouldSuppress(entry)
     }

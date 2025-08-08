@@ -1008,7 +1008,7 @@ filegroup {
         "multivalentTests/src/**/NotificationAlertsInteractorTest.kt",
         "multivalentTests/src/**/NotificationsKeyguardInteractorTest.kt",
         "multivalentTests/src/**/NotifPipelineChoreographerTest.kt",
-        "multivalentTests/src/**/KeyguardNotificationVisibilityProviderTest.java"
+        "multivalentTests/src/**/KeyguardNotificationVisibilityProviderTest.java",
     ],
 }
 
