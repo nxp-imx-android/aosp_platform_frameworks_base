@@ -1310,9 +1310,10 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             FocusTransitionObserver focusTransitionObserver,
-            ShellController shellController) {
+            ShellController shellController,
+            ShellTaskOrganizer shellTaskOrganizer) {
         return new ShellDesktopStateImpl(desktopState, desktopUserRepositories,
-                focusTransitionObserver, shellController);
+                focusTransitionObserver, shellController, shellTaskOrganizer);
     }
 
     @WMSingleton
