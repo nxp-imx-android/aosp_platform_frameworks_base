@@ -4111,7 +4111,11 @@ class DesktopTasksController(
 
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue) {
             val anyDeskActive = repository.isAnyDeskActive(targetDisplayId)
-            val focusedTask = focusTransitionObserver.getFocusedTaskOnDisplay(targetDisplayId)
+            // TODO(b/436462692) - Make `getFocusedTaskOnDisplay` always returns the latest TaskInfo
+            val focusedTask =
+                focusTransitionObserver.getFocusedTaskOnDisplay(targetDisplayId)?.let {
+                    shellTaskOrganizer.getRunningTaskInfo(it.taskId)
+                }
             val isFullscreenFocused = focusedTask?.isFullscreen == true
             val isNonHomeFocused = focusedTask?.activityType != ACTIVITY_TYPE_HOME
             logV(
