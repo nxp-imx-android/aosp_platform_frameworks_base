@@ -2209,6 +2209,7 @@ public class WallpaperManager {
                                 mContext.getUserId());
                         instance = sGlobals.mService.getWallpaperInstance(which,
                                 mContext.getUserId());
+                        bitmap.recycle();
                     }
                 }
                 return instance;
