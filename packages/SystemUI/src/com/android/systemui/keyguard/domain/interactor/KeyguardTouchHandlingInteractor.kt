@@ -222,7 +222,7 @@ constructor(
         if (faceAuthInteractor.canFaceAuthRun()) {
             faceAuthInteractor.onNotificationPanelClicked()
         } else {
-            attemptDeviceEntry()
+            attemptDeviceEntry(loggingReason = "Lockscreen clicked")
         }
     }
 
@@ -290,10 +290,10 @@ constructor(
             .toLong()
     }
 
-    private fun attemptDeviceEntry() {
+    private fun attemptDeviceEntry(loggingReason: String) {
         if (isDeviceAwake()) {
             if (SceneContainerFlag.isEnabled) {
-                deviceEntryInteractor.attemptDeviceEntry()
+                deviceEntryInteractor.attemptDeviceEntry(loggingReason)
             } else {
                 statusBarKeyguardViewManager.showPrimaryBouncer(
                     true,

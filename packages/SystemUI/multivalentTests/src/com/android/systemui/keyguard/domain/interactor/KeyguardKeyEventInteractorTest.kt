@@ -275,7 +275,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionDownMenuKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keycode)
         assertThat(underTest.dispatchKeyEvent(actionDownMenuKeyEvent)).isFalse()
         if (SceneContainerFlag.isEnabled) {
-            verify(deviceEntryInteractor, never()).attemptDeviceEntry()
+            verify(deviceEntryInteractor, never()).attemptDeviceEntry("test")
         } else {
             verify(statusBarKeyguardViewManager, never())
                 .showPrimaryBouncer(
@@ -288,7 +288,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionUpMenuKeyEvent = KeyEvent(KeyEvent.ACTION_UP, keycode)
         assertThat(underTest.dispatchKeyEvent(actionUpMenuKeyEvent)).isTrue()
         if (SceneContainerFlag.isEnabled) {
-            verify(deviceEntryInteractor).attemptDeviceEntry()
+            verify(deviceEntryInteractor).attemptDeviceEntry("test")
         } else {
             verify(statusBarKeyguardViewManager)
                 .showPrimaryBouncer(
@@ -303,7 +303,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionDownMenuKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keycode)
         assertThat(underTest.dispatchKeyEvent(actionDownMenuKeyEvent)).isFalse()
         verify(shadeController, never()).animateCollapseShadeForced()
-        verify(deviceEntryInteractor, never()).attemptDeviceEntry()
+        verify(deviceEntryInteractor, never()).attemptDeviceEntry("test")
         verify(statusBarKeyguardViewManager, never())
             .showPrimaryBouncer(
                 any(),
@@ -314,7 +314,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionUpMenuKeyEvent = KeyEvent(KeyEvent.ACTION_UP, keycode)
         assertThat(underTest.dispatchKeyEvent(actionUpMenuKeyEvent)).isFalse()
         verify(shadeController, never()).animateCollapseShadeForced()
-        verify(deviceEntryInteractor, never()).attemptDeviceEntry()
+        verify(deviceEntryInteractor, never()).attemptDeviceEntry("test")
         verify(statusBarKeyguardViewManager, never())
             .showPrimaryBouncer(
                 any(),

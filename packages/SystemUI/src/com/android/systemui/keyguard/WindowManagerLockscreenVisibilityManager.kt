@@ -229,7 +229,11 @@ constructor(
                 if (deviceEntryInteractor.get().isDeviceEntered.value) {
                     alreadyGoneCallback.invoke()
                 } else {
-                    deviceEntryInteractor.get().attemptDeviceEntry()
+                    deviceEntryInteractor
+                        .get()
+                        .attemptDeviceEntry(
+                            loggingReason = "onKeyguardGoingAwayRemoteAnimationStart"
+                        )
                 }
             } else {
                 keyguardDismissTransitionInteractor.startDismissKeyguardTransition(

@@ -286,7 +286,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
                 SuccessFingerprintAuthenticationStatus(0, true)
             )
 
-            underTest.attemptDeviceEntry()
+            underTest.attemptDeviceEntry("test")
 
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
@@ -300,7 +300,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
-            underTest.attemptDeviceEntry()
+            underTest.attemptDeviceEntry("test")
 
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
@@ -315,7 +315,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             fakeDeviceEntryRepository.setLockscreenEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
-            underTest.attemptDeviceEntry()
+            underTest.attemptDeviceEntry("test")
 
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
@@ -331,7 +331,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             fakeFingerprintPropertyRepository.supportsRearFps() // altBouncer unsupported
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
-            underTest.attemptDeviceEntry()
+            underTest.attemptDeviceEntry("test")
 
             assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
@@ -346,7 +346,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
             givenCanShowAlternateBouncer()
 
-            underTest.attemptDeviceEntry()
+            underTest.attemptDeviceEntry("test")
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         }

@@ -61,7 +61,7 @@ constructor(
         if (event.handleAction()) {
             if (KeyEvent.isConfirmKey(event.keyCode)) {
                 if (isDeviceAwake()) {
-                    return collapseShadeLockedOrShowPrimaryBouncer()
+                    return collapseShadeLockedOrShowPrimaryBouncer(loggingReason = "Confirm key")
                 }
             }
             when (event.keyCode) {
@@ -130,7 +130,7 @@ constructor(
         return false
     }
 
-    private fun collapseShadeLockedOrShowPrimaryBouncer(): Boolean {
+    private fun collapseShadeLockedOrShowPrimaryBouncer(loggingReason: String): Boolean {
         when (statusBarStateController.state) {
             StatusBarState.SHADE -> return false
             StatusBarState.SHADE_LOCKED -> {
@@ -139,7 +139,7 @@ constructor(
             }
             StatusBarState.KEYGUARD -> {
                 if (SceneContainerFlag.isEnabled) {
-                    deviceEntryInteractor.attemptDeviceEntry()
+                    deviceEntryInteractor.attemptDeviceEntry(loggingReason)
                 } else {
                     statusBarKeyguardViewManager.showPrimaryBouncer(
                         true,
