@@ -116,6 +116,8 @@
     <public name="alternateLauncherIcons"/>
     <!-- @FlaggedApi(android.content.pm.Flags.FLAG_CHANGE_LAUNCHER_BADGING) -->
     <public name="alternateLauncherLabels"/>
+    <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+    <public name="runInPccSandbox"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">

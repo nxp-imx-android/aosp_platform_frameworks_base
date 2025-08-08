@@ -1455,6 +1455,7 @@ package android {
     field @Deprecated public static final int rowEdgeFlags = 16843329; // 0x1010241
     field public static final int rowHeight = 16843058; // 0x1010132
     field public static final int rowOrderPreserved = 16843638; // 0x1010376
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int runInPccSandbox;
     field public static final int saveEnabled = 16842983; // 0x10100e7
     field public static final int scaleGravity = 16843262; // 0x10101fe
     field public static final int scaleHeight = 16843261; // 0x10101fd
