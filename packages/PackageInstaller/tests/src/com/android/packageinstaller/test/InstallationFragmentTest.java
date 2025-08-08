@@ -24,8 +24,6 @@ import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
-
 import com.android.packageinstaller.v2.ui.fragments.InstallationFragment;
 
 import org.junit.Test;
@@ -38,9 +36,8 @@ public class InstallationFragmentTest {
     @Test
     public void policyOpen_packageBlocked_onlyAck() {
         boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
-                new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-                        DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
+                        DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED);
 
         assertThat(isBypassAllowed).isFalse();
     }
@@ -48,9 +45,8 @@ public class InstallationFragmentTest {
     @Test
     public void policyOpen_noNetwork_mayBypass() {
         boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
-                new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-                        DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
+                        DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE);
 
         assertThat(isBypassAllowed).isTrue();
     }
@@ -58,9 +54,8 @@ public class InstallationFragmentTest {
     @Test
     public void policyOpen_unknown_mayBypass() {
         boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
-                new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-                        DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
+                        DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN);
 
         assertThat(isBypassAllowed).isTrue();
     }
@@ -68,9 +63,8 @@ public class InstallationFragmentTest {
     @Test
     public void policyClosed_packageBlocked_onlyAck() {
         boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
-                new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                        DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
+                        DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED);
 
         assertThat(isBypassAllowed).isFalse();
     }
@@ -78,9 +72,8 @@ public class InstallationFragmentTest {
     @Test
     public void policyClosed_noNetwork_onlyAck() {
         boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
-                new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                        DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
+                        DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE);
 
         assertThat(isBypassAllowed).isFalse();
     }
@@ -88,9 +81,8 @@ public class InstallationFragmentTest {
     @Test
     public void policyClosed_unknown_onlyAck() {
         boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
-                new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                        DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
+                        DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN);
 
         assertThat(isBypassAllowed).isFalse();
     }

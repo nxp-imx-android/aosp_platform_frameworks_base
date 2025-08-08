@@ -100,6 +100,12 @@ class InstallViewModel(application: Application, val repository: InstallReposito
         _currentInstallStage.value = stage
     }
 
+    fun onRetryVerificationUserResponse() {
+        val stage =
+            repository.setRetryVerificationUserResponse()
+        _currentInstallStage.value = stage
+    }
+
     fun forcedSkipSourceCheck() {
         val stage = repository.requestUserConfirmation(/* forceSourceCheck= */ false)
         if (stage != null) {
