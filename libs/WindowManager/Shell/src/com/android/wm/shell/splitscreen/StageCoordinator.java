@@ -320,6 +320,41 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         return rootTaskInfo != null ? rootTaskInfo.token : null;
     }
 
+    @Override
+    public void prepareMovingSplitScreenRoot(WindowContainerTransaction wct, int displayId) {
+        // If multi split pair is supported, each display will have a root task, we won't need to
+        // move split screen root to another display to make split pair work.
+        if (enableMultiDisplaySplit()) {
+            return;
+        }
+
+        // Find the current split-screen root task info.
+        RunningTaskInfo currentRootTaskInfo = null;
+        for (int id : mSplitMultiDisplayHelper.getCachedOrSystemDisplayIds()) {
+            final RunningTaskInfo rootTaskInfo =
+                    mSplitMultiDisplayHelper.getDisplayRootTaskInfo(id);
+            if (rootTaskInfo != null) {
+                currentRootTaskInfo = rootTaskInfo;
+                break;
+            }
+        }
+
+        if (currentRootTaskInfo == null) {
+            throw new IllegalStateException("Failed to find current split screen root task info.");
+        }
+
+        // If the task to be launched is on a different display than the current split-screen
+        // root, reparent the entire split-screen root to the task's display.
+        if (displayId != currentRootTaskInfo.displayId) {
+            final DisplayAreaInfo targetDisplayAreaInfo =
+                    mRootTDAOrganizer.getDisplayAreaInfo(displayId);
+            if (targetDisplayAreaInfo != null) {
+                wct.reparent(currentRootTaskInfo.token, targetDisplayAreaInfo.token,
+                        true /* onTop */);
+            }
+        }
+    }
+
     class SplitRequest {
         @SplitPosition
         int mActivatePosition;
@@ -867,7 +902,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         // For now, the only CUJ that can use this is LaunchAdjacent while on non-default displays.
         if (enableNonDefaultDisplaySplit()) {
-            prepareMovingSplitscreenRoot(wct, displayId);
+            prepareMovingSplitScreenRoot(wct, displayId);
         }
         wct.sendPendingIntent(intent, fillInIntent, options);
 
@@ -980,6 +1015,16 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         if (firstIntentPipped) {
             startSingleTask(taskId, options2, wct, remoteTransition);
             return;
+        }
+
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
+            // if the flag is enabled, split select can be initiated from external display.
+            // Reparent the root task to correct display if necessary.
+            final RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
+
+            if (taskInfo != null) {
+                prepareMovingSplitScreenRoot(wct, taskInfo.displayId);
+            }
         }
 
         setSideStagePosition(splitPosition, wct);
@@ -2072,16 +2117,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         //  split layout display aware.
         wct.reorder(mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY).token, true);
         setRootForceTranslucent(false, wct);
-    }
-
-    private void prepareMovingSplitscreenRoot(WindowContainerTransaction wct, int displayId) {
-        if (!enableMultiDisplaySplit()) {
-            final DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(displayId);
-            final WindowContainerToken token = getDisplayRootForDisplayId(DEFAULT_DISPLAY);
-            if (token != null && displayAreaInfo != null) {
-                wct.reparent(token, displayAreaInfo.token, true /* onTop */);
-            }
-        }
     }
 
     void finishEnterSplitScreen(SurfaceControl.Transaction finishT) {
