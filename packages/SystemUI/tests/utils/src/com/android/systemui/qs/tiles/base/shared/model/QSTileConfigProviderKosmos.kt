@@ -20,6 +20,8 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.airplane.qsAirplaneModeTileConfig
 import com.android.systemui.qs.tiles.impl.alarm.qsAlarmTileConfig
 import com.android.systemui.qs.tiles.impl.battery.qsBatterySaverTileConfig
+import com.android.systemui.qs.tiles.impl.bluetooth.qsBluetoothTileConfig
+import com.android.systemui.qs.tiles.impl.cast.qsCastTileConfig
 import com.android.systemui.qs.tiles.impl.colorcorrection.qsColorCorrectionTileConfig
 import com.android.systemui.qs.tiles.impl.flashlight.qsFlashlightTileConfig
 import com.android.systemui.qs.tiles.impl.internet.qsInternetTileConfig
@@ -39,5 +41,7 @@ fun Kosmos.populateQsTileConfigProvider() {
         putConfig(qsFlashlightTileConfig.tileSpec, qsFlashlightTileConfig)
         putConfig(qsInternetTileConfig.tileSpec, qsInternetTileConfig)
         putConfig(qsUiModeNightTileConfig.tileSpec, qsUiModeNightTileConfig)
+        putConfig(qsBluetoothTileConfig.tileSpec, qsBluetoothTileConfig)
+        putConfig(qsCastTileConfig.tileSpec, qsCastTileConfig)
     }
 }
