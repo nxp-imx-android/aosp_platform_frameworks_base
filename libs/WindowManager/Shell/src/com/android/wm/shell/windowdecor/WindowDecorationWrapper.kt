@@ -320,7 +320,8 @@ private constructor(
     fun disposeStatusBarInputLayer() =
         when {
             desktopWindowDecor != null -> requireDesktopWindowDecor().disposeStatusBarInputLayer()
-            else -> error("Expected Non-null desktop window decoration")
+            defaultWindowDecor != null -> {} // No-op
+            else -> error("Expected Non-null default or desktop window decoration")
         }
 
     /** Returns [true] if [dragResizeListener] is handling the motion event. */
