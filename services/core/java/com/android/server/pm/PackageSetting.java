@@ -1617,12 +1617,6 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         return pkgState.isHiddenUntilInstalled();
     }
 
-    @NonNull
-    @Override
-    public long[] getLastPackageUsageTime() {
-        return pkgState.getLastPackageUsageTimeInMills();
-    }
-
     @Override
     public boolean isUpdatedSystemApp() {
         return pkgState.isUpdatedSystemApp();
