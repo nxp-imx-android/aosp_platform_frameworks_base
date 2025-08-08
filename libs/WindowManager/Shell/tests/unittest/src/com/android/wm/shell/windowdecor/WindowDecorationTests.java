@@ -697,13 +697,8 @@ public class WindowDecorationTests extends ShellTestCase {
                 createMockSurfaceControlBuilder(captionContainerSurface);
         mMockSurfaceControlBuilders.add(captionContainerSurfaceBuilder);
 
-        final ActivityManager.TaskDescription.Builder taskDescriptionBuilder =
-                new ActivityManager.TaskDescription.Builder()
-                        .setBackgroundColor(Color.YELLOW);
-
         final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
                 .setDisplayId(Display.DEFAULT_DISPLAY)
-                .setTaskDescriptionBuilder(taskDescriptionBuilder)
                 .setVisible(true)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .build();
@@ -712,7 +707,7 @@ public class WindowDecorationTests extends ShellTestCase {
         mRelayoutParams.mShouldSetBackground = true;
         windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
 
-        verify(mMockSurfaceControlStartT).setColor(mMockTaskSurface, new float[]{1.f, 1.f, 0.f});
+        verify(mMockSurfaceControlStartT).setColor(mMockTaskSurface, new float[]{0.f, 0.f, 0.f});
     }
 
     @Test

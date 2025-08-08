@@ -311,7 +311,8 @@ abstract class WindowDecoration2<T>(
         }
 
         if (params.shouldSetBackground) {
-            val backgroundColorInt = taskInfo.taskDescription?.backgroundColor ?: Color.BLACK
+            // TODO: b/437011322 - Use taskDescription backgroundColor for free resizing
+            val backgroundColorInt = Color.BLACK
             val tmpColor =
                 floatArrayOf(
                     Color.red(backgroundColorInt).toFloat() / 255f,
