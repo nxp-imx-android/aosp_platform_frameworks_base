@@ -86,7 +86,10 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -317,6 +320,27 @@ fun ContentScope.NotificationScrollingStack(
     supportNestedScrolling: Boolean,
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)) {
+        // Some scenes or overlays that use this Composable may be using alwaysCompose=true which
+        // will cause them to compose everything but not be visible. Because this Composable has
+        // many side effects that push UI state upstream to its view-model, interactors, and
+        // repositories and because the repositories are shared across callers of this Composable,
+        // the cleanest way to prevent always-composing but invisible scenes/overlays from polluting
+        // the shared state with bogus values is to prevent this entire Composable from actually
+        // composing at all.
+        //
+        // Note that this optimization is very wide and is actively contradicting the point of
+        // alwaysCompose=true (which attempts to pre-compose as much as it can), the initial use of
+        // alwaysCompose=true is to always compose QS content, not notifications.
+        //
+        // Should a more granular optimization be preferred, we can let this Composable compose but
+        // dive deeper into it and make sure that all of the side effects that send state upstream
+        // to its view-model are properly taking lifecycle state into account.
+        Box(modifier)
+        return
+    }
+
     val composeViewRoot = LocalView.current
     val coroutineScope = shadeSession.sessionCoroutineScope(key = "NotificationScrollingStack")
     val density = LocalDensity.current
