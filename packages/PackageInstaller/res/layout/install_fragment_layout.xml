@@ -80,6 +80,7 @@
                 android:src="@drawable/ic_keyboard_arrow_down"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
                 android:gravity="center_vertical"
                 android:selectable="false" />
         </LinearLayout>
@@ -104,8 +105,9 @@
                 android:id="@+id/install_without_verifying_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/dialog_inter_element_margin"
+                android:layout_marginTop="8dp"
                 android:minHeight="@dimen/button_min_height"
+                android:paddingTop="8dp"
                 android:gravity="start|center_vertical"
                 android:text="@string/install_without_verifying"
                 android:textColor="@color/primaryColor"
