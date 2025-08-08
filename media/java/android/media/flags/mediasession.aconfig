@@ -28,3 +28,10 @@ flag {
   description: "Deprecate platform MediaSession2 APIs"
   bug: "436849846"
 }
+
+flag {
+  name: "filter_session_audio_playback_by_usage"
+  namespace: "media_solutions"
+  description: "Filter audio playback uids used for session tracking by audio usage type (to e.g. ignore notification audio)."
+  bug: "432003816"
+}
