@@ -11097,12 +11097,210 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         deskId = 5
                     )
                 }
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
 
             controller.restoreDisplay(
                 displayId = SECOND_DISPLAY_ON_RECONNECT,
                 uniqueDisplayId = SECOND_DISPLAY_UNIQUE_ID,
                 userId = taskRepository.userId,
             )
+            runCurrent()
+
+            verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
+            val wct = wctCaptor.firstValue
+            assertThat(findBoundsChange(wct, firstTask)).isEqualTo(firstTaskBounds)
+            assertThat(findBoundsChange(wct, secondTask)).isEqualTo(secondTaskBounds)
+            wct.assertReorder(task = firstTask, toTop = true, includingParents = true)
+            wct.assertReorder(task = secondTask, toTop = true, includingParents = true)
+            verify(desksOrganizer).moveTaskToDesk(any(), anyInt(), eq(firstTask), eq(false))
+            verify(desksOrganizer).moveTaskToDesk(any(), anyInt(), eq(secondTask), eq(false))
+            val deskIds = taskRepository.getDeskIds(SECOND_DISPLAY_ON_RECONNECT)
+            assertThat(deskIds.size).isEqualTo(1)
+            verify(desksTransitionsObserver)
+                .addPendingTransition(
+                    DeskTransition.AddTaskToDesk(
+                        token = transition,
+                        displayId = SECOND_DISPLAY_ON_RECONNECT,
+                        deskId = 5,
+                        taskId = firstTask.taskId,
+                        userId = taskRepository.userId,
+                        taskBounds = firstTaskBounds,
+                        minimized = false,
+                    )
+                )
+            verify(desksTransitionsObserver)
+                .addPendingTransition(
+                    DeskTransition.AddTaskToDesk(
+                        token = transition,
+                        displayId = SECOND_DISPLAY_ON_RECONNECT,
+                        deskId = 5,
+                        taskId = secondTask.taskId,
+                        userId = taskRepository.userId,
+                        taskBounds = secondTaskBounds,
+                        minimized = false,
+                    )
+                )
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_restoresMinimizedTask() =
+        testScope.runTest {
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+            val firstTaskBounds = Rect(100, 300, 1000, 1200)
+            val firstTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = firstTaskBounds,
+                )
+            taskRepository.minimizeTaskInDesk(
+                SECOND_DISPLAY,
+                DISCONNECTED_DESK_ID,
+                firstTask.taskId,
+            )
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+
+            controller.restoreDisplay(
+                SECOND_DISPLAY_ON_RECONNECT,
+                SECOND_DISPLAY_UNIQUE_ID,
+                taskRepository.userId,
+            )
+            runCurrent()
+
+            verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
+            verify(desksTransitionsObserver)
+                .addPendingTransition(
+                    DeskTransition.AddTaskToDesk(
+                        token = transition,
+                        displayId = SECOND_DISPLAY_ON_RECONNECT,
+                        deskId = 5,
+                        taskId = firstTask.taskId,
+                        userId = taskRepository.userId,
+                        taskBounds = firstTaskBounds,
+                        minimized = true,
+                    )
+                )
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_keyguardLocked_noOp() =
+        testScope.runTest {
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+            val firstTaskBounds = Rect(100, 300, 1000, 1200)
+            val firstTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = firstTaskBounds,
+                )
+            val secondTaskBounds = Rect(400, 400, 1600, 900)
+            val secondTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = secondTaskBounds,
+                )
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            whenever(keyguardManager.isKeyguardLocked).thenReturn(true)
+
+            controller.restoreDisplay(
+                SECOND_DISPLAY_ON_RECONNECT,
+                SECOND_DISPLAY_UNIQUE_ID,
+                DEFAULT_USER_ID,
+            )
+            runCurrent()
+
+            verify(transitions, never()).startTransition(anyInt(), any(), anyOrNull())
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun keyguardUnlocked_displayToRestore_restoresDisplay() =
+        testScope.runTest {
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+            val firstTaskBounds = Rect(100, 300, 1000, 1200)
+            val firstTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = firstTaskBounds,
+                )
+            val secondTaskBounds = Rect(400, 400, 1600, 900)
+            val secondTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = secondTaskBounds,
+                )
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            whenever(displayController.allDisplaysByUniqueId)
+                .thenReturn(
+                    mutableMapOf(
+                        DEFAULT_DISPLAY_UNIQUE_ID to DEFAULT_DISPLAY,
+                        SECOND_DISPLAY_UNIQUE_ID to SECOND_DISPLAY_ON_RECONNECT,
+                    )
+                )
+            whenever(keyguardManager.isKeyguardLocked).thenReturn(false)
+
+            controller.onKeyguardVisibilityChanged(false, false, false)
             runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
