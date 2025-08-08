@@ -22,7 +22,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.user.data.repository.userRepository
 
-val Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
+var Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
     Kosmos.Fixture {
         ScreenRecordingServiceInteractor(
             applicationContext,
