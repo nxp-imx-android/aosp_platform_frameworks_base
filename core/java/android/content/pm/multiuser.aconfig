@@ -476,3 +476,13 @@ flag {
      description: "Refactored some getUsers() methods to use a UserFilter object"
      bug: "419086491"
 }
+
+flag {
+    name: "core_settings_multi_user"
+    namespace: "multiuser"
+    description: "Make CoreSettingsObserver multi-user aware."
+    bug: "439474431"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

@@ -3555,7 +3555,14 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         return old;
     }
 
-    /** Call setCoreSettings on all LRU processes, with the new settings. */
+    /**
+     * Updates the core settings for all running processes.
+     * <p>This method is used when the {@code core_settings_multi_user} feature flag is
+     * <strong>disabled</strong>. It sends a single bundle of settings to every process,
+     * regardless of the user.
+     *
+     * @param settings A {@link Bundle} containing the core settings to be applied.
+     */
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     void updateCoreSettingsLOSP(Bundle settings) {
         for (int i = mLruProcesses.size() - 1; i >= 0; i--) {
@@ -3564,6 +3571,36 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
             try {
                 if (thread != null) {
                     thread.setCoreSettings(settings);
+                }
+            } catch (RemoteException re) {
+                /* ignore */
+            }
+        }
+    }
+
+    /**
+     * Updates the core settings for all running processes on a per-user basis.
+     * <p>This method is used when the {@code core_settings_multi_user} feature flag is
+     * <strong>enabled</strong>. It dispatches user-specific settings to each process based on its
+     * user ID.
+     *
+     * @param settingsPerUser A {@link SparseArray} mapping user IDs to their corresponding
+     *                        core settings {@link Bundle}.
+     */
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    void updateCoreSettingsLOSP(SparseArray<Bundle> settingsPerUser) {
+        for (int i = mLruProcesses.size() - 1; i >= 0; i--) {
+            ProcessRecord processRecord = mLruProcesses.get(i);
+            final Bundle userSettings = settingsPerUser.get(processRecord.userId);
+            final IApplicationThread thread = processRecord.getThread();
+            try {
+                // It's possible for userSettings to be null here if a process has already started
+                // for a new user after CoreSettingsObserverMultiUser retrieves the list of running
+                // users. In that situation, CoreSettingsObserverMultiUser will receive another
+                // onUserStarted() call for that user and call onCoreSettingsChange() again, so we
+                // can skip setCoreSettings() if userSettings is null.
+                if (thread != null && userSettings != null) {
+                    thread.setCoreSettings(userSettings);
                 }
             } catch (RemoteException re) {
                 /* ignore */

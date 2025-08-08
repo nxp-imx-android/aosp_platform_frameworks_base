@@ -6382,6 +6382,10 @@ public final class ActivityThread extends ClientTransactionHandler
         onCoreSettingsChange();
     }
 
+    /**
+     * Handles updates to core settings. This may trigger a relaunch of all activities if
+     * settings that affect the UI, like debug view attributes, have changed.
+     */
     private void onCoreSettingsChange() {
         if (updateDebugViewAttributeState()) {
             // request all activities to relaunch for the changes to take place
@@ -9212,8 +9216,20 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
+    /**
+     * Gets the core settings for the default device.
+     *
+     * On HSUM devices, core settings for a non-system user might not be available immediately
+     * after the user's process starts.
+     * In such cases, this method returns an empty Bundle to prevent crashes.
+     */
     private Bundle getCoreSettingsForDefaultDeviceLocked() {
-        return getCoreSettingsForDeviceLocked(Context.DEVICE_ID_DEFAULT);
+        Bundle bundle = getCoreSettingsForDeviceLocked(Context.DEVICE_ID_DEFAULT);
+        if (bundle == null) {
+            Log.w(TAG, "Core settings not yet available for current user; returning empty bundle");
+            return Bundle.EMPTY;
+        }
+        return bundle;
     }
 
     private Bundle getCoreSettingsForDeviceLocked(int deviceId) {
