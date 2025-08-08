@@ -176,6 +176,8 @@ public class NotificationMetricStyleTest {
                         new FixedFloat(12.345f, null, 0, 3),
                         "Active time"))
                 .addMetric(new Metric(
+                        new FixedString("A LOT", "things"), "With unit"))
+                .addMetric(new Metric(
                         new FixedString("This is the last"), "Last"));
 
         original.addExtras(bundle);
@@ -555,8 +557,11 @@ public class NotificationMetricStyleTest {
 
     @Test
     public void valueToString_fixedString() {
-        FixedString str = new FixedString("Boring");
-        assertThat(str.toValueString(mContext)).isEqualTo(new ValueString("Boring", null));
+        FixedString withUnit = new FixedString("120/80", "mmHg");
+        assertThat(withUnit.toValueString(mContext)).isEqualTo(new ValueString("120/80", "mmHg"));
+
+        FixedString noUnit = new FixedString("Boring");
+        assertThat(noUnit.toValueString(mContext)).isEqualTo(new ValueString("Boring", null));
     }
 
     private void withLocale(Locale locale, Runnable r) {

@@ -12893,47 +12893,80 @@ public class Notification implements Parcelable
         public static final class FixedString extends MetricValue {
 
             private static final String KEY_VALUE = "value";
+            private static final String KEY_UNIT = "unit";
 
             private final String mValue;
+            private final String mUnit;
 
             /**
              * Creates a {@link FixedString} instance with the specified String.
              */
             public FixedString(@NonNull String value) {
+                this(value, null);
+            }
+
+            /**
+             * Creates a {@link FixedString} instance with the specified String.
+             *
+             * @param unit optional unit for the value. Limit this to a few characters.
+             */
+            public FixedString(@NonNull String value, @Nullable String unit) {
                 mValue = safeString(requireNonNull(value));
+                mUnit = safeString(unit);
             }
 
             @NonNull
             private static FixedString fromBundle(Bundle bundle) {
-                return new FixedString(bundle.getString(KEY_VALUE, ""));
+                return new FixedString(
+                        bundle.getString(KEY_VALUE, ""),
+                        bundle.getString(KEY_UNIT));
             }
 
             /** @hide */
             @Override
             protected void toBundle(Bundle bundle) {
                 bundle.putString(KEY_VALUE, mValue);
+                bundle.putString(KEY_UNIT, mUnit);
             }
 
             @Override
             public boolean equals(Object obj) {
                 if (!(obj instanceof FixedString that)) return false;
                 if (this == that) return true;
-                return Objects.equals(this.mValue, that.mValue);
+                return Objects.equals(this.mValue, that.mValue)
+                        && Objects.equals(this.mUnit, that.mUnit);
             }
 
             @Override
             public int hashCode() {
-                return mValue.hashCode();
+                return Objects.hash(mValue, mUnit);
             }
 
             @Override
             public String toString() {
-                return getClass().getSimpleName() + "{" + mValue + "}";
+                return getClass().getSimpleName() + "{"
+                        + "mValue=" + mValue
+                        + ", mUnit=" + mUnit
+                        + "}";
             }
 
             /** The string value. */
-            @NonNull public String getValue() {
+            @NonNull
+            public String getValue() {
                 return mValue;
+            }
+
+            /**
+             * A unit for the value.
+             *
+             * <p>This may not be shown to the user in all views.
+             *
+             * <p>The space allocated to this will be limited. It's recommended to limit
+             * this to just a few characters.
+             */
+            @Nullable
+            public String getUnit() {
+                return mUnit;
             }
 
             /** @hide */
@@ -12941,7 +12974,7 @@ public class Notification implements Parcelable
             @NonNull
             @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
-                return new ValueString(mValue, null);
+                return new ValueString(mValue, mUnit);
             }
         }
     }
