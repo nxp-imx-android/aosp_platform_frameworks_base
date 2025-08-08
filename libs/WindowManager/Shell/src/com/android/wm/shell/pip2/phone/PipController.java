@@ -70,7 +70,6 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipKeepClearAlgorithmInterface;
 import com.android.wm.shell.common.pip.PipMediaController;
-import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.Pip;
@@ -440,8 +439,7 @@ public class PipController implements ConfigurationChangeListener,
             return;
         }
 
-        final PipSnapAlgorithm snapAlgorithm = mPipBoundsAlgorithm.getSnapAlgorithm();
-        final float snapFraction = snapAlgorithm.getSnapFraction(
+        final float snapFraction = mPipBoundsAlgorithm.getSnapAlgorithm().getSnapFraction(
                 mPipBoundsState.getBounds(),
                 mPipBoundsAlgorithm.getMovementBounds(mPipBoundsState.getBounds()),
                 mPipBoundsState.getStashedState());
@@ -471,24 +469,7 @@ public class PipController implements ConfigurationChangeListener,
             mPipTouchHandler.updateMovementBounds();
             mPipTransitionState.setInFixedRotation(false);
         } else {
-            final float boundsScale = mPipBoundsState.getBoundsScale();
-            // Before calculating the PiP bounds, the PiP minimum and maximum sizes
-            // need to be recalculated for the current display.
-            mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
-            Rect toBounds = new Rect(0, 0,
-                    (int) Math.ceil(mPipBoundsState.getMaxSize().x * boundsScale),
-                    (int) Math.ceil(mPipBoundsState.getMaxSize().y * boundsScale));
-
-            // The policy is to keep PiP snap fraction invariant.
-            snapAlgorithm.applySnapFraction(toBounds,
-                    mPipBoundsAlgorithm.getMovementBounds(toBounds), snapFraction,
-                    mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
-                    mPipDisplayLayoutState.getDisplayBounds(),
-                    mPipDisplayLayoutState.getDisplayLayout().stableInsets());
-
-            mPipBoundsState.setBounds(toBounds);
-            mPipTouchHandler.updateMovementBounds();
-            mPipTouchHandler.setUserResizeBounds(toBounds);
+            updateBoundsOnDisplayChange(snapFraction);
         }
         if (mPipTransitionState.getPipTaskToken() == null) {
             Log.d(TAG, "PipController.onDisplayChange no PiP task token"
@@ -504,6 +485,37 @@ public class PipController implements ConfigurationChangeListener,
         }
         // Update the size spec in PipBoundsState afterwards.
         mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
+    }
+
+    @VisibleForTesting
+    void updateBoundsOnDisplayChange(float savedSnapFraction) {
+        // Before calculating the PiP bounds, the PiP minimum and maximum sizes
+        // need to be recalculated for the current display.
+        mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
+        final float boundsScale = mPipBoundsState.getBoundsScale();
+        Rect toBounds = new Rect(0, 0,
+                (int) Math.ceil(mPipBoundsState.getMaxSize().x * boundsScale),
+                (int) Math.ceil(mPipBoundsState.getMaxSize().y * boundsScale));
+
+        // Adjust the toBounds if the calculated one is smaller than the min size.
+        // This could happen when device is transit from unfolded to folded mode.
+        if (toBounds.width() < mPipBoundsState.getMinSize().x) {
+            // boundsScale in PipBoundsState would be updated when we set the bounds.
+            toBounds.set(0, 0,
+                    mPipBoundsState.getMinSize().x, mPipBoundsState.getMinSize().y);
+        }
+
+        // The policy is to keep PiP snap fraction invariant.
+        mPipBoundsAlgorithm.getSnapAlgorithm().applySnapFraction(toBounds,
+                mPipBoundsAlgorithm.getMovementBounds(toBounds), savedSnapFraction,
+                mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
+                mPipDisplayLayoutState.getDisplayBounds(),
+                mPipDisplayLayoutState.getDisplayLayout().stableInsets());
+
+        // Update internal components to the new bounds.
+        mPipBoundsState.setBounds(toBounds);
+        mPipTouchHandler.updateMovementBounds();
+        mPipTouchHandler.setUserResizeBounds(toBounds);
     }
 
     private void setDisplayLayout(DisplayLayout layout) {
