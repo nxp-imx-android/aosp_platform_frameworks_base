@@ -16,11 +16,13 @@ import android.service.quicksettings.Tile
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.logging.MetricsLogger
 import com.android.settingslib.Utils
 import com.android.settingslib.bluetooth.BatteryLevelsInfo
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.flags.Flags.FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY
+import com.android.settingslib.satellite.SatelliteDialogUtils
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewModel
@@ -50,6 +52,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -345,18 +348,20 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     @EnableFlags(QSComposeFragment.FLAG_NAME)
     fun disableBluetooth_transientTurningOff() {
-        enableBluetooth()
-        tile.refreshState()
-        testableLooper.processAllMessages()
+        bypassingSatelliteDialog {
+            enableBluetooth()
+            tile.refreshState()
+            testableLooper.processAllMessages()
 
-        tile.handleSecondaryClick(null)
-        testableLooper.processAllMessages()
+            tile.handleSecondaryClick(null)
+            testableLooper.processAllMessages()
 
-        val state = tile.state
+            val state = tile.state
 
-        assertThat(state.state).isEqualTo(Tile.STATE_INACTIVE)
-        assertThat(state.isTransient).isTrue()
-        assertThat(state.icon).isEqualTo(createExpectedIcon(R.drawable.qs_bluetooth_icon_off))
+            assertThat(state.state).isEqualTo(Tile.STATE_INACTIVE)
+            assertThat(state.isTransient).isTrue()
+            assertThat(state.icon).isEqualTo(createExpectedIcon(R.drawable.qs_bluetooth_icon_off))
+        }
     }
 
     @Test
@@ -459,6 +464,30 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
         setBluetoothConnected()
         addConnectedDevice(cachedDevice)
         tile.handleUpdateState(state, /* arg= */ null)
+    }
+
+    private inline fun bypassingSatelliteDialog(testBody: () -> Unit) {
+        val mockitoSession =
+            ExtendedMockito.mockitoSession()
+                .mockStatic(SatelliteDialogUtils::class.java)
+                .startMocking()
+
+        whenever(
+                SatelliteDialogUtils.mayStartSatelliteWarningDialog(
+                    eq(mContext),
+                    eq(tile),
+                    anyInt(),
+                    any(),
+                )
+            )
+            .thenAnswer { invocation ->
+                (invocation.arguments[3] as (Boolean) -> Unit).invoke(true)
+                mock<Job>()
+            }
+
+        testBody()
+
+        mockitoSession.finishMocking()
     }
 
     private fun listenToDeviceBatteryLevelsInfo(
