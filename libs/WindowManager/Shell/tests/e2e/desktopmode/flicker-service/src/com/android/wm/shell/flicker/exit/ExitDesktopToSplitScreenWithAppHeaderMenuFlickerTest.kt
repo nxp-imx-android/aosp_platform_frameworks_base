@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.fundamentals
+package com.android.wm.shell.flicker.exit
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
@@ -25,33 +25,32 @@ import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
 import com.android.wm.shell.flicker.DesktopModeBaseTest
-import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
-import com.android.wm.shell.flicker.utils.appWindowOnTopAtStart
-import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
-import com.android.wm.shell.flicker.utils.layerIsVisibleAtEnd
-import com.android.wm.shell.scenarios.ExitDesktopToFullScreenWithAppHeaderMenu
+import com.android.wm.shell.scenarios.ExitDesktopToSplitScreenWithAppHeaderMenu
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
+import com.android.wm.shell.flicker.utils.layerBecomesVisible
+import com.android.wm.shell.flicker.utils.splitScreenDividerBecomesVisible
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Exit the app in desktop mode to full screen via app header menu.
+ * Exit the app in desktop mode to split screen via app header menu.
  */
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @Postsubmit
-class ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
-
-    inner class ExitDesktopToFullScreenWithAppHeaderMenuScenario : ExitDesktopToFullScreenWithAppHeaderMenu(flicker.scenario.startRotation)
+class ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
+    inner class ExitDesktopToSplitScreenWithAppHeaderMenuScenario : ExitDesktopToSplitScreenWithAppHeaderMenu(flicker.scenario.startRotation)
 
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
-    val scenario = ExitDesktopToFullScreenWithAppHeaderMenuScenario()
-    private val testApp = scenario.testApp
+    val scenario = ExitDesktopToSplitScreenWithAppHeaderMenuScenario()
+    private val firstApp = scenario.testApp
+    private val secondApp = scenario.calculatorApp
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
@@ -59,7 +58,7 @@ class ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest(flicker: FlickerTest) 
                 scenario.setup()
             }
             transitions {
-                scenario.exitDesktopToFullScreenWithAppHeaderMenu()
+                scenario.exitDesktopToSplitScreen()
             }
             teardown {
                 scenario.teardown()
@@ -67,16 +66,13 @@ class ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest(flicker: FlickerTest) 
         }
 
     @Test
-    fun appWindowOnTopAtStart() = flicker.appWindowOnTopAtStart(testApp)
+    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(firstApp)
 
     @Test
-    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(testApp)
+    fun splitScreenDividerBecomesVisible() = flicker.splitScreenDividerBecomesVisible()
 
     @Test
-    fun appWindowInsideDisplayBoundsAtEnd() = flicker.appWindowInsideDisplayBoundsAtEnd(testApp)
-
-    @Test
-    fun layerIsVisibleAtEnd() = flicker.layerIsVisibleAtEnd(testApp)
+    fun layerBecomesVisible() = flicker.layerBecomesVisible(secondApp)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")

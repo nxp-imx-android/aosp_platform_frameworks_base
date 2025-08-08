@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.maximize
+package com.android.wm.shell.functional.exit
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.ExitDesktopWithDragToTopDragZone
+import com.android.wm.shell.scenarios.ExitDesktopToFullScreenWithAppHeaderMenu
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [ExitDesktopWithDragToTopDragZone]. */
+/* Functional test for [ExitDesktopToFullScreenWithAppHeaderMenu]. */
+
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class ExitDesktopWithDragToTopDragZoneTest : ExitDesktopWithDragToTopDragZone()
+class ExitDesktopToFullScreenWithAppHeaderMenuTest : ExitDesktopToFullScreenWithAppHeaderMenu()
