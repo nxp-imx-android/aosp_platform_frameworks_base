@@ -26,3 +26,10 @@ flag {
     description: "Feature flag to stop voice assistant session"
     bug: "419049796"
 }
+
+flag {
+    name: "enable_system_contacts_picker"
+    namespace: "profile_experiences"
+    description: "Enable the new system contacts picker application components and the new intent action ACTION_PICK_CONTACTS."
+    bug: "427934258"
+}
