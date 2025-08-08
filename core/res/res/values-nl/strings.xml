@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. &lt;br&gt;&lt;br&gt; Deze app is niet compatibel met 16 KB. APK- en ELF-uitlijningscontroles zijn mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; De volgende bibliotheken zijn niet uitgelijnd met 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Niet meer tonen"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibiliteit van Android-apps"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : LOAD-segment niet uitgelijnd&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : Niet-gecomprimeerde bibliotheek niet uitgelijnd&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : LOAD-segment en niet-gecomprimeerde bibliotheek zijn niet uitgelijnd&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : Onbekende fout&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Service niet voorzien."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"U kunt de instelling voor de beller-ID niet wijzigen."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobiele data overgeschakeld naar <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -696,10 +692,8 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Je identiteit bevestigen"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Gebruik je biometrische gegevens om door te gaan"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Gebruik je biometrische gegevens of schermvergrendeling om door te gaan"</string>
-    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
-    <skip />
+    <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"Laat op je telefoon verifiëren dat jij het bent om door te gaan"</string>
+    <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"Laat op je tablet verifiëren dat jij het bent om door te gaan"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrische hardware niet beschikbaar"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Verificatie geannuleerd"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Niet herkend"</string>
@@ -1134,6 +1128,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Pincode-ontgrendeling voor simkaart."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Pukcode-ontgrendeling voor simkaart."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Ontgrendeling via wachtwoord."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Tekengebied voor patroon."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Schuifgebied."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2048,7 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maximaliseren"</string>
     <string name="close_button_text" msgid="10603510034455258">"Sluiten"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Beantwoorden"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Weigeren"</string>

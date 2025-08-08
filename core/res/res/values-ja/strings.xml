@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックが失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"次回から表示しない"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android アプリの互換性"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : LOAD セグメントが一致しません&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : 非圧縮ライブラリが一致しません&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : LOAD セグメントと非圧縮ライブラリが一致していません&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : 不明なエラー&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"提供可能なサービスがありません。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"発信者番号の設定は変更できません。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"データが <xliff:g id="CARRIERDISPLAY">%s</xliff:g> に切り替わりました"</string>
@@ -696,10 +692,8 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"本人確認"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"続行するには生体認証を使用してください"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"続行するには、生体認証または画面ロックを使用してください"</string>
-    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
-    <skip />
+    <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"続行するには、スマートフォンで本人確認を行ってください"</string>
+    <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"続行するには、タブレットで本人確認を行ってください"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"生体認証ハードウェアが利用できません"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"認証をキャンセルしました"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"認識されませんでした"</string>
@@ -1134,6 +1128,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM PIN のロックを解除します。"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM PUK のロックを解除します。"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"パスワードロックを解除します。"</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"パターンエリアです。"</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"スライドエリアです。"</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2048,7 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"最大化"</string>
     <string name="close_button_text" msgid="10603510034455258">"閉じる"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"応答"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"ビデオ"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"拒否"</string>

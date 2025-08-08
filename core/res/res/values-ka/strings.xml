@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ეს გაფრთხილება იმიტომ ჩანს, რომ ეს არის გამართვადი აპი, რომელიც ამჟამად ტესტირების პროცესშია. თუ არ ხართ დეველოპერი, ამის შესახებ გაუგზავნეთ მოხსენება დეველოპერს და მოითხოვეთ არაგამართვადი აპი. &lt;br&gt;&lt;br&gt; ამ აპს არ აქვს 16-კილობაიტიანი თავსებადობა. APK-სა და ELF-ის გასწორების შემოწმება ვერ მოხერხდა. მიჰყევით ნაბიჯებს: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; შემდეგი ბიბლიოთეკები არ არის 16 კილობაიტზე გასწორებული: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"აღარ მაჩვენო"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android აპის თავსებადობა"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : ჩატვირთვის სეგმენტი არ არის გასწორებული&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : არაკომპრესირებული ბიბლიოთეკა არ არის გასწორებული&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : ჩატვირთვის სეგმენტი და არაკომპრესირებული ბიბლიოთეკა არ არის გასწორებული&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : უცნობი შეცდომა&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"სერვისი არ არის მიწოდებული."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"არ შეგიძლიათ აბონენტის ID პარამეტრების შეცვლა."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"მონაცემები გადართულია <xliff:g id="CARRIERDISPLAY">%s</xliff:g>-ზე"</string>
@@ -696,10 +692,8 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"დაადასტურეთ ვინაობა"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"გასაგრძელებლად გამოიყენეთ თქვენი ბიომეტრიული მონაცემები"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"გასაგრძელებლად გამოიყენეთ თქვენი ბიომეტრიული მონაცემები ან ეკრანის განბლოკვის ნიმუში"</string>
-    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
-    <skip />
+    <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"გასაგრძელებლად დაადასტურეთ, რომ თქვენ იყენებთ თქვენს ტელეფონს"</string>
+    <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"დაადასტურეთ, რომ თქვენ იყენებთ თქვენს ტაბლეტს"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ბიომეტრიული აპარატურა მიუწვდომელია"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ავტორიზაცია გაუქმდა"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"არ არის ამოცნობილი"</string>
@@ -1134,6 +1128,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM-ის PIN-კოდით განბლოკვა."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM-ის PUK-კოდით განბლოკვა."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"პაროლის განბლოკვა"</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"ნიმუშების სივრცე."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"გადასრიალების სივრცე."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2048,7 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"მაქსიმალური ზომა"</string>
     <string name="close_button_text" msgid="10603510034455258">"დახურვა"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"პასუხი"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"ვიდეო"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"უარყოფა"</string>

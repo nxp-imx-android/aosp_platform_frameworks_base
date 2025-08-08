@@ -81,14 +81,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. &lt;br&gt;&lt;br&gt; Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanja usklajenosti oblik zapisov APK in ELF niso uspela. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Tega ne prikaži več"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Združljivost aplikacij za Android"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : Segment LOAD ni usklajen&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : Nestisnjena knjižnica ni usklajena&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : Segment LOAD in nestisnjena knjižnica nista usklajena&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : Neznana napaka&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Storitev ni nastavljena in omogočena."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ne morete spremeniti nastavitve ID-ja klicatelja."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Prenos podatkov je preklopljen na operaterja <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -698,10 +694,8 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Potrdite, da ste res vi"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Za nadaljevanje uporabite biometrični podatek."</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Za nadaljevanje uporabite biometrični podatek ali odklepanje s poverilnico."</string>
-    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
-    <skip />
+    <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"Če želite nadaljevati, v telefonu potrdite, da ste to vi"</string>
+    <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"Če želite nadaljevati, v tabličnem računalniku potrdite, da ste to vi"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Strojna oprema za biometrične podatke ni na voljo"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Preverjanje pristnosti je preklicano"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Ni prepoznano"</string>
@@ -1136,6 +1130,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Odklepanje kartice SIM s kodo PIN"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Odklepanje kartice SIM s kodo PUK"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Odklepanje z geslom."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Območje vzorca."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Območje podrsanja."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2054,6 +2050,7 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maksimiziraj"</string>
     <string name="close_button_text" msgid="10603510034455258">"Zapri"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Sprejmi"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Zavrni"</string>

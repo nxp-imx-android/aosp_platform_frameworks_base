@@ -1134,6 +1134,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Shkyçja e kartës SIM me kodin PIN"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Shkyçja e kartës SIM me kodin PUK"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Shkyçja e fjalëkalimit."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Zona e motivit."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Zonën e rrëshqitjes."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2054,8 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maksimizo"</string>
     <string name="close_button_text" msgid="10603510034455258">"Mbyll"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for notification_metric_label_template (1926079523121055190) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Përgjigju"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Refuzo"</string>

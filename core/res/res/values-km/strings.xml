@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នកមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ &lt;br&gt;&lt;br&gt; កម្មវិធីនេះមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK និង ELF មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"កុំបង្ហាញម្ដងទៀត"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"ភាពត្រូវគ្នានៃកម្មវិធី Android"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s៖ ផ្នែក LOAD មិនត្រូវគ្នាទេ&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s៖ បណ្ណាល័យដែលបានពន្លាមិនត្រូវគ្នាទេ&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s៖ ផ្នែក LOAD និងបណ្ណាល័យដែលបានពន្លាមិនត្រូវគ្នាទេ&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s៖ បញ្ហាមិនស្គាល់&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"មិន​បាន​ផ្ដល់​សេវាកម្ម។"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"អ្នក​មិន​អាច​ប្ដូរ​ការ​កំណត់​លេខ​សម្គាល់​អ្នក​ហៅ​បានទេ។"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"បានប្ដូរទិន្នន័យទៅ <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -1134,6 +1130,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"ដោះ​កូដ Pin របស់​សីុម។"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"ដោះ​កូដ Puk របស់​សីុម។"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"ពាក្យ​សម្ងាត់​ដោះ​សោ​។"</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"ផ្ទៃ​លំនាំ។"</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"ផ្ទៃ​រុញ។"</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2050,8 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"ពង្រីក"</string>
     <string name="close_button_text" msgid="10603510034455258">"បិទ"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>៖ <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for notification_metric_label_template (1926079523121055190) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"ឆ្លើយ"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"វីដេអូ"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"បដិសេធ"</string>

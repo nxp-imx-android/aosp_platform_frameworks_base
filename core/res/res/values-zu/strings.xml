@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Lesi sixwayiso sivela ngoba lena yi-app esuswa amaphutha esahlolwa njengamanje. Uma ungeyena unjiniyela, sicela ubike lokhu kunjiniyela futhi ucele i-app engasuswa amaphutha. &lt;br&gt;&lt;br&gt; Le app ayihambisani no-16 KB. Ukuhlola ukuqondanisa i-APK ne-ELF kuhlulekile. Sicela ulandele izinyathelo kokuthi &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari alandelayo awaqondanisiwe no-16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ungaphindi ubonise futhi"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Ukuhambelana kwe-Android App"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : Isigaba SOKULAYISHA asiqondanisiwe&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : Ilabhulari engacindezelwanga ayiqondanisiwe&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : UKULAYISHA kwesigaba kanye nelabhulari engacindezelwanga aziqondanisiwe &lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : Iphutha elingaziwa&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Isevisi ayilungiselelwe."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ngeke ukwazi ukuguqul izilungiselelo zemininingwane yoshayayo."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Ushintshele idatha ku-<xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -1134,6 +1130,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Ukuvulwa kwephinikhodi ye-Sim."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Ukuvulwa kwe-puk ye-Sim."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Ukuvula ngephasiwedi."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Indawo yephethini."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Indawo yokushelelisa."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2050,8 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Khulisa"</string>
     <string name="close_button_text" msgid="10603510034455258">"Vala"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for notification_metric_label_template (1926079523121055190) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Phendula"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Ividiyo"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Yenqaba"</string>
