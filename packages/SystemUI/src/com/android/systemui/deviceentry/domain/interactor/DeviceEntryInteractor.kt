@@ -27,6 +27,7 @@ import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.data.model.asIterable
+import com.android.systemui.scene.data.model.peek
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -66,7 +67,7 @@ constructor(
     private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
     private val alternateBouncerInteractor: Lazy<AlternateBouncerInteractor>,
     private val dismissCallbackRegistry: Lazy<DismissCallbackRegistry>,
-    sceneBackInteractor: Lazy<SceneBackInteractor>,
+    private val sceneBackInteractor: Lazy<SceneBackInteractor>,
     @SceneFrameworkTableLog private val tableLogBuffer: Lazy<TableLogBuffer>,
 ) {
     /**
@@ -251,14 +252,20 @@ constructor(
                         )
                 }
             } else {
-                sceneInteractor
-                    .get()
-                    .changeScene(
-                        toScene = Scenes.Gone,
-                        loggingReason =
-                            "request to unlock device while authentication isn't required," +
-                                " original reason for request: $loggingReason",
-                    )
+                if (sceneBackInteractor.get().backStack.value.peek() != null) {
+                    // If there is a back stack, replacing the Lockscreen scene at the bottom of the
+                    // stack triggers device entry without necessarily dismissing the current scene.
+                    sceneBackInteractor.get().replaceLockscreenSceneOnBackStack()
+                } else {
+                    sceneInteractor
+                        .get()
+                        .changeScene(
+                            toScene = Scenes.Gone,
+                            loggingReason =
+                                "request to unlock device while authentication isn't " +
+                                    "required, original reason for request: $loggingReason",
+                        )
+                }
             }
         }
     }
