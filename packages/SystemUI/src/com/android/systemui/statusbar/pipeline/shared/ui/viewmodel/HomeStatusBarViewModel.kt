@@ -254,7 +254,7 @@ constructor(
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
     override val appHandlesViewModelFactory: AppHandlesViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
-    homeStatusBarInteractor: HomeStatusBarInteractor,
+    @DisplayAware homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
     lightsOutInteractor: LightsOutInteractor,
     notificationsInteractor: ActiveNotificationsInteractor,
