@@ -2188,15 +2188,15 @@ public class TelecomManager {
     /**
      * Ends the foreground call on the device.
      * <p>
-     * If there is a ringing call, calling this method rejects the ringing call. Otherwise, the
-     * foreground call is ended.
+     * If there is a single call and it is ringing, calling this method rejects the ringing call.
+     * Otherwise, the foreground (active) call is ended preferentially.
      * <p>
      * Note: this method CANNOT be used to end ongoing emergency calls and will return {@code false}
      * if an attempt is made to end an emergency call.
      * <p>
-     * Note: If the foreground call on this device is self-managed, this method will only end
-     * the call if the caller of this method is privileged (i.e. system, shell, or root) or system
-     * UI.
+     * Note: If the foreground call on this device is self-managed or transactional, this method
+     * will only end the call if the caller of this method is privileged (i.e. system, shell, or
+     * root) or system UI.
      *
      * @return {@code true} if there is a call which will be rejected or terminated, {@code false}
      * otherwise.
