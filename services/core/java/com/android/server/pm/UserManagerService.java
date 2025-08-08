@@ -35,8 +35,6 @@ import static android.os.UserManager.USER_OPERATION_ERROR_USER_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.provider.Settings.Secure.HIDE_PRIVATESPACE_ENTRY_POINT;
 
-import static com.android.internal.app.SetScreenLockDialogActivity.EXTRA_ORIGIN_USER_ID;
-import static com.android.internal.app.SetScreenLockDialogActivity.LAUNCH_REASON_DISABLE_QUIET_MODE;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
@@ -162,7 +160,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.app.IAppOpsService;
-import com.android.internal.app.SetScreenLockDialogActivity;
 import com.android.internal.app.SetScreenLockDialogContract;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
@@ -2147,19 +2144,11 @@ public class UserManagerService extends IUserManager.Stub {
                     } else if (km != null && !km.isDeviceSecure(parentUserId)
                             && Settings.Secure.getIntForUser(mContext.getContentResolver(),
                                 Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1) {
-                        final Intent setScreenLockPromptIntent;
-                        if (android.multiuser.Flags.moveSetScreenLockDialogToSettingsApp()) {
-                            setScreenLockPromptIntent =
+                        final Intent setScreenLockPromptIntent =
                                     SetScreenLockDialogContract.createUserSpecificDialogIntent(
                                             SetScreenLockDialogContract
                                                     .LAUNCH_REASON_DISABLE_QUIET_MODE,
                                             userId);
-                        } else {
-                            setScreenLockPromptIntent =
-                                    SetScreenLockDialogActivity.createBaseIntent(
-                                            LAUNCH_REASON_DISABLE_QUIET_MODE);
-                            setScreenLockPromptIntent.putExtra(EXTRA_ORIGIN_USER_ID, userId);
-                        }
                         mContext.startActivityAsUser(
                                 setScreenLockPromptIntent, UserHandle.of(parentUserId));
                         return false;
