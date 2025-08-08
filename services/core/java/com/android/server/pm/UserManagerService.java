@@ -415,6 +415,7 @@ public class UserManagerService extends IUserManager.Stub {
     private DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     private ActivityManagerInternal mAmInternal;
     private LockSettingsInternal mLockSettingsInternal;
+    private StorageManagerInternal mStorageManagerInternal;
 
     /** Indicates that this is the 1st boot after the system user mode was changed by emulation. */
     private boolean mUpdatingSystemUserMode;
@@ -6399,8 +6400,7 @@ public class UserManagerService extends IUserManager.Stub {
             }
 
             t.traceBegin("createUserStorageKeys");
-            final StorageManager storage = mContext.getSystemService(StorageManager.class);
-            storage.createUserStorageKeys(userId, userInfo.isEphemeral());
+            getStorageManagerInternal().createUserStorageKeys(userId, userInfo.isEphemeral());
             t.traceEnd();
 
             // Only prepare DE storage here.  CE storage will be prepared later, when the user is
@@ -7241,7 +7241,7 @@ public class UserManagerService extends IUserManager.Stub {
         // Evict and destroy the user's CE and DE encryption keys.  At this point, the user's CE and
         // DE storage is made inaccessible, except to delete its contents.
         try {
-            mContext.getSystemService(StorageManager.class).destroyUserStorageKeys(userId);
+            getStorageManagerInternal().destroyUserStorageKeys(userId);
         } catch (IllegalStateException e) {
             // This may be simply because the user was partially created.
             Slog.i(LOG_TAG, "Destroying storage keys for user " + userId
@@ -7797,8 +7797,7 @@ public class UserManagerService extends IUserManager.Stub {
         mUserDataPreparer.prepareUserData(userInfo, StorageManager.FLAG_STORAGE_CE);
         t.traceEnd();
 
-        StorageManagerInternal smInternal = LocalServices.getService(StorageManagerInternal.class);
-        smInternal.markCeStoragePrepared(userId);
+        getStorageManagerInternal().markCeStoragePrepared(userId);
 
         t.traceBegin("reconcileAppsData-" + userId);
         getPackageManagerInternal().reconcileAppsData(userId, StorageManager.FLAG_STORAGE_CE,
@@ -9025,6 +9024,14 @@ public class UserManagerService extends IUserManager.Stub {
             mLockSettingsInternal = LocalServices.getService(LockSettingsInternal.class);
         }
         return mLockSettingsInternal;
+    }
+
+    /** Returns the internal storage manager interface. */
+    private StorageManagerInternal getStorageManagerInternal() {
+        if (mStorageManagerInternal == null) {
+            mStorageManagerInternal = LocalServices.getService(StorageManagerInternal.class);
+        }
+        return mStorageManagerInternal;
     }
 
     /**
