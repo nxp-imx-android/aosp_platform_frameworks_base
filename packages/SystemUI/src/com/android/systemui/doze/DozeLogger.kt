@@ -400,46 +400,6 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logShouldRequestUdfpsLongPressPulseImmediately(
-        immediate: Boolean,
-        fpsLockout: Boolean,
-        fpsAllowed: Boolean,
-        collectingEvents: Boolean,
-    ) {
-        buffer.log(
-            TAG,
-            DEBUG,
-            {
-                bool1 = immediate
-                bool2 = fpsLockout
-                bool3 = fpsAllowed
-                bool4 = collectingEvents
-            },
-            {
-                "ShouldRequestUdfpsLongPressPulseImmediately - immediate=$bool1, " +
-                    "lockout=$bool2, allowed=$bool3, collecting=$bool4, "
-            },
-        )
-    }
-
-    fun logShouldRequestUdfpsLongPressPulseImmediatelyFeatureAndFlagState(
-        flagEnabled: Boolean,
-        featureEnabled: Boolean,
-    ) {
-        buffer.log(
-            TAG,
-            DEBUG,
-            {
-                bool1 = flagEnabled
-                bool2 = featureEnabled
-            },
-            {
-                "ShouldRequestUdfpsLongPressPulseImmediately - flagEnabled=$bool1, " +
-                    "featureEnabled=$bool2"
-            },
-        )
-    }
-
     fun logUltrasonicScreenOffPulseEvent(state: FingerprintAuthenticationStatus) {
         buffer.log(
             TAG,

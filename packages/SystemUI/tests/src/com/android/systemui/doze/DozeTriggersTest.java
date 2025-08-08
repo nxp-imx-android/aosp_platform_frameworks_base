@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 import android.app.StatusBarManager;
 import android.hardware.Sensor;
 import android.hardware.display.AmbientDisplayConfiguration;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper.RunWithLooper;
 import android.view.Display;
@@ -47,7 +46,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEventLogger;
-import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.biometrics.AuthController;
@@ -114,8 +112,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     private SelectedUserInteractor mSelectedUserInteractor;
     @Mock
     private SessionTracker mSessionTracker;
-    @Mock
-    private KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     @Captor
     private ArgumentCaptor<DozeHost.Callback> mHostCallbackCaptor;
 
@@ -158,8 +154,7 @@ public class DozeTriggersTest extends SysuiTestCase {
                 asyncSensorManager, wakeLock, mDockManager, mProximitySensor,
                 mProximityCheck, mDozeLog, mBroadcastDispatcher, new FakeSettings(),
                 mAuthController, mUiEventLogger, mSessionTracker, mKeyguardStateController,
-                mDevicePostureController, mUserTracker, mSelectedUserInteractor,
-                mKeyguardUpdateMonitor);
+                mDevicePostureController, mUserTracker, mSelectedUserInteractor);
         mTriggers.setDozeMachine(mMachine);
         waitForSensorManager();
     }
@@ -719,99 +714,6 @@ public class DozeTriggersTest extends SysuiTestCase {
 
         // THEN aod interrupt never be sent
         verify(mAuthController, never()).onAodInterrupt(anyInt(), anyInt(), anyFloat(), anyFloat());
-    }
-
-    @Test
-    @EnableFlags({
-            android.hardware.biometrics.Flags.FLAG_SCREEN_OFF_UNLOCK_UDFPS,
-            Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER
-    })
-    public void testOnUltrasonicScreenOffUnlock_shouldNotRequestPulseImmediately() {
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
-        when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
-        when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(true);
-        when(mConfig.screenOffUdfpsEnabled(anyInt())).thenReturn(true);
-
-        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100,
-                new float[]{0, 1, 2, 3, 4});
-
-        verify(mMachine, never()).requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS);
-    }
-
-    @Test
-    @EnableFlags({
-            android.hardware.biometrics.Flags.FLAG_SCREEN_OFF_UNLOCK_UDFPS,
-            Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER
-    })
-    public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_fpsLockout() {
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(true);
-        when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
-        when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(true);
-        when(mConfig.screenOffUdfpsEnabled(anyInt())).thenReturn(true);
-
-        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100,
-                new float[]{0, 1, 2, 3, 4});
-
-        verify(mMachine).requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS);
-    }
-
-    @Test
-    @EnableFlags({
-            android.hardware.biometrics.Flags.FLAG_SCREEN_OFF_UNLOCK_UDFPS,
-            Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER
-    })
-    public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_fpsNotAllowed() {
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
-        when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(false);
-        when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(true);
-        when(mConfig.screenOffUdfpsEnabled(anyInt())).thenReturn(true);
-
-        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100,
-                new float[]{0, 1, 2, 3, 4});
-
-        verify(mMachine).requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS);
-    }
-
-    @Test
-    @EnableFlags({
-            android.hardware.biometrics.Flags.FLAG_SCREEN_OFF_UNLOCK_UDFPS,
-            Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER
-    })
-    public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_notCollecting() {
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
-        when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
-        when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(false);
-        when(mConfig.screenOffUdfpsEnabled(anyInt())).thenReturn(true);
-
-        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100,
-                new float[]{0, 1, 2, 3, 4});
-
-        verify(mMachine).requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS);
-    }
-
-    @Test
-    @EnableFlags(android.hardware.biometrics.Flags.FLAG_SCREEN_OFF_UNLOCK_UDFPS)
-    @DisableFlags(Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER)
-    public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_flagDisabled() {
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
-        when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
-        when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(false);
-        when(mConfig.screenOffUdfpsEnabled(anyInt())).thenReturn(true);
-
-        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100,
-                new float[]{0, 1, 2, 3, 4});
-
-        verify(mMachine).requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS);
     }
 
     private void waitForSensorManager() {

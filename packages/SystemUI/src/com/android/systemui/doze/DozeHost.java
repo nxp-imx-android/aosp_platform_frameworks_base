@@ -100,14 +100,6 @@ public interface DozeHost {
      * wake-up gestures. */
     boolean isAlwaysOnSuppressed();
 
-    /**
-     * Whether we are collecting the usudfps authentication pulse events.
-     * @return true if collecting the events, otherwise false.
-     */
-    default boolean isCollectingUsUdfpsScreenOffPulseEvents() {
-        return false;
-    }
-
     interface Callback {
         /**
          * Called when a high priority notification is added.
@@ -136,11 +128,6 @@ public interface DozeHost {
          * Called when fingerprint acquisition has started and screen state might need updating.
          */
         default void onSideFingerprintAcquisitionStarted() {}
-
-        /**
-         * Called when ultrasonic fingerprint auth events want the screen on to show info.
-         */
-        default void onUltrasonicUdfpsPulseWhileScreenOff(FingerprintAuthenticationStatus state) {}
 
         /**
          * Called when fingerprint auth events want the screen on to show info.
