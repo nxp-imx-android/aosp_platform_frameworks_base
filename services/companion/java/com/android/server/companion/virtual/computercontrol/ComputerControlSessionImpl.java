@@ -50,6 +50,8 @@ import android.view.DisplayInfo;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.android.server.wm.WindowManagerInternal;
+
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -73,7 +75,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     ComputerControlSessionImpl(IBinder appToken, ComputerControlSessionParams params,
             AttributionSource attributionSource, PackageManager packageManager,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            OnClosedListener onClosedListener) {
+            WindowManagerInternal windowManagerInternal, OnClosedListener onClosedListener) {
         mAppToken = appToken;
         mParams = params;
         mOnClosedListener = onClosedListener;
@@ -116,9 +118,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.addActivityPolicyExemption(permissionController);
 
             // Create the display with a clean identity so it can be trusted.
-            mVirtualDisplayId = Binder.withCleanCallingIdentity(() ->
-                    mVirtualDevice.createVirtualDisplay(
-                            virtualDisplayConfig, virtualDisplayCallback));
+            mVirtualDisplayId = Binder.withCleanCallingIdentity(() -> {
+                int displayId = mVirtualDevice.createVirtualDisplay(virtualDisplayConfig,
+                        virtualDisplayCallback);
+                windowManagerInternal.setAnimationsDisabledForDisplay(displayId,
+                        true /* disabled */);
+                return displayId;
+            });
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);

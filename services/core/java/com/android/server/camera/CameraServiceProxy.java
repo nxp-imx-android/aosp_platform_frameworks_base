@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.server.camera;
 
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
@@ -574,8 +575,10 @@ public class CameraServiceProxy extends SystemService
 
         @Override
         public void onDisplayRemoveSystemDecorations(int displayId) { }
-    }
 
+        @Override
+        public void onDisplayAnimationsDisabledChanged(int displayId, boolean disabled) { }
+    }
 
     private final DisplayWindowListener mDisplayWindowListener = new DisplayWindowListener();
 

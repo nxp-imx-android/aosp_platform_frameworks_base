@@ -79,4 +79,9 @@ oneway interface IDisplayWindowListener {
      * Called when the system decorations should be removed from the display.
      */
     void onDisplayRemoveSystemDecorations(int displayId);
+
+    /**
+     * Called when animations are disabled or enabled for a display.
+     */
+    void onDisplayAnimationsDisabledChanged(int displayId, boolean disabled);
 }

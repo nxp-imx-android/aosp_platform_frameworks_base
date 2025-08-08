@@ -29,6 +29,8 @@ import android.os.IBinder;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
+import com.android.server.wm.WindowManagerInternal;
 
 public class ComputerControlSessionProcessor {
 
@@ -38,12 +40,14 @@ public class ComputerControlSessionProcessor {
 
     private final PackageManager mPackageManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
+    private final WindowManagerInternal mWindowManagerInternal;
     private final ArraySet<IBinder> mSessions = new ArraySet<>();
 
     public ComputerControlSessionProcessor(
             Context context, VirtualDeviceFactory virtualDeviceFactory) {
         mVirtualDeviceFactory = virtualDeviceFactory;
         mPackageManager = context.getPackageManager();
+        mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
     }
 
     /**
@@ -65,7 +69,7 @@ public class ComputerControlSessionProcessor {
             }
             IComputerControlSession session = new ComputerControlSessionImpl(
                     token, params, attributionSource, mPackageManager, mVirtualDeviceFactory,
-                    this::onSessionClosed);
+                    mWindowManagerInternal, this::onSessionClosed);
             mSessions.add(session.asBinder());
             return session;
         }
