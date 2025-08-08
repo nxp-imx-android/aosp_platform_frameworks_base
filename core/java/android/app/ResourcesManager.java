@@ -754,19 +754,6 @@ public class ResourcesManager {
         pw.println(resImpls);
     }
 
-    private Configuration generateConfig(@NonNull ResourcesKey key) {
-        Configuration config;
-        final boolean hasOverrideConfig = key.hasOverrideConfiguration();
-        if (hasOverrideConfig) {
-            config = new Configuration(getConfiguration());
-            config.updateFrom(key.mOverrideConfiguration);
-            if (DEBUG) Slog.v(TAG, "Applied overrideConfig=" + key.mOverrideConfiguration);
-        } else {
-            config = getConfiguration();
-        }
-        return config;
-    }
-
     private int generateDisplayId(@NonNull ResourcesKey key) {
         return key.mDisplayId != INVALID_DISPLAY ? key.mDisplayId : mResDisplayId;
     }
@@ -778,10 +765,19 @@ public class ResourcesManager {
             return null;
         }
 
-        final DisplayAdjustments daj = new DisplayAdjustments(key.mOverrideConfiguration);
+        final DisplayAdjustments daj;
+        final Configuration config;
+        if (key.hasOverrideConfiguration()) {
+            daj = new DisplayAdjustments(key.mOverrideConfiguration);
+            config = new Configuration(getConfiguration());
+            config.updateFrom(key.mOverrideConfiguration);
+            if (DEBUG) Slog.v(TAG, "Applied overrideConfig=" + key.mOverrideConfiguration);
+        } else {
+            daj = new DisplayAdjustments();
+            config = getConfiguration();
+        }
         daj.setCompatibilityInfo(key.mCompatInfo);
 
-        final Configuration config = generateConfig(key);
         final DisplayMetrics displayMetrics = getDisplayMetrics(generateDisplayId(key), daj);
         final ResourcesImpl impl = new ResourcesImpl(assets, displayMetrics, config, daj, true);
 
@@ -1102,13 +1098,16 @@ public class ResourcesManager {
     private void rebaseKeyForDisplay(ResourcesKey key, int overrideDisplay) {
         final Configuration temp = new Configuration();
 
-        DisplayAdjustments daj = new DisplayAdjustments(key.mOverrideConfiguration);
+        final boolean hasOverrideConfiguration = key.hasOverrideConfiguration();
+        final DisplayAdjustments daj = hasOverrideConfiguration
+                ? new DisplayAdjustments(key.mOverrideConfiguration)
+                : new DisplayAdjustments();
         daj.setCompatibilityInfo(key.mCompatInfo);
 
         final DisplayMetrics dm = getDisplayMetrics(overrideDisplay, daj);
         applyDisplayMetricsToConfiguration(dm, temp);
 
-        if (key.hasOverrideConfiguration()) {
+        if (hasOverrideConfiguration) {
             temp.updateFrom(key.mOverrideConfiguration);
         }
         key.mOverrideConfiguration.setTo(temp);
