@@ -265,6 +265,10 @@ public abstract class ProcessRecordInternal {
     @CompositeRWLock({"mService", "mProcLock"})
     private boolean mKilled;
 
+    /** True when proc has been killed by activity manager, not for RAM. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mKilledByAm;
+
     /**
      * Maximum OOM adjustment for this process.
      */
@@ -720,6 +724,17 @@ public abstract class ProcessRecordInternal {
     public void setKilled(boolean killed) {
         mKilled = killed;
     }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean isKilledByAm() {
+        return mKilledByAm;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setKilledByAm(boolean killedByAm) {
+        mKilledByAm = killedByAm;
+    }
+
 
     @GuardedBy("mServiceLock")
     public void setMaxAdj(int maxAdj) {

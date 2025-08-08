@@ -279,12 +279,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private ActiveInstrumentation mInstr;
 
     /**
-     * True when proc has been killed by activity manager, not for RAM.
-     */
-    @CompositeRWLock({"mService", "mProcLock"})
-    private boolean mKilledByAm;
-
-    /**
      * The timestamp in uptime when this process was killed.
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -523,9 +517,9 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         pw.print(prefix); pw.print("startSeq="); pw.println(mStartSeq);
         pw.print(prefix); pw.print("mountMode="); pw.println(
                 DebugUtils.valueToString(Zygote.class, "MOUNT_EXTERNAL_", mMountMode));
-        if (isKilled() || mKilledByAm || mWaitingToKill != null) {
+        if (isKilled() || isKilledByAm() || mWaitingToKill != null) {
             pw.print(prefix); pw.print("killed="); pw.print(isKilled());
-            pw.print(" killedByAm="); pw.print(mKilledByAm);
+            pw.print(" killedByAm="); pw.print(isKilledByAm());
             pw.print(" waitingToKill="); pw.println(mWaitingToKill);
         }
         if (mIsolatedEntryPoint != null || mIsolatedEntryPointArgs != null) {
@@ -983,16 +977,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    boolean isKilledByAm() {
-        return mKilledByAm;
-    }
-
-    @GuardedBy({"mService", "mProcLock"})
-    void setKilledByAm(boolean killedByAm) {
-        mKilledByAm = killedByAm;
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     long getKillTime() {
         return mKillTime;
     }
@@ -1248,7 +1232,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     void scheduleCrashLocked(String message, int exceptionTypeId, @Nullable Bundle extras) {
         // Checking killedbyAm should keep it from showing the crash dialog if the process
         // was already dead for a good / normal reason.
-        if (!mKilledByAm) {
+        if (!isKilledByAm()) {
             if (mThread != null) {
                 if (mPid == Process.myPid()) {
                     Slog.w(TAG, "scheduleCrash: trying to crash system process!");
@@ -1300,7 +1284,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy("mService")
     void killLocked(String reason, String description, @Reason int reasonCode,
             @SubReason int subReason, boolean noisy, boolean asyncKPG) {
-        if (!mKilledByAm) {
+        if (!isKilledByAm()) {
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                         "kill/" + processName + "/" + reasonCode + "/" + subReason);
@@ -1329,7 +1313,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             if (!mPersistent) {
                 synchronized (mProcLock) {
                     setKilled(true);
-                    mKilledByAm = true;
+                    setKilledByAm(true);
                     mKillTime = SystemClock.uptimeMillis();
                 }
             }

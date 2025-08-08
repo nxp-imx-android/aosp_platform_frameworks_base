@@ -2828,7 +2828,7 @@ public abstract class OomAdjuster {
      * connection.
      */
     @GuardedBy("mService")
-    boolean evaluateServiceConnectionAdd(ProcessRecord client, ProcessRecord app,
+    boolean evaluateServiceConnectionAdd(ProcessRecordInternal client, ProcessRecordInternal app,
             ConnectionRecord cr) {
         if (evaluateConnectionPrelude(client, app)) {
             return true;
@@ -2855,7 +2855,7 @@ public abstract class OomAdjuster {
         } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
             // These bind flags can grant the shouldNotFreeze state to the service.
             needDryRun = true;
-        } else if (client.mOptRecord.shouldNotFreeze() && !app.mOptRecord.shouldNotFreeze()) {
+        } else if (client.shouldNotFreeze() && !app.shouldNotFreeze()) {
             // The shouldNotFreeze state can be propagated and needs to be checked.
             needDryRun = true;
         }
@@ -2870,8 +2870,8 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    boolean evaluateServiceConnectionRemoval(ProcessRecord client, ProcessRecord app,
-            ConnectionRecord cr) {
+    boolean evaluateServiceConnectionRemoval(ProcessRecordInternal client,
+            ProcessRecordInternal app, ConnectionRecord cr) {
         if (evaluateConnectionPrelude(client, app)) {
             return true;
         }
@@ -2887,7 +2887,7 @@ public abstract class OomAdjuster {
             return true;
         } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
             return true;
-        } else if (app.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
+        } else if (app.shouldNotFreeze() && client.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
@@ -2899,7 +2899,7 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    boolean evaluateProviderConnectionAdd(ProcessRecord client, ProcessRecord app) {
+    boolean evaluateProviderConnectionAdd(ProcessRecordInternal client, ProcessRecordInternal app) {
         if (evaluateConnectionPrelude(client, app)) {
             return true;
         }
@@ -2909,7 +2909,7 @@ public abstract class OomAdjuster {
             needDryRun = true;
         } else if (app.getSetProcState() > client.getSetProcState()) {
             needDryRun = true;
-        } else if (client.mOptRecord.shouldNotFreeze() && !app.mOptRecord.shouldNotFreeze()) {
+        } else if (client.shouldNotFreeze() && !app.shouldNotFreeze()) {
             needDryRun = true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
                 && (client.getSetCapability() & ~app.getSetCapability()
@@ -2925,7 +2925,8 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    boolean evaluateProviderConnectionRemoval(ProcessRecord client, ProcessRecord app) {
+    boolean evaluateProviderConnectionRemoval(ProcessRecordInternal client,
+            ProcessRecordInternal app) {
         if (evaluateConnectionPrelude(client, app)) {
             return true;
         }
@@ -2934,7 +2935,7 @@ public abstract class OomAdjuster {
             return true;
         } else if (app.getSetProcState() >= client.getSetProcState()) {
             return true;
-        } else if (app.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
+        } else if (app.shouldNotFreeze() && client.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
         } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
@@ -2946,7 +2947,8 @@ public abstract class OomAdjuster {
         return false;
     }
 
-    private boolean evaluateConnectionPrelude(ProcessRecord client, ProcessRecord app) {
+    private boolean evaluateConnectionPrelude(ProcessRecordInternal client,
+            ProcessRecordInternal app) {
         if (client == null || app == null) {
             return true;
         }
