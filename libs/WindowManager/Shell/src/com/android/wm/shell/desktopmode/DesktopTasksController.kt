@@ -1516,7 +1516,7 @@ class DesktopTasksController(
      *
      * @param taskInfo task entering split that requires a bounds update
      */
-    fun onDesktopSplitSelectAnimComplete(taskInfo: RunningTaskInfo) {
+    fun onDesktopSplitSelectChoice(taskInfo: RunningTaskInfo) {
         val wct = WindowContainerTransaction()
         wct.setBounds(taskInfo.token, Rect())
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
@@ -4599,7 +4599,7 @@ class DesktopTasksController(
 
     /**
      * Adds split screen changes to a transaction. Note that bounds are not reset here due to
-     * animation; see {@link onDesktopSplitSelectAnimComplete}
+     * animation; see {@link onDesktopSplitSelectChoice}
      */
     private fun addMoveToSplitChanges(wct: WindowContainerTransaction, taskInfo: RunningTaskInfo) {
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
@@ -6219,10 +6219,9 @@ class DesktopTasksController(
             )
         }
 
-        override fun onDesktopSplitSelectAnimComplete(taskInfo: RunningTaskInfo) {
-            executeRemoteCallWithTaskPermission(controller, "onDesktopSplitSelectAnimComplete") { c
-                ->
-                c.onDesktopSplitSelectAnimComplete(taskInfo)
+        override fun onDesktopSplitSelectChoice(taskInfo: RunningTaskInfo) {
+            executeRemoteCallWithTaskPermission(controller, "onDesktopSplitSelectChoice") { c ->
+                c.onDesktopSplitSelectChoice(taskInfo)
             }
         }
 
