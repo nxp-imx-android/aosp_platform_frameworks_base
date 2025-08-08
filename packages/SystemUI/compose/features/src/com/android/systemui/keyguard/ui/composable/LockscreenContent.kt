@@ -34,6 +34,7 @@ import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscree
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.NotificationLockscreenScrim
+import com.android.systemui.plugins.clocks.LockscreenElementKeys
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationLockscreenScrimViewModel
 
 /**
@@ -84,7 +85,10 @@ class LockscreenContent(
 
         val blueprint = blueprintByBlueprintId[viewModel.blueprintId] ?: return
         with(blueprint) {
-            Content(viewModel, modifier.sysuiResTag("keyguard_root_view"))
+            Content(
+                viewModel,
+                modifier.sysuiResTag("keyguard_root_view").element(LockscreenElementKeys.Root),
+            )
             NotificationLockscreenScrim(notificationLockscreenScrimViewModel)
         }
     }
