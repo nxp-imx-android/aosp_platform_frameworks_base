@@ -16,14 +16,22 @@
 
 package android.widget;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import android.app.Activity;
 import android.os.SystemClock;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.UiThreadTest;
 
 import androidx.test.filters.LargeTest;
 
 import com.android.frameworks.coretests.R;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +56,36 @@ public class ChronometerTest extends ActivityInstrumentationTestCase2<Chronomete
 
         mActivity = getActivity();
         mChronometer = mActivity.findViewById(R.id.chronometer);
+    }
+
+    @UiThreadTest
+    public void testSystemClockChronometer() {
+        var clocks = new Object() {
+            public Instant systemNow = Instant.ofEpochMilli(1748615185000L);
+            public long elapsedRealtime = 1000L;
+        };
+        Chronometer chronometer = new Chronometer(mActivity, () -> clocks.elapsedRealtime,
+                () -> clocks.systemNow, null, 0, 0);
+        mActivity.setContentView(chronometer);
+
+        // Start state: timer for 2 minutes.
+        Instant base = clocks.systemNow.plus(2, MINUTES);
+        chronometer.setBase(base);
+        chronometer.setCountDown(true);
+        chronometer.updateText();
+        assertThat(chronometer.getText().toString()).isEqualTo("02:00");
+
+        // Clocks advance normally for 20 seconds.
+        clocks.systemNow = clocks.systemNow.plus(20, SECONDS);
+        clocks.elapsedRealtime = clocks.elapsedRealtime + Duration.ofSeconds(20).toMillis();
+        chronometer.updateText();
+        assertThat(chronometer.getText().toString()).isEqualTo("01:40");
+
+        // After 1 realtime seconds, clock is adjusted and jumps forward by 4 additional seconds!
+        clocks.systemNow = clocks.systemNow.plus(5, SECONDS);
+        clocks.elapsedRealtime = clocks.elapsedRealtime + Duration.ofSeconds(1).toMillis();
+        chronometer.updateText();
+        assertThat(chronometer.getText().toString()).isEqualTo("01:35");
     }
 
     public void testChronometerTicksSequentially() throws Throwable {

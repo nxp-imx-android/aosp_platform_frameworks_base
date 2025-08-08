@@ -20,6 +20,8 @@ import static android.appwidget.flags.Flags.remoteAdapterConversion;
 
 import static com.android.internal.R.id.pending_intent_tag;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,6 +59,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.AttributeSet;
@@ -82,6 +85,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Instant;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1155,6 +1160,33 @@ public class RemoteViewsTest {
         taskCaptor.getValue().accept(factory);
         assertTrue(result.isDone());
         assertTrue(result.isCompletedExceptionally());
+    }
+
+    @Test
+    public void setChronometer_withElapsedRealtime() {
+        long elapsedRealtime = SystemClock.elapsedRealtime();
+        RemoteViews remoteViews = new RemoteViews(mPackage, R.layout.chronometer_layout);
+        remoteViews.setChronometer(R.id.chronometer, elapsedRealtime, null, false);
+
+        View inflated = remoteViews.apply(mContext, mContainer);
+        Chronometer chronometer = inflated.findViewById(R.id.chronometer);
+
+        assertThat(chronometer).isNotNull();
+        assertThat(chronometer.getBase()).isEqualTo(elapsedRealtime);
+    }
+
+    @Test
+    public void setChronometer_withSystemClockInstant() {
+        Instant instant = InstantSource.system().instant();
+        long elapsedRealtime = SystemClock.elapsedRealtime();
+        RemoteViews remoteViews = new RemoteViews(mPackage, R.layout.chronometer_layout);
+        remoteViews.setChronometer(R.id.chronometer, instant, null, false);
+
+        View inflated = remoteViews.apply(mContext, mContainer);
+        Chronometer chronometer = inflated.findViewById(R.id.chronometer);
+
+        assertThat(chronometer).isNotNull();
+        assertThat(chronometer.getBase()).isWithin(500).of(elapsedRealtime);
     }
 
     private static LayoutInflater.Factory2 createLayoutInflaterFactory(String viewTypeToReplace,

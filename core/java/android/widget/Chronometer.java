@@ -16,6 +16,10 @@
 
 package android.widget;
 
+import static java.util.Objects.requireNonNull;
+
+import android.annotation.ElapsedRealtimeLong;
+import android.annotation.NonNull;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -25,6 +29,7 @@ import android.icu.util.Measure;
 import android.icu.util.MeasureUnit;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -33,11 +38,15 @@ import android.view.inspector.InspectableProperty;
 import android.widget.RemoteViews.RemoteView;
 
 import com.android.internal.R;
+import com.android.internal.annotations.VisibleForTesting;
 
+import java.time.Instant;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.IllegalFormatException;
 import java.util.Locale;
+import java.util.function.LongSupplier;
 
 /**
  * Class that implements a simple timer.
@@ -72,7 +81,11 @@ public class Chronometer extends TextView {
 
     }
 
+    private final LongSupplier mElapsedRealtimeClock;
+    private final InstantSource mSystemClock;
+
     private long mBase;
+    private Instant mBaseInstant;
     private long mNow; // the currently displayed time
     private boolean mVisible;
     private boolean mStarted;
@@ -112,7 +125,17 @@ public class Chronometer extends TextView {
     }
 
     public Chronometer(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        this(context, SystemClock::elapsedRealtime, InstantSource.system(), attrs,
+                defStyleAttr, defStyleRes);
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public Chronometer(Context context, LongSupplier elapsedRealtimeClock,
+            InstantSource systemClock, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        mElapsedRealtimeClock = requireNonNull(elapsedRealtimeClock);
+        mSystemClock = requireNonNull(systemClock);
 
         final TypedArray a = context.obtainStyledAttributes(
                 attrs, com.android.internal.R.styleable.Chronometer, defStyleAttr, defStyleRes);
@@ -126,7 +149,7 @@ public class Chronometer extends TextView {
     }
 
     private void init() {
-        mBase = SystemClock.elapsedRealtime();
+        mBase = mElapsedRealtimeClock.getAsLong();
         updateText(mBase);
     }
 
@@ -140,7 +163,7 @@ public class Chronometer extends TextView {
     @android.view.RemotableViewMethod
     public void setCountDown(boolean countDown) {
         mCountDown = countDown;
-        updateText(SystemClock.elapsedRealtime());
+        updateText(mElapsedRealtimeClock.getAsLong());
     }
 
     /**
@@ -170,15 +193,35 @@ public class Chronometer extends TextView {
     }
 
     /**
-     * Set the time that the count-up timer is in reference to.
-     *
-     * @param base Use the {@link SystemClock#elapsedRealtime} time base.
+     * Set the time that the count-up timer is in reference to (in the
+     * {@link SystemClock#elapsedRealtime} time base).
      */
     @android.view.RemotableViewMethod
-    public void setBase(long base) {
+    public void setBase(@ElapsedRealtimeLong long base) {
         mBase = base;
+        mBaseInstant = null;
+
         dispatchChronometerTick();
-        updateText(SystemClock.elapsedRealtime());
+        updateText(mElapsedRealtimeClock.getAsLong());
+    }
+
+    /**
+     * Set the {@link Instant} that the count-up timer is in reference to.
+     *
+     * @hide
+     */
+    @android.view.RemotableViewMethod
+    public void setBase(@NonNull Instant base) {
+        mBaseInstant = requireNonNull(base);
+        mBase = instantToElapsedRealtime(base);
+
+        dispatchChronometerTick();
+        updateText(mElapsedRealtimeClock.getAsLong());
+    }
+
+    private long instantToElapsedRealtime(Instant instant) {
+        return mElapsedRealtimeClock.getAsLong()
+                + (instant.toEpochMilli() - mSystemClock.millis());
     }
 
     /**
@@ -287,7 +330,14 @@ public class Chronometer extends TextView {
         updateRunning();
     }
 
+    /** @hide */
+    @VisibleForTesting
+    public void updateText() {
+        updateText(mElapsedRealtimeClock.getAsLong());
+    }
+
     private synchronized void updateText(long now) {
+        updateBaseTimeIfSystemClockChanged();
         mNow = now;
         long seconds = Math.round((mCountDown ? mBase - now - 499 : now - mBase) / 1000f);
         boolean negative = false;
@@ -321,11 +371,27 @@ public class Chronometer extends TextView {
         setText(text);
     }
 
+    private static final long SIGNIFICANT_DRIFT_MILLIS = 500;
+
+    private void updateBaseTimeIfSystemClockChanged() {
+        if (mBaseInstant == null) {
+            return;
+        }
+        long baseInstantToElapsedRealtime = instantToElapsedRealtime(mBaseInstant);
+        long clockChange = Math.abs(mBase - baseInstantToElapsedRealtime);
+        if (clockChange > SIGNIFICANT_DRIFT_MILLIS) {
+            Log.d(TAG, TextUtils.formatSimple(
+                    "Detected system clock change of %s millis; adjusting mBase (%s -> %s)",
+                    clockChange, mBase, baseInstantToElapsedRealtime));
+            mBase = baseInstantToElapsedRealtime;
+        }
+    }
+
     private void updateRunning() {
         boolean running = mVisible && mStarted && isShown();
         if (running != mRunning) {
             if (running) {
-                updateText(SystemClock.elapsedRealtime());
+                updateText(mElapsedRealtimeClock.getAsLong());
                 dispatchChronometerTick();
                 postTickOnNextSecond();
             } else {
@@ -339,7 +405,7 @@ public class Chronometer extends TextView {
         @Override
         public void run() {
             if (mRunning) {
-                updateText(SystemClock.elapsedRealtime());
+                updateText(mElapsedRealtimeClock.getAsLong());
                 dispatchChronometerTick();
                 postTickOnNextSecond();
             }
