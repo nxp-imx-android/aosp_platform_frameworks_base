@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.overscroll
@@ -49,6 +50,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
@@ -57,6 +59,7 @@ import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
@@ -69,6 +72,7 @@ import com.android.systemui.media.controls.ui.composable.isLandscape
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
+import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.TileGrid
@@ -77,6 +81,7 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsSceneContentViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsUserActionsViewModel
 import com.android.systemui.res.R
+import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.shade.ui.composable.CollapsedShadeHeader
@@ -87,6 +92,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import dagger.Lazy
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.Flow
 
 /** The Quick Settings (AKA "QS") scene shows the quick setting tiles. */
@@ -94,10 +100,12 @@ import kotlinx.coroutines.flow.Flow
 class QuickSettingsScene
 @Inject
 constructor(
+    private val shadeSession: SaveableSession,
     private val notificationStackScrollView: Lazy<NotificationScrollView>,
     private val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
     private val actionsViewModelFactory: QuickSettingsUserActionsViewModel.Factory,
     private val contentViewModelFactory: QuickSettingsSceneContentViewModel.Factory,
+    private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
     override val key = Scenes.QuickSettings
 
@@ -127,6 +135,8 @@ constructor(
             headerViewModel = viewModel.qsContainerViewModel.shadeHeaderViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
             modifier = modifier,
+            shadeSession = shadeSession,
+            jankMonitor = jankMonitor,
         )
     }
 }
@@ -138,6 +148,8 @@ private fun ContentScope.QuickSettingsScene(
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
     modifier: Modifier = Modifier,
+    shadeSession: SaveableSession,
+    jankMonitor: InteractionJankMonitor,
 ) {
     val cutoutLocation = LocalDisplayCutout.current().location
     val brightnessMirrorShowing =
@@ -300,6 +312,32 @@ private fun ContentScope.QuickSettingsScene(
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .navigationBarsPadding()
+                    .padding(horizontal = shadeHorizontalPadding),
+        )
+
+        // The minimum possible value for the top of the notification stack. In other words: how
+        // high is the notification stack allowed to get when the scene is at rest. It may still be
+        // translated farther upwards by a transition animation but, at rest, the top edge of its
+        // bounds must be limited to be at or below this value.
+        //
+        // A 1 pixel is added to compensate for any kind of rounding errors to make sure 100% that
+        // the notification stack is entirely "below" the entire screen.
+        val minNotificationStackTop = screenHeight.roundToInt() + 1
+        val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
+        NotificationScrollingStack(
+            shadeSession = shadeSession,
+            stackScrollView = notificationStackScrollView,
+            viewModel = notificationsPlaceholderViewModel,
+            jankMonitor = jankMonitor,
+            maxScrimTop = { minNotificationStackTop.toFloat() },
+            shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
+            stackTopPadding = notificationStackPadding,
+            stackBottomPadding = navBarBottomHeight,
+            shouldIncludeHeadsUpSpace = false,
+            supportNestedScrolling = true,
+            modifier =
+                Modifier.fillMaxWidth()
+                    .offset { IntOffset(x = 0, y = minNotificationStackTop) }
                     .padding(horizontal = shadeHorizontalPadding),
         )
     }
