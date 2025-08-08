@@ -692,7 +692,7 @@ void Bitmap::traceBitmapCreate() {
 void Bitmap::traceBitmapDelete() {
     size_t bytes = getAllocationByteCount();
     std::lock_guard lock{mLock};
-    mTotalBitmapBytes -= getAllocationByteCount();
+    mTotalBitmapBytes -= bytes;
     mTotalBitmapCount--;
     if (ATRACE_ENABLED()) {
         ATRACE_INT64("Bitmap Memory", mTotalBitmapBytes);

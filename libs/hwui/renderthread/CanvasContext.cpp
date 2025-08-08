@@ -812,8 +812,6 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
         }
     }
 
-    int64_t intendedVsync = mCurrentFrameInfo->get(FrameInfoIndex::IntendedVsync);
-    int64_t frameDeadline = mCurrentFrameInfo->get(FrameInfoIndex::FrameDeadline);
     int64_t dequeueBufferDuration = mCurrentFrameInfo->get(FrameInfoIndex::DequeueBufferDuration);
 
     mHintSessionWrapper->updateTargetWorkDuration(
