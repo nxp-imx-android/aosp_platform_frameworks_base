@@ -23,6 +23,7 @@ import android.content.pm.UserInfo;
 import android.os.IInstalld;
 import android.os.IVold;
 import android.os.ParcelFileDescriptor;
+import android.os.storage.StorageManager.StorageFlags;
 
 import java.io.IOException;
 import java.util.List;
@@ -170,6 +171,27 @@ public abstract class StorageManagerInternal {
      * @param userId ID of the user
      */
     public abstract void destroyUserStorageKeys(int userId);
+
+    /**
+     * Prepares a user's CE and/or DE storage on a volume.
+     *
+     * @param volumeUuid UUID of the volume, or null for the private internal volume
+     * @param userId ID of the user to prepare storage for
+     * @param flags Flags that specify the type(s) of storage to prepare
+     * @throws RuntimeException on failure
+     */
+    public abstract void prepareUserStorage(
+            @Nullable String volumeUuid, @UserIdInt int userId, @StorageFlags int flags);
+
+    /**
+     * Destroys a user's CE and/or DE storage on a volume.
+     *
+     * @param volumeUuid UUID of the volume, or null for the private internal volume
+     * @param userId ID of the user to destroy storage for
+     * @param flags Flags that specify the type(s) of storage to destroy
+     */
+    public abstract void destroyUserStorage(
+            @Nullable String volumeUuid, @UserIdInt int userId, @StorageFlags int flags);
 
     /**
      * Tells StorageManager that CE storage for this user has been prepared.
