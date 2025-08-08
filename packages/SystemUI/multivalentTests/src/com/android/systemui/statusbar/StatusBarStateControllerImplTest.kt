@@ -25,7 +25,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
-import com.android.systemui.bouncer.domain.interactor.givenCanShowAlternateBouncer
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -277,7 +276,6 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            givenCanShowAlternateBouncer()
             alternateBouncerInteractor.forceShow()
             assertThat(alternateBouncerIsVisible).isTrue()
 

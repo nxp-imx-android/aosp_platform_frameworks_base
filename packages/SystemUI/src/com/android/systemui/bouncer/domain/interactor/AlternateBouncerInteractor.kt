@@ -22,6 +22,7 @@ import com.android.systemui.bouncer.data.repository.KeyguardBouncerRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricsAllowedInteractor
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -57,6 +58,7 @@ constructor(
         Lazy<DeviceEntryBiometricsAllowedInteractor>,
     private val keyguardInteractor: Lazy<KeyguardInteractor>,
     keyguardTransitionInteractor: Lazy<KeyguardTransitionInteractor>,
+    displayStateInteractor: Lazy<DisplayStateInteractor>,
     sceneInteractor: Lazy<SceneInteractor>,
     @Application scope: CoroutineScope,
 ) {
@@ -79,6 +81,18 @@ constructor(
                 },
             )
             .distinctUntilChanged()
+
+    private val currentDisplayModeSupported: Flow<Boolean> =
+        fingerprintPropertyRepository.sensorType.flatMapLatest {
+            // SideFPS doesn't support AlternateBouncer in rear display mode
+            if (it.isPowerButton()) {
+                displayStateInteractor.get().isInRearDisplayMode.map { inRearDisplayMode ->
+                    !inRearDisplayMode
+                }
+            } else {
+                flowOf(true)
+            }
+        }
 
     /**
      * Whether the current biometric, bouncer, and keyguard states allow the alternate bouncer to
@@ -108,15 +122,18 @@ constructor(
                                     keyguardInteractor.get().isKeyguardDismissible,
                                     bouncerRepository.primaryBouncerShow,
                                     isDozingOrAod,
+                                    currentDisplayModeSupported,
                                 ) {
                                     fingerprintAllowed,
                                     keyguardDismissible,
                                     primaryBouncerShowing,
-                                    dozing ->
+                                    dozing,
+                                    currentDisplayModeSupported ->
                                     fingerprintAllowed &&
                                         !keyguardDismissible &&
                                         !primaryBouncerShowing &&
-                                        !dozing
+                                        !dozing &&
+                                        currentDisplayModeSupported
                                 }
                             }
                         }

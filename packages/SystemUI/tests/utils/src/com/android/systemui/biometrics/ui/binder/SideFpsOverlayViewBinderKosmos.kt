@@ -27,6 +27,7 @@ import com.android.systemui.keyguard.ui.viewmodel.sideFpsProgressBarViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.power.domain.interactor.powerInteractor
 
 val Kosmos.sideFpsOverlayViewBinder by Fixture {
     SideFpsOverlayViewBinder(
@@ -39,5 +40,6 @@ val Kosmos.sideFpsOverlayViewBinder by Fixture {
         { sideFpsProgressBarViewModel },
         { sideFpsSensorInteractor },
         { windowManager },
+        { powerInteractor },
     )
 }

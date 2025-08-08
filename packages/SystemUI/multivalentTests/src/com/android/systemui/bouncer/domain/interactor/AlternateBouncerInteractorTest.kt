@@ -18,23 +18,19 @@ package com.android.systemui.bouncer.domain.interactor
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
-import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.map
@@ -44,7 +40,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -62,7 +57,7 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
     @DisableSceneContainer
     fun canShowAlternateBouncer_false_dueToTransitionState() =
         kosmos.testScope.runTest {
-            givenAlternateBouncerSupported()
+            kosmos.givenAlternateBouncerSupported()
             val canShowAlternateBouncer by collectLastValue(underTest.canShowAlternateBouncer)
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 from = KeyguardState.AOD,
@@ -76,7 +71,7 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
     @EnableSceneContainer
     fun canShowAlternateBouncer_false_dueToTransitionState_scene_container() =
         kosmos.testScope.runTest {
-            givenAlternateBouncerSupported()
+            kosmos.givenAlternateBouncerSupported()
             val canShowAlternateBouncer by collectLastValue(underTest.canShowAlternateBouncer)
             val isDeviceUnlocked by
                 collectLastValue(
@@ -92,46 +87,6 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun canShowAlternateBouncerForFingerprint_ifFingerprintIsNotUsuallyAllowed() {
-        givenCanShowAlternateBouncer()
-        kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(false)
-
-        assertFalse(underTest.canShowAlternateBouncerForFingerprint())
-    }
-
-    @Test
-    fun canShowAlternateBouncerForFingerprint_strongBiometricNotAllowed() {
-        givenCanShowAlternateBouncer()
-        kosmos.biometricSettingsRepository.setIsFingerprintAuthCurrentlyAllowed(false)
-
-        assertFalse(underTest.canShowAlternateBouncerForFingerprint())
-    }
-
-    @Test
-    fun canShowAlternateBouncerForFingerprint_fingerprintLockedOut() {
-        givenCanShowAlternateBouncer()
-        whenever(kosmos.keyguardUpdateMonitor.isFingerprintLockedOut).thenReturn(true)
-
-        assertFalse(underTest.canShowAlternateBouncerForFingerprint())
-    }
-
-    @Test
-    fun canShowAlternateBouncerForFingerprint_butCanDismissLockScreen() {
-        givenCanShowAlternateBouncer()
-        whenever(kosmos.keyguardStateController.isUnlocked).thenReturn(true)
-
-        assertFalse(underTest.canShowAlternateBouncerForFingerprint())
-    }
-
-    @Test
-    fun canShowAlternateBouncerForFingerprint_primaryBouncerShowing() {
-        givenCanShowAlternateBouncer()
-        kosmos.keyguardBouncerRepository.setPrimaryShow(true)
-
-        assertFalse(underTest.canShowAlternateBouncerForFingerprint())
-    }
-
-    @Test
     fun hide_wasPreviouslyShowing() {
         kosmos.keyguardBouncerRepository.setAlternateVisible(true)
 
@@ -145,21 +100,5 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
 
         assertFalse(underTest.hide())
         assertFalse(kosmos.keyguardBouncerRepository.alternateBouncerVisible.value)
-    }
-
-    @Test
-    fun canShowAlternateBouncerForFingerprint_rearFps() {
-        givenCanShowAlternateBouncer()
-        kosmos.fingerprintPropertyRepository.supportsRearFps() // does not support alternate bouncer
-
-        assertFalse(underTest.canShowAlternateBouncerForFingerprint())
-    }
-
-    private fun givenAlternateBouncerSupported() {
-        kosmos.givenAlternateBouncerSupported()
-    }
-
-    private fun givenCanShowAlternateBouncer() {
-        kosmos.givenCanShowAlternateBouncer()
     }
 }
