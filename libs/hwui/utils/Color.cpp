@@ -73,6 +73,10 @@ static inline SkImageInfo createImageInfo(int32_t width, int32_t height, int32_t
             colorType = kBGRA_1010102_SkColorType;
             alphaType = kPremul_SkAlphaType;
             break;
+        case AHARDWAREBUFFER_FORMAT_B10G10R10X2_UNORM:
+            colorType = kBGR_101010x_SkColorType;
+            alphaType = kOpaque_SkAlphaType;
+            break;
         default:
             ALOGV("Unsupported format: %d, return unknown by default", format);
             break;
@@ -112,6 +116,10 @@ uint32_t ColorTypeToBufferFormat(SkColorType colorType) {
               return AHARDWAREBUFFER_FORMAT_R8_UNORM;
         case kBGRA_8888_SkColorType:
             return AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM;
+        case kBGRA_1010102_SkColorType:
+            return AHARDWAREBUFFER_FORMAT_B10G10R10A2_UNORM;
+        case kBGR_101010x_SkColorType:
+            return AHARDWAREBUFFER_FORMAT_B10G10R10X2_UNORM;
         default:
             ALOGV("Unsupported colorType: %d, return RGBA_8888 by default", (int)colorType);
             return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
@@ -136,6 +144,10 @@ SkColorType BufferFormatToColorType(uint32_t format) {
             return kAlpha_8_SkColorType;
         case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:
             return kBGRA_8888_SkColorType;
+        case AHARDWAREBUFFER_FORMAT_B10G10R10A2_UNORM:
+            return kBGRA_1010102_SkColorType;
+        case AHARDWAREBUFFER_FORMAT_B10G10R10X2_UNORM:
+            return kBGR_101010x_SkColorType;
         default:
             ALOGV("Unsupported format: %d, return unknown by default", format);
             return kUnknown_SkColorType;
