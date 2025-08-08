@@ -35,6 +35,7 @@ import com.android.systemui.media.controls.ui.controller.mediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.controls.ui.view.qqsMediaHost
 import com.android.systemui.media.controls.ui.view.qsMediaHost
+import com.android.systemui.media.remedia.data.repository.setHasMedia
 import com.android.systemui.qs.composefragment.viewmodel.MediaState.ACTIVE_MEDIA
 import com.android.systemui.qs.composefragment.viewmodel.MediaState.ANY_MEDIA
 import com.android.systemui.qs.composefragment.viewmodel.MediaState.NO_MEDIA
@@ -568,9 +569,12 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         with(kosmos) {
             val activeMedia = state == ACTIVE_MEDIA
             val anyMedia = state != NO_MEDIA
+            setHasMedia(visible = anyMedia, active = activeMedia)
             whenever(legacyMediaDataManagerImpl.hasActiveMedia()).thenReturn(activeMedia)
             whenever(legacyMediaDataManagerImpl.hasAnyMedia()).thenReturn(anyMedia)
+            qqsMediaHost.showsOnlyActiveMedia = true
             qqsMediaHost.updateViewVisibility()
+            qsMediaHost.showsOnlyActiveMedia = false
             qsMediaHost.updateViewVisibility()
         }
         runCurrent()

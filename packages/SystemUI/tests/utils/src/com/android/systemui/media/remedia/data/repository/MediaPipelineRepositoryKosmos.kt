@@ -31,9 +31,9 @@ val Kosmos.mediaPipelineRepository by
         }
     }
 
-fun Kosmos.setHasActiveMedia(visible: Boolean) {
+fun Kosmos.setHasMedia(visible: Boolean, active: Boolean = true) {
     if (visible) {
-        mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
+        mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = active))
     } else {
         mediaPipelineRepository.clearCurrentUserMedia()
     }
