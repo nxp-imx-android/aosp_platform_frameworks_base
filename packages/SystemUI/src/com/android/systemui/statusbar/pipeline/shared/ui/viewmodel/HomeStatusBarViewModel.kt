@@ -167,6 +167,12 @@ interface HomeStatusBarViewModel : Activatable {
     /** Notifies that the notification icons container was clicked. */
     fun onNotificationIconChipClicked()
 
+    /** Whether the QS Chip should be highlighted. */
+    val isQuickSettingsChipHighlighted: Boolean
+
+    /** Whether the Notifications chip should be highlighted. */
+    val isNotificationsChipHighlighted: Boolean
+
     /**
      * The multiple ongoing activity chips that should be shown on the left-hand side of the status
      * bar.
@@ -442,6 +448,20 @@ constructor(
             traceName = "isDesktopStatusBarEnabled",
             initialValue = false,
             source = desktopInteractor.isDesktopFeatureSetEnabled,
+        )
+
+    override val isQuickSettingsChipHighlighted: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isQsChipHighlighted",
+            initialValue = false,
+            source = shadeInteractor.isQsExpanded,
+        )
+
+    override val isNotificationsChipHighlighted: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isNotificationsChipHighlighted",
+            initialValue = false,
+            source = shadeInteractor.isNotificationsExpanded,
         )
 
     /**
