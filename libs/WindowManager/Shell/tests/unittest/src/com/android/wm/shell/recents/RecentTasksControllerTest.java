@@ -28,6 +28,8 @@ import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_FULLSCREEN;
 import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_SPLIT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,6 +55,7 @@ import android.app.ActivityManager.RecentTaskInfo;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityTaskManager;
 import android.app.KeyguardManager;
+import android.app.TaskInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -929,7 +932,86 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
         // Verification: Should return an empty list
         assertTrue("Expected empty list when multiple desktops disabled even there are"
-                        + " empty desks", groupedTasks.isEmpty());
+                + " empty desks", groupedTasks.isEmpty());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
+    public void getRecentTask_transparentAppInDesktopTask_addedToSameDesktopTask() {
+        mDesktopState.setEnableMultipleDesktops(true);
+        RecentTaskInfo task1 = makeTaskInfo(1);
+        task1.isTopActivityTransparent = true;
+        RecentTaskInfo task2 = makeTaskInfo(2);
+        RecentTaskInfo task3 = makeTaskInfo(3);
+        RecentTaskInfo task4 = makeTaskInfo(4);
+        setRawList(task1, task2, task3, task4);
+
+        int deskId = 1;
+        when(mDesktopRepository.getActiveDeskId(anyInt())).thenReturn(deskId);
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(2)).thenReturn(true);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(1)).thenReturn(deskId);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(2)).thenReturn(deskId);
+
+        ArrayList<GroupedTaskInfo> recentTasks =
+                mRecentTasksController.getRecentTasks(MAX_VALUE, RECENT_IGNORE_UNAVAILABLE, 0);
+
+        assertThat(recentTasks).hasSize(3);
+
+        GroupedTaskInfo fullscreenGroup1 = recentTasks.get(0);
+        assertThat(fullscreenGroup1.isBaseType(TYPE_FULLSCREEN)).isTrue();
+        assertThat(fullscreenGroup1.getTaskInfoList().get(0)).isEqualTo(task3);
+
+        GroupedTaskInfo fullscreenGroup2 = recentTasks.get(1);
+        assertThat(fullscreenGroup2.isBaseType(TYPE_FULLSCREEN)).isTrue();
+        assertThat(fullscreenGroup2.getTaskInfoList().get(0)).isEqualTo(task4);
+
+        GroupedTaskInfo deskGroup = recentTasks.get(2);
+        assertThat(deskGroup.getDeskId()).isEqualTo(deskId);
+        assertThat(deskGroup.isBaseType(TYPE_DESK)).isTrue();
+        List<TaskInfo> deskTasks = deskGroup.getTaskInfoList();
+        assertThat(deskTasks).hasSize(2);
+        assertThat(deskTasks).containsExactly(task1, task2);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
+    public void getRecentTask_transparentAppNotInExistingDesktopTask_shownAsFullScreenTask() {
+        mDesktopState.setEnableMultipleDesktops(true);
+        RecentTaskInfo task1 = makeTaskInfo(1);
+        task1.isTopActivityTransparent = true;
+        RecentTaskInfo task2 = makeTaskInfo(2);
+        RecentTaskInfo task3 = makeTaskInfo(3);
+        RecentTaskInfo task4 = makeTaskInfo(4);
+        setRawList(task1, task2, task3, task4);
+
+        int deskId = 1;
+        when(mDesktopRepository.getActiveDeskId(anyInt())).thenReturn(null);
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(2)).thenReturn(true);
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(3)).thenReturn(true);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(2)).thenReturn(deskId);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(3)).thenReturn(deskId);
+
+        ArrayList<GroupedTaskInfo> recentTasks =
+                mRecentTasksController.getRecentTasks(MAX_VALUE, RECENT_IGNORE_UNAVAILABLE, 0);
+
+        assertThat(recentTasks).hasSize(3);
+
+        GroupedTaskInfo fullscreenGroup1 = recentTasks.get(0);
+        assertThat(fullscreenGroup1.isBaseType(TYPE_FULLSCREEN)).isTrue();
+        assertThat(fullscreenGroup1.getTaskInfoList().get(0)).isEqualTo(task1);
+
+        GroupedTaskInfo fullscreenGroup2 = recentTasks.get(1);
+        assertThat(fullscreenGroup2.isBaseType(TYPE_FULLSCREEN)).isTrue();
+        assertThat(fullscreenGroup2.getTaskInfoList().get(0)).isEqualTo(task4);
+
+        GroupedTaskInfo deskGroup = recentTasks.get(2);
+        assertThat(deskGroup.getDeskId()).isEqualTo(deskId);
+        assertThat(deskGroup.isBaseType(TYPE_DESK)).isTrue();
+        List<TaskInfo> deskTasks = deskGroup.getTaskInfoList();
+        assertThat(deskTasks).hasSize(2);
+        assertThat(deskTasks).containsExactly(task2, task3);
     }
 
     /**
