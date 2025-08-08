@@ -525,8 +525,9 @@ constructor(
         hasGlobalFocus: Boolean,
     ): Int =
         if (
-            captionType != CaptionController.CaptionType.APP_HEADER ||
-                desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
+            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue ||
+                captionType != CaptionController.CaptionType.APP_HEADER ||
+                !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
             ID_NULL
         } else if (DecorThemeUtil(context).getAppTheme(taskInfo) == Theme.DARK) {
@@ -544,7 +545,9 @@ constructor(
         captionType: CaptionController.CaptionType,
         hasGlobalFocus: Boolean,
     ): Int =
-        if (
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
+            ID_NULL
+        } else if (
             !DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
                 captionType != CaptionController.CaptionType.APP_HEADER ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
@@ -561,7 +564,9 @@ constructor(
         captionType: CaptionController.CaptionType,
         hasGlobalFocus: Boolean,
     ): Int =
-        if (
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
+            INVALID_SHADOW_RADIUS
+        } else if (
             DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
                 captionType != CaptionController.CaptionType.APP_HEADER ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
