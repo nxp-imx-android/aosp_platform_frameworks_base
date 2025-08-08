@@ -39,6 +39,7 @@ import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.hardware.display.VirtualDisplayConfig;
+import android.os.Binder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SharedMemory;
@@ -844,25 +845,29 @@ public final class VirtualDeviceParams implements Parcelable {
                         Duration.ofNanos(MICROSECONDS.toNanos(samplingPeriodMicros));
                 final Duration batchReportingLatency =
                         Duration.ofNanos(MICROSECONDS.toNanos(batchReportLatencyMicros));
-                mExecutor.execute(() -> mCallback.onConfigurationChanged(
-                        sensor, enabled, samplingPeriod, batchReportingLatency));
+                Binder.withCleanCallingIdentity(() ->
+                        mExecutor.execute(() -> mCallback.onConfigurationChanged(
+                                sensor, enabled, samplingPeriod, batchReportingLatency)));
             }
 
             @Override
             public void onDirectChannelCreated(int channelHandle,
                     @NonNull SharedMemory sharedMemory) {
                 if (mDirectChannelCallback != null && mDirectChannelExecutor != null) {
-                    mDirectChannelExecutor.execute(
-                            () -> mDirectChannelCallback.onDirectChannelCreated(channelHandle,
-                                    sharedMemory));
+                    Binder.withCleanCallingIdentity(() ->
+                            mDirectChannelExecutor.execute(() ->
+                                        mDirectChannelCallback.onDirectChannelCreated(
+                                                channelHandle, sharedMemory)));
                 }
             }
 
             @Override
             public void onDirectChannelDestroyed(int channelHandle) {
                 if (mDirectChannelCallback != null && mDirectChannelExecutor != null) {
-                    mDirectChannelExecutor.execute(
-                            () -> mDirectChannelCallback.onDirectChannelDestroyed(channelHandle));
+                    Binder.withCleanCallingIdentity(() ->
+                            mDirectChannelExecutor.execute(() ->
+                                    mDirectChannelCallback.onDirectChannelDestroyed(
+                                            channelHandle)));
                 }
             }
 
@@ -870,9 +875,10 @@ public final class VirtualDeviceParams implements Parcelable {
             public void onDirectChannelConfigured(int channelHandle, @NonNull VirtualSensor sensor,
                     int rateLevel, int reportToken) {
                 if (mDirectChannelCallback != null && mDirectChannelExecutor != null) {
-                    mDirectChannelExecutor.execute(
-                            () -> mDirectChannelCallback.onDirectChannelConfigured(
-                                    channelHandle, sensor, rateLevel, reportToken));
+                    Binder.withCleanCallingIdentity(() ->
+                            mDirectChannelExecutor.execute(() ->
+                                    mDirectChannelCallback.onDirectChannelConfigured(
+                                            channelHandle, sensor, rateLevel, reportToken)));
                 }
             }
         }

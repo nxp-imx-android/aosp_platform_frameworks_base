@@ -40,6 +40,7 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.impl.CameraMetadataNative;
 import android.hardware.camera2.params.StreamConfiguration;
 import android.hardware.camera2.params.StreamConfigurationDuration;
+import android.os.Binder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.RemoteException;
@@ -516,7 +517,7 @@ public final class VirtualCameraConfig implements Parcelable {
         @Override
         public void onOpenCamera() {
             if (Flags.virtualCameraOnOpen()) {
-                mExecutor.execute(mCallback::onOpenCamera);
+                Binder.withCleanCallingIdentity(() -> mExecutor.execute(mCallback::onOpenCamera));
             }
         }
 
@@ -527,32 +528,39 @@ public final class VirtualCameraConfig implements Parcelable {
                 VirtualCameraSessionConfig virtualCameraSessionConfig =
                         new VirtualCameraSessionConfig(sessionParameters);
 
-                mExecutor.execute(() -> mCallback.onConfigureSession(virtualCameraSessionConfig,
-                        convertToFrameworkCaptureResultConsumer(captureResultConsumer)));
+                Binder.withCleanCallingIdentity(() ->
+                        mExecutor.execute(() -> mCallback.onConfigureSession(
+                                virtualCameraSessionConfig,
+                                convertToFrameworkCaptureResultConsumer(captureResultConsumer))));
             }
         }
 
         @Override
         public void onStreamConfigured(int streamId, Surface surface, int width, int height,
                 int format) {
-            mExecutor.execute(() -> mCallback.onStreamConfigured(streamId, surface, width, height,
-                    format));
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mCallback.onStreamConfigured(
+                            streamId, surface, width, height, format)));
         }
 
         @Override
         public void onProcessCaptureRequest(int streamId, long frameId,
                 CaptureRequest captureRequest) {
             if (Flags.virtualCameraMetadata() && mPerFrameCameraMetadataEnabled) {
-                mExecutor.execute(
-                        () -> mCallback.onProcessCaptureRequest(streamId, frameId, captureRequest));
+                Binder.withCleanCallingIdentity(() ->
+                        mExecutor.execute(() -> mCallback.onProcessCaptureRequest(
+                                streamId, frameId, captureRequest)));
             } else {
-                mExecutor.execute(() -> mCallback.onProcessCaptureRequest(streamId, frameId));
+                Binder.withCleanCallingIdentity(() ->
+                        mExecutor.execute(() -> mCallback.onProcessCaptureRequest(
+                                streamId, frameId)));
             }
         }
 
         @Override
         public void onStreamClosed(int streamId) {
-            mExecutor.execute(() -> mCallback.onStreamClosed(streamId));
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mCallback.onStreamClosed(streamId)));
         }
 
         @Nullable
