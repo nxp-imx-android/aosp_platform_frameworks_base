@@ -19,8 +19,8 @@ package com.android.systemui.scene.ui.composable.transitions
 import androidx.compose.animation.core.tween
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.systemui.qs.shared.ui.ElementKeys
-import com.android.systemui.shade.ui.composable.Shade
+import com.android.systemui.notifications.ui.composable.Notifications
+import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -34,16 +34,15 @@ fun TransitionBuilder.toQuickSettingsTransition(durationScale: Double = 1.0) {
     )
     translate(ShadeHeader.Elements.Clock, y = -translationY)
     translate(ShadeHeader.Elements.ShadeCarrierGroup, y = -translationY)
-    translate(ElementKeys.QuickSettingsContent, Edge.Top, false)
 
     fractionRange(start = .58f) {
-        fade(ElementKeys.QuickSettingsContent)
         fade(ShadeHeader.Elements.ExpandedContent)
         fade(ShadeHeader.Elements.Clock)
         fade(ShadeHeader.Elements.ShadeCarrierGroup)
     }
 
-    fractionRange(end = .58f) { fade(Shade.Elements.BackgroundScrim) }
+    translate(QuickSettings.Elements.Content, y = -ShadeHeader.Dimensions.ExpandedHeight * .66f)
+    translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
 }
 
 private val DefaultDuration = 500.milliseconds
