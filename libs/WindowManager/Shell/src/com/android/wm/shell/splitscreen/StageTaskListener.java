@@ -17,7 +17,6 @@
 package com.android.wm.shell.splitscreen;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.res.Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
@@ -583,11 +582,13 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
 
     @Override
     public String toString() {
-        return "mId: " + stageTypeToString(mId)
-                + " mVisible: " + mVisible
-                + " mActive: " + mIsActive
-                + " mHasRootTask: " + mHasRootTask
-                + " childSize: " + mChildrenTaskInfo.size();
+        return TAG + "("
+                + "mId=" + stageTypeToString(mId) + ", "
+                + "mVisible=" + mVisible + ", "
+                + "mActive=" + mIsActive + ", "
+                + "mHasRootTask=" + mHasRootTask + ", "
+                + "childSize=" + mChildrenTaskInfo.size()
+                + ")";
     }
 
     @Override
