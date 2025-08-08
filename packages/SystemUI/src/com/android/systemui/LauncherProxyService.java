@@ -41,7 +41,6 @@ import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_S
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_VOICE_INTERACTION_WINDOW_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_TRANSITION;
 import static com.android.systemui.shared.system.QuickStepContract.addInterface;
-import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 
 import android.annotation.FloatRange;
 import android.annotation.Nullable;
@@ -346,7 +345,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         @Override
         public void onBackEvent(@Nullable KeyEvent keyEvent, int displayId) throws RemoteException {
-            if (predictiveBackSwipeEdgeNoneApi() && mBackAnimation != null && keyEvent != null) {
+            if (mBackAnimation != null && keyEvent != null) {
                 if (DEBUG_MISSING_GESTURE && keyEvent.isCanceled()) {
                     Log.d(DEBUG_MISSING_GESTURE_TAG,
                             "Cancel back [launcher key event]: " + keyEvent);
