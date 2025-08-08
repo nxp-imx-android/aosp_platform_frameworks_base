@@ -997,6 +997,17 @@ flag {
 }
 
 flag {
+    name: "enable_interaction_dependent_tab_tearing_bounds"
+    namespace: "lse_desktop_experience"
+    description: "Update bounds of a torn tab and position it with respect to user /n"
+                 "interactions such drag-drop location and existing size of the parent window."
+    bug: "436502207"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_interactive_picture_in_picture"
     namespace: "web_apps_on_chromeos_and_android"
     description: "Enables the Interactive Picture-in-Picture window API."
