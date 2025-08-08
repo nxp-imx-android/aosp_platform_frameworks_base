@@ -449,13 +449,6 @@ java_defaults {
     libs: [
         "keepanno-annotations",
     ],
-    javacflags: [
-        "-Adagger.fastInit=enabled",
-        "-Adagger.explicitBindingConflictsWithInject=ERROR",
-        "-Adagger.strictMultibindingValidation=enabled",
-        "-Adagger.useBindingGraphFix=ENABLED",
-        "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
-    ],
     kotlincflags: [
         "-Xjvm-default=all",
         "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -599,6 +592,9 @@ android_library {
         "displaylib",
         "aconfig_settings_flags_lib",
     ],
+    javacflags: [
+        "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
+    ],
 }
 
 platform_compat_config {
@@ -620,7 +616,12 @@ android_library {
         "SystemUI-core",
         "com.android.systemui.pods-api-aosp-handheld",
         "com.android.systemui.pods-impl-aosp-handheld",
-
+    ],
+    javacflags: [
+        "-Adagger.fastInit=enabled",
+        "-Adagger.explicitBindingConflictsWithInject=ERROR",
+        "-Adagger.strictMultibindingValidation=enabled",
+        "-Adagger.useBindingGraphFix=ENABLED",
     ],
     manifest: "AndroidManifest.xml",
 }
