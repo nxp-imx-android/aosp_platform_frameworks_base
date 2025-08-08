@@ -65,27 +65,16 @@ fun RegionBoxButton(
 
     // The translation of the button in the X direction.
     val targetTranslationX by
-        animateFloatAsState(
-            targetValue =
-                if (isButtonOutside) {
-                    // Position is centered horizontally, just above the box.
-                    currentRect.left + (currentRect.width - buttonSize.width) / 2f
-                } else {
-                    // Position is centered inside the box.
-                    currentRect.left + (currentRect.width - buttonSize.width) / 2f
-                }
-        )
+        animateFloatAsState(targetValue = (currentRect.width - buttonSize.width) / 2f)
 
     // The translation of the button in the Y direction.
     val targetTranslationY by
         animateFloatAsState(
             targetValue =
                 if (isButtonOutside) {
-                    // Position is centered horizontally, just above the box.
-                    currentRect.top - buttonSize.height
+                    -buttonSize.height.toFloat()
                 } else {
-                    // Position is centered inside the box.
-                    currentRect.top + (currentRect.height - buttonSize.height) / 2f
+                    (currentRect.height - buttonSize.height) / 2f
                 }
         )
 

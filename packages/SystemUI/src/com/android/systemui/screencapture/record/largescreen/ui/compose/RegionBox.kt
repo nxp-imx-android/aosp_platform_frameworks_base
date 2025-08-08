@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -289,56 +288,62 @@ fun RegionBox(
         val borderStrokeWidth = 4.dp
 
         state.rect?.let { currentRect ->
-            val boxWidthDp = with(density) { currentRect.width.toDp() }
-            val boxHeightDp = with(density) { currentRect.height.toDp() }
-
-            // The box that represents the region.
+            // A parent container for the region box and its associated UI. By applying the
+            // graphicsLayer modifier here, all children will be moved together as a single unit,
+            // ensuring their movements are perfectly synchronized.
             Box(
                 modifier =
                     Modifier.graphicsLayer(
-                            translationX = currentRect.left,
-                            translationY = currentRect.top,
-                        )
-                        .size(width = boxWidthDp, height = boxHeightDp)
-                        .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {}
+                        translationX = currentRect.left,
+                        translationY = currentRect.top,
+                    )
+            ) {
+                val boxWidthDp = with(density) { currentRect.width.toDp() }
+                val boxHeightDp = with(density) { currentRect.height.toDp() }
 
-            // The button which initiates capturing the specified region of the screen. It is
-            // positioned inside or outside the region box depending on the size of the region box.
-            RegionBoxButton(
-                text = buttonText,
-                icon = buttonIcon,
-                boxWidthDp,
-                boxHeightDp,
-                currentRect,
-                onClick = onCaptureClick,
-            )
+                // The box that represents the region.
+                Box(
+                    modifier =
+                        Modifier.size(boxWidthDp, boxHeightDp)
+                            .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant)
+                )
 
-            /** Vertical spacing in DP between the region box and the dimensions pill below it. */
-            val pillVerticalSpacingDp = 16.dp
+                // The button which initiates capturing the specified region of the screen. It is
+                // positioned inside or outside the region box depending on the size of the region
+                // box.
+                RegionBoxButton(
+                    text = buttonText,
+                    icon = buttonIcon,
+                    boxWidthDp,
+                    boxHeightDp,
+                    currentRect,
+                    onClick = onCaptureClick,
+                )
 
-            RegionDimensionsPill(
-                widthPx = currentRect.width.roundToInt(),
-                heightPx = currentRect.height.roundToInt(),
-                modifier =
-                    Modifier.layout { measurable, _ ->
-                        // Measure the pill's layout size, then center it horizontally based on the
-                        // currentRect.
-                        val dimensionsPillPlaceable = measurable.measure(Constraints())
-                        val pillX =
-                            currentRect.left +
-                                (currentRect.width - dimensionsPillPlaceable.width) / 2
-                        val pillY =
-                            currentRect.bottom + with(density) { pillVerticalSpacingDp.toPx() }
-                        layout(dimensionsPillPlaceable.width, dimensionsPillPlaceable.height) {
-                            dimensionsPillPlaceable.placeRelative(
-                                pillX.roundToInt(),
-                                pillY.roundToInt(),
-                            )
-                        }
-                    },
-            )
+                /** Vertical spacing in DP between the region box and the dimensions pill. */
+                val pillVerticalSpacingDp = 16.dp
+                val pillVerticalSpacingPx = with(density) { pillVerticalSpacingDp.toPx() }
+
+                // A dimension pill that shows the region's dimensions.
+                RegionDimensionsPill(
+                    widthPx = currentRect.width.roundToInt(),
+                    heightPx = currentRect.height.roundToInt(),
+                    modifier =
+                        Modifier.layout { measurable, _ ->
+                            val dimensionsPillPlaceable = measurable.measure(Constraints())
+                            // Center the pill horizontally relative to the region box's width, and
+                            // position it vertically below the box.
+                            val pillX = (currentRect.width - dimensionsPillPlaceable.width) / 2
+                            val pillY = currentRect.height + pillVerticalSpacingPx
+                            layout(dimensionsPillPlaceable.width, dimensionsPillPlaceable.height) {
+                                dimensionsPillPlaceable.placeRelative(
+                                    pillX.roundToInt(),
+                                    pillY.roundToInt(),
+                                )
+                            }
+                        },
+                )
+            }
         }
     }
 }
