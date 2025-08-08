@@ -142,22 +142,19 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"മൈക്രോഫോൺ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"വീണ്ടും എടുക്കുക"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"എഡിറ്റ് ചെയ്യുക"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"ഇല്ലാതാക്കുക"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"മൊത്തം സ്ക്രീനും ക്യാപ്‌ചർ ചെയ്യുക"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"തിരഞ്ഞെടുത്ത ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ചിത്രമെടുക്കുക"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"റെക്കോർഡ് ചെയ്യുക"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"പങ്കിടുക"</string>
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"സ്‌ക്രീൻ പങ്കിടുന്നു"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ഉള്ളടക്കം പങ്കിടൽ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"സ്‌ക്രീൻ പങ്കിടുന്നത് നിർത്തണോ?"</string>
@@ -167,8 +164,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"നിങ്ങൾ ഇപ്പോൾ <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> പങ്കിടുകയാണ്"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"നിങ്ങൾ നിലവിൽ ഒരു ആപ്പ് പങ്കിടുകയാണ്"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"നിങ്ങൾ നിലവിൽ ഒരു ആപ്പുമായി പങ്കിടുകയാണ്"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"നിങ്ങൾ നിലവിൽ <xliff:g id="HOST_APP_NAME">%1$s</xliff:g> എന്നതുമായി പങ്കിടുകയാണ്"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"പങ്കിടൽ നിർത്തുക"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"സ്‌ക്രീൻ കാസ്‌റ്റ് ചെയ്യുന്നു"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"കാസ്റ്റ് ചെയ്യുന്നത് അവസാനിപ്പിക്കണോ?"</string>
@@ -205,6 +201,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR കോഡ് സ്കാനർ"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"അൺലോക്ക് ചെയ്തു"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"ഉപകരണം ലോക്ക് ചെയ്തു"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"മുഖം സ്കാൻ ചെയ്യുന്നു"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"അയയ്ക്കുക"</string>
     <string name="cancel" msgid="1089011503403416730">"റദ്ദാക്കുക"</string>
@@ -540,6 +540,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"തുറക്കാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"മുഖം വഴി അൺലോക്കുചെയ്തു. മുകളിലേക്ക് സ്വൈപ്പുചെയ്ത് തുറക്കൂ."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു. തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു. തുറക്കാൻ അമർത്തുക."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"മുഖം തിരിച്ചറിഞ്ഞു. തുറക്കാൻ അമർത്തുക."</string>
@@ -873,8 +875,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ഇപ്പോൾ നിങ്ങളുടെ ദൈർഘ്യമേറിയ സംഭാഷണങ്ങൾ സംഗ്രഹിച്ച് നിങ്ങൾക്ക് വേഗത്തിലുള്ള റീക്യാപ്പുകൾ നൽകാനാകും"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"അറിയിപ്പ് ഓർഗനൈസർ, മുൻഗണന കുറഞ്ഞ അറിയിപ്പുകൾ ബണ്ടിൽ ചെയ്യുകയും അവ നിശബ്ദമാക്കുകയും ചെയ്യുന്നു. ക്രമീകരണത്തിൽ കൂടുതൽ വിഭാഗങ്ങൾ ചേർക്കുക."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# അറിയിപ്പ്}other{# അറിയിപ്പുകൾ}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>
@@ -987,8 +988,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ഡിജിറ്റൽ അസിസ്‌റ്റന്റ് തുറക്കുക"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ഒരു കുറിപ്പെടുക്കുക"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"നിലവിലെ വിൻഡോ അടയ്‌ക്കുക"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"വലതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ഇടതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
@@ -1365,10 +1365,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"മീഡിയയെ മറ്റൊരു ഉപകരണത്തിലേക്ക് നീക്കുന്നതിന് നിങ്ങളുടെ പങ്കിട്ട സെഷൻ നിർത്തുക"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"നിർത്തുക"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"പങ്കിടൽ നിർത്തുക"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ഓഡിയോ പങ്കിടുന്നു"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ഓഡിയോ പങ്കിടുക"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ബിൽഡ് നമ്പർ"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"ക്ലിപ്പ്ബോർഡിലേക്ക് ബിൽഡ് നമ്പർ പകർത്തി."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക."</string>

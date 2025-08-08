@@ -142,22 +142,19 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Grabar con el micrófono"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Elige una app para grabar"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"Se guardó el video"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Volver a tomar"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Borrar"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Capturar toda la pantalla"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Capturar área seleccionada"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Capturar"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grabar"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Compartir"</string>
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Compartiendo pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Compartiendo contenido"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"¿Quieres dejar de compartir la pantalla?"</string>
@@ -204,6 +201,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"Escáner de código QR"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Desbloqueado"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Dispositivo bloqueado"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Escaneando rostro"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Enviar"</string>
     <string name="cancel" msgid="1089011503403416730">"Cancelar"</string>
@@ -539,6 +540,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Desliza el dedo hacia arriba para abrir"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Presiona el ícono de desbloquear para abrir"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Desbloqueo con rostro. Desliza hacia arriba para abrir."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Desbloqueo con rostro. Presiona el ícono para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Desbloqueo con rostro. Presiona para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Rostro reconocido. Presiona para abrir."</string>
@@ -872,13 +875,12 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Ahora, puedes obtener resúmenes rápidos de tus conversaciones más largas"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"El organizador de notificaciones agrupa y silencia las notificaciones de menor prioridad. Agrega más categorías en Configuración."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificación}many{# de notificaciones}other{# notificaciones}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Listo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactivar"</string>
-    <string name="notification_silence_title" msgid="8608090968400832335">"Silenciada"</string>
-    <string name="notification_alert_title" msgid="3656229781017543655">"Predeterminada"</string>
+    <string name="notification_silence_title" msgid="8608090968400832335">"Silenciadas"</string>
+    <string name="notification_alert_title" msgid="3656229781017543655">"Predeterminadas"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automática"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Sin sonido ni vibración"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"No suena ni vibra, pero aparece en la sección de conversaciones"</string>
@@ -1363,10 +1365,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Detiene la sesión de uso compartido para transferir contenido multimedia a otro dispositivo"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Detener"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Dejar de compartir"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Compartiendo audio"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Compartir audio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Número de compilación"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Se copió el número de compilación en el portapapeles."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"copiar en el portapapeles."</string>

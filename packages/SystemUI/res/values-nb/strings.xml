@@ -150,9 +150,12 @@
     <skip />
     <!-- no translation found for screen_record_delete (1023421937978254537) -->
     <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Ta opp hele skjermen"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Ta bilde av det valgte området"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Ta bilde"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
+    <skip />
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
+    <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ta opp"</string>
     <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
     <skip />
@@ -167,8 +170,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Du deler nå <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Du deler nå en app"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Du deler med en app"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"Nå deler du med <xliff:g id="HOST_APP_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Slutt å dele"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"Caster skjermen"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Vil du stoppe castingen?"</string>
@@ -205,6 +207,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR-kodeskanner"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Ulåst"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Enheten er låst"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Skanning av ansikt"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Send"</string>
     <string name="cancel" msgid="1089011503403416730">"Avbryt"</string>
@@ -540,6 +546,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Sveip opp for å åpne"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Trykk på lås opp-ikonet for å åpne"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Låst opp med ansiktet. Sveip opp for å åpne."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Låst opp med ansiktet. Trykk på lås opp-ikonet for å fortsette"</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Låst opp med ansiktet. Trykk for å åpne."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Ansiktet er gjenkjent. Trykk for å åpne."</string>
@@ -987,8 +995,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Åpne den digitale assistenten"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Låseskjerm"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Ta et notat"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"Lukk det aktive vinduet"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Bruk delt skjerm med appen til høyre"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Bruk delt skjerm med appen til venstre"</string>

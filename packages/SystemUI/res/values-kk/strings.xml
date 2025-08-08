@@ -142,22 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Микрофон параметрін жазу"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Түрту параметрін көрсету"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Жазу үшін қолданба таңдаңыз"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"Бейне сақталды."</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Қайта түсіру"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Өзгерту"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Жою"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Экранды толықтай түсіру"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Таңдалған аймақты түсіру"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Түсіру"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Жазу"</string>
     <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
     <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Экранды бөлісіп жатыр."</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Контент бөлісіліп жатыр"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Экранды бөлісуді тоқтатасыз ба?"</string>
@@ -204,6 +202,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR кодын сканерлеу қолданбасы"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Құлпы ашылған"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Құрылғы құлыпталды."</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Бетті сканерлеу"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Жіберу"</string>
     <string name="cancel" msgid="1089011503403416730">"Бас тарту"</string>
@@ -539,6 +541,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Ашу үшін жоғары қарай сырғытыңыз."</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Ашу үшін құлыпты ашу белгішесін басыңыз."</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Бетпен ашылды. Ашу үшін жоғары қарай сырғытыңыз."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Бет үлгісі арқылы ашылды. Ашу үшін құлыпты ашу белгішесін басыңыз."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Бетпен ашылды. Ашу үшін басыңыз."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Бет танылды. Ашу үшін басыңыз."</string>
@@ -872,8 +876,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Енді ұзақ әңгімелерді қысқаша мазмұндап, ықшам қорытындылар жасауға болады."</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Хабарландыру ұйымдастырушысы басымдығы төмен хабарландыруларды топтап, дыбысын өшіреді. Қосымша санаттарды параметрлерден қосыңыз."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# хабарландыру}other{# хабарландыру}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Дайын"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Қолдану"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Өшіру"</string>
@@ -1363,10 +1366,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Мультимедиа файлын басқа құрылғыға жылжыту үшін ортақ сеансты тоқтатыңыз."</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Тоқтату"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Бөлісуді тоқтату"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Аудио бөлісіп жатырсыз"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Аудионы бөлісу"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Құрама нөмірі"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Құрама нөмірі буферге көшірілді."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"буферге көшіріңіз."</string>
@@ -1609,7 +1610,7 @@
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Артқа"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Негізгі бетке өту"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Соңғы қолданбаларды көру"</string>
-    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Қолданба ауыстыру"</string>
+    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Қолданбалар арасында ауысу"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Дайын"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Келесі"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Қайталап көріңіз"</string>
@@ -1621,14 +1622,14 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Негізгі экранға өту"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Сенсорлық тақтада үш саусақпен жоғары сырғытыңыз."</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Жарайсыз!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Негізгі экранға қайту қимылын орындадыңыз."</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Негізгі экранға өту қимылын орындадыңыз."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Негізгі экранға өту үшін сенсорлық тақтада үш саусақпен жоғары сырғытыңыз."</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Соңғы қолданбаларды көру"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Сенсорлық тақтада үш саусақпен жоғары сырғытып, басып тұрыңыз."</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Жарайсыз!"</string>
     <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Соңғы қолданбаларды көру қимылын орындадыңыз."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Соңғы қолданбаларды көру үшін сенсорлық тақтада үш саусақпен жоғары сырғытып, ұстап тұрыңыз."</string>
-    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Қолданба ауыстыру"</string>
+    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Қолданбалар арасында ауысу"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Сенсорлық тақтада төрт саусақпен оңға сырғытыңыз."</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Жарайсыз!"</string>
     <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Қолданба ауыстыру қимылын аяқтадыңыз."</string>

@@ -142,22 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofon kaydı"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Dokunmaları göster"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kaydedilecek uygulamayı seçin"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"Video kaydedildi"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Tekrar çek"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Düzenle"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Sil"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Tüm ekranı kaydet"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Seçili alanın görüntüsünü al"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Yakala"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Kaydet"</string>
     <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
     <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran paylaşılıyor"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"İçerik paylaşma"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Ekran paylaşımı durdurulsun mu?"</string>
@@ -167,8 +165,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Şu anda <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> içeriğini paylaşıyorsunuz"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Şu anda bir uygulamayı paylaşıyorsunuz"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Şu anda bir uygulamayla paylaşıyorsunuz"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"Şu anda <xliff:g id="HOST_APP_NAME">%1$s</xliff:g> ile paylaşıyorsunuz"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Paylaşımı durdur"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"Ekran yayınlanıyor"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Yayın durdurulsun mu?"</string>
@@ -205,6 +202,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR kodu tarayıcı"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Kilitli değil"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Cihaz kilitlendi"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Yüz taranıyor"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Gönder"</string>
     <string name="cancel" msgid="1089011503403416730">"İptal"</string>
@@ -540,6 +541,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Açmak için yukarı kaydırın"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Açmak için Kilit açma simgesine basın"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Cihazın kilidini yüzünüzle açtınız. Açmak için yukarı kaydırın."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Kilit, yüzünüzle açıldı. Kilit açma simgesine basın."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Cihazın kilidini yüzünüzle açtınız. Açmak için basın."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Yüzünüz tanındı. Açmak için basın."</string>
@@ -873,8 +876,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Uzun sohbetleriniz artık özetlenebilir, böylece önemli noktaları hızlı bir şekilde görebilirsiniz"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Bildirim düzenleyici, düşük öncelikli bildirimleri gruplandırıp sessize alır. Ayarlar\'dan daha fazla kategori ekleyin."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# bildirim}other{# bildirim}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Bitti"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Uygula"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Kapat"</string>
@@ -987,8 +989,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Dijital asistanı aç"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ekranı kilitle"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Not al"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"Geçerli pencereyi kapat"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Çoklu görev"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Sağdaki uygulamayla birlikte bölünmüş ekranı kullan"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Soldaki uygulamayla birlikte bölünmüş ekranı kullan"</string>
@@ -1365,10 +1366,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Medyayı başka bir cihaza taşımak için paylaşılan oturumunuzu durdurun"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Durdur"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Paylaşımı durdur"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Ses paylaşılıyor"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Sesi paylaş"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Derleme numarası"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Derleme numarası panoya kopyalandı."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"panoya kopyalayın."</string>
