@@ -24,6 +24,7 @@ import com.android.systemui.assist.assistManager
 import com.android.systemui.biometrics.authController
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.doze.dozeLog
+import com.android.systemui.keyguard.domain.interactor.aodDimInteractor
 import com.android.systemui.keyguard.domain.interactor.dozeInteractor
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.Kosmos
@@ -61,5 +62,6 @@ val Kosmos.dozeServiceHost: DozeServiceHost by
             applicationCoroutineScope,
             applicationContext,
             ambientDisplayConfiguration,
+            aodDimInteractor,
         )
     }

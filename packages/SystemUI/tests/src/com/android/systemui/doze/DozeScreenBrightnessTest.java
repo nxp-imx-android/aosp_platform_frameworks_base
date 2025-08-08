@@ -55,6 +55,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.phone.DozeParameters;
@@ -524,6 +525,7 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer
     public void ambientAod_usesWallpaperScrimOpacity() {
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
         mScreen.transitionTo(INITIALIZED, DOZE_AOD);
@@ -543,6 +545,7 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
 
 
     @Test
+    @DisableSceneContainer
     public void ambientAod_usesRegularScrimOpacity() {
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
         mScreen.transitionTo(INITIALIZED, DOZE_AOD);
