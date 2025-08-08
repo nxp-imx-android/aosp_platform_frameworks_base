@@ -26,6 +26,14 @@ flag {
 }
 
 flag {
+    name: "deprecate_old_query_events_api"
+    is_exported: true
+    namespace: "backstage_power"
+    description: "Feature flag to deprecate old event query API"
+    bug: "413479539"
+}
+
+flag {
     name: "get_app_bytes_by_data_type_api"
     is_exported: true
     namespace: "system_performance"
