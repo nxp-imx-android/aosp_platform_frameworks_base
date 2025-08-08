@@ -758,7 +758,8 @@ public final class MessageQueue {
     public void removeSyncBarrier(int token) {
         final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
 
-        final boolean removed = mStack.updateFreelist(matchBarrierToken, null, -1, null, null, 0);
+        final boolean removed = mStack.moveMatchingToFreelist(matchBarrierToken, null, -1, null,
+                null, 0);
         if (!removed) {
             throw new IllegalStateException("The specified message queue synchronization "
                     + " barrier token has not been posted or has already been removed.");
@@ -918,21 +919,21 @@ public final class MessageQueue {
         if (h == null) {
             return;
         }
-        mStack.updateFreelist(sMatchHandlerWhatAndObject, h, what, object, null, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObject, h, what, object, null, 0);
     }
 
     void removeEqualMessages(Handler h, int what, Object object) {
         if (h == null) {
             return;
         }
-        mStack.updateFreelist(sMatchHandlerWhatAndObjectEquals, h, what, object, null, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObjectEquals, h, what, object, null, 0);
     }
 
     void removeMessages(Handler h, Runnable r, Object object) {
         if (h == null || r == null) {
             return;
         }
-        mStack.updateFreelist(sMatchHandlerRunnableAndObject, h, -1, object, r, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObject, h, -1, object, r, 0);
     }
 
     static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
@@ -952,7 +953,7 @@ public final class MessageQueue {
         if (h == null || r == null) {
             return;
         }
-        mStack.updateFreelist(sMatchHandlerRunnableAndObjectEquals, h, -1, object, r, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObjectEquals, h, -1, object, r, 0);
     }
 
     static final class MatchHandlerAndObject extends MessageCompare {
@@ -971,7 +972,7 @@ public final class MessageQueue {
         if (h == null) {
             return;
         }
-        mStack.updateFreelist(sMatchHandlerAndObject, h, -1, object, null, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerAndObject, h, -1, object, null, 0);
     }
 
     static final class MatchHandlerAndObjectEquals extends MessageCompare {
@@ -991,7 +992,7 @@ public final class MessageQueue {
         if (h == null) {
             return;
         }
-        mStack.updateFreelist(sMatchHandlerAndObjectEquals, h, -1, object, null, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, h, -1, object, null, 0);
     }
 
     static final class MatchAllMessages extends MessageCompare {
@@ -1004,7 +1005,7 @@ public final class MessageQueue {
     private static final MatchAllMessages sMatchAllMessages = new MatchAllMessages();
 
     private void removeAllMessages() {
-        mStack.updateFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null, 0);
+        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null, 0);
     }
 
     static final class MatchAllFutureMessages extends MessageCompare {
@@ -1018,7 +1019,7 @@ public final class MessageQueue {
             new MatchAllFutureMessages();
 
     private void removeAllFutureMessages(long when) {
-        mStack.updateFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null, when);
+        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null, when);
     }
 
     /**
