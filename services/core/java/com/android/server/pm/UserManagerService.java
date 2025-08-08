@@ -1203,7 +1203,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     private static boolean isAutoLockForPrivateSpaceEnabled() {
         return android.os.Flags.allowPrivateProfile()
-                && Flags.supportAutolockForPrivateSpace()
                 && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 

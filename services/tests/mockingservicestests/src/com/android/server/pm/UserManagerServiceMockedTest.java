@@ -27,7 +27,6 @@ import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
-import static android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_SYSTEM;
@@ -675,8 +674,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testAutoLockOnDeviceLockForPrivateProfile() {
         int mainUser = mUms.getMainUserId();
@@ -698,8 +696,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testAutoLockOnDeviceLockForPrivateProfile_keyguardUnlocked() {
         assumeTrue(mUms.canAddPrivateProfile(0));
@@ -717,30 +714,9 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
-    @DisableFlags(FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE)
-    public void testAutoLockOnDeviceLockForPrivateProfile_flagDisabled() {
-        int mainUser = mUms.getMainUserId();
-        assumeTrue(mUms.canAddPrivateProfile(mainUser));
-        UserManagerService mSpiedUms = spy(mUms);
-        UserInfo privateProfileUser =
-                mSpiedUms.createProfileForUserEvenWhenDisallowedWithThrow(PRIVATE_PROFILE_NAME,
-                USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
-
-        mSpiedUms.tryAutoLockingPrivateSpaceOnKeyguardChanged(true);
-
-        // Verify that no auto-lock operations take place
-        verify((MockedVoidMethod) () -> Settings.Secure.getInt(any(),
-                eq(Settings.Secure.PRIVATE_SPACE_AUTO_LOCK), anyInt()), never());
-        Mockito.verify(mSpiedUms, never()).setQuietModeEnabledAsync(
-                eq(privateProfileUser.id), eq(true), any(), any());
-    }
-
-    @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testAutoLockAfterInactityForPrivateProfile() {
         int mainUser = mUms.getMainUserId();
@@ -764,8 +740,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testSetOrUpdateAutoLockPreference_noPrivateProfile() {
         mUms.setOrUpdateAutoLockPreferenceForPrivateProfile(
@@ -780,8 +755,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testSetOrUpdateAutoLockPreference() {
         int mainUser = mUms.getMainUserId();

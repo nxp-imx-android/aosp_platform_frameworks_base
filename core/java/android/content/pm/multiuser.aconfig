@@ -105,13 +105,6 @@ flag {
 }
 
 flag {
-    name: "support_autolock_for_private_space"
-    namespace: "profile_experiences"
-    description: "Add support to lock private space automatically after a time period"
-    bug: "303201022"
-}
-
-flag {
     name: "allow_resolver_sheet_for_private_space"
     namespace: "profile_experiences"
     description: "Add support for Private Space in resolver sheet"
