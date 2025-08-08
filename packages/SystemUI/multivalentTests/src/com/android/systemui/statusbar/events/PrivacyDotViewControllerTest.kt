@@ -18,20 +18,27 @@ package com.android.systemui.statusbar.events
 
 import android.graphics.Point
 import android.graphics.Rect
+import android.location.flags.Flags
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.UsesFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import android.view.DisplayAdjustments
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.widget.ImageView
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_SHADE_WINDOW_GOES_AROUND
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.privacy.PrivacyApplication
+import com.android.systemui.privacy.PrivacyItem
+import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
@@ -61,11 +68,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @RunWithLooper
-class PrivacyDotViewControllerTest : SysuiTestCase() {
+@UsesFlags(Flags::class)
+class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val mockDisplay = createMockDisplay()
@@ -104,6 +114,18 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
             displayId = DISPLAY_ID,
             shadeDisplaysInteractor = { shadeDisplaysInteractor },
         )
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
+        }
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Test
     fun topMargin_topLeftView_basedOnSeascapeArea() {
@@ -383,7 +405,7 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
             val callback: SystemStatusAnimationCallback = captor.value
             fakeAvControlsChipInteractor.isShowingAvChip.value = false
             // This informs the controller of an active privacy event.
-            callback.onSystemStatusAnimationTransitionToPersistentDot(null)
+            callback.onSystemStatusAnimationTransitionToPersistentDot(null, null)
             assertThat(controller.currentViewState.shouldShowDot()).isEqualTo(true)
         }
 
@@ -396,8 +418,73 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
             val callback: SystemStatusAnimationCallback = captor.value
             fakeAvControlsChipInteractor.isShowingAvChip.value = true
             // This informs the controller of an active privacy event.
-            callback.onSystemStatusAnimationTransitionToPersistentDot(null)
+            callback.onSystemStatusAnimationTransitionToPersistentDot(null, null)
             assertThat(controller.currentViewState.shouldShowDot()).isEqualTo(false)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
+    fun animationCallback_locationIndicatorsDisabled_doesNotDetermineLocationOnlyEvents() =
+        kosmos.runTest {
+            val captor = ArgumentCaptor.forClass(SystemStatusAnimationCallback::class.java)
+            val controller: PrivacyDotViewController = createAndInitializeController()
+            Mockito.verify(mockAnimationScheduler).addCallback(captor.capture())
+            val callback: SystemStatusAnimationCallback = captor.value
+            fakeAvControlsChipInteractor.isShowingAvChip.value = false
+            // This informs the controller of an active privacy event.
+            // Even with just the location event, the location-only flag is not set.
+            callback.onSystemStatusAnimationTransitionToPersistentDot(
+                null,
+                listOf(
+                    PrivacyItem(
+                        privacyType = PrivacyType.TYPE_LOCATION,
+                        application = PrivacyApplication(packageName = "com.android", uid = 1),
+                    )
+                ),
+            )
+            assertThat(controller.currentViewState.systemPrivacyEventLocationOnlyIsActive)
+                .isEqualTo(false)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
+    fun animationCallback_locationIndicatorsEnabled_determinesLocationOnlyEvents() =
+        kosmos.runTest {
+            val captor = ArgumentCaptor.forClass(SystemStatusAnimationCallback::class.java)
+            val controller: PrivacyDotViewController = createAndInitializeController()
+            Mockito.verify(mockAnimationScheduler).addCallback(captor.capture())
+            val callback: SystemStatusAnimationCallback = captor.value
+            fakeAvControlsChipInteractor.isShowingAvChip.value = false
+            // This informs the controller of an active privacy event.
+            // Multiple privacy items are active, so the location-only flag is not set.
+            callback.onSystemStatusAnimationTransitionToPersistentDot(
+                null,
+                listOf(
+                    PrivacyItem(
+                        privacyType = PrivacyType.TYPE_CAMERA,
+                        application = PrivacyApplication(packageName = "com.android", uid = 1),
+                    ),
+                    PrivacyItem(
+                        privacyType = PrivacyType.TYPE_LOCATION,
+                        application = PrivacyApplication(packageName = "com.android", uid = 2),
+                    ),
+                ),
+            )
+            assertThat(controller.currentViewState.systemPrivacyEventLocationOnlyIsActive)
+                .isEqualTo(false)
+
+            // Only location event is active, so the location-only flag is set.
+            callback.onSystemStatusAnimationTransitionToPersistentDot(
+                null,
+                listOf(
+                    PrivacyItem(
+                        privacyType = PrivacyType.TYPE_LOCATION,
+                        application = PrivacyApplication(packageName = "com.android", uid = 1),
+                    )
+                ),
+            )
+            assertThat(controller.currentViewState.systemPrivacyEventLocationOnlyIsActive)
+                .isEqualTo(true)
         }
 
     private fun setRotation(rotation: Int) {
@@ -405,7 +492,7 @@ class PrivacyDotViewControllerTest : SysuiTestCase() {
     }
 
     private fun initDotView(): View {
-        val privacyDot = View(context).also { it.id = R.id.privacy_dot }
+        val privacyDot = ImageView(context).also { it.id = R.id.privacy_dot }
         return FrameLayout(context).also {
             it.layoutParams = FrameLayout.LayoutParams(/* width= */ 0, /* height= */ 0)
             it.addView(privacyDot)
