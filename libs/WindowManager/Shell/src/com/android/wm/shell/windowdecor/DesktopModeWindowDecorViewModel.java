@@ -63,6 +63,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.util.SparseArray;
 import android.view.Choreographer;
@@ -1131,8 +1132,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     public class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
             implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
             View.OnGenericMotionListener, DragDetector.MotionEventHandler {
+        private static final String TAG = "DesktopModeTouchEventListener";
         private static final long APP_HANDLE_HOLD_TO_DRAG_DURATION_MS = 100;
         private static final long APP_HEADER_HOLD_TO_DRAG_DURATION_MS = 0;
+
+        private static final boolean DEBUG_MOTION_EVENTS = SystemProperties.getBoolean(
+                "persist.wm.debug.window_decoration_motion_events_debug", false);
 
         private final int mTaskId;
         private final WindowContainerToken mTaskToken;
@@ -1177,19 +1182,36 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             mGestureDetector = new GestureDetector(mContext, this);
         }
 
+        @NonNull
+        private String getResourceName(@Nullable View view) {
+            if (view == null) return "null";
+            final int id = view.getId();
+            if (id == R.id.back_button) return "back_button";
+            if (id == R.id.caption_handle) return "caption_handle";
+            if (id == R.id.close_window) return "close_window";
+            if (id == R.id.desktop_mode_caption) return "desktop_mode_caption";
+            if (id == R.id.maximize_window) return "maximize_window";
+            if (id == R.id.minimize_window) return "minimize_window";
+            if (id == R.id.open_menu_button) return "open_menu_button";
+            return "unknown";
+        }
+
         @Override
         public void onClick(View v) {
+            final String viewName = getResourceName(v);
+            logD("onClick(%s)", viewName);
             if (mIsDragging) {
+                logD("onClick(%s) while dragging in progress, ignoring", viewName);
                 mIsDragging = false;
                 return;
             }
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(mTaskId);
             if (decoration == null) {
+                logD("onClick(%s) but decoration is null, ignoring", viewName);
                 return;
             }
             final int id = v.getId();
             if (id == R.id.close_window) {
-                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick close_window: taskId=%d", mTaskId);
                 if (isTaskInSplitScreen(mTaskId)) {
                     mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(mTaskId).taskId,
                             SplitScreenController.EXIT_REASON_DESKTOP_MODE);
@@ -1214,16 +1236,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     }
                 }
             } else if (id == R.id.back_button) {
-                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick back_button: taskId=%d", mTaskId);
                 mTaskOperations.injectBackKey(decoration.getTaskInfo().displayId);
             } else if (id == R.id.caption_handle || id == R.id.open_menu_button) {
-                if (id == R.id.caption_handle) {
-                    ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick caption_handle: taskId=%d",
-                            mTaskId);
-                } else {
-                    ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick open_menu_button: taskId=%d",
-                            mTaskId);
-                }
                 if (id == R.id.caption_handle && !decoration.getTaskInfo().isFreeform()) {
                     // Clicking the App Handle.
                     mDesktopModeUiEventLogger.log(decoration.getTaskInfo(),
@@ -1235,8 +1249,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     openHandleMenu(mTaskId);
                 }
             } else if (id == R.id.maximize_window) {
-                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick maximize_window: taskId=%d",
-                        mTaskId);
                 // TODO(b/346441962): move click detection logic into the decor's
                 //  {@link AppHeaderViewHolder}. Let it encapsulate the that and have it report
                 //  back to the decoration using
@@ -1257,8 +1269,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             getInputMethod(mMotionEvent));
                 }
             } else if (id == R.id.minimize_window) {
-                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick minimize_window: taskId=%d",
-                        mTaskId);
                 if (DesktopExperienceFlags
                         .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
                     final int nextFocusedTaskId = mDesktopTasksController
@@ -1277,9 +1287,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public boolean onTouch(View v, MotionEvent e) {
             mMotionEvent = e;
+            final String viewName = getResourceName(v);
+            debugLogD("onTouch(%s) action=%s", viewName, MotionEvent.actionToString(e.getAction()));
             final int id = v.getId();
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(mTaskId);
             if (decoration == null) {
+                debugLogD("onTouch(%s) but decoration is null, ignoring", viewName);
                 return false;
             }
             final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
@@ -1288,14 +1301,18 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             // Disable long click during events from a non-touchscreen source
             mLongClickDisabled = !touchscreenSource && e.getActionMasked() != ACTION_UP
                     && e.getActionMasked() != ACTION_CANCEL;
+            debugLogD("onTouch(%s) isTouchscreen=%b longClickDisabled=%b",
+                    viewName, touchscreenSource, mLongClickDisabled);
 
             if (id != R.id.caption_handle && id != R.id.desktop_mode_caption
                     && id != R.id.open_menu_button && id != R.id.close_window
                     && id != R.id.maximize_window && id != R.id.minimize_window) {
+                debugLogD("onTouch(%s) unsupported view, ignoring", viewName);
                 return false;
             }
             if (e.isSynthesizedTouchpadGesture()) {
                 // Touchpad finger gestures are ignored.
+                debugLogD("onTouch(%s) but is touchpad gesture, ignoring", viewName);
                 return false;
             }
 
@@ -1340,6 +1357,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             if (mIsCustomHeaderGesture || mIsResizeGesture) {
                 // The event will be handled by the custom window below or pilfered by resize
                 // handler.
+                debugLogD("onTouch(%s) but mIsCustomHeaderGesture=%b mIsResizeGesture=%b, ignoring",
+                        viewName, mIsCustomHeaderGesture, mIsResizeGesture);
                 return false;
             }
             if (mInputManager != null
@@ -1364,20 +1383,29 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public boolean onLongClick(View v) {
+            final String viewName = getResourceName(v);
+            logD("onLongClick(%s)", viewName);
             final int id = v.getId();
-            if (id == R.id.maximize_window && !mLongClickDisabled) {
-                final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(mTaskId);
-                if (decoration == null) {
-                    return false;
-                }
-                moveTaskToFront(decoration.getTaskInfo());
-                if (decoration.getMaximizeMenuController() != null
-                        && !decoration.getMaximizeMenuController().isMaximizeMenuActive()) {
-                    decoration.getMaximizeMenuController().createMaximizeMenu();
-                }
-                return true;
+            if (id != R.id.maximize_window) {
+                logD("onLongClick(%s) but view is unsupported, ignoring", viewName);
+                return false;
             }
-            return false;
+            if (mLongClickDisabled) {
+                logD("onLongClick(%s) but long click is disabled, ignoring", viewName);
+                return false;
+            }
+            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                logD("onLongClick(%s) but decoration is null, ignoring", viewName);
+                return false;
+            }
+            moveTaskToFront(decoration.getTaskInfo());
+            if (decoration.getMaximizeMenuController() != null
+                    && !decoration.getMaximizeMenuController().isMaximizeMenuActive()) {
+                logD("onLongClick(%s) creating maximize menu", viewName);
+                decoration.getMaximizeMenuController().createMaximizeMenu();
+            }
+            return true;
         }
 
         /**
@@ -1414,15 +1442,20 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         private void moveTaskToFront(RunningTaskInfo taskInfo) {
             if (!mFocusTransitionObserver.hasGlobalFocus(taskInfo)) {
-                ProtoLog.d(WM_SHELL_DESKTOP_MODE,
-                        "%s: task#%d in display#%d does not have global focus, moving to front "
+                logD("moveTaskToFront display=%d "
                                 + "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
-                        TAG, taskInfo.taskId, taskInfo.displayId,
+                        taskInfo.displayId,
                         mFocusTransitionObserver.getGloballyFocusedTaskId(),
                         mFocusTransitionObserver.getGloballyFocusedDisplayId());
                 mDesktopModeUiEventLogger.log(taskInfo,
                         DesktopUiEventEnum.DESKTOP_WINDOW_HEADER_TAP_TO_REFOCUS);
                 mDesktopTasksController.moveTaskToFront(taskInfo);
+            } else {
+                debugLogD("moveTaskToFront already had global focus, skipping "
+                        + " display=%d globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                        taskInfo.displayId,
+                        mFocusTransitionObserver.getGloballyFocusedTaskId(),
+                        mFocusTransitionObserver.getGloballyFocusedDisplayId());
             }
         }
 
@@ -1432,8 +1465,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
          */
         @Override
         public boolean handleMotionEvent(@Nullable View v, MotionEvent e) {
+            final String viewName = getResourceName(v);
+            debugLogD("handleMotionEvent(%s) action=%s",
+                    viewName, MotionEvent.actionToString(e.getAction()));
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(mTaskId);
             if (decoration == null) {
+                debugLogD("handleMotionEvent(%s) but decoration is null, ignoring", viewName);
                 return false;
             }
             final RunningTaskInfo taskInfo = decoration.getTaskInfo();
@@ -1448,28 +1485,35 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private boolean handleNonFreeformMotionEvent(WindowDecorationWrapper decoration,
                 View v, MotionEvent e) {
             final int id = v.getId();
-            if (id == R.id.caption_handle) {
-                handleCaptionThroughStatusBar(e, decoration,
-                        /* interruptDragCallback= */
-                        () -> {
-                            mDragInterrupted = true;
-                            setIsDragging(decoration, /* isDragging= */ false);
-                        });
-                final boolean wasDragging = mIsDragging;
-                updateDragStatus(decoration, e);
-                final boolean upOrCancel = e.getActionMasked() == ACTION_UP
-                        || e.getActionMasked() == ACTION_CANCEL;
-                if (wasDragging && upOrCancel) {
-                    // When finishing a drag the event will be consumed, which means the pressed
-                    // state of the App Handle must be manually reset to scale its drawable back to
-                    // its original shape. This is necessary for drag gestures of the Handle that
-                    // result in a cancellation (dragging back to the top).
-                    v.setPressed(false);
-                }
-                // Only prevent onClick from receiving this event if it's a drag.
-                return wasDragging;
+            final String viewName = getResourceName(v);
+            debugLogD("handleNonFreeformMotionEvent(%s)", viewName);
+            if (id != R.id.caption_handle) {
+                debugLogD("handleNonFreeformMotionEvent(%s) unsupported view, ignoring",
+                        viewName);
+                return false;
             }
-            return false;
+            handleCaptionThroughStatusBar(e, decoration,
+                    /* interruptDragCallback= */
+                    () -> {
+                        logD("handleNonFreeformMotionEvent(%s) drag interrupted", viewName);
+                        mDragInterrupted = true;
+                        setIsDragging(decoration, /* isDragging= */ false);
+                    });
+            final boolean wasDragging = mIsDragging;
+            updateDragStatus(decoration, e);
+            final boolean upOrCancel = e.getActionMasked() == ACTION_UP
+                    || e.getActionMasked() == ACTION_CANCEL;
+            debugLogD("handleNonFreeformMotionEvent(%s) wasDragging=%b isDragging=%b upOrCancel=%b",
+                    wasDragging, mIsDragging, upOrCancel);
+            if (wasDragging && upOrCancel) {
+                // When finishing a drag the event will be consumed, which means the pressed
+                // state of the App Handle must be manually reset to scale its drawable back to
+                // its original shape. This is necessary for drag gestures of the Handle that
+                // result in a cancellation (dragging back to the top).
+                v.setPressed(false);
+            }
+            // Only prevent onClick from receiving this event if it's a drag.
+            return wasDragging;
         }
 
         private void setIsDragging(@Nullable WindowDecorationWrapper decor, boolean isDragging) {
@@ -1480,9 +1524,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         private boolean handleFreeformMotionEvent(WindowDecorationWrapper decoration,
                 RunningTaskInfo taskInfo, View v, MotionEvent e) {
+            final String viewName = getResourceName(v);
+            debugLogD("handleFreeformMotionEvent(%s)", viewName);
             updateTouchStatus(e);
             final int id = v.getId();
             if (mGestureDetector.onTouchEvent(e)) {
+                debugLogD("handleFreeformMotionEvent(%s) handled by gesture detector", viewName);
                 return true;
             }
             final boolean touchingButton = (id == R.id.close_window || id == R.id.maximize_window
@@ -1501,6 +1548,20 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         updateDragStatus(decoration, e);
                         mOnDragStartInitialBounds.set(initialBounds);
                         mCurrentBounds.set(initialBounds);
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "dispatched |onDragPositioningStart| dragAllowed=%b "
+                                        + "isDragging=%b mOnDragStartInitialBounds=%s "
+                                        + "mCurrentBounds=%s touchingButton=%b",
+                                viewName, MotionEvent.actionToString(e.getAction()), dragAllowed,
+                                mIsDragging, mOnDragStartInitialBounds, mCurrentBounds,
+                                touchingButton);
+                    } else {
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s dragAllowed=%b "
+                                        + "isDragging=%b mOnDragStartInitialBounds=%s "
+                                        + "mCurrentBounds=%s touchingButton=%b",
+                                viewName, MotionEvent.actionToString(e.getAction()), dragAllowed,
+                                mIsDragging, mOnDragStartInitialBounds, mCurrentBounds,
+                                touchingButton);
                     }
                     // Do not consume input event if a button is touched, otherwise it would
                     // prevent the button's ripple effect from showing.
@@ -1508,9 +1569,19 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 }
                 case ACTION_MOVE: {
                     // If a decor's resize drag zone is active, don't also try to reposition it.
-                    if (decoration.isHandlingDragResize()) break;
+                    if (decoration.isHandlingDragResize()) {
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "handling drag resize, ignore",
+                                viewName, MotionEvent.actionToString(e.getAction()));
+                        break;
+                    }
                     // Dragging the header isn't allowed, so skip the positioning work.
-                    if (!dragAllowed) break;
+                    if (!dragAllowed) {
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "drag is not allowed, ignore",
+                                viewName, MotionEvent.actionToString(e.getAction()));
+                        break;
+                    }
 
                     if (e.findPointerIndex(mDragPointerId) == -1) {
                         mDragPointerId = e.getPointerId(0);
@@ -1531,11 +1602,24 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
                                     e.getDisplayId(),
                                     e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
+                            debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                            + "inDesktopModeDisplay=%b dispatched "
+                                            + "|onDragPositioningMove| mCurrentBounds=%s",
+                                    viewName, MotionEvent.actionToString(e.getAction()),
+                                    inDesktopModeDisplay, mCurrentBounds);
+                        } else {
+                            debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                            + "not a desktop mode display, ignore",
+                                    viewName, MotionEvent.actionToString(e.getAction()));
                         }
                     } else {
                         mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
                                 e.getDisplayId(),
                                 e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s dispatched "
+                                        + "|onDragPositioningMove| mCurrentBounds=%s",
+                                viewName, MotionEvent.actionToString(e.getAction()),
+                                mCurrentBounds);
                     }
 
                     mDesktopTasksController.onDragPositioningMove(taskInfo,
@@ -1544,6 +1628,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             e.getRawX(dragPointerIdx),
                             e.getRawY(dragPointerIdx),
                             mCurrentBounds);
+                    debugLogD("handleFreeformMotionEvent(%s) action=%s updated controller "
+                                    + "mIsDragging=%b mCurrentBounds=%s "
+                                    + "mOnDragStartInitialBounds=%s",
+                            viewName, MotionEvent.actionToString(e.getAction()), mIsDragging,
+                            mCurrentBounds, mOnDragStartInitialBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
                     if (mIsDragging || !mCurrentBounds.equals(mOnDragStartInitialBounds)) {
                         updateDragStatus(decoration, e);
@@ -1554,6 +1643,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 case MotionEvent.ACTION_CANCEL: {
                     final boolean wasDragging = mIsDragging;
                     if (!wasDragging) {
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "was not dragging, ignore",
+                                viewName, MotionEvent.actionToString(e.getAction()));
                         return false;
                     }
                     mDesktopModeUiEventLogger.log(taskInfo,
@@ -1565,6 +1657,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningEnd(
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
+                    debugLogD("handleFreeformMotionEvent(%s) action=%s dispatched "
+                                    + "|onDragPositioningEnd| newTaskBounds=%s",
+                            viewName, MotionEvent.actionToString(e.getAction()), newTaskBounds);
 
                     if (DesktopExperienceFlags
                             .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
@@ -1575,19 +1670,32 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         if (!mShellDesktopState
                                 .isEligibleWindowDropTarget(e.getDisplayId())) {
                             newTaskBounds.set(mOnDragStartInitialBounds);
+                            debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                            + "pointer in non-desktop display(%d), "
+                                            + "reverted to initial bounds=%s",
+                                    viewName, MotionEvent.actionToString(e.getAction()),
+                                    e.getDisplayId(), newTaskBounds);
                         }
                     }
 
                     // Tasks bounds haven't actually been updated (only its leash), so pass to
                     // DesktopTasksController to allow secondary transformations (i.e. snap resizing
                     // or transforming to fullscreen) before setting new task bounds.
+                    final Rect validDragArea = decoration.calculateValidDragArea();
                     final boolean needDragIndicatorCleanup =
                             mDesktopTasksController.onDragPositioningEnd(
                                     taskInfo, decoration.getTaskSurface(), e.getDisplayId(),
-                                    new PointF(e.getRawX(dragPointerIdx),
-                                            e.getRawY(dragPointerIdx)),
-                                    newTaskBounds, decoration.calculateValidDragArea(),
+                                    new PointF(
+                                            e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
+                                    newTaskBounds, validDragArea,
                                     new Rect(mOnDragStartInitialBounds), e);
+                    debugLogD("handleFreeformMotionEvent(%s) action=%s updated controller "
+                                    + "newTaskBounds%s validDragArea=%s "
+                                    + "mOnDragStartInitialBounds=%s touchingButton=%b "
+                                    + "needDragIndicatorCleanup=%b",
+                            viewName, MotionEvent.actionToString(e.getAction()), newTaskBounds,
+                            validDragArea, mOnDragStartInitialBounds, touchingButton,
+                            needDragIndicatorCleanup);
                     if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue()) {
                         if (needDragIndicatorCleanup) {
                             mMultiDisplayDragMoveIndicatorController.onDragEnd(taskInfo.taskId,
@@ -1599,11 +1707,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         // We need the input event to not be consumed here to end the ripple
                         // effect on the touched button. We will reset drag state in the ensuing
                         // onClick call that results.
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "touching button, ignore",
+                                viewName, MotionEvent.actionToString(e.getAction()));
                         return false;
-                    } else {
-                        updateDragStatus(decoration, e);
-                        return true;
                     }
+                    updateDragStatus(decoration, e);
+                    return true;
                 }
             }
             return true;
@@ -1635,6 +1745,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     break;
                 }
             }
+            debugLogD("updateDragStatus action=%s updated mIsDragging=%b mDragInterrupted=%b",
+                    MotionEvent.actionToString(e.getAction()), mIsDragging, mDragInterrupted);
         }
 
         private void updateTouchStatus(MotionEvent e) {
@@ -1676,6 +1788,17 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     ToggleTaskSizeInteraction.AmbiguousSource.DOUBLE_TAP,
                     getInputMethod(mMotionEvent));
             return true;
+        }
+
+        private void debugLogD(@NonNull String msg, @NonNull Object... args) {
+            if (DEBUG_MOTION_EVENTS) {
+                logD(msg, args);
+            }
+        }
+
+        private void logD(@NonNull String msg, @NonNull Object... args) {
+            ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: (taskId=%d) %s",
+                    TAG, mTaskId, String.format(msg, args));
         }
     }
 
