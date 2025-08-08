@@ -24,6 +24,7 @@ import com.android.systemui.qs.footerActionsViewModelFactory
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 
 val Kosmos.quickSettingsSceneContentViewModel by Fixture {
     QuickSettingsSceneContentViewModel(
@@ -34,6 +35,7 @@ val Kosmos.quickSettingsSceneContentViewModel by Fixture {
         shadeModeInteractor = shadeModeInteractor,
         sceneInteractor = sceneInteractor,
         mainDispatcher = testDispatcher,
+        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
     )
 }
 

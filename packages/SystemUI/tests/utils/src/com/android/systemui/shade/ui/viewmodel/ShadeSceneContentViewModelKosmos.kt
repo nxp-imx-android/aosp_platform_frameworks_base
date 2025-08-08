@@ -32,6 +32,7 @@ import com.android.systemui.settings.brightness.ui.viewmodel.brightnessMirrorVie
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 
 val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
     ShadeSceneContentViewModel(
@@ -50,6 +51,7 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
         sceneInteractor = sceneInteractor,
         tileSquishinessInteractor = tileSquishinessInteractor,
         mediaViewModelFactory = mediaViewModelFactory,
+        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
     )
 }
 

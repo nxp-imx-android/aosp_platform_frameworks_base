@@ -70,7 +70,6 @@ import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
@@ -235,7 +234,6 @@ private fun ContentScope.SingleShade(
 ) {
     val cutout = LocalDisplayCutout.current
     val cutoutInsets = WindowInsets.Companion.displayCutout
-    val shadePanelColor = LocalAndroidColorScheme.current.surfaceEffect1
 
     var maxNotifScrimTop by remember { mutableIntStateOf(0) }
     val tileSquishiness by
@@ -286,12 +284,7 @@ private fun ContentScope.SingleShade(
         }
 
     Box(modifier) {
-        Box(
-            modifier =
-                Modifier.fillMaxSize()
-                    .element(Shade.Elements.BackgroundScrim)
-                    .background(shadePanelColor)
-        )
+        ShadePanelScrim(viewModel.isTransparencyEnabled)
         Layout(
             modifier =
                 Modifier.thenIf(viewModel.isEmptySpaceClickable) {
