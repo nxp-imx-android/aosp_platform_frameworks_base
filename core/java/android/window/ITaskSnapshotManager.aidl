@@ -46,11 +46,13 @@ interface ITaskSnapshotManager {
      *                    If it is true, the snapshot can be either real content or app-theme mode
      *                    depending on the attributes of app. Otherwise, the snapshot will be taken
      *                    with real content.
+     * @param lowResolution Whether to get the new snapshot in low resolution.
      * @throws RemoteException
      * @return a graphic buffer representing a screenshot of a task, or {@code null} if no
      *         corresponding task can be found.
      */
-    android.window.TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache);
+    android.window.TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
+            boolean lowResolution);
 
     void registerTaskSnapshotListener(in ITaskSnapshotListener listener);
     void unregisterTaskSnapshotListener(in ITaskSnapshotListener listener);

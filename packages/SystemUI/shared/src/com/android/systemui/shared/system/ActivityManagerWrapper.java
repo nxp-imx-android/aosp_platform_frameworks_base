@@ -178,6 +178,30 @@ public class ActivityManagerWrapper {
     }
 
     /**
+     * Requests for a new snapshot to be taken for the given task, stores it in the cache, and
+     * returns a {@link ThumbnailData} with specific resolution as result.
+     */
+    @NonNull
+    public ThumbnailData takeTaskThumbnail(int taskId, boolean lowResolution) {
+        if (!com.android.window.flags.Flags.respectRequestedTaskSnapshotResolution()
+                || !com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+            return takeTaskThumbnail(taskId);
+        }
+        TaskSnapshot snapshot = null;
+        try {
+            snapshot = TaskSnapshotManager.getInstance().takeTaskSnapshot(taskId,
+                    true /* updateCache */, lowResolution);
+        } catch (RemoteException e) {
+            Log.w(TAG, "Failed to take task snapshot", e);
+        }
+        if (snapshot != null) {
+            return ThumbnailData.fromSnapshot(snapshot);
+        } else {
+            return new ThumbnailData();
+        }
+    }
+
+    /**
      * Removes the outdated snapshot of home task.
      *
      * @param homeActivity The home task activity, or null if you have the

@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.window.TaskSnapshot.REFERENCE_NONE;
 
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_SCREENSHOT;
@@ -28,6 +29,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Trace;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.view.Display;
@@ -41,6 +43,7 @@ import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
 import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 /**
  * When an app token becomes invisible, we take a snapshot (bitmap) of the corresponding task and
@@ -63,6 +66,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     private final Handler mHandler = new Handler();
 
     private final PersistInfoProvider mPersistInfoProvider;
+    final boolean mOnlyCacheLowResSnapshot;
 
     TaskSnapshotController(WindowManagerService service, SnapshotPersistQueue persistQueue) {
         super(service);
@@ -79,6 +83,9 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 mPersistInfoProvider,
                 shouldDisableSnapshots());
         initialize(new TaskSnapshotCache(new AppSnapshotLoader(mPersistInfoProvider)));
+        mOnlyCacheLowResSnapshot = Flags.reduceTaskSnapshotMemoryUsage()
+                && Flags.respectRequestedTaskSnapshotResolution()
+                && mPersistInfoProvider.enableLowResSnapshots();
     }
 
     static PersistInfoProvider createPersistInfoProvider(WindowManagerService service,
@@ -164,10 +171,69 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 snapshot.addReference(initialUsage);
             }
             if (!task.isActivityTypeHome()) {
-                mPersister.persistSnapshot(task.mTaskId, task.mUserId, snapshot);
+                final var updateCacheFunction = mOnlyCacheLowResSnapshot
+                        ? updateLowResToCacheFunction(task, snapshot.getId()) : null;
+                mPersister.persistSnapshotAndConvert(
+                        task.mTaskId, task.mUserId, snapshot, updateCacheFunction);
                 task.onSnapshotChanged(snapshot);
             }
         });
+    }
+
+    private Consumer<BaseAppSnapshotPersister.LowResSnapshotSupplier> updateLowResToCacheFunction(
+            Task task, long snapshotId) {
+        return supplier -> mHandler.post(() -> {
+            boolean abort = false;
+            synchronized (mService.mGlobalLock) {
+                if (!task.isAttached()) {
+                    abort = true;
+                } else {
+                    final TaskSnapshot previous = mCache.getSnapshot(task.mTaskId,
+                            TaskSnapshotManager.RESOLUTION_ANY, TaskSnapshot.REFERENCE_NONE);
+                    if (previous == null || previous.isLowResolution()
+                            || previous.getId() != snapshotId) {
+                        abort = true;
+                    }
+                }
+            }
+            if (abort) {
+                supplier.abort();
+                return;
+            }
+            try {
+                Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "updateLowSnapshotToCache");
+                final TaskSnapshot converted = supplier.getLowResSnapshot();
+                if (converted == null) {
+                    return;
+                }
+                synchronized (mService.mGlobalLock) {
+                    if (!task.isAttached()
+                            || !updateCacheWithLowResSnapshotIfNeeded(task, converted)) {
+                        converted.closeBuffer();
+                    }
+                }
+            } finally {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+            }
+        });
+    }
+
+    /**
+     * Updates the cache with the low-resolution snapshot if the existing snapshot in the cache
+     * is a high-resolution snapshot with the same id.
+     *
+     * @param task The task associated with the snapshot.
+     * @param lowSnapshot The low-resolution snapshot to update the cache with.
+     * @return {@code true} if the cache was updated, {@code false} otherwise.
+     */
+    boolean updateCacheWithLowResSnapshotIfNeeded(Task task, TaskSnapshot lowSnapshot) {
+        final TaskSnapshot tmp = getSnapshot(
+                task.mTaskId, TaskSnapshotManager.RESOLUTION_ANY);
+        if (tmp != null && !tmp.isLowResolution() && tmp.getId() == lowSnapshot.getId()) {
+            mCache.putSnapshot(task, lowSnapshot);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -225,6 +291,23 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
             boolean isLowResolution, @TaskSnapshot.ReferenceFlags int usage) {
         return mCache.getSnapshotFromDisk(taskId, userId, isLowResolution
                 && mPersistInfoProvider.enableLowResSnapshots(), usage);
+    }
+
+    /**
+     * Creates a low-resolution snapshot from a given high-resolution snapshot.
+     * This is only valid if persisting low-resolution snapshots is enabled.
+     *
+     * @param inCacheSnapshot The high-resolution snapshot from cache which to create the
+     *                        low-resolution version.
+     * @return The low-resolution snapshot, or {@code null} if persisting low-resolution snapshots
+     *         is not enabled.
+     */
+    TaskSnapshot createLowResSnapshot(TaskSnapshot inCacheSnapshot) {
+        if (!mPersistInfoProvider.enableLowResSnapshots()) {
+            return null;
+        }
+        return TaskSnapshotConvertUtil.convertSnapshotToLowRes(
+                inCacheSnapshot, mPersistInfoProvider.lowResScaleFactor());
     }
 
     /**
