@@ -1587,7 +1587,7 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
         mInstrumentation.runOnMainSync(
                 () -> {
                     mWindowMagnificationController
-                            .onDrag(getInternalView(R.id.bottom_right_corner), 2f, 1f);
+                            .onDrag(getInternalView(R.id.bottom_right_corner), 2, 1);
                     actualWindowHeight.set(
                             mSurfaceControlViewHost.getView().getLayoutParams().height);
                     actualWindowWidth.set(
@@ -1617,7 +1617,7 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
                     mWindowMagnificationController.setWindowSize(startingSize, startingSize);
                     mWindowMagnificationController.setEditMagnifierSizeMode(true);
                     mWindowMagnificationController
-                            .onDrag(getInternalView(R.id.bottom_handle), 2f, 1f);
+                            .onDrag(getInternalView(R.id.bottom_handle), 2, 1);
                     actualWindowHeight.set(
                             mSurfaceControlViewHost.getView().getLayoutParams().height);
                     actualWindowWidth.set(

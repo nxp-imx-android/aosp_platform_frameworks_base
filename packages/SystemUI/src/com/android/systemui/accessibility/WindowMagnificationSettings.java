@@ -307,18 +307,18 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     }
 
     @Override
-    public boolean onDrag(View v, float offsetX, float offsetY) {
+    public boolean onDrag(View v, int offsetX, int offsetY) {
         moveButton(offsetX, offsetY);
         return true;
     }
 
     @Override
-    public boolean onStart(float x, float y) {
+    public boolean onStart() {
         return true;
     }
 
     @Override
-    public boolean onFinish(float xOffset, float yOffset) {
+    public boolean onFinish() {
         if (!mSingleTapDetected) {
             showSettingPanel();
         }
@@ -331,7 +331,7 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         return mSettingView;
     }
 
-    private void moveButton(float offsetX, float offsetY) {
+    private void moveButton(int offsetX, int offsetY) {
         mSfVsyncFrameProvider.postFrameCallback(l -> {
             mParams.x += offsetX;
             mParams.y += offsetY;

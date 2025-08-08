@@ -16,12 +16,14 @@
 
 package com.android.systemui.accessibility;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.os.Handler;
@@ -43,6 +45,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -52,8 +55,8 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class MagnificationGestureDetectorTest extends SysuiTestCase {
 
-    private static final float ACTION_DOWN_X = 100;
-    private static final float ACTION_DOWN_Y = 200;
+    private static final int ACTION_DOWN_X = 100;
+    private static final int ACTION_DOWN_Y = 200;
     private final int mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
     private MagnificationGestureDetector mGestureDetector;
     private final MotionEventHelper mMotionEventHelper = new MotionEventHelper();
@@ -88,7 +91,7 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
 
         mGestureDetector.onTouch(mSpyView, downEvent);
 
-        mListener.onStart(ACTION_DOWN_X, ACTION_DOWN_Y);
+        verify(mListener).onStart();
     }
 
     @Test
@@ -103,10 +106,10 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
         mGestureDetector.onTouch(mSpyView, upEvent);
 
         InOrder inOrder = Mockito.inOrder(mListener);
-        inOrder.verify(mListener).onStart(ACTION_DOWN_X, ACTION_DOWN_Y);
+        inOrder.verify(mListener).onStart();
         inOrder.verify(mListener).onSingleTap(mSpyView);
-        inOrder.verify(mListener).onFinish(ACTION_DOWN_X, ACTION_DOWN_Y);
-        verify(mListener, never()).onDrag(eq(mSpyView), anyFloat(), anyFloat());
+        inOrder.verify(mListener).onFinish();
+        verify(mListener, never()).onDrag(eq(mSpyView), anyInt(), anyInt());
     }
 
     @Test
@@ -182,15 +185,15 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
         mGestureDetector.onTouch(mSpyView, upEvent);
 
         InOrder inOrder = Mockito.inOrder(mListener);
-        inOrder.verify(mListener).onStart(ACTION_DOWN_X, ACTION_DOWN_Y);
-        inOrder.verify(mListener).onFinish(ACTION_DOWN_X, ACTION_DOWN_Y);
+        inOrder.verify(mListener).onStart();
+        inOrder.verify(mListener).onFinish();
         verify(mListener, never()).onSingleTap(mSpyView);
     }
 
     @Test
     public void performDrag_invokeCallbacksInOrder() {
         final long downTime = SystemClock.uptimeMillis();
-        final float dragOffset = mTouchSlop + 10;
+        final int dragOffset = mTouchSlop + 10;
         final MotionEvent downEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
                 MotionEvent.ACTION_DOWN, ACTION_DOWN_X, ACTION_DOWN_Y);
         final MotionEvent moveEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
@@ -203,9 +206,9 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
         mGestureDetector.onTouch(mSpyView, upEvent);
 
         InOrder inOrder = Mockito.inOrder(mListener);
-        inOrder.verify(mListener).onStart(ACTION_DOWN_X, ACTION_DOWN_Y);
+        inOrder.verify(mListener).onStart();
         inOrder.verify(mListener).onDrag(mSpyView, dragOffset, 0);
-        inOrder.verify(mListener).onFinish(ACTION_DOWN_X, ACTION_DOWN_Y);
+        inOrder.verify(mListener).onFinish();
         verify(mListener, never()).onSingleTap(mSpyView);
     }
 
@@ -239,8 +242,54 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
         mGestureDetector.onTouch(mSpyView, moveEvent);
         mGestureDetector.onTouch(mSpyView, upEvent);
 
-        verify(mListener).onStart(ACTION_DOWN_X, ACTION_DOWN_Y);
+        verify(mListener).onStart();
         verify(mListener).onDrag(mSpyView, mTouchSlop + 30, 0);
-        verify(mListener).onFinish(ACTION_DOWN_X, ACTION_DOWN_Y);
+        verify(mListener).onFinish();
+    }
+
+    @Test
+    public void dragWithFractionalOffsets_totalDragOffsetIsCorrect() {
+        final long downTime = SystemClock.uptimeMillis();
+        final float dragOffsetX = 0.6f;
+        final float dragOffsetY = -0.6f;
+        final int dragCount = 4;
+        final float startX = ACTION_DOWN_X;
+        final float startY = ACTION_DOWN_Y;
+
+        final MotionEvent downEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
+                MotionEvent.ACTION_DOWN, startX, startY);
+        mGestureDetector.onTouch(mSpyView, downEvent);
+
+        final float firstMoveX = startX + mTouchSlop + 1;
+        final float firstMoveY = startY - mTouchSlop - 1;
+        final MotionEvent firstMoveEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
+                MotionEvent.ACTION_MOVE, firstMoveX, firstMoveY);
+        mGestureDetector.onTouch(mSpyView, firstMoveEvent);
+
+        for (int i = 1; i <= dragCount; i++) {
+            final MotionEvent moveEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
+                    MotionEvent.ACTION_MOVE, firstMoveX + dragOffsetX * i,
+                    firstMoveY + dragOffsetY * i);
+            mGestureDetector.onTouch(mSpyView, moveEvent);
+        }
+
+        final MotionEvent upEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
+                MotionEvent.ACTION_UP, firstMoveX + dragOffsetX * dragCount,
+                firstMoveY + dragOffsetY * dragCount);
+        mGestureDetector.onTouch(mSpyView, upEvent);
+
+        ArgumentCaptor<Integer> offsetXCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<Integer> offsetYCaptor = ArgumentCaptor.forClass(Integer.class);
+        verify(mListener, times(dragCount + 1)).onDrag(eq(mSpyView), offsetXCaptor.capture(),
+                offsetYCaptor.capture());
+
+        int totalOffsetX = offsetXCaptor.getAllValues().stream().mapToInt(Integer::intValue).sum();
+        int totalOffsetY = offsetYCaptor.getAllValues().stream().mapToInt(Integer::intValue).sum();
+        int expectedTotalOffsetX = (int) (mTouchSlop + 1 + dragOffsetX * dragCount);
+        int expectedTotalOffsetY = (int) (-mTouchSlop - 1 + dragOffsetY * dragCount);
+        assertEquals("Total X offset should be accumulated correctly",
+                expectedTotalOffsetX, totalOffsetX);
+        assertEquals("Total Y offset should be accumulated correctly",
+                expectedTotalOffsetY, totalOffsetY);
     }
 }
