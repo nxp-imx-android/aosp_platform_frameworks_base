@@ -484,6 +484,16 @@ flag {
 }
 
 flag {
+    name: "excluding_layer_from_task_snapshot"
+    namespace: "windowing_frontend"
+    description: "Supports excluding non-window layers from being included in a task snapshot."
+    bug: "399228526"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fallback_transition_player"
     namespace: "windowing_frontend"
     description: "Use a fallback transition-player while sysui is starting or crashed."
