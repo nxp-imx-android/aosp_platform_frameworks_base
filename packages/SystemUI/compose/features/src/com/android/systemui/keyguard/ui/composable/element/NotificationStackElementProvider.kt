@@ -16,17 +16,23 @@
 
 package com.android.systemui.keyguard.ui.composable.element
 
+import android.content.Context
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
-import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
-import com.android.systemui.keyguard.ui.viewmodel.BurnInParameters
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.ConstrainedNotificationStack
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
@@ -35,19 +41,35 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel
 import dagger.Lazy
 import javax.inject.Inject
+import kotlin.collections.List
 
 @SysUISingleton
-class NotificationElement
+class NotificationStackElementProvider
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     private val stackScrollView: Lazy<NotificationScrollView>,
     private val viewModelFactory: NotificationsPlaceholderViewModel.Factory,
-    private val aodBurnInViewModel: AodBurnInViewModel,
     sharedNotificationContainer: SharedNotificationContainer,
     sharedNotificationContainerViewModel: SharedNotificationContainerViewModel,
     stackScrollLayout: NotificationStackScrollLayout,
     sharedNotificationContainerBinder: SharedNotificationContainerBinder,
-) {
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(notificationElement) }
+
+    private val notificationElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.Notifications.Stack
+            override val context = this@NotificationStackElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                NotificationStack(factory, context)
+            }
+        }
 
     init {
         // This scene container section moves the NSSL to the SharedNotificationContainer.
@@ -67,31 +89,16 @@ constructor(
         )
     }
 
-    /**
-     * @param burnInParams params to make this view adaptive to burn-in, `null` to disable burn-in
-     *   adjustment
-     */
     @Composable
-    fun ContentScope.Notifications(
-        areNotificationsVisible: Boolean,
-        burnInParams: BurnInParameters?,
+    private fun ContentScope.NotificationStack(
+        factory: LockscreenElementFactory,
+        context: LockscreenElementContext,
         modifier: Modifier = Modifier,
     ) {
-        if (!areNotificationsVisible) {
-            return
-        }
-
         ConstrainedNotificationStack(
             stackScrollView = stackScrollView.get(),
             viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
-            modifier =
-                modifier.fillMaxSize().let {
-                    if (burnInParams == null) {
-                        it
-                    } else {
-                        it.burnInAware(viewModel = aodBurnInViewModel, params = burnInParams)
-                    }
-                },
+            modifier = modifier.fillMaxSize(),
         )
     }
 }
