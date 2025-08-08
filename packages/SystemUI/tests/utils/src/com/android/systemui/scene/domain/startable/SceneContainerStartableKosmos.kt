@@ -33,6 +33,7 @@ import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.trustInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -93,5 +94,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         trustInteractor = trustInteractor,
         sysuiStateInteractor = sysuiStateInteractor,
         shadeDisplaysInteractor = { shadeDisplaysInteractor },
+        surfaceBehindInteractor = keyguardSurfaceBehindInteractor,
     )
 }

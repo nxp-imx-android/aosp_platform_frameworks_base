@@ -45,6 +45,7 @@ import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
 import com.android.systemui.log.table.TableLogBuffer
@@ -155,6 +156,7 @@ constructor(
     private val trustInteractor: TrustInteractor,
     private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
     private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -286,11 +288,13 @@ constructor(
                                 headsUpInteractor.isHeadsUpOrAnimatingAway,
                                 occlusionInteractor.invisibleDueToOcclusion,
                                 alternateBouncerInteractor.isVisible,
+                                surfaceBehindInteractor.isAnimatingSurface,
                             ) {
                                 transitionState,
                                 isHeadsUpOrAnimatingAway,
                                 invisibleDueToOcclusion,
-                                isAlternateBouncerVisible ->
+                                isAlternateBouncerVisible,
+                                isAnimatingSurface ->
                                 val isCommunalShowing =
                                     transitionState.isTransitioningFromOrTo(Scenes.Communal) ||
                                         transitionState.isIdle(Scenes.Communal)
@@ -322,6 +326,7 @@ constructor(
                                 when {
                                     isCommunalShowing ->
                                         true to "on or transitioning to/from communal"
+                                    isAnimatingSurface -> true to "animating surface behind"
                                     isHeadsUpOrAnimatingAway -> true to "showing a HUN"
                                     isAlternateBouncerVisible -> true to "showing alternate bouncer"
                                     // We need to be visible during transitions, even if occlusion
