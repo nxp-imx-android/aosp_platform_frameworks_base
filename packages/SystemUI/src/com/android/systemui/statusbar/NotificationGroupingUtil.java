@@ -499,7 +499,9 @@ public class NotificationGroupingUtil {
                 R.id.big_text,
                 R.id.title,
                 R.id.notification_main_column,
-                R.id.notification_header};
+                R.id.notification_header,
+                notificationsRedesignTemplates() ? R.id.notification_top_line : -1
+        };
 
         @Override
         public void apply(View parent, View child, boolean apply, boolean reset) {
