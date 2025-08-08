@@ -5705,12 +5705,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 return;
             }
 
-            UserHandle user = Binder.getCallingUserHandle();
             DexUseManagerLocal dexUseManager = DexOptHelper.getDexUseManagerLocal();
-            // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
             try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
-                    LocalManagerRegistry.getManager(PackageManagerLocal.class)
-                            .withFilteredSnapshot(callingUid, user)) {
+                            LocalManagerRegistry.getManager(PackageManagerLocal.class)
+                                    .withUnownedFilteredSnapshot(snapshot)) {
                 // This is called from binder, so exceptions thrown here are caught and handled
                 // by it.
                 dexUseManager.notifyDexContainersLoaded(
@@ -7662,10 +7660,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         PackageManagerServiceUtils.enforceSystemOrRootOrShell(
                 "Only the system or shell can delete oat artifacts");
 
-        // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
         try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
                         PackageManagerServiceUtils.getPackageManagerLocal()
-                                .withFilteredSnapshot()) {
+                                .withUnownedFilteredSnapshot(snapshot)) {
             try {
                 DeleteResult res = DexOptHelper.getArtManagerLocal().deleteDexoptArtifacts(
                         filteredSnapshot, packageName);
