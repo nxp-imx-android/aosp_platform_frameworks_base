@@ -658,6 +658,7 @@ com.android.internal.util.IntPair
 com.android.internal.util.LineBreakBufferedWriter
 com.android.internal.util.LocalLog
 com.android.internal.util.MessageUtils
+com.android.internal.util.NamedLock
 com.android.internal.util.ObjectUtils
 com.android.internal.util.Parcelling
 com.android.internal.util.ParseUtils
