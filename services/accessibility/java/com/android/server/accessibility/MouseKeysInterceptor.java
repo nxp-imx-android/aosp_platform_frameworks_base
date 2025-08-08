@@ -736,10 +736,10 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     private boolean deviceHasNumpad(@NonNull InputDevice device) {
         final int deviceId = device.getId();
-        Boolean hasNumpad = mDeviceNumpadCapabilityCache.get(deviceId);
 
-        if (hasNumpad != null) {
-            return hasNumpad;
+        // Return numpad capability for device if the device ID exists in the cache
+        if (mDeviceNumpadCapabilityCache.indexOfKey(deviceId) >= 0) {
+            return mDeviceNumpadCapabilityCache.get(deviceId);
         }
 
         int[] numpadKeys = MouseKeyEvent.getAllMouseKeys(/* usePrimaryKeys= */ false);
@@ -880,11 +880,7 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     @Override
     public void onInputDeviceAdded(int deviceId) {
-        final InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
-        if (isDeviceEligible(inputDevice)) {
-            deviceHasNumpad(inputDevice);
-        }
-        onInputDeviceChangedInternal(inputDevice);
+        onInputDeviceChangedInternal(deviceId);
     }
 
     @Override
@@ -902,15 +898,15 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     @Override
     public void onInputDeviceChanged(int deviceId) {
-        InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
-        onInputDeviceChangedInternal(inputDevice);
+        onInputDeviceChangedInternal(deviceId);
     }
 
-    private void onInputDeviceChangedInternal(@NonNull InputDevice inputDevice) {
-        // Update the enum mapping only if input device that changed is a keyboard
+    private void onInputDeviceChangedInternal(int deviceId) {
+        final InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
+        // Update the enum mapping only if input device that changed is a physical keyboard
         if (isDeviceEligible(inputDevice)) {
             initializeDeviceToEnumMap(inputDevice, shouldUsePrimaryKeysForDevice(inputDevice));
-            Slog.i(LOG_TAG, "Updating key code enum map for device ID: " + inputDevice.getId());
+            Slog.i(LOG_TAG, "Updating key code enum map for device ID: " + deviceId);
         }
     }
 
