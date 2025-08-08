@@ -240,6 +240,16 @@ public interface TextClassifier {
     String EXTRA_TEXT_ORIGIN_PACKAGE = "android.view.textclassifier.extra.TEXT_ORIGIN_PACKAGE";
 
     /**
+     * Extra specifying the package name of the app whose SMS retriever hash matches.
+     *
+     * This extra is included in the response when {@link #TYPE_SMS_RETRIEVER_OTP} is detected
+     * in the request.
+     *
+     * @hide
+     */
+    String EXTRA_SMS_RETRIEVER_HASH_MATCHED_PACKAGE = "sms-retriever-hash-matched-package";
+
+    /**
      * Returns suggested text selection start and end indices, recognized entity types, and their
      * associated confidence scores. The entity types are ordered from highest to lowest scoring.
      *
