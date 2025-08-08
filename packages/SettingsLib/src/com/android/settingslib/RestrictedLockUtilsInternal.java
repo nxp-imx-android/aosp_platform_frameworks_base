@@ -779,6 +779,39 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
         item.setTitle(sb);
     }
 
+    /**
+     * Set the menu item as disabled by admin by adding a restricted padlock at the end of the
+     * text and set the click listener which will send an intent to show the admin support details
+     * dialog. If the admin is null, remove the padlock and disabled color span. When the admin is
+     * null, we also set the OnMenuItemClickListener to null, so if you want to set a custom
+     * OnMenuItemClickListener, set it after calling this method.
+     */
+    public static void setMenuItemAsDisabledByAdmin(final Context context,
+            final MenuItem item, final EnforcingAdmin admin, final String restriction) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(item.getTitle());
+        removeExistingRestrictedSpans(sb);
+
+        if (admin != null) {
+            final int disabledColor = getColorAttrDefaultColor(context,
+                    android.R.attr.textColorHint);
+            sb.setSpan(new ForegroundColorSpan(disabledColor), 0, sb.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            ImageSpan image = new RestrictedLockImageSpan(context);
+            sb.append(" ", image, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    sendShowAdminSupportDetailsIntent(context, admin, restriction);
+                    return true;
+                }
+            });
+        } else {
+            item.setOnMenuItemClickListener(null);
+        }
+        item.setTitle(sb);
+    }
+
     private static void removeExistingRestrictedSpans(SpannableStringBuilder sb) {
         final int length = sb.length();
         RestrictedLockImageSpan[] imageSpans = sb.getSpans(length - 1, length,
