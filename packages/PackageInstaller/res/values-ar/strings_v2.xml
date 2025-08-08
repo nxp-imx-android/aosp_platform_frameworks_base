@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"حدثت مشكلة أثناء محاولة استعادة هذا التطبيق"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"‫\"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>\" هو جزء من التطبيق التالي: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"‏&lt;p&gt;تم حظر هذا التطبيق. للمساعدة في الحفاظ على أمان جهازك وبياناتك، لا يمكن تثبيت سوى تطبيقات المطوّرين المعتمَدين.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"‏&lt;p&gt;لم يتم تحديث هذا التطبيق. للمساعدة في الحفاظ على أمان جهازك وبياناتك، لا يمكن تثبيت سوى تحديثات المطوّرين المعتمَدين.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"‏&lt;p&gt;لم يتم تثبيت هذا التطبيق، لأنّ التطبيقات التي أنشأها مطوّرون غير معتمَدين قد تكون غير آمنة.&lt;/p&gt; &lt;p&gt;يجب الاتصال بالإنترنت للتحقّق من هوية مطوّر التطبيق. يُرجى التأكّد من أنّ جهازك متصل بالإنترنت، ثم إعادة محاولة تثبيت التطبيق. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"‏&lt;p&gt;لم يتم تحديث هذا التطبيق، لأنّ التحديثات التي أنشأها مطوّرون غير معتمَدين قد تكون غير آمنة.&lt;/p&gt; &lt;p&gt;يجب الاتصال بالإنترنت للتحقّق من هوية مطوّر التطبيق. يُرجى التأكّد من أنّ جهازك متصل بالإنترنت، ثم إعادة محاولة تحديث التطبيق. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"‏&lt;p&gt;حدثت مشكلة أثناء التحقّق من هوية مطوّر هذا التطبيق. لم يتم تثبيت التطبيق، لأنّ التطبيقات التي أنشأها مطوّرون غير معتمَدين آمنة.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"‏&lt;p&gt;حدثت مشكلة أثناء التحقّق من هوية مطوّر هذا التطبيق. وقد تكون التحديثات التي أنشأها مطوّرون غير معتمَدين غير آمنة، لذا لم يتم تحديث التطبيق.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات عن التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"‏&lt;p&gt;تم حظر هذا التطبيق بسبب حدوث مشكلة أثناء التحقّق من هوية المطوّر. للمساعدة في الحفاظ على أمان جهازك وبياناتك، لا يمكن تثبيت سوى تطبيقات المطوّرين المعتمَدين.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"‏&lt;p&gt;لم يتم تحديث هذا التطبيق بسبب حدوث مشكلة أثناء التحقّق من هوية المطوّر. للمساعدة في الحفاظ على أمان جهازك وبياناتك، لا يمكن تثبيت سوى تحديثات المطوّرين المعتمَدين.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ننصحك بعدم تثبيت التطبيق بدون التحقق من هوية مطوّره، لأنّ التطبيقات التي ينشئها مطوّرون غير معتمَدين قد تعرِّض جهازك وبياناتك للخطر."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ننصحك بعدم تحديث التطبيق بدون التحقق من هوية مطوّره، لأنّ التحديثات التي ينشئها مطوّرون غير معتمَدين قد تعرِّض جهازك وبياناتك للخطر."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"لم يتم التحقّق من هوية مطوّر التطبيق"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"يتعذّر التحقّق من هوية مطوّر التطبيق بسبب عدم الاتصال بالإنترنت"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"يتعذّر التحقّق من هوية مطوّر التطبيق"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"تثبيت بدون تحقُّق"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"تحديث بدون تحقُّق"</string>
     <string name="button_install" msgid="7434013176505680162">"تثبيت"</string>
     <string name="button_update" msgid="3046719350226327526">"تحديث"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"التحديث على أي حال"</string>

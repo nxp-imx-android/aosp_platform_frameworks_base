@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"このアプリを復元しようとしたときに問題が発生しました"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> はアプリ（<xliff:g id="APP_NAME">%2$s</xliff:g>）の一部です"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;このアプリはブロックされています。デバイスとデータを安全に保つため、インストールできるのは確認済みのデベロッパーのアプリのみです。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;このアプリは更新されませんでした。デバイスとデータの安全を保つため、インストールできるのは確認済みのデベロッパーによるアップデートのみです。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;このアプリはインストールされませんでした。未確認のデベロッパーのアプリは安全でない可能性があります。&lt;/p&gt; &lt;p&gt;アプリ デベロッパーを確認するには、インターネット接続が必要です。デバイスがインターネットに接続されていることを確認してから、アプリのインストールをもう一度お試しください。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;このアプリは更新されませんでした。未確認のデベロッパーによるアップデートは安全ではない恐れがあります。&lt;/p&gt;&lt;p&gt;アプリ デベロッパーを確認するには、インターネット接続が必要です。デバイスがインターネットに接続されていることを確認してから、アプリの更新をもう一度お試しください。&lt;/p&gt;&lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;このアプリのデベロッパーの確認中に問題が発生しました。未確認のデベロッパーのアプリは安全でない可能性があるため、インストールされませんでした。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;このアプリのデベロッパーの確認で問題が発生しました。未確認のデベロッパーによるアップデートは安全ではない恐れがあるため、アプリは更新されませんでした。&lt;/p&gt;&lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;デベロッパーの確認で問題が発生したため、このアプリはブロックされました。デバイスとデータの安全を保つため、インストールできるのは確認済みのデベロッパーのアプリのみです。&lt;/p&gt;&lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;デベロッパーの確認で問題が発生したため、このアプリは更新されませんでした。デバイスとデータの安全を保つため、インストールできるのは確認済みのデベロッパーによるアップデートのみです。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"確認せずにインストールする場合、未確認のデベロッパーのアプリはデバイスやデータを危険にさらす恐れがあることにご注意ください。"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"確認せずに更新する場合、未確認のデベロッパーによるアップデートはデバイスやデータを危険にさらす恐れがあることにご注意ください。"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"未確認のアプリ デベロッパーです"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"インターネットに接続されていないため、アプリ デベロッパーを確認できません"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"アプリ デベロッパーを確認できません"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"確認せずにインストール"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"確認せずに更新"</string>
     <string name="button_install" msgid="7434013176505680162">"インストール"</string>
     <string name="button_update" msgid="3046719350226327526">"更新"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"更新する"</string>

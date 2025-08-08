@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Bandant atkurti šią programą iškilo problema"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"„<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>“ yra šios programos dalis: „<xliff:g id="APP_NAME">%2$s</xliff:g>“"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Ši programa buvo užblokuota. Kad įrenginys ir duomenys būtų saugūs, galima įdiegti tik patvirtintų kūrėjų programas.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Ši programa nebuvo atnaujinta. Kad įrenginys ir duomenys būtų saugūs, galima įdiegti tik patvirtintų kūrėjų naujinius.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Ši programa nebuvo įdiegta. Programos iš nepatvirtintų kūrėjų gali būti nesaugios.&lt;/p&gt; &lt;p&gt;Norint patvirtinti programos kūrėją, reikalingas interneto ryšys. Įsitikinkite, kad įrenginys prijungtas prie interneto, tada bandykite dar kartą įdiegti programą. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Ši programa nebuvo atnaujinta. Naujiniai iš nepatvirtintų kūrėjų gali būti nesaugūs.&lt;/p&gt; &lt;p&gt;Norint patvirtinti programos kūrėją, reikalingas interneto ryšys. Įsitikinkite, kad įrenginys prijungtas prie interneto, tada bandykite dar kartą atnaujinti programą. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Patvirtinant šios programos kūrėją kilo problema. Programos iš nepatvirtintų kūrėjų gali būti nesaugios, todėl programa nebuvo įdiegta.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Patvirtinant šios programos kūrėją kilo problema. Naujiniai iš nepatvirtintų kūrėjų gali būti nesaugūs, todėl programa nebuvo atnaujinta.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Ši programa buvo užblokuota, nes kilo problema patvirtinant kūrėją. Kad įrenginys ir duomenys būtų saugūs, galima įdiegti tik patvirtintų kūrėjų programas.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Ši programa nebuvo atnaujinta, nes kilo problema patvirtinant kūrėją. Kad įrenginys ir duomenys būtų saugūs, galima įdiegti tik patvirtintų kūrėjų naujinius.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Jei įdiegiate nepatvirtinę, atminkite, kad programos iš nepatvirtintų kūrėjų gali kelti pavojų jūsų įrenginiui ir duomenims."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Jei atnaujinate nepatvirtinę, atminkite, kad naujiniai iš nepatvirtintų kūrėjų gali kelti pavojų jūsų įrenginiui ir duomenims."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programos kūrėjas nepatvirtintas"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Nėra interneto ryšio, nepavyko patvirtinti programos kūrėjo"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Nepavyko patvirtinti programos kūrėjo"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"Įdiegti nepatvirtinus"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Atnaujinti nepatvirtinant"</string>
     <string name="button_install" msgid="7434013176505680162">"Įdiegti"</string>
     <string name="button_update" msgid="3046719350226327526">"Atnaujinti"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Vis tiek atnaujinti"</string>

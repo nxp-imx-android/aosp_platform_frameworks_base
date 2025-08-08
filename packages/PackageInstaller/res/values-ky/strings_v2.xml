@@ -62,9 +62,9 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Коопсуздукту сактоо максатында, азырынча сыналгыңызга бул булактан колдонмолорду орнотууга уруксат жок. Муну параметрлерден өзгөртсөңүз болот."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Коопсуздукту сактоо максатында, азырынча саатыңызда бул булактан белгисиз колдонмолорду орнотууга уруксат жок. Муну параметрлерден өзгөртсөңүз болот."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"Коопсуздукту сактоо максатында, азырынча телефонуңузга бул булактан колдонмолорду орнотууга уруксат жок. Муну параметрлерден өзгөртсөңүз болот."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Телефонуңуз жана жеке дайын-даректериңиз белгисиз колдонмолордон зыян тартып калышы мүмкүн. Бул колдонмону орнотуп, аны пайдалануудан улам телефонуңузга кандайдыр бир зыян келтирилсе же дайын-даректериңизды жоготуп алсаңыз, өзүңүз жооптуу болосуз."</string>
-    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Планшетиңиз жана жеке дайын-даректериңиз белгисиз колдонмолордон зыян тартып калышы мүмкүн. Бул колдонмону орнотуп, аны пайдалануудан улам планшетиңизге кандайдыр бир зыян келтирилсе же дайын-даректериңизды жоготуп алсаңыз, өзүңүз жооптуу болосуз."</string>
-    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Сыналгыңыз жана жеке дайын-даректериңиз белгисиз колдонмолордон зыян тартып калышы мүмкүн. Бул колдонмону орнотуп, аны пайдалануудан улам сыналгыңызга кандайдыр бир зыян келтирилсе же дайын-даректериңизды жоготуп алсаңыз, өзүңүз жооптуу болосуз."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Телефонуңуз жана жеке дайын-даректериңиз белгисиз колдонмолордон зыян тартып калышы мүмкүн. Бул колдонмону орнотуп, аны пайдалануудан улам телефонуңузга кандайдыр бир зыян келтирилсе же дайын-даректериңизди жоготуп алсаңыз, өзүңүз жооптуу болосуз."</string>
+    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Планшетиңиз жана жеке дайын-даректериңиз белгисиз колдонмолордон зыян тартып калышы мүмкүн. Бул колдонмону орнотуп, аны пайдалануудан улам планшетиңизге кандайдыр бир зыян келтирилсе же дайын-даректериңизди жоготуп алсаңыз, өзүңүз жооптуу болосуз."</string>
+    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Сыналгыңыз жана жеке дайын-даректериңиз белгисиз колдонмолордон зыян тартып калышы мүмкүн. Бул колдонмону орнотуп, аны пайдалануудан улам сыналгыңызга кандайдыр бир зыян келтирилсе же дайын-даректериңизди жоготуп алсаңыз, өзүңүз жооптуу болосуз."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"Бул колдонмону орнотуу бөгөттөлдү"</string>
     <string name="message_install_failed_conflict" msgid="1707670432024473123">"Бул колдонмо ушул түзмөктөгү башка колдонмо менен дал келбейт"</string>
     <string name="message_install_failed_incompatible" msgid="184079710727317076">"Бул колдонмо түзмөгүңүз менен шайкеш келбейт"</string>
@@ -74,21 +74,21 @@
     <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"Колдонмолорду орното албай калдыңыз"</string>
     <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"Белгисиз колдонмолорду орното албай калдыңыз"</string>
     <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Бул колдонмонун клону табылды жана ал өчүрүлөт"</string>
-    <string name="message_delete_clone_app" msgid="6632017049227330363">"Бул колдонмо <xliff:g id="APP_LABEL">%1$s</xliff:g> колдонмонун клону"</string>
+    <string name="message_delete_clone_app" msgid="6632017049227330363">"Бул колдонмо <xliff:g id="APP_LABEL">%1$s</xliff:g> колдонмосунун клону"</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Колдонмонун баштапкы версиясы орнотулат. Колдонмодогу бардык нерселер өчүрүлөт."</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Колдонмонун баштапкы версиясы бул түзмөктөгү бардык колдонуучулар үчүн орнотулат. Колдонмодогу бардык нерселер өчүрүлөт."</string>
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"Бул колдонмо жумуш профилиңизден чыгарылып салынат"</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"Бул колдонмо жеке мейкиндигиңизден чыгарылып салынат"</string>
-    <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Бул колдонмо орнотулган колдонмолор тизмегинен табылган жок же буга чейин чыгарылып салынды"</string>
+    <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Бул колдонмо орнотулган колдонмолор тизмегинен табылган жок же буга чейин чыгарылып салынган"</string>
     <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Учурдагы колдонуучу колдонмону чыгарып сала албайт"</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"Бул колдонмо чыгарылып салынган жок"</string>
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Колдонмодогу нерслерди сактоо"</string>
-    <string name="message_archive" msgid="943853731737315850">"Колдонмодогу нерселер сакталат"</string>
+    <string name="message_archive" msgid="943853731737315850">"Колдонмодогу нерселериңиз сакталат"</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Колдонмодогу бардык нерселер сакталат"</string>
-    <string name="message_archive_other_user" msgid="6465828676043191175">"Колдонмодогу бардык нерселер сакталат"</string>
-    <string name="message_archive_work_profile" msgid="7601504268820630858">"Жумуш профилдеги ушул колдонмо архивделет. Колдонмодогу нерселер сакталат."</string>
-    <string name="message_archive_private_space" msgid="4873651645762576624">"Жеке мейкиндиктеги ушул колдонмо архивделет. Колдонмодогу нерселер сакталат."</string>
-    <string name="message_restore" msgid="8402726798623569969">"Бул колдонмо <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> аркылуу фондо жүктөп алынат"</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"Колдонмодогу нерселер сакталат"</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"Жумуш профилиңиздеги ушул колдонмо архивделет. Колдонмодогу нерселериңиз сакталат."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"Жеке мейкиндиктеги ушул колдонмо архивделет. Колдонмодогу нерселериңиз сакталат."</string>
+    <string name="message_restore" msgid="8402726798623569969">"Бул колдонмо <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> аркылуу фондо жүктөлүп алынат"</string>
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Бул колдонмону калыбына келтирүү үчүн <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> кошумча маалымат сурап жатат"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Бул колдонмону калыбына келтирүү үчүн, &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; өлчөмүндөгү орун бошотуп, кайталап көрүңүз"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Бул колдонмону калыбына келтирүү үчүн Интернет байланышыңызды текшерип, кайталап көрүңүз"</string>
@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бул колдонмону калыбына келтирүү үчүн <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> кызматын орнотуп алышыңыз керек"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Бул колдонмону калыбына келтирүүдө маселе келип чыкты"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> төмөнкү колдонмонун бөлүгү: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Бул колдонмо бөгөттөлгөн. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын колдонмолорун гана орнотуңуз.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуларды текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"Бул колдонмо жаңыртылган эмес. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын жаңыртууларын гана орнотуңуз.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуларды текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Бул колдонмо орнотулган жок. Текшерилбеген иштеп чыгуучулардын колдонмолору кооптуу болушу мүмкүн.&lt;/p&gt; &lt;p&gt;Колдонмону иштеп чыгуучуну текшерүү үчүн Интернетке туташуу керек. Түзмөгүңүз Интернетке туташканын текшерип, колдонмону кайрадан орнотуп көрүңүз. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуларды текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"Бул колдонмо жаңыртылган эмес. Текшерилбеген иштеп чыгуучулардын жаңыртуулары кооптуу болушу мүмкүн.&lt;/p&gt; &lt;p&gt;Колдонмону иштеп чыгуучуну текшерүү үчүн Интернетке туташуу керек. Түзмөгүңүз Интернетке туташканын текшерип, колдонмону кайрадан жаңыртып көрүңүз. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуларды текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Бул колдонмону иштеп чыгуучуну текшерүүдө маселе келип чыкты. Бул колдонмо орнотулган жок, анткени текшерилбеген иштеп чыгуучулардын колдонмолору кооптуу болушу мүмкүн.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Бул колдонмонун иштеп чыгуучусун текшерүүдө маселе келип чыкты. Бул колдонмо жаңыртылган жок, анткени текшерилбеген иштеп чыгуучулардын жаңыртуулары кооптуу болушу мүмкүн.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуну текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"Иштеп чыгуучуну текшерүүдө маселе келип чыккандыктан, бул колдонмо бөгөттөлгөн. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын колдонмолорун гана орнотуңуз.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуларды текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"Иштеп чыгуучуну текшерүүдө маселе келип чыккандыктан, бул колдонмо жаңыртылган эмес. Түзмөгүңүздү жана маалыматтарыңызды коргоого жардам берүү үчүн текшерилген иштеп чыгуучулардын жаңыртууларын гана орнотуңуз.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Иштеп чыгуучуларды текшерүү тууралуу кеңири маалымат&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Текшербей туруп орнотуп жатканда, текшерилбеген иштеп чыгуучулардын колдонмолору түзмөгүңүзгө жана маалыматтарыңызга коркунуч туудурушу мүмкүн экенин эске алыңыз."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Эгер текшерүүсүз жаңыртсаңыз, текшерилбеген иштеп чыгуучулардын жаңыртуулары түзмөгүңүз жана маалыматыңыз үчүн кооптуу болушу мүмкүн."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Колдонмону иштеп чыгуучу текшерилген эмес"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Интернет жок болгондуктан, колдонмону иштеп чыгуучуну текшерүү мүмкүн эмес"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Колдонмону иштеп чыгуучуну текшерүү мүмкүн эмес"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Текшербей орнотуу"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Текшербей жаңыртуу"</string>
     <string name="button_install" msgid="7434013176505680162">"Орнотуу"</string>
     <string name="button_update" msgid="3046719350226327526">"Жаңыртуу"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Баары бир жаңыртылсын"</string>

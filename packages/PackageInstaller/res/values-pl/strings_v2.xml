@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Aby przywrócić tę aplikację, musisz zainstalować aplikację <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Podczas przywracania tej aplikacji wystąpił problem"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> jest częścią tej aplikacji: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Ta aplikacja została zablokowana. Aby pomóc chronić urządzenie i dane, można instalować tylko aplikacje od zweryfikowanych deweloperów.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Ta aplikacja nie została zaktualizowana. Aby pomóc chronić urządzenie i dane, można instalować tylko aktualizacje od zweryfikowanych deweloperów.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Ta aplikacja nie została zainstalowana. Aplikacje od niezweryfikowanych deweloperów mogą być niebezpieczne.&lt;/p&gt; &lt;p&gt;Do zweryfikowania dewelopera aplikacji wymagane jest połączenie z internetem. Sprawdź, czy urządzenie jest połączone z internetem, a następnie spróbuj ponownie zainstalować aplikację. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Ta aplikacja nie została zaktualizowana. Aktualizacje od niezweryfikowanych deweloperów mogą być niebezpieczne.&lt;/p&gt; &lt;p&gt;Do zweryfikowania dewelopera aplikacji wymagane jest połączenie z internetem. Sprawdź, czy urządzenie jest połączone z internetem, a następnie spróbuj ponownie zaktualizować aplikację. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Podczas weryfikacji dewelopera tej aplikacji wystąpił problem. Aplikacje od niezweryfikowanych deweloperów mogą być niebezpieczne, dlatego ta aplikacja nie została zainstalowana.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Podczas weryfikacji dewelopera tej aplikacji wystąpił problem. Aktualizacje od niezweryfikowanych deweloperów mogą być niebezpieczne, dlatego aplikacja nie została zaktualizowana.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Ta aplikacja została zablokowana, ponieważ podczas weryfikacji dewelopera wystąpił problem. Aby pomóc chronić urządzenie i dane, można instalować tylko aplikacje od zweryfikowanych deweloperów.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Ta aplikacja nie została zaktualizowana, ponieważ podczas weryfikacji dewelopera wystąpił problem. Aby pomóc chronić urządzenie i dane, można instalować tylko aktualizacje od zweryfikowanych deweloperów.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Więcej informacji o weryfikacji dewelopera&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"W przypadku instalowania aplikacji, które nie są weryfikowane, należy pamiętać, że te od niezweryfikowanych deweloperów mogą narazić urządzenie i dane na ryzyko."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"W przypadku instalowania aktualizacji, które nie są weryfikowane, należy pamiętać, że te od niezweryfikowanych deweloperów mogą narazić urządzenie i dane na ryzyko."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Niezweryfikowany deweloper aplikacji"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Brak internetu. Nie można zweryfikować dewelopera aplikacji"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Nie można zweryfikować dewelopera aplikacji"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Instaluj bez weryfikacji"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Zaktualizuj bez weryfikacji"</string>
     <string name="button_install" msgid="7434013176505680162">"Zainstaluj"</string>
     <string name="button_update" msgid="3046719350226327526">"Zaktualizuj"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Zaktualizuj mimo to"</string>

@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Produciuse un problema ao restaurar esta aplicación"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma parte da seguinte aplicación: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Bloqueouse esta aplicación. Para axudarche a protexer o dispositivo e os datos, só se poden instalar aplicacións de programadores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Esta aplicación non se actualizou. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar actualizacións de programadores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Non se instalou esta aplicación. É posible que as aplicacións de programadores sen verificar non sexan seguras.&lt;/p&gt; &lt;p&gt;Requírese conexión a Internet para realizar a verificación. Comproba que o teu dispositivo teña conexión a Internet e tenta de novo instalar a aplicación. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Esta aplicación non se actualizou. As actualizacións de programadores sen verificar poden non ser seguras.&lt;/p&gt; &lt;p&gt;Cómpre dispor de conexión a Internet para verificar o programador da aplicación. Comproba que o dispositivo está conectado a Internet e despois proba a actualizar a aplicación de novo. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Produciuse un problema ao verificar o programador desta aplicación. Non se instalou a aplicación porque as aplicacións de programadores sen verificar pode que non sexan seguras.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Produciuse un problema ao verificar o programador desta aplicación. Non se actualizou a aplicación porque as actualizacións de programadores sen verificar poden non ser seguras.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Esta aplicación bloqueouse porque se produciu un problema ao verificar o programador. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar aplicacións de programadores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Esta aplicación non se actualizou porque se produciu un problema ao verificar o programador. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar actualizacións de programadores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Se decides continuar coa instalación, lembra que as aplicacións de programadores sen verificar poden poñer en perigo o teu dispositivo e os teus datos."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Se decides continuar, lembra que as actualizacións de programadores sen verificar poden poñer en perigo o teu dispositivo e os teus datos."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programador da aplicación sen verificar"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Sen Internet, non se pode verificar o programador da aplicación"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Non se puido verificar o programador da aplicación"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"Instalar sen verificar"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Actualizar sen verificar"</string>
     <string name="button_install" msgid="7434013176505680162">"Instalar"</string>
     <string name="button_update" msgid="3046719350226327526">"Actualizar"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Actualizar de todos os modos"</string>

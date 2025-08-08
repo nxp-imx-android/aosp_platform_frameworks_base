@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Jy sal <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> moet installeer om hierdie app terug te stel"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Daar was ’n probleem met die terugstelling van hierdie app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> is deel van die volgende app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Hierdie app is geblokkeer. Om jou toestel en data veilig te hou, kan slegs apps van geverifieerde ontwikkelaars af geïnstalleer word.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Hierdie app is nie opgedateer nie. Om jou toestel en data veilig te hou, kan slegs opdaterings van geverifieerde ontwikkelaars af geïnstalleer word.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Hierdie app is nie geïnstalleer nie. Apps van ongeverifieerde ontwikkelaars kan dalk onveilig wees.&lt;/p&gt; &lt;p&gt;’n Internetverbinding word vereis om die appontwikkelaar te verifieer. Maak seker dat jou toestel aan die internet gekoppel is en probeer dan weer om die app te installeer. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Hierdie app is nie opgedateer nie. Opdaterings van ongeverifieerde ontwikkelaars kan dalk onveilig wees.&lt;/p&gt; &lt;p&gt;’n Internetverbinding word vereis om die appontwikkelaar te verifieer. Maak seker dat jou toestel aan die internet gekoppel is en probeer dan weer om die app op te dateer. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Kon nie hierdie app se ontwikkelaar verifieer nie. Apps vanaf ongeverifieerde ontwikkelaars kan dalk onveilig wees, so die app is nie geïnstalleer nie.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Kon nie hierdie app se ontwikkelaar verifieer nie. Opdaterings vanaf ongeverifieerde ontwikkelaars kan dalk onveilig wees, so die app is nie opgedateer nie.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Hierdie app is geblokkeer omdat daar ’n probleem met die ontwikkelaar was. Om jou toestel en data veilig te hou, kan slegs apps van geverifieerde ontwikkelaars af geïnstalleer word.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Hierdie app is nie opgedateer nie omdat die ontwikkelaar nie geverifieer kon word nie. Om jou toestel en data veilig te hou, kan slegs opdaterings van geverifieerde ontwikkelaars af geïnstalleer word.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Kry meer inligting oor ontwikkelaarverifikasie&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Indien jy installeer sonder om te verifieer, moet jy in gedagte hou dat apps vanaf ongeverifieerde ontwikkelaars jou toestel en data in gevaar kan stel."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"As jy opdateer sonder verifikasie moet jy in gedagte hou dat opdaterings van ongeverifieerde ontwikkelaars dalk jou toestel en data in gevaar kan stel."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Appontwikkelaar is ongeverifieerd"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Geen internet; kan nie appontwikkelaar verifieer nie"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Kan nie appontwikkelaar verifieer nie"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Installeer sonder verifikasie"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Dateer op sonder verifikasie"</string>
     <string name="button_install" msgid="7434013176505680162">"Installeer"</string>
     <string name="button_update" msgid="3046719350226327526">"Dateer op"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Dateer in elk geval op"</string>

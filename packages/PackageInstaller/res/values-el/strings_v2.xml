@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Για να επαναφέρετε αυτή την εφαρμογή, πρέπει να εγκαταστήσετε το πρόγραμμα <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Παρουσιάστηκε κάποιο πρόβλημα κατά την επαναφορά αυτής της εφαρμογής"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"Η δραστηριότητα <xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> αποτελεί τμήμα της ακόλουθης εφαρμογής: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Αυτή η εφαρμογή αποκλείστηκε. Για να διατηρήσετε την ασφάλεια της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο εφαρμογές από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Αυτή η εφαρμογή δεν ενημερώθηκε. Για να διατηρήσετε την ασφάλεια της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο ενημερώσεις από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Αυτή η εφαρμογή δεν εγκαταστάθηκε. Οι εφαρμογές από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς.&lt;/p&gt; &lt;p&gt;Απαιτείται σύνδεση στο διαδίκτυο για την επαλήθευση του προγραμματιστή εφαρμογής. Βεβαιωθείτε ότι η συσκευή σας είναι συνδεδεμένη στο διαδίκτυο και, στη συνέχεια, δοκιμάστε να εγκαταστήσετε ξανά την εφαρμογή. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Αυτή η εφαρμογή δεν ενημερώθηκε. Οι ενημερώσεις από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς.&lt;/p&gt; &lt;p&gt;Απαιτείται σύνδεση στο διαδίκτυο για την επαλήθευση του προγραμματιστή εφαρμογής. Βεβαιωθείτε ότι η συσκευή σας είναι συνδεδεμένη στο διαδίκτυο και, στη συνέχεια, δοκιμάστε να ενημερώσετε ξανά την εφαρμογή. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή αυτής της εφαρμογής. Οι εφαρμογές από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς, επομένως η εφαρμογή δεν εγκαταστάθηκε.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή αυτής της εφαρμογής. Οι ενημερώσεις από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς, επομένως η εφαρμογή δεν ενημερώθηκε.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Αυτή η εφαρμογή αποκλείστηκε, επειδή παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή. Για να διατηρήσετε την ασφάλεια της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο εφαρμογές από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Αυτή η εφαρμογή δεν ενημερώθηκε, επειδή παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή. Για να διατηρήσετε την ασφάλεια της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο ενημερώσεις από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Εάν πραγματοποιήσετε εγκατάσταση χωρίς επαλήθευση, να θυμάστε ότι οι εφαρμογές από μη επαληθευμένους προγραμματιστές ενδέχεται να θέσουν σε κίνδυνο τη συσκευή και τα δεδομένα σας."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Εάν πραγματοποιήσετε ενημέρωση χωρίς επαλήθευση, να θυμάστε ότι οι ενημερώσεις από μη επαληθευμένους προγραμματιστές ενδέχεται να θέσουν σε κίνδυνο τη συσκευή και τα δεδομένα σας."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Ο προγραμματιστής της εφαρμογής δεν έχει επαληθευτεί"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Δεν υπάρχει σύνδεση στο διαδίκτυο, δεν είναι δυνατή η επαλήθευση προγραμματιστή εφαρμογής"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Δεν είναι δυνατή η επαλήθευση του προγραμματιστή εφαρμογής"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Εγκατ. χωρίς επαλ."</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Ενημ. χωρίς επαλ."</string>
     <string name="button_install" msgid="7434013176505680162">"Εγκατάσταση"</string>
     <string name="button_update" msgid="3046719350226327526">"Ενημέρωση"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Να ενημερωθεί ούτως ή άλλως"</string>

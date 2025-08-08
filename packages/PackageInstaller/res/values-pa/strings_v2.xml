@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ਇਸ ਐਪ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰਨ ਲਈ, ਤੁਹਾਨੂੰ <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਦੀ ਲੋੜ ਪਵੇਗੀ"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ਇਸ ਐਪ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਵੇਲੇ ਕੋਈ ਸਮੱਸਿਆ ਆਈ"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ਅੱਗੇ ਦਿੱਤੀ ਐਪ ਦਾ ਹਿੱਸਾ ਹੈ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;ਇਹ ਐਪ ਬਲਾਕ ਕੀਤੀ ਗਈ ਸੀ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਨੂੰ ਹੀ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;ਇਹ ਐਪ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਗਈ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਅੱਪਡੇਟਾਂ ਨੂੰ ਹੀ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;ਇਹ ਐਪ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤੀ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰ ਦੀਆਂ ਐਪਾਂ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੀਆਂ ਹਨ।&lt;/p&gt; &lt;p&gt;ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਲੋੜੀਂਦਾ ਹੈ। ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਹੈ, ਫਿਰ ਐਪ ਨੂੰ ਦੁਬਾਰਾ ਸਥਾਪਤ ਕਰ ਕੇ ਦੇਖੋ। &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;ਇਹ ਐਪ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਵੱਲੋਂ ਅੱਪਡੇਟ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੇ ਹਨ।&lt;/p&gt; &lt;p&gt;ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਲੋੜੀਂਦਾ ਹੈ। ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਹੈ, ਫਿਰ ਐਪ ਨੂੰ ਦੁਬਾਰਾ ਅੱਪਡੇਟ ਕਰ ਕੇ ਦੇਖੋ। &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;ਇਸ ਐਪ ਦੇ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਹੋ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰ ਦੀਆਂ ਐਪਾਂ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੀਆਂ ਹਨ, ਇਸ ਲਈ ਐਪ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤੀ ਗਈ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;ਇਸ ਐਪ ਦੇ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਹੋ ਗਈ। ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਵੱਲੋਂ ਅੱਪਡੇਟ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਐਪ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਗਈ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;ਇਸ ਐਪ ਨੂੰ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਕਰਕੇ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਸੀ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਨੂੰ ਹੀ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;ਇਸ ਐਪ ਨੂੰ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਕਰਕੇ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਸੀ। ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਿੱਚ ਮਦਦ ਲਈ, ਸਿਰਫ਼ ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਅੱਪਡੇਟਾਂ ਨੂੰ ਹੀ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ਵਿਕਾਸਕਾਰ ਪੁਸ਼ਟੀਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ਜੇ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਕਰਨ ਦੇ ਬਿਨਾਂ ਸਥਾਪਤ ਕਰਦੇ ਹੋ, ਤਾਂ ਧਿਆਨ ਵਿੱਚ ਰੱਖੋ ਕਿ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੀਆਂ ਐਪਾਂ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਜੋਖਮ ਵਿੱਚ ਪਾ ਸਕਦੀਆਂ ਹਨ।"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ਜੇ ਤੁਸੀਂ ਬਿਨਾਂ ਪੁਸ਼ਟੀ ਕੀਤੇ ਅੱਪਡੇਟ ਕਰਦੇ ਹੋ, ਤਾਂ ਯਾਦ ਰੱਖੋ ਕਿ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ ਵਿਕਾਸਕਾਰਾਂ ਦੇ ਅੱਪਡੇਟ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟਾ ਨੂੰ ਖਤਰੇ ਵਿੱਚ ਪਾ ਸਕਦੇ ਹਨ।"</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ਐਪ ਵਿਕਾਸਕਾਰ ਗੈਰ-ਪੁਸ਼ਟੀਕਿਰਤ"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ਇੰਟਰਨੈੱਟ ਨਹੀਂ, ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"ਐਪ ਵਿਕਾਸਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"ਪੁਸ਼ਟੀ ਕੀਤੇ ਬਿਨਾਂ ਸਥਾਪਤ ਕਰੋ"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"ਬਿਨਾਂ ਪੁਸ਼ਟੀ ਕੀਤੇ ਅੱਪਡੇਟ ਕਰੋ"</string>
     <string name="button_install" msgid="7434013176505680162">"ਸਥਾਪਤ ਕਰੋ"</string>
     <string name="button_update" msgid="3046719350226327526">"ਅੱਪਡੇਟ ਕਰੋ"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"ਫਿਰ ਵੀ ਅੱਪਡੇਟ ਕਰੋ"</string>

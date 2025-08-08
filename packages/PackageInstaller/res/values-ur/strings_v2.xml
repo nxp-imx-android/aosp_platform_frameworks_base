@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"اس ایپ کو بحال کرنے کی کوشش میں ایک مسئلہ تھا"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"‫<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> درج ذیل ایپ کا حصہ ہے:<xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"‏&lt;p&gt;یہ ایپ بلاک کر دی گئی تھی۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف تصدیق شدہ ڈویلپرز کی ایپس انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی تصدیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"‏‎&lt;p&gt;‎یہ ایپ اپ ڈیٹ نہیں کی گئی تھی۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف تصدیق شدہ ڈویلپرز کی اپ ڈیٹس انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"‏&lt;p&gt;یہ ایپ انسٹال نہیں کی گئی تھی۔ غیر تصدیق شدہ ڈویلپرز کی ایپس غیر محفوظ ہو سکتی ہیں۔&lt;/p&gt; &lt;p&amp;gt؛ایپ ڈویلپر کی تصدیق کے لیے انٹرنیٹ کنکشن کی ضرورت ہے۔ یقینی بنائیں کہ آپ کا آلہ انٹرنیٹ سے منسلک ہے، اس کے بعد ایپ دوبارہ انسٹال کرنے کی کوشش کریں۔ &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی تصدیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"‏‎&lt;p&gt;‎یہ ایپ اپ ڈیٹ نہیں کی گئی تھی۔ غیر توثیق شدہ ڈویلپرز کی اپ ڈیٹس غیر محفوظ ہو سکتی ہیں۔&lt;/p&gt; &lt;p&amp;gt؛ایپ ڈویلپر کی توثیق کے لیے انٹرنیٹ کنکشن کی ضرورت ہے۔ یقینی بنائیں کہ آپ کا آلہ انٹرنیٹ سے منسلک ہے، اس کے بعد ایپ دوبارہ اپ ڈیٹ کرنے کی کوشش کریں۔ &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"‏&lt;p&gt;اس ایپ کے ڈویلپر کی تصدیق کرنے میں ایک مسئلہ پیش آ گیا۔ غیر تصدیق شدہ ڈویلپرز کی ایپس غیر محفوظ ہو سکتی ہیں، اس لیے ایپ انسٹال نہیں کی گئی۔&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی تصدیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"‏&lt;p&gt;اس ایپ کے ڈویلپر کی تصدیق کرنے میں ایک مسئلہ پیش آ گیا۔ غیر تصدیق شدہ ڈویلپرز کی اپ ڈیٹس غیر محفوظ ہو سکتی ہیں، اس لیے ایپ اپ ڈیٹ نہیں کی گئی۔&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی تصدیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"‏‎&lt;p&gt;‎یہ ایپ بلاک کر دی گئی تھی کیونکہ ڈویلپر کی توثیق کرنے میں ایک مسئلہ تھا۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف تصدیق شدہ ڈویلپرز کی ایپس انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی تصدیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"‏&lt;p&gt;اس ایپ کو اپ ڈیٹ نہیں کیا گیا کیونکہ ڈویلپر کی توثیق کرنے میں ایک مسئلہ تھا۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف تصدیق شدہ ڈویلپرز کی اپ ڈیٹس انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"اگر آپ بغیر تصدیق کیے انسٹال کرتے ہیں تو یاد رکھیں کہ غیر تصدیق شدہ ڈویلپرز کی ایپس آپ کے آلے اور ڈیٹا کو خطرے میں ڈال سکتی ہیں۔"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"اگر آپ تصدیق کیے بغیر اپ ڈیٹ کرتے ہیں تو ذہن میں رکھیں کہ غیر تصدیق شدہ ڈویلپرز کی اپ ڈیٹس آپ کے آلے اور ڈیٹا کو خطرے میں ڈال سکتی ہیں۔"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"غیر تصدیق شدہ ایپ ڈویلپر"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"انٹرنیٹ نہیں ہے، ایپ ڈویلپر کی تصدیق نہیں کی جا سکتی"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"ایپ ڈویلپر کی تصدیق نہیں کی جا سکتی"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"تصدیق کیے بغیر انسٹال کریں"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"تصدیق کیے بغیر اپ ڈیٹ کریں"</string>
     <string name="button_install" msgid="7434013176505680162">"انسٹال کریں"</string>
     <string name="button_update" msgid="3046719350226327526">"اپ ڈیٹ کریں"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"بہر حال اپ ڈیٹ کریں"</string>
