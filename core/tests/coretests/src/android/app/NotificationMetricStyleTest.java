@@ -17,6 +17,8 @@
 package android.app;
 
 import static android.app.Notification.EXTRA_METRICS;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -37,13 +39,20 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.RemoteViews;
+import android.widget.TextView;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.internal.R;
 
 import com.google.common.truth.Expect;
 
@@ -566,6 +575,108 @@ public class NotificationMetricStyleTest {
 
         FixedString noUnit = new FixedString("Boring");
         assertThat(noUnit.toValueString(mContext)).isEqualTo(new ValueString("Boring", null));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_METRIC_STYLE_UNIT_IN_LABEL)
+    public void makeContentView_displaysLabelButNoUnit() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(new FixedInt(42), "Answer"))
+                        .addMetric(new Metric(new FixedInt(273, "°K"), "Temp")));
+
+        RemoteViews remoteViews = n.getStyle().makeContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_0)).getText().toString())
+                .isEqualTo("Answer:");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_0)).getText().toString())
+                .isEqualTo("42");
+        assertThat((View) container.findViewById(R.id.metric_unit_0)).isNull();
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_1)).getText().toString())
+                .isEqualTo("Temp:");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_1)).getText().toString())
+                .isEqualTo("273");
+        assertThat((View) container.findViewById(R.id.metric_unit_1)).isNull();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_METRIC_STYLE_UNIT_IN_LABEL)
+    public void makeContentView_displaysLabelButNoUnit_evenWithUnitInLabelFlag() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(new FixedInt(42), "Answer"))
+                        .addMetric(new Metric(new FixedInt(273, "°K"), "Temp")));
+
+        RemoteViews remoteViews = n.getStyle().makeContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_0)).getText().toString())
+                .isEqualTo("Answer:");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_0)).getText().toString())
+                .isEqualTo("42");
+        assertThat((View) container.findViewById(R.id.metric_unit_0)).isNull();
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_1)).getText().toString())
+                .isEqualTo("Temp:");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_1)).getText().toString())
+                .isEqualTo("273");
+        assertThat((View) container.findViewById(R.id.metric_unit_1)).isNull();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_METRIC_STYLE_UNIT_IN_LABEL)
+    public void makeExpandedContentView_displaysLabelAndUnit() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(new FixedInt(42), "Answer"))
+                        .addMetric(new Metric(new FixedInt(273, "°K"), "Temp")));
+
+        RemoteViews remoteViews = n.getStyle().makeExpandedContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_0)).getText().toString())
+                .isEqualTo("Answer");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_0)).getText().toString())
+                .isEqualTo("42");
+        assertThat(container.findViewById(R.id.metric_unit_0).getVisibility()).isEqualTo(GONE);
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_1)).getText().toString())
+                .isEqualTo("Temp");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_1)).getText().toString())
+                .isEqualTo("273");
+        assertThat(container.findViewById(R.id.metric_unit_1).getVisibility()).isEqualTo(VISIBLE);
+        assertThat(((TextView) container.findViewById(R.id.metric_unit_1)).getText().toString())
+                .isEqualTo("°K");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_METRIC_STYLE_UNIT_IN_LABEL)
+    public void makeExpandedContentView_concatenatesLabelAndUnit() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(new FixedInt(42), "Answer"))
+                        .addMetric(new Metric(new FixedInt(273, "°K"), "Temp")));
+
+        RemoteViews remoteViews = n.getStyle().makeExpandedContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_0)).getText().toString())
+                .isEqualTo("Answer");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_0)).getText().toString())
+                .isEqualTo("42");
+        assertThat(container.findViewById(R.id.metric_unit_0).getVisibility()).isEqualTo(GONE);
+
+        assertThat(((TextView) container.findViewById(R.id.metric_label_1)).getText().toString())
+                .isEqualTo("Temp (°K)");
+        assertThat(((TextView) container.findViewById(R.id.metric_value_1)).getText().toString())
+                .isEqualTo("273");
+        assertThat(container.findViewById(R.id.metric_unit_1).getVisibility()).isEqualTo(GONE);
     }
 
     private void withLocale(Locale locale, Runnable r) {

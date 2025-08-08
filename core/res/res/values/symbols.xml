@@ -3579,7 +3579,9 @@
   <java-symbol type="string" name="notification_messaging_title_template" />
 
   <!-- Notifications: MetricStyle -->
-  <java-symbol type="string" name="notification_metric_label_template" />
+  <java-symbol type="string" name="notification_metric_label_unit" />
+  <java-symbol type="string" name="notification_metric_label_unit_separator" />
+  <java-symbol type="string" name="notification_metric_label_separator" />
 
   <!-- Notifications: CallStyle -->
   <java-symbol type="layout" name="notification_template_material_call" />
