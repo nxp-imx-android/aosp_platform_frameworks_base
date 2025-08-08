@@ -137,8 +137,12 @@ constructor(
      * Whether this surface is opaque or transparent. This controls whether the alpha channel is
      * composited with the alpha channels from the surfaces below while rendering.
      */
-    val isSurfaceOpaque =
-        if (Flags.notificationShadeBlur()) flowOf(false) else shadeInteractor.isAnyFullyExpanded
+    val isSurfaceOpaque: Flow<Boolean> =
+        if (Flags.notificationShadeBlur() || !blurInteractor.isBlurredWallpaperSupported) {
+            flowOf(false)
+        } else {
+            shadeInteractor.isAnyFullyExpanded
+        }
 
     fun onBlurApplied(blurRadius: Int, isOpaque: Boolean) {
         if (isLoggable) {
