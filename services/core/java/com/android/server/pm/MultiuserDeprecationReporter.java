@@ -36,9 +36,15 @@ final class MultiuserDeprecationReporter {
 
     private final Handler mHandler;
 
+    // TODO(b/414326600): merge arrays below and/or use the proper proto / structure
+
     // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
-    @Nullable // Only set when logging is enabled
+    @Nullable // Only set on debuggable builds
     private final SparseIntArray mGetMainUserCalls;
+
+    // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
+    @Nullable // Only set on debuggable builds
+    private final SparseIntArray mIsMainUserCalls;
 
     // Set on demand, Should not be used directly (but through getPackageManagerInternal() instead).
     @Nullable
@@ -48,13 +54,26 @@ final class MultiuserDeprecationReporter {
         mHandler = handler;
         if (Build.isDebuggable()) {
             mGetMainUserCalls = new SparseIntArray();
-        } else
+            mIsMainUserCalls = new SparseIntArray();
+        } else {
             mGetMainUserCalls = null;
+            mIsMainUserCalls = null;
+
+        }
     }
 
     // TODO(b/414326600): add unit tests (once the proper formats are determined).
     void logGetMainUserCall() {
-        if (mGetMainUserCalls == null) {
+        logMainUserCall(mGetMainUserCalls);
+    }
+
+    // TODO(b/414326600): add unit tests (once the proper formats are determined).
+    void logIsMainUserCall() {
+        logMainUserCall(mIsMainUserCalls);
+    }
+
+    private void logMainUserCall(@Nullable SparseIntArray calls) {
+        if (calls == null) {
             return;
         }
 
@@ -63,8 +82,8 @@ final class MultiuserDeprecationReporter {
 
         mHandler.post(() -> {
             int canonicalUid = UserHandle.getAppId(uid);
-            int newCount = mGetMainUserCalls.get(canonicalUid, 0) + 1;
-            mGetMainUserCalls.put(canonicalUid, newCount);
+            int newCount = calls.get(canonicalUid, 0) + 1;
+            calls.put(canonicalUid, newCount);
         });
     }
 
@@ -72,8 +91,14 @@ final class MultiuserDeprecationReporter {
     // (a proto version will be provided when it's ready)
     void dump(PrintWriter pw) {
         // TODO(b/414326600): add unit tests (once the proper formats are determined).
-        if (mGetMainUserCalls == null) {
-            pw.println("Not logging getMainUser() calls");
+        dump(pw, "getMainUser", mGetMainUserCalls);
+        pw.println();
+        dump(pw, "isMainUser", mIsMainUserCalls);
+    }
+
+    private void dump(PrintWriter pw, String method, @Nullable SparseIntArray calls) {
+        if (calls == null) {
+            pw.printf("Not logging %s() calls\n", method);
             return;
         }
 
@@ -85,16 +110,16 @@ final class MultiuserDeprecationReporter {
         // properly defined (for example, we might want to log a generic "user violation" that would
         // include other metrics such as stuff that shouldn't be called when the current user is the
         // headless system user)
-        int size = mGetMainUserCalls.size();
+        int size = calls.size();
         if (size == 0) {
-            pw.println("Good News, Everyone!: no app called getMainUser()!");
+            pw.printf("Good News, Everyone!: no app called %s()\n", method);
             return;
         }
-        pw.printf("%d apps called getMainUser():\n", size);
+        pw.printf("%d apps called %s():\n", size, method);
         var pm = getPackageManagerInternal();
         for (int i = 0; i < size; i++) {
-            int canonicalUid = mGetMainUserCalls.keyAt(i);
-            int count = mGetMainUserCalls.valueAt(i);
+            int canonicalUid = calls.keyAt(i);
+            int count = calls.valueAt(i);
             String pkgName = getPackageNameForLoggingPurposes(pm, canonicalUid);
             // uid is the canonical UID, but including "canonical" would add extra churn / bytes
             pw.printf("  %s (uid %d): %d calls\n", pkgName, canonicalUid, count);
@@ -122,7 +147,7 @@ final class MultiuserDeprecationReporter {
         var pkg = pm.getPackage(uid);
         // TODO(b/414326600): if it's from system, it might be useful to log the method that's
         // calling it, but that's expensive (so we should guard using a system property) and we'd
-        // need to change the type of mGetMainUserCalls as well - for now, the solution is to look
+        // need to change the type of maps as well - for now, the solution is to look
         // at logcat (which logs the full stacktrace the tag is VERBOSE).
         // TODO(b/414326600): figure out proper way to handle null (for example, it'is also null
         // for root UID).

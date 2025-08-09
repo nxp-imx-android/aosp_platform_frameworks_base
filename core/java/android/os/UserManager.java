@@ -3081,8 +3081,11 @@ public class UserManager {
     @UserHandleAware
     public boolean isMainUser() {
         logDeprecation();
-        final UserInfo user = getUserInfo(mUserId);
-        return user != null && user.isMainUnlogged();
+        try {
+            return mService.isMainUser(mUserId);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
     }
 
     /**
