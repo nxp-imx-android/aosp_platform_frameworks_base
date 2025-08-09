@@ -57,10 +57,13 @@ constructor(
 
     /** Should haptics be played by pulling down the shade */
     private val isShadePullHapticsRequired: Flow<Boolean> =
-        combine(shadeInteractor.isUserInteracting, sceneInteractor.transitionState) {
-                interacting,
-                transitionState ->
-                interacting && transitionState.isValidForShadePullHaptics()
+        combine(
+                shadeInteractor.isUserInteracting,
+                sceneInteractor.transitionState,
+                sceneInteractor.isRemoteUserInteractionOngoing,
+            ) { interacting, transitionState, remoteInteractionGoing ->
+                val validInteraction = interacting || remoteInteractionGoing
+                validInteraction && transitionState.isValidForShadePullHaptics()
             }
             .distinctUntilChanged()
 
