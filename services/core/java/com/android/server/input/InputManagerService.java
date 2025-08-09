@@ -22,7 +22,7 @@ import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-
+import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
@@ -2874,7 +2874,9 @@ public class InputManagerService extends IInputManager.Stub
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE:
-                // TODO(b/367748270): Add functionality to turn keyboard backlight on/off.
+                if (keyboardBacklightShortcuts() && complete) {
+                    mKeyboardBacklightController.toggleKeyboardBacklight(deviceId);
+                }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK:
                 if (complete) {
@@ -4222,6 +4224,7 @@ public class InputManagerService extends IInputManager.Stub
     interface KeyboardBacklightControllerInterface {
         default void incrementKeyboardBacklight(int deviceId) {}
         default void decrementKeyboardBacklight(int deviceId) {}
+        default void toggleKeyboardBacklight(int deviceId) {}
         default void registerKeyboardBacklightListener(IKeyboardBacklightListener l, int pid) {}
         default void unregisterKeyboardBacklightListener(IKeyboardBacklightListener l, int pid) {}
         default void onInteractiveChanged(boolean isInteractive) {}
