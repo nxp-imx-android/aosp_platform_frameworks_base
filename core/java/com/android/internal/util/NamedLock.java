@@ -26,6 +26,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class NamedLock {
 
     private final String mName;
