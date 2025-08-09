@@ -49,7 +49,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
-import com.android.systemui.shade.ui.composable.ShadeHeader
+import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
@@ -157,11 +157,11 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
         onClick = { viewModel.onNotificationIconChipClicked() },
         backgroundColor =
             if (viewModel.isNotificationsChipHighlighted) {
-                ShadeHeader.ChipHighlight.Strong.backgroundColor
+                ChipHighlightModel.Strong.backgroundColor
             } else {
                 Color.Transparent
             },
-        onHoveredBackgroundColor = ShadeHeader.ChipHighlight.Transparent.onHoveredBackgroundColor,
+        onHoveredBackgroundColor = ChipHighlightModel.Transparent.onHoveredBackgroundColor,
         horizontalArrangement =
             Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
@@ -192,11 +192,11 @@ private fun QuickSettingsChip(
         onClick = { viewModel.onQuickSettingsChipClicked() },
         backgroundColor =
             if (viewModel.isQuickSettingsChipHighlighted) {
-                ShadeHeader.ChipHighlight.Strong.backgroundColor
+                ChipHighlightModel.Strong.backgroundColor
             } else {
                 Color.Transparent
             },
-        onHoveredBackgroundColor = ShadeHeader.ChipHighlight.Transparent.onHoveredBackgroundColor,
+        onHoveredBackgroundColor = ChipHighlightModel.Transparent.onHoveredBackgroundColor,
         horizontalArrangement =
             Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
@@ -280,7 +280,7 @@ private fun WithAdaptiveTint(
     var bounds by remember { mutableStateOf(Rect()) }
     val tint =
         if (isHighlighted) {
-            ShadeHeader.ChipHighlight.Strong.foregroundColor
+            ChipHighlightModel.Strong.foregroundColor
         } else if (isDarkProvider(bounds)) {
             Color.White
         } else {

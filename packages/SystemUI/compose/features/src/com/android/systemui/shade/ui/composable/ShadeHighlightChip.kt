@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,6 +38,51 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingVertical
+
+/** Represents the background and foreground colors of a ShadeHighlightChip. */
+sealed interface ChipHighlightModel {
+    val backgroundColor: Color
+        @Composable @ReadOnlyComposable get
+
+    val foregroundColor: Color
+        @Composable @ReadOnlyComposable get
+
+    val onHoveredBackgroundColor: Color
+        @Composable @ReadOnlyComposable get
+
+    data object Weak : ChipHighlightModel {
+        override val backgroundColor: Color
+            @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+
+        override val foregroundColor: Color
+            @Composable get() = MaterialTheme.colorScheme.onSurface
+
+        override val onHoveredBackgroundColor: Color
+            @Composable get() = backgroundColor
+    }
+
+    data object Strong : ChipHighlightModel {
+        override val backgroundColor: Color
+            @Composable get() = MaterialTheme.colorScheme.secondary
+
+        override val foregroundColor: Color
+            @Composable get() = MaterialTheme.colorScheme.onSecondary
+
+        override val onHoveredBackgroundColor: Color
+            @Composable get() = backgroundColor
+    }
+
+    data object Transparent : ChipHighlightModel {
+        override val backgroundColor: Color
+            @Composable get() = Color.Transparent
+
+        override val foregroundColor: Color
+            @Composable get() = MaterialTheme.colorScheme.onSurface
+
+        override val onHoveredBackgroundColor: Color
+            @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+    }
+}
 
 /** A chip with a colored highlight. Used as an entry point for the shade. */
 @Composable
