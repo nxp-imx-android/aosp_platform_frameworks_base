@@ -89,10 +89,10 @@ import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
@@ -1602,6 +1602,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 allAppsIntent.addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK
                                 | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
                 startActivityAsUser(allAppsIntent, UserHandle.CURRENT_OR_SELF);
                 break;
             case SHORT_PRESS_PRIMARY_LAUNCH_TARGET_ACTIVITY:
