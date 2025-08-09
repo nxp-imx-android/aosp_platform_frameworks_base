@@ -514,13 +514,9 @@ public abstract class ForegroundServiceTypePolicy {
         permissions.add(new RegularPermission(Manifest.permission.ACTIVITY_RECOGNITION));
         permissions.add(new RegularPermission(Manifest.permission.HIGH_SAMPLING_RATE_SENSORS));
 
-        if (android.permission.flags.Flags.replaceBodySensorPermissionEnabled()) {
-            permissions.add(new RegularPermission(HealthPermissions.READ_HEART_RATE));
-            permissions.add(new RegularPermission(HealthPermissions.READ_SKIN_TEMPERATURE));
-            permissions.add(new RegularPermission(HealthPermissions.READ_OXYGEN_SATURATION));
-        } else {
-            permissions.add(new RegularPermission(Manifest.permission.BODY_SENSORS));
-        }
+        permissions.add(new RegularPermission(HealthPermissions.READ_HEART_RATE));
+        permissions.add(new RegularPermission(HealthPermissions.READ_SKIN_TEMPERATURE));
+        permissions.add(new RegularPermission(HealthPermissions.READ_OXYGEN_SATURATION));
 
         return permissions.toArray(new ForegroundServiceTypePermission[permissions.size()]);
     }

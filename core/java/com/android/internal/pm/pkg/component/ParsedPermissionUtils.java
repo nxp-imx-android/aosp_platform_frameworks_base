@@ -81,16 +81,16 @@ public class ParsedPermissionUtils {
                     R.styleable.AndroidManifestPermission_backgroundPermission)) {
                 final boolean isApkInApex = (flags & PARSE_APK_IN_APEX) != 0;
                 final boolean canUseBackgroundPermissionAttr =
-                    "android".equals(packageName) ||
-                        (Flags.replaceBodySensorPermissionEnabled() && isApkInApex);
+                        "android".equals(packageName) || isApkInApex;
                 if (canUseBackgroundPermissionAttr) {
                     permission.setBackgroundPermission(sa.getNonResourceString(
                         R.styleable.AndroidManifestPermission_backgroundPermission));
                 } else {
-                    String allowedPackages = "'android'"
-                        + (Flags.replaceBodySensorPermissionEnabled() ? " and APK_IN_APEX" : "");
-                    Slog.w(TAG, packageName + " defines a background permission. Only the "
-                        + allowedPackages + " packages can do that.");
+                    Slog.w(
+                            TAG,
+                            packageName
+                                    + " defines a background permission. Only the 'android' and"
+                                    + " APK_IN_APEX packages can do that.");
                 }
             }
 

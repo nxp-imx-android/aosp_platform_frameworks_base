@@ -2647,17 +2647,14 @@ public class AppOpsManager {
 
     /** @hide Access to read heart rate sensor. */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_REPLACE_BODY_SENSOR_PERMISSION_ENABLED)
     public static final String OPSTR_READ_HEART_RATE = "android:read_heart_rate";
 
     /** @hide Access to read oxygen saturation. */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_REPLACE_BODY_SENSOR_PERMISSION_ENABLED)
     public static final String OPSTR_READ_OXYGEN_SATURATION = "android:read_oxygen_saturation";
 
     /** @hide Access to read skin temperature. */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_REPLACE_BODY_SENSOR_PERMISSION_ENABLED)
     public static final String OPSTR_READ_SKIN_TEMPERATURE = "android:read_skin_temperature";
 
     /** @hide Access to ranging */
@@ -2793,9 +2790,9 @@ public class AppOpsManager {
             // Notifications
             OP_POST_NOTIFICATION,
             // Health
-            Flags.replaceBodySensorPermissionEnabled() ? OP_READ_HEART_RATE : OP_NONE,
-            Flags.replaceBodySensorPermissionEnabled() ? OP_READ_SKIN_TEMPERATURE : OP_NONE,
-            Flags.replaceBodySensorPermissionEnabled() ? OP_READ_OXYGEN_SATURATION : OP_NONE,
+            OP_READ_HEART_RATE,
+            OP_READ_SKIN_TEMPERATURE,
+            OP_READ_OXYGEN_SATURATION,
             // Android XR
             android.xr.Flags.xrManifestEntries() ? OP_EYE_TRACKING_COARSE : OP_NONE,
             android.xr.Flags.xrManifestEntries() ? OP_EYE_TRACKING_FINE : OP_NONE,
@@ -3318,22 +3315,17 @@ public class AppOpsManager {
                 OPSTR_RECEIVE_SENSITIVE_NOTIFICATIONS, "RECEIVE_SENSITIVE_NOTIFICATIONS")
                 .setDefaultMode(MODE_IGNORED).build(),
         new AppOpInfo.Builder(OP_READ_HEART_RATE, OPSTR_READ_HEART_RATE, "READ_HEART_RATE")
-            .setPermission(Flags.replaceBodySensorPermissionEnabled() ?
-                HealthPermissions.READ_HEART_RATE : null)
+            .setPermission(HealthPermissions.READ_HEART_RATE)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_READ_SKIN_TEMPERATURE, OPSTR_READ_SKIN_TEMPERATURE,
-            "READ_SKIN_TEMPERATURE").setPermission(
-                Flags.replaceBodySensorPermissionEnabled()
-                    ? HealthPermissions.READ_SKIN_TEMPERATURE : null)
+            "READ_SKIN_TEMPERATURE").setPermission(HealthPermissions.READ_SKIN_TEMPERATURE)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_RANGING, OPSTR_RANGING, "RANGING")
             .setPermission(Flags.rangingPermissionEnabled()?
                 Manifest.permission.RANGING : null)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_READ_OXYGEN_SATURATION, OPSTR_READ_OXYGEN_SATURATION,
-            "READ_OXYGEN_SATURATION").setPermission(
-                Flags.replaceBodySensorPermissionEnabled()
-                    ? HealthPermissions.READ_OXYGEN_SATURATION : null)
+            "READ_OXYGEN_SATURATION").setPermission(HealthPermissions.READ_OXYGEN_SATURATION)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_WRITE_SYSTEM_PREFERENCES, OPSTR_WRITE_SYSTEM_PREFERENCES,
             "WRITE_SYSTEM_PREFERENCES").setPermission(
