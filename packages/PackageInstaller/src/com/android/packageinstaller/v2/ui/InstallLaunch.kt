@@ -335,6 +335,10 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         setResult(resultCode, data, true)
     }
 
+    override fun onRetryResponse() {
+        installViewModel!!.onRetryVerificationUserResponse()
+    }
+
     override fun sendUnknownAppsIntent(sourcePackageName: String) {
         if (localLogv) {
             Log.d(LOG_TAG, "Launching unknown-apps settings intent for $sourcePackageName")

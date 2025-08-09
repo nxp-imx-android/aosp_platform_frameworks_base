@@ -382,6 +382,7 @@ public class DeveloperVerifierController {
      * <p>If a response is not returned from the verifier agent within a timeout duration from the
      * time the request is sent to the verifier, the verification will be considered a failure.</p>
      *
+     * @param retry whether this request is for retrying a previously incomplete verification.
      */
     public boolean startVerificationSession(Supplier<Computer> snapshotSupplier, int userId,
             int installationSessionId, String packageName,
@@ -389,7 +390,8 @@ public class DeveloperVerifierController {
             List<SharedLibraryInfo> declaredLibraries,
             @PackageInstaller.DeveloperVerificationPolicy int verificationPolicy,
             @Nullable PersistableBundle extensionParams,
-            PackageInstallerSession.DeveloperVerifierCallback callback) {
+            PackageInstallerSession.DeveloperVerifierCallback callback,
+            boolean retry) {
         // Try connecting to the verifier if not already connected
         if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId, callback)) {
             return false;
@@ -413,10 +415,19 @@ public class DeveloperVerifierController {
                     packageName, stagedPackageUri, signingInfo, declaredLibraries, extensionParams,
                     verificationPolicy, new DeveloperVerificationSessionInterface(callback));
             AndroidFuture<Void> unusedFuture = remoteService.getService().post(service -> {
-                if (DEBUG) {
-                    Slog.i(TAG, "Notifying verification required for session " + verificationId);
+                if (!retry) {
+                    if (DEBUG) {
+                        Slog.i(TAG, "Notifying verification required for session "
+                                + verificationId);
+                    }
+                    service.onVerificationRequired(session);
+                } else {
+                    if (DEBUG) {
+                        Slog.i(TAG, "Notifying verification retry for session "
+                                + verificationId);
+                    }
+                    service.onVerificationRetry(session);
                 }
-                service.onVerificationRequired(session);
             }).orTimeout(mInjector.getVerifierConnectionTimeoutMillis(), TimeUnit.MILLISECONDS)
                     .whenComplete((res, err) -> {
                         if (err != null) {

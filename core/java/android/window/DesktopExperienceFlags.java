@@ -162,6 +162,8 @@ public enum DesktopExperienceFlags {
     ENABLE_DRAG_END_STABLE_BOUNDS_RESET(Flags::enableDragEndStableBoundsReset, false,
             Flags.FLAG_ENABLE_DRAG_END_STABLE_BOUNDS_RESET),
     ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true, Flags.FLAG_ENABLE_DRAG_TO_MAXIMIZE),
+    ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION(Flags::enableDreamActivityWindowingExclusion, false,
+            Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION),
     ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, true,
             Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX),
     ENABLE_EMPTY_DESK_ON_MINIMIZE(Flags::enableEmptyDeskOnMinimize, true,

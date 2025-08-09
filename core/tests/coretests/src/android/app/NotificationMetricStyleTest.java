@@ -154,6 +154,10 @@ public class NotificationMetricStyleTest {
                                 TimeDifference.FORMAT_ADAPTIVE),
                         "Time:"))
                 .addMetric(new Metric(
+                        TimeDifference.forTimer(123456L,
+                                TimeDifference.FORMAT_ADAPTIVE),
+                        "Time:"))
+                .addMetric(new Metric(
                         TimeDifference.forPausedStopwatch(Duration.ofHours(4),
                                 TimeDifference.FORMAT_CHRONOMETER),
                         "Stopwatch:"))

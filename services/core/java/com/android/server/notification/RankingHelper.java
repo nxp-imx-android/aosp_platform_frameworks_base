@@ -15,6 +15,7 @@
  */
 package com.android.server.notification;
 
+import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.text.TextUtils.formatSimple;
 
 import android.annotation.NonNull;

@@ -227,6 +227,7 @@
     <string name="button_restore">Restore</string>
     <string name="button_uninstall_updates_system_app">Uninstall updates</string>
     <string name="button_settings">Settings</string>
+    <string name="button_retry">Retry</string>
     <!-- Dialog Buttons end -->
 
     <!-- Miscellaneous -->

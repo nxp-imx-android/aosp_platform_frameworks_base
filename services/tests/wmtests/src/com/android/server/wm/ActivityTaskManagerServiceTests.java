@@ -144,6 +144,9 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
         @Override
         public void onDisplayRemoveSystemDecorations(int displayId) {}
+
+        @Override
+        public void onDisplayAnimationsDisabledChanged(int displayId, boolean disabled) {}
     }
 
     private static class TestHandoffTaskDataReceiver extends IHandoffTaskDataReceiver.Stub {

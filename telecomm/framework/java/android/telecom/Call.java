@@ -16,10 +16,12 @@
 
 package android.telecom;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -1891,8 +1893,10 @@ public final class Call {
      * @hide
      */
     @SystemApi
+    @RequiresPermission(allOf = {Manifest.permission.CAPTURE_AUDIO_OUTPUT,
+        Manifest.permission.MODIFY_AUDIO_ROUTING})
     @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
-    public void enterBackgroundAudioProcessing(int useCase) {
+    public void enterBackgroundAudioProcessing(@AudioProcessingUseCase int useCase) {
         if (mState != STATE_ACTIVE && mState != STATE_RINGING) {
             throw new IllegalStateException("Call must be active or ringing");
         }

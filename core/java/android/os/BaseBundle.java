@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Intent;
+import android.security.Flags;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.MathUtils;
@@ -446,7 +447,16 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
                 object = ((BiFunction<Class<?>, Class<?>[], ?>) object).apply(clazz, itemTypes);
             } catch (BadParcelableException e) {
                 if (sShouldDefuse) {
-                    Log.w(TAG, "Failed to parse item " + mMap.keyAt(i) + ", returning null.", e);
+                    if (Flags.wtfBundleDefuse()) {
+                        Slog.wtf(TAG, "Failed to parse item " + mMap.keyAt(i) + ", returning null.",
+                                e);
+                    } else {
+                        Log.w(TAG, "Failed to parse item " + mMap.keyAt(i) + ", returning null.",
+                                e);
+                    }
+                    if (Flags.deprecateBundleDefuse()) {
+                        throw e;
+                    }
                     return null;
                 } else {
                     throw e;
@@ -507,7 +517,14 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
                     /* lazy */ ownsParcel, this, numLazyValues);
         } catch (BadParcelableException e) {
             if (sShouldDefuse) {
-                Log.w(TAG, "Failed to parse Bundle, but defusing quietly", e);
+                if (Flags.wtfBundleDefuse()) {
+                    Slog.wtf(TAG, "Failed to parse Bundle, but defusing quietly", e);
+                } else {
+                    Log.w(TAG, "Failed to parse Bundle, but defusing quietly", e);
+                }
+                if (Flags.deprecateBundleDefuse()) {
+                    throw e;
+                }
                 map.erase();
             } else {
                 throw e;

@@ -68,7 +68,7 @@ class FadeAnimationController {
     }
 
     long getScaledDuration(int durationMs) {
-        return (long) (durationMs * mDisplayContent.mWmService.getWindowAnimationScaleLocked());
+        return (long) (durationMs * mDisplayContent.getWindowAnimationScaleLocked());
     }
 
     /** Run the fade in/out animation for a window token. */

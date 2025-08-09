@@ -67,7 +67,7 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
     /** @hide */
     @NonNull
     public static final Creator<TelephonyTimeZoneSuggestion> CREATOR =
-            new Creator<TelephonyTimeZoneSuggestion>() {
+            new Creator<>() {
                 public TelephonyTimeZoneSuggestion createFromParcel(Parcel in) {
                     return TelephonyTimeZoneSuggestion.createFromParcel(in);
                 }
@@ -150,6 +150,7 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
     @MatchType private final int mMatchType;
     @Quality private final int mQuality;
     @Nullable private List<String> mDebugInfo;
+    @Nullable private final TelephonySignal mTelephonySignal;
 
     private TelephonyTimeZoneSuggestion(Builder builder) {
         mSlotIndex = builder.mSlotIndex;
@@ -158,18 +159,24 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
         mMatchType = builder.mMatchType;
         mQuality = builder.mQuality;
         mDebugInfo = builder.mDebugInfo != null ? new ArrayList<>(builder.mDebugInfo) : null;
+        mTelephonySignal = builder.mTelephonySignal;
     }
 
     @SuppressWarnings("unchecked")
     private static TelephonyTimeZoneSuggestion createFromParcel(Parcel in) {
         // Use the Builder so we get validation during build().
         int slotIndex = in.readInt();
-        TelephonyTimeZoneSuggestion suggestion = new Builder(slotIndex)
-                .setZoneId(in.readString())
-                .setCountryIsoCode(in.readString())
-                .setMatchType(in.readInt())
-                .setQuality(in.readInt())
-                .build();
+        TelephonyTimeZoneSuggestion suggestion =
+                new Builder(slotIndex)
+                        .setZoneId(in.readString())
+                        .setCountryIsoCode(in.readString())
+                        .setMatchType(in.readInt())
+                        .setQuality(in.readInt())
+                        .setTelephonySignal(
+                                in.readParcelable(
+                                        TelephonySignal.class.getClassLoader(),
+                                        TelephonySignal.class))
+                        .build();
         List<String> debugInfo =
                 in.readArrayList(TelephonyTimeZoneSuggestion.class.getClassLoader(), java.lang.String.class);
         if (debugInfo != null) {
@@ -185,6 +192,7 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
         dest.writeString(mCountryIsoCode);
         dest.writeInt(mMatchType);
         dest.writeInt(mQuality);
+        dest.writeParcelable(mTelephonySignal, flags);
         dest.writeList(mDebugInfo);
     }
 
@@ -256,6 +264,12 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
                 ? Collections.emptyList() : Collections.unmodifiableList(mDebugInfo);
     }
 
+    /** Returns the {@link TelephonySignal} associated with this suggestion, or {@code null}. */
+    @Nullable
+    public TelephonySignal getTelephonySignal() {
+        return mTelephonySignal;
+    }
+
     /**
      * Associates information with the instance that can be useful for debugging / logging.
      *
@@ -293,23 +307,35 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
                 && mMatchType == that.mMatchType
                 && mQuality == that.mQuality
                 && Objects.equals(mZoneId, that.mZoneId)
-                && Objects.equals(mCountryIsoCode, that.mCountryIsoCode);
+                && Objects.equals(mCountryIsoCode, that.mCountryIsoCode)
+                && Objects.equals(mTelephonySignal, that.mTelephonySignal);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mSlotIndex, mZoneId, mCountryIsoCode, mMatchType, mQuality);
+        return Objects.hash(
+                mSlotIndex, mZoneId, mCountryIsoCode, mMatchType, mQuality, mTelephonySignal);
     }
 
     @Override
     public String toString() {
         return "TelephonyTimeZoneSuggestion{"
-                + "mSlotIndex=" + mSlotIndex
-                + ", mZoneId='" + mZoneId + '\''
-                + ", mCountryIsoCode='" + mCountryIsoCode + '\''
-                + ", mMatchType=" + mMatchType
-                + ", mQuality=" + mQuality
-                + ", mDebugInfo=" + mDebugInfo
+                + "mSlotIndex="
+                + mSlotIndex
+                + ", mZoneId='"
+                + mZoneId
+                + '\''
+                + ", mCountryIsoCode='"
+                + mCountryIsoCode
+                + '\''
+                + ", mMatchType="
+                + mMatchType
+                + ", mQuality="
+                + mQuality
+                + ", mDebugInfo="
+                + mDebugInfo
+                + ", mTelephonySignal="
+                + mTelephonySignal
                 + '}';
     }
 
@@ -325,6 +351,7 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
         @MatchType private int mMatchType;
         @Quality private int mQuality;
         @Nullable private List<String> mDebugInfo;
+        @Nullable private TelephonySignal mTelephonySignal;
 
         /**
          * Creates a builder with the specified {@code slotIndex}.
@@ -395,6 +422,16 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
         }
 
         /**
+         * Sets the {@link TelephonySignal} for this suggestion. Returns the builder for call
+         * chaining.
+         */
+        @NonNull
+        public Builder setTelephonySignal(@Nullable TelephonySignal telephonySignal) {
+            mTelephonySignal = telephonySignal;
+            return this;
+        }
+
+        /**
          * Performs basic structural validation of this instance. e.g. Are all the fields populated
          * that must be? Are the enum ints set to valid values?
          */
@@ -460,6 +497,7 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
                     matchType = parseMatchTypeCommandLineArg(cmd.getNextArgRequired());
                     break;
                 }
+                // TelephonySignal ignored
                 default: {
                     throw new IllegalArgumentException("Unknown option: " + opt);
                 }
@@ -526,6 +564,7 @@ public final class TelephonyTimeZoneSuggestion implements Parcelable {
         pw.println("    --quality <single|multiple_same|multiple_different>");
         pw.println("    --match_type <emulator|country_with_offset|country|test_network>");
         pw.println();
+        pw.println("Note: TelephonySignal data is not directly configurable via command line.");
         pw.println("See " + TelephonyTimeZoneSuggestion.class.getName() + " for more information");
     }
 }

@@ -93,6 +93,7 @@ import android.util.SparseArray;
 import com.android.server.AppSchedulingModuleThread;
 import com.android.server.DeviceIdleInternal;
 import com.android.server.LocalServices;
+import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
 import com.android.server.job.JobStore;
 
@@ -196,6 +197,10 @@ public class FlexibilityControllerTest {
         doReturn(mJobStore).when(mJobSchedulerService).getJobStore();
         // Used in JobStatus.
         doReturn(mIPackageManager).when(AppGlobals::getPackageManager);
+        // Used in JobStatus.
+        doReturn(mock(JobSchedulerInternal.class))
+                .when(() -> LocalServices.getService(JobSchedulerInternal.class));
+
         // Freeze the clocks at a moment in time
         JobSchedulerService.sSystemClock =
                 Clock.fixed(Instant.ofEpochMilli(FROZEN_TIME), ZoneOffset.UTC);

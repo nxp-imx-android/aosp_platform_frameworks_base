@@ -731,6 +731,12 @@ public abstract class WindowManagerInternal {
     public abstract boolean removeImeScreenshot(int displayId);
 
     /**
+     * Enables/disables window and transition animations for the given display. Animations are
+     * enabled by default on any display.
+     */
+    public abstract void setAnimationsDisabledForDisplay(int displayId, boolean disabled);
+
+    /**
       * Returns true when the hardware keyboard is available.
       */
     public abstract boolean isHardKeyboardAvailable();

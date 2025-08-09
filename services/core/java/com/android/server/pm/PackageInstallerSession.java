@@ -29,6 +29,7 @@ import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
@@ -254,6 +255,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class PackageInstallerSession extends IPackageInstallerSession.Stub {
@@ -3031,18 +3033,18 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             setSessionFailed(e.error, errorMsg);
             onSessionVerificationFailure(e.error, errorMsg, /* extras= */ null);
         }
-        if (shouldUseVerificationService()) {
-            final String packageName = getPackageName();
-            if (mDeveloperVerifierController.hasExperiments(packageName)) {
-                // This is a local testing environment. Use previously configured test results
-                // instead of doing the real verification.
-                mDeveloperVerifierController.startLocalExperiment(
-                        packageName, mDeveloperVerifierCallback);
-                synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerificationBypassed(
-                            DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST);
-                }
-            } else if (isMultiPackage()) {
+        final String packageName = getPackageName();
+        if (mDeveloperVerifierController.hasExperiments(packageName)) {
+            // This is a local testing environment with previously configured developer verification
+            // results. Use those results instead of doing the real developer verification.
+            mDeveloperVerifierController.startLocalExperiment(
+                    packageName, mDeveloperVerifierCallback);
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationBypassed(
+                        DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST);
+            }
+        } else if (shouldUseVerificationService()) {
+            if (isMultiPackage()) {
                 // TODO(b/360129657) perform developer verification on each children session before
                 // moving on to the next installation stage.
                 resumeVerify();
@@ -3057,7 +3059,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                         Uri.fromFile(stageDir), signingInfo,
                         declaredLibraries, mCurrentVerificationPolicy.get(),
                         /* extensionParams= */ params.extensionParams,
-                        mDeveloperVerifierCallback)) {
+                        mDeveloperVerifierCallback, /* retry= */ false)) {
                     // A verifier is installed but cannot be connected. Maybe notify user.
                     mDeveloperVerifierCallback.onConnectionInfeasible();
                 }
@@ -3157,6 +3159,44 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
         }
         return false;
+    }
+
+    private void retryDeveloperVerificationSession(Supplier<Computer> snapshotSupplier) {
+        final SigningInfo signingInfo;
+        final List<SharedLibraryInfo> declaredLibraries;
+        final String packageName;
+        synchronized (mLock) {
+            signingInfo = new SigningInfo(mSigningDetails);
+            declaredLibraries =
+                    mPackageLite == null ? null : mPackageLite.getDeclaredLibraries();
+            packageName = getPackageName();
+        }
+        // First check if we have any local experiment for this package. If so, use previously
+        // configured test results instead of doing the real verification.
+        if (mDeveloperVerifierController.hasExperiments(packageName)) {
+
+            mDeveloperVerifierController.startLocalExperiment(
+                    packageName, mDeveloperVerifierCallback);
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationBypassed(
+                        DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST);
+            }
+            return;
+        }
+
+        // Send the request to the verifier and wait for its response before the rest of
+        // the installation can proceed.
+        if (!mDeveloperVerifierController.startVerificationSession(snapshotSupplier, userId,
+                sessionId, getPackageName(),
+                stageDir == null ? Uri.EMPTY : Uri.fromFile(stageDir), signingInfo,
+                declaredLibraries, mCurrentVerificationPolicy.get(), /* extensionParams= */ null,
+                mDeveloperVerifierCallback, /* retry = */ true)) {
+            // A verifier is installed but cannot be connected. Maybe prompt the user again.
+            mDeveloperVerifierCallback.onConnectionInfeasible();
+        }
+        synchronized (mMetrics) {
+            mMetrics.onDeveloperVerificationRetryRequestSent();
+        }
     }
 
     private void resumeVerify() {
@@ -5284,6 +5324,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
+            }
+            case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {
+                retryDeveloperVerificationSession(mPm::snapshotComputer);
             }
 
             case DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY -> resumeVerify();

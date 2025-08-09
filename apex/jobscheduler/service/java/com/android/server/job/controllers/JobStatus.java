@@ -1426,9 +1426,6 @@ public final class JobStatus {
      * @return true if the exemption status changed
      */
     public boolean updateMediaBackupExemptionStatus() {
-        if (mJobSchedulerInternal == null) {
-            mJobSchedulerInternal = LocalServices.getService(JobSchedulerInternal.class);
-        }
         final boolean hasMediaExemption = hasMediaBackupExemption();
         if (mHasMediaBackupExemption == hasMediaExemption) {
             return false;
@@ -2567,6 +2564,10 @@ public final class JobStatus {
     }
 
     private boolean hasMediaBackupExemption() {
+        if (mJobSchedulerInternal == null) {
+            mJobSchedulerInternal = LocalServices.getService(JobSchedulerInternal.class);
+        }
+
         // Check the legacy policy first.
         if (mHasExemptedMediaUrisOnly
                 && !job.hasLateConstraint()

@@ -15,8 +15,6 @@
  */
 package com.android.internal.util;
 
-import static com.android.internal.util.NamedLock.create;
-
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertThrows;
@@ -27,43 +25,43 @@ public final class NamedLockTest {
 
     @Test
     public void testFactoryMethod_null() {
-        assertThrows(NullPointerException.class, () -> create(null));
+        assertThrows(NullPointerException.class, () -> NamedLock.create(null));
     }
 
     @Test
     public void testFactoryMethod_empty() {
-        assertThrows(IllegalArgumentException.class, () -> create(""));
-        assertThrows(IllegalArgumentException.class, () -> create(" "));
-        assertThrows(IllegalArgumentException.class, () -> create("\t"));
+        assertThrows(IllegalArgumentException.class, () -> NamedLock.create(""));
+        assertThrows(IllegalArgumentException.class, () -> NamedLock.create(" "));
+        assertThrows(IllegalArgumentException.class, () -> NamedLock.create("\t"));
     }
 
     @Test
     public void testFactoryMethod_startsWithSpace() {
         assertThrows(IllegalArgumentException.class,
-                () -> create(" NAME, Y U START WITH SPACE?"));
+                () -> NamedLock.create(" NAME, Y U START WITH SPACE?"));
     }
 
     @Test
     public void testFactoryMethod_startsWithTab() {
         assertThrows(IllegalArgumentException.class,
-                () -> create("\tNAME, Y U START WITH TAB?"));
+                () -> NamedLock.create("\tNAME, Y U START WITH TAB?"));
     }
 
     @Test
     public void testFactoryMethod_endsWithSpace() {
         assertThrows(IllegalArgumentException.class,
-                () -> create("NAME, Y U END WITH SPACE? "));
+                () -> NamedLock.create("NAME, Y U END WITH SPACE? "));
     }
 
     @Test
     public void testFactoryMethod_endsWithTab() {
         assertThrows(IllegalArgumentException.class,
-                () -> create("NAME, Y U END WITH TAB?\t"));
+                () -> NamedLock.create("NAME, Y U END WITH TAB?\t"));
     }
 
     @Test
     public void testOneInstance() {
-        var namedLock = create("Bond, James Bond");
+        var namedLock = NamedLock.create("Bond, James Bond");
 
         assertWithMessage("create()").that(namedLock).isNotNull();
 
@@ -73,8 +71,8 @@ public final class NamedLockTest {
     @Test
     public void testMultipleInstances_sameName() {
         String commonName = "Bond, James Bond";
-        var namedLock1 = create(commonName);
-        var namedLock2 = create(commonName);
+        var namedLock1 = NamedLock.create(commonName);
+        var namedLock2 = NamedLock.create(commonName);
 
         assertWithMessage("namedLock1").that(namedLock1).isNotSameInstanceAs(namedLock2);
         assertWithMessage("namedLock1").that(namedLock1).isNotEqualTo(namedLock2);
@@ -83,8 +81,8 @@ public final class NamedLockTest {
 
     @Test
     public void testMultipleInstances_differentNames() {
-        var namedLock1 = create("Bond, James Bond");
-        var namedLock2 = create("A Lock has a Name");
+        var namedLock1 = NamedLock.create("Bond, James Bond");
+        var namedLock2 = NamedLock.create("A Lock has a Name");
 
         assertWithMessage("namedLock1").that(namedLock1).isNotSameInstanceAs(namedLock2);
         assertWithMessage("namedLock1").that(namedLock1).isNotEqualTo(namedLock2);

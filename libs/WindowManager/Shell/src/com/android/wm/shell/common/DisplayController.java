@@ -173,6 +173,14 @@ public class DisplayController {
     }
 
     /**
+     * Returns whether animations are disabled for the given displayId.
+     */
+    public boolean isAnimationsDisabled(int displayId) {
+        final DisplayRecord r = mDisplays.get(displayId);
+        return r == null || r.mAnimationsDisabled;
+    }
+
+    /**
      * Updates the insets for a given display.
      */
     public void updateDisplayInsets(int displayId, InsetsState state) {
@@ -411,6 +419,15 @@ public class DisplayController {
         }
     }
 
+    private void onAnimationsDisabled(int displayId, boolean disabled) {
+        synchronized (mDisplays) {
+            DisplayRecord r = mDisplays.get(displayId);
+            if (r != null) {
+                r.mAnimationsDisabled = disabled;
+            }
+        }
+    }
+
     private class DisplayRecord {
         private final int mDisplayId;
         private String mUniqueId;
@@ -418,10 +435,12 @@ public class DisplayController {
         private DisplayLayout mDisplayLayout;
         private InsetsState mInsetsState = new InsetsState();
         private boolean mHasStatusAndNavBars;
+        private boolean mAnimationsDisabled;
 
         private DisplayRecord(int displayId, boolean hasStatusAndNavBars) {
             mDisplayId = displayId;
             mHasStatusAndNavBars = hasStatusAndNavBars;
+            mAnimationsDisabled = false;
         }
 
         private DisplayLayout createLayout(Context context, Display display) {
@@ -527,6 +546,12 @@ public class DisplayController {
 
         @Override
         public void onDisplayRemoveSystemDecorations(int displayId) { }
+
+        @Override
+        public void onDisplayAnimationsDisabledChanged(int displayId, boolean disabled) {
+            mMainExecutor.execute(
+                    () -> DisplayController.this.onAnimationsDisabled(displayId, disabled));
+        }
     }
 
     /**

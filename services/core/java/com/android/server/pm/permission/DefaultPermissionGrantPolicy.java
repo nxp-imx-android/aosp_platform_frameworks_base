@@ -49,7 +49,6 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.permission.PermissionManager;
-import android.permission.flags.Flags;
 import android.print.PrintManager;
 import android.provider.CalendarContract;
 import android.provider.ContactsContract;
@@ -220,10 +219,9 @@ final class DefaultPermissionGrantPolicy {
         SENSORS_PERMISSIONS.add(Manifest.permission.BODY_SENSORS);
         SENSORS_PERMISSIONS.add(Manifest.permission.BODY_SENSORS_BACKGROUND);
 
-        if (Flags.replaceBodySensorPermissionEnabled()) {
-            SENSORS_PERMISSIONS.add(HealthPermissions.READ_HEART_RATE);
-            SENSORS_PERMISSIONS.add(HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND);
-        }
+
+        SENSORS_PERMISSIONS.add(HealthPermissions.READ_HEART_RATE);
+        SENSORS_PERMISSIONS.add(HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND);
     }
 
     private static final Set<String> STORAGE_PERMISSIONS = new ArraySet<>();

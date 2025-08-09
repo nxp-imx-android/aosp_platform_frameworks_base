@@ -3651,6 +3651,22 @@ public class DevicePolicyManagerTest extends DpmTestBase {
                 DevicePolicyManager.STATUS_DEVICE_ADMIN_NOT_SUPPORTED);
     }
 
+    @Test
+    public void testCheckProvisioningPreCondition_DeviceAdminFeatureOff_RetailDemo()
+            throws Exception {
+        setup_DeviceAdminFeatureOff();
+        when(mServiceContext.resources
+                .getString(R.string.config_retailDemoPackage)).thenReturn(admin1.getPackageName());
+        mContext.callerPermissions.add(permission.MANAGE_PROFILE_AND_DEVICE_OWNERS);
+        assertCheckProvisioningPreCondition(DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE,
+                DevicePolicyManager.STATUS_OK);
+        assertCheckProvisioningPreCondition(DevicePolicyManager.ACTION_PROVISION_FINANCED_DEVICE,
+                DevicePolicyManager.STATUS_OK);
+        // `managed_user` feature is not enabled.
+        assertCheckProvisioningPreCondition(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE,
+                DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED);
+    }
+
     private void setup_ManagedProfileFeatureOff() throws Exception {
         when(getServices().ipackageManager
                 .hasSystemFeature(PackageManager.FEATURE_MANAGED_USERS, 0)).thenReturn(false);

@@ -885,6 +885,16 @@ flag {
 }
 
 flag {
+    name: "enable_dream_activity_windowing_exclusion"
+    namespace: "lse_desktop_experience"
+    description: "When enabled activities with type dream will be exempt from desktop windowing"
+    bug: "414619063"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_dynamic_radius_computation_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to compute the corner/shadow radius of desktop windows dynamically with the current window context."

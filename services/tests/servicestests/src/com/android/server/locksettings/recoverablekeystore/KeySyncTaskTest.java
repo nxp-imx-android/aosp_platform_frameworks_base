@@ -95,6 +95,8 @@ public class KeySyncTaskTest {
     private static final int TEST_RECOVERY_AGENT_UID2 = 10010;
     private static final byte[] TEST_VAULT_HANDLE =
             new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+    private static final byte[] LSKF_SALT =
+            new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, -16};
     private static final String TEST_APP_KEY_ALIAS = "rcleaver";
     private static final byte[] TEST_APP_KEY_METADATA_NULL = null;
     private static final byte[] TEST_APP_KEY_METADATA_NON_NULL =
@@ -860,6 +862,40 @@ public class KeySyncTaskTest {
 
         assertThat(mRecoverableKeyStoreDb.getBadRemoteGuessCounter(TEST_USER_ID)).isEqualTo(0);
         assertThat(mRecoverableKeyStoreDb.getBadRemoteGuessCounter(TEST_USER_ID_2)).isEqualTo(4);
+    }
+
+    @Test
+    public void run_storesLskfSalt() throws Exception {
+        LockscreenCredential shortPassword = LockscreenCredential.createPassword("e2e4");
+        mKeySyncTask = new KeySyncTask(
+                mRecoverableKeyStoreDb,
+                mRecoverySnapshotStorage,
+                mSnapshotListenersStorage,
+                TEST_USER_ID,
+                shortPassword,
+                /*credentialUpdated=*/ false,
+                mPlatformKeyManager,
+                mTestOnlyInsecureCertificateHelper,
+                mMockScrypt);
+        mRecoverableKeyStoreDb.setServerParams(
+                TEST_USER_ID, TEST_RECOVERY_AGENT_UID, TEST_VAULT_HANDLE);
+        mRecoverableKeyStoreDb.setPlatformKeyGenerationId(TEST_USER_ID, TEST_GENERATION_ID);
+        addApplicationKey(TEST_USER_ID, TEST_RECOVERY_AGENT_UID, TEST_APP_KEY_ALIAS);
+        mRecoverableKeyStoreDb.setRecoveryServiceCertPath(
+                TEST_USER_ID, TEST_RECOVERY_AGENT_UID, TEST_ROOT_CERT_ALIAS, TestData.CERT_PATH_1);
+        mRecoverableKeyStoreDb.setLskfSalt(TEST_USER_ID, LSKF_SALT);
+        setExpectedScryptArgument(shortPassword);
+
+        mKeySyncTask.run();
+
+        KeyChainSnapshot keyChainSnapshot = mRecoverySnapshotStorage.get(TEST_RECOVERY_AGENT_UID);
+        assertThat(keyChainSnapshot.getKeyChainProtectionParams().get(0).getLockScreenUiFormat())
+                .isEqualTo(UI_FORMAT_PASSWORD);
+        KeyDerivationParams keyDerivationParams =
+                keyChainSnapshot.getKeyChainProtectionParams().get(0).getKeyDerivationParams();
+        byte[] storedSalt = mRecoverableKeyStoreDb.getLskfSalt(TEST_USER_ID);
+        assertThat(storedSalt).isEqualTo(keyDerivationParams.getSalt());
+        assertThat(storedSalt).isEqualTo(LSKF_SALT);
     }
 
     private SecretKey addApplicationKey(int userId, int recoveryAgentUid, String alias)

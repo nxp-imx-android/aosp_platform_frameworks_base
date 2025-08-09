@@ -693,12 +693,15 @@ public class InstallationFragment extends DialogFragment {
         PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo =
                 installStage.getVerificationInfo();
         assert verificationInfo != null;
+        int verificationUserActionNeededReason = verificationInfo.getUserActionNeededReason();
+        int verificationPolicy = verificationInfo.getVerificationPolicy();
 
         // Set title and main message
-        int titleResId = getVerificationConfirmationTitleResourceId(installStage.getActionReason());
+        int titleResId = getVerificationConfirmationTitleResourceId(
+                verificationUserActionNeededReason);
         int msgResId = getVerificationConfirmationMessageResourceId(
-                installStage.getActionReason(), installStage.isAppUpdating(),
-                verificationInfo.getVerificationPolicy());
+                verificationUserActionNeededReason, verificationPolicy,
+                installStage.isAppUpdating());
         dialog.setTitle(titleResId);
         mCustomMessageTextView.setText(
                 Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
@@ -720,13 +723,45 @@ public class InstallationFragment extends DialogFragment {
                         InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED);
             });
         }
-        // Hide positive button
+        // Normally the positive button is hidden.
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.GONE);
         }
-
-        if (isVerificationBypassAllowed(verificationInfo)) {
+        // Sometimes there is a retry button. The user can choose to retry the verification if the
+        // previously attempt has failed with a network error and the verification policy is closed.
+        // In that case, the positive button displays OK and negative button displays Retry.
+        if (isVerificationRetryAllowed(verificationUserActionNeededReason, verificationPolicy)) {
+            if (positiveButton != null) {
+                positiveButton.setVisibility(View.VISIBLE);
+                positiveButton.setEnabled(true);
+                positiveButton.setText(R.string.ok);
+                UiUtil.applyFilledButtonStyle(requireContext(), positiveButton);
+                // Notice, even though it's a "positive" button, it still gives a negative response
+                // because it means abort the verification.
+                positiveButton.setOnClickListener(view -> {
+                    // Disable the button to avoid the user clicks it more than once quickly
+                    view.setEnabled(false);
+                    // Don't use installStage.getStageCode() here because it can be
+                    // STAGE_USER_ACTION_REQUIRED if the installation is triggered by Pia itself.
+                    mInstallActionListener.onNegativeResponse(
+                            InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED);
+                });
+            }
+            if (negativeButton != null) {
+                negativeButton.setVisibility(View.VISIBLE);
+                negativeButton.setEnabled(true);
+                negativeButton.setText(R.string.button_retry);
+                negativeButton.setFilterTouchesWhenObscured(true);
+                UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
+                negativeButton.setOnClickListener(view -> {
+                    // Disable the button to avoid the user clicks it more than once quickly
+                    view.setEnabled(false);
+                    mInstallActionListener.onRetryResponse();
+                });
+            }
+        } else if (isVerificationBypassAllowed(verificationUserActionNeededReason,
+                verificationPolicy)) {
             if (installStage.isAppUpdating()) {
                 mMoreDetailsExpandedTextView.setText(
                         R.string.more_details_expanded_update_summary);
@@ -762,8 +797,8 @@ public class InstallationFragment extends DialogFragment {
         }
     }
 
-    private int getVerificationConfirmationTitleResourceId(int userActionNeededReason) {
-        return switch (userActionNeededReason) {
+    private int getVerificationConfirmationTitleResourceId(int verificationUserActionNeededReason) {
+        return switch (verificationUserActionNeededReason) {
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN ->
                     R.string.cannot_install_verification_unavailable_title;
 
@@ -775,10 +810,10 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private int getVerificationConfirmationMessageResourceId(
-            int userActionNeededReason, boolean isAppUpdating, int policy) {
-        return switch (userActionNeededReason) {
+            int verificationUserActionNeededReason, int verificationPolicy, boolean isAppUpdating) {
+        return switch (verificationUserActionNeededReason) {
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN -> {
-                if (policy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
+                if (verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
                     yield isAppUpdating
                             ? R.string.cannot_update_verification_unavailable_fail_closed_summary
                             : R.string.cannot_install_verification_unavailable_fail_closed_summary;
@@ -806,11 +841,8 @@ public class InstallationFragment extends DialogFragment {
      * based on the verification policy and the reason for user action.
      */
     public static boolean isVerificationBypassAllowed(
-            PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo) {
-        int userActionNeededReason = verificationInfo.getUserActionNeededReason();
-        int verificationPolicy = verificationInfo.getVerificationPolicy();
-
-        return switch (userActionNeededReason) {
+            int verificationUserActionNeededReason, int verificationPolicy) {
+        return switch (verificationUserActionNeededReason) {
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED -> false;
 
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE,
@@ -819,9 +851,17 @@ public class InstallationFragment extends DialogFragment {
                     verificationPolicy != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 
             default -> {
-                Log.e(LOG_TAG, "Unknown user action needed reason: " + userActionNeededReason);
+                Log.e(LOG_TAG, "Unknown user action needed reason: "
+                        + verificationUserActionNeededReason);
                 yield false;
             }
         };
+    }
+
+    private static boolean isVerificationRetryAllowed(
+            int verificationUserActionNeededReason, int verificationPolicy) {
+        return verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
+                && verificationUserActionNeededReason
+                == DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
     }
 }

@@ -466,9 +466,12 @@ public class WindowManagerService extends IWindowManager.Stub
     // Enums for animation scale update types.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({WINDOW_ANIMATION_SCALE, TRANSITION_ANIMATION_SCALE, ANIMATION_DURATION_SCALE})
-    private @interface UpdateAnimationScaleMode {};
-    private static final int WINDOW_ANIMATION_SCALE = 0;
-    private static final int TRANSITION_ANIMATION_SCALE = 1;
+    private @interface UpdateAnimationScaleMode {}
+
+    @VisibleForTesting
+    static final int WINDOW_ANIMATION_SCALE = 0;
+    @VisibleForTesting
+    static final int TRANSITION_ANIMATION_SCALE = 1;
     private static final int ANIMATION_DURATION_SCALE = 2;
 
     private static final int ANIMATION_COMPLETED_TIMEOUT_MS = 5000;
@@ -1106,6 +1109,7 @@ public class WindowManagerService extends IWindowManager.Stub
     private float mWindowAnimationScaleSetting = DEFAULT_ANIMATION_SCALE;
     @GuardedBy("mGlobalLock")
     private float mTransitionAnimationScaleSetting = DEFAULT_ANIMATION_SCALE;
+
     boolean mPointerLocationEnabled = false;
 
     private final SharedMemoryBackedCurrentAnimatorScale mAnimatorScale =
@@ -3721,9 +3725,8 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-
     @Override
-    public void setAnimationScale(int which, float scale) {
+    public void setAnimationScale(@UpdateAnimationScaleMode int which, float scale) {
         if (!checkCallingPermission(android.Manifest.permission.SET_ANIMATION_SCALE,
                 "setAnimationScale()")) {
             throw new SecurityException("Requires SET_ANIMATION_SCALE permission");
@@ -3731,18 +3734,20 @@ public class WindowManagerService extends IWindowManager.Stub
 
         scale = fixScale(scale);
         switch (which) {
-            case 0:
+            case WINDOW_ANIMATION_SCALE:
                 synchronized (mGlobalLock) {
                     mWindowAnimationScaleSetting = scale;
                 }
                 break;
-            case 1:
+            case TRANSITION_ANIMATION_SCALE:
                 synchronized (mGlobalLock) {
                     mTransitionAnimationScaleSetting = scale;
                 }
                 break;
-            case 2:
-                mAnimatorScale.setCurrentScale(scale);
+            case ANIMATION_DURATION_SCALE:
+                synchronized (mGlobalLock) {
+                    mAnimatorScale.setCurrentScale(scale);
+                }
                 break;
         }
 
@@ -3769,7 +3774,9 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
             if (scales.length >= 3) {
-                mAnimatorScale.setCurrentScale(fixScale(scales[2]));
+                synchronized (mGlobalLock) {
+                    mAnimatorScale.setCurrentScale(fixScale(scales[2]));
+                }
                 dispatchNewAnimatorScaleLocked(null);
             }
         }
@@ -3778,45 +3785,52 @@ public class WindowManagerService extends IWindowManager.Stub
         mH.sendEmptyMessage(H.PERSIST_ANIMATION_SCALE);
     }
 
+    @VisibleForTesting
+    void setAnimationsDisabledForDisplay(int displayId, boolean disabled) {
+        if (!android.companion.virtualdevice.flags.Flags.enableAnimationsPerDisplay()) {
+            Slog.e(TAG, "Required feature flag is disabled");
+            return;
+        }
+
+        synchronized (mGlobalLock) {
+            DisplayContent displayContent = mRoot.getDisplayContentOrCreate(displayId);
+            displayContent.setAnimationsDisabledLocked(disabled);
+        }
+    }
+
     private void setAnimatorDurationScale(float scale) {
         mAnimatorScale.setCurrentScale(scale);
         ValueAnimator.setDurationScale(scale);
     }
 
-    public float getWindowAnimationScaleLocked() {
-        return mAnimatorScale.isAnimationsDisabled() ? 0 : mWindowAnimationScaleSetting;
-    }
-
-    public float getTransitionAnimationScaleLocked() {
-        return mAnimatorScale.isAnimationsDisabled() ? 0 : mTransitionAnimationScaleSetting;
-    }
-
     @Override
-    public float getAnimationScale(int which) {
-        switch (which) {
-            case 0:
-                synchronized (mGlobalLock) {
-                    return mWindowAnimationScaleSetting;
-                }
-            case 1:
-                synchronized (mGlobalLock) {
-                    return mTransitionAnimationScaleSetting;
-                }
-            case 2: return mAnimatorScale.getCurrentScale();
+    public float getAnimationScale(@UpdateAnimationScaleMode int which) {
+        synchronized (mGlobalLock) {
+            return getAnimationScaleLocked(which);
         }
-        return 0;
+    }
+
+    float getAnimationScaleLocked(@UpdateAnimationScaleMode int which) {
+        return switch (which) {
+            case WINDOW_ANIMATION_SCALE -> mWindowAnimationScaleSetting;
+            case TRANSITION_ANIMATION_SCALE -> mTransitionAnimationScaleSetting;
+            case ANIMATION_DURATION_SCALE -> mAnimatorScale.getCurrentScale();
+            default -> 0;
+        };
     }
 
     @Override
     public float[] getAnimationScales() {
         float windowAnimationScale;
         float transitionAnimationScale;
+        float animatorDurationScale;
         synchronized (mGlobalLock) {
             windowAnimationScale = mWindowAnimationScaleSetting;
             transitionAnimationScale = mTransitionAnimationScaleSetting;
+            animatorDurationScale = mAnimatorScale.getCurrentScale();
         }
         return new float[] { windowAnimationScale, transitionAnimationScale,
-                mAnimatorScale.getCurrentScale() };
+                animatorDurationScale };
     }
 
     @Override
@@ -3824,6 +3838,10 @@ public class WindowManagerService extends IWindowManager.Stub
         synchronized (mGlobalLock) {
             return mAnimatorScale.getCurrentScale();
         }
+    }
+
+    boolean isAnimationsDisabledLocked() {
+        return mAnimatorScale.isAnimationsDisabled();
     }
 
     void dispatchNewAnimatorScaleLocked(Session session) {
@@ -8359,6 +8377,11 @@ public class WindowManagerService extends IWindowManager.Stub
                 dc.removeImeScreenshotImmediately();
                 return true;
             }
+        }
+
+        @Override
+        public void setAnimationsDisabledForDisplay(int displayId, boolean disabled) {
+            WindowManagerService.this.setAnimationsDisabledForDisplay(displayId, disabled);
         }
 
         @Override

@@ -23,6 +23,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +40,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -72,7 +72,6 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
-import com.android.compose.theme.colorAttr
 import com.android.internal.policy.SystemBarUtils
 import com.android.settingslib.Utils
 import com.android.systemui.battery.BatteryMeterView
@@ -146,51 +145,6 @@ object ShadeHeader {
         const val BatteryTestTag = "battery_meter_composable_view"
         const val BatteryTestTagLegacy = "battery_percentage_view"
     }
-
-    /** Represents the background highlighting of a header icons chip. */
-    sealed interface ChipHighlight {
-        val backgroundColor: Color
-            @Composable @ReadOnlyComposable get
-
-        val foregroundColor: Color
-            @Composable @ReadOnlyComposable get
-
-        val onHoveredBackgroundColor: Color
-            @Composable @ReadOnlyComposable get
-
-        data object Weak : ChipHighlight {
-            override val backgroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-
-            override val foregroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.onSurface
-
-            override val onHoveredBackgroundColor: Color
-                @Composable get() = backgroundColor
-        }
-
-        data object Strong : ChipHighlight {
-            override val backgroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.secondary
-
-            override val foregroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.onSecondary
-
-            override val onHoveredBackgroundColor: Color
-                @Composable get() = backgroundColor
-        }
-
-        data object Transparent : ChipHighlight {
-            override val backgroundColor: Color
-                @Composable get() = Color.Transparent
-
-            override val foregroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.onSurface
-
-            override val onHoveredBackgroundColor: Color
-                @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-        }
-    }
 }
 
 /** The status bar that appears above the Shade scene on small screens. */
@@ -212,6 +166,8 @@ fun ContentScope.CollapsedShadeHeader(
             }
         }
 
+    val textColor = if (isSystemInDarkTheme()) Color.White else Color.Black
+
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
@@ -221,11 +177,11 @@ fun ContentScope.CollapsedShadeHeader(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
-                Clock(onClick = viewModel::onClockClicked)
+                Clock(onClick = viewModel::onClockClicked, textColor = textColor)
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
-                    textColor = colorAttr(android.R.attr.textColorPrimary),
+                    textColor = textColor,
                     modifier = Modifier.element(ShadeHeader.Elements.CollapsedContentStart),
                 )
             }
@@ -271,7 +227,7 @@ fun ContentScope.CollapsedShadeHeader(
                             showIcon = true,
                             useExpandedFormat = useExpandedTextFormat,
                             modifier = Modifier.padding(vertical = 8.dp),
-                            textColor = Color.White, // Single shade is always in Dark theme
+                            textColor = textColor,
                         )
                     }
                 }
@@ -311,6 +267,7 @@ fun ContentScope.ExpandedShadeHeader(
                     onClick = viewModel::onClockClicked,
                     modifier = Modifier.align(Alignment.CenterStart),
                     scale = 2.57f,
+                    textColor = MaterialTheme.colorScheme.onSurface,
                 )
                 Box(
                     modifier =
@@ -330,7 +287,7 @@ fun ContentScope.ExpandedShadeHeader(
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
-                    textColor = colorAttr(android.R.attr.textColorPrimary),
+                    textColor = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
                 ShadeHighlightChip {
@@ -347,7 +304,7 @@ fun ContentScope.ExpandedShadeHeader(
                         viewModel = viewModel,
                         showIcon = true,
                         useExpandedFormat = useExpandedFormat,
-                        textColor = Color.White, // Single shade is always in Dark theme
+                        textColor = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -362,8 +319,8 @@ fun ContentScope.ExpandedShadeHeader(
 @Composable
 fun ContentScope.OverlayShadeHeader(
     viewModel: ShadeHeaderViewModel,
-    notificationsHighlight: ShadeHeader.ChipHighlight,
-    quickSettingsHighlight: ShadeHeader.ChipHighlight,
+    notificationsHighlight: ChipHighlightModel,
+    quickSettingsHighlight: ChipHighlightModel,
     showClock: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -428,7 +385,7 @@ fun ContentScope.OverlayShadeHeader(
                         with(LocalDensity.current) {
                             (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
                         }
-                    val isHighlighted = quickSettingsHighlight is ShadeHeader.ChipHighlight.Strong
+                    val isHighlighted = quickSettingsHighlight is ChipHighlightModel.Strong
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = false,

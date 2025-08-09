@@ -32,6 +32,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT
 import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
 import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY
 import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo
 import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageInstaller.SessionParams
@@ -890,6 +891,29 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
         }
         packageInstaller.setDeveloperVerificationUserResponse(
             sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY
+        )
+        // If it is triggered by PIA itself, show the installing dialog and wait for the
+        // result from the receiver. Don't need to set the aborted.
+        if (wasUserConfirmationTriggeredByPia) {
+            wasUserConfirmationTriggeredByPia = false
+            return InstallInstalling(appSnippet, isAppUpdating)
+        } else {
+            return InstallAborted(
+                ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+            )
+        }
+    }
+
+    fun setRetryVerificationUserResponse(): InstallStage {
+        if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION != intent.action) {
+            Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
+        if (localLogv) {
+            Log.d(LOG_TAG, "Setting retry verification user response")
+        }
+        packageInstaller.setDeveloperVerificationUserResponse(
+            sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY
         )
         // If it is triggered by PIA itself, show the installing dialog and wait for the
         // result from the receiver. Don't need to set the aborted.

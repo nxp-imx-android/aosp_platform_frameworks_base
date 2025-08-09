@@ -83,7 +83,8 @@ final class SessionMetrics {
     private long mDeveloperVerifierConnectedMillis;
     private long mDeveloperVerifierRequestSentMillis;
     private long mDeveloperVerificationDurationMillis;
-
+    private long mDeveloperVerifierRetryRequestSentMillis;
+    private long mDeveloperVerificationRetryDurationMillis;
     private int mDeveloperVerifierUid = INVALID_UID;
     private int mIsDeveloperVerificationBypassedReason =
             DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED;
@@ -100,6 +101,7 @@ final class SessionMetrics {
             mDeveloperVerificationUserActionRequiredReason;
     private @PackageInstaller.DeveloperVerificationUserResponse int
             mDeveloperVerificationUserResponse = -1;
+    private int mDeveloperVerificationRetryCount;
     private @PackageInstaller.DeveloperVerificationFailedReason int
             mDeveloperVerificationFailureReason;
     @Nullable
@@ -217,6 +219,11 @@ final class SessionMetrics {
         mDeveloperVerifierRequestSentMillis = System.currentTimeMillis();
     }
 
+    public void onDeveloperVerificationRetryRequestSent() {
+        mDeveloperVerifierRetryRequestSentMillis = System.currentTimeMillis();
+        mDeveloperVerificationRetryCount++;
+    }
+
     public void onDeveloperVerificationBypassed(int bypassReason) {
         mIsDeveloperVerificationBypassedReason = bypassReason;
     }
@@ -234,9 +241,14 @@ final class SessionMetrics {
     public void onDeveloperVerificationFinished(DeveloperVerificationStatusInternal status) {
         mDeveloperVerificationStatus = status;
         final long responseReceivedMillis = System.currentTimeMillis();
-        if (mDeveloperVerifierRequestSentMillis != 0) {
+        if (mDeveloperVerifierRequestSentMillis != 0
+                && mDeveloperVerifierRetryRequestSentMillis == 0) {
             mDeveloperVerificationDurationMillis =
                     responseReceivedMillis - mDeveloperVerifierRequestSentMillis;
+        } else if (mDeveloperVerifierRetryRequestSentMillis != 0) {
+            // Sum the total retry duration
+            mDeveloperVerificationRetryDurationMillis +=
+                    responseReceivedMillis - mDeveloperVerifierRetryRequestSentMillis;
         }
     }
 
@@ -335,14 +347,14 @@ final class SessionMetrics {
                                 mDeveloperVerificationUserActionRequiredReason), // 44
                         getTranslatedDeveloperVerificationUserResponseForStats(
                                 mDeveloperVerificationUserResponse), // 45
-                        0, // 46 // retryCount
+                        mDeveloperVerificationRetryCount, // 46
                         mDeveloperVerificationStatus.isLiteVerification(), // 47
                         mDeveloperVerificationFailureReason, // 48
                         mPackageNameWhenDeveloperVerificationFailed, // 49
                         mDeveloperVerificationCancelled, // 50
                         mDeveloperVerificationDurationMillis, // 51
                         developerVerificationPrepDurationMillis, // 52
-                        0L, // 53 // retryDuration
+                        mDeveloperVerificationRetryDurationMillis, // 53
                         developerVerifierConnectionDurationMillis, // 54
                         mWasUserResponseReceived, // 55
                         mWasDeveloperVerificationUserResponseReceived, // 56

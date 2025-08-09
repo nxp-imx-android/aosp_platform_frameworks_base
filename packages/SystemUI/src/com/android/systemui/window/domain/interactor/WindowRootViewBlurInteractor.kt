@@ -16,13 +16,16 @@
 
 package com.android.systemui.window.domain.interactor
 
+import android.content.res.Resources
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
+import com.android.systemui.res.R
 import com.android.systemui.window.data.repository.BlurAppliedListener
 import com.android.systemui.window.data.repository.WindowRootViewBlurRepository
 import javax.inject.Inject
@@ -45,6 +48,7 @@ class WindowRootViewBlurInteractor
 @Inject
 constructor(
     @Application private val applicationScope: CoroutineScope,
+    @Main private val resources: Resources,
     keyguardInteractor: KeyguardInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val communalInteractor: CommunalInteractor,
@@ -90,6 +94,10 @@ constructor(
      * state and multimedia tunneling state.
      */
     val isBlurCurrentlySupported: StateFlow<Boolean> = repository.isBlurSupported
+
+    /** Whether the blurred wallpaper is supported. This feature is disabled on desktop. */
+    val isBlurredWallpaperSupported: Boolean =
+        resources.getBoolean(R.bool.config_supportBlurredWallpaper)
 
     /** Radius of blur to be applied on the window root view. */
     val blurRadiusRequestedByShade: StateFlow<Float> = repository.blurRequestedByShade.asStateFlow()

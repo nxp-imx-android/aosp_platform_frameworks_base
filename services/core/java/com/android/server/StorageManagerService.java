@@ -3325,40 +3325,6 @@ class StorageManagerService extends IStorageManager.Stub
 
     @android.annotation.EnforcePermission(android.Manifest.permission.STORAGE_INTERNAL)
     @Override
-    public void createUserStorageKeys(int userId, boolean ephemeral) {
-
-        super.createUserStorageKeys_enforcePermission();
-
-        try {
-            mVold.createUserStorageKeys(userId, ephemeral);
-            // Since the user's CE key was just created, the user's CE storage is now unlocked.
-            synchronized (mLock) {
-                mCeUnlockedUsers.append(userId);
-            }
-        } catch (Exception e) {
-            Slog.wtf(TAG, e);
-        }
-    }
-
-    @android.annotation.EnforcePermission(android.Manifest.permission.STORAGE_INTERNAL)
-    @Override
-    public void destroyUserStorageKeys(int userId) {
-
-        super.destroyUserStorageKeys_enforcePermission();
-
-        try {
-            mVold.destroyUserStorageKeys(userId);
-            // Since the user's CE key was just destroyed, the user's CE storage is now locked.
-            synchronized (mLock) {
-                mCeUnlockedUsers.remove(userId);
-            }
-        } catch (Exception e) {
-            Slog.wtf(TAG, e);
-        }
-    }
-
-    @android.annotation.EnforcePermission(android.Manifest.permission.STORAGE_INTERNAL)
-    @Override
     public void lockCeStorage(int userId) {
         super.lockCeStorage_enforcePermission();
 
@@ -5090,6 +5056,32 @@ class StorageManagerService extends IStorageManager.Stub
                 }
             }
             return primaryVolumeIds;
+        }
+
+        @Override
+        public void createUserStorageKeys(int userId, boolean ephemeral) {
+            try {
+                mVold.createUserStorageKeys(userId, ephemeral);
+                // Since the user's CE key was just created, the user's CE storage is now unlocked.
+                synchronized (mLock) {
+                    mCeUnlockedUsers.append(userId);
+                }
+            } catch (Exception e) {
+                Slog.wtf(TAG, e);
+            }
+        }
+
+        @Override
+        public void destroyUserStorageKeys(int userId) {
+            try {
+                mVold.destroyUserStorageKeys(userId);
+                // Since the user's CE key was just destroyed, the user's CE storage is now locked.
+                synchronized (mLock) {
+                    mCeUnlockedUsers.remove(userId);
+                }
+            } catch (Exception e) {
+                Slog.wtf(TAG, e);
+            }
         }
 
         @Override
