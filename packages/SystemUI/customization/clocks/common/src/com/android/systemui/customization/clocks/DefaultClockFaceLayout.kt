@@ -20,9 +20,9 @@ import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -109,7 +109,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
                 context: LockscreenElementContext,
             ) {
                 // TODO(b/418824686): Migrate stepping animation to compose
-                clockView(view, Modifier.fillMaxSize().then(context.burnInModifier))
+                clockView(view, Modifier.wrapContentSize().then(context.burnInModifier))
             }
         }
 
