@@ -1497,6 +1497,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 SystemMessage.NOTE_PROFILE_WIPED, notification, UserHandle.of(parentUserId));
     }
 
+    private boolean shouldEnableForRetailDemoPackage(String packageName) {
+        if (!Flags.removeDeviceAdminFeatureChecks() || TextUtils.isEmpty(packageName)) {
+            return false;
+        }
+
+        final String predefinedPkgName = mContext.getString(R.string.config_retailDemoPackage);
+
+        return packageName.equals(predefinedPkgName);
+    }
+
     private final class UserLifecycleListener implements UserManagerInternal.UserLifecycleListener {
 
         @Override
@@ -4164,7 +4174,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             int userHandle,
             @Nullable String provisioningContext
     ) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !shouldEnableForRetailDemoPackage(adminReceiver.getPackageName())) {
             return;
         }
         Preconditions.checkArgumentNonnegative(userHandle, "Invalid userId");
@@ -9941,7 +9951,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public boolean setDeviceOwner(ComponentName admin, int userId,
             boolean setProfileOwnerOnCurrentUserIfNecessary) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !shouldEnableForRetailDemoPackage(admin.getPackageName())) {
             logMissingFeatureAction("Cannot set " + ComponentName.flattenToShortString(admin)
                     + " as device owner for user " + userId);
             return false;
@@ -10515,7 +10525,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public boolean setProfileOwner(ComponentName who, int userHandle) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !shouldEnableForRetailDemoPackage(who.getPackageName())) {
             logMissingFeatureAction("Cannot set " + ComponentName.flattenToShortString(who)
                     + " as profile owner for user " + userHandle);
             return false;
@@ -17727,7 +17737,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private int checkProvisioningPreconditionSkipPermission(
             String action, String packageName, @Nullable ComponentName componentName, int userId) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
             logMissingFeatureAction("Cannot check provisioning for action " + action);
             return STATUS_DEVICE_ADMIN_NOT_SUPPORTED;
         }
