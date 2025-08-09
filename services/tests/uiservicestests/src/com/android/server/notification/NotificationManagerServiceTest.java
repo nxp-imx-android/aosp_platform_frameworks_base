@@ -334,6 +334,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import com.android.compatibility.common.util.SystemUtil;
+import com.android.compatibility.common.util.ThrowingRunnable;
 import com.android.internal.R;
 import com.android.internal.config.sysui.TestableFlagResolver;
 import com.android.internal.logging.InstanceId;
@@ -369,12 +370,12 @@ import com.android.server.utils.quota.MultiRateLimiter;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
-
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+
+import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -392,6 +393,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -406,9 +410,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -616,7 +617,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(Flags.FLAG_SHOW_NOISY_BUNDLED_NOTIFICATIONS);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
@@ -8128,15 +8129,12 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         r2.getSbn().setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
         mService.addNotification(r2);
-        signals = new Bundle();
-        signals.putBoolean(Adjustment.KEY_SENSITIVE_CONTENT, true);
         Adjustment adjustment2 = new Adjustment(
                 r2.getSbn().getPackageName(), r2.getKey(), signals, "",
                 r2.getUser().getIdentifier());
         mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment2);
         assertTrue(mService.checkLastSensitiveLog(true, true, 2));
 
-        signals = new Bundle();
         signals.putBoolean(Adjustment.KEY_SENSITIVE_CONTENT, false);
         Adjustment adjustment3 = new Adjustment(
                 r2.getSbn().getPackageName(), r2.getKey(), signals, "",
@@ -19362,7 +19360,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 anyString())).thenReturn(true);
 
         // Post a single notification
-        final NotificationRecord r = generateNotificationRecord(mSilentChannel);
+        final boolean hasOriginalSummary = false;
+        final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         final String keyToUnbundle = r.getKey();
         mService.addNotification(r);
 
@@ -19395,7 +19394,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Check that the original channel was restored
         verify(mRankingHandler, times(1)).requestSort();
         assertThat(r.hadGroupSummaryWhenUnclassified()).isFalse(); // we didn't add a group summary
-        assertThat(r.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+        assertThat(r.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
 
         // Rebundle the notification
         mService.reclassifyNotification(keyToUnbundle);
@@ -19425,7 +19424,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
         for (int i = 0; i < numNotifications; i++) {
-            NotificationRecord r = generateNotificationRecord(mSilentChannel, i, mUserId);
+            NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, i, mUserId);
             mService.addNotification(r);
             Bundle signals = new Bundle();
             final int adjustmentType = i + 1;
@@ -19458,7 +19457,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mRankingHandler, times(numNotifications)).requestSort();
         for (NotificationRecord record : mService.mNotificationList) {
             // Check that the original channel was restored
-            assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+            assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
         }
 
         // Re-allow KEY_TYPE adjustment
@@ -19491,9 +19490,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
+        final int numNewsNotifications = 1;
         List<String> postedNotificationKeys = new ArrayList();
         for (int i = 0; i < numNotifications; i++) {
-            NotificationRecord r = generateNotificationRecord(mSilentChannel, i, mUserId);
+            NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, i, mUserId);
             mService.addNotification(r);
             postedNotificationKeys.add(r.getKey());
             Bundle signals = new Bundle();
@@ -19530,7 +19530,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             // Check that the original channel was restored
             // for notifications classified as TYPE_NEWS
             if (record.getBundleType() == TYPE_NEWS) {
-                assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
             }
         }
 
@@ -19565,7 +19565,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
         for (int i = 0; i < numNotifications; i++) {
-            NotificationRecord r = generateNotificationRecord(mSilentChannel, i, mUserId);
+            NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, i, mUserId);
             mService.addNotification(r);
             Bundle signals = new Bundle();
             final int adjustmentType = i + 1;
@@ -19598,7 +19598,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         //Check that all notifications were unbundled
         verify(mRankingHandler, times(numNotifications)).requestSort();
         for (NotificationRecord record : mService.mNotificationList) {
-            assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+            assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
         }
 
         // Re-enable bundles for package
@@ -19874,9 +19874,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mUm.getEnabledProfileIds(mUserId)).thenReturn(new int[]{mUserId, mUserId + 2});
 
         // two notifications, one for mUserId, one for different user id, one for profile
-        NotificationRecord r = generateNotificationRecord(mSilentChannel, 0, mUserId);
-        NotificationRecord r1 = generateNotificationRecord(mSilentChannel, 1, mUserId + 1);
-        NotificationRecord r2 = generateNotificationRecord(mSilentChannel, 2, mUserId + 2);
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel, 1,
+                mUserId + 1);
+        NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel, 2,
+                mUserId + 2);
         mService.addNotification(r);
         mService.addNotification(r1);
         mService.addNotification(r2);
@@ -19925,7 +19927,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             // Check that the original channel was restored
             int id = record.getSbn().getNormalizedUserId();
             if (id == mUserId || id == mUserId + 2) {
-                assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
             }
         }
 
@@ -19952,7 +19954,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                         NotificationChannel.SYSTEM_RESERVED_IDS);
             } else if (id == mUserId + 2) {
                 // has been disabled, should not have been reclassified
-                assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
             }
         }
     }
@@ -19978,10 +19980,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mUm.isProfile(anyInt())).thenReturn(false);
         when(mUm.isProfile(mUserId + 2)).thenReturn(true);
         when(mUm.getEnabledProfileIds(mUserId)).thenReturn(new int[]{mUserId, mUserId + 2});
-        NotificationRecord r = generateNotificationRecord(mSilentChannel, 0, mUserId);
-        NotificationRecord r1 = generateNotificationRecord(mSilentChannel, 1,
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel, 1,
                 mUserId + 1);
-        NotificationRecord r2 = generateNotificationRecord(mSilentChannel, 2,
+        NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel, 2,
                 mUserId + 2);
         mService.addNotification(r);
         mService.addNotification(r1);
@@ -20031,7 +20033,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         for (NotificationRecord record : mService.mNotificationList) {
             // Check that the original channel was restored
             if (record.getSbn().getNormalizedUserId() == mUserId) {
-                assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
             }
         }
 
@@ -20074,12 +20076,12 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mUm.isProfile(mUserId + 2)).thenReturn(true);
         when(mUm.getEnabledProfileIds(mUserId)).thenReturn(new int[]{mUserId, mUserId + 2});
         for (int i = 0; i < NotificationChannel.SYSTEM_RESERVED_IDS.size(); i++) {
-            NotificationRecord r = generateNotificationRecord(mSilentChannel, i + 1,
+            NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, i + 1,
                     mUserId);
-            NotificationRecord r2 = generateNotificationRecord(
-                    mSilentChannel, 20 * (i + 1), mUserId + 1);
-            NotificationRecord r3 = generateNotificationRecord(
-                    mSilentChannel, 30 * (i + 1), mUserId + 2);
+            NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel,
+                    20 * (i + 1), mUserId + 1);
+            NotificationRecord r3 = generateNotificationRecord(mTestNotificationChannel,
+                    30 * (i + 1), mUserId + 2);
 
             mService.addNotification(r);
             mService.addNotification(r2);
@@ -20131,7 +20133,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             int userId = record.getSbn().getNormalizedUserId();
             if ((userId == mUserId || userId == mUserId + 2)
                     && record.getBundleType() == TYPE_NEWS) {
-                assertThat(record.getChannel().getId()).isEqualTo(mSilentChannel.getId());
+                assertThat(record.getChannel().getId()).isEqualTo(TEST_CHANNEL_ID);
             }
         }
 

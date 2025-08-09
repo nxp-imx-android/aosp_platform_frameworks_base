@@ -20,8 +20,9 @@ import android.content.Context;
 import com.android.internal.compat.IPlatformCompat;
 
 /**
- * Extracts signals that will be useful to provide to notification listeners and caches them
- * on the {@link NotificationRecord} object.
+ * Extracts signals that will be useful to the {@link NotificationComparator} and caches them
+ *  on the {@link NotificationRecord} object. These annotations will
+ *  not be passed on to {@link android.service.notification.NotificationListenerService}s.
  *
  *  If you add a new Extractor be sure to add it to R.array.config_notificationSignalExtractors.
  */
