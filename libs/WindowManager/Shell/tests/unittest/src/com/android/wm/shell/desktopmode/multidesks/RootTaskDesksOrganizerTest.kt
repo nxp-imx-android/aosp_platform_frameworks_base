@@ -248,6 +248,8 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             callbackApplied = true
         }
         organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+        val minimizationRoot = createFreeformTask()
+        organizer.onTaskAppeared(minimizationRoot, SurfaceControl())
 
         assertThat(callbackApplied).isTrue()
     }

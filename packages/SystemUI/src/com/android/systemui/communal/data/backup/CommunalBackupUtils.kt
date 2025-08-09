@@ -20,58 +20,25 @@ import android.content.Context
 import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.systemui.communal.data.db.CommunalDatabase
-import com.android.systemui.communal.data.db.CommunalItemRank
-import com.android.systemui.communal.data.db.CommunalWidgetItem
 import com.android.systemui.communal.nano.CommunalHubState
-import com.android.systemui.dagger.qualifiers.Background
-import kotlinx.coroutines.CoroutineDispatcher
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /** Utilities for communal backup and restore. */
-class CommunalBackupUtils
-@Inject
-constructor(
-    private val context: Context,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
-) {
+class CommunalBackupUtils(private val context: Context) {
 
     /**
      * Retrieves a communal hub state protobuf that represents the current state of the communal
      * database.
      */
     @WorkerThread
-    @Deprecated(
-        message = "Avoid using runBlocking in production code. Consider asynchronous alternatives.",
-        replaceWith = ReplaceWith("getCommunalHubState()")
-    )
-    fun getCommunalHubStateBlocking(): CommunalHubState {
+    fun getCommunalHubState(): CommunalHubState {
         val database = CommunalDatabase.getInstance(context)
         val widgetsFromDb = runBlocking { database.communalWidgetDao().getWidgets().first() }
-        return getCommunalHubStateInternal(widgetsFromDb)
-    }
-
-    /**
-     * Retrieves a communal hub state protobuf that represents the current state of the communal
-     * database. Suspending equivalent of {@link #getCommunalHubState()} for use within a coroutine
-     */
-    @WorkerThread
-    suspend fun getCommunalHubState(): CommunalHubState {
-        val database = CommunalDatabase.getInstance(context)
-        val widgetsFromDb =
-            withContext(backgroundDispatcher) { database.communalWidgetDao().getWidgets().first() }
-        return getCommunalHubStateInternal(widgetsFromDb)
-    }
-
-    private fun getCommunalHubStateInternal(
-        widgetsFromDb: Map<CommunalItemRank, CommunalWidgetItem>
-    ): CommunalHubState {
         val widgetsState = mutableListOf<CommunalHubState.CommunalWidgetItem>()
         widgetsFromDb.keys.forEach { rankItem ->
             val widget = widgetsFromDb[rankItem]!!

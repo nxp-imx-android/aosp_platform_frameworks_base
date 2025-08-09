@@ -236,7 +236,9 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -252,6 +254,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private static final String TAG = "PackageInstallerSession";
@@ -895,8 +898,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private final List<File> mResolvedStagedFiles = new ArrayList<>();
     @GuardedBy("mLock")
     private final List<File> mResolvedInheritedFiles = new ArrayList<>();
-    @GuardedBy("mLock")
-    private final List<String> mResolvedInstructionSets = new ArrayList<>();
+    @GuardedBy("mLock") private final List<String> mResolvedOatSubDirs = new ArrayList<>();
     @GuardedBy("mLock")
     private final List<String> mResolvedNativeLibPaths = new ArrayList<>();
 
@@ -3637,9 +3639,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 }
 
                 if (isLinkPossible(fromFiles, toDir)) {
-                    if (!mResolvedInstructionSets.isEmpty()) {
+                    if (!mResolvedOatSubDirs.isEmpty()) {
                         final File oatDir = new File(toDir, "oat");
-                        createOatDirs(tempPackageName, mResolvedInstructionSets, oatDir);
+                        createOatDirs(tempPackageName, mResolvedOatSubDirs, oatDir);
                     }
                     // pre-create lib dirs for linking if necessary
                     if (!mResolvedNativeLibPaths.isEmpty()) {
@@ -4521,31 +4523,54 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 params.setDontKillApp(false);
             }
 
-            // Inherit compiled oat directory.
             final File packageInstallDir = (new File(appInfo.getBaseCodePath())).getParentFile();
             mInheritedFilesBase = packageInstallDir;
+
+            // Keep track of all dexopt artifacts and their containing directories. If we're linking
+            // (and not copying) inherited files, we can recreate the oat directory hierarchy and
+            // link dexopt artifacts.
+            // Note that not all dexopt artifacts are necessarily needed and usable at the
+            // destination. Here, we blindly link all of them and let ART decide which ones to use.
+            // ART replaces the unusable ones during the next dexopt (typically in a later stage of
+            // the installation) and removes the unneeded ones during the next file GC (typically
+            // when the device is idle).
             final File oatDir = new File(packageInstallDir, "oat");
-            if (oatDir.exists()) {
-                final File[] archSubdirs = oatDir.listFiles();
-
-                // Keep track of all instruction sets we've seen compiled output for.
-                // If we're linking (and not copying) inherited files, we can recreate the
-                // instruction set hierarchy and link compiled output.
-                if (archSubdirs != null && archSubdirs.length > 0) {
-                    final String[] instructionSets = InstructionSets.getAllDexCodeInstructionSets();
-                    for (File archSubDir : archSubdirs) {
-                        // Skip any directory that isn't an ISA subdir.
-                        if (!ArrayUtils.contains(instructionSets, archSubDir.getName())) {
-                            continue;
+            if (Flags.alternativeForDexoptCleanup()) {
+                Path oatPath = oatDir.toPath();
+                try (Stream<Path> stream = Files.walk(oatPath)) {
+                    for (Path path : (Iterable<Path>) stream::iterator) {
+                        if (Files.isRegularFile(path)) {
+                            mResolvedInheritedFiles.add(path.toFile());
+                            String subDir = oatPath.relativize(path.getParent()).toString();
+                            if (!subDir.equals("") && !mResolvedOatSubDirs.contains(subDir)) {
+                                mResolvedOatSubDirs.add(subDir);
+                            }
                         }
+                    }
+                } catch (IOException | UncheckedIOException e) {
+                    Slog.e(TAG, "Error walking directory " + oatDir, e);
+                }
+            } else {
+                if (oatDir.exists()) {
+                    final File[] archSubdirs = oatDir.listFiles();
 
-                        File[] files = archSubDir.listFiles();
-                        if (files == null || files.length == 0) {
-                            continue;
+                    if (archSubdirs != null && archSubdirs.length > 0) {
+                        final String[] instructionSets =
+                                InstructionSets.getAllDexCodeInstructionSets();
+                        for (File archSubDir : archSubdirs) {
+                            // Skip any directory that isn't an ISA subdir.
+                            if (!ArrayUtils.contains(instructionSets, archSubDir.getName())) {
+                                continue;
+                            }
+
+                            File[] files = archSubDir.listFiles();
+                            if (files == null || files.length == 0) {
+                                continue;
+                            }
+
+                            mResolvedOatSubDirs.add(archSubDir.getName());
+                            mResolvedInheritedFiles.addAll(Arrays.asList(files));
                         }
-
-                        mResolvedInstructionSets.add(archSubDir.getName());
-                        mResolvedInheritedFiles.addAll(Arrays.asList(files));
                     }
                 }
             }
@@ -5091,14 +5116,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         throw new IOException("File: " + pathStr + " outside base: " + baseStr);
     }
 
-    private void createOatDirs(String packageName, List<String> instructionSets, File fromDir)
+    private void createOatDirs(String packageName, List<String> oatSubDirs, File fromDir)
             throws PackageManagerException {
-        for (String instructionSet : instructionSets) {
-            try {
-                mInstaller.createOatDir(packageName, fromDir.getAbsolutePath(), instructionSet);
-            } catch (InstallerException e) {
-                throw PackageManagerException.from(e);
-            }
+        try {
+            mInstaller.createOatDirs(packageName, fromDir.getAbsolutePath(), oatSubDirs);
+        } catch (InstallerException e) {
+            throw PackageManagerException.from(e);
         }
     }
 

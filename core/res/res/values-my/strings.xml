@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB စက်နှင့် သုံး၍မရပါ။ APK နှင့် ELF ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ &lt;br&gt;&lt;br&gt; အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ထပ်မပြပါနှင့်"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android အက်ပ် တွဲဖက်သုံးနိုင်မှု"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s - အစိတ်အပိုင်း ‘ဖွင့်ခြင်း’ ကို ချိန်ညှိမထားပါ&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s - ချုံ့မထားသော ဒစ်ဂျစ်တိုက်ကို ချိန်ညှိမထားပါ&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s - အစိတ်အပိုင်း ‘ဖွင့်ခြင်း’ နှင့် ချုံ့မထားသော ဒစ်ဂျစ်တိုက်တို့ကို ချိန်ညှိမထားပါ&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s - အမျိုးအမည်မသိ အမှားအယွင်း&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ဝန်ဆောင်မှုအား ကန့်သတ်မထားပါ"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"သင်သည် ခေါ်ဆိုသူ ID ဆက်တင်ကို မပြောင်းလဲနိုင်ပါ။"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ဒေတာကို <xliff:g id="CARRIERDISPLAY">%s</xliff:g> သို့ ပြောင်းထားသည်"</string>
@@ -655,7 +651,7 @@
     <string name="permdesc_disableKeyguard" msgid="3223710003098573038">"အပလီကေးရှင်းအား သော့ချခြင်းနှင့် သက်ဆိုင်ရာ စကားဝှက်သတ်မှတ်ခြင်းများအား မသုံးနိုင်အောင် ပိတ်ခြင်းကို ခွင့်ပြုရန်။ ဥပမာ ဖုန်းလာလျှင် သော့ပိတ်ခြင်း ပယ်ဖျက်ခြင်း၊ ဖုန်းပြောပြီးလျှင် သော့ကို အလိုအလျောက် ပြန်ပိတ်ခြင်း"</string>
     <string name="permlab_requestPasswordComplexity" msgid="1808977190557794109">"ဖုန်းမျက်နှာပြင် လော့ခ်ချရန် ရှုပ်ထွေးမှုအဆင့် တောင်းခံခြင်း"</string>
     <string name="permdesc_requestPasswordComplexity" msgid="1130556896836258567">"ဖုန်းမျက်နှာပြင်လော့ခ်၏ ရှုပ်ထွေးမှုအဆင့် (မြင့်၊ အလယ်အလတ်၊ နိမ့် သို့မဟုတ် မရှိ) အား လေ့လာရန် အက်ပ်ကို ခွင့်ပြုသည်။ ၎င်းက သတ်မှတ်ထားနိုင်သော ဖုန်းမျက်နှာပြင်လော့ခ်၏ စာလုံးရေနှင့် အမျိုးအစားကို ညွှန်ပြပေးသည်။ အသုံးပြုသူများအနေနှင့် ဖုန်းမျက်နှာပြင်လော့ခ်ကို အတိုင်းအတာတစ်ခုအထိ အဆင့်မြှင့်ရန် အက်ပ်က အကြံပြုနိုင်သည်။ သို့သော်လည်း အသုံးပြုသူများက ၎င်းကို ဂရုပြုမနေဘဲ လွတ်လပ်စွာ ကြည့်ရှုနိုင်ပါသည်။ ဖုန်းမျက်နှာပြင်လော့ခ်ကို စာသားအတိုင်း သိမ်းမထားသဖြင့် အက်ပ်သည် စကားဝှက်အစစ်ကို မသိနိုင်ကြောင်း သတိပြုပါ။"</string>
-    <string name="permlab_postNotification" msgid="4875401198597803658">"အကြောင်းကြားချက်များ ပြခြင်း"</string>
+    <string name="permlab_postNotification" msgid="4875401198597803658">"အကြောင်းကြားချက်များ ပြရန်"</string>
     <string name="permdesc_postNotification" msgid="5974977162462877075">"အကြောင်းကြားချက်များ ပြရန် အက်ပ်ကို ခွင့်ပြုနိုင်သည်"</string>
     <string name="permlab_turnScreenOn" msgid="219344053664171492">"ဖန်သားပြင်ဖွင့်ခြင်း"</string>
     <string name="permdesc_turnScreenOn" msgid="4394606875897601559">"ဖန်သားပြင်ဖွင့်ရန် အက်ပ်ကို ခွင့်ပြုနိုင်သည်။"</string>
@@ -1134,6 +1130,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"ဆင်းမ်ကတ် ပင်နံပါတ်လော့ခ်ဖွင့်ပါ။"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"ဆင်းမ်ကတ် Puk လော့ခ်ဖွင့်ပါ။"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"စကားဝှက်ဖြင့် သော့ဖွင့်ခြင်း"</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"ပုံစံနေရာ"</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"ဘေးတိုက်ပွတ်ဆွဲရန် နေရာ"</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2050,8 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"အများဆုံး လုပ်ပေးရန်"</string>
     <string name="close_button_text" msgid="10603510034455258">"ပိတ်ရန်"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>− <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for notification_metric_label_template (1926079523121055190) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"ဖုန်းကိုင်ရန်"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"ဗီဒီယို"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"ငြင်းပယ်ရန်"</string>

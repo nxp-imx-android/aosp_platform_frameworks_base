@@ -165,6 +165,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DESKTOP_MODE
+import com.android.wm.shell.sysui.KeyguardChangeListener
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -256,7 +257,8 @@ class DesktopTasksController(
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
     DragAndDropController.DragAndDropListener,
-    UserChangeListener {
+    UserChangeListener,
+    KeyguardChangeListener {
 
     private val desktopMode: DesktopModeImpl
     private var visualIndicator: DesktopModeVisualIndicator? = null
@@ -354,6 +356,7 @@ class DesktopTasksController(
             }
         )
         dragAndDropController.addListener(this)
+        shellController.addKeyguardChangeListener(this)
     }
 
     @VisibleForTesting
@@ -810,6 +813,25 @@ class DesktopTasksController(
         }
     }
 
+    override fun onKeyguardVisibilityChanged(
+        visible: Boolean,
+        occluded: Boolean,
+        animatingDismiss: Boolean,
+    ) {
+        if (visible) return
+        val displaysByUniqueId = displayController.allDisplaysByUniqueId ?: return
+        for (displayIdByUniqueId in displaysByUniqueId) {
+            val taskRepository = userRepositories.current
+            if (taskRepository.hasPreservedDisplayForUniqueDisplayId(displayIdByUniqueId.key)) {
+                restoreDisplay(
+                    displayIdByUniqueId.value,
+                    displayIdByUniqueId.key,
+                    taskRepository.userId,
+                )
+            }
+        }
+    }
+
     private fun handleExtendedModeDisconnect(
         desktopRepository: DesktopRepository,
         wct: WindowContainerTransaction,
@@ -948,12 +970,14 @@ class DesktopTasksController(
         )
         // TODO: b/365873835 - Utilize DesktopTask data class once it is
         //  implemented in DesktopRepository.
+        // Do not handle restoration while locked; it will be handled when keyguard is gone.
+        if (keyguardManager.isKeyguardLocked) return
         val repository = userRepositories.getProfile(userId)
         val preservedTaskIdsByDeskId = repository.getPreservedTasksByDeskIdInZOrder(uniqueDisplayId)
         val boundsByTaskId = repository.getPreservedTaskBounds(uniqueDisplayId)
         val activeDeskId = repository.getPreservedActiveDesk(uniqueDisplayId)
         val wct = WindowContainerTransaction()
-        var runOnTransitStart: RunOnTransitStart? = null
+        var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
         val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
@@ -973,26 +997,29 @@ class DesktopTasksController(
                 )
                 val isActiveDesk = preservedDeskId == activeDeskId
                 if (isActiveDesk) {
-                    runOnTransitStart =
+                    runOnTransitStartList.add(
                         addDeskActivationChanges(
                             deskId = newDeskId,
                             wct = wct,
                             userId = userId,
                             enterReason = EnterReason.DISPLAY_CONNECT,
                         )
+                    )
                 }
 
                 preservedTaskIds.asReversed().forEach { taskId ->
                     if (!excludedTasks.contains(taskId)) {
                         addRestoreTaskToDeskChanges(
-                            wct = wct,
-                            destinationDisplayLayout = destDisplayLayout,
-                            deskId = newDeskId,
-                            taskId = taskId,
-                            userId = userId,
-                            uniqueDisplayId = uniqueDisplayId,
-                            taskBounds = boundsByTaskId[taskId],
-                        )
+                                wct = wct,
+                                destinationDisplayLayout = destDisplayLayout,
+                                deskId = newDeskId,
+                                taskId = taskId,
+                                userId = userId,
+                                displayId = displayId,
+                                uniqueDisplayId = uniqueDisplayId,
+                                taskBounds = boundsByTaskId[taskId],
+                            )
+                            ?.let { runOnTransitStartList.add(it) }
                     }
                 }
 
@@ -1011,7 +1038,7 @@ class DesktopTasksController(
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
             tilingReconnectHandler.activationBinder = transition
-            runOnTransitStart?.invoke(transition)
+            runOnTransitStartList.forEach { it.invoke(transition) }
             repository.removePreservedDisplay(uniqueDisplayId)
         }
     }
@@ -1022,9 +1049,10 @@ class DesktopTasksController(
         deskId: Int,
         taskId: Int,
         userId: Int,
+        displayId: Int,
         uniqueDisplayId: String,
         taskBounds: Rect?,
-    ) {
+    ): RunOnTransitStart? {
         logD(
             "addRestoreTaskToDeskChanges: taskId=$taskId; deskId=$deskId; userId=$userId; " +
                 "taskBounds=$taskBounds; uniqueDisplayId=$uniqueDisplayId"
@@ -1034,7 +1062,7 @@ class DesktopTasksController(
         val task = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (task == null) {
             logE("restoreDisplay: Could not find running task info for taskId=$taskId.")
-            return
+            return null
         }
         desksOrganizer.moveTaskToDesk(wct, deskId, task, minimized = minimized)
         wct.setDensityDpi(task.token, destinationDisplayLayout.densityDpi())
@@ -1043,6 +1071,19 @@ class DesktopTasksController(
         if (!minimized) {
             // Bring display to front if task is not minimized to ensure display focus.
             wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+        }
+        return { transition ->
+            desksTransitionObserver.addPendingTransition(
+                DeskTransition.AddTaskToDesk(
+                    token = transition,
+                    userId = userId,
+                    displayId = displayId,
+                    deskId = deskId,
+                    taskId = taskId,
+                    taskBounds = taskBounds,
+                    minimized = minimized,
+                )
+            )
         }
     }
 
@@ -4111,7 +4152,11 @@ class DesktopTasksController(
 
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue) {
             val anyDeskActive = repository.isAnyDeskActive(targetDisplayId)
-            val focusedTask = focusTransitionObserver.getFocusedTaskOnDisplay(targetDisplayId)
+            // TODO(b/436462692) - Make `getFocusedTaskOnDisplay` always returns the latest TaskInfo
+            val focusedTask =
+                focusTransitionObserver.getFocusedTaskOnDisplay(targetDisplayId)?.let {
+                    shellTaskOrganizer.getRunningTaskInfo(it.taskId)
+                }
             val isFullscreenFocused = focusedTask?.isFullscreen == true
             val isNonHomeFocused = focusedTask?.activityType != ACTIVITY_TYPE_HOME
             logV(
@@ -5701,12 +5746,20 @@ class DesktopTasksController(
         when (indicatorType) {
             IndicatorType.TO_DESKTOP_INDICATOR,
             IndicatorType.NO_INDICATOR -> {
-                // Use default bounds, but with the top-center at the drop point.
-                newWindowBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
-                newWindowBounds.offsetTo(
-                    dragEvent.x.toInt() - (newWindowBounds.width() / 2),
-                    dragEvent.y.toInt(),
-                )
+                if (
+                    DesktopExperienceFlags.ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS.isTrue()
+                ) {
+                    // Inherit parent's bounds.
+                    newWindowBounds.set(taskInfo.configuration.windowConfiguration.bounds)
+                    // TODO: (b/436504714) - Implement the new positioning logic here.
+                } else {
+                    // Use default bounds, but with the top-center at the drop point.
+                    newWindowBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
+                    newWindowBounds.offsetTo(
+                        dragEvent.x.toInt() - (newWindowBounds.width() / 2),
+                        dragEvent.y.toInt(),
+                    )
+                }
             }
             IndicatorType.TO_SPLIT_RIGHT_INDICATOR -> {
                 newWindowBounds.set(getSnapBounds(destinationDisplay, SnapPosition.RIGHT))

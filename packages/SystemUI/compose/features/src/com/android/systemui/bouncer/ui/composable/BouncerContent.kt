@@ -238,7 +238,7 @@ fun ContentScope.BouncerContent(
 
 @Composable
 @VisibleForTesting
-fun ContentScope.BouncerContent(
+fun BouncerContent(
     layout: BouncerOverlayLayout,
     viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
@@ -297,7 +297,7 @@ private fun StandardLayout(
         LocalWindowSizeClass.current.heightSizeClass == WindowHeightSizeClass.Expanded
 
     FoldAware(
-        modifier = modifier.padding(top = 92.dp, bottom = 48.dp),
+        modifier = modifier.padding(top = 92.dp, bottom = 32.dp),
         viewModel = viewModel,
         aboveFold = {
             Column(
@@ -326,7 +326,15 @@ private fun StandardLayout(
                     )
                 }
 
-                ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 48.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 32.dp))
+                    // This spacer dynamically resizes to 0 when there is insufficient space
+                    // available, e.g. when the IME is shown.
+                    Spacer(modifier = Modifier.weight(1f, fill = false).height(16.dp))
+                }
             }
         },
     )

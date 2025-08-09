@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
+import android.util.ArraySet
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
@@ -27,6 +28,7 @@ import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION
 import android.window.DesktopModeFlags
 import android.window.DisplayAreaInfo
 import com.android.app.tracing.traceSection
+import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
@@ -76,6 +78,10 @@ class DesktopDisplayEventHandler(
     // Mapping of display uniqueIds to displayId. Used to match a disconnected
     // displayId to its uniqueId since we will not be able to fetch it after disconnect.
     private val uniqueIdByDisplayId = mutableMapOf<Int, String>()
+
+    // All uniqueDisplayIds that are currently being restored; any further requests
+    // to restore them will no-op.
+    @VisibleForTesting val displaysMidRestoration = ArraySet<String>()
 
     init {
         shellInit.addInitCallback({ onInit() }, this)
@@ -141,6 +147,14 @@ class DesktopDisplayEventHandler(
             if (displayId != DEFAULT_DISPLAY) {
                 desktopDisplayModeController.updateDefaultDisplayWindowingMode()
             }
+            val uniqueDisplayId = uniqueIdByDisplayId[displayId]
+            if (uniqueDisplayId != null && uniqueDisplayId in displaysMidRestoration) {
+                logW(
+                    "onDisplayRemoved: Found display mid-restoration that did not finish: " +
+                        "displayId=$displayId, uniqueDisplayId=$uniqueDisplayId"
+                )
+                displaysMidRestoration.remove(uniqueDisplayId)
+            }
             uniqueIdByDisplayId.remove(displayId)
         }
 
@@ -189,20 +203,28 @@ class DesktopDisplayEventHandler(
         val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId ?: return false
         uniqueIdByDisplayId[displayId] = uniqueDisplayId
         val currentUserRepository = desktopUserRepositories.current
-        if (
-            !DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue ||
-                !currentUserRepository.hasPreservedDisplayForUniqueDisplayId(uniqueDisplayId)
-        ) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
+            logV("handlePotentialReconnect: Reconnect not supported; aborting.")
             return false
         }
-        val preservedTasks = currentUserRepository.getPreservedTasks(uniqueDisplayId)
+        if (uniqueDisplayId in displaysMidRestoration) {
+            logV("handlePotentialReconnect: uniqueDisplay=$uniqueDisplayId " +
+                "mid-restoration; aborting.")
+            return false
+        }
+        if (!currentUserRepository.hasPreservedDisplayForUniqueDisplayId(uniqueDisplayId)) {
+            logV("handlePotentialReconnect: No preserved display found for " +
+                "uniqueDisplayId=$uniqueDisplayId; aborting.")
+        }
+        val preservedTasks =
+            currentUserRepository.getPreservedTasks(uniqueDisplayId).toMutableList()
         // Projected mode: Do not move anything focused on the internal display.
         if (!desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
             val focusedDefaultDisplayTaskIds =
                 desktopTasksController
                     .getFocusedNonDesktopTasks(DEFAULT_DISPLAY, currentUserRepository.userId)
                     .map { task -> task.taskId }
-            preservedTasks.filterNot { taskId -> focusedDefaultDisplayTaskIds.contains(taskId) }
+            preservedTasks.removeAll { taskId -> focusedDefaultDisplayTaskIds.contains(taskId) }
         }
         if (preservedTasks.isEmpty()) {
             // The preserved display is normally removed at the end of restoreDisplay.
@@ -210,11 +232,17 @@ class DesktopDisplayEventHandler(
             currentUserRepository.removePreservedDisplay(uniqueDisplayId)
             return false
         }
-        desktopTasksController.restoreDisplay(
-            displayId = displayId,
-            uniqueDisplayId = uniqueDisplayId,
-            userId = desktopUserRepositories.current.userId,
-        )
+        displaysMidRestoration.add(uniqueDisplayId)
+        mainScope.launch {
+            // If the display has been removed by the time this executes, restore nothing.
+            if (uniqueDisplayId !in displaysMidRestoration) return@launch
+            desktopTasksController.restoreDisplay(
+                displayId = displayId,
+                uniqueDisplayId = uniqueDisplayId,
+                userId = desktopUserRepositories.current.userId,
+            )
+            displaysMidRestoration.remove(uniqueDisplayId)
+        }
         return true
     }
 

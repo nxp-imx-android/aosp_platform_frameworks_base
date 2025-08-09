@@ -605,3 +605,11 @@ flag {
     description: "This flags app ops cell reporting tied to ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION"
     bug: "420985100"
 }
+
+flag {
+    name: "check_package_caching_enabled"
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "Enable checkPackage caching in AppOpsManager"
+    bug: "423030916"
+}

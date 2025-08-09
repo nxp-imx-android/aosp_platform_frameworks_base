@@ -307,6 +307,7 @@ constructor(
             hasGlobalFocus,
             displayExclusionRegion,
             inSyncWithTransition = false,
+            taskSurface,
         )
         if (!applyTransactionOnDraw) {
             t.apply()
@@ -323,6 +324,7 @@ constructor(
         hasGlobalFocus: Boolean,
         displayExclusionRegion: Region,
         inSyncWithTransition: Boolean,
+        taskSurface: SurfaceControl?,
     ) =
         traceSection("DefaultWindowDecoration#relayout") {
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue) {
@@ -356,9 +358,10 @@ constructor(
                 )
 
             val wct = windowContainerTransactionSupplier.invoke()
-            relayout(relayoutParams, startT, finishT, wct)
+            relayout(relayoutParams, startT, finishT, wct, taskSurface)
 
-            // After this line, taskInfo  is up-to-date and should be used instead of taskInfo
+            // After this line, [WindowDecoration2.taskInfo] is up-to-date and should be
+            // used instead of the taskInfo passed to the relayout method.
             if (!wct.isEmpty) {
                 if (
                     DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
@@ -522,8 +525,9 @@ constructor(
         hasGlobalFocus: Boolean,
     ): Int =
         if (
-            captionType != CaptionController.CaptionType.APP_HEADER ||
-                desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
+            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue ||
+                captionType != CaptionController.CaptionType.APP_HEADER ||
+                !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
             ID_NULL
         } else if (DecorThemeUtil(context).getAppTheme(taskInfo) == Theme.DARK) {
@@ -541,7 +545,9 @@ constructor(
         captionType: CaptionController.CaptionType,
         hasGlobalFocus: Boolean,
     ): Int =
-        if (
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
+            ID_NULL
+        } else if (
             !DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
                 captionType != CaptionController.CaptionType.APP_HEADER ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
@@ -558,7 +564,9 @@ constructor(
         captionType: CaptionController.CaptionType,
         hasGlobalFocus: Boolean,
     ): Int =
-        if (
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
+            INVALID_SHADOW_RADIUS
+        } else if (
             DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
                 captionType != CaptionController.CaptionType.APP_HEADER ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)

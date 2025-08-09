@@ -28,6 +28,7 @@ import android.util.Singleton;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -146,9 +147,28 @@ public class TaskSnapshotManager {
      *         corresponding task can be found.
      */
     public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache) throws RemoteException {
+        return takeTaskSnapshot(taskId, updateCache, false /* lowResolution */);
+    }
+
+    /**
+     * Requests for a new snapshot to be taken for the task with the given id, storing it in the
+     * task snapshot cache only if requested.
+     *
+     * @param taskId the id of the task to take a snapshot of
+     * @param updateCache Whether to store the new snapshot in the system's task snapshot cache.
+     *                    If it is true, the snapshot can be either real content or app-theme mode
+     *                    depending on the attributes of app. Otherwise, the snapshot will be taken
+     *                    with real content.
+     * @param lowResolution Whether to get the new snapshot in low resolution.
+     * @return a graphic buffer representing a screenshot of a task,  or {@code null} if no
+     *         corresponding task can be found.
+     */
+    public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
+            boolean lowResolution) throws RemoteException {
         final TaskSnapshot t;
         try {
-            t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache);
+            t = ISnapshotManagerSingleton.get().takeTaskSnapshot(taskId, updateCache,
+                    lowResolution);
         } catch (RemoteException r) {
             Log.e(TAG, "takeTaskSnapshot fail: " + r);
             throw r;
@@ -210,6 +230,8 @@ public class TaskSnapshotManager {
         final boolean isLowRes = snapshot.isLowResolution();
         if (isLowRes) {
             return retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW;
+        } else if (Flags.respectRequestedTaskSnapshotResolution()) {
+            return retrieveResolution == TaskSnapshotManager.RESOLUTION_HIGH;
         }
         return true;
     }

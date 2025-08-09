@@ -40,8 +40,10 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.qs.flags.QSMaterialExpressiveTiles
 import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
+import com.android.systemui.qs.panels.ui.compose.ButtonGroupGrid
 import com.android.systemui.qs.panels.ui.compose.EditTileListState
 import com.android.systemui.qs.panels.ui.compose.PaginatableGridLayout
 import com.android.systemui.qs.panels.ui.compose.TileListener
@@ -100,42 +102,28 @@ constructor(
                     SizedTileImpl(it, if (largeTiles.contains(it.spec)) largeTilesSpan else 1)
                 }
             }
-        val bounceables =
-            remember(sizedTiles) { List(sizedTiles.size) { BounceableTileViewModel() } }
         val squishiness by viewModel.squishinessViewModel.squishiness.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
-        val spans by remember(sizedTiles) { derivedStateOf { sizedTiles.fastMap { it.width } } }
 
         val motionBuilderContext = rememberMotionBuilderContext()
         val marginBottom =
             with(LocalDensity.current) { QuickSettingsShade.Dimensions.Padding.toPx() }
 
-        VerticalSpannedGrid(
-            columns = columns,
-            columnSpacing = dimensionResource(R.dimen.qs_tile_margin_horizontal),
-            rowSpacing = dimensionResource(R.dimen.qs_tile_margin_vertical),
-            spans = spans,
-            keys = { sizedTiles[it].tile.spec },
-            modifier = modifier,
-        ) { spanIndex, column, isFirstInColumn, isLastInColumn ->
-            val it = sizedTiles[spanIndex]
-
-            Element(it.tile.spec.toElementKey(spanIndex), Modifier) {
+        if (QSMaterialExpressiveTiles.isEnabled) {
+            ButtonGroupGrid(
+                sizedTiles = sizedTiles,
+                columns = columns,
+                keys = { it.spec },
+                elementKey = { it.spec.toElementKey() },
+                horizontalPadding = dimensionResource(R.dimen.qs_tile_margin_horizontal),
+                modifier = modifier,
+            ) { sizedTile, interactionSource ->
                 Tile(
-                    tile = it.tile,
-                    iconOnly = iconTilesViewModel.isIconTile(it.tile.spec),
+                    tile = sizedTile.tile,
+                    iconOnly = iconTilesViewModel.isIconTile(sizedTile.tile.spec),
                     squishiness = { squishiness },
                     tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
                     coroutineScope = scope,
-                    bounceableInfo =
-                        bounceables.bounceableInfo(
-                            it,
-                            index = spanIndex,
-                            column = column,
-                            columns = columns,
-                            isFirstInRow = isFirstInColumn,
-                            isLastInRow = isLastInColumn,
-                        ),
                     detailsViewModel = detailsViewModel,
                     isVisible = listening,
                     requestToggleTextFeedback = textFeedbackViewModel::requestShowFeedback,
@@ -151,7 +139,58 @@ constructor(
                             Modifier
                         },
                     revealEffectContainer = revealEffectContainer,
+                    bounceableInfo = null,
+                    interactionSource = interactionSource,
                 )
+            }
+        } else {
+            val bounceables =
+                remember(sizedTiles) { List(sizedTiles.size) { BounceableTileViewModel() } }
+            val spans by remember(sizedTiles) { derivedStateOf { sizedTiles.fastMap { it.width } } }
+            VerticalSpannedGrid(
+                columns = columns,
+                columnSpacing = dimensionResource(R.dimen.qs_tile_margin_horizontal),
+                rowSpacing = dimensionResource(R.dimen.qs_tile_margin_vertical),
+                spans = spans,
+                keys = { sizedTiles[it].tile.spec },
+                modifier = modifier,
+            ) { spanIndex, column, isFirstInColumn, isLastInColumn ->
+                val it = sizedTiles[spanIndex]
+
+                Element(it.tile.spec.toElementKey(), Modifier) {
+                    Tile(
+                        tile = it.tile,
+                        iconOnly = iconTilesViewModel.isIconTile(it.tile.spec),
+                        squishiness = { squishiness },
+                        tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
+                        coroutineScope = scope,
+                        bounceableInfo =
+                            bounceables.bounceableInfo(
+                                it,
+                                index = spanIndex,
+                                column = column,
+                                columns = columns,
+                                isFirstInRow = isFirstInColumn,
+                                isLastInRow = isLastInColumn,
+                            ),
+                        detailsViewModel = detailsViewModel,
+                        isVisible = listening,
+                        requestToggleTextFeedback = textFeedbackViewModel::requestShowFeedback,
+                        modifier =
+                            if (revealEffectContainer != null) {
+                                Modifier.verticalTactileSurfaceReveal(
+                                    contentScope = this@TileGrid,
+                                    motionBuilderContext = motionBuilderContext,
+                                    container = revealEffectContainer,
+                                    deltaY = -marginBottom,
+                                )
+                            } else {
+                                Modifier
+                            },
+                        revealEffectContainer = revealEffectContainer,
+                        interactionSource = null,
+                    )
+                }
             }
         }
 

@@ -233,6 +233,7 @@ fun StatusBarRoot(
             iconManagerFactory = tintedIconManagerFactory,
             mediaHierarchyManager = mediaHierarchyManager,
             mediaHost = mediaHost,
+            iconViewStore = iconViewStore,
         )
         return
     }
@@ -308,7 +309,8 @@ fun StatusBarRoot(
                                     chips = statusBarViewModel.popupChips,
                                     mediaHost = mediaHost,
                                     onMediaControlPopupVisibilityChanged = { popupShowing ->
-                                        mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
+                                        mediaHierarchyManager.isMediaControlPopupShowing =
+                                            popupShowing
                                     },
                                 )
                             }
@@ -319,7 +321,8 @@ fun StatusBarRoot(
                 // If the flag is enabled, create and add a compose section to the end
                 // of the system_icons container
                 if (SystemStatusIconsInCompose.isEnabled) {
-                    phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility = View.GONE
+                    phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility =
+                        View.GONE
                     addSystemStatusIconsComposable(phoneStatusBarView, statusBarViewModel)
                 } else {
                     val statusIconContainer =
@@ -347,7 +350,10 @@ fun StatusBarRoot(
                     }
                 }
 
-                notificationIconsBinder.bindWhileAttached(notificationIconContainer, context.displayId)
+                notificationIconsBinder.bindWhileAttached(
+                    notificationIconContainer,
+                    context.displayId,
+                )
 
                 if (StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled) {
                     bindRegionSamplingViewModel(

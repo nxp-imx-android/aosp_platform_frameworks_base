@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Denne advarsel vises, fordi dette er en app, der kan fejlrettes, som i øjeblikket testes. Hvis det ikke er dig, der er udvikleren, skal du rapportere dette til udvikleren og bede om en app, der ikke kan fejlrettes. &lt;br&gt;&lt;br&gt; Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af APK- og ELF-justering mislykkedes. Følg vejledningen på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Følgende samlinger er ikke justeret til sidestørrelser på 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Vis ikke dette igen"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android-appkompatibilitet"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s: LOAD-segmentet er ikke justeret&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s: Ukomprimeret samling er ikke justeret&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s: LOAD-segmentet og den ukomprimerede samling er ikke justeret&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s: Ukendt fejl&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Tjenesten provisioneres ikke."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Du kan ikke ændre indstillingen for opkalds-id\'et."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Der blev skiftet til <xliff:g id="CARRIERDISPLAY">%s</xliff:g>-data"</string>
@@ -1134,6 +1130,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Lås op ved hjælp af pinkoden til SIM-kortet."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Lås op ved hjælp af PUK-koden til SIM-kortet."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Lås op med adgangskode."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Mønsterområde."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Strygeområde."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2050,8 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maksimér"</string>
     <string name="close_button_text" msgid="10603510034455258">"Luk"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for notification_metric_label_template (1926079523121055190) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Besvar"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Afvis"</string>

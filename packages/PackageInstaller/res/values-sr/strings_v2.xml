@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Дошло је до проблема при враћању ове апликације"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> је део следеће апликације: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Ова апликација је блокирана. Да бисмо заштитили уређај и податке, могу да се инсталирају само апликације верификованих програмера.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Ова апликација није ажурирана. Да би уређај и подаци били безбедни, могу да се инсталирају само ажурирања верификованих програмера.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Ова апликација није инсталирана. Апликације неверификованих програмера могу да буду небезбедне.&lt;/p&gt; &lt;p&gt;Потребна је интернет веза да би се верификовао програмер апликације. Уверите се да је уређај повезан на интернет, па пробајте поново да инсталирате апликацију. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Ова апликација није ажурирана. Ажурирања неверификованих програмера могу да буду небезбедна.&lt;/p&gt; &lt;p&gt;Потребна је интернет веза да би се верификовао програмер апликације. Уверите се да је уређај повезан на интернет, па поново пробајте да ажурирате апликацију. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Дошло је до проблема при верификовању програмера ове апликације. Апликације неверификованих програмера могу да буду небезбедне, па апликација није инсталирана.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Дошло је до проблема при верификацији програмера ове апликације. Ажурирања неверификованих програмера могу да буду небезбедна, па апликација није ажурирана.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Ова апликација је блокирана јер је дошло до проблема при верификацији програмера. Да би уређај и подаци били безбедни, могу да се инсталирају само апликације верификованих програмера.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Ова апликација није ажурирана јер је дошло до проблема при верификацији програмера. Да би уређај и подаци били безбедни, могу да се инсталирају само ажурирања верификованих програмера.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Сазнајте више о верификацији програмера&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ако инсталирате без верификације, имајте на уму да апликације неверификованих програмера могу да угрозе уређај и податке."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ако ажурирате без верификације, имајте на уму да ажурирања неверификованих програмера могу да угрозе уређај и податке."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Програмер апликације није верификован"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Нема интернета, верификација програмера апликације није успела"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Верификација програмера апликације није успела"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"Инстал. без верификације"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Ажурирај без верификације"</string>
     <string name="button_install" msgid="7434013176505680162">"Инсталирај"</string>
     <string name="button_update" msgid="3046719350226327526">"Ажурирај"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Ипак ажурирај"</string>

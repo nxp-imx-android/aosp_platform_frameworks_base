@@ -42,6 +42,7 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -456,9 +457,26 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             .thenReturn(emptyList())
 
         onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
+        testScope.runCurrent()
 
         verify(mockDesktopTasksController)
             .restoreDisplay(eq(externalDisplayId), eq(UNIQUE_DISPLAY_ID), eq(PRIMARY_USER_ID))
+        assertThat(handler.displaysMidRestoration).isEmpty()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION)
+    fun testPotentialReconnect_noOpWhenPendingRestorePresent() {
+        handler.displaysMidRestoration.add(UNIQUE_DISPLAY_ID)
+        desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = true
+        whenever(mockDesktopRepository.hasPreservedDisplayForUniqueDisplayId(UNIQUE_DISPLAY_ID))
+            .thenReturn(true)
+
+        onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
+        testScope.runCurrent()
+
+        verify(mockDesktopTasksController, never())
+            .restoreDisplay(externalDisplayId, UNIQUE_DISPLAY_ID, PRIMARY_USER_ID)
     }
 
     @Test

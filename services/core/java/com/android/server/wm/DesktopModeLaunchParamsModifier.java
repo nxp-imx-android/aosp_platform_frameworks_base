@@ -53,6 +53,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The class that defines default launch params for tasks in desktop mode
  */
 class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
+    private static final String ACTION_DRAG_DROP_VIEW =
+            "org.chromium.chrome.browser.dragdrop.action.VIEW";
     private StringBuilder mLogBuilder;
 
     @NonNull
@@ -233,6 +235,10 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 // ignore the source windowing mode and set the windowing mode to freeform.
                 outParams.mWindowingMode = WINDOWING_MODE_FREEFORM;
                 appendLog("freeform window mode applied to task trampoline");
+                if (persisitSourceBoundsForTabTearingTrampoline(source, activity)) {
+                    outParams.mBounds.set(sourceTask.getBounds());
+                    return RESULT_DONE;
+                }
             } else {
                 // In Proto2, trampoline task launches of an existing background task can result in
                 // the previous windowing mode to be restored even if the desktop mode state has
@@ -477,6 +483,27 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 && existingTaskActivity.getTask().mTaskId != launchingTask.mTaskId
                 && isLaunchingNewSingleTask(launchingActivity.launchMode)
                 && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags());
+    }
+
+    /**
+     * Returns true if the bounds should be persisted from the source activity for
+     * tab tearing trampoline launches.
+     */
+    private boolean persisitSourceBoundsForTabTearingTrampoline(
+            @NonNull ActivityRecord source,
+            @Nullable ActivityRecord activity) {
+        return DesktopExperienceFlags.ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS.isTrue()
+                && activity != null
+                && source.isNoDisplay()
+                && source.packageName.equals(activity.packageName)
+                && isChromiumDragAndDropAction(activity);
+    }
+
+    /**
+     * Returns true if the given activity action is a chromium drag and drop.
+     */
+    private boolean isChromiumDragAndDropAction(@NonNull ActivityRecord activity) {
+        return ACTION_DRAG_DROP_VIEW.equals(activity.intent.getAction());
     }
 
     /**

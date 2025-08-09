@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"이 앱을 복원하려고 시도하던 중 문제가 발생했습니다."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> 활동은 <xliff:g id="APP_NAME">%2$s</xliff:g> 앱의 일부입니다."</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;이 앱은 차단되었습니다. 기기와 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 기기와 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;이 앱은 설치되지 않았습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 기기가 인터넷에 연결되어 있는지 확인한 후 앱을 다시 설치해 보세요. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 기기가 인터넷에 연결되어 있는지 확인한 후 앱을 다시 업데이트해 보세요. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있으므로 앱이 설치되지 않았습니다.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있으므로 앱이 업데이트되지 않았습니다.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 차단되었습니다. 기기와 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 업데이트되지 않았습니다. 기기와 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"인증하지 않고 앱을 설치하는 경우, 인증되지 않은 개발자의 앱으로 인해 기기와 데이터가 위험에 노출될 수 있다는 점에 유의하시기 바랍니다."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"인증하지 않고 업데이트하는 경우, 인증되지 않은 개발자의 업데이트로 인해 기기 및 데이터가 위험에 처할 수 있다는 점에 유의하시기 바랍니다."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"앱 개발자가 인증되지 않음"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"인터넷에 연결되지 않아 앱 개발자를 인증할 수 없음"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"앱 개발자를 인증할 수 없음"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"인증 없이 설치"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"인증 없이 업데이트"</string>
     <string name="button_install" msgid="7434013176505680162">"설치"</string>
     <string name="button_update" msgid="3046719350226327526">"업데이트"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"무시하고 업데이트"</string>

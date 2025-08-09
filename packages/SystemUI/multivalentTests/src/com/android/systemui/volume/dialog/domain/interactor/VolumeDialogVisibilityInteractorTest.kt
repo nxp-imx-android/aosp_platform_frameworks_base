@@ -27,6 +27,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.fakeVolumeDialogController
 import com.android.systemui.res.R
 import com.android.systemui.shade.shadeTestUtil
@@ -51,7 +52,7 @@ private val dialogTimeoutDuration = 3.seconds
 class VolumeDialogVisibilityInteractorTest : SysuiTestCase() {
 
     private val kosmos: Kosmos =
-        testKosmos().apply {
+        testKosmos().useUnconfinedTestDispatcher().apply {
             accessibilityRepository.setRecommendedTimeout(dialogTimeoutDuration)
             volumeDialogStateInteractor.setHovering(false)
             volumeDialogStateInteractor.setSafetyWarning(VolumeDialogSafetyWarningModel.Invisible)

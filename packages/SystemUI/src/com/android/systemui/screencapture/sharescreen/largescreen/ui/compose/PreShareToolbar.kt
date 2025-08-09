@@ -25,43 +25,59 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.ContentDescription
-import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
+import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ScreenShareTarget
 
-/** TODO(b/433836686): Inject ScreenShareViewModel */
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-fun PreShareToolbar(expanded: Boolean, onCloseClick: () -> Unit, modifier: Modifier = Modifier) {
-    // TODO(b/433836686): Preload icons in the view model to avoid loading icons in UI thread and
-    // improve performance
-    val screenShareTabIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_tab, contentDescription = null)
-    val screenShareWindowIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_window, contentDescription = null)
-
-    val captureShareButtonItems =
+fun PreShareToolbar(
+    viewModel: PreShareViewModel,
+    expanded: Boolean,
+    onCloseClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shareTargetButtonItems =
         listOf(
-            RadioButtonGroupItem(icon = screenShareTabIcon, isSelected = true, onClick = {}),
-            RadioButtonGroupItem(icon = screenShareWindowIcon, isSelected = false, onClick = {}),
+            RadioButtonGroupItem(
+                icon =
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_screen_capture_tab,
+                        contentDescription = null,
+                    ),
+                isSelected = viewModel.selectedScreenShareTarget == ScreenShareTarget.TAB,
+                onClick = { viewModel.onTargetSelected(ScreenShareTarget.TAB) },
+            ),
+            RadioButtonGroupItem(
+                icon =
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_screen_capture_window,
+                        contentDescription = null,
+                    ),
+                isSelected = viewModel.selectedScreenShareTarget == ScreenShareTarget.APP_WINDOW,
+                onClick = { viewModel.onTargetSelected(ScreenShareTarget.APP_WINDOW) },
+            ),
         )
 
     Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
         Row {
-            // TODO(b/433836686): Use state from ViewModel for selected index
-            RadioButtonGroup(items = captureShareButtonItems)
+            RadioButtonGroup(items = shareTargetButtonItems)
 
             Spacer(Modifier.size(16.dp))
 
             PrimaryButton(
                 icon =
-                    IconModel.Resource(
-                        res = R.drawable.ic_present_to_all,
-                        contentDescription =
-                            ContentDescription.Resource(R.string.screen_share_toolbar_share_button),
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_present_to_all,
+                        ContentDescription.Resource(R.string.screen_share_toolbar_share_button),
                     ),
                 text = stringResource(R.string.screen_share_toolbar_share_button),
                 onClick = {},

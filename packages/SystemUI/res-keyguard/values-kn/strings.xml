@@ -69,6 +69,14 @@
     <string name="kg_unlock_with_password_or_fp" msgid="2251295907826814237">"ಪಾಸ್‌ವರ್ಡ್ ಅಥವಾ ಫಿಂಗರ್‌ ಪ್ರಿಂಟ್‌ನೊಂದಿಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="kg_unlock_with_pattern_or_fp" msgid="2391870539909135046">"ಪ್ಯಾಟರ್ನ್ ಅಥವಾ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‌ನೊಂದಿಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="kg_prompt_after_dpm_lock" msgid="6002804765868345917">"ಹೆಚ್ಚುವರಿ ಸುರಕ್ಷತೆಗಾಗಿ, ಉದ್ಯೋಗ ನೀತಿಯ ಮೂಲಕ ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
+    <!-- no translation found for kg_prompt_title_after_secure_lock_device (2646423690908627259) -->
+    <skip />
+    <!-- no translation found for kg_prompt_subtitle_for_secure_lock_device_biometric_auth_fingerprint (6596633555720510932) -->
+    <skip />
+    <!-- no translation found for kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face (4550701327607935441) -->
+    <skip />
+    <!-- no translation found for kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex (2093026058274456330) -->
+    <skip />
     <string name="kg_prompt_after_user_lockdown_pin" msgid="5374732179740050373">"ಲಾಕ್‌ಡೌನ್ ಮಾಡಿದ ನಂತರ ಪಿನ್ ಬಳಸುವ ಅಗತ್ಯವಿದೆ"</string>
     <string name="kg_prompt_after_user_lockdown_password" msgid="9097968458291129795">"ಲಾಕ್‌ಡೌನ್‌ನ ನಂತರ ಪಾಸ್‌ವರ್ಡ್‌ನ ಅಗತ್ಯವಿದೆ"</string>
     <string name="kg_prompt_after_user_lockdown_pattern" msgid="215072203613597906">"ಲಾಕ್‌ಡೌನ್ ಮಾಡಿದ ನಂತರ ಪ್ಯಾಟರ್ನ್‌ ಬಳಸುವ ಅಗತ್ಯವಿದೆ"</string>

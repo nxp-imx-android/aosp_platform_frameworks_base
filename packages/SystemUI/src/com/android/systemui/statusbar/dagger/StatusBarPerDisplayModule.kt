@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.Binds
@@ -58,6 +59,10 @@ interface StatusBarPerDisplayModule {
     fun ongoingActivityChipsViewModel(
         impl: OngoingActivityChipsViewModel
     ): OngoingActivityChipsViewModel
+
+    @Binds
+    @DisplayAware
+    fun homeStatusBarInteractor(interactor: HomeStatusBarInteractor): HomeStatusBarInteractor
 
     companion object {
         /**

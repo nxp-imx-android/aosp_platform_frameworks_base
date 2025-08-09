@@ -746,6 +746,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             PackageManager.corkPackageInfoCache();
             ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
             ApplicationPackageManager.disableQueryIntentActivitiesCacheForCurrentProcess();
+            AppOpsManager.disableCheckPackageCache();
         }
 
         @Override
@@ -7645,15 +7646,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         if (accessGranted) {
             invalidateGetPackagesForUidCache(
                     PackageMetrics.INVALIDATION_REASON_GRANT_IMPLICIT_ACCESS);
+            AppOpsManager.invalidateCheckPackageCache();
         }
-    }
-
-    boolean canHaveOatDir(@NonNull Computer snapshot, String packageName) {
-        final PackageStateInternal packageState = snapshot.getPackageStateInternal(packageName);
-        if (packageState == null || packageState.getPkg() == null) {
-            return false;
-        }
-        return AndroidPackageUtils.canHaveOatDir(packageState, packageState.getPkg());
     }
 
     long deleteOatArtifactsOfPackage(@NonNull Computer snapshot, String packageName) {

@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"यो एप रिस्टोर गर्न तपाईंले <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इन्स्टल गर्नु पर्ने हुन्छ"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"यो एप रिस्टोर गर्ने क्रममा कुनै समस्या आयो"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> निम्न एपको अंश हो: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;यो एप ब्लक गरिएको छ। तपाईंको डिभाइस र जानकारी सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताका एपहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;यो एप अपडेट गरिएको छैन। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताले उपलब्ध गराएका अपडेटहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;यो एप इन्स्टल गरिएको छैन। पुष्टि नगरिएका विकासकर्ताहरूका एपहरू असुरक्षित हुन सक्छन्।&lt;/p&gt; &lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्न इन्टरनेट कनेक्सन चाहिन्छ। तपाईंको डिभाइस इन्टरनेटमा कनेक्ट गरिएको छ भन्ने कुरा सुनिश्चित गर्नुहोस्। त्यसपछि एप फेरि इन्स्टल गरी हेर्नुहोस्। &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;यो एप अपडेट गरिएको छैन। पुष्टि नगरिएका विकासकर्ताहरूले उपलब्ध गराउने अपडेटहरू असुरक्षित हुन सक्छन्।&lt;/p&gt; &lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्न इन्टरनेट कनेक्सन चाहिन्छ। तपाईंको डिभाइस इन्टरनेटमा कनेक्ट गरिएको छ भन्ने कुरा सुनिश्चित गर्नुहोस्। त्यसपछि एप फेरि अपडेट गरी हेर्नुहोस्। &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आयो। पुष्टि नगरिएका विकासकर्ताहरूका एपहरू असुरक्षित हुन सक्ने भएकाले यो एप इन्स्टल गरिएन।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आयो। पुष्टि नगरिएका विकासकर्ताहरूले उपलब्ध गराउने अपडेटहरू असुरक्षित हुन सक्ने भएकाले यो एप अपडेट गरिएको छैन।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आएकाले यो एप ब्लक गरिएको छ। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताका एपहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आएकाले यो एप अपडेट गरिएको छैन। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताले उपलब्ध गराएका अपडेटहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"तपाईंले पुष्टि नगरिकनै इन्स्टल गर्नुभयो भने पुष्टि नगरिएका विकासकर्ताहरूका एपहरूले गर्दा तपाईंको डिभाइस र डेटा जोखिममा पर्न सक्छन् भन्ने कुरा ख्याल गर्नुहोस्।"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"तपाईंले पुष्टि नगरिकनै अपडेट गर्नुभयो भने पुष्टि नगरिएका विकासकर्ताहरूले उपलब्ध गराउने अपडेटहरूले गर्दा तपाईंको डिभाइस र डेटा जोखिममा पर्न सक्छन् भन्ने कुरा ख्याल गर्नुहोस्।"</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"एपको विकासकर्ता पुष्टि गरिएको छैन"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"इन्टरनेट नभएका कारण एपको विकासकर्ता पुष्टि गर्न सकिएन"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"एपको विकासकर्ता पुष्टि गर्न सकिएन"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"पुष्टि नगरिकनै इन्स्टल गर्नुहोस्"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"पुष्टि नगरिकनै अपडेट गर्नुहोस्"</string>
     <string name="button_install" msgid="7434013176505680162">"इन्स्टल गर्नुहोस्"</string>
     <string name="button_update" msgid="3046719350226327526">"अपडेट गर्नुहोस्"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"जे भए पनि अपडेट गर्नुहोस्"</string>

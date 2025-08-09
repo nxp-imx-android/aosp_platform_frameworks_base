@@ -989,6 +989,16 @@ flag {
 }
 
 flag {
+    name: "qs_material_expressive_tiles"
+    namespace: "systemui"
+    description: "Uses the Material Expressive button groups for QS tiles."
+    bug: "419309247"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_edit_mode_tabs"
     namespace: "systemui"
     description: "Splits the Quick Settings edit mode in tabs. This feature is for the compose version of Quick Settings."

@@ -66,19 +66,26 @@ object NotificationRowPrimitives {
 
 /** The Icon displayed at the start of any notification row. */
 @Composable
-fun BundleIcon(@DrawableRes drawable: Int?, collapsed: Boolean, modifier: Modifier = Modifier) {
+fun BundleIcon(@DrawableRes drawable: Int?, large: Boolean, modifier: Modifier = Modifier) {
     val iconBackground = notificationProtectionColor()
     Box(
         modifier =
-            modifier
-                .size(if (collapsed) 40.dp else 24.dp)
-                .background(color = iconBackground, shape = CircleShape)
+            if (large) {
+                modifier.size(40.dp).background(color = iconBackground, shape = CircleShape)
+            } else {
+                modifier.size(20.dp)
+            }
     ) {
         if (drawable == null) return@Box
         Image(
             painter = painterResource(drawable),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(.5f).align(Alignment.Center),
+            modifier =
+                if (large) {
+                    Modifier.fillMaxSize(.5f).align(Alignment.Center)
+                } else {
+                    Modifier.padding(2.dp)
+                },
             contentScale = ContentScale.Fit,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
         )

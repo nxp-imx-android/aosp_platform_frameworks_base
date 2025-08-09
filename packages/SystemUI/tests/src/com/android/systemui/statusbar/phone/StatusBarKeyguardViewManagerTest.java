@@ -281,7 +281,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
         mStatusBarKeyguardViewManager.hide(0 /* startTime */, 0 /* fadeoutDuration */);
         mStatusBarKeyguardViewManager.showPrimaryBouncer(true /* scrimmed */, TEST_REASON);
         verify(mPrimaryBouncerInteractor, never()).show(anyBoolean(), eq(TEST_REASON));
-        verify(mDeviceEntryInteractor, never()).attemptDeviceEntry();
+        verify(mDeviceEntryInteractor, never()).attemptDeviceEntry(anyString());
         verify(mSceneInteractor, never()).changeScene(any(), any());
     }
 
@@ -292,7 +292,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
                 KeyguardSecurityModel.SecurityMode.Password);
         mStatusBarKeyguardViewManager.showPrimaryBouncer(true /* scrimmed */, TEST_REASON);
         verify(mPrimaryBouncerInteractor, never()).show(anyBoolean(), eq(TEST_REASON));
-        verify(mDeviceEntryInteractor, never()).attemptDeviceEntry();
+        verify(mDeviceEntryInteractor, never()).attemptDeviceEntry(anyString());
         verify(mSceneInteractor, never()).changeScene(any(), any());
     }
 
@@ -909,7 +909,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @EnableSceneContainer
     public void showBouncer_attemptDeviceEntry() {
         mStatusBarKeyguardViewManager.showBouncer(false, TEST_REASON);
-        verify(mDeviceEntryInteractor).attemptDeviceEntry();
+        verify(mDeviceEntryInteractor).attemptDeviceEntry(anyString());
     }
 
     @Test

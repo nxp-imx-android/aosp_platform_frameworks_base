@@ -16,7 +16,6 @@
 package com.android.hoststubgen
 
 import com.android.hoststubgen.asm.ClassNodes
-import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.filters.printAsTextPolicy
 import com.android.hoststubgen.utils.ConcurrentZipFile
 import com.android.hoststubgen.utils.ZipEntryData
@@ -139,25 +138,12 @@ class HostStubGen(val options: HostStubGenOptions) {
         entry: ZipEntryData,
         processor: HostStubGenClassProcessor
     ): ZipEntryData? {
-        val classInternalName = entry.name.replaceFirst("\\.class$".toRegex(), "")
-        val classPolicy = processor.filter.getPolicyForClass(classInternalName)
-        if (classPolicy.policy == FilterPolicy.Remove) {
-            log.d("Removing class: %s %s", classInternalName, classPolicy)
-            return null
-        }
-        // If we're applying a remapper, we need to rename the file too.
-        var newName = entry.name
-        processor.remapper.mapType(classInternalName)?.let { remappedName ->
-            if (remappedName != classInternalName) {
-                log.d("Renaming class file: %s -> %s", classInternalName, remappedName)
-                newName = "$remappedName.class"
-            }
-        }
+        val entryInfo = processor.applyFilterOnClass(entry) ?: return null
 
-        log.v("Creating class: %s Policy: %s", classInternalName, classPolicy)
+        log.v("Creating class: %s Policy: %s", entryInfo.classInternalName, entryInfo.policy)
         log.withIndent {
             val data = processor.processClassBytecode(entry.data)
-            return ZipEntryData.fromBytes(newName, data)
+            return ZipEntryData.fromBytes(entryInfo.renamedEntryName, data)
         }
     }
 }

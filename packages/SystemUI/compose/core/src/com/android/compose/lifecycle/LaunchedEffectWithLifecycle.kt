@@ -22,7 +22,10 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 // This deprecated-error function shadows the varargs overload so that the varargs version
 // is not used without key parameters.
@@ -51,11 +54,14 @@ private const val LaunchedEffectNoParamError =
 fun LaunchedEffectWithLifecycle(
     key1: Any?,
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
     block: suspend CoroutineScope.() -> Unit,
 ) {
     LaunchedEffect(key1, lifecycle, minActiveState) {
-        lifecycle.repeatOnLifecycle(minActiveState, block)
+        lifecycle.repeatOnLifecycle(minActiveState) {
+            launch(context = this.coroutineContext + coroutineContext) { block() }
+        }
     }
 }
 

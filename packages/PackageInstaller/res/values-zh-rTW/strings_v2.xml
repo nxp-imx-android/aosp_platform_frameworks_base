@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"如要還原這個應用程式，請安裝「<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>」"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"嘗試還原這個應用程式時發生問題"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"「<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>」是下列應用程式的活動：<xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;系統已封鎖這個應用程式。你只能安裝已驗證開發人員的應用程式，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;這個應用程式未更新。你只能安裝已驗證開發人員的更新項目，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;未安裝這個應用程式。如果開發人員未經驗證，應用程式可能不安全。&lt;/p&gt; &lt;p&gt;如要驗證應用程式開發人員，必須連上網際網路。請確認裝置已連上網際網路，然後再試一次。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;這個應用程式未更新。如果開發人員未經驗證，更新項目可能不安全。&lt;/p&gt; &lt;p&gt;如要驗證應用程式開發人員，必須連上網際網路。請確認裝置已連上網際網路，再嘗試更新應用程式。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;驗證這個應用程式的開發人員時發生問題。如果開發人員未經驗證，應用程式可能不安全，因此裝置並未安裝該應用程式。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;驗證這個應用程式的開發人員時發生問題。如果開發人員未經驗證，更新項目可能不安全，因此應用程式未更新。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;驗證開發人員時發生問題，因此系統已封鎖這個應用程式。你只能安裝已驗證開發人員的應用程式，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;驗證開發人員時發生問題，因此這個應用程式未更新。你只能安裝已驗證開發人員的更新項目，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"請注意，如果未驗證開發人員就安裝，應用程式可能會讓裝置和資料暴露在風險中。"</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"請注意，如果未驗證開發人員就更新，更新項目可能會讓裝置和資料暴露在風險中。"</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"應用程式開發人員未經驗證"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"未連上網際網路，因此無法驗證應用程式開發人員"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"無法驗證應用程式開發人員"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"安裝但不驗證"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"更新但不驗證"</string>
     <string name="button_install" msgid="7434013176505680162">"安裝"</string>
     <string name="button_update" msgid="3046719350226327526">"更新"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"仍要更新"</string>

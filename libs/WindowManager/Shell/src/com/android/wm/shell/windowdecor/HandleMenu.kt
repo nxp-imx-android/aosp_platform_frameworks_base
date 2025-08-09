@@ -904,9 +904,10 @@ private constructor(
                 floatingBtnSpace.visibility = View.GONE
             }
 
-            // TODO: b/362720126 - remove this check after entering split screen from handle menu
-            //  is supported on external display.
-            if (taskInfo.displayId != DEFAULT_DISPLAY) {
+            if (
+                !DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue &&
+                    taskInfo.displayId != DEFAULT_DISPLAY
+            ) {
                 splitscreenBtn.visibility = View.GONE
                 splitscreenBtnSpace.visibility = View.GONE
             }

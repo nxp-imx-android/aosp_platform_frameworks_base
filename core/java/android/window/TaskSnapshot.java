@@ -101,13 +101,17 @@ public class TaskSnapshot implements Parcelable {
     /** This snapshot object will be passing to external process. Keep the snapshot reference after
      * writeToParcel*/
     public static final int REFERENCE_WRITE_TO_PARCEL = 1 << 4;
+    /** This snapshot object is being used to convert resolution . */
+    public static final int REFERENCE_CONVERT_RESOLUTION = 1 << 5;
+
     @IntDef(flag = true, prefix = { "REFERENCE_" }, value = {
             REFERENCE_NONE,
             REFERENCE_BROADCAST,
             REFERENCE_CACHE,
             REFERENCE_PERSIST,
             REFERENCE_CONTENT_SUGGESTION,
-            REFERENCE_WRITE_TO_PARCEL
+            REFERENCE_WRITE_TO_PARCEL,
+            REFERENCE_CONVERT_RESOLUTION
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ReferenceFlags {}

@@ -21,8 +21,7 @@
     <string name="update" msgid="3932142540719227615">"अपडेट गर्नुहोस्"</string>
     <string name="done" msgid="6632441120016885253">"सम्पन्न भयो"</string>
     <string name="cancel" msgid="1018267193425558088">"रद्द गर्नुहोस्"</string>
-    <!-- no translation found for more_details (3643407086654820243) -->
-    <skip />
+    <string name="more_details" msgid="3643407086654820243">"थप विवरणहरू"</string>
     <string name="dont_install" msgid="414055123295505225">"इन्स्टल नगर्नुहोस्"</string>
     <string name="installing" msgid="4921993079741206516">"इन्स्टल गरिँदै छ"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> इन्स्टल गरिँदै छ"</string>

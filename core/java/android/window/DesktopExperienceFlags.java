@@ -166,6 +166,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX),
     ENABLE_EMPTY_DESK_ON_MINIMIZE(Flags::enableEmptyDeskOnMinimize, true,
             Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE),
+    ENABLE_FIX_LEAKING_VISUAL_INDICATOR(Flags::fixLeakingVisualIndicator, false,
+            Flags.FLAG_FIX_LEAKING_VISUAL_INDICATOR),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
     ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS(Flags::enableFreeformDisplayLaunchParams, true,
@@ -177,6 +179,9 @@ public enum DesktopExperienceFlags {
     ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP(
             Flags::enableInorderTransitionCallbacksForDesktop, false,
             Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP),
+    ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS(
+            Flags::enableInteractionDependentTabTearingBounds, false,
+            Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS),
     ENABLE_INTERACTIVE_PICTURE_IN_PICTURE(Flags::enableInteractivePictureInPicture, false,
             Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, true,

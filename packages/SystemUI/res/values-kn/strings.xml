@@ -142,22 +142,19 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ಮೈಕ್ರೊಫೋನ್‌ ಮೂಲಕ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ಸ್ಪರ್ಶಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"ವೀಡಿಯೊ ಸೇವ್ ಆಗಿದೆ"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ಕಂಟೆಂಟ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
@@ -204,6 +201,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR ಕೋಡ್ ಸ್ಕ್ಯಾನರ್"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"ಸಾಧನ ಲಾಕ್ ಆಗಿದೆ"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"ಮುಖವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"ಕಳುಹಿಸಿ"</string>
     <string name="cancel" msgid="1089011503403416730">"ರದ್ದುಮಾಡಿ"</string>
@@ -539,6 +540,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"ತೆರೆಯಲು ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"ತೆರೆಯಲು ಅನ್‌ಲಾಕ್ ಐಕಾನ್ ಅನ್ನು ಒತ್ತಿ"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ."</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಅನ್‌ಲಾಕ್ ಐಕಾನ್ ಅನ್ನು ಒತ್ತಿ."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಒತ್ತಿ."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"ಮುಖ ಗುರುತಿಸಲಾಗಿದೆ. ತೆರೆಯಲು ಒತ್ತಿ."</string>
@@ -872,15 +875,14 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ನಿಮ್ಮ ದೀರ್ಘ ಸಂಭಾಷಣೆಗಳನ್ನು ಈಗ ಸಂಕ್ಷಿಪ್ತಗೊಳಿಸಬಹುದು ಇದರಿಂದ ನಿಮಗೆ ತ್ವರಿತ ರೀಕ್ಯಾಪ್‌ಗಳು ದೊರೆಯುತ್ತವೆ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"ನೋಟಿಫಿಕೇಶನ್ ಆರ್ಗನೈಜರ್ ಕಡಿಮೆ ಆದ್ಯತೆಯ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಬಂಡಲ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ನಿಶ್ಯಬ್ದಗೊಳಿಸುತ್ತದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಹೆಚ್ಚಿನ ವರ್ಗಗಳನ್ನು ಸೇರಿಸಿ."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ನೋಟಿಫಿಕೇಶನ್}one{# ನೋಟಿಫಿಕೇಶನ್‌ಗಳು}other{# ನೋಟಿಫಿಕೇಶನ್‌ಗಳು}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ಆಫ್ ಮಾಡಿ"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ನಿಶ್ಶಬ್ದ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ಡೀಫಾಲ್ಟ್"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ಸ್ವಯಂಚಾಲಿತ"</string>
-    <string name="notification_channel_summary_low" msgid="4860617986908931158">"ಯಾವುದೇ ಧ್ವನಿ ಅಥವಾ ವೈಬ್ರೇಷನ್‌ ಆಗುವುದಿಲ್ಲ"</string>
+    <string name="notification_channel_summary_low" msgid="4860617986908931158">"ಯಾವುದೇ ಸೌಂಡ್ ಅಥವಾ ವೈಬ್ರೇಷನ್‌ ಬರುವುದಿಲ್ಲ"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ಯಾವುದೇ ಸೌಂಡ್ ಅಥವಾ ವೈಬ್ರೇಷನ್‌ ಇಲ್ಲ, ಆದರೆ ಇದು ಇನ್ನೂ ಸಂಭಾಷಣೆಗಳ ವಿಭಾಗದಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಧರಿಸಿ ಸಾಧನ ರಿಂಗ್ ಅಥವಾ ವೈಬ್ರೇಟ್ ಆಗುತ್ತದೆ"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಧರಿಸಿ ಫೋನ್ ರಿಂಗ್ ಅಥವಾ ವೈಬ್ರೇಟ್ ಆಗುತ್ತದೆ. ಡಿಫಾಲ್ಟ್ ಆಗಿ, <xliff:g id="APP_NAME">%1$s</xliff:g> ಬಬಲ್ ಸಂಭಾಷಣೆಗಳು."</string>
@@ -1363,10 +1365,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ಮೀಡಿಯಾವನ್ನು ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಸರಿಸಲು ನಿಮ್ಮ ಹಂಚಿಕೊಂಡ ಸೆಶನ್ ಅನ್ನು ನಿಲ್ಲಿಸಿ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ನಿಲ್ಲಿಸಿ"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ಆಡಿಯೋವನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ಆಡಿಯೋ ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ಬಿಲ್ಡ್ ಸಂಖ್ಯೆ"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"ಬಿಲ್ಡ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ ಕಾಪಿ ಮಾಡಲಾಗಿದೆ."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ಕಾಪಿ ಮಾಡಿ."</string>

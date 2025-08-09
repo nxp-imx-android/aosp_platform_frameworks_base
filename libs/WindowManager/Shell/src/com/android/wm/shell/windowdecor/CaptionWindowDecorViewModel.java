@@ -257,7 +257,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                     false /* setTaskCropAndPosition */,
                     mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion,
-                    /* inSyncWithTransition= */ true);
+                    /* inSyncWithTransition= */ true, taskSurface);
         }
     }
 
@@ -272,7 +272,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
         decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                 false /* setTaskCropAndPosition */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion,
-                /* inSyncWithTransition= */ true);
+                /* inSyncWithTransition= */ true, /* taskSurface */ null);
     }
 
     @Override
@@ -372,7 +372,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
         windowDecoration.relayout(taskInfo, startT, finishT,
                 false /* applyStartTransactionOnDraw */, false /* setTaskCropAndPosition */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion,
-                /* inSyncWithTransition= */ true);
+                /* inSyncWithTransition= */ true, taskSurface);
     }
 
     private class CaptionTouchEventListener implements

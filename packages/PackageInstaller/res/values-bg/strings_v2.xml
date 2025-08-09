@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"За да възстановите това приложение, ще трябва да инсталирате <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"При опита за възстановяване на това приложение възникна проблем"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> е част от следното приложение: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Това приложение бе блокирано. С цел защита на устройството и данните ви могат да се инсталират само приложения от потвърдени програмисти.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Това приложение не бе актуализирано. С цел защита на устройството и данните ви могат да се инсталират само актуализации от потвърдени програмисти.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Това приложение не бе инсталирано. Приложенията от непотвърдени програмисти може да са опасни.&lt;/p&gt; &lt;p&gt;За потвърждаване на програмиста на приложението е необходима връзка с интернет. Проверете дали устройството ви е свързано с интернет, след което опитайте да инсталирате приложението отново. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Това приложение не бе актуализирано. Актуализациите от непотвърдени програмисти може да са опасни.&lt;/p&gt; &lt;p&gt;За потвърждаване на програмиста на приложението е необходима връзка с интернет. Проверете дали устройството ви е свързано с интернет, след което опитайте отново да актуализирате приложението. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Възникна проблем при потвърждаването на програмиста на това приложение. Приложенията от непотвърдени програмисти може да са опасни, затова приложението не бе инсталирано.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Възникна проблем при потвърждаването на програмиста на това приложение. Актуализациите от непотвърдени програмисти може да са опасни, затова приложението не бе актуализирано.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Това приложение бе блокирано, защото възникна проблем при потвърждаването на програмиста. С цел защита на устройството и данните ви могат да се инсталират само приложения от потвърдени програмисти.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Това приложение не бе актуализирано, защото възникна проблем при потвърждаването на програмиста. С цел защита на устройството и данните ви могат да се инсталират само актуализации от потвърдени програмисти.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Научете повече за потвърждаването на програмистите&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ако инсталирате без потвърждаване, имайте предвид, че приложенията от непотвърдени програмисти може да изложат устройството и данните ви на риск."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ако актуализирате без потвърждаване, имайте предвид, че актуализациите от непотвърдени програмисти може да изложат устройството и данните ви на риск."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Програмистът на приложението не е потвърден"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Няма достъп до интернет. Програмистът на приложението не може да бъде потвърден"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Програмистът на приложението не може да бъде потвърден"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Инстал. без потвърждаване"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Актуал. без потвърждаване"</string>
     <string name="button_install" msgid="7434013176505680162">"Инсталиране"</string>
     <string name="button_update" msgid="3046719350226327526">"Актуализиране"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Актуализиране въпреки това"</string>

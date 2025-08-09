@@ -18,11 +18,16 @@ package com.android.systemui.lifecycle
 
 import android.view.View
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.Lifecycle
+import com.android.app.tracing.TraceUtils
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.traceCoroutine
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -39,21 +44,47 @@ import kotlinx.coroutines.CoroutineScope
  * The remembered view-model is activated every time the [minActiveState] is reached and deactivated
  * each time the lifecycle state falls "below" the [minActiveState]. This can be used to have more
  * granular control over when exactly a view-model becomes active.
+ *
+ * Note that, by default, `rememberViewModel` will activate its view-model in the [CoroutineContext]
+ * from which it was called. To configure this, either pass a [coroutineContext] to this method or
+ * use [WithConfiguredRememberViewModels] to bulk-configure all usages of `rememberViewModel`s
+ * within the composable hierarchy. If you do both, the provided [coroutineContext] takes precedence
+ * over the [WithConfiguredRememberViewModels] one.
  */
 @Composable
 fun <T> rememberViewModel(
     traceName: String,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    coroutineContext: CoroutineContext = LocalCoroutineContext.current,
     key: Any = Unit,
     factory: () -> T,
 ): T {
     val instance = remember(key) { factory() }
     if (instance is Activatable) {
-        LaunchedEffectWithLifecycle(key1 = instance, minActiveState = minActiveState) {
-            traceCoroutine(traceName) { instance.activate() }
+        LaunchedEffectWithLifecycle(
+            key1 = instance,
+            coroutineContext = coroutineContext,
+            minActiveState = minActiveState,
+        ) {
+            TraceUtils.traceAsync("SystemUI.rememberViewModel", traceName) {
+                traceCoroutine(traceName) { instance.activate() }
+            }
         }
     }
     return instance
+}
+
+/**
+ * Configures all usages of [rememberViewModel] in this composition to use the provided
+ * [coroutineContext] to run their activations. Individual calls to [rememberViewModel] can still
+ * override this behavior by passing a different [CoroutineContext].
+ */
+@Composable
+fun WithConfiguredRememberViewModels(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    block: @Composable () -> Unit,
+) {
+    CompositionLocalProvider(LocalCoroutineContext provides coroutineContext, block)
 }
 
 /**
@@ -79,3 +110,6 @@ suspend fun <T> View.viewModel(
         }
         block(instance)
     }
+
+private val LocalCoroutineContext =
+    staticCompositionLocalOf<CoroutineContext> { EmptyCoroutineContext }

@@ -207,12 +207,12 @@ impl<T: Send, C: HandlerCallback<T>> Handler<T, C> {
             unsafe { libc::eventfd_read(inner.event_fd.as_raw_fd(), val.as_mut_ptr()) }
         );
         if let Err(e) = res {
-            panic!("Failed to read from the event fd: {}", e);
+            panic!("Failed to read from the event fd: {e}");
         }
 
         let res = inner.handle_tasks();
         if let Err(e) = res {
-            panic!("Failed to handle a task: {}", e);
+            panic!("Failed to handle a task: {e}");
         }
         ALOOPER_CALLBACK_FUNC_RETURN_VALUE_CONTINUE
     }

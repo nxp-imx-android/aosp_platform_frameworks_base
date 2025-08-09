@@ -37,6 +37,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
+import android.app.AppOpsManager;
 import android.app.ApplicationExitInfo;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -265,6 +266,7 @@ final class DeletePackageHelper {
             }
             PackageManagerService.invalidateGetPackagesForUidCache(
                     PackageMetrics.INVALIDATION_REASON_DELETE_PACKAGE);
+            AppOpsManager.invalidateCheckPackageCache();
         }
 
         if (res) {

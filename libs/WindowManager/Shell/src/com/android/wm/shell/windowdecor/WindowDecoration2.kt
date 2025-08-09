@@ -69,7 +69,7 @@ abstract class WindowDecoration2<T>(
     private val context: Context,
     private val displayController: DisplayController,
     taskSurface: SurfaceControl,
-    surfaceControlSupplier: () -> SurfaceControl,
+    private val surfaceControlSupplier: () -> SurfaceControl,
     private val taskOrganizer: ShellTaskOrganizer,
     @ShellMainThread private val handler: Handler,
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
@@ -105,7 +105,9 @@ abstract class WindowDecoration2<T>(
             }
         }
     /** The surface control of the task that owns this decoration. */
-    val taskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier)
+    var taskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier)
+        private set
+
     protected var decorationContainerSurface: SurfaceControl? = null
     /** Sets the [TaskDragResizer] which allows task to be drag-resized. */
     var taskDragResizer: TaskDragResizer? = null
@@ -150,6 +152,7 @@ abstract class WindowDecoration2<T>(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
+        newTaskSurface: SurfaceControl?,
     ): RelayoutResult<T>? =
         traceSection(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
@@ -158,6 +161,20 @@ abstract class WindowDecoration2<T>(
             taskInfo = params.runningTaskInfo
             hasGlobalFocus = params.hasGlobalFocus
             exclusionRegion.set(params.displayExclusionRegion)
+
+            if (
+                decorationContainerSurface != null &&
+                    newTaskSurface != null &&
+                    !newTaskSurface.isSameSurface(taskSurface)
+            ) {
+                val containerSurface =
+                    checkNotNull(decorationContainerSurface) {
+                        "expected non-null decoration container surface"
+                    }
+                taskSurface.release()
+                taskSurface = cloneSurfaceControl(newTaskSurface, surfaceControlSupplier)
+                startT.reparent(containerSurface, taskSurface)
+            }
 
             if (!taskInfo.isVisible) {
                 releaseViews(wct)
@@ -294,7 +311,8 @@ abstract class WindowDecoration2<T>(
         }
 
         if (params.shouldSetBackground) {
-            val backgroundColorInt = taskInfo.taskDescription?.backgroundColor ?: Color.BLACK
+            // TODO: b/437011322 - Use taskDescription backgroundColor for free resizing
+            val backgroundColorInt = Color.BLACK
             val tmpColor =
                 floatArrayOf(
                     Color.red(backgroundColorInt).toFloat() / 255f,

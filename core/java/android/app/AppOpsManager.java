@@ -8258,6 +8258,10 @@ public class AppOpsManager {
     private static final String APP_OP_MODE_CACHING_NAME = "appOpModeCache";
     private static final int APP_OP_MODE_CACHING_SIZE = 2048;
 
+    private static final String CHECK_PACKAGE_CACHING_API = "checkPackage";
+    private static final String CHECK_PACKAGE_CACHING_NAME = "checkPackageCache";
+    private static final int CHECK_PACKAGE_CACHING_SIZE = 512;
+
     private static final IpcDataCache.QueryHandler<AppOpModeQuery, Integer> sGetAppOpModeQuery =
             new IpcDataCache.QueryHandler<>() {
                 @Override
@@ -8278,11 +8282,35 @@ public class AppOpsManager {
                 }
             };
 
+    private static final IpcDataCache.QueryHandler<CheckPackageQuery, Integer> sCheckPackageQuery =
+            new IpcDataCache.QueryHandler<>() {
+                @Override
+                public Integer apply(CheckPackageQuery query) {
+                    IAppOpsService service = getService();
+                    try {
+                        return service.checkPackage(query.uid, query.packageName);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                }
+
+                @Override
+                public boolean shouldBypassCache(@NonNull CheckPackageQuery query) {
+                    // If the flag to enable the new caching behavior is off, bypass the cache.
+                    return !Flags.checkPackageCachingEnabled();
+                }
+            };
+
+
     // A LRU cache on binder clients that caches AppOp mode by uid, packageName, virtualDeviceId
     // and attributionTag.
     private static final IpcDataCache<AppOpModeQuery, Integer> sAppOpModeCache =
             new IpcDataCache<>(APP_OP_MODE_CACHING_SIZE, IpcDataCache.MODULE_SYSTEM,
                     APP_OP_MODE_CACHING_API, APP_OP_MODE_CACHING_NAME, sGetAppOpModeQuery);
+
+    private static final IpcDataCache<CheckPackageQuery, Integer> sCheckPackageCache =
+            new IpcDataCache<>(CHECK_PACKAGE_CACHING_SIZE, IpcDataCache.MODULE_SYSTEM,
+                    CHECK_PACKAGE_CACHING_API, CHECK_PACKAGE_CACHING_NAME, sCheckPackageQuery);
 
     // Ops that we don't want to cache due to:
     // 1) Discrepancy of attributionTag support in checkOp and noteOp that determines if a package
@@ -8318,6 +8346,34 @@ public class AppOpsManager {
     public static void disableAppOpModeCache() {
         if (Flags.appopModeCachingEnabled()) {
             sAppOpModeCache.disableLocal();
+        }
+    }
+
+    /**
+     * @hide
+     */
+    public static void invalidateCheckPackageCache() {
+        if (Flags.checkPackageCachingEnabled()) {
+            IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM, CHECK_PACKAGE_CACHING_API);
+        }
+    }
+
+    /**
+     * Bypass CheckPackageCache in the local process
+     *
+     * @hide
+     */
+    public static void disableCheckPackageCache() {
+        if (Flags.checkPackageCachingEnabled()) {
+            sCheckPackageCache.disableLocal();
+        }
+    }
+
+    private record CheckPackageQuery(int uid, @NonNull String packageName) {
+        @Override
+        public String toString() {
+            return TextUtils.formatSimple("CheckPackageQuery(uid=%d, packageName=%s)", uid,
+                    packageName);
         }
     }
 
@@ -10122,7 +10178,15 @@ public class AppOpsManager {
     @Deprecated
     public void checkPackage(int uid, @NonNull String packageName) {
         try {
-            if (mService.checkPackage(uid, packageName) != MODE_ALLOWED) {
+            int mode;
+            if (Flags.checkPackageCachingEnabled()) {
+                mode = sCheckPackageCache.query(
+                        new CheckPackageQuery(uid, packageName));
+            } else {
+                mode = mService.checkPackage(uid, packageName);
+            }
+
+            if (mode != MODE_ALLOWED) {
                 throw new SecurityException(
                         "Package " + packageName + " does not belong to " + uid);
             }

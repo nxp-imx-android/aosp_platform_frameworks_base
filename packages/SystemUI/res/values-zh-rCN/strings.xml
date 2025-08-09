@@ -142,22 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"录制麦克风音频"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"显示触摸操作"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"选择要录制的应用"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"视频已保存"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"重录"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"修改"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"删除"</string>
+    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
     <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"截取整个屏幕"</string>
-    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"截取所选区域"</string>
-    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"拍摄"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"录制"</string>
     <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
     <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在共享屏幕"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"分享内容"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"要停止共享屏幕吗？"</string>
@@ -167,8 +165,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"您正在共享“<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>”的画面"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"您正在分享一个应用的画面"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"您目前正在与应用进行分享"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"您目前正在与“<xliff:g id="HOST_APP_NAME">%1$s</xliff:g>”分享内容"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"停止共享"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"正在投屏"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"要停止投屏吗？"</string>
@@ -205,6 +202,10 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"二维码扫描器"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"已解锁"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"设备已锁定"</string>
+    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
+    <skip />
+    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
+    <skip />
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"正在扫描面孔"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"发送"</string>
     <string name="cancel" msgid="1089011503403416730">"取消"</string>
@@ -391,7 +392,7 @@
     <string name="quick_settings_media_device_label" msgid="8034019242363789941">"媒体设备"</string>
     <string name="quick_settings_user_title" msgid="8673045967216204537">"用户"</string>
     <string name="quick_settings_wifi_label" msgid="2879507532983487244">"WLAN"</string>
-    <string name="quick_settings_internet_label" msgid="6603068555872455463">"互联网"</string>
+    <string name="quick_settings_internet_label" msgid="6603068555872455463">"网络"</string>
     <string name="quick_settings_networks_available" msgid="1875138606855420438">"有可用的网络"</string>
     <string name="quick_settings_networks_unavailable" msgid="1167847013337940082">"没有可用的网络"</string>
     <string name="quick_settings_wifi_detail_empty_text" msgid="483130889414601732">"没有 WLAN 网络"</string>
@@ -540,6 +541,8 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"向上滑动即可打开"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"按下解锁图标即可打开"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"已通过面孔识别解锁。向上滑动即可打开。"</string>
+    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
+    <skip />
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"已通过面孔识别解锁。按下解锁图标即可打开。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"已通过面孔识别解锁。点按即可打开。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"识别出面孔。点按即可打开。"</string>
@@ -873,8 +876,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"现在，系统可以为您总结较长的对话，以便您快速了解重点"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"通知整理工具会将优先级较低的通知归为一组并静音。您可以在“设置”中添加更多类别。"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 条通知}other{# 条通知}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>，<xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"应用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"关闭"</string>
@@ -884,7 +886,7 @@
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"不发出提示音，也不振动"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"不发出提示音，也不振动，但仍在对话部分显示"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"根据设备的设置响铃或振动"</string>
-    <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"可能会响铃或振动，取决于设备设置。默认情况下，来自<xliff:g id="APP_NAME">%1$s</xliff:g>的对话会以消息气泡的形式显示。"</string>
+    <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"根据设备的设置响铃或振动。默认情况下，来自“<xliff:g id="APP_NAME">%1$s</xliff:g>”的对话会以消息气泡的形式显示。"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"让系统决定是否应让设备在收到此通知时发出提示音或振动"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;状态&lt;/b&gt;：已提升为“默认”"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;状态&lt;/b&gt;：已降低为“静音”"</string>
@@ -987,8 +989,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"打开数字助理"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"锁定屏幕"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"添加记事"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"关闭当前窗口"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"多任务处理"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"使用分屏模式，并将应用置于右侧"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"使用分屏模式，并将应用置于左侧"</string>
@@ -1365,10 +1366,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"停止共享的会话，即可将媒体移到其他设备"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"停止"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"停止分享"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"正在分享音频"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"分享音频"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Build 号"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"已将 Build 号复制到剪贴板。"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"复制到剪贴板。"</string>

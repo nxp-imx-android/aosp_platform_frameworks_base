@@ -27,7 +27,7 @@ pub fn run_native_activity_thread(start_seq: i64) -> ! {
             .with_tag_on_device("native_activity_thread")
             .with_max_level(LevelFilter::Trace),
     );
-    info!("Hello from the native activity thread! start_seq={}", start_seq);
+    info!("Hello from the native activity thread! start_seq={start_seq}");
 
     // TODO(b/402614577): Implement the ActivityThread logic.
 

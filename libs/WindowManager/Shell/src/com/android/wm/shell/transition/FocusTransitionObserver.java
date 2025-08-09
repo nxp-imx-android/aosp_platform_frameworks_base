@@ -269,7 +269,8 @@ public class FocusTransitionObserver {
     }
 
     /**
-     * Gets the focused task on a specific display.
+     * Gets the focused task on a specific display. Be careful when you access the properties of the
+     * returned value which may be stale (b/436462692).
      *
      * @param displayId The ID of the display.
      * @return The {@link RunningTaskInfo} of the focused task on the given display,
@@ -277,6 +278,7 @@ public class FocusTransitionObserver {
      */
     @Nullable
     public RunningTaskInfo getFocusedTaskOnDisplay(int displayId) {
+        // TODO(b/436462692) - Make `getFocusedTaskOnDisplay` always returns the latest TaskInfo
         return mFocusedTaskOnDisplay.get(displayId);
     }
 

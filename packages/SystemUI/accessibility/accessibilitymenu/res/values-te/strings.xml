@@ -20,7 +20,7 @@
     <string name="brightness_down_label" msgid="7115662941913272072">"బ్రైట్‌నెస్‌ను తగ్గించండి"</string>
     <string name="previous_button_content_description" msgid="840869171117765966">"మునుపటి స్క్రీన్‌కు వెళ్లండి"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"తదుపరి స్క్రీన్‌కు వెళ్లండి"</string>
-    <string name="accessibility_menu_description" msgid="4458354794093858297">"మీ పరికరాన్ని కంట్రోల్ చేయడానికి యాక్సెసిబిలిటీ మెనూ, స్క్రీన్‌పై పెద్ద మెనూను అందిస్తుంది. మీరు మీ పరికరాన్ని లాక్ చేయవచ్చు, వాల్యూమ్‌ను, బ్రైట్‌నెస్‌ను కంట్రోల్ చేయవచ్చు, స్క్రీన్‌షాట్‌లు తీసుకోవచ్చు, మరిన్ని చేయవచ్చు."</string>
+    <string name="accessibility_menu_description" msgid="4458354794093858297">"మీ డివైజ్‌ను కంట్రోల్ చేయడానికి యాక్సెసిబిలిటీ మెనూ, స్క్రీన్‌పై పెద్ద మెనూను అందిస్తుంది. మీరు మీ డివైజ్‌ను లాక్ చేయవచ్చు, వాల్యూమ్‌ను, బ్రైట్‌నెస్‌ను కంట్రోల్ చేయవచ్చు, స్క్రీన్‌షాట్‌లు తీసుకోవచ్చు, ఇంకా మరెన్నో చేయ‌వ‌చ్చు."</string>
     <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
     <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"యాక్సెసిబిలిటీ మెనూ సెట్టింగ్‌లు"</string>

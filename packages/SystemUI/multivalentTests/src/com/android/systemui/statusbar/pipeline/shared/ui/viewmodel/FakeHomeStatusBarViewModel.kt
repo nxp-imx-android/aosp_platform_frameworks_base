@@ -22,6 +22,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.view.View
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.DarkIconDispatcher
@@ -171,6 +172,12 @@ class FakeHomeStatusBarViewModel(
             source = desktopStatusBarEnabledSource,
             initialValue = false,
         )
+
+    val isQuickSettingsChipHighlightedSource = mutableStateOf(false)
+    override val isQuickSettingsChipHighlighted: Boolean by isQuickSettingsChipHighlightedSource
+
+    val isNotificationsChipHighlightedSource = mutableStateOf(false)
+    override val isNotificationsChipHighlighted: Boolean by isNotificationsChipHighlightedSource
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()

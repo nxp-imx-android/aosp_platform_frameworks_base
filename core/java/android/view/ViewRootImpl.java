@@ -134,7 +134,6 @@ import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
-import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -7785,13 +7784,8 @@ public final class ViewRootImpl implements ViewParent,
                         // - 0 means the button was pressed.
                         // - 1 means the button continues to be pressed (long press).
                         if (keyEvent.getRepeatCount() == 0) {
-                            BackEvent backEvent;
-                            if (predictiveBackSwipeEdgeNoneApi()) {
-                                backEvent = new BackEvent(0, 0, 0f, BackEvent.EDGE_NONE);
-                            } else {
-                                backEvent = new BackEvent(0, 0, 0f, BackEvent.EDGE_LEFT);
-                            }
-                            animationCallback.onBackStarted(backEvent);
+                            animationCallback.onBackStarted(
+                                    new BackEvent(0, 0, 0f, BackEvent.EDGE_NONE));
                         }
                         break;
                     case KeyEvent.ACTION_UP:

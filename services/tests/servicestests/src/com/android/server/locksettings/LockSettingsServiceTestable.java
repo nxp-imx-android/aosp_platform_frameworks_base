@@ -35,6 +35,7 @@ import android.service.gatekeeper.IGateKeeperService;
 
 import com.android.internal.widget.LockscreenCredential;
 import com.android.server.ServiceThread;
+import com.android.server.StorageManagerInternal;
 import com.android.server.locksettings.SyntheticPasswordManager.SyntheticPassword;
 import com.android.server.locksettings.recoverablekeystore.RecoverableKeyStoreManager;
 import com.android.server.pm.UserManagerInternal;
@@ -54,6 +55,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         private final LockSettingsStrongAuth mStrongAuth;
         private IActivityManager mActivityManager;
         private IStorageManager mStorageManager;
+        private StorageManagerInternal mStorageManagerInternal;
         private SyntheticPasswordManager mSpManager;
         private FakeGsiService mGsiService;
         private RecoverableKeyStoreManager mRecoverableKeyStoreManager;
@@ -63,17 +65,24 @@ public class LockSettingsServiceTestable extends LockSettingsService {
 
         public boolean mIsHeadlessSystemUserMode = false;
 
-        public MockInjector(Context context, LockSettingsStorage storage,
+        public MockInjector(
+                Context context,
+                LockSettingsStorage storage,
                 LockSettingsStrongAuth strongAuth,
-                IActivityManager activityManager, IStorageManager storageManager,
-                SyntheticPasswordManager spManager, FakeGsiService gsiService,
+                IActivityManager activityManager,
+                IStorageManager storageManager,
+                StorageManagerInternal storageManagerInternal,
+                SyntheticPasswordManager spManager,
+                FakeGsiService gsiService,
                 RecoverableKeyStoreManager recoverableKeyStoreManager,
-                UserManagerInternal userManagerInternal, DeviceStateCache deviceStateCache) {
+                UserManagerInternal userManagerInternal,
+                DeviceStateCache deviceStateCache) {
             super(context);
             mLockSettingsStorage = storage;
             mStrongAuth = strongAuth;
             mActivityManager = activityManager;
             mStorageManager = storageManager;
+            mStorageManagerInternal = storageManagerInternal;
             mSpManager = spManager;
             mGsiService = gsiService;
             mRecoverableKeyStoreManager = recoverableKeyStoreManager;
@@ -114,6 +123,11 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         @Override
         public IStorageManager getStorageManager() {
             return mStorageManager;
+        }
+
+        @Override
+        public StorageManagerInternal getStorageManagerInternal() {
+            return mStorageManagerInternal;
         }
 
         @Override

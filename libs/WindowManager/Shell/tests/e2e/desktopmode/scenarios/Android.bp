@@ -107,7 +107,6 @@ test_module_config {
         "com.android.wm.shell.functional.FocusAppFromTaskbarOverflowTest",
         "com.android.wm.shell.functional.MoveToNextDisplayTest",
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
-        "com.android.wm.shell.functional.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest",
         "com.android.wm.shell.functional.TabTearingTest",
         "com.android.wm.shell.functional.UnmaximizeAppWindowTest",
@@ -130,6 +129,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest",
+        "com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest",
@@ -268,13 +268,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-OpenUnlimitedAppsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.OpenUnlimitedAppsTest"],
 }
 
 test_module_config {
@@ -429,6 +422,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-OpenUnlimitedAppsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest"],
 }
 
 test_module_config {

@@ -470,7 +470,8 @@ public class KeyguardService extends Service {
             trace("dismiss message=" + message);
             checkPermission();
             if (SceneContainerFlag.isEnabled()) {
-                mDeviceEntryInteractorLazy.get().attemptDeviceEntry(callback);
+                mDeviceEntryInteractorLazy.get().attemptDeviceEntry(
+                        "KeyguardService.dismiss", callback);
             } else if (KeyguardWmStateRefactor.isEnabled()) {
                 mKeyguardDismissInteractor.dismissKeyguardWithCallback(callback);
             } else {

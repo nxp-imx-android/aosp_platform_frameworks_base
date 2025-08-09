@@ -96,36 +96,21 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Bu uygulamayı geri yüklemek için <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> yükleyicisini yüklemeniz gerekiyor"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Bu uygulamayı geri yüklemeye çalışırken bir sorun oluştu"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, şu uygulamanın bir parçasıdır: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Bu uygulama engellendi. Cihazınızın ve verilerinizin güvenliğini sağlamak için yalnızca doğrulanmış geliştiricilerin uygulamaları yüklenebilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Bu uygulama güncellenmedi. Cihazınızın ve verilerinizin güvenliğini sağlamak için yalnızca doğrulanmış geliştiricilerin güncellemeleri yüklenebilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Bu uygulama yüklenmedi. Doğrulanmamış geliştiricilerin uygulamaları güvenli olmayabilir.&lt;/p&gt; &lt;p&gt;Uygulama geliştiricinin doğrulanması için internet bağlantısı gerekir. Cihazınızın internete bağlandığından emin olup uygulamayı tekrar yüklemeyi deneyin. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;&lt;p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Bu uygulama güncellenmedi. Doğrulanmamış geliştiricilerin güncellemeleri güvenli olmayabilir.&lt;/p&gt; &lt;p&gt;Uygulama geliştiricinin doğrulanması için internet bağlantısı gerekir. Cihazınızın internete bağlandığından emin olup uygulamayı tekrar güncellemeyi deneyin. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;.&lt;p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Bu uygulamanın geliştiricisi doğrulanırken bir sorun oluştu. Doğrulanmamış geliştiricilerin uygulamaları güvenli olmayabileceği için uygulama yüklenmedi.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Bu uygulamanın geliştiricisi doğrulanırken bir sorun oluştu. Doğrulanmamış geliştiricilerin güncellemeleri güvenli olmayabileceği için uygulama güncellenmedi.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Geliştirici doğrulanamadığı için bu uygulama engellendi. Cihazınızın ve verilerinizin güvenliğini sağlamak için yalnızca doğrulanmış geliştiricilerin uygulamaları yüklenebilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Geliştirici doğrulanamadığı için bu uygulama güncellenmedi. Cihazınızın ve verilerinizin güvenliğini sağlamak için yalnızca doğrulanmış geliştiricilerin güncellemeleri yüklenebilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Geliştirici doğrulaması hakkında daha fazla bilgi edinin&lt;/a&gt;.&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Doğrulamadan yüklerseniz doğrulanmamış geliştiricilerin uygulamalarının cihazınızı ve verilerinizi riske atabileceğini unutmayın."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Doğrulamadan güncellerseniz doğrulanmamış geliştiricilerin güncellemelerinin cihazınızı ve verilerinizi riske atabileceğini unutmayın."</string>
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Uygulama geliştirici doğrulanmamış"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"İnternet bağlantısı olmadığı için uygulama geliştirici doğrulanamıyor"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Uygulama geliştirici doğrulanamıyor"</string>
+    <string name="install_without_verifying" msgid="5359680595440741626">"Doğrulamadan yükleyin"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Doğrulamadan güncelleyin"</string>
     <string name="button_install" msgid="7434013176505680162">"Yükle"</string>
     <string name="button_update" msgid="3046719350226327526">"Güncelle"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Yine de güncelle"</string>

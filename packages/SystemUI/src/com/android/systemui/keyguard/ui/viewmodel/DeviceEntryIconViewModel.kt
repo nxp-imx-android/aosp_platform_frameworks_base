@@ -262,7 +262,7 @@ constructor(
 
     suspend fun onUserInteraction() {
         if (SceneContainerFlag.isEnabled) {
-            deviceEntryInteractor.attemptDeviceEntry()
+            deviceEntryInteractor.attemptDeviceEntry("Device entry icon")
         } else {
             keyguardViewController
                 .get()

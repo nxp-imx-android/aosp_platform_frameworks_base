@@ -79,14 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK आणि ELF अलाइनमेंटच्या तपासण्या करता आल्या नाहीत. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"पुन्हा दाखवू नका"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android अ‍ॅप कंपॅटिबिलिटी"</string>
-    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
-    <skip />
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : लोड केलेले सेगमेंट अलाइन केलेले नाही&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : अनकाँप्रेस्ड लायब्ररी अलाइन केलेली नाही&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : लोड केलेले सेगमेंट आणि अनकाँप्रेस्ड लायब्ररी अलाइन केलेली नाही&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : अज्ञात एरर&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"सेवेची तरतूद केलेली नाही."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"तुम्ही कॉलर आयडी सेटिंग बदलू शकत नाही."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"डेटा <xliff:g id="CARRIERDISPLAY">%s</xliff:g> वर स्विच केला"</string>
@@ -304,7 +300,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"सहाय्यता"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"व्हॉइस सहाय्य"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"लॉकडाउन"</string>
-    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"लॉक"</string>
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"लॉक करा"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"उत्तर द्या"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"नवीन सूचना"</string>
@@ -696,10 +692,8 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"हे तुम्हीच आहात याची पडताळणी करा"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"पुढे सुरू ठेवण्यासाठी तुमचे बायोमेट्रिक वापरा"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"पुढे सुरू ठेवण्यासाठी तुमचे बायोमेट्रिक किंवा स्क्रीन लॉक वापरा"</string>
-    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
-    <skip />
+    <string name="biometric_dialog_secondary_display_toast" product="default" msgid="256544327174107086">"पुढे सुरू ठेवण्यासाठी तुमच्या फोनवर हे तुम्हीच असल्याची पडताळणी करा"</string>
+    <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"पुढे सुरू ठेवण्यासाठी तुमच्या टॅबलेटवर हे तुम्हीच असल्याची पडताळणी करा"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"बायोमेट्रिक हार्डवेअर उपलब्ध नाही"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ऑथेंटिकेशन रद्द केले"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ओळखले नाही"</string>
@@ -1134,6 +1128,8 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"सिम पिन अनलॉक करा"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"सिम PUK अनलॉक करा"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"पासवर्ड अनलॉक."</string>
+    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
+    <skip />
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"पॅटर्न क्षेत्र."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"स्लाइड क्षेत्र."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2052,6 +2048,7 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"मोठे करा"</string>
     <string name="close_button_text" msgid="10603510034455258">"बंद करा"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
+    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"उत्तर द्या"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"व्हिडिओ"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"नकार द्या"</string>

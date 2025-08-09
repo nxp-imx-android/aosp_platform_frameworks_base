@@ -43,7 +43,6 @@ import com.android.systemui.communal.widgets.EditWidgetsActivityStarter
 import com.android.systemui.communal.widgets.EditWidgetsActivityStarterImpl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.SceneContainerConfig
@@ -55,7 +54,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
-import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 
@@ -133,11 +131,8 @@ interface CommunalModule {
 
         @Provides
         @SysUISingleton
-        fun providesCommunalBackupUtils(
-            @Application context: Context,
-            @Background backgroundDispatcher: CoroutineDispatcher
-        ): CommunalBackupUtils {
-            return CommunalBackupUtils(context, backgroundDispatcher)
+        fun providesCommunalBackupUtils(@Application context: Context): CommunalBackupUtils {
+            return CommunalBackupUtils(context)
         }
 
         /** The prefixes of widgets packages names that are considered loggable. */

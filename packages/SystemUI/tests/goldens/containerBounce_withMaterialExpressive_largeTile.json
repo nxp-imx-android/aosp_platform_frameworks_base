@@ -1,0 +1,479 @@
+{
+  "frame_ids": [
+    "before",
+    0,
+    16,
+    32,
+    48,
+    64,
+    80,
+    96,
+    112,
+    128,
+    144,
+    160,
+    176,
+    192,
+    208,
+    224,
+    240,
+    256,
+    272,
+    288,
+    304,
+    320,
+    336,
+    352,
+    368,
+    384,
+    400,
+    416,
+    432,
+    448,
+    464,
+    480,
+    496,
+    512,
+    "after"
+  ],
+  "features": [
+    {
+      "name": "tile-small_previous",
+      "type": "dpSize",
+      "data_points": [
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        }
+      ]
+    },
+    {
+      "name": "tile-large_clicked",
+      "type": "dpSize",
+      "data_points": [
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        },
+        {
+          "width": 197.71428,
+          "height": 72
+        }
+      ]
+    },
+    {
+      "name": "tile-small_next",
+      "type": "dpSize",
+      "data_points": [
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        },
+        {
+          "width": 98.85714,
+          "height": 72
+        }
+      ]
+    }
+  ]
+}

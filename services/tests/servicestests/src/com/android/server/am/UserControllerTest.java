@@ -103,7 +103,6 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.os.storage.IStorageManager;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -2086,7 +2085,7 @@ public class UserControllerTest {
 
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_BACKGROUND);
 
-        verify(mInjector.mStorageManagerMock, never()).unlockCeStorage(eq(TEST_USER_ID), any());
+        verify(mInjector.mLockPatternUtilsMock, never()).unlockUserKeyIfUnsecured(TEST_USER_ID);
     }
 
     @Test
@@ -2680,7 +2679,6 @@ public class UserControllerTest {
 
         private final TestHandler mUiHandler;
 
-        private final IStorageManager mStorageManagerMock;
         private final UserManagerInternal mUserManagerInternalMock;
         private final LockSettingsInternal mLockSettingsInternalMock;
         private final WindowManagerService mWindowManagerMock;
@@ -2707,7 +2705,6 @@ public class UserControllerTest {
             mUserManagerInternalMock = mock(UserManagerInternal.class);
             mLockSettingsInternalMock = mock(LockSettingsInternal.class);
             mWindowManagerMock = mock(WindowManagerService.class);
-            mStorageManagerMock = mock(IStorageManager.class);
             mPowerManagerInternal = mock(PowerManagerInternal.class);
             mAlarmManagerInternal = mock(AlarmManagerInternal.class);
             mAudioManagerInternal = mock(AudioManagerInternal.class);

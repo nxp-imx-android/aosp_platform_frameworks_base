@@ -69,6 +69,14 @@
     <string name="kg_unlock_with_password_or_fp" msgid="2251295907826814237">"Odklenite z geslom ali prstnim odtisom"</string>
     <string name="kg_unlock_with_pattern_or_fp" msgid="2391870539909135046">"Odklenite z vzorcem ali prstnim odtisom"</string>
     <string name="kg_prompt_after_dpm_lock" msgid="6002804765868345917">"Za dodatno varnost je bila naprava zaklenjena s službenim pravilnikom"</string>
+    <!-- no translation found for kg_prompt_title_after_secure_lock_device (2646423690908627259) -->
+    <skip />
+    <!-- no translation found for kg_prompt_subtitle_for_secure_lock_device_biometric_auth_fingerprint (6596633555720510932) -->
+    <skip />
+    <!-- no translation found for kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face (4550701327607935441) -->
+    <skip />
+    <!-- no translation found for kg_prompt_subtitle_for_secure_lock_device_biometric_auth_coex (2093026058274456330) -->
+    <skip />
     <string name="kg_prompt_after_user_lockdown_pin" msgid="5374732179740050373">"Po zaklepu se zahteva vnos kode PIN"</string>
     <string name="kg_prompt_after_user_lockdown_password" msgid="9097968458291129795">"Po zaklepu se zahteva vnos gesla"</string>
     <string name="kg_prompt_after_user_lockdown_pattern" msgid="215072203613597906">"Po zaklepu se zahteva vnos vzorca"</string>

@@ -19,6 +19,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
+import android.graphics.Rect
 import android.os.Binder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -603,6 +604,58 @@ class DesksTransitionObserverTest : ShellTestCase() {
         )
 
         assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_addTaskToDesk_restoresMinimizedTask() {
+        val transition = Binder()
+        repository.addDesk(SECOND_DISPLAY_ID, deskId = 5)
+        val addTaskToDeskTransition =
+            DeskTransition.AddTaskToDesk(
+                transition,
+                userId = repository.userId,
+                displayId = SECOND_DISPLAY_ID,
+                deskId = 5,
+                taskId = 10,
+                minimized = true,
+                taskBounds = Rect(100, 100, 500, 500),
+            )
+
+        observer.addPendingTransition(addTaskToDeskTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0),
+        )
+
+        assertThat(repository.getMinimizedTaskIdsInDesk(5)).containsExactly(10)
+        assertThat(repository.getActiveTaskIdsInDesk(5)).containsExactly(10)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_addTaskToDesk_restoresNonMinimizedTask() {
+        val transition = Binder()
+        repository.addDesk(SECOND_DISPLAY_ID, deskId = 5)
+        val addTaskToDeskTransition =
+            DeskTransition.AddTaskToDesk(
+                transition,
+                userId = repository.userId,
+                displayId = SECOND_DISPLAY_ID,
+                deskId = 5,
+                taskId = 10,
+                minimized = false,
+                taskBounds = Rect(100, 100, 500, 500),
+            )
+
+        observer.addPendingTransition(addTaskToDeskTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0),
+        )
+
+        assertThat(repository.getMinimizedTaskIdsInDesk(5)).isEmpty()
+        assertThat(repository.getActiveTaskIdsInDesk(5)).containsExactly(10)
     }
 
     @Test

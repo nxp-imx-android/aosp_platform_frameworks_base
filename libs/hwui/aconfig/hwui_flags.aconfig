@@ -169,13 +169,6 @@ flag {
 }
 
 flag {
-  name: "early_preload_gl_context"
-  namespace: "core_graphics"
-  description: "Preload GL context on renderThread preload. This improves app startup time for apps using GL."
-  bug: "383612849"
-}
-
-flag {
   name: "early_preinit_buffer_allocator"
   namespace: "core_graphics"
   description: "Initialize GraphicBufferAllocater on ViewRootImpl init, to avoid blocking on init during buffer allocation, improving app launch latency."

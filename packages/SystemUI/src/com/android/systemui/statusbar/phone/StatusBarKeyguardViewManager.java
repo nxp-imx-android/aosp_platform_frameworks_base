@@ -772,7 +772,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
      */
     public void showBouncer(boolean scrimmed, String reason) {
         if (SceneContainerFlag.isEnabled()) {
-            mDeviceEntryInteractorLazy.get().attemptDeviceEntry();
+            mDeviceEntryInteractorLazy.get().attemptDeviceEntry(reason);
             return;
         }
 

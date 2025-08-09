@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.graphics.Rect
 import android.os.IBinder
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 
@@ -149,6 +150,19 @@ sealed interface DeskTransition {
         override val token: IBinder,
         override val userId: Int,
         val displayId: Int,
+    ) : DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
+
+    /** A transition to add a task to a desk, including bounds and minimize state */
+    data class AddTaskToDesk(
+        override val token: IBinder,
+        override val userId: Int,
+        val displayId: Int,
+        val deskId: Int,
+        val taskId: Int,
+        val taskBounds: Rect?,
+        val minimized: Boolean,
     ) : DeskTransition {
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }

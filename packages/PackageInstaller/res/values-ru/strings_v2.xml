@@ -97,29 +97,20 @@
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Не удалось восстановить приложение."</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – часть приложения \"<xliff:g id="APP_NAME">%2$s</xliff:g>\"."</string>
     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Приложение заблокировано. Чтобы защитить ваши данные и устройство, запрещено устанавливать приложения от непроверенных разработчиков.&lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Приложение не обновлено. Чтобы защитить ваши данные и устройство, запрещено устанавливать обновления от непроверенных разработчиков.&lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;/p&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Приложение не установлено. Приложения от непроверенных разработчиков могут быть опасны.&lt;/p&gt; &lt;p&gt;Чтобы проверить разработчика, требуется подключение к интернету. Убедитесь, что устройство подключено к Сети, и повторите попытку. &lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Приложение не обновлено. Обновления от непроверенных разработчиков могут быть опасны.&lt;/p&gt; &lt;p&gt;Чтобы проверить разработчика, требуется подключение к интернету. Убедитесь, что устройство подключено к Сети, и повторите попытку. &lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;p&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;При проверке разработчика возникла проблема. Приложения от непроверенных разработчиков могут быть опасны, поэтому установка прервана.&lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;/p&gt;"</string>
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Ошибка при проверке разработчика. Обновления от непроверенных разработчиков могут быть опасны, поэтому установка прервана.&lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Приложение заблокировано, поскольку не удалось проверить разработчика. Чтобы защитить ваши данные и устройство, запрещено устанавливать приложения от непроверенных разработчиков.&lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Приложение не обновлено, поскольку не удалось проверить разработчика. Чтобы защитить ваши данные и устройство, запрещено устанавливать обновления от непроверенных разработчиков.&lt;/p&gt; &lt;p&gt;Подробнее &lt;a href=&gt;о проверке разработчиков&lt;/a&gt;…&lt;/p&gt;"</string>
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"При установке приложения от непроверенного разработчика помните, что оно может быть опасно для вашего устройства и данных."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"При установке обновления от непроверенного разработчика помните, что оно может быть опасно для вашего устройства и данных."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Разработчик приложения не проверен"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Нет подключения к интернету. Не удалось проверить разработчика приложения"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Не удалось проверить разработчика приложения"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"Без проверки"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"Без проверки"</string>
     <string name="button_install" msgid="7434013176505680162">"Установить"</string>
     <string name="button_update" msgid="3046719350226327526">"Обновить"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Все равно обновить"</string>
