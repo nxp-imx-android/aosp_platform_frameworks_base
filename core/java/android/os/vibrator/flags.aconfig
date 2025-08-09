@@ -176,3 +176,13 @@ flag {
       purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "decouple_frequency_profile_from_resonance"
+    description: "Removes frequency profiles dependency on resonant frequency when not present"
+    bug: "430503750"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
