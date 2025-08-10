@@ -24,6 +24,8 @@ import com.android.compose.animation.scene.ElementKey
  * process and the client. These are similar to the view ids used previously.
  */
 object LockscreenElementKeys {
+    val Root = ElementKey("LockscreenRoot")
+
     // Element Keys for top level large/small composables
     val ClockLarge = ElementKey("LargeClock")
     val ClockSmall = ElementKey("SmallClock")
