@@ -26,6 +26,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.server.am.Flags.FLAG_PERCEPTIBLE_TASKS
+import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.window.flags.Flags.FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE
@@ -46,6 +47,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -528,6 +530,19 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         whenever(desktopUserRepositories.current.isClosingTask(task.taskId)).thenReturn(true)
         desktopTaskChangeListener.onTaskClosing(task)
         assertThat(desktopTaskChangeListener.isTaskPerceptible(task.taskId)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX)
+    fun onNonTransitionTaskClosing_invisibleFreeformTask_removesTaskFromRepo() {
+        val task = createFreeformTask().apply { isVisible = false }
+        desktopTaskChangeListener.onTaskOpening(task)
+
+        whenever(desktopUserRepositories.current.isVisibleTask(task.taskId)).thenReturn(false)
+        desktopTaskChangeListener.onNonTransitionTaskClosing(task)
+
+        verify(desktopUserRepositories.current, times(1)).removeClosingTask(task.taskId)
+        verify(desktopUserRepositories.current, times(1)).removeTask(task.taskId)
     }
 
     private fun createWallpaperTaskInfo(windowingMode: Int): RunningTaskInfo =
