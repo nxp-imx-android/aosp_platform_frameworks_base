@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -46,6 +45,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.MediaCarousel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Notifications
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Region
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -69,7 +69,7 @@ constructor(
 
     private val upperRegionElement =
         object : LockscreenElement {
-            override val key = LockscreenElementKeys.UpperRegion
+            override val key = LockscreenElementKeys.Region.Upper
             override val context = this@LockscreenUpperRegionElementProvider.context
 
             @Composable
@@ -109,7 +109,7 @@ constructor(
             modifier: Modifier = Modifier,
         ) {
             // TODO(b/432451019): Ensure large clock is centered correctly
-            factory.lockscreenElement(Clock.Region.Large, context, modifier)
+            factory.lockscreenElement(Region.Clock.Large, context, modifier)
         }
 
         @Composable
@@ -122,7 +122,7 @@ constructor(
             // TODO(b/432451019): Check the small clock + date/weather aren't rendering in shade
             // TODO(b/432451019): Ensure larger display/font sizes are working as expected
             Column(modifier = modifier) {
-                factory.lockscreenElement(Clock.Region.Small, context)
+                factory.lockscreenElement(Region.Clock.Small, context)
                 factory.lockscreenElement(MediaCarousel, context)
                 Notifications(viewModel, factory, context)
             }
@@ -163,7 +163,7 @@ constructor(
             context: LockscreenElementContext,
             modifier: Modifier = Modifier,
         ) {
-            factory.lockscreenElement(Clock.Region.Large, context, modifier)
+            factory.lockscreenElement(Region.Clock.Large, context, modifier)
         }
 
         @Composable
@@ -179,12 +179,12 @@ constructor(
                 startContent = {
                     Column {
                         if (viewModel.clockSize == ClockSize.SMALL) {
-                            factory.lockscreenElement(Clock.Region.Small, context)
+                            factory.lockscreenElement(Region.Clock.Small, context)
                         }
                         factory.lockscreenElement(MediaCarousel, context)
                     }
                     if (viewModel.clockSize == ClockSize.LARGE) {
-                        factory.lockscreenElement(Clock.Region.Large, context)
+                        factory.lockscreenElement(Region.Clock.Large, context)
                     }
                 },
                 endContent = { Notifications(viewModel, factory, context) },
@@ -204,7 +204,7 @@ constructor(
                 startContent = {
                     Column {
                         if (viewModel.clockSize == ClockSize.SMALL) {
-                            factory.lockscreenElement(Clock.Region.Small, context)
+                            factory.lockscreenElement(Region.Clock.Small, context)
                         }
                         factory.lockscreenElement(MediaCarousel, context)
                         Notifications(viewModel, factory, context)
@@ -212,7 +212,7 @@ constructor(
                 },
                 endContent = {
                     if (viewModel.clockSize == ClockSize.LARGE) {
-                        factory.lockscreenElement(Clock.Region.Large, context)
+                        factory.lockscreenElement(Region.Clock.Large, context)
                     }
                 },
             )
@@ -229,14 +229,14 @@ constructor(
                 Box(
                     content = startContent,
                     modifier =
-                        Modifier.fillMaxWidth(0.5f).wrapContentHeight().graphicsLayer {
+                        Modifier.fillMaxWidth(0.5f).fillMaxHeight().graphicsLayer {
                             translationX = viewModel.unfoldTranslations.start
                         },
                 )
                 Box(
                     content = endContent,
                     modifier =
-                        Modifier.fillMaxWidth(0.5f).wrapContentHeight().graphicsLayer {
+                        Modifier.fillMaxWidth(1f).fillMaxHeight().graphicsLayer {
                             translationX = viewModel.unfoldTranslations.end
                         },
                 )

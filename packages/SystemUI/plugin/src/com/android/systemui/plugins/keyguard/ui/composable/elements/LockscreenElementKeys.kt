@@ -26,8 +26,19 @@ object LockscreenElementKeys {
     /** Root element of the entire lockcsreen */
     val Root = ElementKey("LockscreenRoot")
 
-    /** All lockscreen elements above the lock icon */
-    val UpperRegion = ElementKey("LockscreenUpperRegion")
+    object Region {
+        /** The upper region includes everything above the lock icon */
+        val Upper = ElementKey("LockscreenUpperRegion")
+
+        /** The lower region includes everything below the lock icon */
+        val Lower = ElementKey("LockscreenLowerRegion")
+
+        /** The clock regions include the clock, smartspace, and the date/weather view */
+        object Clock {
+            val Large = ElementKey("LargeClockRegion")
+            val Small = ElementKey("SmallClockRegion")
+        }
+    }
 
     /** The UMO's lockscreen element */
     val MediaCarousel = ElementKey("LockscreenMediaCarousel")
@@ -45,16 +56,23 @@ object LockscreenElementKeys {
         }
     }
 
+    /** Lock Icon / UDFPS */
+    val LockIcon = ElementKey("LockIcon")
+
+    val SettingsMenu = ElementKey("SettingsMenu")
+    val StatusBar = ElementKey("LockscreenStatusBar")
+    val IndicationArea = ElementKey("IndicationArea")
+    val AmbientIndicationArea = ElementKey("AmbientIndicationArea")
+
+    object Shortcuts {
+        val Start = ElementKey("ShortcutStart")
+        val End = ElementKey("ShortcutEnd")
+    }
+
     /** Element Keys for composables which wrap clock views */
     object Clock {
         val Large = ElementKey("LargeClock")
         val Small = ElementKey("SmallClock")
-
-        /** The clock regions include the clock, smartspace, and the date/weather view */
-        object Region {
-            val Large = ElementKey("LargeClockRegion")
-            val Small = ElementKey("SmallClockRegion")
-        }
     }
 
     /** Smartspace provided lockscreen elements */

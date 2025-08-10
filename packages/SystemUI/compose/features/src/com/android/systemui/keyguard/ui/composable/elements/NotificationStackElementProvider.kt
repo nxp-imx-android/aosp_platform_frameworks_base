@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import android.view.ViewGroup
@@ -27,6 +27,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.ConstrainedNotificationStack
+import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
@@ -99,6 +100,15 @@ constructor(
             stackScrollView = stackScrollView.get(),
             viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
             modifier = modifier.fillMaxSize(),
+        )
+    }
+
+    @Composable
+    // TODO(b/432451019): Can this be removed?
+    private fun ContentScope.HeadsUpNotifications() {
+        SnoozeableHeadsUpNotificationSpace(
+            stackScrollView = stackScrollView.get(),
+            viewModel = rememberViewModel("HeadsUpNotifications") { viewModelFactory.create() },
         )
     }
 }

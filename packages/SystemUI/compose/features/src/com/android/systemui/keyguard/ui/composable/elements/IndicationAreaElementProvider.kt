@@ -14,47 +14,58 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
+import android.content.Context
 import android.view.View
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.keyguard.ui.binder.KeyguardIndicationAreaBinder
 import com.android.systemui.keyguard.ui.view.KeyguardIndicationArea
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardIndicationAreaViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.KeyguardIndicationController
 import javax.inject.Inject
+import kotlin.collections.List
 import kotlinx.coroutines.DisposableHandle
 
-class IndicationAreaElement
+class IndicationAreaElementProvider
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     private val indicationAreaViewModel: KeyguardIndicationAreaViewModel,
     private val indicationController: KeyguardIndicationController,
-) {
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(indicationAreaElement) }
 
-    @Composable
-    fun ContentScope.IndicationArea(modifier: Modifier = Modifier) {
-        Element(key = IndicationAreaElementKey, modifier = modifier) {
-            IndicationArea(
-                indicationAreaViewModel = indicationAreaViewModel,
-                indicationController = indicationController,
-            )
+    private val indicationAreaElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.IndicationArea
+            override val context = this@IndicationAreaElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                IndicationArea(modifier = Modifier.fillMaxWidth())
+            }
         }
-    }
 
     @Composable
-    private fun IndicationArea(
-        indicationAreaViewModel: KeyguardIndicationAreaViewModel,
-        indicationController: KeyguardIndicationController,
-        modifier: Modifier = Modifier,
-    ) {
+    fun IndicationArea(modifier: Modifier = Modifier) {
         val (disposable, setDisposable) = remember { mutableStateOf<DisposableHandle?>(null) }
 
         AndroidView(
@@ -76,5 +87,3 @@ constructor(
         )
     }
 }
-
-private val IndicationAreaElementKey = ElementKey("IndicationArea")

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -32,7 +32,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -40,29 +42,54 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.height
+import com.android.compose.modifiers.padding
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.NotificationPanelView
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeViewStateProvider
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
 import com.android.systemui.statusbar.ui.viewmodel.KeyguardStatusBarViewModel
 import com.android.systemui.util.Utils
 import dagger.Lazy
 import javax.inject.Inject
+import kotlin.collections.List
 
-class StatusBarElement
+class StatusBarElementProvider
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     private val componentFactory: KeyguardStatusBarViewComponent.Factory,
     private val notificationPanelView: Lazy<NotificationPanelView>,
     private val viewModel: KeyguardStatusBarViewModel,
-) {
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(statusBarElement) }
+
+    private val statusBarElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.StatusBar
+            override val context = this@StatusBarElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                StatusBar(modifier = Modifier.fillMaxWidth())
+            }
+        }
 
     @Composable
     fun StatusBar(modifier: Modifier = Modifier) {

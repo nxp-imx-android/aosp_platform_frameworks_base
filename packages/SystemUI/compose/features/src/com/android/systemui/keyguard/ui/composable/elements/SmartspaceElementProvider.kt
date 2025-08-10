@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -138,7 +138,9 @@ constructor(
                         }
                     },
                     modifier =
-                        Modifier.fillMaxWidth()
+                        Modifier
+                            // TODO(b/432451019): Constrain in wide layout to half width
+                            .fillMaxWidth()
                             .padding(
                                 // Note: smartspace adds 16dp of start padding internally
                                 start = 12.dp,

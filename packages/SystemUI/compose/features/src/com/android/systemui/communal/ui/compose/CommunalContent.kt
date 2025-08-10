@@ -51,8 +51,8 @@ import com.android.systemui.communal.ui.compose.section.CommunalPopupSection
 import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
-import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
-import com.android.systemui.keyguard.ui.composable.element.LockElement
+import com.android.systemui.keyguard.ui.composable.elements.IndicationAreaElementProvider
+import com.android.systemui.keyguard.ui.composable.elements.LockIconElementProvider
 import com.android.systemui.keyguard.ui.composable.layout.LockIconAlignmentLines
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
@@ -66,8 +66,8 @@ constructor(
     private val interactionHandler: SmartspaceInteractionHandler,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val dialogFactory: SystemUIDialogFactory,
-    private val lockElement: LockElement,
-    private val indicationAreaElement: IndicationAreaElement,
+    private val lockElement: LockIconElementProvider,
+    private val indicationAreaElement: IndicationAreaElementProvider,
     private val communalPopupSection: CommunalPopupSection,
     private val widgetSection: CommunalAppWidgetSection,
     private val hubOnboardingSection: HubOnboardingSection,

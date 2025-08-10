@@ -12,7 +12,7 @@
  * permissions and limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider

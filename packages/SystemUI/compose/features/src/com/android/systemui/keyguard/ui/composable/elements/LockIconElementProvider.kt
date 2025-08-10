@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
@@ -29,7 +31,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.biometrics.AuthController
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.qualifiers.Application
@@ -46,17 +47,25 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.TouchHandlingViewLogger
 import com.android.systemui.log.dagger.LongPressTouchLog
 import com.android.systemui.plugins.FalsingManager
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.VibratorHelper
 import com.google.android.msdl.domain.MSDLPlayer
 import dagger.Lazy
 import javax.inject.Inject
+import kotlin.collections.List
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
-class LockElement
+class LockIconElementProvider
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     @Application private val applicationScope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
     private val windowManager: WindowManager,
@@ -69,7 +78,22 @@ constructor(
     private val vibratorHelper: Lazy<VibratorHelper>,
     private val msdlPlayer: Lazy<MSDLPlayer>,
     @LongPressTouchLog private val logBuffer: LogBuffer,
-) {
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(lockIconElement) }
+
+    private val lockIconElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.LockIcon
+            override val context = this@LockIconElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                LockIcon()
+            }
+        }
 
     @Composable
     fun ContentScope.LockIcon(overrideColor: Color? = null, modifier: Modifier = Modifier) {
@@ -99,7 +123,7 @@ constructor(
                     }
             },
             modifier =
-                modifier.element(LockIconElementKey).layout { measurable, _ ->
+                modifier.layout { measurable, _ ->
                     val lockIconBounds = lockIconBounds(context)
                     val placeable =
                         measurable.measure(
@@ -177,5 +201,3 @@ constructor(
         private const val TAG = "LockSection"
     }
 }
-
-private val LockIconElementKey = ElementKey("LockIcon")

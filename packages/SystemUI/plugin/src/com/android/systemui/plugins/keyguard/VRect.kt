@@ -16,10 +16,11 @@
 
 package com.android.systemui.plugins.keyguard
 
-import android.graphics.Rect
-import android.graphics.RectF
+import android.graphics.Rect as AndroidRect
+import android.graphics.RectF as AndroidRectF
 import android.util.Half
-import androidx.compose.ui.geometry.Rect as ComposeRect
+import androidx.compose.ui.geometry.Offset as ComposeOffsetF
+import androidx.compose.ui.geometry.Rect as ComposeRectF
 
 private val LEFT_MASK: ULong = 0xFFFF000000000000U
 private val TOP_MASK: ULong = 0x0000FFFF00000000U
@@ -61,10 +62,10 @@ value class VRectF(val data: ULong) {
     val height: Float
         get() = bottom - top
 
-    constructor(rect: RectF) : this(rect.left, rect.top, rect.right, rect.bottom)
+    constructor(rect: AndroidRectF) : this(rect.left, rect.top, rect.right, rect.bottom)
 
     constructor(
-        rect: Rect
+        rect: AndroidRect
     ) : this(
         left = rect.left.toFloat(),
         top = rect.top.toFloat(),
@@ -73,7 +74,7 @@ value class VRectF(val data: ULong) {
     )
 
     constructor(
-        rect: ComposeRect
+        rect: ComposeRectF
     ) : this(left = rect.left, top = rect.top, right = rect.right, bottom = rect.bottom)
 
     constructor(
@@ -89,11 +90,17 @@ value class VRectF(val data: ULong) {
     val size: VPointF
         get() = VPointF(width, height)
 
-    fun toRectF(): RectF = RectF(left, top, right, bottom)
+    fun toRectF(): AndroidRectF = AndroidRectF(left, top, right, bottom)
 
     fun toLong(): Long = data.toLong()
 
     override fun toString() = "($left, $top) -> ($right, $bottom)"
+
+    fun contains(pt: VPoint) = left < pt.x && pt.x < right && top < pt.y && pt.y < bottom
+
+    fun contains(pt: VPointF) = left < pt.x && pt.x < right && top < pt.y && pt.y < bottom
+
+    fun contains(pt: ComposeOffsetF) = left < pt.x && pt.x < right && top < pt.y && pt.y < bottom
 
     companion object {
         private fun toBits(value: Float): Short = Half.halfToShortBits(Half.toHalf(value))
@@ -140,7 +147,7 @@ value class VRect(val data: ULong) {
         get() = bottom - top
 
     constructor(
-        rect: Rect
+        rect: AndroidRect
     ) : this(
         left = rect.left.toShort(),
         top = rect.top.toShort(),
@@ -173,11 +180,13 @@ value class VRect(val data: ULong) {
     val size: VPoint
         get() = VPoint(width, height)
 
-    fun toRect(): Rect = Rect(left, top, right, bottom)
+    fun toRect(): AndroidRect = AndroidRect(left, top, right, bottom)
 
     fun toLong(): Long = data.toLong()
 
     override fun toString() = "($left, $top) -> ($right, $bottom)"
+
+    fun contains(pt: VPoint) = left < pt.x && pt.x < right && top < pt.y && pt.y < bottom
 
     companion object {
         val ZERO = VRect(0, 0, 0, 0)
