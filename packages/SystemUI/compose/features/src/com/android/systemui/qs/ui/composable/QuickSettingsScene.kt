@@ -40,7 +40,9 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,11 +54,13 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.jank.InteractionJankMonitor
@@ -206,6 +210,12 @@ private fun ContentScope.QuickSettingsScene(
                 is TransitionState.Transition -> state.fromContent == Scenes.QuickSettings
             }
 
+        LaunchedEffectWithLifecycle(isScrollable) {
+            if (!isScrollable) {
+                scrollState.scrollTo(0)
+            }
+        }
+
         // ############# NAV BAR paddings ###############
 
         val navBarBottomHeight =
@@ -243,6 +253,14 @@ private fun ContentScope.QuickSettingsScene(
                             CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    var listening by remember { mutableStateOf(false) }
+                    LifecycleStartEffect(Unit) {
+                        listening = true
+
+                        onStopOrDispose { listening = false }
+                    }
+
                     QuickSettingsPanelLayout(
                         brightness =
                             @Composable {
@@ -266,7 +284,10 @@ private fun ContentScope.QuickSettingsScene(
                             @Composable {
                                 Box {
                                     GridAnchor()
-                                    TileGrid(viewModel.qsContainerViewModel.tileGridViewModel)
+                                    TileGrid(
+                                        viewModel.qsContainerViewModel.tileGridViewModel,
+                                        listening = { listening },
+                                    )
                                 }
                             },
                         media =
