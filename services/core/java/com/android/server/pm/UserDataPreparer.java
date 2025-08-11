@@ -36,6 +36,8 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
+import com.android.server.StorageManagerInternal;
 import com.android.server.utils.Slogf;
 
 import java.io.File;
@@ -56,6 +58,7 @@ class UserDataPreparer {
     private final PackageManagerTracedLock mInstallLock;
     private final Context mContext;
     private final Installer mInstaller;
+    private StorageManagerInternal mSmInternal;
 
     UserDataPreparer(Installer installer, PackageManagerTracedLock installLock, Context context) {
         mInstallLock = installLock;
@@ -91,13 +94,12 @@ class UserDataPreparer {
             boolean allowRecover) {
         final int userId = userInfo.id;
         final int userSerial = userInfo.serialNumber;
-        final StorageManager storage = mContext.getSystemService(StorageManager.class);
         final boolean isNewUser = userInfo.lastLoggedInTime == 0;
         Slogf.d(TAG, "Preparing user data; volumeUuid=%s, userId=%d, flags=0x%x, isNewUser=%s",
                 volumeUuid, userId, flags, isNewUser);
         try {
             // Prepare CE and/or DE storage.
-            storage.prepareUserStorage(volumeUuid, userId, flags);
+            getStorageManagerInternal().prepareUserStorage(volumeUuid, userId, flags);
 
             // Ensure that the data directories of a removed user with the same ID are not being
             // reused.  New users must get fresh data directories, to avoid leaking data.
@@ -181,7 +183,6 @@ class UserDataPreparer {
     }
 
     void destroyUserDataLI(String volumeUuid, int userId, int flags) {
-        final StorageManager storage = mContext.getSystemService(StorageManager.class);
         // Allow user data destruction to run while the user is locked.
         final boolean wasCredentialProtectionWhileLockedEnabled =
                 StrictMode.getAndDisableCredentialProtectedWhileLocked();
@@ -204,10 +205,8 @@ class UserDataPreparer {
                 }
             }
 
-            if (storage != null) {
-                // All the user's data directories should be empty now, so finish the job.
-                storage.destroyUserStorage(volumeUuid, userId, flags);
-            }
+            // All the user's data directories should be empty now, so finish the job.
+            getStorageManagerInternal().destroyUserStorage(volumeUuid, userId, flags);
         } catch (Exception e) {
             logCriticalInfo(Log.WARN,
                     "Failed to destroy user " + userId + " on volume " + volumeUuid + ": " + e);
@@ -384,4 +383,11 @@ class UserDataPreparer {
         }
     }
 
+    /** Returns the internal storage manager interface. */
+    private StorageManagerInternal getStorageManagerInternal() {
+        if (mSmInternal == null) {
+            mSmInternal = LocalServices.getService(StorageManagerInternal.class);
+        }
+        return mSmInternal;
+    }
 }

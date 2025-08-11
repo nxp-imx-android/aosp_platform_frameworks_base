@@ -136,10 +136,6 @@ interface IStorageManager {
     @EnforcePermission("STORAGE_INTERNAL")
     void lockCeStorage(int userId) = 64;
     boolean isCeStorageUnlocked(int userId) = 65;
-    @EnforcePermission("STORAGE_INTERNAL")
-    void prepareUserStorage(in String volumeUuid, int userId, int flags) = 66;
-    @EnforcePermission("STORAGE_INTERNAL")
-    void destroyUserStorage(in String volumeUuid, int userId, int flags) = 67;
     @EnforcePermission("MOUNT_FORMAT_FILESYSTEMS")
     void fstrim(int flags, IVoldTaskListener listener) = 72;
     AppFuseMount mountProxyFileDescriptorBridge() = 73;

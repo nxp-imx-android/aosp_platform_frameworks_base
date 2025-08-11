@@ -115,6 +115,7 @@ import android.os.storage.IStorageManager;
 import android.os.storage.IStorageShutdownObserver;
 import android.os.storage.OnObbStateChangeListener;
 import android.os.storage.StorageManager;
+import android.os.storage.StorageManager.StorageFlags;
 import android.os.storage.StorageVolume;
 import android.os.storage.VolumeInfo;
 import android.os.storage.VolumeRecord;
@@ -3387,19 +3388,6 @@ class StorageManagerService extends IStorageManager.Stub
         }
     }
 
-    @android.annotation.EnforcePermission(android.Manifest.permission.STORAGE_INTERNAL)
-    @Override
-    public void prepareUserStorage(String volumeUuid, int userId, int flags) {
-
-        super.prepareUserStorage_enforcePermission();
-
-        try {
-            prepareUserStorageInternal(volumeUuid, userId, flags);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void prepareUserStorageInternal(String volumeUuid, int userId, int flags)
             throws Exception {
         try {
@@ -3429,19 +3417,6 @@ class StorageManagerService extends IStorageManager.Stub
                 return;
             }
             throw e;
-        }
-    }
-
-    @android.annotation.EnforcePermission(android.Manifest.permission.STORAGE_INTERNAL)
-    @Override
-    public void destroyUserStorage(String volumeUuid, int userId, int flags) {
-
-        super.destroyUserStorage_enforcePermission();
-
-        try {
-            mVold.destroyUserStorage(volumeUuid, userId, flags);
-        } catch (Exception e) {
-            Slog.wtf(TAG, e);
         }
     }
 
@@ -5079,6 +5054,26 @@ class StorageManagerService extends IStorageManager.Stub
                 synchronized (mLock) {
                     mCeUnlockedUsers.remove(userId);
                 }
+            } catch (Exception e) {
+                Slog.wtf(TAG, e);
+            }
+        }
+
+        @Override
+        public void prepareUserStorage(
+                @Nullable String volumeUuid, @UserIdInt int userId, @StorageFlags int flags) {
+            try {
+                prepareUserStorageInternal(volumeUuid, userId, flags);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void destroyUserStorage(
+                @Nullable String volumeUuid, @UserIdInt int userId, @StorageFlags int flags) {
+            try {
+                mVold.destroyUserStorage(volumeUuid, userId, flags);
             } catch (Exception e) {
                 Slog.wtf(TAG, e);
             }
