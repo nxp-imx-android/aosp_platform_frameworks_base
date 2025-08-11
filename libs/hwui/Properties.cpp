@@ -50,7 +50,6 @@ constexpr bool skip_eglmanager_telemetry() {
 constexpr bool resample_gainmap_regions() {
     return false;
 }
-}
 }  // namespace hwui_flags
 #endif // __linux__
 
