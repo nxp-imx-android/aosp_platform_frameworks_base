@@ -27,7 +27,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -45,6 +44,7 @@ import com.android.systemui.util.WallpaperController
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
@@ -56,7 +56,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.floatThat
 import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -87,7 +86,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var wallpaperController: WallpaperController
     @Mock private lateinit var wallpaperInteractor: WallpaperInteractor
     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
-    @Mock private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
+    private lateinit var windowRootViewBlurInteractor : WindowRootViewBlurInteractor
     @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
@@ -109,6 +108,10 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
     @Before
     fun setup() {
+        // Constructs kosmos.windowRootViewBlurInteractor after test starts to avoid the error that
+        // the locked flag is read outside of the test code.
+        windowRootViewBlurInteractor = Mockito.spy(kosmos.windowRootViewBlurInteractor)
+
         `when`(root.viewRootImpl).thenReturn(viewRootImpl)
         `when`(root.windowToken).thenReturn(windowToken)
         `when`(root.isAttachedToWindow).thenReturn(true)
