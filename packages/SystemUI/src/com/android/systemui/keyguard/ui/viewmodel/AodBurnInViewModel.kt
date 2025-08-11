@@ -26,12 +26,12 @@ import com.android.systemui.keyguard.domain.interactor.BurnInInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BurnInModel
+import com.android.systemui.keyguard.shared.model.BurnInModel.Companion.MAX_LARGE_CLOCK_SCALE
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.StateToValue
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shared.Flags
 import javax.inject.Inject
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
@@ -70,7 +70,6 @@ constructor(
 ) {
     private val TAG = "AodBurnInViewModel"
     private val burnInParams = MutableStateFlow(BurnInParameters())
-    private val maxLargeClockScale = if (Flags.clockReactiveSmartspaceLayout()) 0.9f else 1f
 
     fun updateBurnInParams(params: BurnInParameters) {
         burnInParams.value =
@@ -196,7 +195,7 @@ constructor(
             BurnInModel(
                 translationX = MathUtils.lerp(0, burnIn.translationX, interpolated).toInt(),
                 translationY = translationY,
-                scale = MathUtils.lerp(burnIn.scale, maxLargeClockScale, 1f - interpolated),
+                scale = MathUtils.lerp(burnIn.scale, MAX_LARGE_CLOCK_SCALE, 1f - interpolated),
                 scaleClockOnly = useScaleOnly,
             )
         }

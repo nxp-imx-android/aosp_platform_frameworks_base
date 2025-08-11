@@ -139,10 +139,19 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
     }
 
     @Test
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun defaultBurnInScaleEqualsOne() =
         testScope.runTest {
             val burnInScale by collectLastValue(underTest.scale)
             assertThat(burnInScale!!.scale).isEqualTo(1f)
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun defaultBurnInScaleEqualsMaxLargeClockScale() =
+        testScope.runTest {
+            val burnInScale by collectLastValue(underTest.scale)
+            assertThat(burnInScale!!.scale).isEqualTo(0.9f)
         }
 
     @Test
