@@ -17,12 +17,13 @@
 package com.android.systemui.bluetooth.qsdialog
 
 import android.bluetooth.BluetoothAdapter
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags
@@ -34,6 +35,7 @@ import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewMo
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.testKosmos
 import com.android.systemui.util.FakeSharedPreferences
@@ -63,12 +65,18 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @EnableFlags(Flags.FLAG_BLUETOOTH_QS_TILE_DIALOG_AUTO_ON_TOGGLE)
-class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
+class BluetoothDetailsContentViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @get:Rule val mockitoRule: MockitoRule = MockitoJUnit.rule()
     private val kosmos = testKosmos()
@@ -176,6 +184,7 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(QsDetailedView.FLAG_NAME)
     fun testShowDialog_noAnimation() {
         testScope.runTest {
             bluetoothDetailsContentViewModel.showDialog(null)
@@ -186,6 +195,7 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(QsDetailedView.FLAG_NAME)
     fun testShowDialog_animated() {
         testScope.runTest {
             bluetoothDetailsContentViewModel.showDialog(expandable)
@@ -209,6 +219,7 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(QsDetailedView.FLAG_NAME)
     fun testShowDialog_animated_callInBackgroundThread() {
         testScope.runTest {
             backgroundExecutor.execute {
@@ -236,6 +247,7 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(QsDetailedView.FLAG_NAME)
     fun testShowDialog_fetchDeviceItem() {
         testScope.runTest {
             bluetoothDetailsContentViewModel.showDialog(null)
@@ -314,6 +326,7 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(QsDetailedView.FLAG_NAME)
     fun testUpdateTitleAndSubtitle() {
         testScope.runTest {
             assertThat(bluetoothDetailsContentViewModel.title).isEqualTo("")
@@ -325,5 +338,12 @@ class BluetoothDetailsContentViewModelTest : SysuiTestCase() {
             assertThat(bluetoothDetailsContentViewModel.title).isEqualTo("Bluetooth")
             assertThat(bluetoothDetailsContentViewModel.subTitle).isEqualTo("Bluetooth is off")
         }
+    }
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun flagsParameterization() =
+            FlagsParameterization.allCombinationsOf(QsDetailedView.FLAG_NAME)
     }
 }
