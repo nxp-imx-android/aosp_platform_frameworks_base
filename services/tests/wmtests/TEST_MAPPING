@@ -1,703 +1,712 @@
 {
   "wm": [
+
     {
       "name": "WmTests-CatchAll"
     },
     {
       "name": "WmTests-policy-DeferredKeyActionExecutorTests",
-      "file_patterns": ["^.*DeferredKeyActionExecutorTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DeferredKeyActionExecutorTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-KeyGestureEventTests",
-      "file_patterns": ["^.*KeyGestureEventTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(KeyGestureEventTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-KeyGestureEventTvTests",
-      "file_patterns": ["^.*KeyGestureEventTvTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(KeyGestureEventTvTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-PhoneWindowManagerTests",
-      "file_patterns": ["^.*PhoneWindowManagerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(PhoneWindowManagerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-PowerKeyGestureTests",
-      "file_patterns": ["^.*PowerKeyGestureTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(PowerKeyGestureTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-SingleKeyGestureTests",
-      "file_patterns": ["^.*SingleKeyGestureTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SingleKeyGestureTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-StemKeyGestureTests",
-      "file_patterns": ["^.*StemKeyGestureTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(StemKeyGestureTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-policy-WindowWakeUpPolicyTests",
-      "file_patterns": ["^.*WindowWakeUpPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowWakeUpPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityInterceptorCallbackRegistryTest",
-      "file_patterns": ["^.*ActivityInterceptorCallbackRegistryTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityInterceptorCallbackRegistryTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityInterceptorCallbackTest",
-      "file_patterns": ["^.*ActivityInterceptorCallbackTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityInterceptorCallbackTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityLeakTests",
-      "file_patterns": ["^.*ActivityLeakTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityLeakTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityMetricsLaunchObserverTests",
-      "file_patterns": ["^.*ActivityMetricsLaunchObserverTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityMetricsLaunchObserverTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityOptionsTest",
-      "file_patterns": ["^.*ActivityOptionsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityOptionsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityRecordInputSinkTests",
-      "file_patterns": ["^.*ActivityRecordInputSinkTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityRecordInputSinkTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityRecordTests",
-      "file_patterns": ["^.*ActivityRecordTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityRecordTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityRefresherTests",
-      "file_patterns": ["^.*ActivityRefresherTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityRefresherTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivitySnapshotControllerTests",
-      "file_patterns": ["^.*ActivitySnapshotControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivitySnapshotControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityStartControllerTests",
-      "file_patterns": ["^.*ActivityStartControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityStartControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityStartInterceptorTest",
-      "file_patterns": ["^.*ActivityStartInterceptorTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityStartInterceptorTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityStarterTests",
-      "file_patterns": ["^.*ActivityStarterTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityStarterTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityTaskManagerServiceTests",
-      "file_patterns": ["^.*ActivityTaskManagerServiceTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityTaskManagerServiceTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ActivityTaskSupervisorTests",
-      "file_patterns": ["^.*ActivityTaskSupervisorTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ActivityTaskSupervisorTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatAspectRatioOverridesTest",
-      "file_patterns": ["^.*AppCompatAspectRatioOverridesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatAspectRatioOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraDisplayRotationPolicyTests",
-      "file_patterns": ["^.*AppCompatCameraDisplayRotationPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraDisplayRotationPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraOverridesTest",
-      "file_patterns": ["^.*AppCompatCameraOverridesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraPolicyTest",
-      "file_patterns": ["^.*AppCompatCameraPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraRotationStateTests",
-      "file_patterns": ["^.*AppCompatCameraRotationStateTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraRotationStateTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraSimReqOrientationPolicyTests",
-      "file_patterns": ["^.*AppCompatCameraSimReqOrientationPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraSimReqOrientationPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraStateSourceTests",
-      "file_patterns": ["^.*AppCompatCameraStateSourceTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraStateSourceTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraStateStrategyForPackageTests",
-      "file_patterns": ["^.*AppCompatCameraStateStrategyForPackageTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraStateStrategyForPackageTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatCameraStateStrategyForTaskTests",
-      "file_patterns": ["^.*AppCompatCameraStateStrategyForTaskTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatCameraStateStrategyForTaskTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatConfigurationPersisterTest",
-      "file_patterns": ["^.*AppCompatConfigurationPersisterTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatConfigurationPersisterTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatConfigurationTest",
-      "file_patterns": ["^.*AppCompatConfigurationTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatConfigurationTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatDisplayCompatTests",
-      "file_patterns": ["^.*AppCompatDisplayCompatTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatDisplayCompatTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
+    },
+    {
+      "name": "WmTests-wm-AppCompatDisplayOverridesTest",
+      "file_patterns": ["^.*(AppCompatDisplayOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatFocusOverridesTest",
-      "file_patterns": ["^.*AppCompatFocusOverridesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatFocusOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatLetterboxOverrideTest",
-      "file_patterns": ["^.*AppCompatLetterboxOverrideTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatLetterboxOverrideTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatLetterboxPolicyStateTest",
-      "file_patterns": ["^.*AppCompatLetterboxPolicyStateTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatLetterboxPolicyStateTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatLetterboxPolicyTest",
-      "file_patterns": ["^.*AppCompatLetterboxPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatLetterboxPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatLetterboxUtilsTest",
-      "file_patterns": ["^.*AppCompatLetterboxUtilsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatLetterboxUtilsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatOrientationOverridesTest",
-      "file_patterns": ["^.*AppCompatOrientationOverridesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatOrientationOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatOrientationPolicyTest",
-      "file_patterns": ["^.*AppCompatOrientationPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatOrientationPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatReachabilityOverridesTest",
-      "file_patterns": ["^.*AppCompatReachabilityOverridesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatReachabilityOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatReachabilityPolicyTest",
-      "file_patterns": ["^.*AppCompatReachabilityPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatReachabilityPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatResizeOverridesTest",
-      "file_patterns": ["^.*AppCompatResizeOverridesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatResizeOverridesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatSafeRegionPolicyTests",
-      "file_patterns": ["^.*AppCompatSafeRegionPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatSafeRegionPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatSizeCompatTests",
-      "file_patterns": ["^.*AppCompatSizeCompatTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatSizeCompatTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AppCompatUtilsTest",
-      "file_patterns": ["^.*AppCompatUtilsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AppCompatUtilsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-AssistDataRequesterTest",
-      "file_patterns": ["^.*AssistDataRequesterTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AssistDataRequesterTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-BackNavigationControllerTests",
-      "file_patterns": ["^.*BackNavigationControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(BackNavigationControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-BackgroundActivityStartControllerExemptionTests",
-      "file_patterns": ["^.*BackgroundActivityStartControllerExemptionTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(BackgroundActivityStartControllerExemptionTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-BackgroundActivityStartControllerLogTests",
-      "file_patterns": ["^.*BackgroundActivityStartControllerLogTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(BackgroundActivityStartControllerLogTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-BackgroundActivityStartControllerTests",
-      "file_patterns": ["^.*BackgroundActivityStartControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(BackgroundActivityStartControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-BackgroundLaunchProcessControllerTests",
-      "file_patterns": ["^.*BackgroundLaunchProcessControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(BackgroundLaunchProcessControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-CameraIdAppPairsSetTests",
-      "file_patterns": ["^.*CameraIdAppPairsSetTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(CameraIdAppPairsSetTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-CameraIdPackageNameBiMappingTests",
-      "file_patterns": ["^.*CameraIdPackageNameBiMappingTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(CameraIdPackageNameBiMappingTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-CameraStateMonitorTests",
-      "file_patterns": ["^.*CameraStateMonitorTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(CameraStateMonitorTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ClientLifecycleManagerTests",
-      "file_patterns": ["^.*ClientLifecycleManagerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ClientLifecycleManagerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-CompatModePackagesTests",
-      "file_patterns": ["^.*CompatModePackagesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(CompatModePackagesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-CompatScaleProviderTest",
-      "file_patterns": ["^.*CompatScaleProviderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(CompatScaleProviderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ConfigurationContainerTests",
-      "file_patterns": ["^.*ConfigurationContainerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ConfigurationContainerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ContentRecorderTests",
-      "file_patterns": ["^.*ContentRecorderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ContentRecorderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ContentRecordingControllerTests",
-      "file_patterns": ["^.*ContentRecordingControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ContentRecordingControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DeferredDisplayUpdaterDiffTest",
-      "file_patterns": ["^.*DeferredDisplayUpdaterDiffTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DeferredDisplayUpdaterDiffTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DesktopAppCompatAspectRatioPolicyTests",
-      "file_patterns": ["^.*DesktopAppCompatAspectRatioPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DesktopAppCompatAspectRatioPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DesktopModeHelperTest",
-      "file_patterns": ["^.*DesktopModeHelperTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DesktopModeHelperTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DesktopModeLaunchParamsModifierTests",
-      "file_patterns": ["^.*DesktopModeLaunchParamsModifierTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DesktopModeLaunchParamsModifierTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DeviceStateAutoRotateSettingControllerTests",
-      "file_patterns": ["^.*DeviceStateAutoRotateSettingControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DeviceStateAutoRotateSettingControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DeviceStateAutoRotateSettingIssueLoggerTests",
-      "file_patterns": ["^.*DeviceStateAutoRotateSettingIssueLoggerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DeviceStateAutoRotateSettingIssueLoggerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DeviceStateControllerTests",
-      "file_patterns": ["^.*DeviceStateControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DeviceStateControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DimmerTests",
-      "file_patterns": ["^.*DimmerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DimmerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayAreaGroupTest",
-      "file_patterns": ["^.*DisplayAreaGroupTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayAreaGroupTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayAreaOrganizerTest",
-      "file_patterns": ["^.*DisplayAreaOrganizerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayAreaOrganizerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayAreaPolicyBuilderTest",
-      "file_patterns": ["^.*DisplayAreaPolicyBuilderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayAreaPolicyBuilderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayAreaPolicyTests",
-      "file_patterns": ["^.*DisplayAreaPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayAreaPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayAreaProviderTest",
-      "file_patterns": ["^.*DisplayAreaProviderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayAreaProviderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayAreaTest",
-      "file_patterns": ["^.*DisplayAreaTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayAreaTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayContentDeferredUpdateTests",
-      "file_patterns": ["^.*DisplayContentDeferredUpdateTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayContentDeferredUpdateTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayContentTests",
-      "file_patterns": ["^.*DisplayContentTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayContentTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayPolicyInsetsTests",
-      "file_patterns": ["^.*DisplayPolicyInsetsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayPolicyInsetsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayPolicyLayoutTests",
-      "file_patterns": ["^.*DisplayPolicyLayoutTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayPolicyLayoutTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayPolicyTests",
-      "file_patterns": ["^.*DisplayPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayRotationCoordinatorTests",
-      "file_patterns": ["^.*DisplayRotationCoordinatorTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayRotationCoordinatorTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayRotationImmersiveAppCompatPolicyTests",
-      "file_patterns": ["^.*DisplayRotationImmersiveAppCompatPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayRotationImmersiveAppCompatPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayRotationReversionControllerTests",
-      "file_patterns": ["^.*DisplayRotationReversionControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayRotationReversionControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayRotationTests",
-      "file_patterns": ["^.*DisplayRotationTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayRotationTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayWindowPolicyControllerTests",
-      "file_patterns": ["^.*DisplayWindowPolicyControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayWindowPolicyControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayWindowSettingsProviderTests",
-      "file_patterns": ["^.*DisplayWindowSettingsProviderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayWindowSettingsProviderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DisplayWindowSettingsTests",
-      "file_patterns": ["^.*DisplayWindowSettingsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DisplayWindowSettingsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
+    },
+    {
+      "name": "WmTests-wm-DisplayWindowSettingsXmlHelperTests",
+      "file_patterns": ["^.*(DisplayWindowSettingsXmlHelperTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DragDropControllerTests",
-      "file_patterns": ["^.*DragDropControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DragDropControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-DualDisplayAreaGroupPolicyTest",
-      "file_patterns": ["^.*DualDisplayAreaGroupPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(DualDisplayAreaGroupPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-EmulatorDisplayOverlayTests",
-      "file_patterns": ["^.*EmulatorDisplayOverlayTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(EmulatorDisplayOverlayTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-FrameRateSelectionPriorityTests",
-      "file_patterns": ["^.*FrameRateSelectionPriorityTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(FrameRateSelectionPriorityTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-HighRefreshRateDenylistTest",
-      "file_patterns": ["^.*HighRefreshRateDenylistTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(HighRefreshRateDenylistTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ImeInsetsSourceProviderTest",
-      "file_patterns": ["^.*ImeInsetsSourceProviderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ImeInsetsSourceProviderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-InputMethodDialogWindowContextTest",
-      "file_patterns": ["^.*InputMethodDialogWindowContextTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(InputMethodDialogWindowContextTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-InsetsPolicyTest",
-      "file_patterns": ["^.*InsetsPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(InsetsPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-InsetsSourceProviderTest",
-      "file_patterns": ["^.*InsetsSourceProviderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(InsetsSourceProviderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-InsetsStateControllerTest",
-      "file_patterns": ["^.*InsetsStateControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(InsetsStateControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-KeyguardDisableHandlerTest",
-      "file_patterns": ["^.*KeyguardDisableHandlerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(KeyguardDisableHandlerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-LaunchParamsControllerTests",
-      "file_patterns": ["^.*LaunchParamsControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(LaunchParamsControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-LaunchParamsPersisterTests",
-      "file_patterns": ["^.*LaunchParamsPersisterTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(LaunchParamsPersisterTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-LetterboxAttachInputTest",
-      "file_patterns": ["^.*LetterboxAttachInputTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(LetterboxAttachInputTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-LetterboxTest",
-      "file_patterns": ["^.*LetterboxTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(LetterboxTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-LockTaskControllerTest",
-      "file_patterns": ["^.*LockTaskControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(LockTaskControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-PendingRemoteAnimationRegistryTest",
-      "file_patterns": ["^.*PendingRemoteAnimationRegistryTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(PendingRemoteAnimationRegistryTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-PersisterQueueTests",
-      "file_patterns": ["^.*PersisterQueueTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(PersisterQueueTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-PossibleDisplayInfoMapperTests",
-      "file_patterns": ["^.*PossibleDisplayInfoMapperTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(PossibleDisplayInfoMapperTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-PresentationControllerTests",
-      "file_patterns": ["^.*PresentationControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(PresentationControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ProtoLogIntegrationTest",
-      "file_patterns": ["^.*ProtoLogIntegrationTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ProtoLogIntegrationTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-RecentTasksTest",
-      "file_patterns": ["^.*RecentTasksTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RecentTasksTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-RecentsAnimationTest",
-      "file_patterns": ["^.*RecentsAnimationTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RecentsAnimationTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-RefreshRatePolicyTest",
-      "file_patterns": ["^.*RefreshRatePolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RefreshRatePolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-RootTaskTests",
-      "file_patterns": ["^.*RootTaskTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RootTaskTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-RootWindowContainerTests",
-      "file_patterns": ["^.*RootWindowContainerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RootWindowContainerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-RunningTasksTest",
-      "file_patterns": ["^.*RunningTasksTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RunningTasksTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SafeActivityOptionsTest",
-      "file_patterns": ["^.*SafeActivityOptionsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SafeActivityOptionsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ScreenshotTests",
-      "file_patterns": ["^.*ScreenshotTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ScreenshotTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SensitiveContentPackagesTest",
-      "file_patterns": ["^.*SensitiveContentPackagesTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SensitiveContentPackagesTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SizeCompatTests",
-      "file_patterns": ["^.*SizeCompatTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SizeCompatTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SplashScreenExceptionListTest",
-      "file_patterns": ["^.*SplashScreenExceptionListTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SplashScreenExceptionListTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceAnimationRunnerTest",
-      "file_patterns": ["^.*SurfaceAnimationRunnerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceAnimationRunnerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceAnimatorTest",
-      "file_patterns": ["^.*SurfaceAnimatorTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceAnimatorTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceControlTests",
-      "file_patterns": ["^.*SurfaceControlTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceControlTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceControlViewHostTests",
-      "file_patterns": ["^.*SurfaceControlViewHostTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceControlViewHostTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceSyncGroupTest",
-      "file_patterns": ["^.*SurfaceSyncGroupTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceSyncGroupTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceSyncGroupTests",
-      "file_patterns": ["^.*SurfaceSyncGroupTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceSyncGroupTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SurfaceViewSyncContinuousTest",
-      "file_patterns": ["^.*SurfaceViewSyncContinuousTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SurfaceViewSyncContinuousTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SyncEngineTests",
-      "file_patterns": ["^.*SyncEngineTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SyncEngineTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SynchedDeviceConfigTests",
-      "file_patterns": ["^.*SynchedDeviceConfigTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SynchedDeviceConfigTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-SystemServicesTestRuleTest",
-      "file_patterns": ["^.*SystemServicesTestRuleTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(SystemServicesTestRuleTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskDisplayAreaTests",
-      "file_patterns": ["^.*TaskDisplayAreaTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskDisplayAreaTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskFragmentOrganizerControllerTest",
-      "file_patterns": ["^.*TaskFragmentOrganizerControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskFragmentOrganizerControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskFragmentTest",
-      "file_patterns": ["^.*TaskFragmentTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskFragmentTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskLaunchParamsModifierTests",
-      "file_patterns": ["^.*TaskLaunchParamsModifierTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskLaunchParamsModifierTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskPersisterTest",
-      "file_patterns": ["^.*TaskPersisterTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskPersisterTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskSnapshotCacheTest",
-      "file_patterns": ["^.*TaskSnapshotCacheTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskSnapshotCacheTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskSnapshotControllerTest",
-      "file_patterns": ["^.*TaskSnapshotControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskSnapshotControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskSnapshotLowResDisabledTest",
-      "file_patterns": ["^.*TaskSnapshotLowResDisabledTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskSnapshotLowResDisabledTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskSnapshotPersisterLoaderTest",
-      "file_patterns": ["^.*TaskSnapshotPersisterLoaderTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskSnapshotPersisterLoaderTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskStackChangedListenerTest",
-      "file_patterns": ["^.*TaskStackChangedListenerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskStackChangedListenerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TaskTests",
-      "file_patterns": ["^.*TaskTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TaskTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TransitionControllerTest",
-      "file_patterns": ["^.*TransitionControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TransitionControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TransitionTests",
-      "file_patterns": ["^.*TransitionTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TransitionTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TransparentPolicyTest",
-      "file_patterns": ["^.*TransparentPolicyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TransparentPolicyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-TrustedOverlayTests",
-      "file_patterns": ["^.*TrustedOverlayTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(TrustedOverlayTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-UnknownAppVisibilityControllerTest",
-      "file_patterns": ["^.*UnknownAppVisibilityControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(UnknownAppVisibilityControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-VisibleActivityProcessTrackerTests",
-      "file_patterns": ["^.*VisibleActivityProcessTrackerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(VisibleActivityProcessTrackerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WallpaperControllerTests",
-      "file_patterns": ["^.*WallpaperControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WallpaperControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowAnimationSpecTest",
-      "file_patterns": ["^.*WindowAnimationSpecTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowAnimationSpecTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowConfigurationTests",
-      "file_patterns": ["^.*WindowConfigurationTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowConfigurationTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowContainerTests",
-      "file_patterns": ["^.*WindowContainerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowContainerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowContainerTransactionTests",
-      "file_patterns": ["^.*WindowContainerTransactionTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowContainerTransactionTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowContainerTraversalTests",
-      "file_patterns": ["^.*WindowContainerTraversalTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowContainerTraversalTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowContextListenerControllerTests",
-      "file_patterns": ["^.*WindowContextListenerControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowContextListenerControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowManagerConstantsTest",
-      "file_patterns": ["^.*WindowManagerConstantsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowManagerConstantsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowManagerServiceTests",
-      "file_patterns": ["^.*WindowManagerServiceTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowManagerServiceTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowManagerSettingsTests",
-      "file_patterns": ["^.*WindowManagerSettingsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowManagerSettingsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowOrganizerTests",
-      "file_patterns": ["^.*WindowOrganizerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowOrganizerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowProcessControllerMapTests",
-      "file_patterns": ["^.*WindowProcessControllerMapTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowProcessControllerMapTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowProcessControllerTests",
-      "file_patterns": ["^.*WindowProcessControllerTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowProcessControllerTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowStateTests",
-      "file_patterns": ["^.*WindowStateTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowStateTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowTokenTests",
-      "file_patterns": ["^.*WindowTokenTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowTokenTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowTracingLegacyTest",
-      "file_patterns": ["^.*WindowTracingLegacyTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowTracingLegacyTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-WindowTracingPerfettoTest",
-      "file_patterns": ["^.*WindowTracingPerfettoTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowTracingPerfettoTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-ZOrderingTests",
-      "file_patterns": ["^.*ZOrderingTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(ZOrderingTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-testing-AssertTest",
-      "file_patterns": ["^.*AssertTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(AssertTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-CoordinateTransformsTest",
-      "file_patterns": ["^.*CoordinateTransformsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(CoordinateTransformsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-InsetUtilsTest",
-      "file_patterns": ["^.*InsetUtilsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(InsetUtilsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-OptPropFactoryTest",
-      "file_patterns": ["^.*OptPropFactoryTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(OptPropFactoryTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-RotationAnimationUtilsTest",
-      "file_patterns": ["^.*RotationAnimationUtilsTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RotationAnimationUtilsTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-RotationCacheTest",
-      "file_patterns": ["^.*RotationCacheTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(RotationCacheTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-StateMachineTest",
-      "file_patterns": ["^.*StateMachineTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(StateMachineTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-WindowStyleCacheTest",
-      "file_patterns": ["^.*WindowStyleCacheTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WindowStyleCacheTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     },
     {
       "name": "WmTests-wm-utils-WmDisplayCutoutTest",
-      "file_patterns": ["^.*WmDisplayCutoutTest(s)*\\.java$|^(?!.*(?:Test|Tests)\\.java$).*"]
+      "file_patterns": ["^.*(WmDisplayCutoutTest(s)*\\.java$|(?<!Tests\\.java)(?<!Test\\.java)$)"]
     }
   ]
 }
