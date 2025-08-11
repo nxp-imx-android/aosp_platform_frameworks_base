@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"इस ऐप्लिकेशन को वापस लाने के लिए, आपको <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इंस्टॉल करना होगा"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"इस ऐप्लिकेशन को वापस लाते समय कोई समस्या हुई"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, इस ऐप्लिकेशन का एक हिस्सा है: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे अपडेट इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;यह ऐप्लिकेशन इंस्टॉल नहीं किया गया. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. पक्का करें कि आपका डिवाइस इंटरनेट से कनेक्ट हो. इसके बाद, ऐप्लिकेशन को दोबारा इंस्टॉल करने की कोशिश करें. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. पक्का करें कि आपका डिवाइस इंटरनेट से कनेक्ट हो. इसके बाद, ऐप्लिकेशन को अपडेट करने की फिर से कोशिश करें. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को इंस्टॉल नहीं किया गया.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को अपडेट नहीं किया गया.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है, क्योंकि डेवलपर की पुष्टि करने में कोई समस्या हुई. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया, क्योंकि इसके डेवलपर की पुष्टि करने में कोई समस्या हुई. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे अपडेट इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"अगर पुष्टि किए बिना ऐप्लिकेशन को इंस्टॉल किया जाता है, तो ध्यान रखें कि जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन से आपके डिवाइस और डेटा की सुरक्षा को खतरा हो सकता है."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"अगर पुष्टि किए बिना ऐप्लिकेशन को अपडेट किया जाता है, तो ध्यान रखें कि जिन डेवलपर की पुष्टि नहीं हुई है उनके अपडेट से आपके डिवाइस और डेटा की सुरक्षा को खतरा हो सकता है."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"ऐप्लिकेशन डेवलपर की पुष्टि नहीं हुई है"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"वापस लाएं"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"अपडेट अनइंस्टॉल करें"</string>
     <string name="button_settings" msgid="3837571366246132287">"सेटिंग"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> का क्लोन"</string>
 </resources>

@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restablecer esta app, deberás instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hubo un problema al intentar restablecer esta app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> es parte de la siguiente app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Se bloqueó esta app. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;No se actualizó esta app. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;No se instaló esta app. Las apps de desarrolladores no verificados podrían no ser seguras.&lt;/p&gt; &lt;p&gt;Se requiere una conexión a Internet para verificar al desarrollador de la app. Asegúrate de que el dispositivo esté conectado a Internet y vuelve a intentar instalar la app. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;No se actualizó esta app. Las actualizaciones de desarrolladores no verificados podrían no ser seguras.&lt;/p&gt; &lt;p&gt;Se requiere una conexión a Internet para verificar al desarrollador de la app. Asegúrate de que el dispositivo esté conectado a Internet y vuelve a intentar actualizar la app. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Se produjo un error cuando se verificaba el desarrollador de esta app. Las apps de desarrolladores no verificados pueden ser peligrosas, por lo que no se instaló la app.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Se produjo un error cuando se verificaba el desarrollador de esta app. Las actualizaciones de desarrolladores no verificados pueden ser peligrosas, por lo que no se actualizó la app.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Se bloqueó esta app porque hubo un problema cuando se verificaba su desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;No se actualizó esta app porque hubo un problema cuando se verificaba el desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ten en cuenta que, si instalas una app sin verificar su desarrollador, el dispositivo y tus datos podrían estar en riesgo."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si actualizas sin verificar, ten en cuenta que las actualizaciones de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desarrollador de la app sin verificar"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Restablecer"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalar las actualizaciones"</string>
     <string name="button_settings" msgid="3837571366246132287">"Configuración"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Copia de <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

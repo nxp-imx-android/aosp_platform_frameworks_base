@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"За да ја вратите апликацијава, треба да инсталирате <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Се јави проблем при обидот за враќање на апликацијава"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> е дел од следнава апликација: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Апликацијава е блокирана. За да се заштитат вашиот уред и податоци, може да се инсталираат само апликации од потврдени програмери.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Апликацијава не е ажурирана. За да се заштитат вашиот уред и податоци, може да се инсталираат само ажурирања од потврдени програмери.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Апликацијава не е инсталирана. Апликациите од непотврдени програмери може да се небезбедни.&lt;/p&gt; &lt;p&gt;Потребна е интернет-врска за да се потврди програмерот на апликацијата. Проверете дали вашиот уред е поврзан на интернет, па обидете се повторно да ја инсталирате апликацијата. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Апликацијава не е ажурирана. Ажурирањата од непотврдени програмери може да се небезбедни.&lt;/p&gt; &lt;p&gt;Потребна е интернет-врска за да се потврди програмерот на апликацијата. Проверете дали вашиот уред е поврзан на интернет, па обидете се повторно да ја ажурирате апликацијата. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Се јави проблем при потврдата на програмерот на апликацијава. Апликациите од непроверени програмери може да се небезбедни, па апликацијата не е инсталирана.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Се јави проблем при потврдата на програмерот на апликацијава. Ажурирањата од непотврдени програмери може да се небезбедни.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Апликацијава е блокирана бидејќи се јави проблем при потврдата на програмерот. За да се заштитат вашиот уред и податоци, може да се инсталираат само апликации од потврдени програмери.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Апликацијава не e ажурирана бидејќи се јави проблем при потврдата на програмерот. За да се заштитат вашиот уред и податоци, може да се инсталираат само ажурирања од потврдени програмери.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ако инсталирате без потврдување, имајте предвид дека апликациите од непотврдени програмери може да ги изложат вашиот уред и податоци на ризик."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ако ажурирате без да потврдите, имајте предвид дека ажурирањата од непотврдени програмери може да ги изложат вашиот уред и податоци на ризик."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Програмерот на апликацијата е непотврден"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Врати"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Деинсталирај ажурирања"</string>
     <string name="button_settings" msgid="3837571366246132287">"Поставки"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Клон на <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>
