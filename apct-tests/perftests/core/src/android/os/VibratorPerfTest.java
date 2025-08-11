@@ -90,6 +90,8 @@ public class VibratorPerfTest {
             // VibratorManagerService methods
             "vibrate",
             "cancelVibrate",
+            "startVibrationLocked",
+            "runVibrationOnVibrationThread",
     };
 
     private static final String LATENCY_METRIC_KEY_SUFFIX = "Latency";
