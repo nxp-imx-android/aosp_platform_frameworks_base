@@ -19,18 +19,16 @@ package com.android.systemui.screencapture.common.ui.compose
 import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 
 /** @see DrawableLoaderViewModel */
 @Composable
-fun loadDrawable(viewModel: DrawableLoaderViewModel, @DrawableRes resId: Int): Drawable? {
+fun loadDrawable(viewModel: DrawableLoaderViewModel, @DrawableRes resId: Int): State<Drawable?> {
     val context = LocalContext.current
-    val drawable by
-        produceState<Drawable?>(initialValue = null, keys = arrayOf(viewModel, context, resId)) {
-            value = viewModel.loadDrawable(context = context, resId = resId)
-        }
-    return drawable
+    return produceState<Drawable?>(initialValue = null, keys = arrayOf(viewModel, context, resId)) {
+        value = viewModel.loadDrawable(context = context, resId = resId)
+    }
 }
