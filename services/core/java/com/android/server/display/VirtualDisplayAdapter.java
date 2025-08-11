@@ -33,6 +33,8 @@ import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_SUPPO
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TOUCH_FEEDBACK_DISABLED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED;
 
+import static com.android.server.display.DisplayModeFactory.createMode;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Point;

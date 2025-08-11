@@ -427,6 +427,16 @@ flag {
 }
 
 flag {
+    name: "enable_synthetic_modes_v2"
+    namespace: "display_manager"
+    description: "Added synthetic mode flags, parentId. Construction moved to LocalDisplay "
+    bug: "428843411"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_single_app_event_for_mode_and_frame_rate_override"
     namespace: "display_manager"
     description: "Enable single app event for mode and frame rate override changed event."

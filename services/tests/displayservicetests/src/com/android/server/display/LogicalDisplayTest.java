@@ -158,7 +158,7 @@ public class LogicalDisplayTest {
     public void testNoLetterbox_noAnisotropyCorrectionForInternalDisplay() {
         mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true);
+                /*isSyncedResolutionSwitchEnabled=*/ true, true);
         mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
@@ -187,7 +187,7 @@ public class LogicalDisplayTest {
     public void testNoLetterbox_anisotropyCorrection() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true);
+                /*isSyncedResolutionSwitchEnabled=*/ true, true);
         mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
@@ -216,7 +216,7 @@ public class LogicalDisplayTest {
     public void testLetterbox_anisotropyCorrectionYDpi() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true);
+                /*isSyncedResolutionSwitchEnabled=*/ true, true);
         mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         DisplayInfo displayInfo = new DisplayInfo();
@@ -274,7 +274,7 @@ public class LogicalDisplayTest {
     public void testPillarbox_anisotropyCorrection() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true);
+                /*isSyncedResolutionSwitchEnabled=*/ true, true);
         mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         DisplayInfo displayInfo = new DisplayInfo();
@@ -303,7 +303,7 @@ public class LogicalDisplayTest {
     public void testNoPillarbox_anisotropyCorrectionYDpi() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true);
+                /*isSyncedResolutionSwitchEnabled=*/ true, true);
         mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
@@ -387,7 +387,7 @@ public class LogicalDisplayTest {
     @Test
     public void testSetDisplaySizeIsCalledDuringConfigureDisplayLocked() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true);
+                /*isSyncedResolutionSwitchEnabled=*/ true, true);
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
         mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false);
@@ -572,7 +572,7 @@ public class LogicalDisplayTest {
 
     @Test
     public void testGetsAppSupportedModesFromSyntheticModeManager() {
-        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice);
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false, false);
         Display.Mode[] appSupportedModes = new Display.Mode[] {new Display.Mode(OTHER_MODE_ID,
                 DISPLAY_WIDTH, DISPLAY_HEIGHT, /* refreshRate= */ 45)};
         when(mSyntheticModeManager.createAppSupportedModes(
@@ -582,6 +582,15 @@ public class LogicalDisplayTest {
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
         DisplayInfo info = mLogicalDisplay.getDisplayInfoLocked();
         assertArrayEquals(appSupportedModes, info.appsSupportedModes);
+    }
+
+    @Test
+    public void testGetsAppSupportedModesFromSupportedModes() {
+        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice);
+
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+        DisplayInfo info = mLogicalDisplay.getDisplayInfoLocked();
+        assertArrayEquals(mDisplayDeviceInfo.supportedModes, info.appsSupportedModes);
     }
 
     @Test
