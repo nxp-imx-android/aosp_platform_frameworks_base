@@ -67,6 +67,7 @@ import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
 import com.android.systemui.util.time.FakeSystemClock
+import java.util.function.Consumer
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -81,11 +82,9 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.argumentCaptor
-import java.util.function.Consumer
-import org.mockito.Mockito.`when` as whenever
-
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -112,14 +111,19 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
     private val notifPipeline: NotifPipeline = mock(NotifPipeline::class.java)
     private val logger = HeadsUpCoordinatorLogger(logcatLogBuffer(), verbose = true)
-    private val interruptLogger: VisualInterruptionDecisionLogger = mock(VisualInterruptionDecisionLogger::class.java)
+    private val interruptLogger: VisualInterruptionDecisionLogger =
+        mock(VisualInterruptionDecisionLogger::class.java)
     private val headsUpManager = kosmos.mockHeadsUpManager
     private val headsUpViewBinder: HeadsUpViewBinder = mock(HeadsUpViewBinder::class.java)
-    private val visualInterruptionDecisionProvider: VisualInterruptionDecisionProvider = mock(VisualInterruptionDecisionProvider::class.java)
-    private val remoteInputManager: NotificationRemoteInputManager = mock(NotificationRemoteInputManager::class.java)
-    private val endLifetimeExtension: OnEndLifetimeExtensionCallback = mock(OnEndLifetimeExtensionCallback::class.java)
+    private val visualInterruptionDecisionProvider: VisualInterruptionDecisionProvider =
+        mock(VisualInterruptionDecisionProvider::class.java)
+    private val remoteInputManager: NotificationRemoteInputManager =
+        mock(NotificationRemoteInputManager::class.java)
+    private val endLifetimeExtension: OnEndLifetimeExtensionCallback =
+        mock(OnEndLifetimeExtensionCallback::class.java)
     private val headerController: NodeController = mock(NodeController::class.java)
-    private val launchFullScreenIntentProvider: LaunchFullScreenIntentProvider = mock(LaunchFullScreenIntentProvider::class.java)
+    private val launchFullScreenIntentProvider: LaunchFullScreenIntentProvider =
+        mock(LaunchFullScreenIntentProvider::class.java)
     private val flags: NotifPipelineFlags = mock(NotifPipelineFlags::class.java)
 
     private lateinit var entry: NotificationEntry
@@ -196,46 +200,37 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         notifLifetimeExtender.setCallback(endLifetimeExtension)
         entry = NotificationEntryBuilder().build()
         // Same summary we can use for either set of children
-        groupSummary = kosmos.buildSummaryNotificationEntry {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_ALL)
-                .setWhen(500)
-        }
-        // One set of children with GROUP_ALERT_SUMMARY
-        groupPriority = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
-                .setWhen(400)
-            updateSbn {
-                setTag("priority")
+        groupSummary =
+            kosmos.buildSummaryNotificationEntry {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_ALL).setWhen(500)
             }
-        }
-        groupSibling1 = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
-                .setWhen(300)
-        }
-        groupSibling2 = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
-                .setWhen(200)
-        }
+        // One set of children with GROUP_ALERT_SUMMARY
+        groupPriority =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_SUMMARY).setWhen(400)
+                updateSbn { setTag("priority") }
+            }
+        groupSibling1 =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_SUMMARY).setWhen(300)
+            }
+        groupSibling2 =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_SUMMARY).setWhen(200)
+            }
         // Another set of children with GROUP_ALERT_ALL
-        groupChild1 = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_ALL)
-                .setWhen(350)
-        }
-        groupChild2 = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_ALL)
-                .setWhen(250)
-        }
-        groupChild3 = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_ALL)
-                .setWhen(150)
-        }
+        groupChild1 =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_ALL).setWhen(350)
+            }
+        groupChild2 =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_ALL).setWhen(250)
+            }
+        groupChild3 =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_ALL).setWhen(150)
+            }
         // Set the default HUN decision
         setDefaultShouldHeadsUp(false)
 
@@ -740,8 +735,8 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
                 .setSummary(groupSummary)
                 .setChildren(listOf(groupSibling1, groupPriority, groupSibling2))
                 .build()
-        //beforeTransformGroupsListener.onBeforeTransformGroups(listOf(beforeTransformGroup))
-        //verify(headsUpViewBinder, never()).bindHeadsUpView(any(), any(), any())
+        // beforeTransformGroupsListener.onBeforeTransformGroups(listOf(beforeTransformGroup))
+        // verify(headsUpViewBinder, never()).bindHeadsUpView(any(), any(), any())
 
         val afterTransformGroup =
             GroupEntryBuilder()
@@ -967,11 +962,11 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
     private fun helpTestNoTransferToBundleChildForChannel(channelId: String) {
         // Set up for normal alert transfer from summary to child
         // but here child is classified so it should not happen
-        val bundleChild = kosmos.buildChildNotificationEntry() {
-            modifyNotification(context)
-                .setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
-            setChannel(NotificationChannel(channelId, channelId, IMPORTANCE_LOW))
-        }
+        val bundleChild =
+            kosmos.buildChildNotificationEntry() {
+                modifyNotification(context).setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
+                setChannel(NotificationChannel(channelId, channelId, IMPORTANCE_LOW))
+            }
         setShouldHeadsUp(bundleChild, true)
         setShouldHeadsUp(groupSummary, true)
         whenever(notifPipeline.allNotifs).thenReturn(listOf(groupSummary, bundleChild))
@@ -990,8 +985,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
         // Capture last param
         val decision = withArgCaptor {
-            verify(interruptLogger)
-                .logDecision(capture(), capture(), capture())
+            verify(interruptLogger).logDecision(capture(), capture(), capture())
         }
         assertFalse(decision.shouldInterrupt)
         assertEquals(decision.logReason, "disqualified-transfer-target")
