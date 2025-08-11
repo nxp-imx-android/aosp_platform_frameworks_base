@@ -195,12 +195,10 @@ class MenuViewLayer extends FrameLayout implements
 
         @Override
         public void onAnimationRepeat(Animation animation) {
-            if (Flags.floatingMenuRemoveFullscreenTaps()) {
-                mIsDockDemoDocked = !mIsDockDemoDocked;
-                // Only stop animation once MenuView has looped back to its normal position.
-                if (!mShouldLoopDockDemo && !mIsDockDemoDocked) {
-                    mMenuView.clearAnimation();
-                }
+            mIsDockDemoDocked = !mIsDockDemoDocked;
+            // Only stop animation once MenuView has looped back to its normal position.
+            if (!mShouldLoopDockDemo && !mIsDockDemoDocked) {
+                mMenuView.clearAnimation();
             }
         }
     };
@@ -357,9 +355,6 @@ class MenuViewLayer extends FrameLayout implements
         super.onAttachedToWindow();
 
         mMenuView.show();
-        if (!Flags.floatingMenuRemoveFullscreenTaps()) {
-            setOnClickListener(this);
-        }
         setOnApplyWindowInsetsListener((view, insets) -> onWindowInsetsApplied(insets));
         getViewTreeObserver().addOnComputeInternalInsetsListener(this);
         mMenuViewModel.getDockTooltipVisibilityData().observeForever(mDockTooltipObserver);
@@ -479,9 +474,7 @@ class MenuViewLayer extends FrameLayout implements
     void dispatchTooltipTuckAnimation() {
         Animation animation =
                 mMenuAnimationController.startTuckedAnimationPreview();
-        if (Flags.floatingMenuRemoveFullscreenTaps()) {
-            animation.setAnimationListener(mTuckDemoListener);
-        }
+        animation.setAnimationListener(mTuckDemoListener);
     }
 
     void dispatchAccessibilityAction(int id) {
@@ -560,9 +553,7 @@ class MenuViewLayer extends FrameLayout implements
 
         mMenuListViewTouchHandler.setOnActionDownEndListener(
                 () -> mEduTooltipView.ifPresent(this::removeTooltip));
-        if (Flags.floatingMenuRemoveFullscreenTaps()) {
-            setOnClickListener(this);
-        }
+        setOnClickListener(this);
     }
 
     private void removeTooltip(View tooltipView) {
@@ -582,9 +573,7 @@ class MenuViewLayer extends FrameLayout implements
         mMenuListViewTouchHandler.setOnActionDownEndListener(null);
         mEduTooltipView = Optional.empty();
 
-        if (Flags.floatingMenuRemoveFullscreenTaps()) {
-            setClickable(false);
-        }
+        setClickable(false);
     }
 
     @VisibleForTesting
