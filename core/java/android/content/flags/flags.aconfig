@@ -10,16 +10,6 @@ flag {
 }
 
 flag {
-     namespace: "system_performance"
-     name: "intent_save_to_xml_package"
-     description: "Add package to saveToXml so save then restore passes filterEquals."
-     bug: "369856202"
-     metadata {
-         purpose: PURPOSE_BUGFIX
-     }
-}
-
-flag {
     name: "stop_voice_command"
     is_exported: true
     namespace: "bluetooth"
