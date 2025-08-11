@@ -20,19 +20,25 @@ import android.annotation.NonNull;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
+import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.ArraySet;
+import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.wm.WindowManagerInternal;
 
 public class ComputerControlSessionProcessor {
+
+    private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
 
     // TODO(b/419548594): Make this configurable.
     @VisibleForTesting
@@ -53,25 +59,31 @@ public class ComputerControlSessionProcessor {
     /**
      * Process a new session creation request.
      */
-    public IComputerControlSession processNewSession(
-            @NonNull IBinder token,
+    public void processNewSessionRequest(
             @NonNull AttributionSource attributionSource,
-            @NonNull ComputerControlSessionParams params) {
-        // TODO(b/430259551, b/432678191): Async creation of sessions triggering a consent dialog
-
+            @NonNull ComputerControlSessionParams params,
+            @NonNull IComputerControlSessionCallback callback) {
         synchronized (mSessions) {
             if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
-                // TODO(b/419548594): Communicate this via a callback in an async flow. Returning
-                // null is not good enough and the developer did nothing wrong, so we shouldn't
-                // throw.
-                throw new UnsupportedOperationException(
-                        "Maximum number of concurrent session reached, try again later.");
+                try {
+                    callback.onSessionCreationFailed(
+                            ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
+                            + " about session creation failure");
+                }
+                return;
             }
             IComputerControlSession session = new ComputerControlSessionImpl(
-                    token, params, attributionSource, mPackageManager, mVirtualDeviceFactory,
-                    mWindowManagerInternal, this::onSessionClosed);
+                    callback.asBinder(), params, attributionSource, mPackageManager,
+                    mVirtualDeviceFactory, mWindowManagerInternal, this::onSessionClosed);
             mSessions.add(session.asBinder());
-            return session;
+            try {
+                callback.onSessionCreated(session);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
+                        + " about session creation success");
+            }
         }
     }
 
