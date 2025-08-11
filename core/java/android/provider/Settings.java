@@ -12494,7 +12494,7 @@ public final class Settings {
          * backup_finished_notification_receivers  (String[])
          * </pre>
          *
-         * backup_finished_notification_receivers uses ":" as delimeter for values.
+         * backup_finished_notification_receivers uses ":" as delimiter for values.
          *
          * <p>
          * Type: string
@@ -20340,6 +20340,13 @@ public final class Settings {
          */
         public static final String WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE =
                 "watch_ranging_supported_by_primary_device";
+
+        /**
+         * Indicates whether the device is in minmode.
+         *
+         * @hide
+         */
+        public static final String MINMODE_ACTIVE = "minmode_active";
 
         /**
          * Settings migrated from Wear OS settings provider.

@@ -483,5 +483,6 @@ public class GlobalSettingsValidators {
         VALIDATORS.put(Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
                 new InclusiveIntegerRangeValidator(0, 1));
+        VALIDATORS.put(Global.MINMODE_ACTIVE, BOOLEAN_VALIDATOR);
     }
 }

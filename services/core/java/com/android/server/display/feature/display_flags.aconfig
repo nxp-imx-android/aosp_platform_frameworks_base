@@ -469,3 +469,13 @@ flag {
     description: "Enable logging statistics for display event occurrences."
     bug: "433479938"
 }
+
+flag {
+    name: "minmode_cap_brightness_enabled"
+    namespace: "display_manager"
+    description: "Restrict the brightness due to minmode"
+    bug: "433557124"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
