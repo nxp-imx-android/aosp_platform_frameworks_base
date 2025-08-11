@@ -1249,7 +1249,7 @@ public abstract class WallpaperService extends Service {
             final boolean typeChanged = mType != mSurfaceHolder.getRequestedType();
             final boolean flagsChanged = mCurWindowFlags != mWindowFlags ||
                     mCurWindowPrivateFlags != mWindowPrivateFlags;
-            final boolean reportDraw = mAlwaysSeqId ? seqId > mSeqId : false;
+            boolean reportDraw = mAlwaysSeqId ? seqId > mSeqId : false;
             redrawNeeded = redrawNeeded || reportDraw;
             if (forceRelayout || creating || surfaceCreating || formatChanged || sizeChanged
                     || typeChanged || flagsChanged || redrawNeeded
@@ -1316,6 +1316,11 @@ public abstract class WallpaperService extends Service {
                                 inputChannel, addRes) < 0) {
                             Log.w(TAG, "Failed to add window while updating wallpaper surface.");
                             return;
+                        }
+                        if (mAlwaysSeqId) {
+                            seqId = addRes.syncSeqId;
+                            reportDraw = reportDraw || seqId > mSeqId;
+                            redrawNeeded = redrawNeeded || reportDraw;
                         }
                         mSession.setShouldZoomOutWallpaper(mWindow, shouldZoomOutWallpaper());
                         mCreated = true;
