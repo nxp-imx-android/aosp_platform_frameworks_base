@@ -1547,9 +1547,10 @@ private fun getTransformationContentKey(
                 transition.toContent
             } else {
                 throw IllegalStateException(
-                    "Ancestor transition is active but no transformation " +
-                        "spec was found. The ancestor transition should have only been selected " +
-                        "when a transformation for that element and content was defined."
+                    "Ancestor transition $transition is active but no transformation for element " +
+                        "${element.key} spec was found. The ancestor transition should have only " +
+                        "been selected when a transformation for that element and content was " +
+                        "defined."
                 )
             }
         }
