@@ -52559,7 +52559,7 @@ package android.view {
     method @Nullable public android.hardware.display.DeviceProductInfo getDeviceProductInfo();
     method public int getDisplayId();
     method public int getFlags();
-    method public android.view.Display.HdrCapabilities getHdrCapabilities();
+    method @Nullable public android.view.Display.HdrCapabilities getHdrCapabilities();
     method public float getHdrSdrRatio();
     method @Deprecated public int getHeight();
     method @FlaggedApi("com.android.server.display.feature.flags.highest_hdr_sdr_ratio_api") public float getHighestHdrSdrRatio();

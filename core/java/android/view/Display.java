@@ -1489,6 +1489,7 @@ public final class Display {
      *
      * @see #isHdr()
      */
+    @Nullable
     public HdrCapabilities getHdrCapabilities() {
         synchronized (mLock) {
             updateDisplayInfoLocked();
