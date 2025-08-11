@@ -131,5 +131,6 @@ public class GlobalSettings {
         Settings.Global.USER_SWITCHER_ENABLED,
         Settings.Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS,
         Settings.Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
+        Settings.Global.MINMODE_ACTIVE,
     };
 }

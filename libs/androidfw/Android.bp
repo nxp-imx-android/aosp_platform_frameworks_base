@@ -75,6 +75,7 @@ cc_library {
         "BigBufferStream.cpp",
         "ChunkIterator.cpp",
         "ConfigDescription.cpp",
+        "CursorWindow.cpp",
         "FileStream.cpp",
         "Idmap.cpp",
         "LoadedArsc.cpp",
@@ -114,7 +115,6 @@ cc_library {
             srcs: [
                 "BackupData.cpp",
                 "BackupHelpers.cpp",
-                "CursorWindow.cpp",
             ],
             shared_libs: [
                 "libbase",
@@ -146,11 +146,6 @@ cc_library {
             ],
             shared_libs: [
                 "libz",
-            ],
-        },
-        host_linux: {
-            srcs: [
-                "CursorWindow.cpp",
             ],
         },
         windows: {
@@ -221,6 +216,7 @@ cc_test {
         "tests/Config_test.cpp",
         "tests/ConfigDescription_test.cpp",
         "tests/ConfigLocale_test.cpp",
+        "tests/CursorWindow_test.cpp",
         "tests/DynamicRefTable_test.cpp",
         "tests/FileStream_test.cpp",
         "tests/Idmap_test.cpp",
@@ -245,7 +241,6 @@ cc_test {
             srcs: [
                 "tests/BackupData_test.cpp",
                 "tests/BackupHelpers_test.cpp",
-                "tests/CursorWindow_test.cpp",
                 "tests/ObbFile_test.cpp",
                 "tests/PosixUtils_test.cpp",
             ],
@@ -257,6 +252,7 @@ cc_test {
         },
         host: {
             static_libs: common_test_libs + [
+                "libbinder",
                 "liblog",
                 "libz",
             ],

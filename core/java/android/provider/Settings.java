@@ -13379,6 +13379,8 @@ public final class Settings {
         public static final int ACTION_CORNER_ACTION_NOTIFICATIONS = 3;
         /** @hide */
         public static final int ACTION_CORNER_ACTION_QUICK_SETTINGS = 4;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_LOCKSCREEN = 5;
 
         /**
          * The different actions that can be used for action corners
@@ -13390,6 +13392,7 @@ public final class Settings {
                 ACTION_CORNER_ACTION_OVERVIEW,
                 ACTION_CORNER_ACTION_NOTIFICATIONS,
                 ACTION_CORNER_ACTION_QUICK_SETTINGS,
+                ACTION_CORNER_ACTION_LOCKSCREEN,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ActionCornerActionType {
@@ -20340,6 +20343,13 @@ public final class Settings {
          */
         public static final String WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE =
                 "watch_ranging_supported_by_primary_device";
+
+        /**
+         * Indicates whether the device is in minmode.
+         *
+         * @hide
+         */
+        public static final String MINMODE_ACTIVE = "minmode_active";
 
         /**
          * Settings migrated from Wear OS settings provider.

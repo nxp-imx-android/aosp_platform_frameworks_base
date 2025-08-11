@@ -224,11 +224,9 @@ constructor(
 
                                 is Transition.ChangeScene ->
                                     when {
-                                        // If transitioning between two scenes and any one of the
-                                        // two scenes is one of the keyguard scenes, report that the
-                                        // keyguard is visible.
+                                        // If transitioning between keyguard and another scene, keep
+                                        // lockscreen visible until the transition ends.
                                         it.fromScene in keyguardScenes -> flowOf(true)
-                                        it.toScene in keyguardScenes -> flowOf(true)
                                         // If transitioning between two non-keyguard scenes but the
                                         // bouncer overlay is showing, report that the keyguard is
                                         // visible.

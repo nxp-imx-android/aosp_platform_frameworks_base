@@ -328,7 +328,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
         if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
             // We need to stop broadcast when we transfer to another route
-            stopBroadcastIfCurrentlySelected(requestId);
+            stopBroadcastForTransferIfCurrentlySelected(requestId);
         }
 
         MediaRoute2InfoHolder mediaRoute2InfoHolder;
@@ -390,12 +390,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mHandler.post(() -> mBluetoothRouteController.removeRouteFromBroadcast(routeId));
     }
 
-    private void stopBroadcastIfCurrentlySelected(long requestId) {
+    private void stopBroadcastForTransferIfCurrentlySelected(long requestId) {
         if (!currentOutputIsBLEBroadcast()) {
             return;
         }
 
-        mHandler.post(mBluetoothRouteController::stopBroadcast);
+        // TODO: b/430200199 - Setting a correct routeId
+        mHandler.post(() -> mBluetoothRouteController.stopBroadcast(/* routeId= */ null));
     }
 
     @RequiresPermission(

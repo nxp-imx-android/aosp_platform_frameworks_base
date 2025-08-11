@@ -24,6 +24,7 @@ import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.helpers.WindowUtils
 import androidx.test.filters.RequiresDevice
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -71,6 +72,7 @@ class RestartAppInSizeCompatModeTest(flicker: FlickerTest) : BaseAppCompat(flick
         }
     }
 
+    @Ignore("b/273892772 It depends on the transition implementation. Not a necessary condition.")
     @Postsubmit @Test fun appLayerKeepVisible() = assertLetterboxAppLayerKeepVisible()
 
     @Postsubmit @Test fun appIsLetterboxedAtStart() = assertAppLetterboxedAtStart()

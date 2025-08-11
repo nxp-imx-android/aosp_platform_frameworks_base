@@ -258,10 +258,10 @@ constructor(
     val configurationBasedDimensions: Flow<ConfigurationBasedDimensions> =
         if (SceneContainerFlag.isEnabled) {
                 combine(
-                    shadeModeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isFullWidthShade,
                     shadeModeInteractor.shadeMode,
                     configurationInteractor.onAnyConfigurationChange,
-                ) { isShadeLayoutWide, shadeMode, _ ->
+                ) { isFullWidthShade, shadeMode, _ ->
                     with(context.resources) {
                         val marginHorizontal =
                             getDimensionPixelSize(
@@ -278,12 +278,12 @@ constructor(
                                 Single -> marginHorizontal to marginHorizontal
                                 Split -> 0 to marginHorizontal
                                 Dual ->
-                                    if (isShadeLayoutWide) {
+                                    if (isFullWidthShade) {
+                                        0 to 0
+                                    } else {
                                         // all insets types combined, except the IME
                                         val insets = getInsetsOf(context, defaultVisible()).toRect()
                                         marginHorizontal.coerceAtLeast(insets.left) to 0
-                                    } else {
-                                        0 to 0
                                     }
                             }
 
@@ -293,14 +293,14 @@ constructor(
                                 Single -> HorizontalPosition.EdgeToEdge
                                 Split -> HorizontalPosition.MiddleToEdge(ratio = 0.5f)
                                 Dual ->
-                                    if (isShadeLayoutWide) {
+                                    if (isFullWidthShade) {
+                                        HorizontalPosition.EdgeToEdge
+                                    } else {
                                         HorizontalPosition.EdgeToMiddle(
                                             ratio = 0.5f,
                                             maxWidth =
                                                 getDimensionPixelSize(R.dimen.shade_panel_width),
                                         )
-                                    } else {
-                                        HorizontalPosition.EdgeToEdge
                                     }
                             }
 

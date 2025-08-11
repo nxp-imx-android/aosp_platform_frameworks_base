@@ -906,15 +906,6 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI)
-    @Throws(Exception::class)
-    fun testBindNotification_hidesFeedbackLink_notReservedChannel() {
-        bindNotification()
-
-        assertThat(underTest.findViewById<View>(R.id.feedback).visibility).isEqualTo(GONE)
-    }
-
-    @Test
     @Throws(RemoteException::class)
     fun testDismissListenerBound() {
         val latch = CountDownLatch(1)

@@ -43,6 +43,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleWithImeViaBubbleBarTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-ExpandedBubbleAppMoveTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest"
     },
     {

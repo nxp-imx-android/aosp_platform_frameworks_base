@@ -251,6 +251,28 @@ ondeviceintelligence_module_java_defaults {
     },
 }
 
+// Conditionally add anomaly detector stubs library
+soong_config_module_type {
+    name: "anomaly_detector_java_defaults",
+    module_type: "java_defaults",
+    config_namespace: "ANDROID",
+    bool_variables: [
+        "release_anomaly_detector",
+    ],
+    properties: [
+        "libs",
+    ],
+}
+
+anomaly_detector_java_defaults {
+    name: "services_anomaly_detector_stubs_conditionally",
+    soong_config_variables: {
+        release_anomaly_detector: {
+            libs: ["service-anomaly-detector.stubs.system_server"],
+        },
+    },
+}
+
 soong_config_module_type {
     name: "system_java_library",
     module_type: "java_library",
@@ -289,6 +311,7 @@ java_library {
     defaults: [
         "services_crashrecovery_stubs_conditionally",
         "ondeviceintelligence_conditionally",
+        "services_anomaly_detector_stubs_conditionally",
     ],
 
     exclude_kotlinc_generated_files: true,

@@ -28,7 +28,6 @@ import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
-import static android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_SYSTEM;
@@ -76,6 +75,7 @@ import android.app.admin.DevicePolicyManagerInternal;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
+import android.content.pm.UserInfo.UserInfoFlag;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -140,31 +140,33 @@ public final class UserManagerServiceMockedTest {
     /**
      * Id for a simple user (that doesn't have profiles).
      */
-    private static final int USER_ID = 600;
+    private static final int USER_ID = 4;
 
-    /**
-     * Id for another simple user.
-     */
-    private static final int OTHER_USER_ID = 666;
-
-    /**
-     * Id for a third simple user.
-     */
-    private static final int THIRD_USER_ID = 667;
+    // Other user ids
+    private static final int USER_ID2 = 8;
+    private static final int USER_ID3 = 15;
+    private static final int USER_ID4 = 16;
+    private static final int USER_ID5 = 23;
+    private static final int USER_ID6 = 42;
 
     /**
      * Id for a user that has one profile (whose id is {@link #PROFILE_USER_ID}.
      *
      * <p>You can use {@link #addDefaultProfileAndParent()} to add both of this user to the service.
      */
-    private static final int PARENT_USER_ID = 642;
+    private static final int PARENT_USER_ID = 108;
 
     /**
      * Id for a profile whose parent is {@link #PARENTUSER_ID}.
      *
      * <p>You can use {@link #addDefaultProfileAndParent()} to add both of this user to the service.
      */
-    private static final int PROFILE_USER_ID = 643;
+    private static final int PROFILE_USER_ID = 666;
+
+    private static final String A_USER_HAS_NO_NAME = null;
+    private static final String NAME = "Bond, James Bond";
+
+    private static final @UserInfoFlag int NO_FLAGS = 0;
 
     private static final String USER_INFO_DIR = "system" + File.separator + "users";
 
@@ -281,19 +283,18 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetCurrentAndTargetUserIds() {
-        mockCurrentAndTargetUser(USER_ID, OTHER_USER_ID);
+        mockCurrentAndTargetUser(USER_ID, USER_ID2);
 
         assertWithMessage("getCurrentAndTargetUserIds()")
                 .that(mUms.getCurrentAndTargetUserIds())
-                .isEqualTo(new Pair<>(USER_ID, OTHER_USER_ID));
+                .isEqualTo(new Pair<>(USER_ID, USER_ID2));
     }
 
     @Test
     public void testGetCurrentUserId() {
         mockCurrentUser(USER_ID);
 
-        assertWithMessage("getCurrentUserId()").that(mUms.getCurrentUserId())
-                .isEqualTo(USER_ID);
+        assertWithMessage("getCurrentUserId()").that(mUms.getCurrentUserId()).isEqualTo(USER_ID);
     }
 
     @Test
@@ -306,7 +307,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testIsCurrentUserOrRunningProfileOfCurrentUser_notCurrentUser() {
-        mockCurrentUser(OTHER_USER_ID);
+        mockCurrentUser(USER_ID2);
 
         assertWithMessage("isCurrentUserOrRunningProfileOfCurrentUser(%s)", USER_ID)
                 .that(mUms.isCurrentUserOrRunningProfileOfCurrentUser(USER_ID)).isFalse();
@@ -335,7 +336,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testIsCurrentUserOrRunningProfileOfCurrentUser_profileOfNonCurrentUSer() {
         addDefaultProfileAndParent();
-        mockCurrentUser(OTHER_USER_ID);
+        mockCurrentUser(USER_ID2);
 
         assertWithMessage("isCurrentUserOrRunningProfileOfCurrentUser(%s)", PROFILE_USER_ID)
                 .that(mUms.isCurrentUserOrRunningProfileOfCurrentUser(PROFILE_USER_ID)).isFalse();
@@ -380,19 +381,19 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testSetBootUser_SuppliedUserIsSwitchable() throws Exception {
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
 
-        mUms.setBootUser(OTHER_USER_ID);
+        mUms.setBootUser(USER_ID2);
 
         assertWithMessage("getBootUser")
-                .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(OTHER_USER_ID);
+                .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(USER_ID2);
     }
 
     @Test
     public void testSetBootUser_NotHeadless_SuppliedUserIsNotSwitchable() throws Exception {
         setSystemUserHeadless(false);
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
         addDefaultProfileAndParent();
 
         mUms.setBootUser(PROFILE_USER_ID);
@@ -407,21 +408,21 @@ public final class UserManagerServiceMockedTest {
         setSystemUserHeadless(true);
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
         addDefaultProfileAndParent();
 
         mUms.setBootUser(PROFILE_USER_ID);
         // Boot user not switchable so return most recently in foreground.
         assertWithMessage("getBootUser")
-                .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(OTHER_USER_ID);
+                .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(USER_ID2);
     }
 
     @Test
     public void testGetBootUser_NotHeadless_ReturnsSystemUser() throws Exception {
         setSystemUserHeadless(false);
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
 
         assertWithMessage("getBootUser")
                 .that(mUmi.getBootUser(/* waitUntilSet= */ false))
@@ -434,11 +435,11 @@ public final class UserManagerServiceMockedTest {
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
 
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
 
         assertWithMessage("getBootUser")
-                .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(OTHER_USER_ID);
+                .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(USER_ID2);
     }
 
     @Test
@@ -466,22 +467,22 @@ public final class UserManagerServiceMockedTest {
     public void testGetPreviousUserToEnterForeground() throws Exception {
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
 
         assertWithMessage("getPreviousUserToEnterForeground")
                 .that(mUms.getPreviousUserToEnterForeground())
-                .isEqualTo(OTHER_USER_ID);
+                .isEqualTo(USER_ID2);
     }
 
     @Test
     public void testGetPreviousUserToEnterForeground_SkipsCurrentUser() throws Exception {
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
 
-        mockCurrentUser(OTHER_USER_ID);
+        mockCurrentUser(USER_ID2);
         assertWithMessage("getPreviousUserToEnterForeground")
                 .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
@@ -491,10 +492,10 @@ public final class UserManagerServiceMockedTest {
     public void testGetPreviousUserToEnterForeground_SkipsPartialUsers() throws Exception {
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
 
-        mUsers.get(OTHER_USER_ID).info.partial = true;
+        mUsers.get(USER_ID2).info.partial = true;
         assertWithMessage("getPreviousUserToEnterForeground")
                 .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
@@ -504,10 +505,10 @@ public final class UserManagerServiceMockedTest {
     public void testGetPreviousUserToEnterForeground_SkipsDisabledUsers() throws Exception {
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
 
-        mUsers.get(OTHER_USER_ID).info.flags |= UserInfo.FLAG_DISABLED;
+        mUsers.get(USER_ID2).info.flags |= UserInfo.FLAG_DISABLED;
         assertWithMessage("getPreviousUserToEnterForeground")
                 .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
@@ -517,10 +518,10 @@ public final class UserManagerServiceMockedTest {
     public void testGetPreviousUserToEnterForeground_SkipsRemovingUsers() throws Exception {
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 2_000_000L);
 
-        mUms.addRemovingUserId(OTHER_USER_ID);
+        mUms.addRemovingUserId(USER_ID2);
         assertWithMessage("getPreviousUserToEnterForeground")
                 .that(mUms.getPreviousUserToEnterForeground())
                 .isEqualTo(USER_ID);
@@ -675,8 +676,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testAutoLockOnDeviceLockForPrivateProfile() {
         int mainUser = mUms.getMainUserId();
@@ -698,8 +698,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testAutoLockOnDeviceLockForPrivateProfile_keyguardUnlocked() {
         assumeTrue(mUms.canAddPrivateProfile(0));
@@ -717,30 +716,9 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
-    @DisableFlags(FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE)
-    public void testAutoLockOnDeviceLockForPrivateProfile_flagDisabled() {
-        int mainUser = mUms.getMainUserId();
-        assumeTrue(mUms.canAddPrivateProfile(mainUser));
-        UserManagerService mSpiedUms = spy(mUms);
-        UserInfo privateProfileUser =
-                mSpiedUms.createProfileForUserEvenWhenDisallowedWithThrow(PRIVATE_PROFILE_NAME,
-                USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
-
-        mSpiedUms.tryAutoLockingPrivateSpaceOnKeyguardChanged(true);
-
-        // Verify that no auto-lock operations take place
-        verify((MockedVoidMethod) () -> Settings.Secure.getInt(any(),
-                eq(Settings.Secure.PRIVATE_SPACE_AUTO_LOCK), anyInt()), never());
-        Mockito.verify(mSpiedUms, never()).setQuietModeEnabledAsync(
-                eq(privateProfileUser.id), eq(true), any(), any());
-    }
-
-    @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testAutoLockAfterInactityForPrivateProfile() {
         int mainUser = mUms.getMainUserId();
@@ -764,8 +742,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testSetOrUpdateAutoLockPreference_noPrivateProfile() {
         mUms.setOrUpdateAutoLockPreferenceForPrivateProfile(
@@ -780,8 +757,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE
+        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
     })
     public void testSetOrUpdateAutoLockPreference() {
         int mainUser = mUms.getMainUserId();
@@ -961,7 +937,7 @@ public final class UserManagerServiceMockedTest {
     public void testGetBootUser_Headless_BootToSystemUserWhenDeviceIsProvisioned() {
         setSystemUserHeadless(true);
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
         mockProvisionedDevice(true);
         mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
 
@@ -972,7 +948,7 @@ public final class UserManagerServiceMockedTest {
     public void testGetBootUser_Headless_BootToFirstSwitchableFullUserWhenDeviceNotProvisioned() {
         setSystemUserHeadless(true);
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
         mockProvisionedDevice(false);
         mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
         // Even if the headless system user switchable flag is true, the boot user should be the
@@ -1053,8 +1029,8 @@ public final class UserManagerServiceMockedTest {
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(true);
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
-        setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
+        addSecondaryUser(USER_ID2);
+        setLastForegroundTime(USER_ID2, 1_000_000L);
         mockCurrentUser(USER_ID);
         mUms.setUserRestriction(DISALLOW_USER_SWITCH, true, USER_ID);
         assertThat(mUms.getUserLogoutability(USER_ID))
@@ -1094,31 +1070,31 @@ public final class UserManagerServiceMockedTest {
     public void testUserWithName_hasExplicitName() {
         int initialAllocations = getCurrentNumberOfUser0Allocations();
 
-        var systemUser = new UserInfo(USER_SYSTEM, "James Bond", /* flags= */ 0);
+        var systemUser = new UserInfo(USER_SYSTEM, NAME, NO_FLAGS);
         expect.withMessage("userWithName(%s)", systemUser).that(mUms.userWithName(systemUser))
                 .isSameInstanceAs(systemUser);
-        expect.withMessage("system.name").that(systemUser.name).isEqualTo("James Bond");
+        expect.withMessage("system.name").that(systemUser.name).isEqualTo(NAME);
         expect.withMessage("number of system user allocations after systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
 
-        var mainUser = new UserInfo(007, "James Bond", UserInfo.FLAG_MAIN);
+        var mainUser = new UserInfo(007, NAME, UserInfo.FLAG_MAIN);
         expect.withMessage("userWithName(%s)", mainUser).that(mUms.userWithName(mainUser))
                 .isSameInstanceAs(mainUser);
-        expect.withMessage("mainUser.name").that(mainUser.name).isEqualTo("James Bond");
+        expect.withMessage("mainUser.name").that(mainUser.name).isEqualTo(NAME);
         expect.withMessage("number of system user allocations after non-systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
 
-        var guestUser = new UserInfo(007, "James Bond", UserInfo.FLAG_GUEST);
+        var guestUser = new UserInfo(007, NAME, UserInfo.FLAG_GUEST);
         expect.withMessage("userWithName(%s)", guestUser).that(mUms.userWithName(guestUser))
                 .isSameInstanceAs(guestUser);
-        expect.withMessage("guest.name").that(guestUser.name).isEqualTo("James Bond");
+        expect.withMessage("guest.name").that(guestUser.name).isEqualTo(NAME);
         expect.withMessage("number of system user allocations after non-systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
 
-        var normalUser = new UserInfo(007, "James Bond", /* flags= */ 0);
+        var normalUser = new UserInfo(007, NAME, NO_FLAGS);
         expect.withMessage("userWithName(%s)", systemUser).that(mUms.userWithName(normalUser))
                 .isSameInstanceAs(normalUser);
-        expect.withMessage("normalUser.name").that(normalUser.name).isEqualTo("James Bond");
+        expect.withMessage("normalUser.name").that(normalUser.name).isEqualTo(NAME);
         expect.withMessage("number of system user allocations after non-systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(initialAllocations);
     }
@@ -1132,7 +1108,7 @@ public final class UserManagerServiceMockedTest {
         setSystemUserHeadless(false);
         int initialAllocations = getCurrentNumberOfUser0Allocations();
 
-        var systemUser = new UserInfo(USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        var systemUser = new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, NO_FLAGS);
         UserInfo systemUserWithName = mUms.userWithName(systemUser);
         assertWithMessage("userWithName(systemUser)").that(systemUserWithName).isNotNull();
         expect.withMessage("userWithName(systemUser)").that(systemUserWithName)
@@ -1146,7 +1122,7 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("number of system user allocations after systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
 
-        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        var mainUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, UserInfo.FLAG_MAIN);
         UserInfo mainUserWithName = mUms.userWithName(mainUser);
         assertWithMessage("userWithName(mainUser)").that(mainUserWithName).isNotNull();
         expect.withMessage("userWithName(mainUser)").that(mainUserWithName)
@@ -1157,7 +1133,7 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("number of system user allocations after non-systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
 
-        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        var guestUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, UserInfo.FLAG_GUEST);
         UserInfo guestUserWithName = mUms.userWithName(guestUser);
         assertWithMessage("userWithName(guestUser)").that(guestUserWithName).isNotNull();
         expect.withMessage("userWithName(guestUser)").that(guestUserWithName)
@@ -1168,7 +1144,7 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("number of system user allocations after non-systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
 
-        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        var normalUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, NO_FLAGS);
         UserInfo normalUserWithName = mUms.userWithName(normalUser);
         assertWithMessage("userWithName(normalUser)").that(normalUserWithName).isNotNull();
         expect.withMessage("userWithName(normalUser)").that(normalUserWithName)
@@ -1185,7 +1161,7 @@ public final class UserManagerServiceMockedTest {
     public void testUserWithName_withDefaultName_hsum() {
         setSystemUserHeadless(true);
 
-        var systemUser = new UserInfo(USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        var systemUser = new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, NO_FLAGS);
         UserInfo systemUserWithName = mUms.userWithName(systemUser);
         assertWithMessage("userWithName(systemUser)").that(systemUserWithName).isNotNull();
         expect.withMessage("userWithName(systemUser)").that(systemUserWithName)
@@ -1203,19 +1179,17 @@ public final class UserManagerServiceMockedTest {
     /** Tests what happens when the {@link UserInfo} has a explicit (non-{@code null}) name. */
     @Test
     public void testGetName_withExplicitName() {
-        String name = "Bond, James Bond!";
+        var systemUser = new UserInfo(USER_SYSTEM, NAME, NO_FLAGS);
+        expect.withMessage("name of system user").that(mUms.getName(systemUser)).isEqualTo(NAME);
 
-        var systemUser = new UserInfo(USER_SYSTEM, name, /* flags= */ 0);
-        expect.withMessage("name of system user").that(mUms.getName(systemUser)).isEqualTo(name);
+        var mainUser = new UserInfo(USER_ID, NAME, UserInfo.FLAG_MAIN);
+        expect.withMessage("name of main user").that(mUms.getName(mainUser)).isEqualTo(NAME);
 
-        var mainUser = new UserInfo(42, name, UserInfo.FLAG_MAIN);
-        expect.withMessage("name of main user").that(mUms.getName(mainUser)).isEqualTo(name);
+        var guestUser = new UserInfo(USER_ID, NAME, UserInfo.FLAG_GUEST);
+        expect.withMessage("name of guest user").that(mUms.getName(guestUser)).isEqualTo(NAME);
 
-        var guestUser = new UserInfo(42, name, UserInfo.FLAG_GUEST);
-        expect.withMessage("name of guest user").that(mUms.getName(guestUser)).isEqualTo(name);
-
-        var normalUser = new UserInfo(42, name, /* flags=*/ 0);
-        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isEqualTo(name);
+        var normalUser = new UserInfo(USER_ID, NAME, /* flags=*/ 0);
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isEqualTo(NAME);
     }
 
     /** Tests what happens when the {@link UserInfo} has a {@code null} name. */
@@ -1223,19 +1197,19 @@ public final class UserManagerServiceMockedTest {
     public void testGetName_withDefaultNames_nonHsum() {
         setSystemUserHeadless(false);
 
-        var systemUser = new UserInfo(USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        var systemUser = new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, NO_FLAGS);
         expect.withMessage("name of system user").that(mUms.getName(systemUser))
                 .isEqualTo(mUms.getOwnerName());
 
-        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        var mainUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, UserInfo.FLAG_MAIN);
         expect.withMessage("name of main user").that(mUms.getName(mainUser))
                 .isEqualTo(mUms.getOwnerName());
 
-        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        var guestUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, UserInfo.FLAG_GUEST);
         expect.withMessage("name of guest user").that(mUms.getName(guestUser))
                 .isEqualTo(mUms.getGuestName());
 
-        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        var normalUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, NO_FLAGS);
         expect.withMessage("name of normal user").that(mUms.getName(normalUser))
                 .isEqualTo(mUms.getUnnamedUserName());
     }
@@ -1245,19 +1219,19 @@ public final class UserManagerServiceMockedTest {
     public void testGetName_withDefaultNames_hsum() {
         setSystemUserHeadless(true);
 
-        var systemUser = new UserInfo(USER_SYSTEM, /* name= */ null, /* flags= */ 0);
+        var systemUser = new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, NO_FLAGS);
         expect.withMessage("name of system user").that(mUms.getName(systemUser))
                 .isEqualTo(mUms.getHeadlessSystemUserName());
 
-        var mainUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_MAIN);
+        var mainUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, UserInfo.FLAG_MAIN);
         expect.withMessage("name of main user").that(mUms.getName(mainUser))
                 .isEqualTo(mUms.getOwnerName());
 
-        var guestUser = new UserInfo(42, /* name= */ null, UserInfo.FLAG_GUEST);
+        var guestUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, UserInfo.FLAG_GUEST);
         expect.withMessage("name of guest user").that(mUms.getName(guestUser))
                 .isEqualTo(mUms.getGuestName());
 
-        var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
+        var normalUser = new UserInfo(USER_ID, A_USER_HAS_NO_NAME, NO_FLAGS);
         expect.withMessage("name of normal user").that(mUms.getName(normalUser))
                 .isEqualTo(mUms.getUnnamedUserName());
     }
@@ -1406,17 +1380,16 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetUsersWithUnresolvedNames() {
-        var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_ADMIN));
-        var adminUser = addUser(new UserInfo(/* id= */ 4, /* name= */ null,
-                FLAG_FULL | FLAG_ADMIN));
-        var nonAdminUser = addUser(new UserInfo(/* id= */ 8, /* name= */ null, FLAG_FULL));
-        var partialUser = addUser(new UserInfo(/* id= */ 15, /* name= */ null, FLAG_FULL));
+        var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_ADMIN));
+        var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+        var nonAdminUser = addUser(new UserInfo(USER_ID2, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var partialUser = addUser(new UserInfo(USER_ID3, A_USER_HAS_NO_NAME, FLAG_FULL));
         partialUser.partial = true;
         // NOTE: user pre-creation is not supported anymore, so it won't be returned
-        var preCreatedUser = addUser(new UserInfo(/* id= */ 16, /* name= */ null, FLAG_FULL));
+        var preCreatedUser = addUser(new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL));
         preCreatedUser.preCreated = true;
-        var dyingUser = addDyingUser(new UserInfo(/* id= */ 23, /* name= */ null, FLAG_FULL));
-        var namedUser = addUser(new UserInfo(/* id= */ 42, "Bond, James Bond", FLAG_FULL));
+        var dyingUser = addDyingUser(new UserInfo(USER_ID5, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var namedUser = addUser(new UserInfo(USER_ID6, NAME, FLAG_FULL));
 
         expect.withMessage("getUsersWithUnresolvedNames(%s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING)
                 .that(mUms.getUsersWithUnresolvedNames(EXCLUDE_PARTIAL, EXCLUDE_DYING))
@@ -1441,27 +1414,26 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testGetUsersInternal_nonHsum() {
         var fullSystemUser =
-                addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_FULL | FLAG_ADMIN));
+                addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
         testGetUsersInternal(fullSystemUser);
     }
 
     @Test
     public void testGetUsersInternal_hsum() {
-        var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_ADMIN));
+        var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, A_USER_HAS_NO_NAME, FLAG_ADMIN));
         testGetUsersInternal(headlessSystemUser);
     }
 
     private void testGetUsersInternal(UserInfo systemUser) {
-        var adminUser = addUser(new UserInfo(/* id= */ 4, /* name= */ null,
-                FLAG_FULL | FLAG_ADMIN));
-        var nonAdminUser = addUser(new UserInfo(/* id= */ 8, /* name= */ null, FLAG_FULL));
-        var partialUser = addUser(new UserInfo(/* id= */ 15, /* name= */ null, FLAG_FULL));
+        var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+        var nonAdminUser = addUser(new UserInfo(USER_ID2, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var partialUser = addUser(new UserInfo(USER_ID3, A_USER_HAS_NO_NAME, FLAG_FULL));
         partialUser.partial = true;
         // NOTE: user pre-creation is not supported anymore, so it won't be returned
-        var preCreatedUser = addUser(new UserInfo(/* id= */ 16, /* name= */ null, FLAG_FULL));
+        var preCreatedUser = addUser(new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL));
         preCreatedUser.preCreated = true;
-        var dyingUser = addDyingUser(new UserInfo(/* id= */ 23, /* name= */ null, FLAG_FULL));
-        var namedUser = addUser(new UserInfo(/* id= */ 42, "Bond, James Bond", FLAG_FULL));
+        var dyingUser = addDyingUser(new UserInfo(USER_ID5, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var namedUser = addUser(new UserInfo(USER_ID6, NAME, FLAG_FULL));
 
         expect.withMessage("getUsersInternal(%s, %s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING,
                 DONT_RESOLVE_NULL_NAMES)
@@ -1584,7 +1556,7 @@ public final class UserManagerServiceMockedTest {
     @EnableFlags(FLAG_DEMOTE_MAIN_USER)
     public void testSetMainUser_userNotFound() {
         assumeDoesntHaveMainUser();
-        int userId = OTHER_USER_ID;
+        int userId = USER_ID2;
 
         expect.withMessage("setMainUser(%s)", userId).that(mUms.setMainUser(userId)).isFalse();
 
@@ -1665,7 +1637,7 @@ public final class UserManagerServiceMockedTest {
     public void testIsLastFullAdminUser_hsum_targetNotAdmin_returnsFalse() {
         setSystemUserHeadless(true);
         addSecondaryUser(USER_ID); // USER_ID is full, not admin
-        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
+        addAdminUser(USER_ID2); // USER_ID2 is full, admin
 
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
     }
@@ -1674,12 +1646,12 @@ public final class UserManagerServiceMockedTest {
     public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullAdminExists_returnsFalse() {
         setSystemUserHeadless(true);
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
-        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
+        addAdminUser(USER_ID2); // USER_ID2 is full, admin
 
         expect.withMessage("isLastFullAdminUserLU(%s)", USER_ID)
                 .that(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
-        expect.withMessage("isLastFullAdminUserLU(%s)", OTHER_USER_ID)
-                .that(mUms.isLastFullAdminUserLU(mUsers.get(OTHER_USER_ID).info)).isFalse();
+        expect.withMessage("isLastFullAdminUserLU(%s)", USER_ID2)
+                .that(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID2).info)).isFalse();
     }
 
     @Test
@@ -1695,7 +1667,7 @@ public final class UserManagerServiceMockedTest {
     public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullNotAdmin_returnsTrue() {
         setSystemUserHeadless(true);
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
-        addSecondaryUser(OTHER_USER_ID); // OTHER_USER_ID is full, not admin
+        addSecondaryUser(USER_ID2); // USER_ID2 is full, not admin
 
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
     }
@@ -1704,10 +1676,10 @@ public final class UserManagerServiceMockedTest {
     public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullAdminIsRemoving_returnsTrue() {
         setSystemUserHeadless(true);
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
-        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
-        mUms.addRemovingUserId(OTHER_USER_ID); // Mark OTHER_USER_ID as dying
+        addAdminUser(USER_ID2); // USER_ID2 is full, admin
+        mUms.addRemovingUserId(USER_ID2); // Mark USER_ID2 as dying
 
-        // OTHER_USER_ID will be excluded by getUsersInternal
+        // USER_ID2 will be excluded by getUsersInternal
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
     }
 
@@ -1715,10 +1687,10 @@ public final class UserManagerServiceMockedTest {
     public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullAdminIsPartial_returnsTrue() {
         setSystemUserHeadless(true);
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
-        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
-        mUsers.get(OTHER_USER_ID).info.partial = true; // Mark OTHER_USER_ID as partial
+        addAdminUser(USER_ID2); // USER_ID2 is full, admin
+        mUsers.get(USER_ID2).info.partial = true; // Mark USER_ID2 as partial
 
-        // OTHER_USER_ID will be excluded by getUsersInternal
+        // USER_ID2 will be excluded by getUsersInternal
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
     }
 
@@ -1729,7 +1701,7 @@ public final class UserManagerServiceMockedTest {
         mUsers.get(UserHandle.USER_SYSTEM).info.preCreated = true; // Mark system user as preCreated
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
 
-        // OTHER_USER_ID will be excluded by getUsersInternal
+        // USER_ID2 will be excluded by getUsersInternal
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
     }
 
@@ -1778,8 +1750,8 @@ public final class UserManagerServiceMockedTest {
     @RequiresFlagsEnabled(FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY)
     public void testSetUserAdminThrowsSecurityException() {
         addSecondaryUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
-        mockCallingUserId(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
+        mockCallingUserId(USER_ID2);
 
         // 1. Target User Restriction
         mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, USER_ID);
@@ -1787,7 +1759,7 @@ public final class UserManagerServiceMockedTest {
 
         // 2. Current User Restriction
         mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, false, USER_ID);
-        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, OTHER_USER_ID);
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, USER_ID2);
         assertThrows(SecurityException.class, () -> mUms.setUserAdmin(USER_ID));
     }
 
@@ -1841,8 +1813,8 @@ public final class UserManagerServiceMockedTest {
     @RequiresFlagsEnabled(FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY)
     public void testRevokeUserAdminThrowsSecurityException() {
         addAdminUser(USER_ID);
-        addSecondaryUser(OTHER_USER_ID);
-        mockCallingUserId(OTHER_USER_ID);
+        addSecondaryUser(USER_ID2);
+        mockCallingUserId(USER_ID2);
 
         // 1. Target User Restriction
         mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, USER_ID);
@@ -1850,7 +1822,7 @@ public final class UserManagerServiceMockedTest {
 
         // 2. Current User Restriction
         mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, false, USER_ID);
-        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, OTHER_USER_ID);
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, USER_ID2);
         assertThrows(SecurityException.class, () -> mUms.revokeUserAdmin(USER_ID));
     }
 
@@ -1882,7 +1854,7 @@ public final class UserManagerServiceMockedTest {
         mockCallingUserId(USER_ID);
 
         assertThrows(SecurityException.class, () -> mUms
-                .getApplicationRestrictionsForUser(mRealContext.getPackageName(), OTHER_USER_ID));
+                .getApplicationRestrictionsForUser(mRealContext.getPackageName(), USER_ID2));
     }
 
     @Test

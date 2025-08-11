@@ -45,6 +45,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
@@ -97,6 +98,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     private val mockSurfaceControl = mock<SurfaceControl>()
     private val mockMultiDisplayDragMoveIndicatorController =
         mock<MultiDisplayDragMoveIndicatorController>()
+    private val mockDesktopTasksController = mock<DesktopTasksController>()
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
@@ -171,6 +173,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 mainHandler,
                 mockMultiDisplayDragMoveIndicatorController,
                 desktopState,
+                mockDesktopTasksController,
             )
     }
 
@@ -618,6 +621,57 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         // Display has changed; we expect a new stable bounds for display 1.
         verify(spyDisplayLayout1, times(1)).getStableBounds(any())
+    }
+
+    @Test
+    fun testDragResize_moved_updatesTaskbarRounding() = runOnUiThread {
+        val moveBounds = Rect(STARTING_BOUNDS)
+        moveBounds.union(moveBounds.right + 100, moveBounds.bottom + 100)
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.right.toFloat(),
+            STARTING_BOUNDS.bottom.toFloat(),
+        )
+
+        taskPositioner.onDragPositioningMove(
+            DISPLAY_ID_0,
+            moveBounds.right.toFloat(),
+            moveBounds.bottom.toFloat(),
+        )
+
+        verify(mockDesktopTasksController)
+            .updateTaskbarRoundingOnTaskResize(DISPLAY_ID_0, TASK_ID, moveBounds)
+    }
+
+    @Test
+    fun testDragResize_movedSeveralTimes_updatesTaskbarRoundingOnce() = runOnUiThread {
+        val firstmoveBounds = Rect(STARTING_BOUNDS)
+        firstmoveBounds.union(firstmoveBounds.right + 100, firstmoveBounds.bottom + 100)
+        val secondMoveBounds = Rect(firstmoveBounds)
+        secondMoveBounds.union(secondMoveBounds.right + 100, secondMoveBounds.bottom + 100)
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.right.toFloat(),
+            STARTING_BOUNDS.bottom.toFloat(),
+        )
+
+        taskPositioner.onDragPositioningMove(
+            DISPLAY_ID_0,
+            firstmoveBounds.right.toFloat(),
+            firstmoveBounds.bottom.toFloat(),
+        )
+        taskPositioner.onDragPositioningMove(
+            DISPLAY_ID_0,
+            secondMoveBounds.right.toFloat() + 100,
+            secondMoveBounds.bottom.toFloat() + 100,
+        )
+
+        verify(mockDesktopTasksController)
+            .updateTaskbarRoundingOnTaskResize(DISPLAY_ID_0, TASK_ID, firstmoveBounds)
+        verify(mockDesktopTasksController, never())
+            .updateTaskbarRoundingOnTaskResize(DISPLAY_ID_0, TASK_ID, secondMoveBounds)
     }
 
     @Test

@@ -135,11 +135,11 @@ constructor(
                 }
             }
 
-        activityTransitionAnimator.register(cookie, factory, scope)
+        activityTransitionAnimator.registerLongLivedTransitions(cookie, factory, scope)
     }
 
     override fun unregisterTransition(cookie: ActivityTransitionAnimator.TransitionCookie) {
-        activityTransitionAnimator.unregister(cookie)
+        activityTransitionAnimator.unregisterLongLivedTransitions(cookie)
     }
 
     override fun startActivityDismissingKeyguard(

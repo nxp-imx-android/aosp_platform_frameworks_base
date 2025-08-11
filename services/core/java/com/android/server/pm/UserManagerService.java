@@ -170,6 +170,7 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.RoSystemProperties;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.NamedLock;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.XmlUtils;
 import com.android.internal.widget.LockPatternUtils;
@@ -393,9 +394,9 @@ public class UserManagerService extends IUserManager.Stub {
      * with {@link #mPackagesLock}, {@link #mPackagesLock} should be acquired first.
      */
     private final Object mUsersLock = LockGuard.installNewLock(LockGuard.INDEX_USER);
-    private final Object mRestrictionsLock = new Object();
+    private final Object mRestrictionsLock = NamedLock.create("mRestrictionsLock");
     // Used for serializing access to app restriction files
-    private final Object mAppRestrictionsLock = new Object();
+    private final Object mAppRestrictionsLock = NamedLock.create("mAppRestrictionsLock");
 
     private final Handler mHandler;
     private final MultiuserDeprecationReporter mDeprecationReporter;
@@ -1089,7 +1090,7 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     UserManagerService(Context context) {
         this(context, /* pm= */ null, /* userDataPreparer= */ null, new UserJourneyLogger(),
-                /* packagesLock= */ new Object(), context.getCacheDir(), /* users= */ null);
+                NamedLock.create("mPackagesLock"), context.getCacheDir(), /* users= */ null);
     }
 
     /**
@@ -1146,7 +1147,7 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
-     * This method is used to invalidate the caches at server statup,
+     * This method is used to invalidate the caches at server startup,
      * so that caches can start working.
      */
     private static final void initPropertyInvalidatedCaches() {
@@ -1204,7 +1205,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     private static boolean isAutoLockForPrivateSpaceEnabled() {
         return android.os.Flags.allowPrivateProfile()
-                && Flags.supportAutolockForPrivateSpace()
                 && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 

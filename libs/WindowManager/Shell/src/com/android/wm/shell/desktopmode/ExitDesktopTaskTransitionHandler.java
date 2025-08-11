@@ -47,6 +47,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.Cuj;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.util.LatencyTracker;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.transition.Transitions;
@@ -77,14 +78,17 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private Point mPosition;
 
+    private final DisplayController mDisplayController;
+
     public ExitDesktopTaskTransitionHandler(
             Transitions transitions,
             Context context,
             InteractionJankMonitor interactionJankMonitor,
-            @ShellMainThread Handler handler
+            @ShellMainThread Handler handler,
+            DisplayController displayController
     ) {
         this(transitions, SurfaceControl.Transaction::new, context, interactionJankMonitor,
-                handler);
+                handler, displayController);
     }
 
     private ExitDesktopTaskTransitionHandler(
@@ -92,13 +96,15 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
             Supplier<SurfaceControl.Transaction> supplier,
             Context context,
             InteractionJankMonitor interactionJankMonitor,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler,
+            DisplayController displayController) {
         mTransitions = transitions;
         mTransactionSupplier = supplier;
         mContext = context;
         mInteractionJankMonitor = interactionJankMonitor;
         mLatencyTracker = LatencyTracker.getInstance(mContext);
         mHandler = handler;
+        mDisplayController = displayController;
     }
 
     /**
@@ -168,7 +174,9 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
         if (isExitDesktopModeTransition(type)
                 && taskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
             // This Transition animates a task to fullscreen after being dragged to status bar
-            final Resources resources = mContext.getResources();
+            Context displayContext = mDisplayController.getDisplayContext(taskInfo.displayId);
+            if (displayContext == null) displayContext = mContext;
+            final Resources resources = displayContext.getResources();
             final DisplayMetrics metrics = resources.getDisplayMetrics();
             final int screenWidth = metrics.widthPixels;
             final int screenHeight = metrics.heightPixels;

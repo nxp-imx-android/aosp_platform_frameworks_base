@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
-
-import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDesktopDevice
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.AltTabSwitchInDesktopMode
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
-
-/* Functional test for [AltTabSwitchInDesktopMode]. */
-@RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
-@Presubmit
-@ScreenRecordRule.ScreenRecord
-class AltTabSwitchInDesktopModeTest : AltTabSwitchInDesktopMode()
+package com.android.compose.animation.scene.mechanics
+object TileRevealFlag {
+    // TODO(b/435138055) Remove once perf issues are addressed
+    const val isEnabled: Boolean = false
+}

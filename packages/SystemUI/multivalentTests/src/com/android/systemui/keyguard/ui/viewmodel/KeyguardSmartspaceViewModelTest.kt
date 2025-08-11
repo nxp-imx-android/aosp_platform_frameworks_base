@@ -24,7 +24,8 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.keyguardClockRepository
 import com.android.systemui.keyguard.data.repository.keyguardSmartspaceRepository
 import com.android.systemui.keyguard.shared.model.ClockSize
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.testKosmos
@@ -41,9 +42,9 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
-    val kosmos = testKosmos()
-    val testScope = kosmos.testScope
-    val underTest = kosmos.keyguardSmartspaceViewModel
+
+    private val kosmos = testKosmos()
+    private val underTest = kosmos.keyguardSmartspaceViewModel
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS) private lateinit var clockController: ClockController
 
@@ -55,152 +56,128 @@ class KeyguardSmartspaceViewModelTest : SysuiTestCase() {
 
     @Test
     fun testWhenWeatherEnabled_notCustomWeatherDataDisplay_isWeatherVisible_shouldBeTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
             whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay)
                 .thenReturn(false)
 
-            with(kosmos) {
-                keyguardSmartspaceRepository.setIsWeatherEnabled(true)
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-            }
+            keyguardSmartspaceRepository.setIsWeatherEnabled(true)
+            keyguardClockRepository.setClockSize(ClockSize.LARGE)
 
             assertThat(isWeatherVisible).isEqualTo(true)
         }
 
     @Test
     fun testWhenWeatherEnabled_notCustomWeatherDataDisplay_isWeatherVisible_smallClock_shouldBeTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
             whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay)
                 .thenReturn(false)
 
-            with(kosmos) {
-                keyguardSmartspaceRepository.setIsWeatherEnabled(true)
-                keyguardClockRepository.setClockSize(ClockSize.SMALL)
-            }
+            keyguardSmartspaceRepository.setIsWeatherEnabled(true)
+            keyguardClockRepository.setClockSize(ClockSize.SMALL)
 
             assertThat(isWeatherVisible).isEqualTo(true)
         }
 
     @Test
     fun testWhenWeatherEnabled_hasCustomWeatherDataDisplay_isWeatherVisible_shouldBeFalse() =
-        testScope.runTest {
+        kosmos.runTest {
             val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
             whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay).thenReturn(true)
 
-            with(kosmos) {
-                keyguardSmartspaceRepository.setIsWeatherEnabled(true)
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-            }
+            keyguardSmartspaceRepository.setIsWeatherEnabled(true)
+            keyguardClockRepository.setClockSize(ClockSize.LARGE)
 
             assertThat(isWeatherVisible).isEqualTo(false)
         }
 
     @Test
     fun testWhenWeatherEnabled_hasCustomWeatherDataDisplay_isWeatherVisible_smallClock_shouldBeTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
             whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay).thenReturn(true)
 
-            with(kosmos) {
-                keyguardSmartspaceRepository.setIsWeatherEnabled(true)
-                keyguardClockRepository.setClockSize(ClockSize.SMALL)
-            }
+            keyguardSmartspaceRepository.setIsWeatherEnabled(true)
+            keyguardClockRepository.setClockSize(ClockSize.SMALL)
 
             assertThat(isWeatherVisible).isEqualTo(true)
         }
 
     @Test
     fun testWhenWeatherEnabled_notCustomWeatherDataDisplay_notIsWeatherVisible_shouldBeFalse() =
-        testScope.runTest {
+        kosmos.runTest {
             val isWeatherVisible by collectLastValue(underTest.isWeatherVisible)
             whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay)
                 .thenReturn(false)
 
-            with(kosmos) {
-                keyguardSmartspaceRepository.setIsWeatherEnabled(false)
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-            }
+            keyguardSmartspaceRepository.setIsWeatherEnabled(false)
+            keyguardClockRepository.setClockSize(ClockSize.LARGE)
 
             assertThat(isWeatherVisible).isEqualTo(false)
         }
 
     @Test
     fun isDateVisible_notCustomWeatherDataDisplay_largeClock_shouldBeTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isDateVisible by collectLastValue(underTest.isDateVisible)
             whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay)
                 .thenReturn(false)
 
-            with(kosmos) {
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-            }
+            keyguardClockRepository.setClockSize(ClockSize.LARGE)
 
             assertThat(isDateVisible).isEqualTo(true)
         }
 
     @Test
     fun isDateVisible_hasCustomWeatherDataDisplay_largeClock_shouldBeFalse() =
-        testScope.runTest {
+        kosmos.runTest {
             val isDateVisible by collectLastValue(underTest.isDateVisible)
-            whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay)
-                .thenReturn(true)
+            whenever(clockController.largeClock.config.hasCustomWeatherDataDisplay).thenReturn(true)
 
-            with(kosmos) {
-                keyguardClockRepository.setClockSize(ClockSize.LARGE)
-            }
+            keyguardClockRepository.setClockSize(ClockSize.LARGE)
 
             assertThat(isDateVisible).isEqualTo(false)
         }
 
     @Test
     fun isDateVisible_hasCustomWeatherDataDisplay_smallClock_shouldBeTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isDateVisible by collectLastValue(underTest.isDateVisible)
-            whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay)
-                .thenReturn(true)
+            whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay).thenReturn(true)
 
-            with(kosmos) {
-                keyguardClockRepository.setClockSize(ClockSize.SMALL)
-            }
+            keyguardClockRepository.setClockSize(ClockSize.SMALL)
 
             assertThat(isDateVisible).isEqualTo(true)
         }
 
     @Test
     fun isDateVisible_notCustomWeatherDataDisplay_smallClock_shouldBeTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isDateVisible by collectLastValue(underTest.isDateVisible)
             whenever(clockController.smallClock.config.hasCustomWeatherDataDisplay)
                 .thenReturn(false)
 
-            with(kosmos) {
-                keyguardClockRepository.setClockSize(ClockSize.SMALL)
-            }
+            keyguardClockRepository.setClockSize(ClockSize.SMALL)
 
             assertThat(isDateVisible).isEqualTo(true)
         }
 
     @Test
-    fun isShadeLayoutWide_withConfigTrue_true() =
-        with(kosmos) {
-            testScope.runTest {
-                val isShadeLayoutWide by collectLastValue(underTest.isShadeLayoutWide)
-                shadeRepository.setShadeLayoutWide(true)
+    fun isFullWidthShade_withConfigTrue_false() =
+        kosmos.runTest {
+            val isFullWidthShade by collectLastValue(underTest.isFullWidthShade)
+            shadeRepository.setShadeLayoutWide(true)
 
-                assertThat(isShadeLayoutWide).isTrue()
-            }
+            assertThat(isFullWidthShade).isFalse()
         }
 
     @Test
-    fun isShadeLayoutWide_withConfigFalse_false() =
-        with(kosmos) {
-            testScope.runTest {
-                val isShadeLayoutWide by collectLastValue(underTest.isShadeLayoutWide)
-                shadeRepository.setShadeLayoutWide(false)
+    fun isFullWidthShade_withConfigFalse_true() =
+        kosmos.runTest {
+            val isFullWidthShade by collectLastValue(underTest.isFullWidthShade)
+            shadeRepository.setShadeLayoutWide(false)
 
-                assertThat(isShadeLayoutWide).isFalse()
-            }
+            assertThat(isFullWidthShade).isTrue()
         }
 }

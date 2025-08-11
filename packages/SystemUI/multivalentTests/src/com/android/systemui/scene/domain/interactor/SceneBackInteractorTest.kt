@@ -41,6 +41,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableSceneContainer
 class SceneBackInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -48,7 +49,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
     private val underTest by lazy { kosmos.sceneBackInteractor }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_thenBack_whileLocked() =
         kosmos.runTest {
             enableSingleShade()
@@ -64,7 +64,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_thenUnlock() =
         kosmos.runTest {
             enableSingleShade()
@@ -79,7 +78,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_skippingShade_thenBack_whileLocked() =
         kosmos.runTest {
             enableSingleShade()
@@ -93,7 +91,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_skippingShade_thenBack_thenShade_whileLocked() =
         kosmos.runTest {
             enableSingleShade()
@@ -108,7 +105,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_thenBack_whileUnlocked() =
         kosmos.runTest {
             enableSingleShade()
@@ -125,7 +121,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_skippingShade_thenBack_whileUnlocked() =
         kosmos.runTest {
             enableSingleShade()
@@ -140,7 +135,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun navigateToQs_skippingShade_thenBack_thenShade_whileUnlocked() =
         kosmos.runTest {
             enableSingleShade()
@@ -156,7 +150,6 @@ class SceneBackInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
     fun updateBackStack() =
         kosmos.runTest {
             enableSingleShade()
@@ -172,6 +165,36 @@ class SceneBackInteractorTest : SysuiTestCase() {
 
             assertThat(underTest.backStack.value.asIterable().toList())
                 .isEqualTo(listOf(Scenes.Lockscreen, Scenes.Shade))
+        }
+
+    @Test
+    fun replaceLockscreenSceneOnBackStack_replacesLockscreenWithGone() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.onSceneChange(from = Scenes.Lockscreen, to = Scenes.Shade)
+            underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Lockscreen))
+
+            underTest.replaceLockscreenSceneOnBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
+        }
+
+    @Test
+    fun replaceLockscreenSceneOnBackStack_nothingToDo() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.onSceneChange(from = Scenes.Gone, to = Scenes.Shade)
+            underTest.onSceneChange(from = Scenes.Shade, to = Scenes.QuickSettings)
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
+
+            underTest.replaceLockscreenSceneOnBackStack()
+
+            assertThat(underTest.backStack.value.asIterable().toList())
+                .isEqualTo(listOf(Scenes.Shade, Scenes.Gone))
         }
 
     private suspend fun Kosmos.assertRoute(vararg route: RouteNode) {

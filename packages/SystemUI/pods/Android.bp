@@ -88,6 +88,7 @@ java_library {
     name: "com.android.systemui.pods-impl-aosp-handheld",
     static_libs: [
         "com.android.systemui.pods-api-aosp-handheld",
+        "com.android.systemui.notifications.ui.composable",
         "com.android.systemui.retail-impl",
         "com.android.systemui.rotation-impl",
         "com.android.systemui.statusbar.pipeline.airplane.data.repository-impl",

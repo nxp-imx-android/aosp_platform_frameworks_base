@@ -17,7 +17,7 @@
 package com.android.systemui.plugins.clocks
 
 data class ClockPreviewConfig(
-    val isShadeLayoutWide: Boolean,
+    val isFullWidthShade: Boolean,
     val isSceneContainerFlagEnabled: Boolean,
     val statusBarHeight: Int,
     val splitShadeTopMargin: Int,
@@ -27,10 +27,10 @@ data class ClockPreviewConfig(
     val udfpsTop: Float? = null,
 ) {
     fun getSmallClockTopPadding(statusBarHeight: Int = this.statusBarHeight): Int {
-        return if (isShadeLayoutWide) {
-            splitShadeTopMargin - if (isSceneContainerFlagEnabled) statusBarHeight else 0
+        return if (isFullWidthShade) {
+            clockTopMargin + if (isSceneContainerFlagEnabled) 0 else statusBarHeight
         } else {
-            clockTopMargin + if (!isSceneContainerFlagEnabled) statusBarHeight else 0
+            splitShadeTopMargin - if (isSceneContainerFlagEnabled) statusBarHeight else 0
         }
     }
 }

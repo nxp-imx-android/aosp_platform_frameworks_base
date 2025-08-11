@@ -309,6 +309,13 @@ flag {
 }
 
 flag {
+    name: "material_default_user_icon"
+    namespace: "systemui"
+    description: "Shows the material themed default user icon."
+    bug: "424367031"
+}
+
+flag {
     name: "material_motion_tokens"
     namespace: "systemui"
     description: "Adding new Material Tokens for M3 Motion Spec"

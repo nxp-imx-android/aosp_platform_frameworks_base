@@ -153,7 +153,7 @@ class TextFileFilterPolicyBuilder(
 
     init {
         // Create a filter that checks "partial allowlisting".
-        val filter = ConstantFilter(FilterPolicy.Remove, "default disallowed")
+        val filter = ConstantFilter(FilterPolicy.Remove.withReason("default disallowed"))
         annotationAllowedInMemoryFilter = InMemoryOutputFilter(classes, filter)
     }
 
@@ -280,7 +280,7 @@ class TextFileFilterPolicyBuilder(
                 targetName,
                 methodDesc,
                 FilterPolicy.Keep.withReason(
-                    "in-class-replace - ${policy.reason}")
+                    "in-class-replace-target - ${policy.reason}")
             )
             // Set up the rename.
             imf.setRenameTo(className, targetName, methodDesc, methodName)
@@ -295,7 +295,7 @@ class TextFileFilterPolicyBuilder(
             // Keep the source method, because the target method may call it.
             imf.setPolicyForMethod(className, methodName, methodDesc,
                 FilterPolicy.Keep.withReason(
-                    reason("out-class-replace", parser.currentInlineComment)))
+                    reason("out-class-replace-from", parser.currentInlineComment)))
             imf.setMethodCallReplaceSpec(replaceSpec)
         }
     }
@@ -427,6 +427,11 @@ class TextFileFilterPolicyParser {
             "kc", FilterPolicy.KeepClass.policyStringOrPrefix -> FilterPolicy.KeepClass
             "i", FilterPolicy.Ignore.policyStringOrPrefix -> FilterPolicy.Ignore
             "rdr", FilterPolicy.Redirect.policyStringOrPrefix -> FilterPolicy.Redirect
+
+            // Exp/expc is handled differently from "keep/keepclass".
+            // If a class has "exp", it'll automatically be converted to "ExperimentalClass".
+            // So we don't use "experimentalclass" in the policy file.
+            // See parseClassPolicy().
             "exp", FilterPolicy.Experimental.policyStringOrPrefix -> FilterPolicy.Experimental
             FilterPolicy.AnnotationAllowed.policyStringOrPrefix -> FilterPolicy.AnnotationAllowed
             else -> {
@@ -437,6 +442,18 @@ class TextFileFilterPolicyParser {
                 }
             }
         }
+    }
+
+    /**
+     * Basically same as [parsePolicy], but use it for package/classes. We remap tweak some
+     * of the policies.
+     */
+    private fun parseClassPolicy(s: String): FilterPolicy {
+        val p = parsePolicy(s)
+        if (p == FilterPolicy.Experimental) {
+            return FilterPolicy.ExperimentalClass
+        }
+        return p
     }
 
     private fun parsePackage(fields: Array<String>) {
@@ -457,9 +474,10 @@ class TextFileFilterPolicyParser {
         if (rawPolicy.startsWith("~")) {
             throw ParseException("Package can't have a class load hook")
         }
-        val policy = parsePolicy(rawPolicy)
+        val policy = parseClassPolicy(rawPolicy)
         if (!policy.isUsableWithClasses) {
-            throw ParseException("Package can't have policy '$policy'")
+            throw ParseException(
+                "Package can't have policy '$rawPolicy' (parsed as $policy)")
         }
         processor.onPackage(name, policy.withReason(
             reason("package - '$rawPolicy'", currentInlineComment)))
@@ -517,9 +535,10 @@ class TextFileFilterPolicyParser {
                 throw ParseException("Special class or subclass directive must have a policy")
             }
 
-            val policy = parsePolicy(rawPolicy)
+            val policy = parseClassPolicy(rawPolicy)
             if (!policy.isUsableWithClasses) {
-                throw ParseException("Class can't have policy '$policy'")
+                throw ParseException(
+                    "Class can't have policy '$rawPolicy' (parsed as $policy)")
             }
 
             when (classType) {

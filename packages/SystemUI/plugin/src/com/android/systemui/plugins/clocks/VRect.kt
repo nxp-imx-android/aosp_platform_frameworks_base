@@ -19,6 +19,7 @@ package com.android.systemui.plugins.clocks
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Half
+import androidx.compose.ui.geometry.Rect as ComposeRect
 
 private val LEFT_MASK: ULong = 0xFFFF000000000000U
 private val TOP_MASK: ULong = 0x0000FFFF00000000U
@@ -70,6 +71,10 @@ value class VRectF(val data: ULong) {
         right = rect.right.toFloat(),
         bottom = rect.bottom.toFloat(),
     )
+
+    constructor(
+        rect: ComposeRect
+    ) : this(left = rect.left, top = rect.top, right = rect.right, bottom = rect.bottom)
 
     constructor(
         left: Float,

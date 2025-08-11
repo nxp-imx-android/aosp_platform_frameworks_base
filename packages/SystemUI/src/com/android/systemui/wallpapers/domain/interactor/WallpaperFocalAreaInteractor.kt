@@ -172,12 +172,12 @@ constructor(
     @VisibleForTesting
     val wallpaperFocalAreaBounds: Flow<RectF> =
         combine(
-                shadeModeInteractor.isShadeLayoutWide,
+                shadeModeInteractor.isFullWidthShade,
                 wallpaperFocalAreaRepository.notificationStackAbsoluteBottom,
                 wallpaperFocalAreaRepository.shortcutAbsoluteTop,
                 topAreaSectionBottom,
             ) {
-                isShadeLayoutWide,
+                isFullWidthShade,
                 notificationStackAbsoluteBottom,
                 shortcutAbsoluteTop,
                 topAreaSectionBottom ->
@@ -211,21 +211,25 @@ constructor(
                         wallpaperZoomedInScale
 
                 val top =
-                    // tablet landscape
-                    if (context.resources.getBoolean(R.bool.center_align_focal_area_shape)) {
-                        // no strict constraints for top, use bottom margin to make it symmetric
-                        // vertically
-                        scaledBounds.top + scaledBottomMargin
-                    }
-                    // unfold foldable landscape
-                    else if (isShadeLayoutWide) {
-                        // For all landscape, we should use bottom of smartspace to constrain
-                        scaledBounds.top + topAreaSectionBottom / wallpaperZoomedInScale
-                        // handheld / portrait
-                    } else {
-                        scaledBounds.top +
-                            MathUtils.max(topAreaSectionBottom, notificationStackAbsoluteBottom) /
-                                wallpaperZoomedInScale
+                    when {
+                        // Tablet landscape
+                        context.resources.getBoolean(R.bool.center_align_focal_area_shape) ->
+                            // no strict constraints for top, use bottom margin to make it symmetric
+                            // vertically
+                            scaledBounds.top + scaledBottomMargin
+
+                        // Handheld / tablet portrait
+                        isFullWidthShade ->
+                            scaledBounds.top +
+                                MathUtils.max(
+                                    topAreaSectionBottom,
+                                    notificationStackAbsoluteBottom,
+                                ) / wallpaperZoomedInScale
+
+                        // Unfolded foldable landscape
+                        else ->
+                            // For all landscape, we should use bottom of smartspace to constrain
+                            scaledBounds.top + topAreaSectionBottom / wallpaperZoomedInScale
                     }
                 val bottom = scaledBounds.bottom - scaledBottomMargin
                 RectF(left, top, right, bottom).also { Log.d(TAG, "Focal area changes to $it") }

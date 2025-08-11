@@ -24,7 +24,7 @@ import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
 import static android.security.Flags.shouldTrustManagerListenForPrimaryAuth;
 
-import static com.android.internal.widget.flags.Flags.hideLastCharWithPhysicalInput;
+import static com.android.internal.widget.flags.Flags.useDefaultVisibilityForSensitiveInputs;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -42,7 +42,6 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.UserInfo;
-import android.hardware.input.InputManagerGlobal;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -60,7 +59,6 @@ import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
-import android.view.InputDevice;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
@@ -1065,18 +1063,17 @@ public class LockPatternUtils {
         return type == CREDENTIAL_TYPE_PATTERN;
     }
 
-    private boolean hasActivePointerDeviceAttached() {
-        return !getEnabledNonTouchInputDevices(InputDevice.SOURCE_CLASS_POINTER).isEmpty();
-    }
-
     /**
      * @return Whether the visible pattern is enabled.
      */
     @UnsupportedAppUsage
     public boolean isVisiblePatternEnabled(int userId) {
         boolean defaultValue = true;
-        if (hideLastCharWithPhysicalInput()) {
-            defaultValue = !hasActivePointerDeviceAttached();
+        if (useDefaultVisibilityForSensitiveInputs()) {
+            defaultValue =
+                    mContext.getResources()
+                            .getBoolean(
+                                    com.android.internal.R.bool.config_lockPatternVisibleDefault);
         }
         return getBoolean(Settings.Secure.LOCK_PATTERN_VISIBLE, defaultValue, userId);
     }
@@ -1092,37 +1089,17 @@ public class LockPatternUtils {
         return getString(Settings.Secure.LOCK_PATTERN_VISIBLE, userId) != null;
     }
 
-    private List<InputDevice> getEnabledNonTouchInputDevices(int source) {
-        final InputManagerGlobal inputManager = InputManagerGlobal.getInstance();
-        final int[] inputIds = inputManager.getInputDeviceIds();
-        List<InputDevice> matchingDevices = new ArrayList<InputDevice>();
-        for (final int deviceId : inputIds) {
-            final InputDevice inputDevice = inputManager.getInputDevice(deviceId);
-            if (!inputDevice.isEnabled()) continue;
-            if (inputDevice.supportsSource(InputDevice.SOURCE_TOUCHSCREEN)) continue;
-            if (inputDevice.isVirtual()) continue;
-            if (!inputDevice.supportsSource(source)) continue;
-            matchingDevices.add(inputDevice);
-        }
-        return matchingDevices;
-    }
-
-    private boolean hasPhysicalKeyboardActive() {
-        final List<InputDevice> keyboards =
-                getEnabledNonTouchInputDevices(InputDevice.SOURCE_KEYBOARD);
-        for (final InputDevice keyboard : keyboards) {
-            if (keyboard.isFullKeyboard()) return true;
-        }
-        return false;
-    }
-
     /**
      * @return Whether enhanced pin privacy is enabled.
      */
     public boolean isPinEnhancedPrivacyEnabled(int userId) {
         boolean defaultValue = false;
-        if (hideLastCharWithPhysicalInput()) {
-            defaultValue = hasPhysicalKeyboardActive();
+        if (useDefaultVisibilityForSensitiveInputs()) {
+            defaultValue =
+                    mContext.getResources()
+                            .getBoolean(
+                                    com.android.internal.R.bool
+                                            .config_lockPinEnhancedPrivacyDefault);
         }
         return getBoolean(LOCK_PIN_ENHANCED_PRIVACY, defaultValue, userId);
     }

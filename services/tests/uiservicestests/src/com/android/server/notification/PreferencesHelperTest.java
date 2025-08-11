@@ -52,7 +52,6 @@ import static android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION;
 import static android.media.AudioAttributes.USAGE_NOTIFICATION;
 import static android.os.Process.INVALID_UID;
 import static android.os.UserHandle.USER_ALL;
-import static android.os.UserHandle.USER_SYSTEM;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
@@ -207,10 +206,9 @@ import java.util.concurrent.ThreadLocalRandom;
 @RunWith(ParameterizedAndroidJunit4.class)
 public class PreferencesHelperTest extends UiServiceTestCase {
     private static final int UID_HEADLESS = 1000000;
-    private static final UserHandle USER = UserHandle.of(0);
     private static final String SYSTEM_PKG = "android";
     private static final int SYSTEM_UID = 1000;
-    private static final UserHandle USER2 = UserHandle.of(10);
+    private final UserHandle USER2 = UserHandle.of(mUserId + UserHandle.PER_USER_RANGE);
     private static final String TEST_AUTHORITY = "test";
     private static final Uri SOUND_URI =
             Uri.parse("content://" + TEST_AUTHORITY + "/internal/audio/media/10");
@@ -370,7 +368,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         appPermissions.put(new Pair<>(UID_O, PKG_O), new Pair<>(true, false));
         appPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
 
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         IntArray currentProfileIds = IntArray.wrap(new int[]{0});
@@ -584,34 +582,32 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testReadXml_onlyRestoresTargetUser() throws Exception {
-        // Setup package in user 0.
-        String package0 = "test.package.user0";
-        int uid0 = 1001;
-        setUpPackageWithUid(package0, uid0);
+        // Setup package in user mUserId.
+        setUpPackageWithUid(PKG_P, UID_P);
         NotificationChannel channel0 = new NotificationChannel("id0", "name0", IMPORTANCE_HIGH);
-        assertTrue(mHelper.createNotificationChannel(package0, uid0, channel0, true, false,
-                uid0, false));
+        assertTrue(mHelper.createNotificationChannel(PKG_P, UID_P, channel0, true, false,
+                UID_P, false));
 
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
-        appPermissions.put(new Pair<>(uid0, package0), new Pair<>(true, false));
+        appPermissions.put(new Pair<>(UID_P, PKG_P), new Pair<>(true, false));
 
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
-        ByteArrayOutputStream baos = writeXmlAndPurge(package0, uid0, true, 0);
+        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_P, UID_P, true, mUserId);
 
         // Reset state.
-        mXmlHelper.onPackagesChanged(true, 0, new String[] {package0}, new int[] {uid0});
+        mXmlHelper.onPackagesChanged(true, mUserId, new String[] {PKG_P}, new int[] {UID_P});
 
         // Restore should convert the uid according to the target user.
-        int expectedUid = 1001001;
-        setUpPackageWithUid(package0, expectedUid);
+        int expectedUid = UID_P + (3 * UserHandle.PER_USER_RANGE);
+        setUpPackageWithUid(PKG_P, expectedUid);
         // Parse backup data.
-        loadStreamXml(baos, true, 10);
+        loadStreamXml(baos, true, UserHandle.getUserId(expectedUid));
 
         assertEquals(channel0,
-                mXmlHelper.getNotificationChannel(package0, expectedUid, channel0.getId(), false));
-        assertNull(mXmlHelper.getNotificationChannel(package0, uid0, channel0.getId(), false));
+                mXmlHelper.getNotificationChannel(PKG_P, expectedUid, channel0.getId(), false));
+        assertNull(mXmlHelper.getNotificationChannel(PKG_P, UID_P, channel0.getId(), false));
     }
 
     @Test
@@ -748,14 +744,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.setValidBubbleSent(PKG_P, UID_P);
 
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel1.getId(), channel2.getId(), channel3.getId(),
+                mUserId, channel1.getId(), channel2.getId(), channel3.getId(),
                 NotificationChannel.DEFAULT_CHANNEL_ID);
         mHelper.onPackagesChanged(true, UserHandle.myUserId(), new String[]{PKG_N_MR1, PKG_O},
                 new int[]{UID_N_MR1, UID_O});
 
         mHelper.setShowBadge(PKG_O, UID_O, true);
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         assertTrue(mXmlHelper.canShowBadge(PKG_N_MR1, UID_N_MR1));
         assertTrue(mXmlHelper.hasSentInvalidMsg(PKG_P, UID_P));
@@ -814,7 +810,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "</package>\n"
                 + "</ranking>\n";
 
-        loadByteArrayXml(xml.getBytes(), false, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), false, mUserId);
 
         // expected values
         NotificationChannel idn = new NotificationChannel("idn", "name", IMPORTANCE_LOW);
@@ -857,11 +853,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testReadXml_oldXml_backup_migratesWhenPkgInstalled() throws Exception {
-        when(mPm.getPackageUidAsUser("pkg1", USER_SYSTEM))
+        when(mPm.getPackageUidAsUser("pkg1", mUserId))
                 .thenThrow(new PackageManager.NameNotFoundException("Package pkg1 not found"));
-        when(mPm.getPackageUidAsUser("pkg2", USER_SYSTEM))
+        when(mPm.getPackageUidAsUser("pkg2", mUserId))
                 .thenThrow(new PackageManager.NameNotFoundException("Package pkg2 not found"));
-        when(mPm.getPackageUidAsUser("pkg3", USER_SYSTEM))
+        when(mPm.getPackageUidAsUser("pkg3", mUserId))
                 .thenThrow(new PackageManager.NameNotFoundException("Package pkg3 not found"));
         when(mPm.getApplicationInfoAsUser(eq("pkg1"), anyInt(), anyInt())).thenThrow(
                 new PackageManager.NameNotFoundException());
@@ -905,28 +901,32 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .build());
 
         // Notifications enabled, not user set
-        PackagePermission pkg1Expected = new PackagePermission("pkg1", 0, true, false);
+        PackagePermission pkg1Expected = new PackagePermission("pkg1", mUserId, true, false);
         // Notifications not enabled, so user set
-        PackagePermission pkg2Expected = new PackagePermission("pkg2", 0, false, true);
+        PackagePermission pkg2Expected = new PackagePermission("pkg2", mUserId, false, true);
         // Notifications enabled, user set b/c channel modified
-        PackagePermission pkg3Expected = new PackagePermission("pkg3", 0, true, true);
+        PackagePermission pkg3Expected = new PackagePermission("pkg3", mUserId, true, true);
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         verify(mPermissionHelper, never()).setNotificationPermission(any());
 
-        doReturn(11).when(mPm).getPackageUidAsUser("pkg1", USER_SYSTEM);
-        doReturn(12).when(mPm).getPackageUidAsUser("pkg2", USER_SYSTEM);
-        doReturn(13).when(mPm).getPackageUidAsUser("pkg3", USER_SYSTEM);
+        doReturn(UserHandle.getUid(mUserId, 11)).when(mPm).getPackageUidAsUser("pkg1", mUserId);
+        doReturn(UserHandle.getUid(mUserId, 12)).when(mPm).getPackageUidAsUser("pkg2", mUserId);
+        doReturn(UserHandle.getUid(mUserId, 13)).when(mPm).getPackageUidAsUser("pkg3", mUserId);
 
         mXmlHelper.onPackagesChanged(
-                false, 0, new String[]{"pkg1", "pkg2", "pkg3"}, new int[] {11, 12, 13});
+                false, mUserId, new String[]{"pkg1", "pkg2", "pkg3"},
+                new int[] {11, 12, 13});
 
-        assertTrue(mXmlHelper.canShowBadge("pkg1", 11));
+        assertTrue(mXmlHelper.canShowBadge("pkg1", mUserId));
 
-        assertEquals(idn, mXmlHelper.getNotificationChannel("pkg1", 11, idn.getId(), false));
-        compareChannels(ido, mXmlHelper.getNotificationChannel("pkg2", 12, ido.getId(), false));
-        compareChannels(idp, mXmlHelper.getNotificationChannel("pkg3", 13, idp.getId(), false));
+        assertEquals(idn, mXmlHelper.getNotificationChannel(
+                "pkg1", UserHandle.getUid(mUserId, 11), idn.getId(), false));
+        compareChannels(ido, mXmlHelper.getNotificationChannel(
+                "pkg2", UserHandle.getUid(mUserId, 12), ido.getId(), false));
+        compareChannels(idp, mXmlHelper.getNotificationChannel(
+                "pkg3", UserHandle.getUid(mUserId, 13), idp.getId(), false));
 
         verify(mPermissionHelper).setNotificationPermission(pkg1Expected);
         verify(mPermissionHelper).setNotificationPermission(pkg2Expected);
@@ -973,7 +973,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .setFlags(0)
                 .build());
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         assertTrue(mXmlHelper.canShowBadge(PKG_N_MR1, UID_N_MR1));
 
@@ -1032,7 +1032,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .setFlags(0)
                 .build());
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         assertTrue(mXmlHelper.canShowBadge(PKG_N_MR1, UID_N_MR1));
 
@@ -1091,7 +1091,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .setFlags(0)
                 .build());
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         assertTrue(mXmlHelper.canShowBadge(PKG_N_MR1, UID_N_MR1));
 
@@ -1111,7 +1111,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testReadXml_oldXml_migration_NoUid() throws Exception {
-        when(mPm.getPackageUidAsUser("something", USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser("something", mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package something not found"));
         String xml = "<ranking version=\"2\">\n"
                 + "<package name=\"something\" show_badge=\"true\">\n"
@@ -1126,23 +1126,24 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .build());
         idn.setShowBadge(false);
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
         verify(mPermissionHelper, never()).setNotificationPermission(any());
 
-        doReturn(1234).when(mPm).getPackageUidAsUser("something", USER_SYSTEM);
+        doReturn(UserHandle.getUid(mUserId, 1234)).when(mPm).getPackageUidAsUser("something", mUserId);
         final ApplicationInfo app = new ApplicationInfo();
         app.targetSdkVersion = Build.VERSION_CODES.N_MR1 + 1;
         when(mPm.getApplicationInfoAsUser(
-                eq("something"), anyInt(), eq(USER_SYSTEM))).thenReturn(app);
+                eq("something"), anyInt(), eq(mUserId))).thenReturn(app);
 
-        mXmlHelper.onPackagesChanged(false, 0, new String[] {"something"}, new int[] {1234});
+        mXmlHelper.onPackagesChanged(false, mUserId, new String[] {"something"},
+                new int[] {UserHandle.getUid(mUserId, 1234)});
 
         verify(mPermissionHelper, times(1)).setNotificationPermission(any());
     }
 
     @Test
     public void testReadXml_newXml_noMigration_NoUid() throws Exception {
-        when(mPm.getPackageUidAsUser("something", USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser("something", mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package something not found"));
         String xml = "<ranking version=\"3\">\n"
                 + "<package name=\"something\" show_badge=\"true\">\n"
@@ -1157,9 +1158,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .build());
         idn.setShowBadge(false);
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
-        doReturn(1234).when(mPm).getPackageUidAsUser("something", USER_SYSTEM);
+        doReturn(1234).when(mPm).getPackageUidAsUser("something", mUserId);
         final ApplicationInfo app = new ApplicationInfo();
         app.targetSdkVersion = Build.VERSION_CODES.N_MR1 + 1;
         when(mPm.getApplicationInfoAsUser(eq("something"), anyInt(), anyInt())).thenReturn(app);
@@ -1178,7 +1179,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         appPermissions.put(new Pair<>(UID_O, PKG_O), new Pair<>(false, false));
         appPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
 
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         NotificationChannelGroup ncg = new NotificationChannelGroup("1", "bye");
@@ -1218,7 +1219,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.setInvalidMsgAppDemoted(PKG_P, UID_P, true);
 
         ByteArrayOutputStream baos = writeXmlAndPurge(
-                PKG_N_MR1, UID_N_MR1, false, USER_SYSTEM);
+                PKG_N_MR1, UID_N_MR1, false, mUserId);
         String expected = "<ranking version=\"4\" "
                 + "last_bubbles_version_upgrade=\"" + Build.VERSION.SDK_INT + "\">\n";
         String expected_o =
@@ -1270,7 +1271,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         appPermissions.put(new Pair<>(UID_O, PKG_O), new Pair<>(false, false));
         appPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
 
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         NotificationChannelGroup ncg = new NotificationChannelGroup("1", "bye");
@@ -1310,7 +1311,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.setInvalidMsgAppDemoted(PKG_P, UID_P, true);
 
         ByteArrayOutputStream baos = writeXmlAndPurge(
-                PKG_N_MR1, UID_N_MR1, true, USER_SYSTEM);
+                PKG_N_MR1, UID_N_MR1, true, mUserId);
         String expected = "<ranking version=\"4\" "
                 + "last_bubbles_version_upgrade=\"" + Build.VERSION.SDK_INT + "\">\n";
         String expected_o =
@@ -1364,7 +1365,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
         appPermissions.put(new Pair<>(UID_P, PKG_P), new Pair<>(true, false));
         appPermissions.put(new Pair<>(UID_O, PKG_O), new Pair<>(false, false));
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         NotificationChannelGroup ncg = new NotificationChannelGroup("1", "bye");
@@ -1404,7 +1405,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.setInvalidMsgAppDemoted(PKG_P, UID_P, true);
 
         ByteArrayOutputStream baos = writeXmlAndPurge(
-                PKG_N_MR1, UID_N_MR1, true, USER_SYSTEM);
+                PKG_N_MR1, UID_N_MR1, true, mUserId);
         String expected = "<ranking version=\"4\" "
                 + "last_bubbles_version_upgrade=\"" + Build.VERSION.SDK_INT + "\">\n";
                 // Importance 0 because off in permissionhelper
@@ -1459,11 +1460,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         appPermissions.put(new Pair<>(UID_O, PKG_O), new Pair<>(false, false));
         appPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
 
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         ByteArrayOutputStream baos = writeXmlAndPurge(
-                PKG_N_MR1, UID_N_MR1, true, USER_SYSTEM);
+                PKG_N_MR1, UID_N_MR1, true, mUserId);
         String expected = "<ranking version=\"4\" "
                 + "last_bubbles_version_upgrade=\"" + Build.VERSION.SDK_INT + "\">\n"
                 // Packages that exist solely in permissionhelper
@@ -1485,10 +1486,10 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 UID_N_MR1, false);
 
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
         // Testing that in restore we are given the canonical version
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
         verify(mTestIContentProvider).uncanonicalize(any(), eq(CANONICAL_SOUND_URI));
     }
 
@@ -1514,9 +1515,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         NotificationChannel actualChannel = mXmlHelper.getNotificationChannel(
                 PKG_N_MR1, UID_N_MR1, channel.getId(), false);
@@ -1537,9 +1538,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         NotificationChannel actualChannel = mXmlHelper.getNotificationChannel(
                 PKG_N_MR1, UID_N_MR1, channel.getId(), false);
@@ -1563,7 +1564,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
         // canonicalization / uncanonicalization returns null for the restore part
         doReturn(null)
@@ -1572,18 +1573,18 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 .when(mTestIContentProvider).uncanonicalize(any(), any());
 
         // simulate package not installed
-        when(mPm.getPackageUidAsUser(PKG_N_MR1, USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser(PKG_N_MR1, mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package PKG_N_MR1 not found"));
         when(mPm.getApplicationInfoAsUser(eq(PKG_N_MR1), anyInt(), anyInt())).thenThrow(
                 new PackageManager.NameNotFoundException());
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         // package is "installed"
-        doReturn(UID_N_MR1).when(mPm).getPackageUidAsUser(PKG_N_MR1, USER_SYSTEM);
+        doReturn(UID_N_MR1).when(mPm).getPackageUidAsUser(PKG_N_MR1, mUserId);
 
         // Trigger 2nd restore pass
-        mXmlHelper.onPackagesChanged(false, USER_SYSTEM, new String[]{PKG_N_MR1},
+        mXmlHelper.onPackagesChanged(false, mUserId, new String[]{PKG_N_MR1},
                 new int[]{UID_N_MR1});
 
         // sound is flagged as restored and set to default URI
@@ -1597,7 +1598,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     @Test
     public void testRestoreXml_delayedRestore() throws Exception {
         // simulate package not installed
-        when(mPm.getPackageUidAsUser(PKG_R, USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser(PKG_R, mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package PKG_R not found"));
         when(mPm.getApplicationInfoAsUser(eq(PKG_R), anyInt(), anyInt())).thenThrow(
                 new PackageManager.NameNotFoundException());
@@ -1611,16 +1612,16 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "</package>\n"
                 + "</ranking>\n";
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         // settings are not available with real uid because pkg is not installed
         assertThat(mXmlHelper.getNotificationChannel(PKG_R, UID_P, id, false)).isNull();
 
         // package is "installed"
-        doReturn(UID_P).when(mPm).getPackageUidAsUser(PKG_R, USER_SYSTEM);
+        doReturn(UID_P).when(mPm).getPackageUidAsUser(PKG_R, mUserId);
 
         // Trigger 2nd restore pass
-        mXmlHelper.onPackagesChanged(false, USER_SYSTEM, new String[]{PKG_R},
+        mXmlHelper.onPackagesChanged(false, mUserId, new String[]{PKG_R},
                 new int[]{UID_P});
 
         NotificationChannel channel = mXmlHelper.getNotificationChannel(PKG_R, UID_P, id,
@@ -1638,11 +1639,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // load restore data
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
         appPermissions.put(new Pair<>(UID_R, PKG_R), new Pair<>(true, false));
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         // simulate package not installed
-        when(mPm.getPackageUidAsUser(PKG_R, USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser(PKG_R, mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package PKG_R not found"));
         when(mPm.getApplicationInfoAsUser(eq(PKG_R), anyInt(), anyInt())).thenThrow(
                 new PackageManager.NameNotFoundException());
@@ -1656,14 +1657,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "</package>\n"
                 + "</ranking>\n";
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         // simulate write to disk
         TypedXmlSerializer serializer = Xml.newFastSerializer();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mXmlHelper.writeXml(serializer, false, USER_SYSTEM);
+        mXmlHelper.writeXml(serializer, false, mUserId);
         serializer.endDocument();
         serializer.flush();
 
@@ -1674,8 +1675,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         loadByteArrayXml(baos.toByteArray(), false, USER_ALL);
 
         // Trigger 2nd restore pass
-        doReturn(UID_R).when(mPm).getPackageUidAsUser(PKG_R, USER_SYSTEM);
-        mXmlHelper.onPackagesChanged(false, USER_SYSTEM, new String[]{PKG_R},
+        doReturn(UID_R).when(mPm).getPackageUidAsUser(PKG_R, mUserId);
+        mXmlHelper.onPackagesChanged(false, mUserId, new String[]{PKG_R},
                 new int[]{UID_R});
 
         NotificationChannel channel = mXmlHelper.getNotificationChannel(PKG_R, UID_R, id,
@@ -1690,11 +1691,11 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // load restore data
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
         appPermissions.put(new Pair<>(UID_R, PKG_R), new Pair<>(true, false));
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         // simulate package not installed
-        when(mPm.getPackageUidAsUser(PKG_R, USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser(PKG_R, mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package PKG_R not found"));
         when(mPm.getApplicationInfoAsUser(eq(PKG_R), anyInt(), anyInt())).thenThrow(
                 new PackageManager.NameNotFoundException());
@@ -1707,14 +1708,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "</package>\n"
                 + "</ranking>\n";
 
-        loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), true, mUserId);
 
         // simulate write to disk
         TypedXmlSerializer serializer = Xml.newFastSerializer();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mXmlHelper.writeXml(serializer, false, USER_SYSTEM);
+        mXmlHelper.writeXml(serializer, false, mUserId);
         serializer.endDocument();
         serializer.flush();
 
@@ -1729,7 +1730,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         loadByteArrayXml(xml.getBytes(), false, USER_ALL);
 
         // Trigger 2nd restore pass
-        mXmlHelper.onPackagesChanged(false, USER_SYSTEM, new String[]{PKG_R},
+        mXmlHelper.onPackagesChanged(false, mUserId, new String[]{PKG_R},
                 new int[]{UID_P});
 
         // verify the 2nd restore pass failed because the restore data had been removed
@@ -1757,7 +1758,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "</ranking>\n";
 
         loadByteArrayXml(
-                backupWithUncanonicalizedSoundUri.getBytes(), true, USER_SYSTEM);
+                backupWithUncanonicalizedSoundUri.getBytes(), true, mUserId);
 
         NotificationChannel actualChannel =
                 mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, id, false);
@@ -1771,7 +1772,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         ArrayMap<Pair<Integer, String>, Pair<Boolean, Boolean>> appPermissions = new ArrayMap<>();
         appPermissions.put(new Pair<>(UID_N_MR1, PKG_N_MR1), new Pair<>(true, false));
 
-        when(mPermissionHelper.getNotificationPermissionValues(USER_SYSTEM))
+        when(mPermissionHelper.getNotificationPermissionValues(mUserId))
                 .thenReturn(appPermissions);
 
         NotificationChannel channel =
@@ -1780,9 +1781,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         NotificationChannel actualChannel = mXmlHelper.getNotificationChannel(
                 PKG_N_MR1, UID_N_MR1, channel.getId(), false);
@@ -1814,21 +1815,21 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
         // simulate package not installed
-        when(mPm.getPackageUidAsUser(PKG_N_MR1, USER_SYSTEM)).thenThrow(
+        when(mPm.getPackageUidAsUser(PKG_N_MR1, mUserId)).thenThrow(
                 new PackageManager.NameNotFoundException("Package PKG_N_MR1 not found"));
         when(mPm.getApplicationInfoAsUser(eq(PKG_N_MR1), anyInt(), anyInt())).thenThrow(
                 new PackageManager.NameNotFoundException());
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         // package is "installed"
-        doReturn(UID_N_MR1).when(mPm).getPackageUidAsUser(PKG_N_MR1, USER_SYSTEM);
+        doReturn(UID_N_MR1).when(mPm).getPackageUidAsUser(PKG_N_MR1, mUserId);
 
         // Trigger 2nd restore pass
-        mXmlHelper.onPackagesChanged(false, USER_SYSTEM, new String[]{PKG_N_MR1},
+        mXmlHelper.onPackagesChanged(false, mUserId, new String[]{PKG_N_MR1},
                 new int[]{UID_N_MR1});
 
         // sound is flagged as restored
@@ -1846,9 +1847,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel.getId());
+                mUserId, channel.getId());
 
-        loadStreamXml(baos, true, USER_SYSTEM);
+        loadStreamXml(baos, true, mUserId);
 
         NotificationChannel actualChannel = mXmlHelper.getNotificationChannel(
                 PKG_N_MR1, UID_N_MR1, channel.getId(), false);
@@ -1887,7 +1888,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel2.getId(), false));
 
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_N_MR1, UID_N_MR1, true,
-                USER_SYSTEM, channel1.getId(), channel2.getId(), channel3.getId(),
+                mUserId, channel1.getId(), channel2.getId(), channel3.getId(),
                 NotificationChannel.DEFAULT_CHANNEL_ID);
         mHelper.onPackagesChanged(true, UserHandle.myUserId(), new String[]{PKG_N_MR1}, new int[]{
                 UID_N_MR1});
@@ -1896,7 +1897,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, USER_SYSTEM);
+        mHelper.readXml(parser, true, mUserId);
 
         assertNull(mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1.getId(), false));
         assertNull(mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3.getId(), false));
@@ -3024,7 +3025,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 IMPORTANCE_DEFAULT);
         mHelper.createNotificationChannel(PKG_O, UID_O, other, true, false, UID_O, false);
 
-        assertThat(mHelper.getPackagesWithAnyChannels(USER.getIdentifier())).containsExactly(
+        assertThat(mHelper.getPackagesWithAnyChannels(mUser.getIdentifier())).containsExactly(
                 PKG_N_MR1, PKG_O);
     }
 
@@ -3384,7 +3385,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1, true, false,
                 UID_N_MR1, false);
 
-        assertTrue(mHelper.onPackagesChanged(true, USER_SYSTEM, new String[]{PKG_N_MR1},
+        assertTrue(mHelper.onPackagesChanged(true, mUserId, new String[]{PKG_N_MR1},
                 new int[]{UID_N_MR1}));
 
         assertEquals(0, mHelper.getRemovedPkgNotificationChannels(PKG_N_MR1, UID_N_MR1).size());
@@ -3393,7 +3394,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1, true, false,
                 UID_N_MR1, false);
 
-        assertFalse(mHelper.onPackagesChanged(false, USER_SYSTEM,
+        assertFalse(mHelper.onPackagesChanged(false, mUserId,
                 new String[]{PKG_N_MR1}, new int[]{UID_N_MR1}));
         assertEquals(2,
                 mHelper.getNotificationChannels(PKG_N_MR1, UID_N_MR1, false, true)
@@ -3409,7 +3410,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg2, true,
                 UID_N_MR1, false);
 
-        mHelper.onPackagesChanged(true, USER_SYSTEM, new String[]{PKG_N_MR1}, new int[]{
+        mHelper.onPackagesChanged(true, mUserId, new String[]{PKG_N_MR1}, new int[]{
                 UID_N_MR1});
 
         assertEquals(0, mHelper.getNotificationChannelGroups(PKG_N_MR1, UID_N_MR1,
@@ -3427,7 +3428,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         legacy.targetSdkVersion = Build.VERSION_CODES.N_MR1;
         when(mPm.getApplicationInfoAsUser(eq(PKG_O), anyInt(), anyInt())).thenReturn(legacy);
         mHelper.onPackagesChanged(
-                false, USER_SYSTEM, new String[]{PKG_O}, new int[]{UID_O});
+                false, mUserId, new String[]{PKG_O}, new int[]{UID_O});
 
         // make sure the default channel was readded
         //assertEquals(2, mHelper.getNotificationChannels(PKG_O, UID_O, false).getList().size());
@@ -3967,18 +3968,18 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testBadgingOverrideTrue() throws Exception {
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BADGING, 1,
-                USER.getIdentifier());
+                mUser.getIdentifier());
         mHelper.updateBadgingEnabled(); // would be called by settings observer
-        assertTrue(mHelper.badgingEnabled(USER));
+        assertTrue(mHelper.badgingEnabled(mUser));
     }
 
     @Test
     public void testBadgingOverrideFalse() throws Exception {
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BADGING, 0,
-                USER.getIdentifier());
+                mUser.getIdentifier());
         mHelper.updateBadgingEnabled(); // would be called by settings observer
-        assertFalse(mHelper.badgingEnabled(USER));
+        assertFalse(mHelper.badgingEnabled(mUser));
     }
 
     @Test
@@ -3994,12 +3995,12 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testBadgingOverrideUserIsolation() throws Exception {
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BADGING, 0,
-                USER.getIdentifier());
+                mUser.getIdentifier());
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BADGING, 1,
                 USER2.getIdentifier());
         mHelper.updateBadgingEnabled(); // would be called by settings observer
-        assertFalse(mHelper.badgingEnabled(USER));
+        assertFalse(mHelper.badgingEnabled(mUser));
         assertTrue(mHelper.badgingEnabled(USER2));
     }
 
@@ -4007,30 +4008,30 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testBubblesOverrideTrue() {
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BUBBLES, 1,
-                USER.getIdentifier());
+                mUser.getIdentifier());
         mHelper.updateBubblesEnabled(); // would be called by settings observer
-        assertTrue(mHelper.bubblesEnabled(USER));
+        assertTrue(mHelper.bubblesEnabled(mUser));
     }
 
     @Test
     public void testBubblesOverrideFalse() {
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BUBBLES, 0,
-                USER.getIdentifier());
+                mUser.getIdentifier());
         mHelper.updateBubblesEnabled(); // would be called by settings observer
-        assertFalse(mHelper.bubblesEnabled(USER));
+        assertFalse(mHelper.bubblesEnabled(mUser));
     }
 
     @Test
     public void testBubblesOverrideUserIsolation() throws Exception {
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BUBBLES, 0,
-                USER.getIdentifier());
+                mUser.getIdentifier());
         Secure.putIntForUser(getContext().getContentResolver(),
                 Secure.NOTIFICATION_BUBBLES, 1,
                 USER2.getIdentifier());
         mHelper.updateBubblesEnabled(); // would be called by settings observer
-        assertFalse(mHelper.bubblesEnabled(USER));
+        assertFalse(mHelper.bubblesEnabled(mUser));
         assertTrue(mHelper.bubblesEnabled(USER2));
     }
 
@@ -4063,7 +4064,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         when(res.getString(com.android.internal.R.string.default_notification_channel_label))
                 .thenReturn(newLabel);
 
-        mHelper.onLocaleChanged(mContext, USER.getIdentifier());
+        mHelper.onLocaleChanged(mContext, mUser.getIdentifier());
 
         assertEquals(newLabel, mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1,
                 NotificationChannel.DEFAULT_CHANNEL_ID, false).getName());
@@ -4251,7 +4252,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "</package>\n"
                 + "</ranking>\n";
 
-        loadByteArrayXml(preQXml.getBytes(), true, USER_SYSTEM);
+        loadByteArrayXml(preQXml.getBytes(), true, mUserId);
 
         assertEquals(PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS,
                 mXmlHelper.shouldHideSilentStatusIcons());
@@ -4261,7 +4262,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testXml_statusBarIcons() throws Exception {
         mHelper.setHideSilentStatusIcons(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS);
 
-        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, false, UserHandle.USER_SYSTEM);
+        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, false, mUserId);
         loadStreamXml(baos, false, UserHandle.USER_ALL);
 
         assertEquals(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS,
@@ -4272,21 +4273,10 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testXml_statusBarIcons_restore() throws Exception {
         mHelper.setHideSilentStatusIcons(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS);
 
-        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, false, UserHandle.USER_SYSTEM);
-        loadStreamXml(baos, true, USER_SYSTEM);
+        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, false, mUserId);
+        loadStreamXml(baos, true, UserHandle.USER_SYSTEM);
 
         assertEquals(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS,
-                mXmlHelper.shouldHideSilentStatusIcons());
-    }
-
-    @Test
-    public void testXml_statusBarIcons_restoreSecondary() throws Exception {
-        mHelper.setHideSilentStatusIcons(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS);
-
-        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, false, UserHandle.USER_ALL);
-        loadStreamXml(baos, true, USER_ALL);
-
-        assertEquals(PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS,
                 mXmlHelper.shouldHideSilentStatusIcons());
     }
 
@@ -4541,14 +4531,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testUpdateNotificationChannel_fixedPermission() {
-        List<UserInfo> users = ImmutableList.of(new UserInfo(UserHandle.USER_SYSTEM, "user0", 0));
-        when(mPermissionHelper.isPermissionFixed(PKG_O, 0)).thenReturn(true);
+        List<UserInfo> users = ImmutableList.of(new UserInfo(mUserId, "user0", 0));
+        when(mPermissionHelper.isPermissionFixed(PKG_O, mUserId)).thenReturn(true);
         PackageInfo pm = new PackageInfo();
         pm.packageName = PKG_O;
         pm.applicationInfo = new ApplicationInfo();
         pm.applicationInfo.uid = UID_O;
         List<PackageInfo> packages = ImmutableList.of(pm);
-        when(mPm.getInstalledPackagesAsUser(eq(0), anyInt())).thenReturn(packages);
+        when(mPm.getInstalledPackagesAsUser(anyInt(), anyInt())).thenReturn(packages);
         mHelper.updateFixedImportance(users);
 
         assertTrue(mHelper.isImportanceLocked(PKG_O, UID_O));
@@ -4789,7 +4779,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         toRemove.add(PKG_O);
         toAdd = new ArraySet<>();
         toAdd.add(new Pair<>(PKG_N_MR1, UID_N_MR1));
-        mHelper.updateDefaultApps(USER.getIdentifier(), toRemove, toAdd);
+        mHelper.updateDefaultApps(mUser.getIdentifier(), toRemove, toAdd);
 
         assertFalse(mHelper.getNotificationChannel(PKG_O, UID_O, a.getId(), false)
                 .isImportanceLockedByCriticalDeviceFunction());
@@ -4930,7 +4920,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         // clear data
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, true,
-                USER_SYSTEM, channel1.getId(), NotificationChannel.DEFAULT_CHANNEL_ID);
+                mUserId, channel1.getId(), NotificationChannel.DEFAULT_CHANNEL_ID);
         mHelper.onPackagesChanged(true, UserHandle.myUserId(), new String[]{PKG_O}, new int[]{
                 UID_O});
 
@@ -4942,7 +4932,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, USER_SYSTEM);
+        mHelper.readXml(parser, true, mUserId);
 
         assertTrue(mHelper.getNotificationChannel(PKG_O, UID_O, channel1.getId(), false)
                 .isImportanceLockedByCriticalDeviceFunction());
@@ -5268,13 +5258,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         assertTrue(nc1.isDeleted());
 
         ByteArrayOutputStream baos = writeXmlAndPurge(PKG_P, UID_P, false,
-                USER_SYSTEM, "id", NotificationChannel.DEFAULT_CHANNEL_ID);
+                mUserId, "id", NotificationChannel.DEFAULT_CHANNEL_ID);
 
         TypedXmlPullParser parser = Xml.newFastPullParser();
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, USER_SYSTEM);
+        mHelper.readXml(parser, true, mUserId);
 
         NotificationChannel nc = mHelper.getNotificationChannel(PKG_P, UID_P, "id", true);
         assertTrue(DateUtils.isToday(nc.getDeletedTimeMs()));
@@ -5355,7 +5345,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 SYSTEM_UID, true);
 
         List<ConversationChannelWrapper> convos =
-                mHelper.getConversations(IntArray.wrap(new int[] {0}), false);
+                mHelper.getConversations(IntArray.wrap(new int[] {mUserId}), false);
 
         assertEquals(3, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, channel));
@@ -5391,13 +5381,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
 
         List<ConversationChannelWrapper> convos =
-                mHelper.getConversations(IntArray.wrap(new int[] {0}), false);
+                mHelper.getConversations(IntArray.wrap(new int[] {mUserId}), false);
 
         assertEquals(1, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, messagesFromB));
 
         convos =
-                mHelper.getConversations(IntArray.wrap(new int[] {0, UserHandle.getUserId(UID_O + UserHandle.PER_USER_RANGE)}), false);
+                mHelper.getConversations(IntArray.wrap(new int[] {mUserId, UserHandle.getUserId(UID_O + UserHandle.PER_USER_RANGE)}), false);
 
         assertEquals(2, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, messagesFromB));
@@ -5436,7 +5426,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 SYSTEM_UID, true);
 
         List<ConversationChannelWrapper> convos =
-                mHelper.getConversations(IntArray.wrap(new int[] {0}), false);
+                mHelper.getConversations(IntArray.wrap(new int[] {mUserId}), false);
 
         assertEquals(2, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, channel));
@@ -5476,7 +5466,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_O, UID_O, channel2, true, false, UID_O, false);
 
         List<ConversationChannelWrapper> convos =
-                mHelper.getConversations(IntArray.wrap(new int[] {0}), true);
+                mHelper.getConversations(IntArray.wrap(new int[] {mUserId}), true);
 
         assertEquals(2, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, channel));
@@ -5501,7 +5491,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.permanentlyDeleteNotificationChannel(PKG_O, UID_O, "messages");
 
         List<ConversationChannelWrapper> convos =
-                mHelper.getConversations(IntArray.wrap(new int[] {0}), true);
+                mHelper.getConversations(IntArray.wrap(new int[] {mUserId}), true);
 
         assertEquals(1, convos.size());
         assertTrue(conversationWrapperContainsChannel(convos, channel));
@@ -6585,7 +6575,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 + "show_badge=\"true\" />\n"
                 + "</package></ranking>\n";
 
-        loadByteArrayXml(xml.getBytes(), false, USER_SYSTEM);
+        loadByteArrayXml(xml.getBytes(), false, mUserId);
 
         // verify 4 reserved channels are created
         assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, NEWS_ID, true)).isNull();
@@ -6689,13 +6679,13 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                     + "</ranking>\n";
 
             try {
-                loadByteArrayXml(xml.getBytes(), true, USER_SYSTEM);
+                loadByteArrayXml(xml.getBytes(), true, mUserId);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
             // trigger a removal from the list
-            mXmlHelper.onPackagesChanged(true, USER_SYSTEM, new String[]{PKG_P},
+            mXmlHelper.onPackagesChanged(true, mUserId, new String[]{PKG_P},
                     new int[]{INVALID_UID});
         }, 20, 50);
     }
@@ -6891,7 +6881,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         // package deleted: expect cache invalidation
         mHelper.resetCacheInvalidation();
-        mHelper.onPackagesChanged(true, USER_SYSTEM, new String[]{PKG_N_MR1},
+        mHelper.onPackagesChanged(true, mUserId, new String[]{PKG_N_MR1},
                 new int[]{UID_N_MR1});
         assertThat(mHelper.hasChannelCacheBeenInvalidated()).isTrue();
         assertThat(mHelper.hasGroupCacheBeenInvalidated()).isTrue();

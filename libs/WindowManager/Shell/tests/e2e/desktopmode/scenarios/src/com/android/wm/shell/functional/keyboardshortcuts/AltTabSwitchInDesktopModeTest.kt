@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.keyboardshortcuts
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.ExitDesktopToFullScreenWithAppHeaderMenu
+import com.android.wm.shell.scenarios.AltTabSwitchInDesktopMode
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [ExitDesktopToFullScreenWithAppHeaderMenu]. */
-
+/* Functional test for [AltTabSwitchInDesktopMode]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class ExitDesktopToFullScreenWithAppHeaderMenuTest : ExitDesktopToFullScreenWithAppHeaderMenu()
+class AltTabSwitchInDesktopModeTest : AltTabSwitchInDesktopMode()

@@ -23,9 +23,11 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.internal.statusbar.statusBarService
 import android.os.Bundle
+import android.os.IBinder
 import android.os.PowerManager
 import android.os.powerManager
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
@@ -35,6 +37,9 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowManager
+import android.window.IRemoteTransition
+import android.window.IRemoteTransitionFinishedCallback
+import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLogger
 import com.android.internal.widget.lockPatternUtils
@@ -42,8 +47,11 @@ import com.android.keyguard.keyguardUnlockAnimationController
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.keyguard.mediator.ScreenOnCoordinator
 import com.android.keyguard.trustManager
+import com.android.systemui.Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.ActivityTransitionAnimator
+import com.android.systemui.animation.RemoteTransitionHelper
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.classifier.falsingCollector
@@ -73,7 +81,6 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionBootInt
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.sessionTracker
@@ -105,9 +112,9 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -135,6 +142,9 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
             statusBarKeyguardViewManager =
                 mock<StatusBarKeyguardViewManager> { on { viewRootImpl } doReturn mockViewRootImpl }
         }
+
+    private val mockActivityTransitionAnimator =
+        mock<ActivityTransitionAnimator>().also { kosmos.activityTransitionAnimator = it }
 
     private val Kosmos.dreamViewModelSpy by Kosmos.Fixture { spy(dreamViewModel) }
 
@@ -175,7 +185,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 wallpaperRepository,
                 { shadeController },
                 { notificationShadeWindowController },
-                { activityTransitionAnimator },
+                { mockActivityTransitionAnimator },
                 { scrimController },
                 mock<IActivityTaskManager>(),
                 statusBarService,
@@ -184,7 +194,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 fakeSettings,
                 systemClock,
                 processWrapper,
-                testDispatcher,
+                testScope,
                 { dreamViewModelSpy },
                 { communalTransitionViewModel },
                 systemPropertiesHelper,
@@ -204,6 +214,15 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
         val testViewRoot = mock<ViewRootImpl>()
         whenever(testViewRoot.view).thenReturn(mock<View>())
         whenever(kosmos.statusBarKeyguardViewManager.getViewRootImpl()).thenReturn(testViewRoot)
+        whenever(
+                kosmos.activityTransitionAnimator.createOriginTransition(
+                    any<ActivityTransitionAnimator.Controller>(),
+                    eq(kosmos.testScope),
+                    anyBoolean(),
+                    any<RemoteTransitionHelper>(),
+                )
+            )
+            .thenReturn(mock<IRemoteTransition>())
     }
 
     @Test
@@ -275,6 +294,31 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
 
             // Hub scene is not changed.
             assertThat(communalSceneRepository.currentScene.value).isEqualTo(CommunalScenes.Blank)
+        }
+
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @EnableFlags(FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun occludeTransition_occludesKeyguard() =
+        kosmos.runTest {
+            // GIVEN that keyguard is showing and not occluded.
+            underTest.onSystemReady()
+            underTest.setShowingLocked(true, "")
+            whenever(keyguardStateController.isShowing()).thenReturn(true)
+            whenever(keyguardUpdateMonitor.isDreaming).thenReturn(false)
+            assertThat(underTest.isShowingAndNotOccluded).isTrue()
+
+            // WHEN an occlude transition starts.
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val transaction = mock<SurfaceControl.Transaction>()
+            val finishCallback = mock<IRemoteTransitionFinishedCallback>()
+            underTest.occludeTransition.startAnimation(token, info, transaction, finishCallback)
+            testableLooper.processAllMessages()
+
+            // THEN keyguard is locked and occluded.
+            assertThat(underTest.isShowing).isTrue()
+            assertThat(underTest.isShowingAndNotOccluded).isFalse()
         }
 
     @Test

@@ -11837,17 +11837,25 @@ public class Notification implements Parcelable
                             TextUtils.isEmpty(valueString.subtext()) ? View.GONE : View.VISIBLE);
                     contentView.setTextViewText(metricView.unitId(), valueString.subtext());
 
-                    if (metricValue instanceof  Metric.TimeDifference timeDifference
+                    if (metricValue instanceof Metric.TimeDifference timeDifference
                             && timeDifference.getPausedDuration() == null) {
                         contentView.setViewVisibility(metricView.textValueId(), View.GONE);
                         contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
-                        contentView.setBoolean(
-                                metricView.chronometerId(), "setStarted", true);
                         contentView.setChronometerCountDown(
-                                metricView.chronometerId(), timeDifference.mCountDown);
-                        contentView.setLong(
-                                metricView.chronometerId(),
-                                "setBase", calculateBase(timeDifference));
+                                metricView.chronometerId(), timeDifference.isTimer());
+
+                        if (timeDifference.getZeroTime() != null) {
+                            contentView.setChronometer(metricView.chronometerId(),
+                                    timeDifference.getZeroTime(), /* format= */ null,
+                                    /* started= */ true);
+                        } else if (timeDifference.getZeroElapsedRealtime() != null) {
+                            contentView.setChronometer(metricView.chronometerId(),
+                                    timeDifference.getZeroElapsedRealtime(), /* format= */ null,
+                                    /* started= */ true);
+                        } else {
+                            throw new IllegalStateException(
+                                    "No zeroTime for running TimeDifference in " + metric);
+                        }
                         // TODO(b/434910979): implement format support for Chronometer.
                     } else {
                         contentView.setViewVisibility(metricView.chronometerId(), View.GONE);
@@ -11859,17 +11867,6 @@ public class Notification implements Parcelable
                 }
             }
             return contentView;
-        }
-        // TODO(b/435150348): Add Instant support to Chronometer..
-        private long calculateBase(@NonNull Metric.TimeDifference timeDifference) {
-            if (timeDifference.mZeroTime != null) {
-                return getElapsedRealtimeClock().getAsLong()
-                        + (timeDifference.mZeroTime.toEpochMilli() - getSystemClock().millis());
-            } else if (timeDifference.mZeroElapsedRealtime != null) {
-                return timeDifference.mZeroElapsedRealtime;
-            } else {
-                throw new IllegalStateException("None of mZeroTime, mZeroElapsedRealtime set!");
-            }
         }
 
         private record MetricView(int containerId,

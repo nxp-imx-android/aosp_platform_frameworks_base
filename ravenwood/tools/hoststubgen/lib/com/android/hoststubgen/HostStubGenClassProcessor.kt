@@ -35,13 +35,13 @@ import com.android.hoststubgen.utils.ZipEntryData
 import com.android.hoststubgen.visitors.ImplGeneratingAdapter
 import com.android.hoststubgen.visitors.JdkPatchVisitor
 import com.android.hoststubgen.visitors.PackageRedirectRemapper
-import java.io.PrintWriter
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.util.CheckClassAdapter
 import org.objectweb.asm.util.TraceClassVisitor
+import java.io.PrintWriter
 
 /**
  * This class implements bytecode transformation of HostStubGen.
@@ -61,12 +61,13 @@ class HostStubGenClassProcessor(
         // Connect to the base visitor
         var outVisitor: ClassVisitor = base
 
-        if (!options.disableJdkPatch.get) {
-            outVisitor = JdkPatchVisitor(outVisitor)
-        }
-
+        // This should be the innermost visitor. This one checks the final bytecode.
         if (options.enableClassChecker.get) {
             outVisitor = CheckClassAdapter(outVisitor)
+        }
+
+        if (!options.disableJdkPatch.get) {
+            outVisitor = JdkPatchVisitor(outVisitor)
         }
 
         // Remapping should happen at the end.
@@ -182,7 +183,11 @@ class HostStubGenClassProcessor(
             var filter: OutputFilter
 
             // The first filter is for the default policy from the command line options.
-            filter = ConstantFilter(options.defaultPolicy.get, "default-by-options")
+            filter = ConstantFilter(
+                options.defaultPolicy.get.resolveDefaultForClass(),
+                options.defaultPolicy.get.resolveDefaultForFields(),
+                options.defaultPolicy.get.resolveDefaultForMethods(),
+            )
 
             // Next, we build a filter that preserves all native methods by default
             filter = KeepNativeFilter(allClasses, filter)

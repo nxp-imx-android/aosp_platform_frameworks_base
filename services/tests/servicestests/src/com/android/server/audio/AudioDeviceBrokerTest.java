@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
@@ -125,7 +126,7 @@ public class AudioDeviceBrokerTest {
                     BluetoothProfileConnectionInfo.createA2dpInfo(true, 1), "testSource"));
         Thread.sleep(2 * MAX_MESSAGE_HANDLING_DELAY_MS);
         verify(mSpyDevInventory, times(1)).setBluetoothActiveDevice(
-                any(AudioDeviceBroker.BtDeviceInfo.class));
+                any(AudioDeviceBroker.BtDeviceInfo.class), anyString());
 
         // verify the connection was reported to AudioSystem
         checkSingleSystemConnection(mFakeBtDevice);

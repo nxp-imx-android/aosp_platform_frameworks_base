@@ -967,6 +967,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final @NonNull String mRequiredSdkSandboxPackage;
     private final @Nullable ComponentName mDeveloperVerificationServiceProvider;
     private final @Nullable String mDeveloperVerificationPolicyDelegatePackage;
+    @GuardedBy("mLock")
+    private final PackageUsage mPackageUsage = new PackageUsage();
 
     private final DomainVerificationConnection mDomainVerificationConnection;
 
@@ -2348,6 +2350,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 setting.updateProcesses();
             }
 
+            // Now that we know all the packages we are keeping,
+            // read and update their last usage times.
+            mPackageUsage.read(packageSettings);
+
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
                     SystemClock.uptimeMillis());
             Slog.i(TAG, "Time to scan packages: "
@@ -3069,6 +3075,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
 
         synchronized (mLock) {
+            mPackageUsage.writeNow(mSettings.getPackagesLocked());
+
             if (mHandler.hasMessages(WRITE_SETTINGS)
                     || mBackgroundHandler.hasMessages(WRITE_DIRTY_PACKAGE_RESTRICTIONS)
                     || mHandler.hasMessages(WRITE_PACKAGE_LIST)) {
@@ -5697,12 +5705,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 return;
             }
 
-            UserHandle user = Binder.getCallingUserHandle();
             DexUseManagerLocal dexUseManager = DexOptHelper.getDexUseManagerLocal();
-            // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
             try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
-                    LocalManagerRegistry.getManager(PackageManagerLocal.class)
-                            .withFilteredSnapshot(callingUid, user)) {
+                            LocalManagerRegistry.getManager(PackageManagerLocal.class)
+                                    .withUnownedFilteredSnapshot(snapshot)) {
                 // This is called from binder, so exceptions thrown here are caught and handled
                 // by it.
                 dexUseManager.notifyDexContainersLoaded(
@@ -7654,10 +7660,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         PackageManagerServiceUtils.enforceSystemOrRootOrShell(
                 "Only the system or shell can delete oat artifacts");
 
-        // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
         try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
                         PackageManagerServiceUtils.getPackageManagerLocal()
-                                .withFilteredSnapshot()) {
+                                .withUnownedFilteredSnapshot(snapshot)) {
             try {
                 DeleteResult res = DexOptHelper.getArtManagerLocal().deleteDexoptArtifacts(
                         filteredSnapshot, packageName);

@@ -299,6 +299,8 @@ constructor(
 
     private fun onEditDone() {
         lifecycleScope.launch {
+            communalViewModel.onEditDone()
+
             if (!Flags.hubEditModeTransition()) {
                 communalViewModel.cleanupEditModeState()
             }

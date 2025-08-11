@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package android.os;
 
-import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDesktopDevice
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.AltTabSwitchOutDesktopMode
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
+// TODO(b/437406213): Remove this after RELEASE_ANOMALY_DETECTOR is ramped up to next.
 
-/* Functional test for Alt+Tab app switching out of desktop mode. */
-@RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
-@Presubmit
-@ScreenRecordRule.ScreenRecord
-class AltTabSwitchOutDesktopModeTest : AltTabSwitchOutDesktopMode()
+/**
+ * Mock AnomalyDetectorFrameworkInitializer.
+ *
+ * @hide
+ */
+public final class AnomalyDetectorFrameworkInitializer {
+    private AnomalyDetectorFrameworkInitializer() {}
+
+    /**
+     * @hide
+     */
+    public static void registerServiceWrappers() {
+        // No-op.
+    }
+}

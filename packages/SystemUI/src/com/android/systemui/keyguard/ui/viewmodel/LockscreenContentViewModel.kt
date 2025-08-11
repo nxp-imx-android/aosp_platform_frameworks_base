@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.biometrics.AuthController
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -82,20 +81,14 @@ constructor(
             source = transitionInteractor.transitionValue(KeyguardState.OCCLUDED).map { it == 0f },
         )
 
-    /**
-     * Whether the shade layout should be wide (true) or narrow (false).
-     *
-     * In a wide layout, notifications and quick settings each take up only half the screen width
-     * (whether they are shown at the same time or not). In a narrow layout, they can each be as
-     * wide as the entire screen.
-     */
-    val isShadeLayoutWide: Boolean by
+    /** @see ShadeModeInteractor.isFullWidthShade */
+    val isFullWidthShade: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isShadeLayoutWide",
-            source = shadeModeInteractor.isShadeLayoutWide,
+            traceName = "isFullWidthShade",
+            source = shadeModeInteractor.isFullWidthShade,
         )
 
-    /** @see DeviceEntryInteractor.isBypassEnabled */
+    /** @see DeviceEntryBypassInteractor.isBypassEnabled */
     val isBypassEnabled: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isBypassEnabled",

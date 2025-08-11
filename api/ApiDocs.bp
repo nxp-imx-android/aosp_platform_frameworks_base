@@ -69,6 +69,7 @@ stubs_defaults {
         ":framework-permission-s-sources",
         ":framework-permission-sources",
         ":framework-profiling-sources",
+        ":framework-anomaly-detector-sources",
         ":framework-scheduling-sources",
         ":framework-sdkextensions-sources",
         ":framework-sdksandbox-sources",

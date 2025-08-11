@@ -14,3 +14,13 @@ flag {
     description: "Feature flag for changing the priority of the check credential task"
     bug: "407716215"
 }
+
+flag {
+    name: "use_default_visibility_for_sensitive_inputs"
+    namespace: "input"
+    description: "Allows setting default value for visibility of sensitive inputs (passowrd, pin and pattern)."
+    bug: "339270220"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

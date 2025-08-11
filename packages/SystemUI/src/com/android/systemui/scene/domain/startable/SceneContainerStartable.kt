@@ -58,7 +58,6 @@ import com.android.systemui.plugins.FalsingManager.FalsingBeliefListener
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.data.model.asIterable
-import com.android.systemui.scene.data.model.sceneStackOf
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
@@ -500,7 +499,7 @@ constructor(
                                     "device was unlocked with alternate bouncer showing" +
                                         " and shade didn't need to be left open"
                             } else {
-                                replaceLockscreenSceneOnBackStack()
+                                sceneBackInteractor.replaceLockscreenSceneOnBackStack()
                                 null
                             }
                         }
@@ -518,7 +517,7 @@ constructor(
                                         " didn't need to be left open"
                             } else {
                                 if (previousScene.value != Scenes.Gone) {
-                                    replaceLockscreenSceneOnBackStack()
+                                    sceneBackInteractor.replaceLockscreenSceneOnBackStack()
                                 }
                                 targetScene to
                                     "device was unlocked with primary bouncer showing," +
@@ -547,7 +546,7 @@ constructor(
                         // unlocked, replace the Lockscreen scene from the bottom of the navigation
                         // back stack with the Gone scene.
                         else -> {
-                            replaceLockscreenSceneOnBackStack()
+                            sceneBackInteractor.replaceLockscreenSceneOnBackStack()
                             null
                         }
                     }
@@ -555,22 +554,6 @@ constructor(
                 .collect { (targetSceneKey, loggingReason) ->
                     switchToScene(targetSceneKey = targetSceneKey, loggingReason = loggingReason)
                 }
-        }
-    }
-
-    /**
-     * If the [Scenes.Lockscreen] is on the bottom of the navigation backstack, replaces it with
-     * [Scenes.Gone].
-     */
-    private fun replaceLockscreenSceneOnBackStack() {
-        sceneBackInteractor.updateBackStack { stack ->
-            val list = stack.asIterable().toMutableList()
-            if (list.lastOrNull() == Scenes.Lockscreen) {
-                list[list.size - 1] = Scenes.Gone
-                sceneStackOf(*list.toTypedArray())
-            } else {
-                stack
-            }
         }
     }
 

@@ -65,7 +65,6 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.compose.animation.scene.animateContentDpAsState
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.padding
@@ -79,7 +78,6 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.composable.MediaCarousel
 import com.android.systemui.media.controls.ui.composable.MediaContentPicker
-import com.android.systemui.media.controls.ui.composable.isLandscape
 import com.android.systemui.media.controls.ui.composable.shouldElevateMedia
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
@@ -93,7 +91,6 @@ import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibi
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.ui.composable.BrightnessMirror
 import com.android.systemui.qs.ui.composable.QuickSettings
-import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaLandscapeTopOffset
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.shared.model.Scenes
@@ -250,14 +247,7 @@ private fun ContentScope.SingleShade(
     val shouldPunchHoleBehindScrim =
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
             layoutState.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)
-    // Media is visible and we are in landscape on a small height screen
-    val mediaInRow = viewModel.showMedia && isLandscape()
-    val mediaOffset by
-        animateContentDpAsState(
-            value = QuickSettings.SharedValues.MediaOffset.inQqs(mediaInRow),
-            key = MediaLandscapeTopOffset,
-            canOverflow = false,
-        )
+    val mediaInRow = viewModel.showMediaInRow
     val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
     val navBarHeight = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
@@ -268,11 +258,7 @@ private fun ContentScope.SingleShade(
             val cutoutLocation = cutout().location
             SingleShadeMeasurePolicy(
                 isMediaInRow = mediaInRow,
-                mediaOffset = { mediaOffset.roundToPx() },
                 onNotificationsTopChanged = { maxNotifScrimTop = it },
-                mediaZIndex = {
-                    if (MediaContentPicker.shouldElevateMedia(layoutState)) 1f else 0f
-                },
                 cutoutInsetsProvider = {
                     if (cutoutLocation == CutoutLocation.CENTER) {
                         null
@@ -298,15 +284,12 @@ private fun ContentScope.SingleShade(
                 )
 
                 val qqsLayoutPaddingBottom = 16.dp
-
+                val qsHorizontalMargin =
+                    shadeHorizontalPadding + dimensionResource(id = R.dimen.qs_horizontal_margin)
                 Box(
                     Modifier.element(QuickSettings.Elements.QuickQuickSettings)
                         .layoutId(SingleShadeMeasurePolicy.LayoutId.QuickSettings)
-                        .padding(
-                            horizontal =
-                                shadeHorizontalPadding +
-                                    dimensionResource(id = R.dimen.qs_horizontal_margin)
-                        )
+                        .padding(horizontal = qsHorizontalMargin)
                         .padding(bottom = qqsLayoutPaddingBottom)
                 ) {
                     val qqsViewModel =
@@ -321,22 +304,29 @@ private fun ContentScope.SingleShade(
                         )
                     }
                 }
-                Element(
-                    key = Media.Elements.mediaCarousel,
-                    modifier =
-                        Modifier.layoutId(SingleShadeMeasurePolicy.LayoutId.Media)
-                            .padding(
-                                horizontal =
-                                    shadeHorizontalPadding +
-                                        dimensionResource(id = R.dimen.qs_horizontal_margin)
-                            )
-                            .padding(bottom = qqsLayoutPaddingBottom),
-                ) {
-                    if (viewModel.isQsEnabled) {
+                if (viewModel.isQsEnabled && viewModel.showMedia) {
+                    Element(
+                        key = Media.Elements.mediaCarousel,
+                        modifier =
+                            Modifier.layoutId(SingleShadeMeasurePolicy.LayoutId.Media)
+                                .padding(
+                                    end = qsHorizontalMargin,
+                                    // Only apply padding at the start if not in row, if in row, we
+                                    // have
+                                    // the end padding of qs.
+                                    start = if (mediaInRow) 0.dp else qsHorizontalMargin,
+                                )
+                                .padding(bottom = qqsLayoutPaddingBottom),
+                    ) {
                         Media(
                             viewModelFactory = viewModel.mediaViewModelFactory,
-                            presentationStyle = MediaPresentationStyle.Default,
-                            behavior = viewModel.qqsMediaUiBehavior,
+                            presentationStyle =
+                                if (mediaInRow) {
+                                    MediaPresentationStyle.Compressed
+                                } else {
+                                    MediaPresentationStyle.Default
+                                },
+                            behavior = ShadeSceneContentViewModel.qqsMediaUiBehavior,
                             onDismissed = viewModel::onMediaSwipeToDismiss,
                         )
                     }

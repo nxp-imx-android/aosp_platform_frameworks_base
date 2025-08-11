@@ -10,7 +10,10 @@ package {
 python_library_host {
     name: "core-python-protos",
     proto: {
-        include_dirs: ["external/protobuf/src"],
+        include_dirs: [
+            "external/protobuf/src",
+            "frameworks/proto_logging/stats",
+        ],
         canonical_path_from_root: true,
     },
     srcs: ["android/**/*.proto"],

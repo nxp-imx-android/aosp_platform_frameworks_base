@@ -72,7 +72,6 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.controls.ui.composable.isLandscape
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
@@ -222,8 +221,7 @@ private fun ContentScope.QuickSettingsScene(
             WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
         // ############# Media ###############
-        val isMediaVisible = viewModel.qsContainerViewModel.showMedia
-        val mediaInRow = isMediaVisible && isLandscape()
+        val mediaInRow = viewModel.qsContainerViewModel.showMediaInRow
 
         ShadePanelScrim(viewModel.isTransparencyEnabled)
         Column(

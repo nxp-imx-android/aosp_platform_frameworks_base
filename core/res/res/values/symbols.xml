@@ -1574,6 +1574,7 @@
   <java-symbol type="drawable" name="ic_feedback_downrank" />
 
   <java-symbol type="drawable" name="ic_account_circle" />
+  <java-symbol type="drawable" name="material_ic_account_circle" />
   <java-symbol type="drawable" name="ic_dual_screen" />
   <java-symbol type="drawable" name="ic_thermostat" />
   <java-symbol type="drawable" name="ic_security_privacy_notification_badge" />
@@ -4195,6 +4196,9 @@
   <java-symbol type="bool" name="config_enableCredentialFactoryResetProtection" />
   <java-symbol type="bool" name="config_disableWeaverOnUnsecuredUsers" />
   <java-symbol type="bool" name="config_softwareLskfRateLimiterEnforcing" />
+
+  <java-symbol type="bool" name="config_lockPinEnhancedPrivacyDefault" />
+  <java-symbol type="bool" name="config_lockPatternVisibleDefault" />
 
   <!-- ETWS primary messages -->
   <java-symbol type="string" name="etws_primary_default_message_earthquake" />

@@ -1106,6 +1106,47 @@ public class ActivityManager {
         return sb.toString();
     }
 
+    // NOTE: If a new PROCESS_CAPABILITY is added, then new fields must be added
+    // to frameworks/base/core/proto/android/app/enums.proto and the following method must
+    // be updated to correctly map between them.
+    // However, if the current ActivityManager values are merely modified, no update should be made
+    // to enums.proto, to which values can only be added but never modified. Note that the proto
+    // versions do NOT have the ordering restrictions of the ActivityManager process capabilities.
+    /**
+     * Maps ActivityManager.PROCESS_CAPABILITY_ values to enums.proto ProcessCapabilityEnum value.
+     *
+     * @param amInt a process capability of the form ActivityManager.PROCESS_CAPABILITY_
+     * @return the value of the corresponding enums.proto ProcessCapabilityEnum value.
+     * @hide
+     */
+    @android.ravenwood.annotation.RavenwoodKeep
+    public static final int processCapabilityAmToProto(int amInt) {
+        switch (amInt) {
+            case PROCESS_CAPABILITY_FOREGROUND_LOCATION:
+                return AppProtoEnums.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
+            case PROCESS_CAPABILITY_FOREGROUND_CAMERA:
+                return AppProtoEnums.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
+            case PROCESS_CAPABILITY_FOREGROUND_MICROPHONE:
+                return AppProtoEnums.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+            case PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK:
+                return AppProtoEnums.PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK;
+            case PROCESS_CAPABILITY_BFSL:
+                return AppProtoEnums.PROCESS_CAPABILITY_BFSL;
+            case PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK:
+                return AppProtoEnums.PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
+            case PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL:
+                return AppProtoEnums.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
+            case PROCESS_CAPABILITY_CPU_TIME:
+                return AppProtoEnums.PROCESS_CAPABILITY_CPU_TIME;
+            case PROCESS_CAPABILITY_IMPLICIT_CPU_TIME:
+                return AppProtoEnums.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+            default:
+                // ActivityManager capabilities
+                // could not be mapped to an AppProtoEnums ProcessCapability capability.
+                return AppProtoEnums.PROCESS_CAPABILITY_UNKNOWN;
+        }
+    }
+
     // NOTE: If PROCESS_STATEs are added, then new fields must be added
     // to frameworks/base/core/proto/android/app/enums.proto and the following method must
     // be updated to correctly map between them.

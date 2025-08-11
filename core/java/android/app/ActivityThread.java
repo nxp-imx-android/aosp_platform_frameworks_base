@@ -648,6 +648,7 @@ public final class ActivityThread extends ClientTransactionHandler
         boolean hideForNow;
         Configuration createdConfig;
         Configuration overrideConfig;
+        HandoffActivityData handoffActivityData;
         @NonNull
         private final ActivityWindowInfo mActivityWindowInfo = new ActivityWindowInfo();
         @NonNull
@@ -6311,6 +6312,10 @@ public final class ActivityThread extends ClientTransactionHandler
         stopInfo.setActivity(r);
         stopInfo.setState(r.state);
         stopInfo.setPersistentState(r.persistentState);
+        if (android.companion.Flags.enableTaskContinuity()) {
+            stopInfo.setHandoffActivityData(r.handoffActivityData);
+        }
+
         pendingActions.setStopInfo(stopInfo);
         mSomeActivitiesChanged = true;
     }
@@ -6851,6 +6856,13 @@ public final class ActivityThread extends ClientTransactionHandler
     private void callActivityOnSaveInstanceState(ActivityClientRecord r) {
         r.state = new Bundle();
         r.state.setAllowFds(false);
+
+        if (android.companion.Flags.enableTaskContinuity() && r.activity.isHandoffEnabled()) {
+            final HandoffActivityDataRequestInfo requestInfo
+                    = new HandoffActivityDataRequestInfo(false /* isActiveRequest */);
+            r.handoffActivityData = r.activity.onHandoffActivityDataRequested(requestInfo);
+        }
+
         if (r.isPersistable()) {
             r.persistentState = new PersistableBundle();
             mInstrumentation.callActivityOnSaveInstanceState(r.activity, r.state,

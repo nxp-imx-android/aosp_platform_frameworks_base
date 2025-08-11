@@ -278,13 +278,11 @@ public class PartialConversationInfo extends LinearLayout implements
     }
 
     private boolean showSummarizationFeedback() {
-        return NmSummarizationUiFlag.isEnabled()
-                && !TextUtils.isEmpty(mRanking.getSummarization());
+        return NmSummarizationUiFlag.isEnabled();
     }
 
     private boolean showClassificationFeedback() {
-        return Flags.notificationClassificationUi() &&
-                SYSTEM_RESERVED_IDS.contains(mNotificationChannel.getId());
+        return Flags.notificationClassificationUi();
     }
 
     private void bindFeedback() {

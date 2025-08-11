@@ -609,7 +609,12 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
 
                     String permGroupName = getGroupForOp(op);
                     if (LOCATION.equals(permGroupName)) {
-                        if (isSystemApp(op, packageName, user, uid) || isBackgroundApp(uid)) {
+                        // Only non-system, non-background apps should trigger location indicator.
+                        // But if the location indicator is already visible (e.g. an app
+                        // transitioned from foreground to background), we should not filter it out
+                        // if it's within the holding period.
+                        if (isSystemApp(op, packageName, user, uid)
+                                || (isBackgroundApp(uid) && !isRunning)) {
                             // Remove the system & background apps for location op
                             continue;
                         }

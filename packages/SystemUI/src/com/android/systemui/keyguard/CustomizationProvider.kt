@@ -364,7 +364,7 @@ class CustomizationProvider : ContentProvider(), ContentProviderContextInitializ
                 addRow(
                     arrayOf(
                         Contract.RuntimeValuesTable.KEY_IS_SHADE_LAYOUT_WIDE,
-                        if (shadeModeInteractor.isShadeLayoutWide.value) 1 else 0,
+                        if (shadeModeInteractor.isFullWidthShade.value) 0 else 1,
                     )
                 )
                 addRow(

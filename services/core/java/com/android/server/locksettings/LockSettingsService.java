@@ -2163,13 +2163,11 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     private void setCeStorageProtection(@UserIdInt int userId, SyntheticPassword sp) {
         final byte[] secret = sp.deriveFileBasedEncryptionKey();
-        final long callingId = Binder.clearCallingIdentity();
         try {
             mStorageManagerInternal.setCeStorageProtection(userId, secret);
         } catch (RuntimeException e) {
             throw new IllegalStateException("Failed to protect CE key for user " + userId, e);
         } finally {
-            Binder.restoreCallingIdentity(callingId);
             ArrayUtils.zeroize(secret);
         }
     }

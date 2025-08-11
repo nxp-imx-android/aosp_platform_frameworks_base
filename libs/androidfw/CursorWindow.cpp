@@ -18,10 +18,11 @@
 
 #include <androidfw/CursorWindow.h>
 
-#include <sys/mman.h>
-
 #include "android-base/logging.h"
+#include "android-base/mapped_file.h"
 #include "cutils/ashmem.h"
+
+using android::base::MappedFile;
 
 namespace android {
 
@@ -39,7 +40,7 @@ CursorWindow::CursorWindow() {
 
 CursorWindow::~CursorWindow() {
     if (mAshmemFd >= 0) {
-        ::munmap(mData, mSize);
+        mMappedFile.reset();
         ::close(mAshmemFd);
     } else {
         free(mData);
@@ -75,6 +76,7 @@ fail_silent:
 status_t CursorWindow::maybeInflate() {
     int ashmemFd = 0;
     void* newData = nullptr;
+    std::unique_ptr<MappedFile> newMappedFile = nullptr;
 
     // Bail early when we can't expand any further
     if (mReadOnly || mSize == mInflatedSize) {
@@ -95,11 +97,12 @@ status_t CursorWindow::maybeInflate() {
         goto fail_silent;
     }
 
-    newData = ::mmap(nullptr, mInflatedSize, PROT_READ | PROT_WRITE, MAP_SHARED, ashmemFd, 0);
-    if (newData == MAP_FAILED) {
+    newMappedFile = MappedFile::FromFd(ashmemFd, 0, mInflatedSize, PROT_READ | PROT_WRITE);
+    if (newMappedFile == nullptr) {
         PLOG(ERROR) << "Failed mmap";
         goto fail_silent;
     }
+    newData = newMappedFile->data();
 
     if (ashmem_set_prot_region(ashmemFd, PROT_READ) < 0) {
         PLOG(ERROR) << "Failed ashmem_set_prot_region";
@@ -117,6 +120,7 @@ status_t CursorWindow::maybeInflate() {
 
         free(mData);
         mAshmemFd = ashmemFd;
+        mMappedFile = std::move(newMappedFile);
         mData = newData;
         mSize = mInflatedSize;
         mSlotsOffset = newSlotsOffset;
@@ -130,11 +134,12 @@ status_t CursorWindow::maybeInflate() {
 fail:
     LOG(ERROR) << "Failed maybeInflate";
 fail_silent:
-    ::munmap(newData, mInflatedSize);
+    newMappedFile.reset();
     ::close(ashmemFd);
     return UNKNOWN_ERROR;
 }
 
+#ifdef __linux__
 status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outWindow) {
     *outWindow = nullptr;
 
@@ -166,13 +171,13 @@ status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outWindow
             PLOG(ERROR) << "Failed F_DUPFD_CLOEXEC";
             goto fail_silent;
         }
-
-        window->mData = ::mmap(nullptr, window->mSize, PROT_READ, MAP_SHARED, tempFd, 0);
-        if (window->mData == MAP_FAILED) {
+        window->mMappedFile = MappedFile::FromFd(tempFd, 0, window->mSize, PROT_READ);
+        if (window->mMappedFile == nullptr) {
             ::close(tempFd);
             PLOG(ERROR) << "Failed mmap";
             goto fail_silent;
         }
+        window->mData = window->mMappedFile->data();
 
         window->mAshmemFd = tempFd;
 
@@ -239,6 +244,7 @@ fail:
 fail_silent:
     return UNKNOWN_ERROR;
 }
+#endif
 
 status_t CursorWindow::clear() {
     if (mReadOnly) {

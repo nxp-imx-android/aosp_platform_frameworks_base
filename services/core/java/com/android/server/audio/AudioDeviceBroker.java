@@ -1126,26 +1126,15 @@ public class AudioDeviceBroker {
                     .set(MediaMetrics.Property.NAME, name)
                     .set(MediaMetrics.Property.STATUS, data.mInfo.getProfile())
                     .record();
-            synchronized (mDeviceStateLock) {
-                postBluetoothDeviceConfigChange(createBtDeviceInfo(data, data.mNewDevice,
-                        BluetoothProfile.STATE_CONNECTED));
-            }
+            postBluetoothDeviceConfigChange(data);
         } else {
-            synchronized (mDeviceStateLock) {
-                if (data.mPreviousDevice != null) {
-                    btMediaMetricRecord(data.mPreviousDevice, MediaMetrics.Value.DISCONNECTED,
-                            data);
-                    sendLMsgNoDelay(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT, SENDMSG_QUEUE,
-                            createBtDeviceInfo(data, data.mPreviousDevice,
-                                    BluetoothProfile.STATE_DISCONNECTED));
-                }
-                if (data.mNewDevice != null) {
-                    btMediaMetricRecord(data.mNewDevice, MediaMetrics.Value.CONNECTED, data);
-                    sendLMsgNoDelay(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT, SENDMSG_QUEUE,
-                            createBtDeviceInfo(data, data.mNewDevice,
-                                    BluetoothProfile.STATE_CONNECTED));
-                }
+            if (data.mPreviousDevice != null) {
+                btMediaMetricRecord(data.mPreviousDevice, MediaMetrics.Value.DISCONNECTED, data);
             }
+            if (data.mNewDevice != null) {
+                btMediaMetricRecord(data.mNewDevice, MediaMetrics.Value.CONNECTED, data);
+            }
+            postBluetoothDeviceConnectionChange(data);
         }
     }
 
@@ -1392,8 +1381,12 @@ public class AudioDeviceBroker {
                 SENDMSG_REPLACE, new AudioModeInfo(mode, pid, uid));
     }
 
-    /*package*/ void postBluetoothDeviceConfigChange(@NonNull BtDeviceInfo info) {
-        sendLMsgNoDelay(MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE, SENDMSG_QUEUE, info);
+    /*package*/ void postBluetoothDeviceConfigChange(@NonNull BtDeviceChangedData data) {
+        sendLMsgNoDelay(MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE, SENDMSG_QUEUE, data);
+    }
+
+    /*package*/ void postBluetoothDeviceConnectionChange(@NonNull BtDeviceChangedData data) {
+        sendLMsgNoDelay(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT, SENDMSG_QUEUE, data);
     }
 
     /*package*/ void startBluetoothScoForClient(IBinder cb,
@@ -2094,7 +2087,14 @@ public class AudioDeviceBroker {
                     }
                     break;
                 case MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE: {
-                    final BtDeviceInfo btInfo = (BtDeviceInfo) msg.obj;
+                    final BtDeviceChangedData data = (BtDeviceChangedData) msg.obj;
+                    if (data.mNewDevice == null) {
+                        Slog.e(TAG, "Malformed MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE message");
+                        break;
+                    }
+                    final BtDeviceInfo btInfo = createBtDeviceInfo(
+                            data, data.mNewDevice, BluetoothProfile.STATE_CONNECTED);
+
                     final Pair<Integer, Boolean> codecAndChanged = mBtHelper.getCodecWithFallback(
                             btInfo.mDevice, btInfo.mProfile, btInfo.mIsLeOutput,
                             "MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE");
@@ -2206,12 +2206,26 @@ public class AudioDeviceBroker {
                     }
                     break;
                 case MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT: {
-                    final BtDeviceInfo btInfo = (BtDeviceInfo) msg.obj;
-                    if (btInfo.mDevice == null) break;
-                    AudioService.sDeviceLogger.enqueue((new EventLogger.StringEvent(
-                            "msg: MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT " + btInfo)).printLog(TAG));
-                    synchronized (mDeviceStateLock) {
-                        mDeviceInventory.setBluetoothActiveDevice(btInfo);
+                    final BtDeviceChangedData data = (BtDeviceChangedData) msg.obj;
+                    if (data.mPreviousDevice == null && data.mNewDevice == null) {
+                        Slog.e(TAG, "Malformed MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT message");
+                        break;
+                    }
+                    if (data.mPreviousDevice != null) {
+                        final BtDeviceInfo btInfo = createBtDeviceInfo(
+                                data, data.mPreviousDevice, BluetoothProfile.STATE_DISCONNECTED);
+                        synchronized (mDeviceStateLock) {
+                            mDeviceInventory.setBluetoothActiveDevice(btInfo,
+                                    "MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT" /*eventSource*/);
+                        }
+                    }
+                    if (data.mNewDevice != null) {
+                        final BtDeviceInfo btInfo = createBtDeviceInfo(
+                                data, data.mNewDevice, BluetoothProfile.STATE_CONNECTED);
+                        synchronized (mDeviceStateLock) {
+                            mDeviceInventory.setBluetoothActiveDevice(btInfo,
+                                    "MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT" /*eventSource*/);
+                        }
                     }
                 } break;
                 case MSG_CHECK_MUTE_MUSIC:

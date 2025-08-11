@@ -217,7 +217,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun qsFullscreen_dualShadeWide_falseWhenIdleQs() =
+    fun qsFullscreen_dualShadeWide_trueWhenIdleQs() =
         kosmos.runTest {
             enableDualShade(wideLayout = true)
             val actual by collectLastValue(underTest.isQsFullscreen)
@@ -234,7 +234,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
             )
 
             // THEN QS is fullscreen
-            assertThat(actual).isFalse()
+            assertThat(actual).isTrue()
         }
 
     @Test

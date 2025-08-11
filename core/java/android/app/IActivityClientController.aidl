@@ -17,6 +17,7 @@
 package android.app;
 
 import android.app.ActivityManager;
+import android.app.HandoffActivityData;
 import android.app.IRequestFinishCallback;
 import android.app.PictureInPictureParams;
 import android.content.ComponentName;
@@ -52,8 +53,12 @@ interface IActivityClientController {
      * there won't be other lifecycle changes.
      */
     void activityPaused(in IBinder token);
-    oneway void activityStopped(in IBinder token, in Bundle state,
-            in PersistableBundle persistentState, in CharSequence description);
+    oneway void activityStopped(
+        in IBinder token,
+        in Bundle state,
+        in PersistableBundle persistentState,
+        in HandoffActivityData handoffActivityData,
+        in CharSequence description);
     oneway void activityDestroyed(in IBinder token);
     oneway void activityLocalRelaunch(in IBinder token);
     oneway void activityRelaunched(in IBinder token);

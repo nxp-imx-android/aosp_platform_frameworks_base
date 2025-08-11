@@ -246,7 +246,7 @@ class DreamSmartspaceControllerTest : SysuiTestCase() {
         // should not be called
         verify(viewComponentFactory)
             .create(eq(fakeParent), eq(weatherPlugin), any(), eq(customView))
-        verify(weatherPlugin, Mockito.never()).getView(fakeParent)
+        verify(weatherPlugin, Mockito.never()).getView(fakeParent.context)
 
         // And then session is created
         controller.stateChangeListener.onViewAttachedToWindow(weatherView)

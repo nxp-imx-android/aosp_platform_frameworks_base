@@ -24,6 +24,7 @@ aconfig_declarations_group {
         "aconfig_settingslib_flags_java_lib",
         "aconfig_trade_in_mode_flags_java_lib",
         "adpf_flags_java_lib",
+        "anomaly-detector-exported-aconfig-flags-lib",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
         "android.app.contextualsearch.flags-aconfig-java",
@@ -1779,6 +1780,7 @@ java_aconfig_library {
     name: "android.provider.flags-aconfig-java",
     aconfig_declarations: "android.provider.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    min_sdk_version: "30",
 }
 
 // ContextHub

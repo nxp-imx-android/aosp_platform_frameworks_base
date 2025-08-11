@@ -52,7 +52,8 @@ public class HostTestUtils {
                 case HostStubGenProcessedAsIgnore a -> a.reason();
                 case HostStubGenProcessedAsThrow a -> a.reason();
                 case HostStubGenProcessedAsThrowButSupported a -> a.reason();
-                // case HostStubGenProcessedAsSubstitute a -> a.reason();
+                case HostStubGenProcessedAsExperimental a -> a.reason();
+                case HostStubGenProcessedAsSubstitute a -> a.reason();
                 default -> null;
             };
             if (reason != null && !reason.isEmpty()) {
