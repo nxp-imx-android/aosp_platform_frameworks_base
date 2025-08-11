@@ -106,6 +106,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_ADDITIONAL;
 import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
@@ -2053,7 +2054,7 @@ public final class ViewRootImpl implements ViewParent,
                 // properly configured dark theme are unaffected by force invert dark theme. For
                 // self-declared light theme apps HWUI then performs its own "color area"
                 // calculation to determine if the app actually renders with light colors.
-                if (a.getBoolean(R.styleable.Theme_isLightTheme, false)) {
+                if (!isInputWindow() && a.getBoolean(R.styleable.Theme_isLightTheme, false)) {
                     return ForceDarkType.FORCE_INVERT_COLOR_DARK;
                 }
             }
@@ -2062,6 +2063,10 @@ public final class ViewRootImpl implements ViewParent,
         } finally {
             a.recycle();
         }
+    }
+
+    private boolean isInputWindow() {
+        return mOrigWindowType == TYPE_INPUT_METHOD || mOrigWindowType == TYPE_INPUT_METHOD_DIALOG;
     }
 
     private boolean shouldApplyForceInvertDark() {
