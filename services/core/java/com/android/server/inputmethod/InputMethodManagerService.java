@@ -1169,10 +1169,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         // Hide soft input before user switch task since switch task may block main handler a while
         // and delayed the hideCurrentInputLocked().
-        final var userData = getUserData(userId);
+        final var userData = getUserData(mCurrentImeUserId);
         final var statsToken = createStatsTokenForFocusedClient(false /* show */,
-                SoftInputShowHideReason.HIDE_SWITCH_USER, userId);
-        setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
+                SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
+        hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
+                false /* updateTargetWindow */, statsToken,
+                SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
         final UserSwitchHandlerTask task = new UserSwitchHandlerTask(this, userId,
                 clientToBeReset);
         mUserSwitchHandlerTask = task;
@@ -1736,7 +1738,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @NonNull UserData userData) {
         final int userId = userData.mUserId;
         if (userData.mCurClient == client) {
+            final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                    SoftInputShowHideReason.HIDE_REMOVE_CLIENT, userId);
             hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
+                    true /* updateTargetWindow */, statsToken,
                     SoftInputShowHideReason.HIDE_REMOVE_CLIENT, userId);
             if (userData.mBoundToMethod) {
                 userData.mBoundToMethod = false;
@@ -1968,7 +1973,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         if (visibilityStateComputer.getImePolicy().isImeHiddenByDisplayPolicy()) {
+            final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                    SoftInputShowHideReason.HIDE_DISPLAY_IME_POLICY_HIDE, userId);
             hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
+                    true /* updateTargetWindow */, statsToken,
                     SoftInputShowHideReason.HIDE_DISPLAY_IME_POLICY_HIDE, userId);
             return InputBindResult.NO_IME;
         }
@@ -2981,8 +2989,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             final long ident = Binder.clearCallingIdentity();
             try {
                 ProtoLog.v(IMMS_DEBUG, "Client requesting input be hidden");
-                return hideCurrentInputLocked(windowToken, statsToken,
-                        SoftInputShowHideReason.HIDE_SOFT_INPUT, userId);
+                return hideCurrentInputLocked(windowToken, true /* updateTargetWindow */,
+                        statsToken, SoftInputShowHideReason.HIDE_SOFT_INPUT, userId);
             } finally {
                 Binder.restoreCallingIdentity(ident);
                 Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -3364,20 +3372,31 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         synchronized (ImfLock.class) {
             final int userId = resolveImeUserIdLocked(callingUserId);
             final var userData = getUserData(userId);
+            final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                    SoftInputShowHideReason.HIDE_SOFT_INPUT, userId);
             hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
+                    true /* updateTargetWindow */, statsToken,
                     SoftInputShowHideReason.HIDE_SOFT_INPUT, userId);
         }
     }
 
+    /**
+     * Hides the IME for the given focused window and user.
+     *
+     * <p>This will also update the {@link ImeTargetWindowState} through
+     * {@link ImeVisibilityStateComputer#requestImeVisibility} if {@code updateTargetWindow} is set.
+     * Otherwise, this will only send the hide signal to the IME without updating the target window
+     * state, such that the requested visibility can be later restored when this window gains focus.
+     *
+     * @param windowToken        the token of the current focused window.
+     * @param updateTargetWindow whether to update the {@link ImeTargetWindowState}.
+     * @param statsToken         the token tracking the IME hide request.
+     * @param reason             the reason for requesting to hide the IME.
+     * @param userId             the ID of the user to hide the IME for.
+     * @return whether the hide request was sent to the IME or not.
+     */
     @GuardedBy("ImfLock.class")
-    private boolean hideCurrentInputLocked(IBinder windowToken, @SoftInputShowHideReason int reason,
-            @UserIdInt int userId) {
-        final var statsToken = createStatsTokenForFocusedClient(false /* show */, reason, userId);
-        return hideCurrentInputLocked(windowToken, statsToken, reason, userId);
-    }
-
-    @GuardedBy("ImfLock.class")
-    private boolean hideCurrentInputLocked(IBinder windowToken,
+    private boolean hideCurrentInputLocked(IBinder windowToken, boolean updateTargetWindow,
             @NonNull ImeTracker.Token statsToken, @SoftInputShowHideReason int reason,
             @UserIdInt int userId) {
         final var userData = getUserData(userId);
@@ -3397,7 +3416,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 && (visibilityStateComputer.isInputShown()
                 || (bindingController.getImeWindowVis() & InputMethodService.IME_ACTIVE) != 0);
 
-        visibilityStateComputer.requestImeVisibility(windowToken, false);
+        if (updateTargetWindow) {
+            visibilityStateComputer.requestImeVisibility(windowToken, false);
+        }
         if (shouldHideSoftInput) {
             // The IME will report its visible state again after the following message finally
             // delivered to the IME process as an IPC.  Hence the inconsistency between
@@ -3634,7 +3655,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         Slog.w(TAG, "If you need to impersonate a foreground user/profile from"
                                 + " a background user, use EditorInfo.targetInputMethodUser with"
                                 + " INTERACT_ACROSS_USERS_FULL permission.");
+                        final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                                SoftInputShowHideReason.HIDE_INVALID_USER, userId);
                         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
+                                true /* updateTargetWindow */, statsToken,
                                 SoftInputShowHideReason.HIDE_INVALID_USER, userId);
                         return InputBindResult.INVALID_USER;
                     }
