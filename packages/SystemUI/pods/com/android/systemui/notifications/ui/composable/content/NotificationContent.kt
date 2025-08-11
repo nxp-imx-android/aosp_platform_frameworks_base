@@ -50,8 +50,15 @@ public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modif
         NotificationRow(
             viewModel,
             firstLine = {
-                // TODO: b/431222735 - Implement the top line properly.
-                TopLineText("Placeholder • Top Line Text", Modifier.padding(vertical = 2.dp))
+                TopLineText(
+                    modifier = Modifier.padding(vertical = 2.dp),
+                    appNameText = viewModel.appName,
+                    headerTextSecondary = viewModel.headerTextSecondary,
+                    headerText = viewModel.headerText,
+                    // TODO: b/431222735 - Implement time/chronometer logic.
+                    timeText = "now",
+                    verificationText = viewModel.verificationText,
+                )
             },
             secondLine = { Title(viewModel.title) },
             modifier,
@@ -111,13 +118,12 @@ private fun HeaderWithLargeIcon(
             secondLine()
         }
         viewModel.largeIcon?.let {
-            LargeIcon(
-                it,
-                Modifier.padding(start = 16.dp, end = 8.dp),
-                viewModel.maxLargeIconAspectRatio,
-            )
+            LargeIcon(it, Modifier.padding(start = 16.dp), viewModel.maxLargeIconAspectRatio)
         }
-        Expander(expanded = viewModel.isExpanded, modifier = Modifier.padding(top = 4.dp))
+        Expander(
+            expanded = viewModel.isExpanded,
+            modifier = Modifier.padding(top = 4.dp, start = 8.dp),
+        )
     }
 }
 
@@ -140,7 +146,7 @@ private fun HeaderWithoutLargeIcon(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) { firstLine() }
-            Expander(expanded = viewModel.isExpanded)
+            Expander(expanded = viewModel.isExpanded, modifier = Modifier.padding(start = 8.dp))
         }
         secondLine()
     }
