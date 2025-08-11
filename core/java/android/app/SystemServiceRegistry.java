@@ -1973,9 +1973,7 @@ public final class SystemServiceRegistry {
             if (android.permission.flags.Flags.enhancedConfirmationModeApisEnabled()) {
                 EnhancedConfirmationFrameworkInitializer.registerServiceWrappers();
             }
-            if (android.server.Flags.telemetryApisService()) {
-                ProfilingFrameworkInitializer.registerServiceWrappers();
-            }
+            ProfilingFrameworkInitializer.registerServiceWrappers();
             if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
                 AnomalyDetectorFrameworkInitializer.registerServiceWrappers();
             }
