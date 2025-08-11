@@ -399,10 +399,6 @@ public final class AppStartInfoTracker {
                 return;
             }
             info.setLaunchMode(launchMode);
-            if (!android.app.Flags.appStartInfoTimestamps()) {
-                info.setStartupState(ApplicationStartInfo.STARTUP_STATE_FIRST_FRAME_DRAWN);
-                checkCompletenessAndCallback(info);
-            }
         }
     }
 
@@ -1266,8 +1262,7 @@ public final class AppStartInfoTracker {
 
             startInfo.addStartupTimestamp(key, timestampNs);
 
-            if (key == ApplicationStartInfo.START_TIMESTAMP_FIRST_FRAME
-                    && android.app.Flags.appStartInfoTimestamps()) {
+            if (key == ApplicationStartInfo.START_TIMESTAMP_FIRST_FRAME) {
                 startInfo.setStartupState(ApplicationStartInfo.STARTUP_STATE_FIRST_FRAME_DRAWN);
                 checkCompletenessAndCallback(startInfo);
             }
