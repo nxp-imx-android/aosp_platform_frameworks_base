@@ -25,6 +25,9 @@ import android.view.WindowInsets
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.splitscreen.SplitScreenController
+import dagger.Lazy
+import java.util.Optional
 
 object BubbleUtils {
 
@@ -126,13 +129,24 @@ object BubbleUtils {
 
     /** Returns true if the task is valid for Bubble. */
     @JvmStatic
-    fun isValidToBubble(taskInfo: ActivityManager.RunningTaskInfo?): Boolean {
-        return taskInfo != null && taskInfo.supportsMultiWindow
+    fun ActivityManager.RunningTaskInfo?.isValidToBubble(): Boolean {
+        return this?.supportsMultiWindow == true
     }
 
     /** Determines if a bubble task is moving to fullscreen based on its windowing mode. */
-    fun isBubbleToFullscreen(task: ActivityManager.RunningTaskInfo?): Boolean {
+    @JvmStatic
+    fun ActivityManager.RunningTaskInfo?.isBubbleToFullscreen(): Boolean {
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
-                && task?.windowingMode == WINDOWING_MODE_FULLSCREEN
+                && this?.windowingMode == WINDOWING_MODE_FULLSCREEN
+    }
+
+    /** Determines if a bubble task is moving to split-screen based on its parent task. */
+    @JvmStatic
+    fun ActivityManager.RunningTaskInfo?.isBubbleToSplit(
+        splitScreenController: Lazy<Optional<SplitScreenController>>,
+    ): Boolean {
+        return this?.hasParentTask() == true && splitScreenController.get()
+            .map { it.isTaskRootOrStageRoot(parentTaskId) }
+            .orElse(false)
     }
 }

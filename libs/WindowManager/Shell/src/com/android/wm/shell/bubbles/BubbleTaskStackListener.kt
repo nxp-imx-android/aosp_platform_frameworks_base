@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-// Exports bubble task utilities (e.g., `isBubbleToFullscreen`) for Java interop.
-@file:JvmName("BubbleTaskUtils")
-
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
@@ -25,6 +22,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
+import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
@@ -63,9 +61,9 @@ class BubbleTaskStackListener(
             taskId)
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             when {
-                isBubbleToFullscreen(task) -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
-                isBubbleToSplit(task) -> return // skip split task restarts
-                !isAppBubbleMovingToFront(task) -> selectAndExpandInStackBubble(bubble, task)
+                task.isBubbleToFullscreen() -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
+                task.isBubbleToSplit(splitScreenController) -> return // skip split task restarts
+                !task.isAppBubbleMovingToFront() -> selectAndExpandInStackBubble(bubble, task)
             }
         }
     }
@@ -78,15 +76,9 @@ class BubbleTaskStackListener(
             taskId)
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             when {
-                isBubbleToFullscreen(task) -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
+                task.isBubbleToFullscreen() -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
             }
         }
-    }
-
-    private fun isBubbleToSplit(task: ActivityManager.RunningTaskInfo): Boolean {
-        return task.hasParentTask() && splitScreenController.get()
-            .map { it.isTaskRootOrStageRoot(task.parentTaskId) }
-            .orElse(false)
     }
 
     /**
@@ -95,9 +87,9 @@ class BubbleTaskStackListener(
      * This occurs when a startActivity call resolves to an existing activity, causing the
      * task to move to front, and the mixed transition will then expand the bubble.
      */
-    private fun isAppBubbleMovingToFront(task: ActivityManager.RunningTaskInfo): Boolean {
-        return task.activityType == ACTIVITY_TYPE_STANDARD
-                && bubbleController.shouldBeAppBubble(task)
+    private fun ActivityManager.RunningTaskInfo?.isAppBubbleMovingToFront(): Boolean {
+        return this?.activityType == ACTIVITY_TYPE_STANDARD
+                && bubbleController.shouldBeAppBubble(this)
     }
 
     /** Selects and expands a bubble that is currently in the stack. */

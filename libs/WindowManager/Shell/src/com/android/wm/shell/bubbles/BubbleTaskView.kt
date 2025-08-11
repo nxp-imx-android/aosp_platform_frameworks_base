@@ -108,7 +108,8 @@ class BubbleTaskView(val taskView: TaskView, executor: Executor) {
      * This should be called after all other cleanup animations have finished.
      */
     fun cleanup() {
-        if (isBubbleToFullscreen(taskView.taskInfo)) {
+        val task = taskView.taskInfo
+        if (task.isBubbleToFullscreen()) {
             taskView.unregisterTask()
         } else {
             taskView.removeTask()
