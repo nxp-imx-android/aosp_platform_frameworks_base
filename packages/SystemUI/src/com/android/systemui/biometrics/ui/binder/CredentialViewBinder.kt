@@ -3,6 +3,7 @@ package com.android.systemui.biometrics.ui.binder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -56,11 +57,14 @@ object CredentialViewBinder {
             view.requireViewById(R.id.customized_view_container)
         val iconView: ImageView? = view.findViewById(R.id.icon)
         val errorView: TextView = view.requireViewById(R.id.error)
+        val backButton: ImageButton? = view.findViewById(R.id.back_button)
         val cancelButton: Button? = view.findViewById(R.id.cancel_button)
         val emergencyButtonView: Button = view.requireViewById(R.id.emergencyCallButton)
         val fallbackButton: Button? = view.findViewById(R.id.fallback_button)
 
         var errorTimer: Job? = null
+
+        backButton?.setOnClickListener { host.onCredentialAborted() }
 
         // bind common elements
         view.repeatWhenAttached {
@@ -151,6 +155,12 @@ object CredentialViewBinder {
                         if (shouldDismiss) {
                             host.onCredentialAborted()
                         }
+                    }
+                }
+
+                launch {
+                    viewModel.isBackButtonVisible.collect { visible ->
+                        backButton?.visibility = if (visible) View.VISIBLE else View.GONE
                     }
                 }
 
