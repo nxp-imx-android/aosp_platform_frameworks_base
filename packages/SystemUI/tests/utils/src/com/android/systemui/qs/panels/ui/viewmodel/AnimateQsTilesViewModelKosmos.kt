@@ -23,7 +23,10 @@ val Kosmos.animateQsTilesViewModelFactory by
     Kosmos.Fixture {
         object : AnimateQsTilesViewModel.Factory {
             override fun create(): AnimateQsTilesViewModel {
-                return AnimateQsTilesViewModel(inFirstPageInteractor)
+                return AnimateQsTilesViewModel(
+                    inFirstPageInteractor,
+                    mediaInRowInLandscapeViewModelFactory,
+                )
             }
         }
     }

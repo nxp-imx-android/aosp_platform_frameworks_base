@@ -8,6 +8,7 @@ import com.android.compose.animation.scene.transitions
 import com.android.internal.jank.Cuj
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.systemui.notifications.ui.composable.Notifications
+import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeCollapse
@@ -49,16 +50,11 @@ import com.android.systemui.shade.ui.composable.Shade
  *
  * Please keep the list sorted alphabetically.
  */
-class SceneContainerTransitions(
-    /**
-     * Pass to transitions that animate QS tiles to disable the shared element animation (e.g.
-     * QuickSettings to Shade when QuickSettings is on the second page).
-     */
-    private val animateQsTilesAsShared: () -> Boolean = { true }
-) : SceneContainerTransitionsBuilder {
+class SceneContainerTransitions : SceneContainerTransitionsBuilder {
     override fun build(
         shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
+        animateQsTilesViewModel: AnimateQsTilesViewModel,
     ): SceneTransitions {
         return transitions {
             interruptionHandler = DefaultInterruptionHandler
@@ -153,7 +149,9 @@ class SceneContainerTransitions(
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
                 reversed {
-                    shadeToQuickSettingsTransition(animateQsTilesAsShared = animateQsTilesAsShared)
+                    shadeToQuickSettingsTransition(
+                        animateQsTilesAsShared = { animateQsTilesViewModel.animateQsTiles }
+                    )
                 }
                 sharedElement(
                     Notifications.Elements.HeadsUpNotificationPlaceholder,
@@ -165,7 +163,9 @@ class SceneContainerTransitions(
                 to = Scenes.QuickSettings,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                shadeToQuickSettingsTransition(animateQsTilesAsShared = animateQsTilesAsShared)
+                shadeToQuickSettingsTransition(
+                    animateQsTilesAsShared = { animateQsTilesViewModel.animateQsTiles }
+                )
             }
             from(
                 Scenes.Shade,

@@ -22,6 +22,7 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarou
 import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.qs.panels.ui.viewmodel.detailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
+import com.android.systemui.qs.panels.ui.viewmodel.mediaInRowInLandscapeViewModelFactory
 import com.android.systemui.qs.panels.ui.viewmodel.tileGridViewModelFactory
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
@@ -42,6 +43,7 @@ val Kosmos.quickSettingsContainerViewModelFactory by
                     shadeDisplaysInteractor = { shadeDisplaysInteractor },
                     mediaCarouselInteractor = mediaCarouselInteractor,
                     mediaViewModelFactory = mediaViewModelFactory,
+                    mediaInRowInLandscapeViewModelFactory = mediaInRowInLandscapeViewModelFactory,
                 )
             }
         }

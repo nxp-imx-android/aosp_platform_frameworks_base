@@ -16,15 +16,55 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel
 
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QQS
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
 import com.android.systemui.qs.panels.domain.interactor.InFirstPageInteractor
+import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
+import com.android.systemui.shade.ui.viewmodel.ShadeSceneContentViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
+/**
+ * View model to determine if the tiles should animate (move) when going from QQS to QS. If
+ * [animateQsTiles] is `false`, the tiles should probably be faded instead.
+ *
+ * Only use this with scene container.
+ */
 class AnimateQsTilesViewModel
 @AssistedInject
-constructor(private val inFirstPageInteractor: InFirstPageInteractor) {
+constructor(
+    private val inFirstPageInteractor: InFirstPageInteractor,
+    mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
+) : ExclusiveActivatable() {
     val animateQsTiles
-        get() = inFirstPageInteractor.inFirstPage
+        get() = inFirstPageInteractor.inFirstPage && !mediaAppearsSuddenly
+
+    private val qqsMediaInRowViewModel =
+        mediaInRowInLandscapeViewModelFactory.create(
+            LOCATION_QQS,
+            ShadeSceneContentViewModel.qqsMediaUiBehavior,
+        )
+
+    private val qsMediaInRowViewModel =
+        mediaInRowInLandscapeViewModelFactory.create(
+            LOCATION_QS,
+            QuickSettingsContainerViewModel.mediaUiBehavior,
+        )
+
+    private val mediaAppearsSuddenly: Boolean
+        get() =
+            !qqsMediaInRowViewModel.shouldMediaShowInRow &&
+                qsMediaInRowViewModel.shouldMediaShowInRow
+
+    override suspend fun onActivated() {
+        coroutineScope {
+            launch { qsMediaInRowViewModel.activate() }
+            launch { qqsMediaInRowViewModel.activate() }
+        }
+    }
 
     @AssistedFactory
     interface Factory {

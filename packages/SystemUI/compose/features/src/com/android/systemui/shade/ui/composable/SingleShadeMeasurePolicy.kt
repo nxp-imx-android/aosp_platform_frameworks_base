@@ -35,9 +35,7 @@ import kotlin.math.max
  */
 class SingleShadeMeasurePolicy(
     private val isMediaInRow: Boolean,
-    private val mediaOffset: MeasureScope.() -> Int,
     private val onNotificationsTopChanged: (Int) -> Unit,
-    private val mediaZIndex: () -> Float,
     private val cutoutInsetsProvider: () -> WindowInsets?,
 ) : MeasurePolicy {
 
@@ -64,11 +62,11 @@ class SingleShadeMeasurePolicy(
         val mediaPlaceable =
             measurables
                 .fastFirstOrNull { it.layoutId == LayoutId.Media }
-                ?.measure(applyMediaConstraints(constraintsWithCutout, isMediaInRow))
+                ?.measure(constraintsWithCutout.mediaConstraints(isMediaInRow))
         val quickSettingsPlaceable =
             measurables
                 .fastFirstOrNull { it.layoutId == LayoutId.QuickSettings }
-                ?.measure(constraintsWithCutout)
+                ?.measure(constraintsWithCutout.qsTilesConstraints(isMediaInRow))
         val notificationsPlaceable =
             measurables
                 .fastFirstOrNull { it.layoutId == LayoutId.Notifications }
@@ -87,32 +85,34 @@ class SingleShadeMeasurePolicy(
         return layout(constraints.maxWidth, constraints.maxHeight) {
             shadeHeaderPlaceable?.placeRelative(x = insetsLeft, y = insetsTop)
             val statusBarHeaderHeight = shadeHeaderPlaceable?.height ?: 0
+
+            val quickSettingsHeight = quickSettingsPlaceable?.height ?: 0
+            val quickSettingsOffset =
+                if (isMediaInRow && mediaPlaceable != null) {
+                    max((mediaPlaceable.height - quickSettingsHeight) / 2, 0)
+                } else {
+                    0
+                }
+
             quickSettingsPlaceable?.placeRelative(
                 x = insetsLeft,
-                y = insetsTop + statusBarHeaderHeight,
+                y = insetsTop + statusBarHeaderHeight + quickSettingsOffset,
             )
 
             if (mediaPlaceable != null) {
-                val quickSettingsHeight = quickSettingsPlaceable?.height ?: 0
-
                 if (isMediaInRow) {
                     // mediaPlaceable height ranges from 0 to qsHeight. We want it to be centered
                     // vertically when it's smaller than the QS
-                    val mediaCenteringOffset = (quickSettingsHeight - mediaPlaceable.height) / 2
+                    val mediaCenteringOffset =
+                        max((quickSettingsHeight - mediaPlaceable.height) / 2, 0)
                     mediaPlaceable.placeRelative(
                         x = insetsLeft + constraintsWithCutout.maxWidth / 2,
-                        y =
-                            insetsTop +
-                                statusBarHeaderHeight +
-                                mediaCenteringOffset +
-                                mediaOffset(),
-                        zIndex = mediaZIndex(),
+                        y = insetsTop + statusBarHeaderHeight + mediaCenteringOffset,
                     )
                 } else {
                     mediaPlaceable.placeRelative(
                         x = insetsLeft,
                         y = insetsTop + statusBarHeaderHeight + quickSettingsHeight,
-                        zIndex = mediaZIndex(),
                     )
                 }
             }
@@ -142,14 +142,23 @@ class SingleShadeMeasurePolicy(
             }
     }
 
-    private fun applyMediaConstraints(
-        constraints: Constraints,
-        isMediaInRow: Boolean,
-    ): Constraints {
+    private fun Constraints.halfWidthConstraints(): Constraints {
+        return copy(maxWidth = maxWidth / 2)
+    }
+
+    private fun Constraints.mediaConstraints(isMediaInRow: Boolean): Constraints {
         return if (isMediaInRow) {
-            constraints.copy(maxWidth = constraints.maxWidth / 2)
+            halfWidthConstraints()
         } else {
-            constraints
+            this
+        }
+    }
+
+    private fun Constraints.qsTilesConstraints(isMediaInRow: Boolean): Constraints {
+        return if (isMediaInRow) {
+            halfWidthConstraints()
+        } else {
+            this
         }
     }
 
