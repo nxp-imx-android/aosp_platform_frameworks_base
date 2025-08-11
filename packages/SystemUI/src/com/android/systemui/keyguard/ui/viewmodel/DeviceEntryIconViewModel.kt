@@ -31,7 +31,9 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.customization.data.SensorLocation
 import dagger.Lazy
@@ -70,6 +72,7 @@ constructor(
     private val deviceEntrySourceInteractor: DeviceEntrySourceInteractor,
     private val accessibilityInteractor: AccessibilityInteractor,
     @Application private val scope: CoroutineScope,
+    private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
     val isUdfpsSupported: StateFlow<Boolean> = deviceEntryUdfpsInteractor.isUdfpsSupported
     val udfpsLocation: StateFlow<SensorLocation?> =
@@ -141,10 +144,22 @@ constructor(
             KeyguardState.GLANCEABLE_HUB,
             KeyguardState.GONE,
             KeyguardState.OCCLUDED -> 0f
-            KeyguardState.UNDEFINED,
             KeyguardState.AOD,
             KeyguardState.ALTERNATE_BOUNCER,
             KeyguardState.LOCKSCREEN -> 1f
+            KeyguardState.UNDEFINED -> calculateAlphaForKeyguardStateUndefined()
+        }
+    }
+
+    private fun calculateAlphaForKeyguardStateUndefined(): Float {
+        return if (SceneContainerFlag.isEnabled) {
+            when (sceneInteractor.get().currentScene.value) {
+                Scenes.Shade,
+                Scenes.QuickSettings -> 1f
+                else -> 0f
+            }
+        } else {
+            1f
         }
     }
 
