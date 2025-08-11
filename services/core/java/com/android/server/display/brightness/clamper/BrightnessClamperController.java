@@ -333,6 +333,9 @@ public class BrightnessClamperController {
             }
             modifiers.add(new HdrBrightnessModifier(
                     handler, context, flags, pluginManager, listener, data));
+            if (flags.isMinmodeCapBrightnessEnabled()) {
+                modifiers.add(new BrightnessMinModeModifier(handler, context, listener, data));
+            }
             return modifiers;
         }
 
@@ -356,7 +359,8 @@ public class BrightnessClamperController {
      */
     public static class DisplayDeviceData implements BrightnessThermalModifier.ThermalData,
             BrightnessPowerModifier.PowerData,
-            BrightnessWearBedtimeModeModifier.WearBedtimeModeData {
+            BrightnessWearBedtimeModeModifier.WearBedtimeModeData,
+            BrightnessMinModeModifier.MinModeBrightnessData {
         @NonNull
         private final String mUniqueDisplayId;
         @Nullable
@@ -436,6 +440,11 @@ public class BrightnessClamperController {
         @Override
         public float getBrightnessWearBedtimeModeCap() {
             return mDisplayDeviceConfig.getBrightnessCapForWearBedtimeMode();
+        }
+
+        @Override
+        public float getBrightnessMinModeCap() {
+            return mDisplayDeviceConfig.getBrightnessCapForMinMode();
         }
 
         @NonNull

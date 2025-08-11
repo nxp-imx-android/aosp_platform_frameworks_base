@@ -20345,6 +20345,13 @@ public final class Settings {
                 "watch_ranging_supported_by_primary_device";
 
         /**
+         * Indicates whether the device is in minmode.
+         *
+         * @hide
+         */
+        public static final String MINMODE_ACTIVE = "minmode_active";
+
+        /**
          * Settings migrated from Wear OS settings provider.
          * @hide
          */

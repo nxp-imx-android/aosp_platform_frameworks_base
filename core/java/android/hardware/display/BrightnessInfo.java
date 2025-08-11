@@ -64,7 +64,8 @@ public final class BrightnessInfo implements Parcelable {
                 BRIGHTNESS_MAX_REASON_THERMAL,
                 BRIGHTNESS_MAX_REASON_POWER_IC,
                 BRIGHTNESS_MAX_REASON_WEAR_BEDTIME_MODE,
-                BRIGHTNESS_MAX_REASON_MODES
+                BRIGHTNESS_MAX_REASON_MODES,
+                BRIGHTNESS_MAX_REASON_MINMODE
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BrightnessMaxReason {}
@@ -93,6 +94,11 @@ public final class BrightnessInfo implements Parcelable {
      * Maximum brightness is restricted by {@link android.app.NotificationManager} for quiet modes
      */
     public static final int BRIGHTNESS_MAX_REASON_MODES = 4;
+
+    /**
+     * Maximum brightness is restricted due to the MinMode
+     */
+    public static final int BRIGHTNESS_MAX_REASON_MINMODE = 5;
 
     /** Brightness */
     public final float brightness;

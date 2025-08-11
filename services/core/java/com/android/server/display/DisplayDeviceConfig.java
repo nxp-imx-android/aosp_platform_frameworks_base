@@ -918,6 +918,11 @@ public class DisplayDeviceConfig {
      */
     private float mBrightnessCapForWearBedtimeMode;
 
+    /**
+     * Maximum screen brightness setting when screen brightness capped in MinMode.
+     */
+    private float mBrightnessCapForMinMode;
+
     private boolean mVrrSupportEnabled;
 
     @Nullable
@@ -1698,6 +1703,13 @@ public class DisplayDeviceConfig {
     }
 
     /**
+     * @return Maximum screen brightness setting when screen brightness capped in MinMode.
+     */
+    public float getBrightnessCapForMinMode() {
+        return mBrightnessCapForMinMode;
+    }
+
+    /**
      * @return true if display supports dvrr
      */
     public boolean isVrrSupportEnabled() {
@@ -1918,6 +1930,7 @@ public class DisplayDeviceConfig {
                 mHdrBrightnessData = HdrBrightnessData.loadConfig(config, transitionPointProvider);
                 loadBrightnessCapForWearBedtimeMode(config);
                 loadIdleScreenRefreshRateTimeoutConfigs(config);
+                loadBrightnessCapForMinMode(config);
                 mVrrSupportEnabled = config.getSupportsVrr();
                 loadDozeBrightness(config);
             } else {
@@ -3061,6 +3074,13 @@ public class DisplayDeviceConfig {
         mBrightnessCapForWearBedtimeMode = BrightnessSynchronizer.brightnessIntToFloat(
                 mContext.getResources().getInteger(com.android.internal.R.integer
                         .config_screenBrightnessCapForWearBedtimeMode));
+    }
+
+    private void loadBrightnessCapForMinMode(DisplayConfiguration config) {
+        HighBrightnessMode hbm = config.getHighBrightnessMode();
+        float hbmTransitionPoint = hbm != null ? hbm.getTransitionPoint_all().floatValue()
+                    : PowerManager.BRIGHTNESS_MAX;
+        mBrightnessCapForMinMode = hbmTransitionPoint;
     }
 
     /**

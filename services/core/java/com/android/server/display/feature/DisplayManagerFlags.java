@@ -258,6 +258,11 @@ public class DisplayManagerFlags {
             Flags::enableLoggingForDisplayEvents
     );
 
+    private final FlagState mIsMinmodeCapBrightnessEnabled = new FlagState(
+            Flags.FLAG_MINMODE_CAP_BRIGHTNESS_ENABLED,
+            Flags::minmodeCapBrightnessEnabled
+    );
+
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
@@ -505,6 +510,10 @@ public class DisplayManagerFlags {
         return mIsLoggingForDisplayEventsEnabled.isEnabled();
     }
 
+    public boolean isMinmodeCapBrightnessEnabled() {
+        return mIsMinmodeCapBrightnessEnabled.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -557,6 +566,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mIsOnDisplayAddedInObserverEnabled);
         pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
+        pw.println(" " + mIsMinmodeCapBrightnessEnabled);
     }
 
     private static class FlagState {
