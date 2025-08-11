@@ -64,6 +64,7 @@ android.content.pm.UserInfo
 android.content.res.ApkAssets
 android.content.res.AssetFileDescriptor
 android.content.res.AssetManager
+android.content.res.CameraCompatibilityInfo
 android.content.res.ColorStateList
 android.content.res.CompatibilityInfo
 android.content.res.ComplexColor
