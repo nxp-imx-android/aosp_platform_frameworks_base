@@ -365,8 +365,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         bindDelegate();
 
 
-        if (Flags.notificationClassificationUi() &&
-                SYSTEM_RESERVED_IDS.contains(mSingleNotificationChannel.getId())) {
+        if (Flags.notificationClassificationUi()) {
             bindFeedback();
         } else {
             // Set up app settings link (i.e. Customize)
@@ -393,6 +392,9 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
+        if (feedbackButton == null) {
+            return;
+        }
         Intent intent = getAssistantFeedbackIntent(
                 mINotificationManager, mPm, mSbn.getKey(), mRanking);
         if ((!android.app.Flags.notificationClassificationUi() &&
@@ -444,8 +446,13 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             intent.setClassName(activityInfo.packageName, activityInfo.name);
 
             intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_KEY, key);
-            intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_ADJUSTMENT,
-                    ranking.getSummarization() != null ? KEY_SUMMARIZATION : KEY_TYPE);
+            if (ranking.getSummarization() != null ||
+                    SYSTEM_RESERVED_IDS.contains(ranking.getChannel().getId())) {
+                intent.putExtra(NotificationAssistantService.EXTRA_NOTIFICATION_ADJUSTMENT,
+                        ranking.getSummarization() != null
+                        ? KEY_SUMMARIZATION
+                        : KEY_TYPE);
+            }
             ArrayList<String> keys = new ArrayList<>();
             NotificationChannel channel = ranking.getChannel(); // Get channel from ranking
 

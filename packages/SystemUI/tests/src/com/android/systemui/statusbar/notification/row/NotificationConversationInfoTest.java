@@ -523,18 +523,6 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI,
-            FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT
-    })
-    public void testBindNotification_hidesFeedbackLink_ifSummaryNotInRanking() {
-        doStandardBind();
-
-        assertEquals(GONE, mNotificationInfo.findViewById(R.id.feedback).getVisibility());
-    }
-
-    @Test
     public void testBindNotification_SetsOnClickListenerForSettings() {
         final CountDownLatch latch = new CountDownLatch(1);
         mNotificationInfo.bindNotification(
