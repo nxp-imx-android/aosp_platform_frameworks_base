@@ -4196,6 +4196,9 @@
   <java-symbol type="bool" name="config_disableWeaverOnUnsecuredUsers" />
   <java-symbol type="bool" name="config_softwareLskfRateLimiterEnforcing" />
 
+  <java-symbol type="bool" name="config_lockPinEnhancedPrivacyDefault" />
+  <java-symbol type="bool" name="config_lockPatternVisibleDefault" />
+
   <!-- ETWS primary messages -->
   <java-symbol type="string" name="etws_primary_default_message_earthquake" />
   <java-symbol type="string" name="etws_primary_default_message_tsunami" />
