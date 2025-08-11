@@ -297,6 +297,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                     any(),
                     any(),
                     any(),
+                    any(),
                 )
             )
             .thenReturn(mockTaskPositioner)
