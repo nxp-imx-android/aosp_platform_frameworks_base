@@ -117,16 +117,6 @@ flag {
 }
 
 flag {
-     namespace: "system_performance"
-     name: "app_start_info_keep_records_sorted"
-     description: "Ensure records are kept sorted to avoid extra work"
-     bug: "384539178"
-     metadata {
-         purpose: PURPOSE_BUGFIX
-     }
-}
-
-flag {
      name: "enable_process_observer_broadcast_on_process_started"
      namespace: "system_performance"
      description: "Enable ProcessObserver's onProcessStarted callbacks."
