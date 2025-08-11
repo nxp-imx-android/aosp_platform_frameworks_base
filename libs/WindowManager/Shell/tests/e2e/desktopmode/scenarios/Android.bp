@@ -140,6 +140,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
+        "com.android.wm.shell.functional.immersive.EnterImmersiveViaHeaderMenuTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
@@ -499,6 +500,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.immersive.EnterImmersiveViaHeaderMenuTest"],
 }
 
 test_module_config {

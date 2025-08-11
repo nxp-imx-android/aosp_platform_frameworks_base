@@ -636,10 +636,18 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
     fun enterDesktopModeFromAppHandleMenu(
         wmHelper: WindowManagerStateHelper,
-        device: UiDevice
+        device: UiDevice,
+        isImmersiveApp: Boolean = false,
     ) {
         if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
-
+        if (isImmersiveApp) {
+            val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
+            val startX = windowRect.centerX()
+            val startY = windowRect.top
+            val endY = windowRect.centerY() / 2
+            // Swipe down from the top edge of the screen to show the app handle
+            device.swipe(startX, startY, startX, endY, 10)
+        }
         clickAppHandle(wmHelper, device)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
@@ -650,6 +658,26 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
         desktopModeButton.click()
         waitForTransitionToFreeform(wmHelper)
+    }
+
+    fun enterImmersiveMode(
+        wmHelper: WindowManagerStateHelper,
+        device: UiDevice
+    ) {
+        val caption = getCaptionForTheApp(wmHelper, device)
+        val maximizeButton = getMaximizeButtonForTheApp(caption)
+        maximizeButton.longClick()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+
+        val buttonResId = IMMERSIVE_BUTTON_IN_MENU
+        val maximizeMenu = getDesktopAppViewByRes(MAXIMIZE_MENU)
+
+        val immersiveButton =
+            maximizeMenu
+                ?.wait(Until.findObject(By.res(SYSTEMUI_PACKAGE, buttonResId)), TIMEOUT.toMillis())
+                ?: error("Unable to find object with resource id $buttonResId")
+        immersiveButton.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     fun enterSplitScreenFromAppHandleMenu(
@@ -869,6 +897,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         const val RESTART_DIALOG_RESTART_BUTTON: String = "letterbox_restart_dialog_restart_button"
         const val FULL_SCREEN_BUTTON: String = "fullscreen_button"
         const val SPLIT_SCREEN_BUTTON: String = "split_screen_button"
+        const val IMMERSIVE_BUTTON_IN_MENU: String = "maximize_menu_immersive_toggle_button"
         val caption: BySelector
             get() = By.res(SYSTEMUI_PACKAGE, CAPTION)
 
