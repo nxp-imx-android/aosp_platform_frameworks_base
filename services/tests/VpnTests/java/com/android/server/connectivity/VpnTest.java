@@ -1517,6 +1517,7 @@ public class VpnTest extends VpnTestBase {
                 eq(TEST_VPN_PKG),
                 eq(null) /* attributionTag */,
                 eq(null) /* message */);
+        verify(mVpnConnectivityMetrics, times(1)).setVpnType(VpnManager.TYPE_VPN_SERVICE);
         // Call establish() twice with the same config, it should match seamless handover case and
         // startOp() shouldn't be called again.
         vpn.establish(config);
@@ -1526,6 +1527,7 @@ public class VpnTest extends VpnTestBase {
                 eq(TEST_VPN_PKG),
                 eq(null) /* attributionTag */,
                 eq(null) /* message */);
+        verify(mVpnConnectivityMetrics, times(2)).setVpnType(VpnManager.TYPE_VPN_SERVICE);
     }
 
     private void verifyVpnManagerEvent(String sessionKey, String category, int errorClass,
@@ -3336,7 +3338,6 @@ public class VpnTest extends VpnTestBase {
         verify(mConnectivityManager, times(1)).registerNetworkProvider(argThat(
                 provider -> provider.getName().contains("VpnNetworkProvider")
         ));
-        doReturn(true).when(mVpnConnectivityMetrics).isPlatformVpn();
         return vpn;
     }
 

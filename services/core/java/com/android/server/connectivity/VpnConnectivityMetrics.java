@@ -28,7 +28,6 @@ import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA512;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CBC;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CTR;
 import static android.net.VpnManager.TYPE_VPN_OEM;
-import static android.net.VpnManager.TYPE_VPN_PLATFORM;
 
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
@@ -388,18 +387,6 @@ public class VpnConnectivityMetrics {
             ipProtocol = IP_PROTOCOL_IPv6;
         }
         return ipProtocol;
-    }
-
-    /**
-     * Checks if the VPN associated with these metrics is a platform-managed VPN.
-     * The determination is based on the internal {@code mVpnType} field, which
-     * should be set during the VPN's configuration.
-     *
-     * @return {@code true} if the VPN type matches {@code TYPE_VPN_PLATFORM};
-     *         {@code false} otherwise.
-     */
-    public boolean isPlatformVpn() {
-        return mVpnType == TYPE_VPN_PLATFORM;
     }
 
     /**
