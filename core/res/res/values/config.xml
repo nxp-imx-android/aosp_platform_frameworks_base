@@ -7863,6 +7863,12 @@
     <!-- Whether to force color fade. -->
     <bool name="config_forceColorFade">false</bool>
 
+    <!-- The locale countries that force camera shutter sound-->
+    <string-array name="config_cameraSoundForcedCountry" translatable="false">
+        <item>JP</item>
+        <item>KR</item>
+    </string-array>
+
     <!-- location button service components -->
     <string name="config_locationButtonRenderService" translatable="false">com.android.systemui/.locationbutton.LocationButtonRenderService</string>
 
