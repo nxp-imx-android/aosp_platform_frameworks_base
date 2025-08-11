@@ -34,7 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.settingslib.bluetooth.AmbientVolumeUi;
+import com.android.settingslib.bluetooth.hearingdevices.ui.AmbientVolumeUi;
 import com.android.systemui.res.R;
 
 import com.google.common.collect.BiMap;

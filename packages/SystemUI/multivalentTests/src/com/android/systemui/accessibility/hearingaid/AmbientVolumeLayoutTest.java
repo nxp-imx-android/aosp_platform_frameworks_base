@@ -42,7 +42,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.settingslib.bluetooth.AmbientVolumeUi;
+import com.android.settingslib.bluetooth.hearingdevices.ui.AmbientVolumeUi;
 import com.android.systemui.SysuiTestCase;
 
 import org.junit.Before;

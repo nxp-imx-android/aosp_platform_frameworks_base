@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.bluetooth;
+package com.android.settingslib.bluetooth.hearingdevices.ui;
 
 import static android.bluetooth.AudioInputControl.MUTE_MUTED;
 import static android.bluetooth.AudioInputControl.MUTE_NOT_MUTED;
@@ -24,14 +24,14 @@ import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_L
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothDevice;
@@ -41,6 +41,14 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.test.core.app.ApplicationProvider;
+
+import com.android.settingslib.bluetooth.BluetoothEventManager;
+import com.android.settingslib.bluetooth.CachedBluetoothDevice;
+import com.android.settingslib.bluetooth.LocalBluetoothManager;
+import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
+import com.android.settingslib.bluetooth.VolumeControlProfile;
+import com.android.settingslib.bluetooth.hearingdevices.AmbientVolumeController;
+import com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceLocalDataManager;
 
 import org.junit.Before;
 import org.junit.Rule;
