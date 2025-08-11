@@ -24,6 +24,8 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsIntera
 import com.android.systemui.keyguard.domain.interactor.KeyguardTouchHandlingInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.plugins.FalsingManager
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
 import dagger.assisted.AssistedFactory
@@ -39,6 +41,7 @@ class KeyguardTouchHandlingViewModel
 constructor(
     private val interactor: KeyguardTouchHandlingInteractor,
     private val msdlPlayer: MSDLPlayer,
+    private val falsingManager: FalsingManager,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator("KeyguardTouchHandlingViewModel.hydrator")
@@ -86,6 +89,14 @@ constructor(
      * @param isA11yAction: Whether the action was performed as an a11y action
      */
     fun onLongPress(isA11yAction: Boolean) {
+        if (
+            SceneContainerFlag.isEnabled &&
+                !isA11yAction &&
+                falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)
+        ) {
+            return
+        }
+
         if (Flags.msdlFeedback()) {
             msdlPlayer.playToken(MSDLToken.LONG_PRESS)
         }
@@ -107,6 +118,7 @@ constructor(
 
     /** Notifies that the lockscreen has been double clicked. */
     fun onDoubleClick() {
+        if (SceneContainerFlag.isEnabled && falsingManager.isFalseDoubleTap()) return
         interactor.onDoubleClick()
     }
 
