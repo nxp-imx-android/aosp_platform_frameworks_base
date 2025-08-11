@@ -17,6 +17,7 @@
 package com.android.server.locksettings;
 
 import static android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION;
+import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
@@ -54,6 +55,7 @@ import android.text.TextUtils;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.widget.ICheckCredentialProgressCallback;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
 import com.android.internal.widget.VerifyCredentialResponse;
@@ -257,6 +259,43 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         LockscreenCredential password = newPassword("password");
         setCredential(PRIMARY_USER_ID, password);
         verify(mRecoverableKeyStoreManager).lockScreenSecretChanged(password, PRIMARY_USER_ID);
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testUnlockNotReportedToStrongAuth_onCredentialVerified_inSecureLockDevice()
+            throws RemoteException {
+        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(true);
+        LockscreenCredential password = newPassword("password");
+        setCredential(PRIMARY_USER_ID, password);
+
+        reset(mStrongAuth);
+        mService.checkCredential(password, PRIMARY_USER_ID,
+                mock(ICheckCredentialProgressCallback.class));
+
+        verify(mStrongAuth, never()).reportUnlock(anyInt());
+        verify(mStrongAuth, never()).reportSuccessfulStrongAuthUnlock(anyInt());
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testStrongAuthNotified_onDisableSecureLockDevice() {
+        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(true);
+        reset(mStrongAuth);
+        mLocalService.disableSecureLockDevice(PRIMARY_USER_ID, /* authenticationComplete=*/ true);
+
+        verify(mStrongAuth).disableSecureLockDevice(eq(PRIMARY_USER_ID), eq(true));
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testStrongAuthNotifiedAndCeLocked_afterSecureLockDeviceDisabledWithoutAuth()
+            throws RemoteException {
+        when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(true);
+        mLocalService.disableSecureLockDevice(PRIMARY_USER_ID, /* authenticationComplete=*/ false);
+
+        verify(mStrongAuth).disableSecureLockDevice(eq(PRIMARY_USER_ID), eq(false));
+        verify(mInjector.getStorageManager()).lockCeStorage(eq(PRIMARY_USER_ID));
     }
 
     @Test

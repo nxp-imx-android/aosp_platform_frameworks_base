@@ -60,6 +60,7 @@ import com.android.server.LocalServices;
 import com.android.server.StorageManagerInternal;
 import com.android.server.locksettings.recoverablekeystore.RecoverableKeyStoreManager;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -93,6 +94,7 @@ public abstract class BaseLockSettingsServiceTests {
     MockLockSettingsContext mContext;
     LockSettingsStorageTestable mStorage;
     LockSettingsStrongAuth mStrongAuth;
+    LockSettingsService.SynchronizedStrongAuthTracker mStrongAuthTracker;
 
     Resources mResources;
     FakeGateKeeperService mGateKeeperService;
@@ -113,6 +115,7 @@ public abstract class BaseLockSettingsServiceTests {
     FingerprintManager mFingerprintManager;
     FaceManager mFaceManager;
     PackageManager mPackageManager;
+    SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
     LockSettingsServiceTestable.MockInjector mInjector;
     @Rule
     public FakeSettingsProviderRule mSettingsRule = FakeSettingsProvider.rule();
@@ -140,12 +143,18 @@ public abstract class BaseLockSettingsServiceTests {
         mFaceManager = mock(FaceManager.class);
         mPackageManager = mock(PackageManager.class);
         mStrongAuth = mock(LockSettingsStrongAuth.class);
+        mStrongAuthTracker = mock(LockSettingsService.SynchronizedStrongAuthTracker.class);
 
         LocalServices.removeServiceForTest(LockSettingsInternal.class);
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal.class);
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.addService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
         LocalServices.addService(WindowManagerInternal.class, mMockWindowManager);
+
+        mSecureLockDeviceServiceInternal = mock(SecureLockDeviceServiceInternal.class);
+        LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
+        LocalServices.addService(SecureLockDeviceServiceInternal.class,
+                mSecureLockDeviceServiceInternal);
 
         final Context origContext = InstrumentationRegistry.getContext();
         mContext = new MockLockSettingsContext(origContext, mResources,
@@ -169,6 +178,7 @@ public abstract class BaseLockSettingsServiceTests {
                         mContext,
                         mStorage,
                         mStrongAuth,
+                        mStrongAuthTracker,
                         mActivityManager,
                         mock(IStorageManager.class),
                         setUpStorageManagerInternalMock(),
@@ -176,7 +186,8 @@ public abstract class BaseLockSettingsServiceTests {
                         mGsiService,
                         mRecoverableKeyStoreManager,
                         mUserManagerInternal,
-                        mDeviceStateCache);
+                        mDeviceStateCache,
+                        mSecureLockDeviceServiceInternal);
         mService =
                 new LockSettingsServiceTestable(mInjector, mGateKeeperService, mAuthSecretService);
         mService.mHasSecureLockScreen = true;

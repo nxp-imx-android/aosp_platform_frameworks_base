@@ -139,6 +139,29 @@ public abstract class LockSettingsInternal {
     public abstract void lockUser(@UserIdInt int userId);
 
     /**
+     * Notifies LockSettingsService that secure lock device mode has been disabled.
+     *
+     * <p>When this method is called, the strong authentication flags set by secure lock device are
+     * asynchronously cleared.
+     *
+     * <p>If {@code authenticationComplete} is {@code true}, indicating successful on-device
+     * two-factor authentication, the user is unlocked. This involves unlocking the user (both
+     * storage and user state) and its associated profiles that share the lock credential (e.g.
+     * managed and clone profiles) synchronously.
+     *
+     * <p>If {@code authenticationComplete} is {@code false} (indicating a disable request by a
+     * remote mechanism that has independently verified the user's identity), this indicates the
+     * user has not completed the on-device two-factor authentication. As a result, any partial
+     * authentication progress (e.g. if the user has authenticated with LSKF but not biometrics)
+     * is reset, and the user's CE storage and keystore are relocked.
+     *
+     * @see LockSettingsStrongAuth#disableSecureLockDevice(int, boolean)
+     * @param userId the ID of the user requesting to disable secure lock device.
+     * @param authenticationComplete whether two-factor authentication was completed.
+     */
+    public abstract void disableSecureLockDevice(int userId, boolean authenticationComplete);
+
+    /**
      * Returns PasswordMetrics object corresponding to the given user's lockscreen password.
      * If the user has a password but its metrics isn't known yet (for example if the device
      * has not been unlocked since boot), this method will return {@code null}.

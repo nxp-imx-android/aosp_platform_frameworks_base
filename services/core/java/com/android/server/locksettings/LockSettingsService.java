@@ -29,14 +29,17 @@ import static android.content.Intent.ACTION_MAIN_USER_LOCKSCREEN_KNOWLEDGE_FACTO
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.security.Flags.secureLockdown;
 
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD_OR_PIN;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
 import static com.android.internal.widget.LockPatternUtils.CURRENT_LSKF_BASED_PROTECTOR_ID_KEY;
 import static com.android.internal.widget.LockPatternUtils.PIN_LENGTH_UNAVAILABLE;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_LOCKOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.USER_FRP;
 import static com.android.internal.widget.LockPatternUtils.USER_REPAIR_MODE;
 import static com.android.internal.widget.LockPatternUtils.VERIFY_FLAG_REQUEST_GK_PW_HANDLE;
@@ -152,6 +155,7 @@ import com.android.server.locksettings.SyntheticPasswordManager.SyntheticPasswor
 import com.android.server.locksettings.SyntheticPasswordManager.TokenType;
 import com.android.server.locksettings.recoverablekeystore.RecoverableKeyStoreManager;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
 import com.android.server.utils.Slogf;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -541,6 +545,15 @@ public class LockSettingsService extends ILockSettings.Stub {
 
         public NotificationManager getNotificationManager() {
             return (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        }
+
+        @Nullable
+        public SecureLockDeviceServiceInternal getSecureLockDeviceServiceInternal() {
+            if (secureLockdown()) {
+                return LocalServices.getService(SecureLockDeviceServiceInternal.class);
+            } else {
+                return null;
+            }
         }
 
         public UserManager getUserManager() {
@@ -958,6 +971,25 @@ public class LockSettingsService extends ILockSettings.Stub {
         mStorage.prefetchUser(UserHandle.USER_SYSTEM);
         mBiometricDeferredQueue.systemReady(mInjector.getFingerprintManager(),
                 mInjector.getFaceManager(), mInjector.getBiometricManager());
+
+        // When secure lock device is enabled, require two-factor authentication for
+        // device entry: primary authentication as the first factor, followed by strong
+        // biometric authentication as the second factor. The flags are set on all users, because
+        // secure lock device is a global state applied on the whole device. Keyguard should only
+        // allow authentication requests by the user that initiated Secure Lock Device, but flags
+        // are set on all users to be safe.
+        SecureLockDeviceServiceInternal secureLockDeviceServiceInternal =
+                mInjector.getSecureLockDeviceServiceInternal();
+        if (secureLockDeviceServiceInternal != null
+                && secureLockDeviceServiceInternal.isSecureLockDeviceEnabled()) {
+            for (UserInfo userInfo : mUserManager.getUsers()) {
+                int userId = userInfo.id;
+                Slog.d(TAG, "Applying Secure Lock Device strong auth flags to user: "
+                        + userId);
+                requireStrongAuth(PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+                        | STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE, userId);
+            }
+        }
     }
 
     private void loadEscrowData() {
@@ -3052,6 +3084,41 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     private void onCredentialVerified(SyntheticPassword sp, @Nullable PasswordMetrics metrics,
             int userId) {
+        SecureLockDeviceServiceInternal secureLockDeviceServiceInternal =
+                mInjector.getSecureLockDeviceServiceInternal();
+        if (secureLockDeviceServiceInternal != null
+                && secureLockDeviceServiceInternal.isSecureLockDeviceEnabled()) {
+            onCredentialVerifiedInSecureLockDeviceMode(sp, metrics, userId);
+        } else {
+            onCredentialVerifiedInternal(sp, metrics, userId);
+        }
+    }
+
+    private void onCredentialVerifiedInSecureLockDeviceMode(SyntheticPassword sp,
+            @Nullable PasswordMetrics metrics, int userId) {
+        // TODO: (b/433569177) Cache the synthetic password in memory and don't unlock CE storage
+        //  etc. until Secure Lock mode is disabled.
+        if (metrics != null) {
+            synchronized (this) {
+                mUserPasswordMetrics.put(userId,  metrics);
+            }
+        }
+        unlockKeystore(userId, sp);
+        unlockCeStorage(userId, sp);
+        activateEscrowTokens(sp, userId);
+        onSyntheticPasswordUnlocked(userId, sp);
+
+        Slog.d(TAG, "Secure lock device is enabled: reporting successful primary auth, "
+                + "but awaiting two-factor authentication completion before full strong auth "
+                + "unlock.");
+        mStrongAuth.reportSuccessfulPrimaryAuthInSecureLockDeviceMode(userId);
+        Slog.d(TAG, "Successful primary auth in secure lock device mode: process biometric "
+                + "lockout resets.");
+        mBiometricDeferredQueue.processPendingLockoutResets();
+    }
+
+    private void onCredentialVerifiedInternal(SyntheticPassword sp,
+            @Nullable PasswordMetrics metrics, int userId) {
 
         if (metrics != null) {
             synchronized (this) {
@@ -3714,6 +3781,24 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     private final class LocalService extends LockSettingsInternal {
+        @Override
+        public void disableSecureLockDevice(int userId, boolean authenticationComplete) {
+            mStrongAuth.disableSecureLockDevice(userId, authenticationComplete);
+            if (authenticationComplete) {
+                // TODO: (b/433569177) Cache the synthetic password in memory and don't unlock CE
+                //  storage until Secure Lock mode is disabled here upon two-factor authentication
+                //  completion
+                unlockUser(userId);
+                if (isCredentialShareableWithParent(userId)
+                        && getSeparateProfileChallengeEnabledInternal(userId)) {
+                    setDeviceUnlockedForUser(userId);
+                }
+            } else {
+                // If secure lock mode is disabled while two factor authentication is incomplete,
+                // lock the user.
+                lockUser(userId);
+            }
+        }
 
         @Override
         public void onThirdPartyAppsStarted() {
