@@ -32,8 +32,10 @@ import android.view.RemoteAnimationAdapter
 import android.view.View
 import android.view.WindowManager
 import android.window.RemoteTransition
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.ActivityIntentHelper
+import com.android.systemui.Flags.shadeAppLaunchAnimationSkipInDesktop
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.assist.AssistManager
@@ -45,6 +47,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
+import com.android.systemui.model.SysUiState
 import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
@@ -52,6 +55,7 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
@@ -97,6 +101,7 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     private val communalSceneInteractor: CommunalSceneInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
+    private val perDisplaySysUiStateRepository: PerDisplayRepository<SysUiState>,
 ) : ActivityStarterInternal {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -106,6 +111,11 @@ constructor(
 
     private val displayId: Int
         get() = context.displayId
+
+    private val isInDesktopMode: Boolean
+        get() =
+            ((perDisplaySysUiStateRepository[displayId]?.flags ?: 0) and
+                SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0L
 
     override fun registerTransition(
         cookie: ActivityTransitionAnimator.TransitionCookie,
@@ -779,6 +789,10 @@ constructor(
         // TODO(b/294418322): always support launch animations when occluded.
         val ignoreOcclusion = showOverLockscreen || isCommunalWidgetLaunch()
         if (keyguardStateController.isOccluded && !ignoreOcclusion) {
+            return false
+        }
+
+        if (shadeAppLaunchAnimationSkipInDesktop() && isInDesktopMode) {
             return false
         }
 
