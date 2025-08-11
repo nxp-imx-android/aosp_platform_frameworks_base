@@ -19,5 +19,6 @@
     <declare-styleable name="MenuPreference">
         <attr name="menu" format="reference" />
         <attr name="number" format="integer" />
+        <attr name="showIconsInPopupMenu" format="boolean" />
     </declare-styleable>
 </resources>
