@@ -211,10 +211,26 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         // at the same, whereas applying them independently causes flickering. See b/270202228.
         relayout(taskInfo, t, t, true /* applyStartTransactionOnDraw */,
                 shouldSetTaskVisibilityPositionAndCrop, hasGlobalFocus, displayExclusionRegion,
-                /* inSyncWithTransition= */ false);
+                /* inSyncWithTransition= */ false, /* forceReinflation= */ false);
+    }
+
+    /** TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings */
+    void onThemeChanged() {
+        final SurfaceControl.Transaction t = mSurfaceControlTransactionSupplier.get();
+        final boolean shouldSetTaskVisibilityPositionAndCrop =
+                !mDesktopConfig.isVeiledResizeEnabled()
+                        && mTaskDragResizer.isResizingOrAnimating();
+        final boolean applyTransactionOnDraw = mTaskInfo.isFreeform();
+        relayout(mTaskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
+                mHasGlobalFocus, mExclusionRegion, /* inSyncWithTransition= */ false,
+                /* forceReinflation= */ true);
+        if (!applyTransactionOnDraw) {
+            t.apply();
+        }
     }
 
     @VisibleForTesting
+    /** TODO(b/437224867): Remove forceReinflation param */
     static void updateRelayoutParams(
             RelayoutParams relayoutParams,
             @NonNull Context context,
@@ -227,7 +243,8 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             boolean hasGlobalFocus,
             @NonNull Region globalExclusionRegion,
             boolean shouldSetBackground,
-            boolean inSyncWithTransition) {
+            boolean inSyncWithTransition,
+            boolean forceReinflation) {
         relayoutParams.reset();
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
@@ -249,6 +266,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                 || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
         relayoutParams.mDisplayExclusionRegion.set(globalExclusionRegion);
         relayoutParams.mInSyncWithTransition = inSyncWithTransition;
+        relayoutParams.mForceReinflation = forceReinflation;
 
         if (TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo)) {
             // If the app is requesting to customize the caption bar, allow input to fall
@@ -276,11 +294,13 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
     }
 
     @SuppressLint("MissingPermission")
+    /** TODO(b/437224867): Remove forceReinflation param */
     void relayout(RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
             boolean hasGlobalFocus,
-            @NonNull Region globalExclusionRegion, boolean inSyncWithTransition) {
+            @NonNull Region globalExclusionRegion, boolean inSyncWithTransition,
+            boolean forceReinflation) {
         final boolean isFreeform =
                 taskInfo.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM;
         final boolean isDragResizeable = ENABLE_WINDOWING_SCALED_RESIZING.isTrue()
@@ -295,7 +315,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                 mIsKeyguardVisibleAndOccluded,
                 mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
                 globalExclusionRegion, mDesktopConfig.shouldSetBackground(taskInfo),
-                inSyncWithTransition);
+                inSyncWithTransition, forceReinflation);
 
         relayout(mRelayoutParams, startT, finishT, wct, oldRootView, mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo

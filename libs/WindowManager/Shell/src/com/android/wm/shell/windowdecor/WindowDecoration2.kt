@@ -129,11 +129,16 @@ abstract class WindowDecoration2<T>(
         captionType: CaptionController.CaptionType
     ): CaptionController<T>?
 
-    /** Updates the window decorations when limited information is available. */
+    /**
+     * Updates the window decorations when limited information is available.
+     *
+     * TODO(b/437224867): Remove forceReinflation
+     */
     abstract fun relayout(
         taskInfo: RunningTaskInfo,
         hasGlobalFocus: Boolean,
         displayExclusionRegion: Region,
+        forceReinflation: Boolean = false,
     )
 
     /**
@@ -475,6 +480,11 @@ abstract class WindowDecoration2<T>(
         }
     }
 
+    /** TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings */
+    fun onThemeChanged() {
+        relayout(taskInfo, hasGlobalFocus, exclusionRegion, forceReinflation = true)
+    }
+
     /** Updates the window decorations when exclusion region changes. */
     open fun onExclusionRegionChanged(exclusionRegion: Region) {
         relayout(taskInfo, hasGlobalFocus, exclusionRegion)
@@ -532,7 +542,11 @@ abstract class WindowDecoration2<T>(
         surfaceControlSupplier: () -> SurfaceControl,
     ) = surfaceControlSupplier().apply { copyFrom(sc, TAG) }
 
-    /** Holds the data required to update the window decorations. */
+    /**
+     * Holds the data required to update the window decorations.
+     *
+     * TODO(b/437224867): Remove forceReinflation
+     */
     data class RelayoutParams(
         val runningTaskInfo: RunningTaskInfo,
         val captionType: CaptionController.CaptionType,
@@ -555,6 +569,7 @@ abstract class WindowDecoration2<T>(
         val shouldSetAppBounds: Boolean = false,
         val shouldSetBackground: Boolean = false,
         val inSyncWithTransition: Boolean = false,
+        val forceReinflation: Boolean = false,
     ) {
 
         /** Returns true if caption input should fall through to the app. */
