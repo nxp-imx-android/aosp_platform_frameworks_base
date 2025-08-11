@@ -245,6 +245,12 @@ constructor(
             false
         }
 
+    /** Called when user is done editing widgets and will return back to hub */
+    fun onEditDone() {
+        // Persist scroll position in edit mode so we go back to the position in glanceable hub.
+        persistScrollPosition("edit done")
+    }
+
     private fun getWidgetPickerActivityIntent(
         resources: Resources,
         excludeList: ArrayList<AppWidgetProviderInfo>,
@@ -292,9 +298,6 @@ constructor(
     /** Called when exiting the edit mode, before transitioning back to the communal scene. */
     fun cleanupEditModeState() {
         communalSceneInteractor.setEditModeState(null)
-
-        // Set the scroll position of the glanceable hub to match where we are now.
-        persistScrollPosition()
     }
 
     /** Whether screen rotation is allowed. If false, screen orientation should remain portrait. */

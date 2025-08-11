@@ -239,13 +239,13 @@ abstract class BaseCommunalViewModel(
     }
 
     /** Stores scroll values to interactor. */
-    protected fun persistScrollPosition() {
-        communalInteractor.setScrollPosition(currentScrollIndex, currentScrollOffset)
+    protected fun persistScrollPosition(reason: String) {
+        communalInteractor.setScrollPosition(currentScrollIndex, currentScrollOffset, reason)
     }
 
     /** Invoked after scroll values are used to initialize grid position. */
-    open fun clearPersistedScrollPosition() {
-        communalInteractor.setScrollPosition(0, 0)
+    open fun clearPersistedScrollPosition(reason: String) {
+        communalInteractor.clearScrollPosition(reason)
     }
 
     val savedFirstScrollIndex: Int

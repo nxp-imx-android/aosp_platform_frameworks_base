@@ -356,12 +356,12 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun scrollPosition_persistedOnEditCleanup() =
+    fun scrollPosition_persistedOnEditDone() =
         kosmos.runTest {
             val index = 2
             val offset = 30
             underTest.onScrollPositionUpdated(index, offset)
-            underTest.cleanupEditModeState()
+            underTest.onEditDone()
 
             assertThat(communalInteractor.firstVisibleItemIndex).isEqualTo(index)
             assertThat(communalInteractor.firstVisibleItemOffset).isEqualTo(offset)
