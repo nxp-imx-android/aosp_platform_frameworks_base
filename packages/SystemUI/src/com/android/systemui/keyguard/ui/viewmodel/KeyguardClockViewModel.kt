@@ -120,9 +120,10 @@ constructor(
         combine(
                 isLargeClockVisible,
                 clockShouldBeCentered,
-                shadeModeInteractor.isShadeLayoutWide,
+                shadeModeInteractor.isFullWidthShade,
                 currentClock,
-            ) { isLargeClockVisible, clockShouldBeCentered, isShadeLayoutWide, currentClock ->
+            ) { isLargeClockVisible, clockShouldBeCentered, isFullWidthShade, currentClock ->
+                val isShadeLayoutWide = !isFullWidthShade
                 if (currentClock?.config?.useCustomClockScene == true) {
                     when {
                         isShadeLayoutWide && clockShouldBeCentered ->
@@ -164,7 +165,7 @@ constructor(
     /** Calculates the top margin for the small clock. */
     fun getSmallClockTopMargin(): Int {
         return ClockPreviewConfig(
-                isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value,
+                isFullWidthShade = shadeModeInteractor.isFullWidthShade.value,
                 isSceneContainerFlagEnabled = SceneContainerFlag.isEnabled,
                 statusBarHeight = systemBarUtils.getStatusBarHeaderHeightKeyguard(),
                 splitShadeTopMargin =
@@ -184,7 +185,7 @@ constructor(
     val smallClockTopMargin =
         combine(
             configurationInteractor.onAnyConfigurationChange,
-            shadeModeInteractor.isShadeLayoutWide,
+            shadeModeInteractor.isFullWidthShade,
         ) { _, _ ->
             getSmallClockTopMargin()
         }
@@ -201,19 +202,16 @@ constructor(
         }
     }
 
-    val largeClockTopMargin: Flow<Int> =
-        configurationInteractor.onAnyConfigurationChange.map { getLargeClockTopMargin() }
-
     val largeClockTextSize: Flow<Int> =
         configurationInteractor.dimensionPixelSize(clocksR.dimen.large_clock_text_size)
 
     val shouldDateWeatherBeBelowLargeClock: StateFlow<Boolean> =
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 combine(
-                    shadeModeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isFullWidthShade,
                     configurationInteractor.configurationValues,
                     keyguardClockInteractor.currentClock,
-                ) { isShadeLayoutWide, configurationValues, currentClock ->
+                ) { isFullWidthShade, configurationValues, currentClock ->
                     val screenWidthDp = configurationValues.screenWidthDp
                     val fontScale = configurationValues.fontScale
 
@@ -222,7 +220,7 @@ constructor(
                             currentClock = currentClock,
                             screenWidthDp = screenWidthDp,
                             fontScale = fontScale,
-                            isShadeLayoutWide = isShadeLayoutWide,
+                            isFullWidthShade = isFullWidthShade,
                         )
                     largeClockLogBuffer.log(
                         TAG,
@@ -249,14 +247,11 @@ constructor(
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 combine(
                     hasCustomWeatherDataDisplay,
-                    shadeModeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isFullWidthShade,
                     configurationInteractor.configurationValues,
                     keyguardClockInteractor.currentClock,
-                ) {
-                    hasCustomWeatherDataDisplay,
-                    isShadeLayoutWide,
-                    configurationValues,
-                    currentClock ->
+                ) { hasCustomWeatherDataDisplay, isFullWidthShade, configurationValues, currentClock
+                    ->
                     val isRtlLayout = configurationValues.layoutDirection == LayoutDirection.RTL
 
                     if (hasCustomWeatherDataDisplay || isRtlLayout) {
@@ -282,7 +277,7 @@ constructor(
                             currentClock = currentClock,
                             screenWidthDp = screenWidthDp,
                             fontScale = fontScale,
-                            isShadeLayoutWide = isShadeLayoutWide,
+                            isFullWidthShade = isFullWidthShade,
                         )
                     smallClockLogBuffer.log(
                         TAG,
@@ -291,7 +286,7 @@ constructor(
                             int1 = screenWidthDp
                             double1 = fontScale.toDouble()
                             bool1 = fallBelow
-                            bool2 = isShadeLayoutWide
+                            bool2 = !isFullWidthShade
                         },
                         {
                             "fallBelowClock:$bool1, isShadeWide:$bool2, " +
@@ -309,7 +304,7 @@ constructor(
         currentClock: ClockController?,
         screenWidthDp: Int,
         fontScale: Float,
-        isShadeLayoutWide: Boolean? = null,
+        isFullWidthShade: Boolean,
     ): Boolean {
         val breakingPairs: List<Pair<Float, Int>> =
             when (currentClock?.config?.id) {
@@ -318,16 +313,12 @@ constructor(
                 else -> DEFAULT_BREAKING_PAIRS
             }
 
-        // if the shade is wide, we should account for the possibility of date/weather
-        // going past the halfway point
-        val adjustedScreenWidth =
-            if (isShadeLayoutWide == true) screenWidthDp / 2 else screenWidthDp
-        for ((font, width) in breakingPairs) {
-            if (fontScale >= font && adjustedScreenWidth <= width) {
-                return true
-            }
+        // if the shade is wide, we should account for the possibility of date/weather going past
+        // the halfway point
+        val adjustedScreenWidth = if (isFullWidthShade) screenWidthDp else screenWidthDp / 2
+        return breakingPairs.any { (font, width) ->
+            fontScale >= font && adjustedScreenWidth <= width
         }
-        return false
     }
 
     enum class ClockLayout {

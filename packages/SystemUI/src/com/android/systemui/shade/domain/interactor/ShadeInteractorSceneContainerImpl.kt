@@ -100,14 +100,7 @@ constructor(
                 when (shadeMode) {
                     ShadeMode.Single -> Scenes.QuickSettings.isShownAndIdle
                     ShadeMode.Split -> flowOf(false)
-                    ShadeMode.Dual ->
-                        shadeModeInteractor.isShadeLayoutWide.flatMapLatest { isShadeLayoutWide ->
-                            if (isShadeLayoutWide) {
-                                flowOf(false)
-                            } else {
-                                Overlays.QuickSettingsShade.isShownAndIdle
-                            }
-                        }
+                    ShadeMode.Dual -> Overlays.QuickSettingsShade.isShownAndIdle
                 }
             }
             .distinctUntilChanged()

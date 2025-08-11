@@ -115,20 +115,20 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun hydrateShadeMode_dualShadeDisabled() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
-            val isShadeLayoutWide by collectLastValue(shadeModeInteractor.isShadeLayoutWide)
+            val isFullWidthShade by collectLastValue(shadeModeInteractor.isFullWidthShade)
             underTest.start()
 
             enableSingleShade()
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
-            assertThat(isShadeLayoutWide).isFalse()
+            assertThat(isFullWidthShade).isTrue()
 
             enableSplitShade()
             assertThat(shadeMode).isEqualTo(ShadeMode.Split)
-            assertThat(isShadeLayoutWide).isTrue()
+            assertThat(isFullWidthShade).isFalse()
 
             enableSingleShade()
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
-            assertThat(isShadeLayoutWide).isFalse()
+            assertThat(isFullWidthShade).isTrue()
         }
 
     @Test
@@ -136,20 +136,20 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun hydrateShadeMode_dualShadeEnabled() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
-            val isShadeLayoutWide by collectLastValue(shadeModeInteractor.isShadeLayoutWide)
+            val isFullWidthShade by collectLastValue(shadeModeInteractor.isFullWidthShade)
             underTest.start()
 
             enableDualShade(wideLayout = false)
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
-            assertThat(isShadeLayoutWide).isFalse()
+            assertThat(isFullWidthShade).isTrue()
 
             enableDualShade(wideLayout = true)
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
-            assertThat(isShadeLayoutWide).isTrue()
+            assertThat(isFullWidthShade).isFalse()
 
             enableDualShade(wideLayout = false)
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
-            assertThat(isShadeLayoutWide).isFalse()
+            assertThat(isFullWidthShade).isTrue()
         }
 
     @Test

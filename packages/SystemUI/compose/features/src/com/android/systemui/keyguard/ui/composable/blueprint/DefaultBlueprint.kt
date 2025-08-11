@@ -104,10 +104,8 @@ constructor(
                 media = {
                     with(mediaCarouselElement) {
                         KeyguardMediaCarousel(
-                            isShadeLayoutWide = viewModel.isShadeLayoutWide,
-                            onBottomChanged = { bottom ->
-                                viewModel.setMediaPlayerBottom(bottom = bottom)
-                            },
+                            isFullWidthShade = viewModel.isFullWidthShade,
+                            onBottomChanged = viewModel::setMediaPlayerBottom,
                         )
                     }
                 },
@@ -125,7 +123,7 @@ constructor(
                         Shortcut(
                             isStart = true,
                             applyPadding = false,
-                            onTopChanged = { top -> viewModel.setShortcutTop(top) },
+                            onTopChanged = viewModel::setShortcutTop,
                         )
                     }
                 },
@@ -146,7 +144,7 @@ constructor(
                         Shortcut(
                             isStart = false,
                             applyPadding = false,
-                            onTopChanged = { top -> viewModel.setShortcutTop(top) },
+                            onTopChanged = viewModel::setShortcutTop,
                         )
                     }
                 },

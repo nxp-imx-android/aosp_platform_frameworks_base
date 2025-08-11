@@ -99,7 +99,7 @@ constructor(
             context.resources.getDimensionPixelSize(clocksR.dimen.status_view_margin_horizontal)
         val height = context.resources.getDimensionPixelSize(R.dimen.notification_shelf_height)
         val isVisible = rootViewModel.isNotifIconContainerVisible.value
-        val isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value
+        val isFullWidthShade = shadeModeInteractor.isFullWidthShade.value
 
         constraintSet.apply {
             if (PromotedNotificationUi.isEnabled) {
@@ -111,7 +111,7 @@ constructor(
             setGoneMargin(nicId, BOTTOM, bottomMargin)
             setVisibility(nicId, if (isVisible.value) VISIBLE else GONE)
 
-            if (PromotedNotificationUi.isEnabled && isShadeLayoutWide) {
+            if (PromotedNotificationUi.isEnabled && !isFullWidthShade) {
                 // Don't create a start constraint, so the icons can hopefully right-align.
             } else {
                 connect(nicId, START, PARENT_ID, START, horizontalMargin)
