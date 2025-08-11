@@ -49,7 +49,7 @@ internal fun Expander(expanded: Boolean, modifier: Modifier = Modifier, numberTo
     Box(modifier = modifier.background(surfaceColor, RoundedCornerShape(100.dp))) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 6.dp),
+            modifier = Modifier.padding(vertical = 1.dp, horizontal = 5.dp),
         ) {
             val iconSizeDp = with(LocalDensity.current) { 16.sp.toDp() }
 

@@ -110,10 +110,10 @@ fun ContentScope.ExpansionControl(
             verticalAlignment = Alignment.CenterVertically,
             modifier =
                 Modifier.padding(
-                    top = 2.dp,
-                    bottom = 2.dp,
-                    start = 6.dp,
-                    end = if (shouldShowNumber) 4.dp else 6.dp,
+                    top = 1.dp,
+                    bottom = 1.dp,
+                    start = 5.dp,
+                    end = if (shouldShowNumber) 3.dp else 5.dp,
                 ),
         ) {
             val iconSizeDp = with(LocalDensity.current) { 16.sp.toDp() }
