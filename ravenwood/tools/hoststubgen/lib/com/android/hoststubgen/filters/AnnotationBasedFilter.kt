@@ -65,7 +65,7 @@ class AnnotationBasedFilter(
      * policy.
      */
     var annotationAllowedMembers: OutputFilter =
-        ConstantFilter(FilterPolicy.Remove, "default disallowed")
+        ConstantFilter(FilterPolicy.Remove.withReason("default disallowed"))
 
     private val keepAnnotations = convertToInternalNames(keepAnnotations_)
     private val keepClassAnnotations = convertToInternalNames(keepClassAnnotations_)
