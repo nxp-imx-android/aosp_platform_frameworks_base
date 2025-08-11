@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.exit
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice

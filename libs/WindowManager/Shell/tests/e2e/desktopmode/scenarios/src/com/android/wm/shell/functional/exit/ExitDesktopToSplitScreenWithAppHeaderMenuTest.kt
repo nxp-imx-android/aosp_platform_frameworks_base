@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.exit
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.AltTabSwitchInDesktopMode
+import com.android.wm.shell.scenarios.ExitDesktopToSplitScreenWithAppHeaderMenu
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [AltTabSwitchInDesktopMode]. */
+/* Functional test for [ExitDesktopToSplitScreenWithAppHeaderMenu]. */
+
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class AltTabSwitchInDesktopModeTest : AltTabSwitchInDesktopMode()
+class ExitDesktopToSplitScreenWithAppHeaderMenuTest : ExitDesktopToSplitScreenWithAppHeaderMenu()

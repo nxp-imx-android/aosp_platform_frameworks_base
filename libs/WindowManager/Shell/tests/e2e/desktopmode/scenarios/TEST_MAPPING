@@ -7,15 +7,6 @@
   ],
   "wm": [
     {
-      "name": "FunctionalTestsDesktopMode-AltTabSwitchInDesktopModeTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-AltTabSwitchToUnminimizeInDesktopModeFlickerTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-CatchAll"
     },
     {
@@ -79,6 +70,15 @@
       "name": "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-exit-ExitDesktopToSplitScreenWithAppHeaderMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-exit-ExitDesktopWithDragToTopDragZoneTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-externaldisplay-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
     },
     {
@@ -113,12 +113,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithDragTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToFullScreenWithAppHeaderMenuTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest"
@@ -166,6 +160,15 @@
       "name": "FunctionalTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchOutDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchToUnminimizeInDesktopModeFlickerTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest"
     },
     {
@@ -176,9 +179,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-maximize-ExitDesktopWithDragToTopDragZoneTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
@@ -215,6 +215,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-RestartSizeCompatAppInDesktopMode"
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ScaleDensityForExternalDisplayTest"
