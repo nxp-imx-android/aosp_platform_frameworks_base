@@ -17,21 +17,18 @@
 package com.android.systemui.keyguard.ui.composable.element
 
 import android.content.Context
-import android.view.View
-import android.widget.FrameLayout
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementKey
 import com.android.compose.modifiers.padding
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
@@ -39,7 +36,11 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.plugins.clocks.LockscreenElement
 import com.android.systemui.plugins.clocks.LockscreenElementContext
 import com.android.systemui.plugins.clocks.LockscreenElementFactory
-import com.android.systemui.plugins.clocks.LockscreenElementKeys
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceCards
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceDateLargeClock
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceDateSmallClock
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceWeatherLargeClock
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceWeatherSmallClock
 import com.android.systemui.plugins.clocks.LockscreenElementProvider
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
@@ -50,116 +51,73 @@ class SmartspaceElementProvider
 @Inject
 constructor(
     @ShadeDisplayAware private val context: Context,
-    private val lockscreenSmartspaceController: LockscreenSmartspaceController,
+    private val smartspaceController: LockscreenSmartspaceController,
     private val keyguardUnlockAnimationController: KeyguardUnlockAnimationController,
     private val keyguardSmartspaceViewModel: KeyguardSmartspaceViewModel,
     private val aodBurnInViewModel: AodBurnInViewModel,
 ) : LockscreenElementProvider {
     override val elements by lazy {
         listOf(
-            dateElement,
-            weatherElement,
-            dateAndWeatherVerticalElement,
-            dateAndWeatherHorizontalElement,
+            DateElement(SmartspaceDateLargeClock, isLargeClock = true),
+            DateElement(SmartspaceDateSmallClock, isLargeClock = false),
+            WeatherElement(SmartspaceWeatherLargeClock, isLargeClock = true),
+            WeatherElement(SmartspaceWeatherSmallClock, isLargeClock = false),
             cardsElement,
         )
     }
 
-    private val dateElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.SmartspaceDate
-            override val context = this@SmartspaceElementProvider.context
+    private inner class DateElement(
+        override val key: ElementKey,
+        private val isLargeClock: Boolean,
+    ) : LockscreenElement {
+        override val context = this@SmartspaceElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                val isVisible =
-                    keyguardSmartspaceViewModel.isDateVisible.collectAsStateWithLifecycle()
-                if (!isVisible.value || !keyguardSmartspaceViewModel.isSmartspaceEnabled) {
-                    return
-                }
-
-                AndroidView(
-                    factory = { context ->
-                        wrapView(context) { frame ->
-                            lockscreenSmartspaceController.buildAndConnectDateView(frame, false)
-                        }
-                    }
-                )
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val isDateEnabled = keyguardSmartspaceViewModel.isDateEnabled
+            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled || !isDateEnabled) {
+                return
             }
-        }
 
-    private val weatherElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.SmartspaceWeather
-            override val context = this@SmartspaceElementProvider.context
-
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                val isVisible =
-                    keyguardSmartspaceViewModel.isWeatherVisible.collectAsStateWithLifecycle()
-                if (!isVisible.value || !keyguardSmartspaceViewModel.isSmartspaceEnabled) {
-                    return
+            AndroidView(
+                factory = { ctx ->
+                    smartspaceController.buildAndConnectDateView(ctx, isLargeClock)!!
                 }
-
-                AndroidView(
-                    factory = { context ->
-                        wrapView(context) { frame ->
-                            lockscreenSmartspaceController.buildAndConnectWeatherView(frame, false)
-                        }
-                    }
-                )
-            }
+            )
         }
+    }
 
-    private val dateAndWeatherHorizontalElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.SmartspaceDateWeatherHorizontal
-            override val context = this@SmartspaceElementProvider.context
+    private inner class WeatherElement(
+        override val key: ElementKey,
+        private val isLargeClock: Boolean,
+    ) : LockscreenElement {
+        override val context = this@SmartspaceElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    factory.lockscreenElement(LockscreenElementKeys.SmartspaceDate, context)
-                    factory.lockscreenElement(LockscreenElementKeys.SmartspaceWeather, context)
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val isWeatherEnabled: Boolean by
+                keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
+            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled || !isWeatherEnabled) {
+                return
+            }
+
+            AndroidView(
+                factory = { ctx ->
+                    smartspaceController.buildAndConnectWeatherView(ctx, isLargeClock)!!
                 }
-            }
+            )
         }
-
-    private val dateAndWeatherVerticalElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.SmartspaceDateWeatherVertical
-            override val context = this@SmartspaceElementProvider.context
-
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    factory.lockscreenElement(LockscreenElementKeys.SmartspaceDate, context)
-                    factory.lockscreenElement(LockscreenElementKeys.SmartspaceWeather, context)
-                }
-            }
-        }
+    }
 
     private val cardsElement =
         object : LockscreenElement {
-            override val key = LockscreenElementKeys.SmartspaceCards
+            override val key = SmartspaceCards
             override val context = this@SmartspaceElementProvider.context
 
             @Composable
@@ -171,55 +129,27 @@ constructor(
                     return
                 }
 
-                // TODO(b/432451019): Reserve card space even if no cards are currently visible
-                // TODO(b/432451019): Placement/positional modifiers need an implementation
-                Column(
-                    modifier =
-                        Modifier
-                            // .onTopPlacementChanged(onTopChanged)
-                            .padding(
-                                // top = { smartSpacePaddingTop(LocalResources.current) },
-                                bottom =
-                                    dimensionResource(R.dimen.keyguard_status_view_bottom_margin)
-                            )
-                ) {
-                    AndroidView(
-                        factory = { context ->
-                            wrapView(context) { frame ->
-                                val view = lockscreenSmartspaceController.buildAndConnectView(frame)
-                                keyguardUnlockAnimationController.lockscreenSmartspace = view
-                                view
-                            }
-                        },
-                        onRelease = {
+                AndroidView(
+                    factory = { ctx ->
+                        val view = smartspaceController.buildAndConnectView(ctx)!!
+                        keyguardUnlockAnimationController.lockscreenSmartspace = view
+                        view
+                    },
+                    onRelease = { view ->
+                        if (keyguardUnlockAnimationController.lockscreenSmartspace == view) {
                             keyguardUnlockAnimationController.lockscreenSmartspace = null
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(
-                                    horizontal = dimensionResource(R.dimen.below_clock_padding_end)
-                                )
-                                .then(context.burnInModifier),
-                        // .onGloballyPositioned { coordinates ->
-                        //    onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
-                        // },
-                    )
-                }
+                        }
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(
+                                // Note: smartspace adds 16dp of start padding internally
+                                start = 12.dp,
+                                bottom =
+                                    dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
+                            )
+                            .then(context.burnInModifier),
+                )
             }
         }
-
-    companion object {
-        private fun wrapView(context: Context, builder: (FrameLayout) -> View?): View {
-            return FrameLayout(context).apply {
-                builder(this)?.let { view ->
-                    view.layoutParams =
-                        FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.WRAP_CONTENT,
-                            FrameLayout.LayoutParams.WRAP_CONTENT,
-                        )
-                    addView(view)
-                }
-            }
-        }
-    }
 }

@@ -183,75 +183,6 @@ fun LockscreenSceneLayout(
 ) {
     val layout = layout(viewModel)
 
-    /**
-     * Convenience function to draw the content column without needing to pass a lot of parameters.
-     *
-     * Also draws a placeholder if the content column shouldn't be visible.
-     */
-    @Composable
-    fun contentColumn(modifier: Modifier = Modifier) {
-        if (layout.isContentColumnVisible) {
-            ContentColumn(
-                elementFactory = elementFactory,
-                elementContext = elementContext,
-                isSmallClockVisible = layout.isSmallClockVisible,
-                isDateAndWeatherVisible = viewModel.isDateAndWeatherVisible,
-                shouldDateWeatherBeBelowSmallClock = viewModel.shouldDateWeatherBeBelowSmallClock,
-                isSmartSpaceVisible = viewModel.isSmartSpaceVisible,
-                isMediaVisible = viewModel.isMediaVisible,
-                media = media,
-                isNotificationsVisible = viewModel.isNotificationsVisible,
-                notifications = notifications,
-                modifier = modifier,
-            )
-        } else {
-            Box(modifier)
-        }
-    }
-
-    /**
-     * Convenience function to draw the large clock without needing to pass a lot of parameters.
-     *
-     * Also draws a placeholder if the large clock shouldn't be visible.
-     */
-    @Composable
-    fun largeClock(modifier: Modifier = Modifier) {
-        if (!layout.isLargeClockVisible) {
-            Box(modifier)
-            return
-        }
-
-        if (
-            !elementFactory.lockscreenElement(
-                LockscreenElementKeys.ClockRegionLarge,
-                elementContext,
-                modifier,
-            )
-        ) {
-            LargeClockRegion(
-                elementFactory = elementFactory,
-                elementContext = elementContext,
-                isDateAndWeatherVisible = viewModel.isDateAndWeatherVisibleWithLargeClock,
-                isSmartSpaceVisible = viewModel.isSmartSpaceVisible,
-                modifier = modifier,
-            )
-        }
-    }
-
-    /** Convenience function to draw the bottom area without needing to pass a lot of parameters. */
-    @Composable
-    fun bottomArea(modifier: Modifier = Modifier) {
-        BottomArea(
-            startShortcut = startShortcut,
-            isAmbientIndicationVisible = viewModel.isAmbientIndicationVisible,
-            ambientIndication = ambientIndication,
-            bottomIndication = bottomIndication,
-            endShortcut = endShortcut,
-            unfoldTranslations = viewModel.unfoldTranslations,
-            modifier = modifier.navigationBarsPadding(),
-        )
-    }
-
     val density = LocalDensity.current
     val spacingAboveLockIconPx = with(density) { 64.dp.roundToPx() }
     val spacingBetweenColumnsPx = with(density) { 32.dp.roundToPx() }
@@ -265,13 +196,45 @@ fun LockscreenSceneLayout(
             ) {
                 statusBar()
             }
+
             Box(Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.start }) {
-                contentColumn()
+                // TODO(b/432451019): Check the small clock + date/weather aren't rendering in shade
+                // TODO(b/432451019): Ensure larger display/font sizes are working as expected
+                if (layout.isContentColumnVisible) {
+                    ContentColumn(
+                        elementFactory = elementFactory,
+                        elementContext = elementContext,
+                        isMediaVisible = viewModel.isMediaVisible,
+                        media = media,
+                        isNotificationsVisible = viewModel.isNotificationsVisible,
+                        notifications = notifications,
+                        modifier = Modifier.padding(top = 32.dp),
+                    )
+                }
             }
+
             Box(Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }) {
-                largeClock()
+                if (layout.isLargeClockVisible) {
+                    // TODO(b/432451019): Ensure this the clock is centered correctly
+                    // TODO(b/432451019): Large clock moves to right side in flexiglass
+                    elementFactory.lockscreenElement(
+                        LockscreenElementKeys.ClockRegionLarge,
+                        elementContext,
+                        Modifier.padding(top = 32.dp),
+                    )
+                }
             }
-            bottomArea()
+
+            BottomArea(
+                startShortcut = startShortcut,
+                isAmbientIndicationVisible = viewModel.isAmbientIndicationVisible,
+                ambientIndication = ambientIndication,
+                bottomIndication = bottomIndication,
+                endShortcut = endShortcut,
+                unfoldTranslations = viewModel.unfoldTranslations,
+                modifier = Modifier.navigationBarsPadding(),
+            )
+
             lockIcon()
             settingsMenu()
         },
@@ -387,6 +350,7 @@ fun LockscreenSceneLayout(
                                 largeClockPlaceableOrNull.measuredWidth) / 2
                     },
                 y =
+                    // TODO(b/432451019): This mechanism doesn't account for the weather clock
                     if (
                         layout.isOnlyLargeClockVisible &&
                             viewModel.isDateAndWeatherVisibleWithLargeClock
@@ -455,109 +419,17 @@ private fun BottomArea(
 private fun ContentColumn(
     elementFactory: LockscreenElementFactory,
     elementContext: LockscreenElementContext,
-    isSmallClockVisible: Boolean,
-    isDateAndWeatherVisible: Boolean,
-    shouldDateWeatherBeBelowSmallClock: Boolean,
-    isSmartSpaceVisible: Boolean,
     isMediaVisible: Boolean,
     media: @Composable () -> Unit,
     isNotificationsVisible: Boolean,
     notifications: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.padding(top = 32.dp)) {
-        if (
-            !elementFactory.lockscreenElement(
-                LockscreenElementKeys.ClockRegionSmall,
-                elementContext,
-                modifier,
-            )
-        ) {
-            if (isSmallClockVisible) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                ) {
-                    elementFactory.lockscreenElement(
-                        LockscreenElementKeys.ClockSmall,
-                        elementContext,
-                        modifier,
-                    )
-                    if (isDateAndWeatherVisible && !shouldDateWeatherBeBelowSmallClock) {
-                        elementFactory.lockscreenElement(
-                            LockscreenElementKeys.SmartspaceDateWeatherVertical,
-                            elementContext,
-                            modifier,
-                        )
-                    }
-                }
-
-                if (isDateAndWeatherVisible && shouldDateWeatherBeBelowSmallClock) {
-                    elementFactory.lockscreenElement(
-                        LockscreenElementKeys.SmartspaceDateWeatherHorizontal,
-                        elementContext,
-                        modifier,
-                    )
-                }
-
-                AnimatedVisibility(isSmartSpaceVisible) {
-                    Box(Modifier.padding(bottom = 24.dp)) {
-                        elementFactory.lockscreenElement(
-                            LockscreenElementKeys.SmartspaceCards,
-                            elementContext,
-                            modifier,
-                        )
-                    }
-                }
-            }
-        }
-
+    Column(modifier = modifier) {
+        elementFactory.lockscreenElement(LockscreenElementKeys.ClockRegionSmall, elementContext)
         AnimatedVisibility(isMediaVisible) { Box(Modifier.padding(bottom = 24.dp)) { media() } }
-
+        // TODO(b/432451019): Notifications should be on the left side in flexiglass.
         AnimatedVisibility(isNotificationsVisible) { notifications() }
-    }
-}
-
-/** Draws the large clock. */
-@Composable
-private fun LargeClockRegion(
-    elementFactory: LockscreenElementFactory,
-    elementContext: LockscreenElementContext,
-    isDateAndWeatherVisible: Boolean,
-    isSmartSpaceVisible: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            modifier = Modifier.align(Alignment.Center),
-        ) {
-            AnimatedVisibility(isSmartSpaceVisible) {
-                Box(Modifier.padding(bottom = 24.dp)) {
-                    elementFactory.lockscreenElement(
-                        LockscreenElementKeys.SmartspaceCards,
-                        elementContext,
-                        modifier,
-                    )
-                }
-            }
-
-            elementFactory.lockscreenElement(
-                LockscreenElementKeys.ClockLarge,
-                elementContext,
-                modifier,
-            )
-
-            if (isDateAndWeatherVisible) {
-                elementFactory.lockscreenElement(
-                    LockscreenElementKeys.SmartspaceDateWeatherHorizontal,
-                    elementContext,
-                    modifier,
-                )
-            }
-        }
     }
 }
 
@@ -592,6 +464,7 @@ private fun layout(viewModel: LockscreenLayoutViewModel): Layout {
         windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium &&
             windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
 
+    // TODO(b/432451019): Two column layout renders incorrectly with notifications
     val isTwoColumns = isLargeScreen && isContentColumnVisible
     return Layout(
         isTwoColumns = isTwoColumns,

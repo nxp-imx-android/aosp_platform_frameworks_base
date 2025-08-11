@@ -36,7 +36,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.window.InputTransferToken
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -67,7 +66,6 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombin
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
 import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.res.R
@@ -150,13 +148,9 @@ constructor(
         )
 
         if (Flags.doNotUseRunBlocking()) {
-            mainHandler.post {
-                provideSurfaceControlViewHost(displayManager)
-            }
+            mainHandler.post { provideSurfaceControlViewHost(displayManager) }
         } else {
-            runBlocking(context = mainDispatcher) {
-                provideSurfaceControlViewHost(displayManager)
-            }
+            runBlocking(context = mainDispatcher) { provideSurfaceControlViewHost(displayManager) }
         }
     }
 
@@ -325,12 +319,10 @@ constructor(
             cs.clone(parentView)
             cs.apply {
                 largeDateView =
-                    lockscreenSmartspaceController
-                        .buildAndConnectDateView(parentView, true)
+                    lockscreenSmartspaceController.buildAndConnectDateView(previewContext, true)
 
                 smallDateView =
-                    lockscreenSmartspaceController
-                        .buildAndConnectDateView(parentView, false)
+                    lockscreenSmartspaceController.buildAndConnectDateView(previewContext, false)
                 parentView.addView(largeDateView)
                 parentView.addView(smallDateView)
             }
@@ -338,7 +330,7 @@ constructor(
         } else {
             smartSpaceView =
                 lockscreenSmartspaceController.buildAndConnectDateView(
-                    parent = parentView,
+                    previewContext,
                     isLargeClock = false,
                 )
 

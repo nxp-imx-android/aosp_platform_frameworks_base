@@ -63,7 +63,7 @@ interface SmartspaceViewComponent {
         ): BcSmartspaceDataPlugin.SmartspaceView {
             val ssView =
                 viewWithCustomLayout as? BcSmartspaceDataPlugin.SmartspaceView
-                    ?: plugin.getView(parent)
+                    ?: plugin.getView(parent.getContext())
             // Currently, this is only used to provide SmartspaceView on Dream surface.
             ssView.setUiSurface(UI_SURFACE_DREAM)
             ssView.setBgHandler(bgHandler)
