@@ -479,7 +479,8 @@ public class SizeCompatTests extends WindowTestsBase {
         mActivity.setState(RESUMED, "anyStateChange");
         doReturn(true).when(mSupervisor).hasScheduledRestartTimeouts(mActivity);
         mAtm.mActivityClientController.activityStopped(mActivity.token, null /* icicle */,
-                null /* persistentState */, null /* description */);
+                null /* persistentState */, null /* handoffActivityData */,
+                null /* description */);
         assertEquals(RESTARTING_PROCESS, mActivity.getState());
         verify(mSupervisor).removeRestartTimeouts(mActivity);
     }

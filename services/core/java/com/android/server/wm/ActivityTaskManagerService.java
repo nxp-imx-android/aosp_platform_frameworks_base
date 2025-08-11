@@ -37,6 +37,7 @@ import static android.app.ActivityManager.LOCK_TASK_MODE_NONE;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.ActivityTaskManager.RESIZE_MODE_PRESERVE_WINDOW;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_EMPTY_TASK;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_INTERNAL_ERROR;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_TIMEOUT;
@@ -2859,6 +2860,37 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
+    private void notifyHandoffTaskDataRequestResultReceived(
+        @NonNull IHandoffTaskDataReceiver receiver,
+        int taskId,
+        @NonNull List<HandoffActivityData> data
+    ) {
+        Objects.requireNonNull(receiver);
+        Objects.requireNonNull(data);
+
+        Slog.v(TAG, "Returning HandoffActivityData to receiver.");
+        for (int i = 0; i < data.size(); i++) {
+            final HandoffActivityData activityData = data.get(i);
+            if (activityData == null) {
+                Slog.w(TAG, "Received null HandoffActivityData from Activity.");
+                notifyHandoffTaskDataRequestFailed(
+                    receiver,
+                    taskId,
+                    HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+                return;
+            }
+        }
+
+        try {
+            receiver.onHandoffTaskDataRequestSucceeded(taskId, data);
+        } catch (RemoteException e) {
+            Slog.e(
+                TAG,
+                "Failed to notify receiver of handoff task data request success.",
+                e);
+        }
+    }
+
     @Override
     public void reportHandoffActivityData(IBinder requestToken, List<HandoffActivityData> data) {
         Slog.v(TAG, "reportHandoffActivityData");
@@ -2870,36 +2902,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
         }
 
-        Slog.v(TAG, "Returning HandoffActivityData to receiver.");
-        for (int i = 0; i < data.size(); i++) {
-            final HandoffActivityData activityData = data.get(i);
-            if (activityData == null) {
-                Slog.w(TAG, "Received null HandoffActivityData from Activity.");
-                notifyHandoffTaskDataRequestFailed(
-                    request.receiver,
-                    request.taskId,
-                    HANDOFF_FAILURE_UNSUPPORTED_TASK);
-                return;
-            }
-        }
-
-        if (data == null) {
-            Slog.w(TAG, "No HandoffActivityData provided.");
-            notifyHandoffTaskDataRequestFailed(
-                request.receiver,
-                request.taskId,
-                HANDOFF_FAILURE_EMPTY_TASK);
-            return;
-        }
-
-        try {
-            request.receiver.onHandoffTaskDataRequestSucceeded(request.taskId, data);
-        } catch (RemoteException e) {
-            Slog.e(
-                TAG,
-                "Failed to notify receiver of handoff task data request success.",
-                e);
-        }
+        notifyHandoffTaskDataRequestResultReceived(request.receiver, request.taskId, data);
     }
 
     @Override
@@ -3773,6 +3776,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
 
             final Task task = mRootWindowContainer.anyTaskForId(taskId);
+            // TODO(b/400970610): Add a check for leaf tasks here.
             if (task == null) {
                 Slog.w(TAG, "No task found for taskId: " + taskId);
                 mH.post(() -> {
@@ -3784,6 +3788,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 return;
             }
 
+            // TODO(b/400970610): Add a check for ActivityEmbedding and handle that case.
             final ActivityRecord activity = task.getTopNonFinishingActivity();
 
             if (activity == null) {
@@ -3837,14 +3842,23 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                             HANDOFF_FAILURE_INTERNAL_ERROR);
                     });
                 }
+            } else if (activity.getHandoffActivityData() != null) {
+                List<HandoffActivityData> handoffActivityData =
+                    List.of(activity.getHandoffActivityData());
+                mH.post(() -> {
+                    notifyHandoffTaskDataRequestResultReceived(
+                        receiver,
+                        taskId,
+                        handoffActivityData);
+                });
             } else {
-                // TODO: Implement pulling HandoffActivityData from
+                // TODO(b/400970610): Implement pulling HandoffActivityData from
                 // activities in the background.
                 mH.post(() -> {
                     notifyHandoffTaskDataRequestFailed(
                         receiver,
                         taskId,
-                        HANDOFF_FAILURE_INTERNAL_ERROR);
+                        HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
                 });
             }
         }

@@ -70,6 +70,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.FullscreenRequestHandler;
+import android.app.HandoffActivityData;
 import android.app.IActivityClientController;
 import android.app.IRequestFinishCallback;
 import android.app.PictureInPictureParams;
@@ -242,8 +243,12 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     @Override
-    public void activityStopped(IBinder token, Bundle icicle, PersistableBundle persistentState,
-            CharSequence description) {
+    public void activityStopped(
+        IBinder token,
+        Bundle icicle,
+        PersistableBundle persistentState,
+        HandoffActivityData handoffActivityData,
+        CharSequence description) {
         if (DEBUG_ALL) Slog.v(TAG, "Activity stopped: token=" + token);
 
         // Refuse possible leaked file descriptors.
@@ -271,7 +276,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                     restartingName = r.app.mName;
                     restartingUid = r.app.mUid;
                 }
-                r.activityStopped(icicle, persistentState, description);
+                r.activityStopped(icicle, persistentState, handoffActivityData, description);
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }

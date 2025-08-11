@@ -21,6 +21,7 @@ import static android.os.UserHandle.getCallingUserId;
 
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.app.HandoffActivityData;
 import android.content.ComponentName;
 import android.content.ContentProvider;
 import android.content.Intent;
@@ -95,10 +96,14 @@ public class ActivityClient {
 
     /** Reports {@link Activity#onStop()} is done. */
     public void activityStopped(IBinder token, Bundle state, PersistableBundle persistentState,
-            CharSequence description) {
+            HandoffActivityData handoffActivityData, CharSequence description) {
         try {
-            getActivityClientController().activityStopped(token, state, persistentState,
-                    description);
+            getActivityClientController().activityStopped(
+                token,
+                state,
+                persistentState,
+                handoffActivityData,
+                description);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }

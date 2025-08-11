@@ -35,7 +35,8 @@ public final class HandoffFailureCode {
             HANDOFF_FAILURE_UNKNOWN_TASK,
             HANDOFF_FAILURE_INTERNAL_ERROR,
             HANDOFF_FAILURE_EMPTY_TASK,
-            HANDOFF_FAILURE_UNSUPPORTED_TASK
+            HANDOFF_FAILURE_UNSUPPORTED_TASK,
+            HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FailureCode {}
@@ -53,4 +54,6 @@ public final class HandoffFailureCode {
     public static final int HANDOFF_FAILURE_EMPTY_TASK = 5;
     /** The handoff task data request was for a task whose top activity does not support handoff. */
     public static final int HANDOFF_FAILURE_UNSUPPORTED_TASK = 6;
+    /** Handoff task data was not reported by the app, despite the app supporting handoff. */
+    public static final int HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA = 7;
 }

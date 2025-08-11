@@ -118,6 +118,7 @@ import static org.mockito.Mockito.never;
 
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
+import android.app.HandoffActivityData;
 import android.app.PictureInPictureParams;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
 import android.app.servertransaction.ClientTransaction;
@@ -1017,29 +1018,61 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(savedState, activity.getSavedState());
     }
 
+    @Test
+    public void testSetHandoffEnabled_clearsHandoffActivityData() {
+        final ActivityRecord activity = createActivityWithTask();
+        final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("pkg", "cls")).build();
+        activity.setHandoffEnabled(true, false);
+        activity.setHandoffActivityData(handoffActivityData);
+        assertEquals(handoffActivityData, activity.getHandoffActivityData());
+        activity.setHandoffEnabled(false, false);
+        assertNull(activity.getHandoffActivityData());
+    }
+
+    @Test
+    public void testSetHandoffActivityData_doesNotSetIfHandoffDisabled() {
+        final ActivityRecord activity = createActivityWithTask();
+        final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("pkg", "cls")).build();
+        activity.setHandoffActivityData(handoffActivityData);
+        activity.setHandoffEnabled(
+            false /* handoffEnabled */,
+            false /* allowFullTaskRecreation */);
+        assertNull(activity.getHandoffActivityData());
+    }
+
     /** Verify the correct updates of saved state when activity client reports stop. */
     @Test
     public void testUpdateSavedState_activityStopped() {
         final ActivityRecord activity = createActivityWithTask();
         final Bundle savedState = new Bundle();
         savedState.putString("test", "string");
+        final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("pkg", "cls")).build();
         final PersistableBundle persistentSavedState = new PersistableBundle();
         persistentSavedState.putString("persist", "string");
+        activity.setHandoffEnabled(
+            true /* handoffEnabled */,
+            false /* allowFullTaskRecreation */);
 
         // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
         activity.setState(STOPPING, "test");
-        activity.activityStopped(savedState, persistentSavedState, "desc");
+        activity.activityStopped(savedState, persistentSavedState, handoffActivityData, "desc");
         assertTrue(activity.hasSavedState());
         assertEquals(savedState, activity.getSavedState());
         assertEquals(persistentSavedState, activity.getPersistentSavedState());
+        assertEquals(handoffActivityData, activity.getHandoffActivityData());
 
         // Sending 'null' for saved state can only happen due to timeout, so previously stored saved
         // states should not be overridden.
         activity.setState(STOPPING, "test");
-        activity.activityStopped(null /* savedState */, null /* persistentSavedState */, "desc");
+        activity.activityStopped(null /* savedState */, null /* persistentSavedState */,
+            null /* handoffActivityData */, "desc");
         assertTrue(activity.hasSavedState());
         assertEquals(savedState, activity.getSavedState());
         assertEquals(persistentSavedState, activity.getPersistentSavedState());
+        assertEquals(handoffActivityData, activity.getHandoffActivityData());
     }
 
     @Test
