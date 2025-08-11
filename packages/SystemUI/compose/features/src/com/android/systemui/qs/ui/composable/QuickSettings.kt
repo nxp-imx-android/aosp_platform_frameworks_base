@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.MovableElementContentPicker
 import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.animation.scene.SceneTransitionLayoutState
@@ -45,11 +44,13 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter.State.Companion.Collapsing
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter.State.Expanding
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter.State.UnsquishingQQS
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter.State.UnsquishingQS
+import com.android.systemui.qs.ui.composable.QuickSettings.Elements.Content
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
 
@@ -62,20 +63,9 @@ object QuickSettings {
                 "QuickSettingsContent",
                 contentPicker = MovableElementContentPicker(SCENES),
             )
-        val QuickQuickSettings = ElementKey("QuickQuickSettings")
-        val SplitShadeQuickSettings = ElementKey("SplitShadeQuickSettings")
-        val FooterActions = ElementKey("QuickSettingsFooterActions")
     }
 
     object SharedValues {
-        val TilesSquishiness = ValueKey("QuickSettingsTileSquishiness")
-
-        object SquishinessValues {
-            val Default = 1f
-            val LockscreenSceneStarting = 0f
-            val GoneSceneStarting = 0.3f
-        }
-
         val MediaLandscapeTopOffset = ValueKey("MediaLandscapeTopOffset")
 
         object MediaOffset {
@@ -174,7 +164,7 @@ fun ContentScope.QuickSettings(
     }
 
     MovableElement(
-        key = QuickSettings.Elements.Content,
+        key = Content,
         modifier =
             modifier.sysuiResTag("quick_settings_panel").fillMaxWidth().layout {
                 measurable,
