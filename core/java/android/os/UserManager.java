@@ -2454,6 +2454,15 @@ public class UserManager {
     @SystemApi
     public static final int REMOVE_RESULT_ERROR_LAST_ADMIN_USER = -6;
 
+    // TODO(b/435271558): expose as @SystemApi
+    /**
+     * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
+     * user being removed cannot be removed because it is the Device Owner on this device.
+     *
+     * @hide
+     */
+    public static final int REMOVE_RESULT_DEVICE_OWNER = -7;
+
     /**
      * Possible response codes from {@link #removeUserWhenPossible(UserHandle, boolean)}.
      *
@@ -2469,6 +2478,7 @@ public class UserManager {
             REMOVE_RESULT_ERROR_SYSTEM_USER,
             REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN,
             REMOVE_RESULT_ERROR_LAST_ADMIN_USER,
+            REMOVE_RESULT_DEVICE_OWNER,
             REMOVE_RESULT_ERROR_UNKNOWN,
     })
     @Retention(RetentionPolicy.SOURCE)

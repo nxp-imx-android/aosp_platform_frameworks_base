@@ -205,6 +205,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_HAS_DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_HAS_PAIRED;
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_ONLY_SYSTEM_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED;
+import static android.app.admin.DevicePolicyManager.STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUPPORTED;
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_SYSTEM_USER;
@@ -346,6 +347,7 @@ import android.app.admin.DevicePolicyManager.DevicePolicyOperation;
 import android.app.admin.DevicePolicyManager.OperationSafetyReason;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.PersonalAppsSuspensionReason;
+import android.app.admin.DevicePolicyManager.ProvisioningPrecondition;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerLiteInternal;
 import android.app.admin.DevicePolicySafetyChecker;
@@ -11403,8 +11405,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 return "Not allowed to set the device owner because this device has already "
                         + "paired.";
             case STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED:
-                return "Cannot provision an unsupported DPC into DO on a"
-                        + " headless device";
+                return "Cannot provision an unsupported DPC into DO on a headless device";
+            case STATUS_HEADLESS_ONLY_SYSTEM_USER:
+                return "Cannot provision DPC on single user mode on headless device when only the "
+                        + "system user exists in the device";
+            case STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER:
+                return "Cannot provision DPC on single user mode on headless device on user "
+                    + userId + " because it's not the first \"human\" user";
             default:
                 return "Unexpected @ProvisioningPreCondition: " + code;
         }
@@ -17831,9 +17838,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 }
 
                 if (isHeadlessModeSingleUser) {
-                    ensureSetUpUser = mUserManagerInternal.getMainUserId();
-                    if (ensureSetUpUser == UserHandle.USER_NULL) {
-                        return STATUS_HEADLESS_ONLY_SYSTEM_USER;
+                    if (Flags.deviceOwnerForAll()) {
+                        int status = checkDeviceOwnerForHeadlessModeSingleUser(deviceOwnerUserId);
+                        if (status == STATUS_OK) {
+                            ensureSetUpUser = deviceOwnerUserId;
+                        } else {
+                            return status;
+                        }
+
+                    } else {
+                        ensureSetUpUser = mUserManagerInternal.getMainUserId();
+                        if (ensureSetUpUser == UserHandle.USER_NULL) {
+                            return STATUS_HEADLESS_ONLY_SYSTEM_USER;
+                        }
                     }
                 }
             }
@@ -17883,12 +17900,63 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    private @ProvisioningPrecondition int checkDeviceOwnerForHeadlessModeSingleUser(
+            @UserIdInt int userId) {
+        if (userId == UserHandle.USER_SYSTEM) {
+            Slogf.e(LOG_TAG, "Cannot set device owner for headless mode / single user on SYSTEM");
+            return STATUS_SYSTEM_USER;
+        }
+
+        // In "real life" (not adb), the device owner would be called by the Setup Wizard of the
+        // first non-HSU user on first boot, so we don't need to check for Main User, but instead
+        // check that it's being called by the current user, which is an admin, and that the device
+        // only contains the SYSTEM and that current user. And if it's called by adb, we can impose
+        // these same restrictions...
+
+        int currentUserId = getCurrentForegroundUserId();
+        if (userId != currentUserId) {
+            Slogf.e(LOG_TAG, "Cannot set device owner for headless mode / single user on user %d,"
+                    + " only on current user (%d)", userId, currentUserId);
+            return STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER;
+        }
+
+        UserInfo user = mUserManagerInternal.getUserInfo(userId);
+        if (user == null) {
+            // Shouldn't happen as caller already check if user is running, but it doesn't hurt to
+            // double check
+            Slogf.wtf(LOG_TAG, "Trying to set device owner on user (%d) that doesn't exit", userId);
+            return STATUS_USER_NOT_RUNNING; // No need for new code as it shouldn't happen
+        }
+        if (!user.isAdmin()) {
+            Slogf.e(LOG_TAG, "Cannot set device owner for headless mode / single user on user %d "
+                    + "because it's not an admin", userId);
+            return STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER;
+        }
+
+        // TODO(b/419086491): use new method that takes a filter
+        long extraUsersCount = mUserManagerInternal.getUsers(/* excludeDying= */ false).stream()
+                .filter(u -> u.id != UserHandle.USER_SYSTEM && u.id != userId)
+                .count();
+        // TODO(b/435271558): make sure to unit test these scenarios (as this checks comes before
+        // the similar change when setting from adb)
+        if (extraUsersCount > 0) {
+            Slogf.e(LOG_TAG, "Cannot set device owner for headless mode / single user on user %d,"
+                    + " as device has %d \"secondary\" user(s) already",
+                    userId, extraUsersCount);
+            return STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER;
+        }
+
+        Slogf.d(LOG_TAG, "User %d is allowed to be the device owner", userId);
+        return STATUS_OK;
+    }
+
     /**
      * True if there are any users on the device which were not setup by default (1 usually, 2 for
      * devices with a headless system user) and also are not marked as FOR_TESTING.
      */
     private boolean nonTestNonPrecreatedUsersExist() {
         int allowedUsers = UserManager.isHeadlessSystemUserMode() ? 2 : 1;
+        // TODO(b/419086491): use new method that takes a filter
         return mUserManagerInternal.getUsers(/* excludeDying= */ true).stream()
                 .filter(u -> !u.isForTesting())
                 .count() > allowedUsers;
@@ -22598,6 +22666,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     public void provisionFullyManagedDevice(
             @NonNull FullyManagedDeviceProvisioningParams provisioningParams,
             @NonNull String callerPackage) {
+        Slogf.d(LOG_TAG, "provisionFullyManagedDevice(pkg=%s, params=%s)", callerPackage,
+                provisioningParams);
         Objects.requireNonNull(provisioningParams, "provisioningParams is null.");
         Objects.requireNonNull(callerPackage, "callerPackage is null.");
 
@@ -22616,8 +22686,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final long identity = Binder.clearCallingIdentity();
         try {
             boolean isSingleUserMode;
+            int callerUserId = caller.getUserId();
             int headlessDeviceOwnerMode = getHeadlessDeviceOwnerModeForDeviceAdmin(
-                    deviceAdmin, caller.getUserId());
+                    deviceAdmin, callerUserId);
             isSingleUserMode = headlessDeviceOwnerMode == HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER;
 
             if (Flags.headlessSingleMinTargetSdk()
@@ -22625,12 +22696,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     && isSingleUserMode
                     && !mInjector.isChangeEnabled(
                             PROVISION_SINGLE_USER_MODE, deviceAdmin.getPackageName(),
-                    caller.getUserId())) {
+                    callerUserId)) {
                 throw new IllegalStateException("Device admin is not targeting Android V.");
             }
 
             int result = checkProvisioningPreconditionSkipPermission(
-                    ACTION_PROVISION_MANAGED_DEVICE, deviceAdmin, caller.getUserId());
+                    ACTION_PROVISION_MANAGED_DEVICE, deviceAdmin, callerUserId);
             if (result != STATUS_OK) {
                 throw new ServiceSpecificException(
                         ERROR_PRE_CONDITION_FAILED,
@@ -22642,10 +22713,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             setTimeAndTimezone(provisioningParams.getTimeZone(), provisioningParams.getLocalTime());
             setLocale(provisioningParams.getLocale());
 
-            int deviceOwnerUserId =
-                    isSingleUserMode && mInjector.userManagerIsHeadlessSystemUserMode()
-                    ? mUserManagerInternal.getMainUserId() : UserHandle.USER_SYSTEM;
-
+            int deviceOwnerUserId = UserHandle.USER_SYSTEM;
+            if (isSingleUserMode && mInjector.userManagerIsHeadlessSystemUserMode()) {
+                if (Flags.deviceOwnerForAll()) {
+                    deviceOwnerUserId = callerUserId;
+                    Slogf.d(LOG_TAG,
+                            "provisionFullyManagedDevice(): using calling user id (%d) as DO",
+                            deviceOwnerUserId);
+                } else {
+                    deviceOwnerUserId = mUserManagerInternal.getMainUserId();
+                    Slogf.d(LOG_TAG, "provisionFullyManagedDevice(): using main user id (%d) as DO",
+                            deviceOwnerUserId);
+                }
+            }
             if (!removeNonRequiredAppsForManagedDevice(
                     deviceOwnerUserId,
                     provisioningParams.isLeaveAllSystemAppsEnabled(),
