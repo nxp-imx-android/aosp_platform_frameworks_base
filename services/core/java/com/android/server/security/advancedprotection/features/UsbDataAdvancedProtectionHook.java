@@ -19,6 +19,7 @@ package com.android.server.security.advancedprotection.features;
 import static android.app.Notification.EXTRA_SUBSTITUTE_APP_NAME;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_USER_PRESENT;
+import static android.content.Intent.ACTION_LOCKED_BOOT_COMPLETED;
 import static android.hardware.usb.UsbManager.ACTION_USB_PORT_CHANGED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
@@ -151,25 +152,24 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final Map<Integer, Integer> NOTIFICATION_TYPE_TO_TEXT =
             Map.of(
                     NOTIFICATION_CHARGE,
-                    R.string.usb_apm_usb_plugged_in_for_power_brick_notification_text,
+                    R.string.usb_apm_usb_plugged_in_when_locked_charge_notification_text,
                     NOTIFICATION_CHARGE_DATA,
-                    R.string.usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text,
+                    R.string.usb_apm_usb_plugged_in_when_locked_charge_data_notification_text,
                     NOTIFICATION_DATA,
-                    R.string.usb_apm_usb_plugged_in_when_locked_notification_text);
+                    R.string.usb_apm_usb_plugged_in_when_locked_data_notification_text);
     private static final Map<Integer, Integer> NOTIFICATION_TYPE_TO_TEXT_WITH_REPLUG =
             Map.of(
                     NOTIFICATION_CHARGE,
-                    R.string.usb_apm_usb_plugged_in_for_power_brick_replug_notification_text,
+                    R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_text,
                     NOTIFICATION_CHARGE_DATA,
-                    R.string
-                            .usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text,
+                    R.string.usb_apm_usb_plugged_in_when_locked_charge_data_notification_text,
                     NOTIFICATION_DATA,
-                    R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_text);
+                    R.string.usb_apm_usb_plugged_in_when_locked_data_notification_text);
 
     private final ReentrantLock mDisableLock = new ReentrantLock();
     private final Context mContext;
 
-    private AtomicBoolean mApmRequestedUsbDisable = new AtomicBoolean(false);
+    private AtomicBoolean mApmRequestedUsbDataStatus = new AtomicBoolean(false);
 
     // We use handlers for tasks that may need to be updated by broadcasts events.
     private Handler mDelayedDisableHandler = new Handler(Looper.getMainLooper());
@@ -233,7 +233,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             UserManager userManager,
             Handler delayDisableHandler,
             Handler delayedNotificationHandler,
-            AtomicBoolean apmRequestedUsbDisable,
+            AtomicBoolean apmRequestedUsbDataStatus,
             boolean canSetUsbDataSignal,
             boolean afterFirstUnlock) {
         super(context, false);
@@ -248,7 +248,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         mCanSetUsbDataSignal = canSetUsbDataSignal;
         mIsAfterFirstUnlock = afterFirstUnlock;
         mUserManager = userManager;
-        mApmRequestedUsbDisable = apmRequestedUsbDisable;
+        mApmRequestedUsbDataStatus = apmRequestedUsbDataStatus;
     }
 
     @Override
@@ -365,7 +365,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                     /*
                                      * Due to limitations of current APIs, we cannot cannot fully
                                      * rely on power brick and pd compliance check to be accurate
-                                     * until it's passed the check timeouts unless the value is
+                                     * until it's passed the check timeouts or the value is
                                      * POWER_BRICK_STATUS_CONNECTED or isCompliant=true
                                      * respectively.
                                      */
@@ -391,6 +391,10 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                     createAndSendNotificationIfDeviceIsLocked(
                                             portStatus, NOTIFICATION_DATA);
                                 }
+                            // Any earlier call to USBService during bootup have a risk of having
+                            // request dropped due to USB stack not being ready.
+                            } else if (ACTION_LOCKED_BOOT_COMPLETED.equals(intent.getAction())) {
+                                setUsbDataSignalIfPossible(false);
                             }
                         } catch (Exception e) {
                             Slog.e(TAG, "USB Data protection failed with: " + e.getMessage());
@@ -669,7 +673,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             // to framework. So we can only assume that disable request is honored.
             // The atomic boolean check is to make sure it requested by us and not by other reasons
             // ie. Enterprise policy.
-            boolean isDataEnabled = isRequestedDisabled && mApmRequestedUsbDisable.get();
+            boolean isDataEnabled = isRequestedDisabled && mApmRequestedUsbDataStatus.get();
             int usbHalVersion = mUsbManager.getUsbHalVersion();
             // For AIDL implementation, DATA_STATUS_ENABLED is fed back to framework from the HAL
             if (usbHalVersion > UsbManager.USB_HAL_V1_3) {
@@ -703,9 +707,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             int usbChangeStateReattempts = 0;
             while (usbChangeStateReattempts < USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS) {
                 try {
+                    Slog.d(TAG, "Setting USB data: " + status);
                     if (mUsbManagerInternal.enableUsbDataSignal(status, USB_DISABLE_REASON_APM)) {
-                        mApmRequestedUsbDisable.set(status);
+                        mApmRequestedUsbDataStatus.set(status);
                         successfullySetUsbDataSignal = true;
+                        Slog.d(TAG, "Successfully set USB data");
                         break;
                     } else {
                         Slog.e(TAG, "USB Data protection toggle to " + status + " attempt failed");
@@ -757,6 +763,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
         filter.addAction(ACTION_USER_PRESENT);
         filter.addAction(ACTION_SCREEN_OFF);
+        filter.addAction(ACTION_LOCKED_BOOT_COMPLETED);
         filter.addAction(UsbManager.ACTION_USB_PORT_CHANGED);
 
         mContext.registerReceiverAsUser(
