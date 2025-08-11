@@ -1327,13 +1327,19 @@ public final class MessageQueue {
 
     @NeverCompile
     void dump(Printer pw, String prefix, Handler h) {
-        //TODO: fill in later
         pw.println(prefix + "(MessageQueue is using DeliQueue implementation)");
+        final int n = mStack.dump(pw, prefix, h);
+        pw.println(prefix + "(Total messages: " + n + ", polling=" + isPolling()
+                + ", quitting=" + mStack.isQuitting() + ")");
     }
 
     @NeverCompile
     void dumpDebug(ProtoOutputStream proto, long fieldId) {
-        //TODO: fill in later
+        final long messageQueueToken = proto.start(fieldId);
+        mStack.dumpDebug(proto);
+        proto.write(MessageQueueProto.IS_POLLING_LOCKED, isPolling());
+        proto.write(MessageQueueProto.IS_QUITTING, mStack.isQuitting());
+        proto.end(messageQueueToken);
     }
 
     private void incAndTraceMessageCount(Message msg, long when) {

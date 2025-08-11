@@ -683,6 +683,8 @@ public final class Message implements Parcelable {
             b.append(arg1);
         }
 
+        b.append(" async=");
+        b.append(isAsynchronous());
         b.append(" heapIndex=");
         b.append(heapIndex);
         b.append(" }");
