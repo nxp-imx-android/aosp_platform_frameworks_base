@@ -18,6 +18,7 @@ package com.android.systemui.shade.domain.interactor
 
 import android.content.Context
 import android.provider.Settings
+import android.util.Log
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -102,11 +103,18 @@ constructor(
         isDualShadeSettingEnabled
             .flatMapLatest { isDualShadeSettingEnabled ->
                 if (isDualShadeSettingEnabled) {
+                    Log.d(TAG, "Shade layout is derived from screen width")
                     repository.isWideScreen.map { !it }
                 } else {
+                    Log.d(TAG, "Shade layout is derived from the legacy config")
                     repository.legacyUseSplitShade.map { !it }
                 }
             }
+            .logDiffsForTable(
+                tableLogBuffer = tableLogBuffer,
+                initialValue = !repository.isWideScreen.value,
+                columnName = "isFullWidthShade",
+            )
             .stateIn(
                 applicationScope,
                 SharingStarted.Eagerly,
@@ -129,24 +137,32 @@ constructor(
         isDualShadeSettingEnabled: Boolean,
         isFullWidthShade: Boolean,
     ): ShadeMode {
-        return when {
-            // Case 1: The Dual Shade setting has been enabled by the user.
-            isDualShadeSettingEnabled -> ShadeMode.Dual
+        val (newMode, reason) =
+            when {
+                isDualShadeSettingEnabled -> ShadeMode.Dual to "the setting is 'separate'"
 
-            // Case 2: Phone (in any orientation) or large screen in portrait, with Dual Shade
-            // setting disabled.
-            isFullWidthShade -> ShadeMode.Single
+                isFullWidthShade ->
+                    ShadeMode.Single to
+                        "the setting is 'combined', and the device is a phone " +
+                            "(in any orientation) or large screen in portrait"
 
-            // Case 3: Large screen in landscape orientation, with Dual Shade setting disabled.
-            isSplitShadeEnabled -> ShadeMode.Split
+                isSplitShadeEnabled ->
+                    ShadeMode.Split to
+                        "the setting is 'combined', split shade is enabled, " +
+                            "and the device has a large screen in landscape orientation"
 
-            // Case 4: Large screen in landscape orientation, with both Dual Shade setting and Split
-            // Shade disabled.
-            else -> ShadeMode.Dual
-        }
+                else ->
+                    ShadeMode.Dual to
+                        "the setting is 'combined', " +
+                            "but split shade disabled and the device has a large screen"
+            }
+        Log.d(TAG, "Shade mode is $newMode because $reason")
+        return newMode
     }
 
     companion object {
+        private const val TAG = "ShadeModeInteractorImpl"
+
         /* Whether the Dual Shade setting is enabled by default. */
         private const val DUAL_SHADE_ENABLED_DEFAULT = false
     }
