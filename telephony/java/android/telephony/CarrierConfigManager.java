@@ -9885,6 +9885,59 @@ public class CarrierConfigManager {
             "carrier_supported_satellite_services_per_provider_bundle";
 
     /**
+     * A PersistableBundle that contains a list of key-value pairs, where keys are satellite
+     * provider PLMNs and values are bundles containing satellite configurations for that PLMN.
+     * This allows for per-provider settings within a single carrier, which is necessary for
+     * hybrid scenarios where a carrier supports multiple satellite networks with different
+     * capabilities (e.g., AST and Skylo).
+     * <p>
+     * The keys in this bundle are PLMNs of satellite providers as strings. The values are
+     * PersistableBundles containing some of the <b>existing</b> satellite configurations for that
+     * PLMN.
+     * <p>
+     * The <b>allowed</b> satellite configuration keys that the PersistableBundle values can have
+     * are:
+     * <ul>
+     * <li>{@link #KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT}</li>
+     * <li>{@link #KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT}</li>
+     * </ul>
+     * <p>
+     * An example config for a hybrid carrier supporting two PLMNs (lets say "XXXXXX" is the PLMN of
+     * AST and "YYYYYY" is the PLMN of Skylo):
+     * <pre>{@code
+     * <pbundle_as_map name="satellite_configs_per_plmn_bundle">
+     *     <!-- AST PLMN's satellite configurations -->
+     *     <pbundle_as_map name="XXXXXX">
+     *         <!-- SatelliteManager#EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911 -->
+     *         <int name="carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int"
+     *              value="2" />
+     *         <!-- CarrierConfigManager#CARRIER_ROAMING_NTN_CONNECT_AUTOMATIC -->
+     *         <int name="carrier_roaming_ntn_connect_type_int" value="0" />
+     *     </pbundle_as_map>
+     *     <!-- Skylo PLMN's satellite configurations -->
+     *     <pbundle_as_map name="YYYYYY">
+     *         <!-- SatelliteManager#EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_SOS -->
+     *         <int name="carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int"
+     *              value="1" />
+     *         <!-- CarrierConfigManager#CARRIER_ROAMING_NTN_CONNECT_MANUAL -->
+     *         <int name="carrier_roaming_ntn_connect_type_int" value="1" />
+     *     </pbundle_as_map>
+     * </pbundle_as_map>
+     * }</pre>
+     * <p>
+     * When set, this PLMN config would take precedence over the global configs. For example,
+     * if the global handover type is set as {@link SatelliteManager
+     * #EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_SOS}, but if this config's current PLMN handover
+     * type is set as {@link SatelliteManager#EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911}, then
+     * T911 would be effective way of handling emergency call.
+     * <p>
+     * This config is empty by default.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_SATELLITE_CONFIGS_PER_PLMN_BUNDLE =
+            "satellite_configs_per_plmn_bundle";
+
+    /**
      * A PersistableBundle that contains a list of key-value pairs, where the values are integer
      * arrays.
      * <p>
@@ -10249,6 +10302,13 @@ public class CarrierConfigManager {
      */
     @FlaggedApi(Flags.FLAG_SATELLITE_SYSTEM_APIS)
     public static final int CARRIER_ROAMING_NTN_CONNECT_MANUAL = 1;
+    /**
+     * Device can connect to carrier roaming non-terrestrial network both automatically and
+     * manually i.e. Carrier would support multiple satellite providers with automatical and
+     * manually connect capabilities.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final int CARRIER_ROAMING_NTN_CONNECT_HYBRID = 2;
     /**
      * Indicates carrier roaming non-terrestrial network connect type that the device can use to
      * perform satellite communication.
@@ -11606,6 +11666,8 @@ public class CarrierConfigManager {
         sDefaults.putStringArray(KEY_MISSED_INCOMING_CALL_SMS_PATTERN_STRING_ARRAY, new String[0]);
         sDefaults.putPersistableBundle(
                 KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE,
+                PersistableBundle.EMPTY);
+        sDefaults.putPersistableBundle(KEY_SATELLITE_CONFIGS_PER_PLMN_BUNDLE,
                 PersistableBundle.EMPTY);
         sDefaults.putPersistableBundle(
                 KEY_REGIONAL_SATELLITE_EARFCN_BUNDLE,
