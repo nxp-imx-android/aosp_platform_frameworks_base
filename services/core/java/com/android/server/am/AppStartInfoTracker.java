@@ -606,8 +606,7 @@ public final class AppStartInfoTracker {
 
         // Isolated process starts won't be reasonably accessible if stored by their uid, don't
         // store them.
-        if (com.android.server.am.Flags.appStartInfoIsolatedProcess()
-                && UserHandle.isIsolated(uid)) {
+        if (UserHandle.isIsolated(uid)) {
             return null;
         }
 
@@ -980,8 +979,7 @@ public final class AppStartInfoTracker {
                     // This is expected only as a one time mitigation, records added after this flag
                     // is enabled should always return false for isIsolated and thereby always
                     // continue on.
-                    if (com.android.server.am.Flags.appStartInfoIsolatedProcess()
-                            && UserHandle.isIsolated(uid)) {
+                    if (UserHandle.isIsolated(uid)) {
                         break;
                     }
 
