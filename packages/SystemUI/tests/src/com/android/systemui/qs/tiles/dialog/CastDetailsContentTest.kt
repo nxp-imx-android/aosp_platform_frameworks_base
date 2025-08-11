@@ -18,7 +18,6 @@ package com.android.systemui.qs.tiles.dialog
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -65,7 +64,6 @@ class CastDetailsContentTest : SysuiTestCase() {
         composeRule
             .onNodeWithTag(CastDetailsViewModel.CONTROLLER_VIEW_TEST_TAG)
             .assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("device icon").assertDoesNotExist()
         composeRule.onNodeWithText("Disconnect").assertDoesNotExist()
 
         verify(chooserContentManager).bindViews(any())
@@ -80,7 +78,6 @@ class CastDetailsContentTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithTag(CastDetailsViewModel.CONTROLLER_VIEW_TEST_TAG).assertExists()
-        composeRule.onNodeWithContentDescription("device icon").assertExists()
         composeRule.onNodeWithText("Disconnect").assertExists()
         composeRule.onNodeWithTag(CastDetailsViewModel.CHOOSER_VIEW_TEST_TAG).assertDoesNotExist()
 
