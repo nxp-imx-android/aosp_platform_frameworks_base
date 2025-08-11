@@ -106,9 +106,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         underTest.apply { overrideResource(R.bool.config_enableLargeScreenScreencapture, true) }
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
-        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(screenRecordUxController, never())
-            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
+        verify(screenRecordUxController, never()).createScreenRecordDialog(any())
     }
 
     // Test that clicking the tile not in large screen opens the recording dialog when the flag is
@@ -119,9 +117,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         val recordingModel = ScreenRecordModel.DoingNothing
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
-        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(screenRecordUxController)
-            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
+        verify(screenRecordUxController).createScreenRecordDialog(any())
     }
 
     @Test
@@ -130,9 +126,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         val recordingModel = ScreenRecordModel.DoingNothing
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
-        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(screenRecordUxController)
-            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
+        verify(screenRecordUxController).createScreenRecordDialog(any())
     }
 
     @Test
@@ -181,9 +175,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         underTest.handleInput(
             QSTileInputTestKtx.click(recordingModel, UserHandle.CURRENT, expandable)
         )
-        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(screenRecordUxController)
-            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
+        verify(screenRecordUxController).createScreenRecordDialog(any())
 
         val onDismissActionCaptor = argumentCaptor<OnDismissAction>()
         verify(keyguardDismissUtil)
