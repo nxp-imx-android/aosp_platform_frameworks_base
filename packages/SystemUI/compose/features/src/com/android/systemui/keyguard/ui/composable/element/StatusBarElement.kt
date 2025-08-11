@@ -36,7 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -47,6 +47,7 @@ import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.NotificationPanelView
 import com.android.systemui.shade.ShadeViewStateProvider
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
@@ -123,7 +124,13 @@ constructor(
 
     private fun createSignOutButtonView(context: Context): ComposeView {
         return ComposeView(context).apply {
-            setViewCompositionStrategy(DisposeOnViewTreeLifecycleDestroyed)
+            setViewCompositionStrategy(
+                if (SceneContainerFlag.isEnabled) {
+                    ViewCompositionStrategy.Default
+                } else {
+                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                }
+            )
             setContent { PlatformTheme { SignOutButton() } }
         }
     }

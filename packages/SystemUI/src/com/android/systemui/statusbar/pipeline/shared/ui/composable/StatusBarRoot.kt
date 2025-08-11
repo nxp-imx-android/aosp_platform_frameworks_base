@@ -70,6 +70,7 @@ import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.POPUP
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
@@ -301,7 +302,11 @@ fun StatusBarRoot(
                                 )
 
                             setViewCompositionStrategy(
-                                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                                if (SceneContainerFlag.isEnabled) {
+                                    ViewCompositionStrategy.Default
+                                } else {
+                                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                                }
                             )
 
                             setContent {
