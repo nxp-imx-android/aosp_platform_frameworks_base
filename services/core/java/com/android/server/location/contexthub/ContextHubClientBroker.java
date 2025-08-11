@@ -484,7 +484,7 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
             if (authState == AUTHORIZATION_DENIED) {
                 if (Compatibility.isChangeEnabled(CHANGE_ID_AUTH_STATE_DENIED)) {
                     throw new SecurityException("Client doesn't have valid permissions to send"
-                            + " message to " + message.getNanoAppId());
+                            + " message to 0x" + Long.toHexString(message.getNanoAppId()));
                 }
                 // Return a bland error code for apps targeting old SDKs since they wouldn't be able
                 // to use an error code added in S.
