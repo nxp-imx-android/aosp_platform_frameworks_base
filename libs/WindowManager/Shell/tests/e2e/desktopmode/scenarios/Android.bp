@@ -64,34 +64,10 @@ android_test {
 // Auto generated section, don't update it manually
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-AltTabSwitchInDesktopModeTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.AltTabSwitchInDesktopModeTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.AltTabSwitchOutDesktopModeTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-AltTabSwitchToUnminimizeInDesktopModeTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-CatchAll",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
-        "com.android.wm.shell.functional.AltTabSwitchInDesktopModeTest",
-        "com.android.wm.shell.functional.AltTabSwitchOutDesktopModeTest",
-        "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
         "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.CloseAllAppsWithAppHeaderExitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
@@ -142,6 +118,9 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.immersive.EnterImmersiveViaHeaderMenuTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchInDesktopModeTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchOutDesktopModeTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
@@ -158,6 +137,7 @@ test_module_config {
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithEdgeResizeTest",
+        "com.android.wm.shell.functional.resizing.RestartSizeCompatAppInDesktopMode",
         "com.android.wm.shell.functional.resizing.ScaleDensityForExternalDisplayTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithButtonTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithDragTest",
@@ -517,6 +497,27 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchInDesktopModeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchOutDesktopModeTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchOutDesktopModeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchToUnminimizeInDesktopModeTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -528,6 +529,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-OpenAppFromAllAppsUsingKeyboardTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest"],
 }
 
 test_module_config {
@@ -619,6 +627,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.resizing.ResizeAppWithEdgeResizeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-resizing-RestartSizeCompatAppInDesktopMode",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.resizing.RestartSizeCompatAppInDesktopMode"],
 }
 
 test_module_config {

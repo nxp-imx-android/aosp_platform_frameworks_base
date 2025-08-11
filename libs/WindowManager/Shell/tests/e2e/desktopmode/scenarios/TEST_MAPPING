@@ -7,15 +7,6 @@
   ],
   "wm": [
     {
-      "name": "FunctionalTestsDesktopMode-AltTabSwitchInDesktopModeTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-AltTabSwitchToUnminimizeInDesktopModeFlickerTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-CatchAll"
     },
     {
@@ -169,6 +160,15 @@
       "name": "FunctionalTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchOutDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchToUnminimizeInDesktopModeFlickerTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest"
     },
     {
@@ -215,6 +215,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-RestartSizeCompatAppInDesktopMode"
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ScaleDensityForExternalDisplayTest"

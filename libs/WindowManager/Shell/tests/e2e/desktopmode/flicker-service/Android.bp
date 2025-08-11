@@ -64,10 +64,14 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest",
         "com.android.wm.shell.flicker.immersive.EnterImmersiveViaHeaderMenuFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.EnterDesktopFromKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.MaximizeAppWithKeyboardFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.MinimizeAppsWithKeyboardFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.OpenBrowserWithKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppDoubleTapAppHeaderFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppNonResizableFlickerTest",
@@ -92,6 +96,7 @@ test_module_config {
         "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterHomeSwipeFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterOverviewFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerShownHiddenFlickerTest",
+        "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenDraggingHeader",
         "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenEnteringPipFlickerTest",
     ],
 }
@@ -241,6 +246,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-AltTabSwitchToUnminimizeInDesktopModeFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeFlickerTest"],
 }
 
 test_module_config {
@@ -451,6 +463,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.tiling.TilingDividerShownHiddenFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-tiling-TilingPairBrokenWhenDraggingHeader",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenDraggingHeader"],
 }
 
 test_module_config {
