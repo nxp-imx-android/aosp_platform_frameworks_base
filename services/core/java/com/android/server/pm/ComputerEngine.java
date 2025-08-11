@@ -3118,7 +3118,7 @@ public class ComputerEngine implements Computer {
                 }
                 ipw.println("Dexopt state:");
                 ipw.increaseIndent();
-                DexOptHelper.dumpDexoptState(ipw, packageName);
+                DexOptHelper.dumpDexoptState(ipw, this, packageName);
                 ipw.decreaseIndent();
                 break;
             }

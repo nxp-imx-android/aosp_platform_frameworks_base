@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApexStagedEvent;
+import android.content.pm.Flags;
 import android.content.pm.IPackageManagerNative;
 import android.content.pm.IStagedApexObserver;
 import android.content.pm.PackageManager;
@@ -63,6 +64,7 @@ import com.android.server.pinner.PinnerService;
 import com.android.server.pm.dex.InstallScenarioHelper;
 import com.android.server.pm.local.PackageManagerLocalImpl;
 import com.android.server.pm.pkg.AndroidPackage;
+import com.android.server.pm.snapshot.PackageDataSnapshot;
 
 import java.io.File;
 import java.io.IOException;
@@ -163,16 +165,23 @@ public final class DexOptHelper {
     /**
      * Dumps the dexopt state for the given package, or all packages if it is null.
      */
-    public static void dumpDexoptState(
-            @NonNull IndentingPrintWriter ipw, @Nullable String packageName) {
+    public static void dumpDexoptState(@NonNull IndentingPrintWriter ipw,
+            @NonNull PackageDataSnapshot computer, @Nullable String packageName) {
         try (PackageManagerLocal.FilteredSnapshot snapshot =
-                        getPackageManagerLocal().withFilteredSnapshot()) {
+                        getPackageManagerLocal().withUnownedFilteredSnapshot(computer)) {
             if (packageName != null) {
-                try {
+                if (Flags.alternativeForDexoptCleanup()) {
+                    // The caller has already vetted the package name against the computer, so
+                    // IllegalArgumentException cannot happen.
                     DexOptHelper.getArtManagerLocal().dumpPackage(ipw, snapshot, packageName);
-                } catch (IllegalArgumentException e) {
-                    // Package isn't found, but that should only happen due to race.
-                    ipw.println(e);
+                } else {
+                    try {
+                        DexOptHelper.getArtManagerLocal().dumpPackage(ipw, snapshot, packageName);
+                    } catch (IllegalArgumentException e) {
+                        // Package isn't found, but that should only happen due to race. It can
+                        // happen because the snapshot is not created from the computer.
+                        ipw.println(e);
+                    }
                 }
             } else {
                 DexOptHelper.getArtManagerLocal().dump(ipw, snapshot);
