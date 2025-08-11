@@ -16,14 +16,9 @@
 
 package com.android.systemui.shade.ui.composable
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.clipScrollableContainer
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,15 +32,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -53,20 +49,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
+import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
-import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.transitions
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
 import com.android.internal.jank.InteractionJankMonitor
@@ -76,26 +72,25 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.controls.ui.composable.MediaCarousel
-import com.android.systemui.media.controls.ui.composable.MediaContentPicker
-import com.android.systemui.media.controls.ui.composable.shouldElevateMedia
-import com.android.systemui.media.controls.ui.controller.MediaCarouselController
-import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.EXPANDED
-import com.android.systemui.media.dagger.MediaModule.QS_PANEL
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
+import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
+import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
-import com.android.systemui.qs.ui.composable.BrightnessMirror
 import com.android.systemui.qs.ui.composable.QuickSettings
+import com.android.systemui.qs.ui.composable.QuickSettings.Elements.SplitShadeQuickSettings
+import com.android.systemui.qs.ui.composable.QuickSettingsContent
+import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.shade.shared.model.ShadeMode
+import com.android.systemui.shade.ui.composable.ShadeScene.Companion.SplitShadeInternalScenes.Edit
+import com.android.systemui.shade.ui.composable.ShadeScene.Companion.SplitShadeInternalScenes.QS
+import com.android.systemui.shade.ui.composable.ShadeScene.Companion.SplitShadeInternalScenes.transitions
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.shade.ui.viewmodel.ShadeSceneContentViewModel
 import com.android.systemui.shade.ui.viewmodel.ShadeUserActionsViewModel
@@ -103,7 +98,6 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import dagger.Lazy
 import javax.inject.Inject
-import javax.inject.Named
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.Flow
 
@@ -129,8 +123,6 @@ constructor(
     private val actionsViewModelFactory: ShadeUserActionsViewModel.Factory,
     private val contentViewModelFactory: ShadeSceneContentViewModel.Factory,
     private val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
-    private val mediaCarouselController: MediaCarouselController,
-    @Named(QS_PANEL) private val qsMediaHost: MediaHost,
     private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
 
@@ -165,18 +157,27 @@ constructor(
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-            mediaCarouselController = mediaCarouselController,
-            qsMediaHost = qsMediaHost,
             jankMonitor = jankMonitor,
             modifier = modifier,
             shadeSession = shadeSession,
         )
     }
 
-    init {
-        qsMediaHost.expansion = EXPANDED
-        qsMediaHost.showsOnlyActiveMedia = false
-        qsMediaHost.init(MediaHierarchyManager.LOCATION_QS)
+    companion object {
+        object SplitShadeInternalScenes {
+            val QS = SceneKey("QuickSettingsMainPanel")
+            val Edit = SceneKey("QuickSettingsEditPanel")
+
+            private const val EDIT_MODE_TIME_MILLIS = 500
+
+            val transitions = transitions {
+                from(QS, Edit) {
+                    spec = tween(durationMillis = EDIT_MODE_TIME_MILLIS)
+                    fractionRange(start = 0.5f) { fade(Edit.rootElementKey) }
+                    fractionRange(end = 0.5f) { fade(QS.rootElementKey) }
+                }
+            }
+        }
     }
 }
 
@@ -186,8 +187,6 @@ private fun ContentScope.ShadeScene(
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
-    mediaCarouselController: MediaCarouselController,
-    qsMediaHost: MediaHost,
     jankMonitor: InteractionJankMonitor,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
@@ -198,8 +197,6 @@ private fun ContentScope.ShadeScene(
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-            mediaCarouselController = mediaCarouselController,
-            mediaHost = qsMediaHost,
             modifier = modifier,
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
@@ -367,88 +364,42 @@ private fun ContentScope.SplitShade(
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
-    mediaCarouselController: MediaCarouselController,
-    mediaHost: MediaHost,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
 ) {
-    val isCustomizing by viewModel.qsSceneAdapter.isCustomizing.collectAsStateWithLifecycle()
-    val isCustomizerShowing by
-        viewModel.qsSceneAdapter.isCustomizerShowing.collectAsStateWithLifecycle()
-    val customizingAnimationDuration by
-        viewModel.qsSceneAdapter.customizerAnimationDuration.collectAsStateWithLifecycle()
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val footerActionsViewModel =
         remember(lifecycleOwner, viewModel) { viewModel.getFooterActionsViewModel(lifecycleOwner) }
-    val tileSquishiness by
-        animateContentFloatAsState(
-            value = 1f,
-            key = QuickSettings.SharedValues.TilesSquishiness,
-            canOverflow = false,
-        )
+
+    val qsContainerViewModel =
+        rememberViewModel(traceName = "SplitShade.QSContainerViewModel") {
+            viewModel.qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
+        }
 
     val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
     val navBarBottomHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val bottomPadding by
-        animateDpAsState(
-            targetValue = if (isCustomizing) 0.dp else navBarBottomHeight,
-            animationSpec = tween(customizingAnimationDuration),
-            label = "animateQSSceneBottomPaddingAsState",
-        )
-    val density = LocalDensity.current
-    LaunchedEffect(navBarBottomHeight, density) {
-        with(density) {
-            viewModel.qsSceneAdapter.applyBottomNavBarPadding(navBarBottomHeight.roundToPx())
-        }
-    }
 
-    val quickSettingsScrollState = rememberScrollState()
-    val isScrollable = layoutState.transitionState is TransitionState.Idle
-    LaunchedEffect(isCustomizing, quickSettingsScrollState) {
-        if (isCustomizing) {
-            quickSettingsScrollState.scrollTo(0)
-        }
-    }
+    val brightnessMirrorShowing = qsContainerViewModel.brightnessSliderViewModel.showMirror
 
-    val brightnessMirrorViewModel =
-        rememberViewModel("SplitShade-brightnessMirrorViewModel") {
-            viewModel.brightnessMirrorViewModelFactory.create()
-        }
-    val brightnessMirrorShowing by brightnessMirrorViewModel.isShowing.collectAsStateWithLifecycle()
     val contentAlpha by
         animateFloatAsState(
             targetValue = if (brightnessMirrorShowing) 0f else 1f,
             label = "alphaAnimationBrightnessMirrorContentHiding",
         )
 
-    notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(contentAlpha)
-    DisposableEffect(Unit) {
-        onDispose { notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(1f) }
+    LaunchedEffectWithLifecycle(key1 = Unit) {
+        try {
+            snapshotFlow { contentAlpha }
+                .collect { notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(it) }
+        } finally {
+            notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(1f)
+        }
     }
 
-    val brightnessMirrorShowingModifier = Modifier.graphicsLayer { alpha = contentAlpha }
-
-    val mediaOffsetProvider = remember {
-        ShadeMediaOffsetProvider.Qs(
-            { @Suppress("UNUSED_EXPRESSION") tileSquishiness },
-            viewModel.qsSceneAdapter,
-        )
-    }
-
-    Box {
-        Box(
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .element(Shade.Elements.BackgroundScrim)
-                    // Cannot set the alpha of the whole element to 0, because the mirror should be
-                    // in the QS column.
-                    .background(
-                        colorResource(R.color.shade_scrim_background_dark)
-                            .copy(alpha = contentAlpha)
-                    )
-        )
+    Box(modifier = modifier.fillMaxSize().graphicsLayer { alpha = contentAlpha }) {
+        ShadePanelScrim(viewModel.isTransparencyEnabled)
 
         Column(modifier = Modifier.fillMaxSize()) {
             val unfoldTranslationXForStartSide = viewModel.unfoldTranslationXForStartSide
@@ -457,87 +408,94 @@ private fun ContentScope.SplitShade(
                 viewModel = headerViewModel,
                 isSplitShade = true,
                 modifier =
-                    Modifier.then(brightnessMirrorShowingModifier)
-                        .padding(horizontal = { unfoldTranslationXForStartSide.roundToInt() }),
+                    Modifier.padding(horizontal = { unfoldTranslationXForStartSide.roundToInt() }),
             )
 
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 Box(
                     modifier =
-                        Modifier.element(Shade.Elements.SplitShadeStartColumn)
+                        Modifier.element(QuickSettings.Elements.SplitShadeQuickSettings)
                             .overscroll(verticalOverscrollEffect)
                             .weight(1f)
                             .graphicsLayer { translationX = unfoldTranslationXForStartSide }
+                            .fillMaxSize()
+                            .padding(bottom = navBarBottomHeight)
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        BrightnessMirror(
-                            viewModel = brightnessMirrorViewModel,
-                            qsSceneAdapter = viewModel.qsSceneAdapter,
-                            modifier = Modifier.align(Alignment.TopCenter),
-                            measureFromContainer = true,
+                    val sceneState =
+                        rememberMutableSceneTransitionLayoutState(
+                            initialScene =
+                                remember { if (qsContainerViewModel.isEditing) Edit else QS },
+                            transitions = transitions,
                         )
+
+                    val coroutineScope = rememberCoroutineScope()
+
+                    LaunchedEffect(sceneState, qsContainerViewModel.isEditing, coroutineScope) {
+                        if (qsContainerViewModel.isEditing) {
+                            sceneState.setTargetScene(Edit, coroutineScope)
+                        } else {
+                            sceneState.setTargetScene(QS, coroutineScope)
+                        }
                     }
-                    Column(
-                        verticalArrangement = Arrangement.Top,
-                        modifier = Modifier.fillMaxSize().padding(bottom = bottomPadding),
+
+                    NestedSceneTransitionLayout(
+                        state = sceneState,
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        Column(
-                            modifier =
-                                Modifier.fillMaxSize()
-                                    .sysuiResTag("expanded_qs_scroll_view")
-                                    .weight(1f)
-                                    .thenIf(!isCustomizerShowing) {
-                                        Modifier.verticalScroll(
-                                                quickSettingsScrollState,
-                                                enabled = isScrollable,
-                                            )
-                                            .clipScrollableContainer(Orientation.Horizontal)
-                                    }
-                                    .then(brightnessMirrorShowingModifier)
-                        ) {
-                            Box(
-                                modifier =
-                                    Modifier.element(QuickSettings.Elements.SplitShadeQuickSettings)
-                            ) {
-                                QuickSettings(
-                                    qsSceneAdapter = viewModel.qsSceneAdapter,
-                                    heightProvider = { viewModel.qsSceneAdapter.qsHeight },
-                                    isSplitShade = true,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    squishiness = { tileSquishiness },
-                                )
+                        scene(QS) {
+                            val tileSquishiness by
+                                with(this@SplitShade) {
+                                    animateContentFloatAsState(
+                                        value = 1f,
+                                        key = QuickSettings.SharedValues.TilesSquishiness,
+                                        canOverflow = false,
+                                    )
+                                }
+
+                            LaunchedEffect(Unit) {
+                                snapshotFlow { tileSquishiness }
+                                    .collect { viewModel.setTileSquishiness(it) }
                             }
 
-                            ShadeMediaCarousel(
-                                isVisible = viewModel.showMedia,
-                                isInRow = false,
-                                mediaHost = mediaHost,
-                                mediaOffsetProvider = mediaOffsetProvider,
-                                modifier =
-                                    Modifier.thenIf(
-                                            MediaContentPicker.shouldElevateMedia(layoutState)
-                                        ) {
-                                            Modifier.zIndex(1f)
-                                        }
-                                        .padding(
-                                            horizontal =
-                                                dimensionResource(id = R.dimen.qs_horizontal_margin)
-                                        ),
-                                carouselController = mediaCarouselController,
-                                isQsEnabled = viewModel.isQsEnabled,
-                                isInSplitShade = true,
-                            )
+                            Element(QS.rootElementKey, Modifier) {
+                                Column {
+                                    Box(
+                                        Modifier.weight(1f)
+                                            .sysuiResTag("expanded_qs_scroll_view")
+                                            .verticalScroll(rememberScrollState())
+                                            .wrapContentHeight(
+                                                align = Alignment.Top,
+                                                unbounded = true,
+                                            )
+                                    ) {
+                                        QuickSettingsContent(
+                                            qsContainerViewModel,
+                                            mediaInRow = false,
+                                        )
+                                    }
+                                    FooterActionsWithAnimatedVisibility(
+                                        viewModel = footerActionsViewModel,
+                                        isCustomizing = false,
+                                        customizingAnimationDuration = 0,
+                                        lifecycleOwner = lifecycleOwner,
+                                        modifier =
+                                            Modifier.align(Alignment.CenterHorizontally)
+                                                .sysuiResTag("qs_footer_actions"),
+                                    )
+                                }
+                            }
                         }
-                        FooterActionsWithAnimatedVisibility(
-                            viewModel = footerActionsViewModel,
-                            isCustomizing = isCustomizing,
-                            customizingAnimationDuration = customizingAnimationDuration,
-                            lifecycleOwner = lifecycleOwner,
-                            modifier =
-                                Modifier.align(Alignment.CenterHorizontally)
-                                    .sysuiResTag("qs_footer_actions")
-                                    .then(brightnessMirrorShowingModifier),
-                        )
+
+                        scene(Edit) {
+                            Element(Edit.rootElementKey, Modifier) {
+                                GridAnchor()
+                                EditMode(
+                                    qsContainerViewModel.editModeViewModel,
+                                    Modifier.testTag("edit_mode_scene")
+                                        .padding(horizontal = QuickSettingsShade.Dimensions.Padding),
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -554,47 +512,15 @@ private fun ContentScope.SplitShade(
                     onEmptySpaceClick =
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
                     modifier =
-                        Modifier.weight(1f)
+                        Modifier.weight(weight = 1f)
                             .fillMaxHeight()
                             .padding(
                                 end =
                                     dimensionResource(R.dimen.notification_panel_margin_horizontal),
                                 bottom = navBarBottomHeight,
-                            )
-                            .then(brightnessMirrorShowingModifier),
+                            ),
                 )
             }
         }
     }
-}
-
-@Composable
-private fun ContentScope.ShadeMediaCarousel(
-    isVisible: Boolean,
-    isInRow: Boolean,
-    mediaHost: MediaHost,
-    carouselController: MediaCarouselController,
-    mediaOffsetProvider: ShadeMediaOffsetProvider,
-    isInSplitShade: Boolean,
-    isQsEnabled: Boolean,
-    modifier: Modifier = Modifier,
-    usingCollapsedLandscapeMedia: Boolean = false,
-) {
-    if (!isQsEnabled) {
-        return
-    }
-    MediaCarousel(
-        modifier = modifier.fillMaxWidth(),
-        isVisible = isVisible,
-        mediaHost = mediaHost,
-        carouselController = carouselController,
-        offsetProvider =
-            if (isInRow || MediaContentPicker.shouldElevateMedia(layoutState)) {
-                null
-            } else {
-                { mediaOffsetProvider.offset }
-            },
-        usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
-        isInSplitShade = isInSplitShade,
-    )
 }

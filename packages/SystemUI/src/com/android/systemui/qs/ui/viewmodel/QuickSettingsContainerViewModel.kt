@@ -74,6 +74,9 @@ constructor(
                 },
         )
 
+    val isEditing by
+        hydrator.hydratedStateOf(source = editModeViewModel.isEditing, traceName = "isEditing")
+
     val brightnessSliderViewModel =
         brightnessSliderViewModelFactory.create(supportsBrightnessMirroring)
 

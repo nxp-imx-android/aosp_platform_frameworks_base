@@ -317,7 +317,6 @@ constructor(
                         setOf(
                             Scenes.Shade,
                             Scenes.QuickSettings,
-                            Scenes.QSEditMode,
                             Overlays.NotificationsShade,
                             Overlays.QuickSettingsShade,
                         )

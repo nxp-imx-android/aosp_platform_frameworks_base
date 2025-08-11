@@ -35,12 +35,11 @@ import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.qs.panels.domain.interactor.TileSquishinessInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.QuickQuickSettingsViewModel
-import com.android.systemui.qs.ui.adapter.QSSceneAdapter
+import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.settings.brightness.ui.viewModel.BrightnessMirrorViewModel
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
@@ -67,10 +66,9 @@ class ShadeSceneContentViewModel
 @AssistedInject
 constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
-    val qsSceneAdapter: QSSceneAdapter,
+    val qsContainerViewModelFactory: QuickSettingsContainerViewModel.Factory,
     val quickQuickSettingsViewModel: QuickQuickSettingsViewModel.Factory,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
-    val brightnessMirrorViewModelFactory: BrightnessMirrorViewModel.Factory,
     val mediaCarouselInteractor: MediaCarouselInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     val mediaViewModelFactory: MediaViewModel.Factory,
