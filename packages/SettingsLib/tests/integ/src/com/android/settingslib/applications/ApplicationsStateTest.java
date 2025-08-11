@@ -318,7 +318,6 @@ public class ApplicationsStateTest {
 
     @Test
     public void testEnabledFilterNotQuietRejectsInstantApp() {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE);
         mEntry.info.enabled = true;
         assertThat(ApplicationsState.FILTER_ENABLED_NOT_QUIET.filterApp(mEntry)).isTrue();
         when(mEntry.info.isInstantApp()).thenReturn(true);
