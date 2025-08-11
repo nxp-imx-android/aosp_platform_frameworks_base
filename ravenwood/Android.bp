@@ -351,6 +351,7 @@ filegroup {
         ":ravenwood-services.core-platform-compat-config",
         ":system-build.prop",
         "texts/ravenwood-build.prop",
+        "texts/ravenwood-classpath.txt",
     ],
     device_first_srcs: [
         ":apex_icu.dat",
@@ -576,106 +577,27 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
-// JARs in "ravenwood-runtime" are set to the classpath, sorted alphabetically.
-// Rename some of the dependencies to make sure they're included in the intended order.
-
-java_import {
-    name: "100-framework-minus-apex.ravenwood",
-    jars: [":framework-minus-apex.ravenwood"],
-    visibility: ["//visibility:private"],
-}
-
-java_import {
-    name: "200-kxml2-android",
-    jars: [":kxml2-android"],
-    visibility: ["//visibility:private"],
-}
-
-java_import {
-    name: "200-json-prebuilt",
-    jars: [":json-prebuilt"],
-    visibility: ["//visibility:private"],
-}
-
-java_import {
-    name: "z00-50-framework-updatable-stubs-module_libs_api",
-    jars: [":framework-updatable-stubs-module_libs_api-for-host"],
-    visibility: ["//visibility:private"],
-}
-
-java_import {
-    name: "z00-all-updatable-modules-system-stubs",
-    jars: [":all-updatable-modules-system-stubs-for-host"],
-    visibility: ["//visibility:private"],
-}
-
-// We add empty jar files with specific names to overwrite stale jar files
-// that should be removed from ravenwood-runtime.
-// We need them until CleanSpec.mk gets fixed.
-//
-// TODO(b/418236847) Once CleanSpec.mk is fixed, delete the following
-// empty jars and instead delete the whole ravenwood-runtime/ directory,
-// using f/b/CleanSpec.mk.
-
-java_defaults {
-    name: "ravenwood-empty-jar",
-    installable: false,
-    sdk_version: "core_current",
-    visibility: ["//visibility:private"],
-}
-
-java_library {
-    name: "ravenwood-empty-framework-minus-apex.ravenwood",
-    stem: "framework-minus-apex.ravenwood",
-    defaults: ["ravenwood-empty-jar"],
-}
-
-java_library {
-    name: "ravenwood-empty-kxml2-android",
-    stem: "kxml2-android",
-    defaults: ["ravenwood-empty-jar"],
-}
-
-java_library {
-    name: "ravenwood-empty-helper-runtime",
-    stem: "ravenwood-helper-runtime",
-    defaults: ["ravenwood-empty-jar"],
-}
-
 android_ravenwood_libgroup {
     name: "ravenwood-runtime",
     data: [":ravenwood-data"],
     fonts: [":ravenwood-fonts"],
     libs: [
-        "100-framework-minus-apex.ravenwood",
-        "200-kxml2-android",
-        "200-json-prebuilt",
+        // The libraries listed here should be in sync with texts/ravenwood-classpath.txt.
+        // ravenwood-classpath.txt determines the order of the jar files in the classpath.
+        "framework-minus-apex.ravenwood",
+        "kxml2-android",
+        "json-prebuilt",
         "ext-ravenwood",
-
         "android.test.mock.ravenwood",
         "hoststubgen-helper-runtime",
-
-        // Note, when we include other services.* jars, we'll need to add
-        // platform_compat_config for that module too.
-        // See ravenwood-services.core-platform-compat-config above.
         "services.core.ravenwood-jarjar",
         "services.fakes.ravenwood-jarjar",
-
-        // ICU
         "core-icu4j-for-host.ravenwood",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",
-
-        // DeviceConfig
         "framework-configinfrastructure.ravenwood",
-
-        // StatsD
         "framework-statsd.ravenwood",
-
-        // Graphics
         "framework-graphics.ravenwood",
-
-        // Provide runtime versions of utils linked in below
         "junit",
         "truth",
         "flag-junit",
@@ -683,33 +605,8 @@ android_ravenwood_libgroup {
         "ravenwood-junit-impl",
         "mockito-ravenwood-prebuilt",
         "inline-mockito-ravenwood-prebuilt",
-
-        // Below are the mainline API stubs. We put them after the test jar in the
-        // classpath so that the test jar can include its own, non-stub version
-        // of mainline classes.
-
-        // System API stubs including @SystemApi(MODULE_LIBRARIES),
-        // but it doesn't contain libcore APIs, which are included in
-        // all-updatable-modules-system-stubs.
-        //
-        // We want this one before z00-all-updatable-modules-system-stubs
-        // in the alphabetical order, but unfortunately CleanSpec.mk may
-        // not be working now, so we can't rename it.
-        // So for now, let's just use this ugly name...
-        "z00-50-framework-updatable-stubs-module_libs_api",
-
-        // System API stubs from all mainline modules, including ART,
-        // so it contains classes in libcore (including libcore.*, dalvik.*,
-        // android.system.*, java.*, org.xml, ...)
-        // (It doesn't contain @SystemApi(MODULE_LIBRARIES) APIs, which are
-        // covered in framework-updatable-stubs-module_libs_api. Libcore
-        // doesn't have MODULE_LIBRARIES APIs.)
-        "z00-all-updatable-modules-system-stubs",
-
-        // Empty jars to overwrite stale jars in ravenwood-runtime.
-        "ravenwood-empty-framework-minus-apex.ravenwood",
-        "ravenwood-empty-kxml2-android",
-        "ravenwood-empty-helper-runtime",
+        "framework-updatable-stubs-module_libs_api-for-host",
+        "all-updatable-modules-system-stubs-for-host",
     ],
     jni_libs: [
         // Libraries has to be loaded in the following order
