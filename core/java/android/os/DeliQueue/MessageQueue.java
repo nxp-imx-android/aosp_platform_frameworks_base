@@ -316,8 +316,8 @@ public final class MessageQueue {
                 newWaitState = WaitState.incrementCounter(waitState);
             } else {
                 final long TSmillis = WaitState.getTSMillis(waitState);
-
-                if (msg.when < TSmillis) {
+                if (msg.when < TSmillis
+                        && (!WaitState.hasSyncBarrier(waitState) || msg.isAsynchronous())) {
                     newWaitState = WaitState.initCounter();
                     needWake = true;
                 } else {
@@ -415,6 +415,7 @@ public final class MessageQueue {
             */
             Message next = null;
 
+            boolean waitingOnSyncBarrier = false;
             /*
             * If we have a barrier we should return the async node (if it exists and is ready)
             */
@@ -422,6 +423,7 @@ public final class MessageQueue {
                 if (asyncMsg != null && (returnEarliest || now >= asyncMsg.when)) {
                     found = asyncMsg;
                 } else {
+                    waitingOnSyncBarrier = true;
                     next = asyncMsg;
                 }
             } else { /* No barrier. */
@@ -512,11 +514,9 @@ public final class MessageQueue {
             /*
              * Try to swap waitstate back from a counter to a deadline. If we can't then that means
              * the counter was incremented and we need to loop back to pick up any new items.
-             *
-             * TODO: Encode sync barrier state here
              */
             if (!sWaitState.compareAndSet(this, oldWaitState,
-                    WaitState.composeDeadline(nextDeadline, false))) {
+                    WaitState.composeDeadline(nextDeadline, waitingOnSyncBarrier))) {
                 continue;
             }
             if (found != null || nextDeadline != 0) {
@@ -744,27 +744,31 @@ public final class MessageQueue {
                     + " barrier token has not been posted or has already been removed.");
         }
 
-        if (Thread.currentThread() != mLooperThread) {
-            boolean needWake;
-            while (true) {
-                long waitState = mWaitState;
-                long newWaitState;
+        boolean needWake;
+        while (true) {
+            long waitState = mWaitState;
+            long newWaitState;
 
-                if (WaitState.isCounter(waitState)) {
-                    newWaitState = WaitState.incrementCounter(waitState);
-                    needWake = false;
-                } else {
-                    newWaitState = WaitState.initCounter();
-                    needWake = true;
-                }
-                if (sWaitState.compareAndSet(this, waitState, newWaitState)) {
-                    break;
-                }
+            if (WaitState.isCounter(waitState)) {
+                // Thread is already awake and processing messages
+                newWaitState = WaitState.incrementCounter(waitState);
+                needWake = false;
+            } else if (!WaitState.hasSyncBarrier(waitState)) {
+                // Thread is asleep but not waiting on sync barrier
+                newWaitState = WaitState.incrementDeadline(waitState);
+                needWake = false;
+            } else {
+                // Thread is asleep, wake up
+                newWaitState = WaitState.initCounter();
+                needWake = true;
             }
-            if (needWake) {
-                // Wake up next() in case it was sleeping on this barrier.
-                concurrentWake();
+            if (sWaitState.compareAndSet(this, waitState, newWaitState)) {
+                break;
             }
+        }
+        if (needWake) {
+            // Wake up next() in case it was sleeping on this barrier.
+            concurrentWake();
         }
     }
 
