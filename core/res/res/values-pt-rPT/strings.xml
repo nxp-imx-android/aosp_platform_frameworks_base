@@ -1129,8 +1129,7 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Desbloqueio do SIM através de PIN."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Desbloqueio do PUK do SIM."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Desbloqueio através de palavra-passe."</string>
-    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
-    <skip />
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"Desbloqueio biométrico para bloquear o dispositivo de forma segura."</string>
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Área da sequência."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Área de deslize."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
