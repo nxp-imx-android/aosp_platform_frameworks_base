@@ -237,13 +237,40 @@ import java.util.concurrent.ThreadLocalRandom;
         mBroadcastProfile.startBroadcast(settings);
     }
 
-    /** Stops the broadcast. */
+    /** Stops the broadcast */
     public synchronized void stopBroadcast() {
-        if (mBroadcastProfile != null) {
-            mBroadcastProfile.stopBroadcast(mBroadcastId);
-        } else {
+        if (mBroadcastProfile == null) {
             Slog.e(TAG, "Fail to stop broadcast, LeBroadcast is null");
+            return;
         }
+        mBroadcastProfile.stopBroadcast(mBroadcastId);
+    }
+
+    /**
+     * Stops the broadcast, optionally making a new BT device active.
+     *
+     * <p>This method is expected to use this ID to determine which unicast fallback group should be
+     * set the broadcast stops.
+     *
+     * @param routeId id of the bluetooth route that should become active once the broadcast stops,
+     *     or null if no BT route should become active once broadcast stops.
+     */
+    public synchronized void stopBroadcast(@Nullable String routeId) {
+        if (mBroadcastProfile == null) {
+            Slog.e(TAG, "Fail to stop broadcast, LeBroadcast is null");
+            return;
+        }
+        if (routeId == null) {
+            if (mLeAudioProfile == null) {
+                Slog.e(TAG, "Fail to set fall back group, LeProfile is null");
+            } else {
+                // TODO: b/430200199 - Map the route id to group id if not null, so that
+                // the target BT route becomes active.
+                mLeAudioProfile.setBroadcastToUnicastFallbackGroup(
+                        BluetoothLeAudio.GROUP_ID_INVALID);
+            }
+        }
+        mBroadcastProfile.stopBroadcast(mBroadcastId);
     }
 
     /**
