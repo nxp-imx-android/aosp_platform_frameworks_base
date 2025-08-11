@@ -23,10 +23,11 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.accessibilityRepository
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.fakeVolumeDialogController
 import com.android.systemui.res.R
@@ -38,9 +39,6 @@ import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityMod
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -64,123 +62,100 @@ class VolumeDialogVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     fun testShowRequest_visible() =
-        with(kosmos) {
-            testScope.runTest {
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                runCurrent()
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+        kosmos.runTest {
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                assertThat(visibilityModel!!)
-                    .isEqualTo(
-                        VolumeDialogVisibilityModel.Visible(
-                            Events.SHOW_REASON_VOLUME_CHANGED,
-                            false,
-                            ActivityManager.LOCK_TASK_MODE_LOCKED,
-                        )
+            assertThat(visibilityModel!!)
+                .isEqualTo(
+                    VolumeDialogVisibilityModel.Visible(
+                        Events.SHOW_REASON_VOLUME_CHANGED,
+                        false,
+                        ActivityManager.LOCK_TASK_MODE_LOCKED,
                     )
-            }
+                )
         }
 
     @Test
     fun testDismissRequest_dismissed() =
-        with(kosmos) {
-            testScope.runTest {
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                runCurrent()
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+        kosmos.runTest {
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                fakeVolumeDialogController.onDismissRequested(Events.DISMISS_REASON_SCREEN_OFF)
-                runCurrent()
+            fakeVolumeDialogController.onDismissRequested(Events.DISMISS_REASON_SCREEN_OFF)
 
-                assertThat(visibilityModel!!)
-                    .isEqualTo(
-                        VolumeDialogVisibilityModel.Dismissed(Events.DISMISS_REASON_SCREEN_OFF)
-                    )
-            }
+            assertThat(visibilityModel!!)
+                .isEqualTo(VolumeDialogVisibilityModel.Dismissed(Events.DISMISS_REASON_SCREEN_OFF))
         }
 
     @Test
     fun testTimeout_dismissed() =
-        with(kosmos) {
-            testScope.runTest {
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                runCurrent()
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+        kosmos.runTest {
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                advanceTimeBy(1.days)
+            advanceTimeBy(1.days)
 
-                assertThat(visibilityModel!!)
-                    .isEqualTo(VolumeDialogVisibilityModel.Dismissed(Events.DISMISS_REASON_TIMEOUT))
-            }
+            assertThat(visibilityModel!!)
+                .isEqualTo(VolumeDialogVisibilityModel.Dismissed(Events.DISMISS_REASON_TIMEOUT))
         }
 
     @Test
     fun testResetTimeoutInterruptsEvents() =
-        with(kosmos) {
-            testScope.runTest {
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                runCurrent()
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+        kosmos.runTest {
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                advanceTimeBy(dialogTimeoutDuration / 2)
-                underTest.resetDismissTimeout()
-                advanceTimeBy(dialogTimeoutDuration / 2)
-                underTest.resetDismissTimeout()
-                advanceTimeBy(dialogTimeoutDuration / 2)
+            advanceTimeBy(dialogTimeoutDuration / 2)
+            underTest.resetDismissTimeout()
+            advanceTimeBy(dialogTimeoutDuration / 2)
+            underTest.resetDismissTimeout()
+            advanceTimeBy(dialogTimeoutDuration / 2)
 
-                assertThat(visibilityModel)
-                    .isInstanceOf(VolumeDialogVisibilityModel.Visible::class.java)
-                assertThat(fakeVolumeDialogController.hasUserActivity).isTrue()
-            }
+            assertThat(visibilityModel)
+                .isInstanceOf(VolumeDialogVisibilityModel.Visible::class.java)
+            assertThat(fakeVolumeDialogController.hasUserActivity).isTrue()
         }
 
     @Test
     @EnableSceneContainer
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
     fun testShowRequest_whenQsSliderFeatureEnabledAndQsNotExpanded_dialogVisible() {
-        with(kosmos) {
-            testScope.runTest {
-                overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                shadeTestUtil.setQsExpansion(0f)
-                runCurrent()
+        kosmos.runTest {
+            overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            shadeTestUtil.setQsExpansion(0f)
 
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                assertThat(visibilityModel!!)
-                    .isEqualTo(
-                        VolumeDialogVisibilityModel.Visible(
-                            Events.SHOW_REASON_VOLUME_CHANGED,
-                            false,
-                            ActivityManager.LOCK_TASK_MODE_LOCKED,
-                        )
+            assertThat(visibilityModel!!)
+                .isEqualTo(
+                    VolumeDialogVisibilityModel.Visible(
+                        Events.SHOW_REASON_VOLUME_CHANGED,
+                        false,
+                        ActivityManager.LOCK_TASK_MODE_LOCKED,
                     )
-            }
+                )
         }
     }
 
@@ -188,22 +163,18 @@ class VolumeDialogVisibilityInteractorTest : SysuiTestCase() {
     @EnableSceneContainer
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
     fun testShowRequest_whenQsSliderFeatureEnabledAndQsExpanded_dialogInvisible() {
-        with(kosmos) {
-            testScope.runTest {
-                overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                shadeTestUtil.setQsExpansion(1f)
-                runCurrent()
+        kosmos.runTest {
+            overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            shadeTestUtil.setQsExpansion(1f)
 
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                assertThat(visibilityModel!!).isEqualTo(VolumeDialogVisibilityModel.Invisible)
-            }
+            assertThat(visibilityModel!!).isEqualTo(VolumeDialogVisibilityModel.Invisible)
         }
     }
 
@@ -211,30 +182,25 @@ class VolumeDialogVisibilityInteractorTest : SysuiTestCase() {
     @EnableSceneContainer
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
     fun testShowRequest_whenQsSliderFeatureEnabledAndQsBecomesExpanded_dialogDismissed() {
-        with(kosmos) {
-            testScope.runTest {
-                overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
-                val visibilityModel by collectLastValue(underTest.dialogVisibility)
-                shadeTestUtil.setQsExpansion(0f)
-                runCurrent()
+        kosmos.runTest {
+            overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
+            val visibilityModel by collectLastValue(underTest.dialogVisibility)
+            shadeTestUtil.setQsExpansion(0f)
 
-                fakeVolumeDialogController.onShowRequested(
-                    Events.SHOW_REASON_VOLUME_CHANGED,
-                    false,
-                    ActivityManager.LOCK_TASK_MODE_LOCKED,
-                )
-                runCurrent()
+            fakeVolumeDialogController.onShowRequested(
+                Events.SHOW_REASON_VOLUME_CHANGED,
+                false,
+                ActivityManager.LOCK_TASK_MODE_LOCKED,
+            )
 
-                shadeTestUtil.setQsExpansion(1f)
-                runCurrent()
+            shadeTestUtil.setQsExpansion(1f)
 
-                assertThat(visibilityModel!!)
-                    .isEqualTo(
-                        VolumeDialogVisibilityModel.Dismissed(
-                            Events.DISMISS_REASON_QUICK_SETTINGS_EXPANDED
-                        )
+            assertThat(visibilityModel!!)
+                .isEqualTo(
+                    VolumeDialogVisibilityModel.Dismissed(
+                        Events.DISMISS_REASON_QUICK_SETTINGS_EXPANDED
                     )
-            }
+                )
         }
     }
 }
