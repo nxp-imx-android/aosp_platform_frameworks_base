@@ -23,7 +23,6 @@ import android.app.WallpaperManager
 import android.content.res.Resources
 import android.graphics.Matrix
 import android.graphics.Rect
-import android.hardware.devicestate.DeviceStateManager
 import android.os.DeadObjectException
 import android.os.Handler
 import android.os.PowerManager
@@ -55,7 +54,6 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.util.Utils.isDeviceFoldable
 import dagger.Lazy
 import javax.inject.Inject
 
@@ -166,7 +164,6 @@ constructor(
     private val notificationShadeWindowController: NotificationShadeWindowController,
     private val powerManager: PowerManager,
     private val wallpaperManager: WallpaperManager,
-    private val deviceStateManager: DeviceStateManager,
 ) : KeyguardStateController.Callback, ISysuiUnlockAnimationController.Stub() {
 
     interface KeyguardUnlockAnimationListener {
@@ -482,7 +479,6 @@ constructor(
                 "${!notificationShadeWindowController.isLaunchingActivity}",
         )
         Log.wtf(TAG, "  launcherUnlockController != null: ${launcherUnlockController != null}")
-        Log.wtf(TAG, "  !isFoldable(context): ${!isDeviceFoldable(resources, deviceStateManager)}")
     }
 
     /**
