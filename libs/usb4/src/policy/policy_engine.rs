@@ -19,7 +19,7 @@
 //! The `PolicyEngine` struct is the primary entry point for consumers of this
 //! crate. It encapsulates the `PciAuthorizer`.
 
-use crate::common::TunnelControl;
+use crate::common::{TunnelControl, UserId};
 use crate::pci_authorizer::PciAuthorizer;
 use tokio::runtime::Runtime;
 
@@ -64,7 +64,7 @@ impl TunnelControl for PolicyEngine {
     }
 
     /// Notifies the engine of a user login or logout event.
-    fn update_logged_in_state(&mut self, logged_in: bool, user_id: usize) {
+    fn update_logged_in_state(&mut self, logged_in: bool, user_id: UserId) {
         self.pci_authorizer.update_logged_in_state(logged_in, user_id);
     }
 }

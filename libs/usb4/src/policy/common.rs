@@ -18,6 +18,10 @@
 
 use std::collections::HashSet;
 
+/// Newtype to hold user ids.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct UserId(pub usize);
+
 /// Holds the live state variables that determine the authorization policy.
 pub struct PolicySourceData {
     /// A flag indicating if the PCI tunneling feature is globally enabled.
@@ -25,7 +29,7 @@ pub struct PolicySourceData {
     /// A flag indicating if the user's screen is currently locked.
     pub is_locked: bool,
     /// A set tracking the IDs of all currently logged-in users.
-    pub logged_in_users: HashSet<usize>,
+    pub logged_in_users: HashSet<UserId>,
 }
 
 impl PolicySourceData {
@@ -56,5 +60,5 @@ pub trait TunnelControl {
     fn update_lock_state(&mut self, locked: bool);
 
     /// Notifies the engine of a user login or logout event.
-    fn update_logged_in_state(&mut self, logged_in: bool, user_id: usize);
+    fn update_logged_in_state(&mut self, logged_in: bool, user_id: UserId);
 }

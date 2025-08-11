@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::common::{PolicySourceData, TunnelControl};
+use crate::common::{PolicySourceData, TunnelControl, UserId};
 use crate::sysfs::SysfsUtils;
 use anyhow::Result;
 use kobject_uevent::ActionType;
@@ -43,7 +43,7 @@ pub enum PciAuthState {
 enum PciServiceEvent {
     EnablePciTunnels(bool),
     UpdateLockState(bool),
-    UpdateLoggedInState { logged_in: bool, user_id: usize },
+    UpdateLoggedInState { logged_in: bool, user_id: UserId },
     Shutdown,
 }
 
@@ -229,7 +229,7 @@ impl TunnelControl for PciAuthorizer {
         self.send_event(PciServiceEvent::UpdateLockState(locked));
     }
 
-    fn update_logged_in_state(&mut self, logged_in: bool, user_id: usize) {
+    fn update_logged_in_state(&mut self, logged_in: bool, user_id: UserId) {
         self.send_event(PciServiceEvent::UpdateLoggedInState { logged_in, user_id });
     }
 }

@@ -18,7 +18,10 @@ use jni::sys::{jboolean, jint};
 use jni::JNIEnv;
 use log::trace;
 use std::sync::{Arc, LazyLock, Mutex};
-use usb4_policies::{common::TunnelControl, policy_engine::PolicyEngine};
+use usb4_policies::{
+    common::{TunnelControl, UserId},
+    policy_engine::PolicyEngine,
+};
 
 // Singleton of PolicyEngine to use for JNI. Will get created on first use.
 static POLICY_ENGINE: LazyLock<Arc<Mutex<PolicyEngine>>> =
@@ -75,5 +78,5 @@ pub extern "system" fn Java_com_android_server_usb_Usb4Manager_updateLoggedInSta
 ) {
     trace!("updateLoggedInstate with {} = {}", user_id as usize, logged_in != 0);
     let mut engine = POLICY_ENGINE.lock().unwrap();
-    engine.update_logged_in_state(logged_in != 0, user_id as usize);
+    engine.update_logged_in_state(logged_in != 0, UserId(user_id as usize));
 }
