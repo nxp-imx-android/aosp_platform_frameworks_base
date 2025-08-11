@@ -33,8 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 
@@ -53,14 +51,14 @@ fun LockscreenTouchHandling(
         modifier =
             modifier
                 .pointerInput(viewModel.isLongPressHandlingEnabled) {
-                    if (viewModel.isLongPressHandlingEnabled) {
-                        detectLongPressGesture { viewModel.onLongPress(isA11yAction = false) }
-                    }
-                }
-                .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = { viewModel.onClick(it.x, it.y) },
                         onDoubleTap = { viewModel.onDoubleClick() },
+                        onLongPress = {
+                            if (viewModel.isLongPressHandlingEnabled) {
+                                viewModel.onLongPress(isA11yAction = false)
+                            }
+                        },
                     )
                 }
                 .pointerInput(settingsMenuBounds) {
