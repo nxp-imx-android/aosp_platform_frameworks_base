@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"녹화"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"공유"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"화면 공유 중"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"콘텐츠 공유"</string>
@@ -202,10 +201,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR 코드 스캐너"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"잠금 해제됨"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"기기 잠김"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"확인 및 기기 잠금을 해제합니다."</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"얼굴 인식 잠금 해제를 다시 시도해 주세요."</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"얼굴 스캔 중"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"보내기"</string>
     <string name="cancel" msgid="1089011503403416730">"취소"</string>
@@ -226,13 +223,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"인증됨"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"인증 취소"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"옵션 더보기"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"옵션 더보기"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"다른 방법으로 인증"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"본인 확인 관리"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"본인 확인이 사용 설정되어 있으며 생체 인식이 필요하므로 PIN을 사용하여 인증할 수 없습니다. 본인 확인 자세히 알아보기"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"본인 확인이 사용 설정되어 있어 생체 인식이 필요하므로 패턴을 사용하여 인증할 수 없습니다. 본인 확인에 대해 자세히 알아보기"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"본인 확인이 사용 설정되어 있어 생체 인식이 필요하므로 비밀번호를 사용하여 인증할 수 없습니다. 본인 확인에 대해 자세히 알아보기"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"위험 평가 중..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"사용할 수 없음"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN 사용"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"패턴 사용"</string>
@@ -541,8 +541,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"위로 스와이프하여 열기"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"기기를 열려면 잠금 해제 아이콘을 누르세요."</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"얼굴 인식으로 잠금 해제되었습니다. 위로 스와이프하여 여세요."</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"얼굴 인식으로 잠금 해제되었습니다. 계속하려면 확인을 누르세요."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"얼굴 인식으로 잠금 해제되었습니다. 기기를 열려면 잠금 해제 아이콘을 누르세요."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"얼굴 인식으로 잠금 해제되었습니다. 열려면 누르세요."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"얼굴이 인식되었습니다. 열려면 누르세요."</string>
@@ -782,14 +781,14 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"벨소리가 음소거되어 있으므로 사용할 수 없음"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"방해 금지 모드로 설정되어 있어 사용할 수 없음"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"방해 금지 모드로 설정되어 있어 사용할 수 없음"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"<xliff:g id="MODE">%s</xliff:g> 모드가 사용 설정되어 있어 사용할 수 없음"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"<xliff:g id="MODE">%s</xliff:g>가 사용 설정되어 있어 사용할 수 없음"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"사용할 수 없음"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. 탭하여 음소거를 해제하세요."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s. 탭하여 진동으로 설정하세요. 접근성 서비스가 음소거될 수 있습니다."</string>
     <string name="volume_stream_content_description_mute" msgid="4079046784917920984">"%1$s. 탭하여 음소거로 설정하세요. 접근성 서비스가 음소거될 수 있습니다."</string>
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s. 탭하여 진동으로 설정하세요."</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s. 탭하여 음소거로 설정하세요."</string>
-    <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"소음 제어"</string>
+    <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"노이즈 제어"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"공간 음향"</string>
     <string name="volume_panel_spatial_audio_off" msgid="4177490084606772989">"사용 안함"</string>
     <string name="volume_panel_spatial_audio_fixed" msgid="3136080137827746046">"고정됨"</string>
@@ -994,7 +993,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"앱이 오른쪽에 오도록 화면 분할 사용"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"앱이 왼쪽에 오도록 화면 분할 사용"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"전체 화면 사용"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"데스크톱 창 사용"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"데스크톱 창 모드 사용"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"화면 분할을 사용하는 중에 오른쪽 또는 아래쪽에 있는 앱으로 전환"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"화면 분할을 사용하는 중에 왼쪽 또는 위쪽에 있는 앱으로 전환하기"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"화면 분할 중: 다른 앱으로 바꾸기"</string>

@@ -142,14 +142,10 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"মাইক্রোফোন দিয়ে রেকর্ড করুন"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"স্পর্শ করা সংক্রান্ত সেটিং দেখুন"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"রেকর্ড করার জন্য অ্যাপ বেছে নিন"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
-    <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
-    <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
-    <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"ভিডিও সেভ করা হয়েছে"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"আবার রেকর্ড করুন"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"এডিট করুন"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"মুছুন"</string>
     <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
     <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
@@ -157,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"রেকর্ড করুন"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"শেয়ার করুন"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"স্ক্রিন শেয়ার করা হচ্ছে"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"কন্টেন্ট শেয়ার করা হচ্ছে"</string>
@@ -230,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"প্রমাণীকৃত"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"যাচাইকরণ বাতিল করুন"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"আরও বিকল্প"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"আরও বিকল্প"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"অন্যভাবে যাচাই করান"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"পরিচয় যাচাই ম্যানেজ করুন"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"পরিচয় যাচাইকরণের জন্য পিন ব্যবহার করা যাবে না কারণ পরিচয় যাচাইকরণের সুবিধা চালু আছে। এর জন্য বায়োমেট্রিক্স যাচাইকরণ প্রয়োজন আছে। পরিচয় যাচাইকরণ সম্পর্কে আরও জানুন"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"পরিচয় যাচাই করার ফিচার চালু আছে বলে যাচাইকরণের জন্য প্যাটার্ন ব্যবহার করা যাবে না। এর জন্য বায়োমেট্রিক্স প্রয়োজন। পরিচয় যাচাই সম্পর্কে আরও জানুন"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"পরিচয় যাচাই করার ফিচার চালু আছে বলে যাচাইকরণের জন্য পাসওয়ার্ড ব্যবহার করা যাবে না। এর জন্য বায়োমেট্রিক্স প্রয়োজন। পরিচয় যাচাই সম্পর্কে আরও জানুন"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"ঝুঁকির মূল্যায়ন করা হচ্ছে..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"উপলভ্য নেই"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"পিন ব্যবহার করুন"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"প্যাটার্ন ব্যবহার করুন"</string>
@@ -521,7 +519,7 @@
     <string name="sensor_privacy_htt_blocked_dialog_content" msgid="3333321592997666441">"মাইক্রোফোনের বোতাম ব্যবহার করতে, সেটিংস থেকে মাইক্রোফোনের অ্যাক্সেস চালু করুন।"</string>
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"সেটিংস খুলুন"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"অন্য ডিভাইস"</string>
-    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"<xliff:g id="DEVICE_NAME">%s</xliff:g>-এ চালান"</string>
+    <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"এতে চালান : <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="media_suggestion_failure_text" msgid="8453022394887613774">"কানেক্ট হচ্ছে না। আবার করুন।"</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"\'এক নজরে\' বৈশিষ্ট্যটি চালু বা বন্ধ করুন"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"মোড"</string>
@@ -1370,10 +1368,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"অন্য ডিভাইসে মিডিয়া সরাতে আপনার শেয়ার করা সেশন বন্ধ করুন"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"বন্ধ করুন"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"শেয়ার করা বন্ধ করুন"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"অডিও শেয়ার করা হচ্ছে"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"অডিও শেয়ার করুন"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"বিল্ড নম্বর"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"বিল্ড নম্বর ক্লিপবোর্ডে কপি করা হয়েছে।"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ক্লিপবোর্ডে কপি করুন।"</string>

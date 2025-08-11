@@ -146,15 +146,11 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ပြန်ရိုက်ရန်"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ပြင်ရန်"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ဖျက်ရန်"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ဖန်သားပြင်တစ်ခုလုံးကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ရွေးထားသောနေရာကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ဖန်သားပြင်ဓာတ်ပုံ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ရုပ်သံဖမ်းရန်"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"မျှဝေရန်"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ဖန်သားပြင်ကို မျှဝေနေသည်"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"အကြောင်းအရာကို မျှဝေနေသည်"</string>
@@ -226,13 +222,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"အထောက်အထားစိစစ်ပြီးပြီ"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"အထောက်အထားစိစစ်ခြင်းကို ပယ်ဖျက်ရန်"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"နောက်ထပ်ရွေးစရာများ"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"နောက်ထပ်ရွေးစရာများ"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"အခြားနည်းဖြင့် အတည်ပြုရန်"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ စီမံရန်"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ ဖွင့်ထားပြီး ဇီဝမက်ထရစ်များ လိုအပ်သောကြောင့် အတည်ပြုခြင်းအတွက် ပင်နံပါတ်ကို သုံး၍မရပါ။ ‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ ကို ပိုလေ့လာရန်"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ ဖွင့်ထားပြီး ဇီဝမက်ထရစ်များ လိုအပ်သောကြောင့် အတည်ပြုခြင်းအတွက် ပုံဖော်ခြင်းကို သုံး၍မရပါ။ ‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ ကို ပိုမိုလေ့လာရန်"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ ဖွင့်ထားပြီး ဇီဝမက်ထရစ်များ လိုအပ်သောကြောင့် အတည်ပြုခြင်းအတွက် စကားဝှက်ကို သုံး၍မရပါ။ ‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ ကို ပိုမိုလေ့လာရန်"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"အန္တရာယ်ကို အကဲဖြတ်နေသည်..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"မရနိုင်ပါ"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ပင်နံပါတ်သုံးရန်"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ပုံစံကို သုံးရန်"</string>
@@ -998,7 +997,7 @@
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"မျက်နှာပြင်ခွဲ၍ပြသခြင်း သုံးစဉ် ညာ (သို့) အောက်ရှိအက်ပ်သို့ ပြောင်းရန်"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"မျက်နှာပြင် ခွဲ၍ပြသခြင်းသုံးစဉ် ဘယ် (သို့) အထက်ရှိအက်ပ်သို့ ပြောင်းရန်"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"မျက်နှာပြင် ခွဲ၍ပြသစဉ်- အက်ပ်တစ်ခုကို နောက်တစ်ခုနှင့် အစားထိုးရန်"</string>
-    <string name="system_multitasking_move_to_next_display" msgid="6169737557526976997">"လက်ရှိဝင်းဒိုးကို ပြကွက်များအကြား ရွှေ့ခြင်း"</string>
+    <string name="system_multitasking_move_to_next_display" msgid="6169737557526976997">"လက်ရှိဝင်းဒိုးကို ပြကွက်များအကြား ရွှေ့ရန်"</string>
     <string name="system_desktop_mode_snap_left_window" msgid="8636204689945162298">"ဝင်းဒိုးကို ဘယ်ဘက်ရွှေ့ရန်"</string>
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ဝင်းဒိုးကို ညာဘက်ရွှေ့ရန်"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ဝင်ဒိုးကို ချဲ့ရန်"</string>
@@ -1024,8 +1023,8 @@
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"ကပ်ခွာကီးများ ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"အနှေးကီးများ ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"အသံဖြင့်ထိန်းချုပ်ခြင်း ပြောင်းရန်"</string>
-    <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Talkback ခလုတ်"</string>
-    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"ချဲ့ခြင်း ခလုတ်"</string>
+    <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Talkback ခလုတ်ပြောင်းရန်"</string>
+    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"ချဲ့ခြင်း ခလုတ်ပြောင်းရန်"</string>
     <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"စကားပြောရွေးခြင်း စတင်ရန်"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"မနှောင့်ယှက်ရ"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"အသံထိန်းချုပ်သည့်ခလုတ် ဖြတ်လမ်း"</string>

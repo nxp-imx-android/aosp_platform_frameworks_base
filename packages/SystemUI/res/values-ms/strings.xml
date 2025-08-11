@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Ambil semula"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Edit"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Padam"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ambil tangkapan skrin seluruh skrin"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Ambil tangkapan skrin kawasan yang dipilih"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Tangkapan skrin"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Rakam"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Kongsi"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
@@ -201,10 +198,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"Pengimbas Kod QR"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Tidak berkunci"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Peranti dikunci"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Sahkan dan buka kunci peranti"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Cuba Buka Kunci Wajah lagi"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Mengimbas wajah"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Hantar"</string>
     <string name="cancel" msgid="1089011503403416730">"Batal"</string>
@@ -225,13 +220,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Disahkan"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Batalkan Pengesahan"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Lagi Pilihan"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Lagi Pilihan"</string>
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Buat pengesahan dengan cara lain"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Buat pengesahan dengan cara lain"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Urus Semakan Identiti"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN tidak boleh digunakan untuk pengesahan kerana Semakan Identiti sudah dihidupkan dan memerlukan biometrik. Ketahui Semakan Identiti dengan lebih lanjut"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Corak tidak boleh digunakan untuk pengesahan kerana Semakan Identiti sudah dihidupkan dan memerlukan biometrik. Ketahui Semakan Identiti dengan lebih lanjut"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Kata laluan tidak boleh digunakan untuk pengesahan kerana Semakan Identiti sudah dihidupkan dan memerlukan biometrik. Ketahui Semakan Identiti dengan lebih lanjut"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Menilai risiko..."</string>
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Ketahui Semakan Identiti dengan lebih lanjut"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Semakan Identiti dihidupkan dan boleh mengesahkan identiti anda hanya dengan cap jari atau wajah anda. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Menilai risiko…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Tidak tersedia"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Gunakan PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Gunakan corak"</string>
@@ -540,8 +534,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Leret ke atas untuk buka"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Tekan ikon buka kunci untuk buka"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Dibuka kunci dengan wajah. Leret ke atas untuk buka."</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Dibuka kunci dengan wajah. Sahkan untuk meneruskan proses."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Dibuka kunci dengan wajah. Tekan ikon buka kunci untuk buka."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Dibuka kunci dengan wajah. Tekan untuk membuka."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Wajah dicam. Tekan untuk membuka."</string>

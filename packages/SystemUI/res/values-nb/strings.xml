@@ -142,14 +142,10 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ta opp med mikrofonen"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Vis berøringer"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Velg en app å ta opp"</string>
-    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
-    <skip />
-    <!-- no translation found for screen_record_retake (3846643688365398450) -->
-    <skip />
-    <!-- no translation found for screen_record_edit (8733014191240769309) -->
-    <skip />
-    <!-- no translation found for screen_record_delete (1023421937978254537) -->
-    <skip />
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoen er lagret"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Ta på nytt"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Endre"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Slett"</string>
     <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
     <skip />
     <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
@@ -157,10 +153,8 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ta opp"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Del"</string>
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deler skjermen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Deler innhold"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vil du slutte å dele skjermen?"</string>
@@ -231,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autentisert"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Avbryt autentisering"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Flere alternativer"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Flere alternativer"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Bekreft på en annen måte"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Administrer identitetssjekken"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN-koden kan ikke brukes til bekreftelse, fordi identitetssjekken er på og krever biometri. Finn ut mer om identitetssjekken"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Mønsteret kan ikke brukes til bekreftelse, fordi identitetssjekken er på og krever biometri. Finn ut mer om identitetssjekken"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Passordet kan ikke brukes til bekreftelse, fordi identitetssjekken er på og krever biometri. Finn ut mer om identitetssjekken"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Vurderer risikoen …"</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Utilgjengelig"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Bruk PIN-kode"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Bruk mønster"</string>
@@ -881,8 +878,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Nå kan du få raske oppsummeringer av lengre samtaler"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Varselsorganiseringen grupperer og demper varsler med lavere prioritet Legg til flere kategorier i innstillingene."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# varsel}other{# varsler}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Ferdig"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Bruk"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Slå av"</string>
@@ -1372,10 +1368,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Stopp den delte økten for å flytte medieinnholdet til en annen enhet"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Stopp"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Slutt å dele"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Deler lyd"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Del lyd"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Delversjonsnummer"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Delversjonsnummeret er kopiert til utklippstavlen."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"Kopier til utklippstavlen."</string>

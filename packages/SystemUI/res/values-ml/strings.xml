@@ -201,10 +201,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"QR കോഡ് സ്കാനർ"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"അൺലോക്ക് ചെയ്തു"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"ഉപകരണം ലോക്ക് ചെയ്തു"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"സ്ഥിരീകരിച്ച്, അൺലോക്ക് ചെയ്യൂ"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"ഫെയ്‌സ് അൺലോക്ക് പരീക്ഷിക്കൂ"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"മുഖം സ്കാൻ ചെയ്യുന്നു"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"അയയ്ക്കുക"</string>
     <string name="cancel" msgid="1089011503403416730">"റദ്ദാക്കുക"</string>
@@ -225,13 +223,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"പരിശോധിച്ചുറപ്പിച്ചു"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"പരിശോധിച്ചുറപ്പിക്കൽ റദ്ദാക്കുക"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"കൂടുതൽ ഓപ്‌ഷനുകൾ"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"കൂടുതൽ ഓപ്‌ഷനുകൾ"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"മറ്റൊരു രീതിയിലൂടെ പരിശോധിച്ചുറപ്പിക്കുക"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ഐഡന്റിറ്റി പരിശോധന മാനേജ് ചെയ്യുക"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ഐഡന്റിറ്റി പരിശോധന ഓണായിരിക്കുന്നതിനാലും ബയോമെട്രിക്സ് ആവശ്യമുള്ളതിനാലും പരിശോധിച്ചുറപ്പിക്കാൻ പിൻ ഉപയോഗിക്കാൻ കഴിയില്ല. ഐഡന്റിറ്റി പരിശോധനയെ കുറിച്ച് കൂടുതലറിയുക"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ഐഡന്റിറ്റി പരിശോധന ഓണായിരിക്കുന്നതിനാലും ബയോമെട്രിക്സ് ആവശ്യമുള്ളതിനാലും പരിശോധിച്ചുറപ്പിക്കാൻ പാറ്റേൺ ഉപയോഗിക്കാൻ കഴിയില്ല. ഐഡന്റിറ്റി പരിശോധനയെ കുറിച്ച് കൂടുതലറിയുക"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ഐഡന്റിറ്റി പരിശോധന ഓണായിരിക്കുന്നതിനാലും ബയോമെട്രിക്സ് ആവശ്യമുള്ളതിനാലും പരിശോധിച്ചുറപ്പിക്കാൻ പാസ്‍വേഡ് ഉപയോഗിക്കാൻ കഴിയില്ല. ഐഡന്റിറ്റി പരിശോധനയെ കുറിച്ച് കൂടുതലറിയുക"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"റിസ്ക് വിലയിരുത്തുന്നു..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"ലഭ്യമല്ല"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"പിൻ ഉപയോഗിക്കുക"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"പാറ്റേൺ ഉപയോഗിക്കുക"</string>
@@ -540,8 +541,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"തുറക്കാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"മുഖം വഴി അൺലോക്കുചെയ്തു. മുകളിലേക്ക് സ്വൈപ്പുചെയ്ത് തുറക്കൂ."</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"ഫെയ്‌സ് ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു. തുടരാൻ സ്ഥിരീകരിക്കുക."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു. തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു. തുറക്കാൻ അമർത്തുക."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"മുഖം തിരിച്ചറിഞ്ഞു. തുറക്കാൻ അമർത്തുക."</string>
