@@ -1107,7 +1107,9 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertThat(lockscreenVisibility).isFalse()
 
             setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
-            assertThat(lockscreenVisibility).isTrue()
+            // Lockscreen remains not visible during the transition so that the unlocked app content
+            // is visible under the light reveal screen off animation.
+            assertThat(lockscreenVisibility).isFalse()
 
             setSceneTransition(Idle(Scenes.Lockscreen))
             sceneInteractor.changeScene(Scenes.Lockscreen, "")
