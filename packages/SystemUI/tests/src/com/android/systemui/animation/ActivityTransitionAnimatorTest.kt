@@ -64,6 +64,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.whenever
 
@@ -83,6 +84,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     @Mock lateinit var callback: ActivityTransitionAnimator.Callback
     @Mock lateinit var listener: ActivityTransitionAnimator.Listener
     @Mock lateinit var iCallback: IRemoteAnimationFinishedCallback
+    @Mock lateinit var transitionHelper: RemoteTransitionHelper
 
     @get:Rule(order = 0) val mockitoRule = MockitoJUnit.rule()
     @get:Rule(order = 1) val activityRule = ActivityScenarioRule(EmptyTestActivity::class.java)
@@ -380,34 +382,54 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 object : DelegateTransitionAnimatorController(createController()) {
                     override val transitionCookie = cookie
                 }
+            val token = mock(IBinder::class.java)
             val info = mock(TransitionInfo::class.java)
             val change =
                 listOf(createChange(mock(SurfaceControl::class.java), cookie, forLaunch = true))
             whenever(info.changes).thenReturn(change)
             val startTransaction = mock(SurfaceControl.Transaction::class.java)
             var finished = false
+            val finishCallback = finishedCallback { finished = true }
 
-            startIntentWithAnimation(controller = controllerWithCookie) { transition ->
-                assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-
-                transition!!
-                    .remoteTransition
-                    .startAnimation(
-                        null,
-                        info,
-                        startTransaction,
-                        finishedCallback { finished = true },
-                    )
-
-                ActivityManager.START_SUCCESS
-            }
+            activityTransitionAnimator
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+                .startAnimation(token, info, startTransaction, finishCallback)
 
             // Need this to make sure that the animation runs until the end before the checks.
             while (!finished) continue
             waitForIdleSync()
-            assertThat(testShellTransitions.remotes).isEmpty()
+            verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
             verify(listener).onTransitionAnimationStart()
             verify(listener).onTransitionAnimationEnd()
+            verify(transitionHelper).cleanUpAnimation(eq(token), any())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionStartAnimationDoesNotAnimate_ifTokenIsNull() {
+        kosmos.runTest {
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie
+                        get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
+                }
+            val info = mock(TransitionInfo::class.java)
+            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            var finished = false
+
+            activityTransitionAnimator
+                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .startAnimation(null, info, startTransaction, finishedCallback { finished = true })
+
+            waitForIdleSync()
+            assertThat(finished).isTrue()
+            verify(listener, never()).onTransitionAnimationStart()
         }
     }
 
@@ -420,27 +442,16 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
+            val token = mock(IBinder::class.java)
             val startTransaction = mock(SurfaceControl.Transaction::class.java)
             var finished = false
 
-            startIntentWithAnimation(controller = controllerWithCookie) { transition ->
-                assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-
-                transition!!
-                    .remoteTransition
-                    .startAnimation(
-                        null,
-                        null,
-                        startTransaction,
-                        finishedCallback { finished = true },
-                    )
-
-                ActivityManager.START_SUCCESS
-            }
+            activityTransitionAnimator
+                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .startAnimation(token, null, startTransaction, finishedCallback { finished = true })
 
             waitForIdleSync()
             assertThat(finished).isTrue()
-            assertThat(testShellTransitions.remotes).isEmpty()
             verify(listener, never()).onTransitionAnimationStart()
         }
     }
@@ -454,22 +465,16 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
+            val token = mock(IBinder::class.java)
             val info = mock(TransitionInfo::class.java)
             var finished = false
 
-            startIntentWithAnimation(controller = controllerWithCookie) { transition ->
-                assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-
-                transition!!
-                    .remoteTransition
-                    .startAnimation(null, info, null, finishedCallback { finished = true })
-
-                ActivityManager.START_SUCCESS
-            }
+            activityTransitionAnimator
+                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .startAnimation(token, info, null, finishedCallback { finished = true })
 
             waitForIdleSync()
             assertThat(finished).isTrue()
-            assertThat(testShellTransitions.remotes).isEmpty()
             verify(listener, never()).onTransitionAnimationStart()
         }
     }
@@ -483,35 +488,66 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 object : DelegateTransitionAnimatorController(createController()) {
                     override val transitionCookie = cookie
                 }
+            val token = mock(IBinder::class.java)
             val info = mock(TransitionInfo::class.java)
             val change =
                 listOf(createChange(mock(SurfaceControl::class.java), cookie, forLaunch = true))
             whenever(info.changes).thenReturn(change)
             val startTransaction = mock(SurfaceControl.Transaction::class.java)
             var finished = false
+            val finishCallback = finishedCallback { finished = true }
 
-            startIntentWithAnimation(controller = controllerWithCookie) { transition ->
-                assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-
-                transition!!
-                    .remoteTransition
-                    .takeOverAnimation(
-                        null,
-                        info,
-                        startTransaction,
-                        finishedCallback { finished = true },
-                        arrayOf(WindowAnimationState()),
-                    )
-
-                ActivityManager.START_SUCCESS
-            }
+            activityTransitionAnimator
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+                .takeOverAnimation(
+                    token,
+                    info,
+                    startTransaction,
+                    finishCallback,
+                    arrayOf(WindowAnimationState()),
+                )
 
             // Need this to make sure that the animation runs until the end before the checks.
             while (!finished) continue
             waitForIdleSync()
-            assertThat(testShellTransitions.remotes).isEmpty()
+            verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
             verify(listener).onTransitionAnimationStart()
             verify(listener).onTransitionAnimationEnd()
+            verify(transitionHelper).cleanUpAnimation(eq(token), any())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionTakeOverAnimationDoesNotAnimate_ifTokenIsNull() {
+        kosmos.runTest {
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie
+                        get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
+                }
+            val info = mock(TransitionInfo::class.java)
+            val startTransaction = mock(SurfaceControl.Transaction::class.java)
+            var finished = false
+
+            activityTransitionAnimator
+                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .takeOverAnimation(
+                    null,
+                    info,
+                    startTransaction,
+                    finishedCallback { finished = true },
+                    emptyArray(),
+                )
+
+            waitForIdleSync()
+            assertThat(finished).isTrue()
+            verify(listener, never()).onTransitionAnimationStart()
         }
     }
 
@@ -524,28 +560,22 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
+            val token = mock(IBinder::class.java)
             val startTransaction = mock(SurfaceControl.Transaction::class.java)
             var finished = false
 
-            startIntentWithAnimation(controller = controllerWithCookie) { transition ->
-                assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-
-                transition!!
-                    .remoteTransition
-                    .takeOverAnimation(
-                        null,
-                        null,
-                        startTransaction,
-                        finishedCallback { finished = true },
-                        emptyArray(),
-                    )
-
-                ActivityManager.START_SUCCESS
-            }
+            activityTransitionAnimator
+                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .takeOverAnimation(
+                    token,
+                    null,
+                    startTransaction,
+                    finishedCallback { finished = true },
+                    emptyArray(),
+                )
 
             waitForIdleSync()
             assertThat(finished).isTrue()
-            assertThat(testShellTransitions.remotes).isEmpty()
             verify(listener, never()).onTransitionAnimationStart()
         }
     }
@@ -559,24 +589,19 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     override val transitionCookie
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
+            val token = mock(IBinder::class.java)
             val info = mock(TransitionInfo::class.java)
             var finished = false
 
-            startIntentWithAnimation(controller = controllerWithCookie) { transition ->
-                assertThat(testShellTransitions.remotes.size).isEqualTo(1)
-
-                transition!!
-                    .remoteTransition
-                    .takeOverAnimation(
-                        null,
-                        info,
-                        null,
-                        finishedCallback { finished = true },
-                        emptyArray(),
-                    )
-
-                ActivityManager.START_SUCCESS
-            }
+            activityTransitionAnimator
+                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .takeOverAnimation(
+                    token,
+                    info,
+                    null,
+                    finishedCallback { finished = true },
+                    emptyArray(),
+                )
 
             waitForIdleSync()
             assertThat(finished).isTrue()
@@ -707,28 +732,28 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         kosmos.runTest {
             val controller = createController()
             var factory = controllerFactory(controller)
-            underTest.register(factory.cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
-            assertThat(testShellTransitions.remotesForTakeover).isEmpty()
+            assertThat(testShellTransitions.remotesForTakeover.size).isEqualTo(2)
 
             factory = controllerFactory(controller)
-            underTest.register(factory.cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(4)
-            assertThat(testShellTransitions.remotesForTakeover).isEmpty()
+            assertThat(testShellTransitions.remotesForTakeover.size).isEqualTo(4)
         }
     }
 
     @Test
-    fun registersLongLivedTransitionOverridingPreviousRegistration() {
+    fun registersLongLivedTransition_overridingPreviousRegistration() {
         kosmos.runTest {
             val controller = createController()
             val cookie = ActivityTransitionAnimator.TransitionCookie("test_cookie")
             var factory = controllerFactory(controller, cookie)
-            underTest.register(cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(cookie, factory, testScope)
             val transitions = testShellTransitions.remotes.values.toList()
 
             factory = controllerFactory(controller, cookie)
-            underTest.register(cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
             for (transition in transitions) {
                 assertThat(testShellTransitions.remotes.values).doesNotContain(transition)
@@ -737,28 +762,25 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun doesNotRegisterLongLivedTransitionIfMissingRequiredProperties() {
+    fun doesNotRegisterLongLivedTransition_ifMissingRequiredProperties() {
         kosmos.runTest {
             val controller = createController()
 
-            // No ComponentName
-            var factory = controllerFactory(controller, component = null)
+            // Cookies don't match
+            val cookie = ActivityTransitionAnimator.TransitionCookie("test_cookie")
+            var factory = controllerFactory(controller, cookie)
             assertThrows(IllegalStateException::class.java) {
-                underTest.register(factory.cookie, factory, testScope)
+                underTest.registerLongLivedTransitions(
+                    ActivityTransitionAnimator.TransitionCookie("wrong_cookie"),
+                    factory,
+                    testScope,
+                )
             }
 
-            // No TransitionRegister
-            val activityTransitionAnimator =
-                ActivityTransitionAnimator(
-                    mainExecutor,
-                    transitionRegister = null,
-                    testTransitionAnimator,
-                    testTransitionAnimator,
-                    disableWmTimeout = true,
-                )
-            factory = controllerFactory(controller)
+            // No ComponentName
+            factory = controllerFactory(controller, component = null)
             assertThrows(IllegalStateException::class.java) {
-                activityTransitionAnimator.register(factory.cookie, factory, testScope)
+                underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             }
         }
     }
@@ -772,16 +794,16 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             for (index in 0 until 3) {
                 cookies[index] = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
                 val factory = controllerFactory(controller, cookies[index]!!)
-                underTest.register(factory.cookie, factory, testScope)
+                underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             }
 
-            underTest.unregister(cookies[0]!!)
+            underTest.unregisterLongLivedTransitions(cookies[0]!!)
             assertThat(testShellTransitions.remotes.size).isEqualTo(4)
 
-            underTest.unregister(cookies[2]!!)
+            underTest.unregisterLongLivedTransitions(cookies[2]!!)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
 
-            underTest.unregister(cookies[1]!!)
+            underTest.unregisterLongLivedTransitions(cookies[1]!!)
             assertThat(testShellTransitions.remotes).isEmpty()
         }
     }

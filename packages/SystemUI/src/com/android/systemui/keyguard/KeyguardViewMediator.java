@@ -101,6 +101,10 @@ import android.view.WindowManager;
 import android.view.WindowManagerPolicyConstants;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.window.IRemoteTransition;
+import android.window.IRemoteTransitionFinishedCallback;
+import android.window.RemoteTransitionStub;
+import android.window.TransitionInfo;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -138,7 +142,7 @@ import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor;
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
-import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.UiBackground;
 import com.android.systemui.dreams.DreamOverlayStateController;
 import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
@@ -183,7 +187,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitions;
 
 import dagger.Lazy;
 
-import kotlinx.coroutines.CoroutineDispatcher;
+import kotlinx.coroutines.CoroutineScope;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -1147,8 +1151,12 @@ public class KeyguardViewMediator implements CoreStartable,
                                 (int) (fullWidth - initialWidth) /* left */,
                                 fullWidth /* right */,
                                 mWindowCornerRadius, mWindowCornerRadius);
-                    } else if (mOccludingRemoteAnimationTarget != null
-                            && mOccludingRemoteAnimationTarget.isTranslucent) {
+                    } else if ((ActivityTransitionAnimator.Companion.shellMigrationEnabled()
+                            && mIsOccludingWithTranslucentTask)
+                            || (!ActivityTransitionAnimator.Companion.shellMigrationEnabled()
+                            && mOccludingRemoteAnimationTarget != null
+                            && mOccludingRemoteAnimationTarget.isTranslucent)) {
+                        mIsOccludingWithTranslucentTask = false;
                         // Animating in a transparent window looks really weird. Just let it be
                         // fullscreen and the app can do an internal animation if it wants to.
                         return new TransitionAnimator.State(
@@ -1225,6 +1233,9 @@ public class KeyguardViewMediator implements CoreStartable,
         public void onAnimationCancelled() {
         }
     };
+
+    private final IRemoteTransition mOccludeTransition =
+            new OccludeActivityLaunchRemoteTransition(mOccludeAnimationController);
 
     private final IRemoteAnimationRunner mOccludeAnimationRunner =
             new OccludeActivityLaunchRemoteAnimationRunner(mOccludeAnimationController);
@@ -1532,7 +1543,7 @@ public class KeyguardViewMediator implements CoreStartable,
 
     private final UiEventLogger mUiEventLogger;
     private final SessionTracker mSessionTracker;
-    private final CoroutineDispatcher mMainDispatcher;
+    private final CoroutineScope mApplicationScope;
     private final Lazy<DreamViewModel> mDreamViewModel;
     private final Lazy<CommunalTransitionViewModel> mCommunalTransitionViewModel;
     private RemoteAnimationTarget mRemoteAnimationTarget;
@@ -1541,6 +1552,8 @@ public class KeyguardViewMediator implements CoreStartable,
      * The most recent RemoteAnimationTarget provided for an occluding activity animation.
      */
     private RemoteAnimationTarget mOccludingRemoteAnimationTarget;
+    /** Whether we're currently animating an occlusion with a translucent task. */
+    private boolean mIsOccludingWithTranslucentTask = false;
     private boolean mShowCommunalWhenUnoccluding = false;
     /**
      * Either transitioning to dreaming, from dreaming, or currently in the dreaming state. If the
@@ -1594,7 +1607,7 @@ public class KeyguardViewMediator implements CoreStartable,
             SystemSettings systemSettings,
             SystemClock systemClock,
             ProcessWrapper processWrapper,
-            @Main CoroutineDispatcher mainDispatcher,
+            @Application CoroutineScope applicationScope,
             Lazy<DreamViewModel> dreamViewModel,
             Lazy<CommunalTransitionViewModel> communalTransitionViewModel,
             SystemPropertiesHelper systemPropertiesHelper,
@@ -1676,7 +1689,7 @@ public class KeyguardViewMediator implements CoreStartable,
         mDreamViewModel = dreamViewModel;
         mCommunalTransitionViewModel = communalTransitionViewModel;
         mWmLockscreenVisibilityManager = wmLockscreenVisibilityManager;
-        mMainDispatcher = mainDispatcher;
+        mApplicationScope = applicationScope;
 
         mOrderUnlockAndWake = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_orderUnlockAndWake);
@@ -1722,7 +1735,9 @@ public class KeyguardViewMediator implements CoreStartable,
         mKeyguardTransitions.register(
                 KeyguardService.wrap(this, getExitAnimationRunner()),
                 KeyguardService.wrap(this, getAppearAnimationRunner()),
-                KeyguardService.wrap(this, getOccludeAnimationRunner()),
+                ActivityTransitionAnimator.Companion.shellMigrationEnabled()
+                        ? getOccludeTransition()
+                        : KeyguardService.wrap(this, getOccludeAnimationRunner()),
                 KeyguardService.wrap(this, getOccludeByDreamAnimationRunner()),
                 KeyguardService.wrap(this, getUnoccludeAnimationRunner()));
 
@@ -2320,6 +2335,14 @@ public class KeyguardViewMediator implements CoreStartable,
 
     public IRemoteAnimationRunner getAppearAnimationRunner() {
         return validatingRemoteAnimationRunner(mAppearAnimationRunner);
+    }
+
+    public IRemoteTransition getOccludeTransition() {
+        if (KeyguardWmStateRefactor.isEnabled()) {
+            return validatingRemoteTransition(mWmOcclusionManager.getOccludeTransition());
+        } else {
+            return validatingRemoteTransition(mOccludeTransition);
+        }
     }
 
     public IRemoteAnimationRunner getOccludeAnimationRunner() {
@@ -4310,6 +4333,86 @@ public class KeyguardViewMediator implements CoreStartable,
      */
     public void launchingActivityOverLockscreen(boolean isLaunchingActivityOverLockscreen) {
         mKeyguardTransitions.setLaunchingActivityOverLockscreen(isLaunchingActivityOverLockscreen);
+    }
+
+    /**
+     * Implementation of {@link IRemoteTransition} that wraps the default Animation Library launch
+     * transition and calls {@link #setOccluded} when startAnimation is called.
+     */
+    private class OccludeActivityLaunchRemoteTransition extends RemoteTransitionStub {
+        private final ActivityTransitionAnimator.Controller mController;
+        private IRemoteTransition mDelegate;
+
+        OccludeActivityLaunchRemoteTransition(ActivityTransitionAnimator.Controller controller) {
+            mController = controller;
+        }
+
+        @Override
+        public void startAnimation(IBinder token, TransitionInfo info, Transaction t,
+                IRemoteTransitionFinishedCallback finishCallback) throws RemoteException {
+            for (TransitionInfo.Change change : info.getChanges()) {
+                // This flag needs to be set before mDelegate.startAnimation(),  since that's the
+                // call that eventually asks the animation controller to configure the animation
+                // state.
+                mIsOccludingWithTranslucentTask =
+                        (change.getMode() == WindowManager.TRANSIT_OPEN
+                                || change.getMode() == WindowManager.TRANSIT_TO_FRONT)
+                                && (change.getFlags() & TransitionInfo.FLAG_TRANSLUCENT) != 0;
+                if (mIsOccludingWithTranslucentTask) {
+                    break;
+                }
+            }
+
+            mDelegate = mActivityTransitionAnimator.get().createOriginTransition(
+                    mController, mApplicationScope, mController.isDialogLaunch(),
+                    new KeyguardTransitionHelper());
+            mDelegate.startAnimation(token, info, t, finishCallback);
+
+            mInteractionJankMonitor.begin(
+                    createInteractionJankMonitorConf(CUJ_LOCKSCREEN_OCCLUSION)
+                            .setTag("OCCLUDE"));
+
+            // This is the first signal we have from WM that we're going to be occluded. Set our
+            // internal state to reflect that immediately, vs. waiting for the launch animator to
+            // begin. Otherwise, calls to setShowingLocked, etc. will not know that we're about to
+            // be occluded and might re-show the keyguard.
+            Log.d(TAG, "OccludeAnimator#onAnimationStart. Set occluded = true.");
+            setOccluded(true /* isOccluded */, false /* animate */);
+        }
+
+        @Override
+        public void mergeAnimation(IBinder transition, TransitionInfo info, Transaction t,
+                IBinder mergeTarget, IRemoteTransitionFinishedCallback finishCallback)
+                throws RemoteException {
+            Log.d(TAG, "Occlude animation cancelled by WM (mergeAnimation).");
+            mDelegate.mergeAnimation(transition, info, t, mergeTarget, finishCallback);
+            mIsOccludingWithTranslucentTask = false;
+            mInteractionJankMonitor.cancel(CUJ_LOCKSCREEN_OCCLUSION);
+        }
+
+        @Override
+        public void onTransitionConsumed(IBinder transition, boolean aborted)
+                throws RemoteException {
+            Log.d(TAG, "Occlude animation cancelled by WM (onTransitionConsumed).");
+            mDelegate.onTransitionConsumed(transition, aborted);
+            mIsOccludingWithTranslucentTask = false;
+            mInteractionJankMonitor.cancel(CUJ_LOCKSCREEN_OCCLUSION);
+        }
+    }
+
+    private IRemoteTransition validatingRemoteTransition(IRemoteTransition delegate) {
+        return new RemoteTransitionStub() {
+            @Override
+            public void startAnimation(IBinder token, TransitionInfo info, Transaction t,
+                    IRemoteTransitionFinishedCallback finishCallback) throws RemoteException {
+                if (!isViewRootReady()) {
+                    Log.w(TAG, "Skipping remote transition - view root not ready");
+                    return;
+                }
+
+                delegate.startAnimation(token, info, t, finishCallback);
+            }
+        };
     }
 
     /**

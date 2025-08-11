@@ -164,7 +164,8 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
 
                 underTest.registerTransition(cookie, controllerFactory, testScope)
 
-                verify(activityTransitionAnimator).register(eq(cookie), any(), eq(testScope))
+                verify(activityTransitionAnimator)
+                    .registerLongLivedTransitions(eq(cookie), any(), eq(testScope))
             }
         }
     }
@@ -175,7 +176,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
 
         underTest.unregisterTransition(cookie)
 
-        verify(activityTransitionAnimator).unregister(eq(cookie))
+        verify(activityTransitionAnimator).unregisterLongLivedTransitions(eq(cookie))
     }
 
     @Test
