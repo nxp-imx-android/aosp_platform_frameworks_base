@@ -909,6 +909,7 @@ message ProcessOomProto {
             optional float ultilization = 3; // ratio of cpu time usage
         }
         optional CpuRunTime service_run_time = 15;
+        repeated .android.app.ProcessCapabilityEnum capability_flags = 16;
     }
     optional Detail detail = 15;
 }
