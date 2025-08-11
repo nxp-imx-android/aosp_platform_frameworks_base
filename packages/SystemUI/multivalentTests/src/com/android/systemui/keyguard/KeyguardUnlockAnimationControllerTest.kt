@@ -19,8 +19,6 @@ import androidx.test.filters.SmallTest
 import com.android.keyguard.KeyguardViewController
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.defaultDeviceState
-import com.android.systemui.deviceStateManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.shared.system.smartspace.ILauncherUnlockAnimationController
@@ -70,7 +68,6 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     @Mock private lateinit var powerManager: PowerManager
     @Mock private lateinit var wallpaperManager: WallpaperManager
     private val kosmos = testKosmos()
-    private val deviceStateManager = kosmos.deviceStateManager
 
     @Mock
     private lateinit var launcherUnlockAnimationController: ILauncherUnlockAnimationController.Stub
@@ -180,7 +177,6 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
                     notificationShadeWindowController,
                     powerManager,
                     wallpaperManager,
-                    deviceStateManager,
                 ) {
                 override fun shouldPerformSmartspaceTransition(): Boolean =
                     shouldPerformSmartspaceTransition
@@ -192,8 +188,6 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
 
         whenever(keyguardViewController.viewRootImpl).thenReturn(mock(ViewRootImpl::class.java))
         whenever(powerManager.isInteractive).thenReturn(true)
-        whenever(deviceStateManager.supportedDeviceStates)
-            .thenReturn(listOf(kosmos.defaultDeviceState))
 
         // All of these fields are final, so we can't mock them, but are needed so that the surface
         // appear amount setter doesn't short circuit.
