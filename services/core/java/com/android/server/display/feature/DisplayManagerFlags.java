@@ -81,10 +81,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
             Flags::resolutionBackupRestore);
 
-    private final FlagState mVsyncLowPowerVote = new FlagState(
-            Flags.FLAG_ENABLE_VSYNC_LOW_POWER_VOTE,
-            Flags::enableVsyncLowPowerVote);
-
     private final FlagState mBrightnessWearBedtimeModeClamperFlagState = new FlagState(
             Flags.FLAG_BRIGHTNESS_WEAR_BEDTIME_MODE_CLAMPER,
             Flags::brightnessWearBedtimeModeClamper);
@@ -297,10 +293,6 @@ public class DisplayManagerFlags {
 
     public boolean isResolutionBackupRestoreEnabled() {
         return mResolutionBackupRestore.isEnabled();
-    }
-
-    public boolean isVsyncLowPowerVoteEnabled() {
-        return mVsyncLowPowerVote.isEnabled();
     }
 
     public boolean isBrightnessWearBedtimeModeClamperEnabled() {
