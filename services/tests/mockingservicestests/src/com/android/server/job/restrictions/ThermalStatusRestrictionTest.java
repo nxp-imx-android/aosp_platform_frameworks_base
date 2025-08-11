@@ -24,6 +24,7 @@ import static android.os.PowerManager.THERMAL_STATUS_NONE;
 import static android.os.PowerManager.THERMAL_STATUS_SEVERE;
 import static android.os.PowerManager.THERMAL_STATUS_SHUTDOWN;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.inOrder;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
@@ -55,6 +56,7 @@ import android.util.DebugUtils;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
+import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
 import com.android.server.job.controllers.JobStatus;
 
@@ -251,6 +253,10 @@ public class ThermalStatusRestrictionTest {
 
         PowerManager powerManager = mock(PowerManager.class);
         when(mContext.getSystemService(PowerManager.class)).thenReturn(powerManager);
+
+        // Used by JobStatus.
+        doReturn(mock(JobSchedulerInternal.class))
+                .when(() -> LocalServices.getService(JobSchedulerInternal.class));
         // Initialize real objects.
         // Capture the listeners.
         ArgumentCaptor<PowerManager.OnThermalStatusChangedListener> listenerCaptor =
