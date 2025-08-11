@@ -1189,4 +1189,7 @@
 
     <!-- Indicates whether the blurred wallpaper is supported -->
     <bool name="config_supportBlurredWallpaper">true</bool>
+
+    <!-- Whether to hide notifications shade when the user presses ALL_APPS key. -->
+    <bool name="config_enableHideNotificationsShadeOnAllAppsKey">false</bool>
 </resources>
