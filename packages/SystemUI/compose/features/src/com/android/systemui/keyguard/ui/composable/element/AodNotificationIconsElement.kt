@@ -21,6 +21,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -84,6 +85,10 @@ constructor(
             modifier =
                 modifier
                     .height(dimensionResource(R.dimen.notification_shelf_height))
+                    .padding(
+                        start = dimensionResource(R.dimen.below_clock_padding_start_icons),
+                        end = dimensionResource(R.dimen.shelf_icon_container_padding),
+                    )
                     .burnInAware(aodBurnInViewModel, burnIn.parameters),
         ) {
             val scope = rememberCoroutineScope()
