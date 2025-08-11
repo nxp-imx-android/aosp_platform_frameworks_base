@@ -16,30 +16,5 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.view.Surface;
-
-/**
- * Parameters for creating a computer control session.
- *
- * @hide
- */
-parcelable ComputerControlSessionParams {
-
-    /** The name of the session. Only used internally and not shown to users. */
-    String name;
-
-    /** The width of the display used for the session. */
-    int displayWidthPx;
-
-    /** The height of the display used for the session. */
-    int displayHeightPx;
-
-    /** The DPI of the display used for the session. */
-    int displayDpi;
-
-    /** The surface of the display used for the session. */
-    Surface displaySurface;
-
-    /** Whether the display used for the session should remain always unlocked. */
-    boolean isDisplayAlwaysUnlocked;
-}
+/** @hide */
+parcelable ComputerControlSessionParams ;

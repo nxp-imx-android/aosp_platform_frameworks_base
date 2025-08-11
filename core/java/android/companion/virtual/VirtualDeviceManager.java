@@ -39,6 +39,7 @@ import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.audio.VirtualAudioDevice.AudioConfigurationChangeCallback;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
+import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.sensor.VirtualSensor;
@@ -212,12 +213,13 @@ public final class VirtualDeviceManager {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
     @NonNull
-    public IComputerControlSession createComputerControlSession(
+    public ComputerControlSession createComputerControlSession(
             @NonNull ComputerControlSessionParams params) {
         Objects.requireNonNull(params, "params must not be null");
         try {
-            return mService.createComputerControlSession(
+            IComputerControlSession session = mService.createComputerControlSession(
                     new Binder(), mContext.getAttributionSource(), params);
+            return new ComputerControlSession(session);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

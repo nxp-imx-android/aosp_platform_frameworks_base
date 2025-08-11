@@ -48,7 +48,15 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private IVirtualDevice mVirtualDevice;
 
-    private final ComputerControlSessionParams mParams = new ComputerControlSessionParams();
+    private final ComputerControlSessionParams mParams = new ComputerControlSessionParams.Builder()
+            .setName(ComputerControlSessionTest.class.getSimpleName())
+            .setDisplayDpi(100)
+            .setDisplayHeightPx(200)
+            .setDisplayWidthPx(300)
+            .setDisplaySurface(new Surface())
+            .setDisplayAlwaysUnlocked(true)
+            .build();
+
     private final Context mContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
     private ComputerControlSessionProcessor mProcessor;
@@ -58,13 +66,6 @@ public class ComputerControlSessionProcessorTest {
     @Before
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-
-        mParams.displayDpi = 100;
-        mParams.displayHeightPx = 200;
-        mParams.displayWidthPx = 300;
-        mParams.displaySurface = new Surface();
-        mParams.isDisplayAlwaysUnlocked = true;
-        mParams.name = ComputerControlSessionTest.class.getSimpleName();
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
