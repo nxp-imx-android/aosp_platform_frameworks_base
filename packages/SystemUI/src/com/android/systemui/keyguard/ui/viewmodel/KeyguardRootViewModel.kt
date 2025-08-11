@@ -419,26 +419,19 @@ constructor(
     val isNotifIconContainerVisible: StateFlow<AnimatedValue<Boolean>> =
         combine(
                 goneToAodTransitionRunning,
-                keyguardTransitionInteractor
-                    .transitionValue(LOCKSCREEN)
-                    .map { it > 0f }
-                    .onStart { emit(false) },
                 keyguardTransitionInteractor.isFinishedIn(
                     content = Scenes.Gone,
                     stateWithoutSceneContainer = GONE,
                 ),
-                deviceEntryBypassInteractor.isBypassEnabled,
                 areNotifsFullyHiddenAnimated(),
                 isPulseExpandingAnimated(),
                 aodNotificationIconViewModel.icons.map { it.visibleIcons.isNotEmpty() },
             ) { flows ->
                 val goneToAodTransitionRunning = flows[0] as Boolean
-                val isOnLockscreen = flows[1] as Boolean
-                val isOnGone = flows[2] as Boolean
-                val isBypassEnabled = flows[3] as Boolean
-                val notifsFullyHidden = flows[4] as AnimatedValue<Boolean>
-                val pulseExpanding = flows[5] as AnimatedValue<Boolean>
-                val hasAodIcons = flows[6] as Boolean
+                val isOnGone = flows[1] as Boolean
+                val notifsFullyHidden = flows[2] as AnimatedValue<Boolean>
+                val pulseExpanding = flows[3] as AnimatedValue<Boolean>
+                val hasAodIcons = flows[4] as Boolean
 
                 when {
                     // Hide the AOD icons if we're not in the KEYGUARD state unless the screen off
