@@ -43,6 +43,7 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlStabilityListener;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.hardware.display.DisplayManager;
@@ -94,6 +95,7 @@ public class ComputerControlSessionTest {
     private static final int LONG_PRESS_STEP_COUNT = 5;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
+    private static final long STABILITY_TIMEOUT_MS = 5000L;
     private static final List<String> TARGET_PACKAGE_NAMES =
             List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
@@ -104,6 +106,8 @@ public class ComputerControlSessionTest {
     private ComputerControlSessionImpl.Injector mInjector;
     @Mock
     private ComputerControlSessionImpl.OnClosedListener mOnClosedListener;
+    @Mock
+    private IComputerControlStabilityListener mStabilityListener;
     @Mock
     private IVirtualDevice mVirtualDevice;
     @Mock
@@ -404,6 +408,75 @@ public class ComputerControlSessionTest {
                 new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN)));
         verify(mVirtualDpad).sendKeyEvent(argThat(
                 new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void tap_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.tap(60, 200);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void longPress_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.longPress(100, 200);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void performAction_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.performAction(ComputerControlSession.ACTION_GO_BACK);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void insertText_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.insertText("hello", false /* replaceExisting */, true /* commit */);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void swipe_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.swipe(60, 200, 180, 400);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void launchApplication_notifiesStabilityListener() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        mSession.launchApplication(TARGET_PACKAGE_1);
+
+        verify(mStabilityListener, timeout(STABILITY_TIMEOUT_MS)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_withStabilityListenerAlreadySet_throwsException() {
+        createComputerControlSession(mDefaultParams);
+        mSession.setStabilityListener(mStabilityListener);
+
+        assertThrows(IllegalStateException.class,
+                () -> mSession.setStabilityListener(mStabilityListener));
     }
 
     private void createComputerControlSession(ComputerControlSessionParams params) {

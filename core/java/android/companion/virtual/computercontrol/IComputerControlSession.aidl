@@ -16,6 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.companion.virtual.computercontrol.IComputerControlStabilityListener;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
@@ -65,6 +66,9 @@ interface IComputerControlSession {
 
     /** Performs computer control action on the computer control display. */
     void performAction(int actionCode);
+
+    /** Sets a listener to be notified when the computer control session is potentially stable. */
+    void setStabilityListener(in IComputerControlStabilityListener listener);
 
     /** Closes this session. */
     void close();
