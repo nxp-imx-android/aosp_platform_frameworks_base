@@ -17,6 +17,8 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.NavBar
+import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -29,13 +31,16 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Base Test Class")
-abstract class EnterDesktopViaStaticDesktopOverviewTask : TestScenarioBase() {
+abstract class EnterDesktopViaStaticDesktopOverviewTask(
+    val navigationMode: NavBar = NavBar.MODE_GESTURAL,
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val desktopApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val desktopApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
 
     @Before
     fun setup() {
