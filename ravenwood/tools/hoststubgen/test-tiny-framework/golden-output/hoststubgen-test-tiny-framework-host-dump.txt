@@ -5901,6 +5901,231 @@ RuntimeVisibleAnnotations:
     )
   x: #x()
     android.hosttest.annotation.HostSideTestStaticInitializerKeep
+## Class: com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum.class
+  Compiled from "MoreClasses.java"
+final class com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum extends java.lang.Enum<com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum>
+  minor version: 0
+  major version: 65
+  flags: (0x4030) ACC_FINAL, ACC_SUPER, ACC_ENUM
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+  super_class: #x                         // java/lang/Enum
+  interfaces: 0, fields: 4, methods: 6, attributes: 3
+Constant pool:
+{
+  public static final com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum A;
+    descriptor: Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  public static final com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum B;
+    descriptor: Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  public static final com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum C;
+    descriptor: Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  private static final com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum[] $VALUES;
+    descriptor: [Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x101a) ACC_PRIVATE, ACC_STATIC, ACC_FINAL, ACC_SYNTHETIC
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  public static com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum[] values();
+    descriptor: ()[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=0, args_size=0
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+         x: ldc           #x                 // String values
+         x: ldc           #x                 // String ()[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
+         x: getstatic     #x                 // Field $VALUES:[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: invokevirtual #x                 // Method "[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;".clone:()Ljava/lang/Object;
+        x: checkcast     #x                 // class "[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;"
+        x: areturn
+      LineNumberTable:
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  public static com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum valueOf(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+         x: ldc           #x                 // String valueOf
+         x: ldc           #x                 // String (Ljava/lang/String;)Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: aload_0
+        x: invokestatic  #x                 // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+        x: checkcast     #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: areturn
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            9      10     0  name   Ljava/lang/String;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+    MethodParameters:
+      Name                           Flags
+      <no name>                      mandated
+
+  private com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum();
+    descriptor: (Ljava/lang/String;I)V
+    flags: (0x0002) ACC_PRIVATE
+    Code:
+      stack=3, locals=3, args_size=3
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+         x: ldc           #x                 // String <init>
+         x: ldc           #x                 // String (Ljava/lang/String;I)V
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
+         x: aload_0
+        x: aload_1
+        x: iload_2
+        x: invokespecial #x                 // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            9       7     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    Signature: #x                          // ()V
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+    MethodParameters:
+      Name                           Flags
+      <no name>                      synthetic
+      <no name>                      synthetic
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=3, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+         x: ldc           #x                 // String foo
+         x: ldc           #x                 // String ()V
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: ldc           #x                 // String foo
+        x: ldc           #x                 // String ()V
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onExperimentalMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Z
+        x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.assertThatHookReturnedTrue:(Z)V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           21       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  private static com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum[] $values();
+    descriptor: ()[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+    flags: (0x100a) ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC
+    Code:
+      stack=4, locals=0, args_size=0
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+         x: ldc           #x                 // String $values
+         x: ldc           #x                 // String ()[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
+         x: iconst_3
+        x: anewarray     #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: dup
+        x: iconst_0
+        x: getstatic     #x                 // Field A:Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: aastore
+        x: dup
+        x: iconst_1
+        x: getstatic     #x                 // Field B:Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: aastore
+        x: dup
+        x: iconst_2
+        x: getstatic     #x                 // Field C:Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: aastore
+        x: areturn
+      LineNumberTable:
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+
+  static {};
+    descriptor: ()V
+    flags: (0x0008) ACC_STATIC
+    Code:
+      stack=4, locals=0, args_size=0
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+         x: ldc           #x                 // String <clinit>
+         x: ldc           #x                 // String ()V
+         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.onMethodCalled:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkHooks.defaultClassLoadHook:(Ljava/lang/Class;)V
+        x: new           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: dup
+        x: ldc           #x                 // String A
+        x: iconst_0
+        x: invokespecial #x                 // Method "<init>":(Ljava/lang/String;I)V
+        x: putstatic     #x                 // Field A:Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: new           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: dup
+        x: ldc           #x                 // String B
+        x: iconst_1
+        x: invokespecial #x                 // Method "<init>":(Ljava/lang/String;I)V
+        x: putstatic     #x                 // Field B:Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: new           #x                  // class com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum
+        x: dup
+        x: ldc           #x                 // String C
+        x: iconst_2
+        x: invokespecial #x                 // Method "<init>":(Ljava/lang/String;I)V
+        x: putstatic     #x                 // Field C:Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: invokestatic  #x                 // Method $values:()[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: putstatic     #x                 // Field $VALUES:[Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;
+        x: return
+      LineNumberTable:
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: file-override [package - \'experimental\'] (#test-experimental-package-policy)]"
+        )
+}
+Signature: #x                           // Ljava/lang/Enum<Lcom/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum;>;
+SourceFile: "MoreClasses.java"
+RuntimeVisibleAnnotations:
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override [package - \'experimental\'] (#test-experimental-package-policy)"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/exp/RedirectTo.class
   Compiled from "MoreClasses.java"
 class com.android.hoststubgen.test.tinyframework.exp.RedirectTo

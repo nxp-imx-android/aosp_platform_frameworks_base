@@ -1572,6 +1572,17 @@ com.android.hoststubgen.test.tinyframework.exp
   0
   2
 com.android.hoststubgen.test.tinyframework.exp
+  ExpC8_Enum
+  0
+  com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum
+  foo
+  foo()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum [inner-reason: file-override [package - 'experimental'] (#test-experimental-package-policy)]
+  0
+  0
+com.android.hoststubgen.test.tinyframework.exp
   RedirectTo
   0
   com.android.hoststubgen.test.tinyframework.exp.RedirectTo
