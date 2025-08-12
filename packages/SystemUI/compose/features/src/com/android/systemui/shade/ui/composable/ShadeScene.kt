@@ -278,7 +278,9 @@ private fun ContentScope.SingleShade(
         Layout(
             modifier =
                 Modifier.thenIf(viewModel.isEmptySpaceClickable) {
-                    Modifier.clickable { viewModel.onEmptySpaceClicked() }
+                    Modifier.clickable(interactionSource = null, indication = null) {
+                        viewModel.onEmptySpaceClicked()
+                    }
                 },
             content = {
                 CollapsedShadeHeader(
