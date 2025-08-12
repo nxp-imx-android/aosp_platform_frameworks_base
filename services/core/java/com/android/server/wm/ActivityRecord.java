@@ -4572,6 +4572,11 @@ final class ActivityRecord extends WindowToken {
                     firstWindowDrawn = true;
                 }
                 if (fromActivity.isVisible()) {
+                    // Collect this activity in case it isn't yet visible from resume.
+                    if (Flags.transferStartingWindowToNextWhenInvisible()
+                            && !isVisibleRequested()) {
+                        mTransitionController.collect(this);
+                    }
                     setVisible(true);
                     setVisibleRequested(true);
                     mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
@@ -4661,6 +4666,46 @@ final class ActivityRecord extends WindowToken {
             }
             return !fromActivity.isVisibleRequested() && transferStartingWindow(fromActivity);
         });
+    }
+
+    /**
+     * Tries to transfer the starting window from this activity in the task but will not visible
+     * anymore. This is a common scenario apps use: A trampoline activity is started on top of an
+     * existing Task, the starting windowing should transfer to the activity below once the
+     * trampoline activity finishes.
+     */
+    void transferStartingWindowToNextRunningIfNeeded() {
+        if (mStartingData == null) {
+            return;
+        }
+        final ActivityRecord next = task.topRunningActivity();
+        if (next == null || next == this) {
+            return;
+        }
+        final WindowState mainWin = next.findMainWindow(false);
+        if (mainWin != null && mainWin.mWinAnimator.getShown()) {
+            // Next activity already has a visible window, so doesn't need to transfer the starting
+            // window from this activity to here. The starting window will be removed with this
+            // activity.
+            return;
+        }
+        final StartingData tmpStartingData = mStartingData;
+        if (tmpStartingData != null && tmpStartingData.mAssociatedTask == null
+                && mTransitionController.isCollecting(this)
+                && tmpStartingData instanceof SnapshotStartingData) {
+            final Rect myBounds = getBounds();
+            final Rect nextBounds = next.getBounds();
+            if (!myBounds.equals(nextBounds)) {
+                // Mark as no animation, so these changes won't merge into playing transition.
+                if (mTransitionController.inPlayingTransition(this)) {
+                    mTransitionController.setNoAnimation(next);
+                    mTransitionController.setNoAnimation(this);
+                }
+                removeStartingWindow();
+                return;
+            }
+        }
+        next.transferStartingWindow(this);
     }
 
     boolean isKeyguardLocked() {
@@ -5418,6 +5463,9 @@ final class ActivityRecord extends WindowToken {
         setVisibleRequested(visible);
 
         if (!visible) {
+            if (Flags.transferStartingWindowToNextWhenInvisible()) {
+                transferStartingWindowToNextRunningIfNeeded();
+            }
             // Because starting window was transferred, this activity may be a trampoline which has
             // been occluded by next activity. If it has added windows, set client visibility
             // immediately to avoid the client getting RELAYOUT_RES_FIRST_TIME from relayout and
@@ -5442,7 +5490,9 @@ final class ActivityRecord extends WindowToken {
             ProtoLog.v(WM_DEBUG_ADD_REMOVE, "No longer Stopped: %s", this);
             mAppStopped = false;
 
-            transferStartingWindowFromHiddenAboveTokenIfNeeded();
+            if (!Flags.transferStartingWindowToNextWhenInvisible()) {
+                transferStartingWindowFromHiddenAboveTokenIfNeeded();
+            }
         }
         requestUpdateWallpaperIfNeeded();
 
