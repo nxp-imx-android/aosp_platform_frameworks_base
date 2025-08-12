@@ -3945,6 +3945,10 @@ public final class DisplayManagerService extends SystemService {
     }
 
     void enableConnectedDisplay(int displayId, boolean enabled) {
+        if (!enabled && displayId == Display.DEFAULT_DISPLAY) {
+            Slog.w(TAG, "enableConnectedDisplay: Cannot disable default display");
+            return;
+        }
         synchronized (mSyncRoot) {
             final var logicalDisplay = mLogicalDisplayMapper.getDisplayLocked(displayId);
             if (logicalDisplay == null) {

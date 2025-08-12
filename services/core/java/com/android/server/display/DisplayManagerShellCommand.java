@@ -786,6 +786,10 @@ class DisplayManagerShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error: invalid displayId: '" + displayIdText + "'");
             return 1;
         }
+        if (!enable && displayId == Display.DEFAULT_DISPLAY) {
+            getErrPrintWriter().println("Error: cannot disable default display");
+            return 1;
+        }
         mService.enableConnectedDisplay(displayId, enable);
         return 0;
     }
