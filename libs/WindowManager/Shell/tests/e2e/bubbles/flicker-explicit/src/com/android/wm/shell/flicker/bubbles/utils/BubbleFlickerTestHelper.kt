@@ -195,6 +195,13 @@ internal object BubbleFlickerTestHelper {
         waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
     }
 
+    /**
+     * Switches from one expanded bubble to another.
+     *
+     * @param appSwitchedFrom The app currently expanded in a bubble.
+     * @param appSwitchTo The app to switch to, which is in a collapsed bubble.
+     * @param wmHelper The [WindowManagerStateHelper].
+     */
     fun switchBubble(
         appSwitchedFrom: StandardAppHelper,
         appSwitchTo: StandardAppHelper,
@@ -204,23 +211,19 @@ internal object BubbleFlickerTestHelper {
         waitAndAssertBubbleAppInExpandedState(appSwitchedFrom, wmHelper)
 
         val bubbles = Root.get().expandedBubbleStack.bubbles
-        val bubbleAppIcon = bubbles.find { bubble ->
-            bubble.containsBubbleApp(appSwitchTo)
-        } ?: error(
-            "Can't find the bubble with ${appSwitchTo.packageName}. "
-                    + "Bubbles are ${bubbles.dumpBubbles()}"
-        )
+        val bubbleAppIcon =
+            bubbles.find { bubble -> bubble.containsBubbleApp(appSwitchTo) } ?: error(
+                "Can't find the bubble with ${appSwitchTo.packageName}. "
+                        + "Bubbles are ${bubbles.describeAll()}"
+            )
         bubbleAppIcon.click()
 
         waitAndAssertBubbleAppInExpandedState(appSwitchTo, wmHelper)
     }
 
-    private fun List<Bubble>.dumpBubbles(): String {
-        val builder = StringBuilder()
-        for (bubble in this) {
-            builder.append(bubble.contentDescription()).append(", ")
-        }
-        return builder.toString()
+    /** Returns a string describing all bubbles in the list for debugging messages. */
+    private fun List<Bubble>.describeAll(): String {
+        return joinToString(separator = ", ") { bubble -> bubble.contentDescription() }
     }
 
     /**
@@ -304,14 +307,13 @@ internal object BubbleFlickerTestHelper {
 
         when (from) {
             FROM_FLOATING_BUBBLE_ICON -> {
-                Root.get().expandedBubbleStack.bubbles.apply {
-                    find { bubble -> bubble.containsBubbleApp(testApp) }
+                val bubbles = Root.get().expandedBubbleStack.bubbles
+                bubbles.find { bubble -> bubble.containsBubbleApp(testApp) }
                     ?.dismiss()
                     ?: error(
                         "Can't find the bubble with ${testApp.packageName}. "
-                                + "Bubbles are ${dumpBubbles()}"
+                                + "Bubbles are ${bubbles.describeAll()}"
                     )
-                }
             }
             FROM_BUBBLE_BAR_HANDLE -> {
                 Root.get().expandedBubbleStack.bubbleBarHandle.dragToDismiss()
