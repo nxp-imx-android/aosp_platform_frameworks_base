@@ -22,6 +22,7 @@ import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.InputManager.KeyGestureEventListener
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TASKBAR
@@ -81,6 +82,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @EnableFlags(
         com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
     )
     fun start_flagEnabled_registerKeyGestureEvents() {
         underTest.start()
@@ -91,6 +93,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 .containsExactly(
                     KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                     KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                    KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
                 )
         }
     }
@@ -99,6 +102,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @DisableFlags(
         com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
     )
     fun start_flagDisabled_noRegisterKeyGestureEvents() {
         underTest.start()
@@ -140,6 +144,23 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
 
         verify(shadeDisplayPolicy).onQSPanelKeyboardShortcut()
         verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeTakePartialScreenshot_opensScreenCaptureUi() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        // TODO(b/420714826) Verify screen capture UI is launched.
     }
 
     @Test

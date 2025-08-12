@@ -40,6 +40,7 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_LEFT_FREEFOR
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_RIGHT_FREEFORM_WINDOW
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
@@ -66,6 +67,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_RECENT_APPS to System,
             KEY_GESTURE_TYPE_BACK to System,
             KEY_GESTURE_TYPE_TAKE_SCREENSHOT to System,
+            KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT to System,
             KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER to System,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to System,
             KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL to System,
@@ -111,6 +113,8 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_RECENT_APPS to R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_BACK to R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_TAKE_SCREENSHOT to R.string.shortcut_helper_category_system_controls,
+            KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT to
+                R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER to
                 R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to
@@ -175,6 +179,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_RECENT_APPS to R.string.group_system_overview_open_apps,
             KEY_GESTURE_TYPE_BACK to R.string.group_system_go_back,
             KEY_GESTURE_TYPE_TAKE_SCREENSHOT to R.string.group_system_full_screenshot,
+            KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT to R.string.group_system_partial_screenshot,
             KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER to
                 R.string.group_system_access_system_app_shortcuts,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to
