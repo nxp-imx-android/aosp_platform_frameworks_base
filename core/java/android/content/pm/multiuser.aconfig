@@ -452,3 +452,10 @@ flag {
      description: "For user restrictions about adding or editing shared or private Wi-Fi configurations"
      bug: "390240471"
 }
+
+flag {
+     name: "hsu_allowlist_activities"
+     namespace: "multiuser"
+     description: "Adds an allowlist mechanism to decide which activities can be launched when the current user is the headless system user"
+     bug: "412177078"
+}

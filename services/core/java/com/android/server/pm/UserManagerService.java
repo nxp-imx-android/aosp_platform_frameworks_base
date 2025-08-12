@@ -82,6 +82,7 @@ import android.app.StatsManager;
 import android.app.admin.DevicePolicyEventLogger;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.IIntentReceiver;
 import android.content.Intent;
@@ -8088,6 +8089,7 @@ public class UserManagerService extends IUserManager.Stub {
                 case "--visibility-mediator":
                     mUserVisibilityMediator.dump(pw, args);
                     return;
+                // TODO(b/414326600): use a different arg for HSU SysUI actions
                 case "--deprecated-calls":
                     if (args.length > 1 && args[1].equals("reset")) {
                         mDeprecationReporter.reset(pw);
@@ -8916,6 +8918,17 @@ public class UserManagerService extends IUserManager.Stub {
                 }
             }
         }
+
+        @Override
+        public boolean isHeadlessSystemUserMode() {
+            return UserManagerService.this.isHeadlessSystemUserMode();
+        }
+
+        @Override
+        public void logLaunchedHsuActivity(ComponentName activity) {
+            mDeprecationReporter.logLaunchedHsuActivity(activity);
+        }
+
     } // class LocalService
 
     /**
