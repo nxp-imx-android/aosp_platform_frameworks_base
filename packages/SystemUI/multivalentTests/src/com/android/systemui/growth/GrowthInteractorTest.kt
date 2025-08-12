@@ -17,6 +17,7 @@
 package com.android.systemui.growth.domain.interactor
 
 import android.content.Intent
+import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -66,6 +67,7 @@ class GrowthInteractorTest : SysuiTestCase() {
     private lateinit var underTest: GrowthInteractor
 
     @Captor private lateinit var intentArgumentCaptor: ArgumentCaptor<Intent>
+    @Captor private lateinit var userHandleArgumentCaptor: ArgumentCaptor<UserHandle>
 
     @Before
     fun setUp() {
@@ -83,7 +85,12 @@ class GrowthInteractorTest : SysuiTestCase() {
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             runCurrent()
 
-            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
+            verify(broadcastSender, times(1))
+                .sendBroadcastAsUser(
+                    capture(intentArgumentCaptor),
+                    capture(userHandleArgumentCaptor)
+                )
+            assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
             assertThat(intentArgumentCaptor.value.`package`).isNull()
@@ -103,7 +110,12 @@ class GrowthInteractorTest : SysuiTestCase() {
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             runCurrent()
 
-            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
+            verify(broadcastSender, times(1))
+                .sendBroadcastAsUser(
+                    capture(intentArgumentCaptor),
+                    capture(userHandleArgumentCaptor)
+                )
+            assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
             assertThat(intentArgumentCaptor.value.`package`).isNull()
@@ -120,7 +132,12 @@ class GrowthInteractorTest : SysuiTestCase() {
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             runCurrent()
 
-            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
+            verify(broadcastSender, times(1))
+                .sendBroadcastAsUser(
+                    capture(intentArgumentCaptor),
+                    capture(userHandleArgumentCaptor)
+                )
+            assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
             assertThat(intentArgumentCaptor.value.`package`).isNull()
@@ -137,7 +154,12 @@ class GrowthInteractorTest : SysuiTestCase() {
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             runCurrent()
 
-            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
+            verify(broadcastSender, times(1))
+                .sendBroadcastAsUser(
+                    capture(intentArgumentCaptor),
+                    capture(userHandleArgumentCaptor)
+                )
+            assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
             assertThat(intentArgumentCaptor.value.`package`).isNull()
@@ -148,13 +170,15 @@ class GrowthInteractorTest : SysuiTestCase() {
     fun onDeviceNotEnteredDirectly_doNotSendBroadcast_onLockscreen() =
         kosmos.runTest {
             overrideResources(GROWTH_APP_PACKAGE_NAME, GROWTH_RECEIVER_CLASS_NAME)
+            underTest = kosmos.growthInteractor
+            underTest.activateIn(kosmos.testScope)
             setDeviceEntered()
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             clearInvocations(broadcastSender)
 
             setScene(Scenes.Lockscreen)
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
-            verify(broadcastSender, never()).sendBroadcast(any(), any())
+            verify(broadcastSender, never()).sendBroadcastAsUser(any(), any())
         }
 
     @Test
@@ -166,12 +190,12 @@ class GrowthInteractorTest : SysuiTestCase() {
             setDeviceEntered()
             advanceTimeBy(DURATION_50_MILLIS)
             runCurrent()
-            verify(broadcastSender, never()).sendBroadcast(any(), any())
+            verify(broadcastSender, never()).sendBroadcastAsUser(any(), any())
 
             setScene(Scenes.Lockscreen)
             advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             runCurrent()
-            verify(broadcastSender, never()).sendBroadcast(any(), any())
+            verify(broadcastSender, never()).sendBroadcastAsUser(any(), any())
         }
 
     private fun overrideResources(packageName: String, receiverClassName: String) {
