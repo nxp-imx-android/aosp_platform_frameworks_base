@@ -257,7 +257,7 @@ private fun CardCarouselContent(
     ) {
         @Composable
         fun PagerContent(overscrollEffect: OverscrollEffect? = null) {
-            Box {
+            Box(modifier = Modifier.sysuiResTag(MediaRes.MEDIA_CAROUSEL_SCROLLER)) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.sysuiResTag(MediaRes.MEDIA_CAROUSEL),
@@ -1482,6 +1482,7 @@ private object MediaRes {
     const val PLAY_PAUSE_BTN = "actionPlayPause"
     const val NEXT_BTN = "actionNext"
     const val PREV_BTN = "actionPrev"
+    const val MEDIA_CAROUSEL_SCROLLER = "media_carousel_scroller"
     const val MEDIA_CAROUSEL = "media_carousel"
     const val MEDIA_CONTROLS = "qs_media_controls"
     const val OUTPUT_CHIP = "media_seamless"
