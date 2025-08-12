@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -380,12 +381,24 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
     }
 
+    /**
+     * Handles shell commands. This method is used instead of the deprecated {@code onShellCommand}
+     * to ensure that the caller is either the shell or root user, enforcing access checks for ADB
+     * commands.
+     */
     @Override
-    public void onShellCommand(FileDescriptor in, FileDescriptor out,
-            FileDescriptor err, @NonNull String[] args, ShellCallback callback,
-            @NonNull ResultReceiver resultReceiver) {
-        (new AdvancedProtectionShellCommand(this))
-                .exec(this, in, out, err, args, callback, resultReceiver);
+    public int handleShellCommand(
+            @NonNull ParcelFileDescriptor in,
+            @NonNull ParcelFileDescriptor out,
+            @NonNull ParcelFileDescriptor err,
+            @NonNull String[] args) {
+        return (new AdvancedProtectionShellCommand(this))
+                .exec(
+                        this,
+                        in.getFileDescriptor(),
+                        out.getFileDescriptor(),
+                        err.getFileDescriptor(),
+                        args);
     }
 
     @Override
