@@ -57,7 +57,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
-import com.android.systemui.qs.shared.ui.QuickSettings.Elements.toElementKey
+import com.android.systemui.qs.shared.ui.ElementKeys.toElementKey
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.res.R
 import javax.inject.Inject

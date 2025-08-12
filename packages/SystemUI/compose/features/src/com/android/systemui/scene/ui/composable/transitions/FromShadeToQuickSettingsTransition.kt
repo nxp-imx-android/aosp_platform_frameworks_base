@@ -9,7 +9,8 @@ import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.UserActionDistance
 import com.android.systemui.media.remedia.ui.compose.Media.Elements.mediaCarousel
 import com.android.systemui.notifications.ui.composable.Notifications
-import com.android.systemui.qs.shared.ui.QuickSettings.Elements
+import com.android.systemui.qs.shared.ui.ElementKeys
+import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
@@ -28,20 +29,20 @@ fun TransitionBuilder.shadeToQuickSettingsTransition(
     }
 
     translate(Notifications.Elements.NotificationScrim, Edge.Bottom)
-    timestampRange(endMillis = 83) { fade(Elements.FooterActions) }
+    timestampRange(endMillis = 83) { fade(QuickSettings.Elements.FooterActions) }
 
-    fractionRange(start = 0.43f) { fade(Elements.QuickSettingsContent) }
+    fractionRange(start = 0.43f) { fade(ElementKeys.QuickSettingsContent) }
 
-    anchoredTranslate(Elements.QuickSettingsContent, Elements.GridAnchor)
+    anchoredTranslate(ElementKeys.QuickSettingsContent, ElementKeys.GridAnchor)
 
-    sharedElement(Elements.TileElementMatcher, enabled = animateQsTilesAsShared())
+    sharedElement(ElementKeys.TileElementMatcher, enabled = animateQsTilesAsShared())
 
     // This will animate between 0f (QQS) and 0.5, fading in the QQS tiles when coming back
     // from non first page QS. The QS content ends fading out at 0.43f, so there's a brief
     // overlap, but because they are really faint, it looks better than complete black without
     // overlap.
     fractionRange(end = 0.5f) { fade(QqsTileElementMatcher) }
-    anchoredTranslate(QqsTileElementMatcher, Elements.GridAnchor)
+    anchoredTranslate(QqsTileElementMatcher, ElementKeys.GridAnchor)
     fade(mediaCarousel)
 
     val translationY = ShadeHeader.Dimensions.CollapsedHeightForTransitions
@@ -69,6 +70,6 @@ private val DefaultDuration = 500.milliseconds
 private val QqsTileElementMatcher =
     object : ElementMatcher {
         override fun matches(key: ElementKey, content: ContentKey): Boolean {
-            return content == Scenes.Shade && Elements.TileElementMatcher.matches(key, content)
+            return content == Scenes.Shade && ElementKeys.TileElementMatcher.matches(key, content)
         }
     }
