@@ -23,6 +23,7 @@ import android.view.View
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -355,6 +356,10 @@ constructor(
             afterKeyguardGone = afterKeyguardGone,
             customMessage = customMessage,
         )
+    }
+
+    override fun startActivityDismissingKeyguard(options: ActivityStartOptions) {
+        activityStarterInternal.startActivityDismissingKeyguard(options)
     }
 
     override fun startActivityDismissingKeyguard(
