@@ -242,7 +242,7 @@ public class CompanionTransportManager {
                 return;
             }
 
-            transport.stop();
+            transport.close();
             notifyOnTransportsChanged();
         }
 
@@ -281,6 +281,7 @@ public class CompanionTransportManager {
         int flags = association.getTransportFlags();
         Transport transport = createTransport(association, fd, preSharedKey, flags);
         addListenersToTransport(transport);
+        transport.setOnTransportClosedListener(this::detachSystemDataTransport);
         transport.start();
         synchronized (mTransports) {
             mTransports.put(association.getId(), transport);
