@@ -69,6 +69,14 @@ constructor(
     private val glanceableHubWidgetManager by lazy { glanceableHubWidgetManagerLazy.get() }
 
     override fun start() {
+        // Do nothing on a non system user process when hsum is not enabled. See b/431515488.
+        if (
+            !glanceableHubMultiUserHelper.glanceableHubHsumFlagEnabled &&
+                !glanceableHubMultiUserHelper.isSystemUser()
+        ) {
+            return
+        }
+
         if (
             glanceableHubMultiUserHelper.glanceableHubHsumFlagEnabled &&
                 glanceableHubMultiUserHelper.isInHeadlessSystemUser()
