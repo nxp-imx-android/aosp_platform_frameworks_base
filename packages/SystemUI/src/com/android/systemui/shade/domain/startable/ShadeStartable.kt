@@ -26,6 +26,7 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.ShadeTouchLog
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.shade.TouchLogger.Companion.logTouchesTo
@@ -91,10 +92,13 @@ constructor(
             combine(
                     shadeInteractor.shadeExpansion,
                     sceneInteractorProvider.get().isTransitionUserInputOngoing,
-                ) { panelExpansion, tracking ->
+                    sceneInteractorProvider.get().transitionState,
+                ) { panelExpansion, tracking, transitionState ->
+                    val fraction =
+                        if (transitionState.isIdle(Scenes.Lockscreen)) 1f else panelExpansion
                     shadeExpansionStateManager.onPanelExpansionChanged(
-                        fraction = panelExpansion,
-                        expanded = panelExpansion > 0f,
+                        fraction = fraction,
+                        expanded = fraction > 0f,
                         tracking = tracking,
                     )
                 }
