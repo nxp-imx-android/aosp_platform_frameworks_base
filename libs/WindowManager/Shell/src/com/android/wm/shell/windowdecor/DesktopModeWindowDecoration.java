@@ -2010,7 +2010,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     @Override
     public void onMaximizeButtonHoverExit() {
-        asAppHeader(mWindowDecorViewHolder).onMaximizeWindowHoverExit();
+        final AppHeaderViewHolder appHeader = asAppHeader(mWindowDecorViewHolder);
+        if (appHeader != null) {
+            appHeader.onMaximizeWindowHoverExit();
+        }
     }
 
     /**
