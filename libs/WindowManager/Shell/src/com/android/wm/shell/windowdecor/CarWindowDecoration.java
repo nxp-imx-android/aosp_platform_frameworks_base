@@ -93,7 +93,7 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
 
         updateRelayoutParams(mRelayoutParams, taskInfo, isCaptionVisible);
 
-        relayout(mRelayoutParams, startT, finishT, wct, mRootView, mResult);
+        relayout(mRelayoutParams, startT, finishT, wct, mRootView, getLeash(), mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo
         mBgExecutor.execute(() -> mTaskOrganizer.applyTransaction(wct));
 

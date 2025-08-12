@@ -429,7 +429,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         final boolean applyTransactionOnDraw = taskInfo.isFreeform();
         relayout(taskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 hasGlobalFocus, displayExclusionRegion, /* inSyncWithTransition= */ false,
-                /* forceReinflation= */ false);
+                /* forceReinflation= */ false, getLeash());
         if (!applyTransactionOnDraw) {
             t.apply();
         }
@@ -444,7 +444,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         final boolean applyTransactionOnDraw = mTaskInfo.isFreeform();
         relayout(mTaskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 mHasGlobalFocus, mExclusionRegion, /* inSyncWithTransition= */ false,
-                /* forceReinflation= */ true);
+                /* forceReinflation= */ true, getLeash());
         if (!applyTransactionOnDraw) {
             t.apply();
         }
@@ -472,7 +472,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
             boolean hasGlobalFocus, @NonNull Region displayExclusionRegion,
-            boolean inSyncWithTransition, boolean forceReinflation) {
+            boolean inSyncWithTransition, boolean forceReinflation, SurfaceControl taskSurface) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
 
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
@@ -527,7 +527,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
         final WindowContainerTransaction wct = new WindowContainerTransaction();
 
-        relayout(mRelayoutParams, startT, finishT, wct, oldRootView, mResult);
+        relayout(mRelayoutParams, startT, finishT, wct, oldRootView, taskSurface, mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo
 
         if (!wct.isEmpty()) {
@@ -1309,7 +1309,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mUserContext,
                 mTransitions,
                 mTaskInfo,
-                mTaskSurface,
+                getLeash(),
                 mDisplayController,
                 mTaskResourceLoader,
                 mSurfaceControlTransactionSupplier,
@@ -1352,7 +1352,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private void createResizeVeilIfNeeded() {
         if (mResizeVeil != null) return;
         mResizeVeil = new ResizeVeil(mContext, mDisplayController, mTaskResourceLoader,
-                mMainDispatcher, mMainScope, mTaskSurface,
+                mMainDispatcher, mMainScope, getLeash(),
                 mSurfaceControlTransactionSupplier, mTaskInfo);
     }
 
@@ -1361,7 +1361,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     public void showResizeVeil(Rect taskBounds) {
         createResizeVeilIfNeeded();
-        mResizeVeil.showVeil(mTaskSurface, taskBounds, mTaskInfo);
+        mResizeVeil.showVeil(getLeash(), taskBounds, mTaskInfo);
     }
 
     /**
@@ -1369,7 +1369,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     public void showResizeVeil(SurfaceControl.Transaction tx, Rect taskBounds) {
         createResizeVeilIfNeeded();
-        mResizeVeil.showVeil(tx, mTaskSurface, taskBounds, mTaskInfo, false /* fadeIn */);
+        mResizeVeil.showVeil(tx, getLeash(), taskBounds, mTaskInfo, false /* fadeIn */);
     }
 
     /**
