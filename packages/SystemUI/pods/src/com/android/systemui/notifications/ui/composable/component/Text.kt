@@ -66,6 +66,7 @@ internal fun ExpandedText(content: String, maxLines: Int, modifier: Modifier = M
 @Composable
 internal fun TopLineText(
     modifier: Modifier = Modifier,
+    title: String? = null,
     appNameText: String? = null,
     headerTextSecondary: String? = null,
     headerText: String? = null,
@@ -87,9 +88,12 @@ internal fun TopLineText(
             }
         }
 
-        // TODO: b/431222735 - Add a title with a separate style.
-        if (appNameText != null) {
+        if (title != null) {
             isFirstElement = false
+            Title(title, Modifier.shrinkable(importance = 3, minWidth = reducedWidth))
+        }
+        if (appNameText != null) {
+            maybeAddSeparator()
             TopLineComponentText(
                 text = appNameText,
                 modifier = Modifier.shrinkable(importance = 1, minWidth = reducedWidth),
@@ -101,7 +105,7 @@ internal fun TopLineText(
                 text = headerTextSecondary,
                 modifier =
                     Modifier.hideable(
-                        importance = 4,
+                        importance = 3,
                         reducedWidth = reducedWidth,
                         hideWidth = hideWidth,
                     ),
