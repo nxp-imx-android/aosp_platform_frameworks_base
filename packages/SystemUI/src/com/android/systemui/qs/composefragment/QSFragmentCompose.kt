@@ -149,7 +149,7 @@ import com.android.systemui.qs.panels.shared.model.QSFragmentComposeClippingTabl
 import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.panels.ui.compose.TileGrid
-import com.android.systemui.qs.shared.ui.QuickSettings.Elements
+import com.android.systemui.qs.shared.ui.ElementKeys
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExclusionInShade
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
@@ -804,7 +804,7 @@ constructor(
                 )
         ) {
             if (viewModel.isQsEnabled) {
-                Element(Elements.QuickSettingsContent, modifier = Modifier.weight(1f)) {
+                Element(ElementKeys.QuickSettingsContent, modifier = Modifier.weight(1f)) {
                     if (alwaysCompose) {
                         // scrollState never changes
                         LaunchedEffect(Unit) {
@@ -957,7 +957,7 @@ constructor(
                 }
                 QuickSettingsTheme {
                     Element(
-                        Elements.FooterActions,
+                        ElementKeys.FooterActions,
                         Modifier.sysuiResTag(ResIdTags.qsFooterActions),
                     ) {
                         FooterActions(
@@ -1095,7 +1095,7 @@ object SceneKeys {
         object : ElementMatcher {
             override fun matches(key: ElementKey, content: ContentKey): Boolean {
                 return content == SceneKeys.QuickQuickSettings &&
-                    Elements.TileElementMatcher.matches(key, content)
+                    ElementKeys.TileElementMatcher.matches(key, content)
             }
         }
 }
