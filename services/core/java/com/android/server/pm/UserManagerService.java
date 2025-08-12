@@ -1139,7 +1139,7 @@ public class UserManagerService extends IUserManager.Stub {
         mPackagesLock = packagesLock;
         mUsers = users != null ? users : new SparseArray<>();
         mHandler = new MainHandler();
-        mNonComplianceLogger = new MultiuserNonComplianceLogger(mHandler);
+        mNonComplianceLogger = new MultiuserNonComplianceLogger(mContext, mHandler);
         mInternalExecutor = new ThreadPoolExecutor(/* corePoolSize */ 0, /* maximumPoolSize */ 1,
                 /* keepAliveTime */ 24, TimeUnit.HOURS, new LinkedBlockingQueue<>());
         mUserVisibilityMediator = new UserVisibilityMediator(mHandler);
@@ -8220,7 +8220,9 @@ public class UserManagerService extends IUserManager.Stub {
                     if (args.length > 1 && args[1].equals("reset")) {
                         mNonComplianceLogger.reset(pw);
                     } else {
-                        mNonComplianceLogger.dump(pw);
+                        try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
+                            mNonComplianceLogger.dump(ipw);
+                        }
                     }
                     return;
             }
@@ -8358,9 +8360,6 @@ public class UserManagerService extends IUserManager.Stub {
             mUserTypes.valueAt(i).dump(pw, "        ");
         }
 
-        pw.println();
-        mNonComplianceLogger.dump(pw);
-
         // NOTE: add new stuff here, as pw is closed after the try-with-resources block below
 
         // TODO(b/163423525): create IndentingPrintWriter at the beginning of dump() and use the
@@ -8370,6 +8369,12 @@ public class UserManagerService extends IUserManager.Stub {
             // Dump SystemPackageInstaller info
             ipw.println();
             mSystemPackageInstaller.dump(ipw);
+
+            ipw.println();
+            ipw.println("Non-multiuser-compliant events:");
+            ipw.increaseIndent();
+            mNonComplianceLogger.dump(ipw);
+            ipw.decreaseIndent();
         }
 
         // NOTE: pw's not available after this point as it's auto-closed by ipw, so new dump
