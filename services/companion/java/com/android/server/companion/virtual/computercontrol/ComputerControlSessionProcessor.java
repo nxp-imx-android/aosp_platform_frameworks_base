@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import android.annotation.NonNull;
+import android.app.KeyguardManager;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceParams;
@@ -45,6 +46,7 @@ public class ComputerControlSessionProcessor {
     static final int MAXIMUM_CONCURRENT_SESSIONS = 5;
 
     private final PackageManager mPackageManager;
+    private final KeyguardManager mKeyguardManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final WindowManagerInternal mWindowManagerInternal;
     private final ArraySet<IBinder> mSessions = new ArraySet<>();
@@ -53,6 +55,7 @@ public class ComputerControlSessionProcessor {
             Context context, VirtualDeviceFactory virtualDeviceFactory) {
         mVirtualDeviceFactory = virtualDeviceFactory;
         mPackageManager = context.getPackageManager();
+        mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
     }
 
@@ -63,15 +66,15 @@ public class ComputerControlSessionProcessor {
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
+        if (mKeyguardManager.isKeyguardLocked()) {
+            dispatchSessionCreationFailed(
+                    callback, params, ComputerControlSession.ERROR_KEYGUARD_LOCKED);
+            return;
+        }
         synchronized (mSessions) {
             if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
-                try {
-                    callback.onSessionCreationFailed(
-                            ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
-                            + " about session creation failure");
-                }
+                dispatchSessionCreationFailed(
+                        callback, params, ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
                 return;
             }
             IComputerControlSession session = new ComputerControlSessionImpl(
@@ -85,6 +88,16 @@ public class ComputerControlSessionProcessor {
                 Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
                         + " about session creation success");
             }
+        }
+    }
+
+    private void dispatchSessionCreationFailed(IComputerControlSessionCallback callback,
+            ComputerControlSessionParams params, int reason) {
+        try {
+            callback.onSessionCreationFailed(reason);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
+                    + " about session creation failure");
         }
     }
 

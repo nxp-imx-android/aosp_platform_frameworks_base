@@ -19,10 +19,12 @@ package com.android.server.companion.virtual.computercontrol;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MAXIMUM_CONCURRENT_SESSIONS;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.KeyguardManager;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
@@ -30,6 +32,7 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Binder;
 import android.platform.test.annotations.Presubmit;
 import android.view.Surface;
@@ -54,6 +57,8 @@ import org.mockito.MockitoAnnotations;
 public class ComputerControlSessionProcessorTest {
 
     @Mock
+    private KeyguardManager mKeyguardManager;
+    @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
@@ -73,8 +78,7 @@ public class ComputerControlSessionProcessorTest {
             .setDisplayAlwaysUnlocked(true)
             .build();
 
-    private final Context mContext =
-            InstrumentationRegistry.getInstrumentation().getTargetContext();
+    private Context mContext;
     private ComputerControlSessionProcessor mProcessor;
 
     private AutoCloseable mMockitoSession;
@@ -86,6 +90,10 @@ public class ComputerControlSessionProcessorTest {
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
 
+        mContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
+        when(mContext.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
+
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
@@ -95,6 +103,16 @@ public class ComputerControlSessionProcessorTest {
     @After
     public void tearDown() throws Exception {
         mMockitoSession.close();
+    }
+
+    @Test
+    public void keyguardLocked_sessionNotCreated() throws Exception {
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+
+        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
+                mParams, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback)
+                .onSessionCreationFailed(ComputerControlSession.ERROR_KEYGUARD_LOCKED);
     }
 
     @Test
