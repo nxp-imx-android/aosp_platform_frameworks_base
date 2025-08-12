@@ -42,6 +42,7 @@ class OrderMenuPreference @JvmOverloads constructor(
     override var menuItemClickListener: MenuHandler.OnMenuItemClickListener? = null
     override var menuButton: MaterialButton? = null
     override var preference: Preference? = this
+    override var showIconsInPopupMenu: Boolean = false
 
     var number: Int = 0
         set(value) {
@@ -66,6 +67,8 @@ class OrderMenuPreference @JvmOverloads constructor(
             context.withStyledAttributes(attrs, R.styleable.MenuPreference) {
                 menuResId = getResourceId(R.styleable.MenuPreference_menu, 0)
                 number = getInt(R.styleable.MenuPreference_number, 0)
+                showIconsInPopupMenu =
+                    getBoolean(R.styleable.MenuPreference_showIconsInPopupMenu, false)
             }
         }
     }
