@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.annotation.SuppressLint
 import android.graphics.RectF
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
@@ -41,6 +42,7 @@ import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -54,6 +56,7 @@ import kotlinx.coroutines.flow.onStart
  * ViewModel for the list of notifications, including child elements like the Clear all/Manage
  * button at the bottom (the footer) and the "No notifications" text (the empty shade).
  */
+@SuppressLint("FlowExposedFromViewModel") // because all flows from this class are bound to a View
 class NotificationListViewModel
 @Inject
 constructor(
@@ -98,7 +101,10 @@ constructor(
                 shadeInteractor.qsExpansion
                     .map { it >= QS_EXPANSION_THRESHOLD }
                     .distinctUntilChanged(),
-                shadeModeInteractor.shadeMode.map { it == ShadeMode.Split },
+                shadeModeInteractor.shadeMode.map {
+                    @Suppress("DEPRECATION") // to handle split shade
+                    it == ShadeMode.Split
+                },
                 notificationStackInteractor.isShowingOnLockscreen,
             ) { hasNotifications, qsExpandedEnough, splitShade, isShowingOnLockscreen ->
                 when {
@@ -367,6 +373,7 @@ constructor(
      * Note that this list can contain both notification keys, as well as keys for other types of
      * chips like screen recording.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val visibleStatusBarChips: Flow<Map<String, RectF>> =
         shadeStatusBarComponentsInteractor.ongoingActivityChipsViewModel.flatMapLatest {
             it.visibleChipsWithBounds

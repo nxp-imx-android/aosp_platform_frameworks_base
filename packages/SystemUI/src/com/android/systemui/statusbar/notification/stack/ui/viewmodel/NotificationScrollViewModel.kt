@@ -19,6 +19,7 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.annotation.SuppressLint
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
@@ -66,6 +67,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 
 /** ViewModel which represents the state of the NSSL/Controller in the world of flexiglass */
+@SuppressLint("FlowExposedFromViewModel") // because all flows from this class are bound to a View
 class NotificationScrollViewModel
 @AssistedInject
 constructor(
@@ -76,7 +78,7 @@ constructor(
     shadeModeInteractor: ShadeModeInteractor,
     bouncerInteractor: BouncerInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
-    private val sceneInteractor: SceneInteractor,
+    sceneInteractor: SceneInteractor,
     // TODO(b/336364825) Remove Lazy when SceneContainerFlag is released -
     // while the flag is off, creating this object too early results in a crash
     keyguardInteractor: Lazy<KeyguardInteractor>,
@@ -282,6 +284,7 @@ constructor(
                 shadeInteractor.qsExpansion,
                 sceneInteractor.transitionState,
             ) { shadeMode, qsExpansion, transition ->
+                @Suppress("DEPRECATION") // to handle split shade
                 when (shadeMode) {
                     is ShadeMode.Dual ->
                         // Don't clip notifications while we are opening the DualShade panel to
