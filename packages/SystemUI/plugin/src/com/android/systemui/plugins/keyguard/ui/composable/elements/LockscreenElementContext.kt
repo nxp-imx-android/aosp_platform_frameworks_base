@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.plugins.keyguard.VRectF
-import kotlin.collections.mutableSetOf
 
 /** Combined context for lockscreen elements. Contains relevant rendering parameters. */
 data class LockscreenElementContext(
@@ -30,10 +29,4 @@ data class LockscreenElementContext(
 
     /** Callback executed when an element is positioned by compose. */
     val onElementPositioned: (ElementKey, VRectF) -> Unit,
-) {
-    /**
-     * A list of all the elements that have been rendered so far. This allows us to prevent crashes
-     * that occur when the same element is rendered twice at different locations.
-     */
-    val history = mutableSetOf<ElementKey>()
-}
+)

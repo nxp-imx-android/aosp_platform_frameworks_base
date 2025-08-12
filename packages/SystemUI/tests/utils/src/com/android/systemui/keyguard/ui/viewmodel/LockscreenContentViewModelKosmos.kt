@@ -19,14 +19,12 @@ package com.android.systemui.keyguard.ui.viewmodel
 import com.android.systemui.biometrics.authController
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryBypassInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardBlueprintInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
-import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 
@@ -36,7 +34,6 @@ val Kosmos.lockscreenContentViewModelFactory by Fixture {
             keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback
         ): LockscreenContentViewModel {
             return LockscreenContentViewModel(
-                clockInteractor = keyguardClockInteractor,
                 interactor = keyguardBlueprintInteractor,
                 authController = authController,
                 touchHandlingFactory = keyguardTouchHandlingViewModelFactory,
@@ -47,9 +44,6 @@ val Kosmos.lockscreenContentViewModelFactory by Fixture {
                 keyguardTransitionAnimationCallbackDelegator =
                     keyguardTransitionAnimationCallbackDelegator,
                 keyguardMediaViewModelFactory = keyguardMediaViewModelFactory,
-                keyguardSmartspaceViewModel = keyguardSmartspaceViewModel,
-                keyguardClockViewModel = keyguardClockViewModel,
-                activeNotificationsInteractor = activeNotificationsInteractor,
                 keyguardTransitionAnimationCallback = keyguardTransitionAnimationCallback,
                 wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
             )

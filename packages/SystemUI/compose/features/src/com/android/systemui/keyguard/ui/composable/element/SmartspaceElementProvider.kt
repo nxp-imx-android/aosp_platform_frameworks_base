@@ -36,16 +36,13 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceCards
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceDateLargeClock
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceDateSmallClock
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceWeatherLargeClock
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceWeatherSmallClock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import javax.inject.Inject
+import kotlin.collections.List
 
 class SmartspaceElementProvider
 @Inject
@@ -56,12 +53,12 @@ constructor(
     private val keyguardSmartspaceViewModel: KeyguardSmartspaceViewModel,
     private val aodBurnInViewModel: AodBurnInViewModel,
 ) : LockscreenElementProvider {
-    override val elements by lazy {
+    override val elements: List<LockscreenElement> by lazy {
         listOf(
-            DateElement(SmartspaceDateLargeClock, isLargeClock = true),
-            DateElement(SmartspaceDateSmallClock, isLargeClock = false),
-            WeatherElement(SmartspaceWeatherLargeClock, isLargeClock = true),
-            WeatherElement(SmartspaceWeatherSmallClock, isLargeClock = false),
+            DateElement(Smartspace.Date.LargeClock, isLargeClock = true),
+            DateElement(Smartspace.Date.SmallClock, isLargeClock = false),
+            WeatherElement(Smartspace.Weather.LargeClock, isLargeClock = true),
+            WeatherElement(Smartspace.Weather.SmallClock, isLargeClock = false),
             cardsElement,
         )
     }
@@ -117,7 +114,7 @@ constructor(
 
     private val cardsElement =
         object : LockscreenElement {
-            override val key = SmartspaceCards
+            override val key = Smartspace.Cards
             override val context = this@SmartspaceElementProvider.context
 
             @Composable

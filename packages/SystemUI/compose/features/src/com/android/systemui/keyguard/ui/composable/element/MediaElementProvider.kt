@@ -1,0 +1,131 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.keyguard.ui.composable.element
+
+import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
+import com.android.compose.animation.scene.ContentScope
+import com.android.systemui.Flags.mediaControlsInCompose
+import com.android.systemui.keyguard.ui.composable.element.LockscreenUpperRegionElementProvider.Companion.LayoutType
+import com.android.systemui.keyguard.ui.composable.element.LockscreenUpperRegionElementProvider.Companion.getLayoutType
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardMediaViewModel
+import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.media.controls.ui.composable.MediaCarousel
+import com.android.systemui.media.controls.ui.controller.MediaCarouselController
+import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.dagger.MediaModule
+import com.android.systemui.media.remedia.ui.compose.Media
+import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+import com.android.systemui.plugins.keyguard.VRectF
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
+import javax.inject.Inject
+import javax.inject.Named
+import kotlin.collections.List
+
+class MediaElementProvider
+@Inject
+constructor(
+    @ShadeDisplayAware private val context: Context,
+    private val mediaCarouselController: MediaCarouselController,
+    @param:Named(MediaModule.KEYGUARD) private val mediaHost: MediaHost,
+    private val mediaViewModelFactory: KeyguardMediaViewModel.Factory,
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy {
+        listOf(if (mediaControlsInCompose()) mediaCarouselElement else mediaCarouselLegacyElement)
+    }
+
+    private val mediaCarouselElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.MediaCarousel
+            override val context = this@MediaElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                val horizontalPadding =
+                    when (getLayoutType()) {
+                        LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
+                        LayoutType.NARROW ->
+                            dimensionResource(R.dimen.notification_side_paddings) +
+                                dimensionResource(R.dimen.notification_panel_margin_horizontal)
+                    }
+
+                val viewModel =
+                    rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
+
+                AnimatedVisibility(viewModel.isMediaVisible) {
+                    Element(
+                        key = Media.Elements.mediaCarousel,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+                    ) {
+                        Media(
+                            viewModelFactory = viewModel.mediaViewModelFactory,
+                            presentationStyle = MediaPresentationStyle.Default,
+                            behavior = viewModel.mediaUiBehavior,
+                            onDismissed = viewModel::onSwipeToDismiss,
+                        )
+                    }
+                }
+            }
+        }
+
+    private val mediaCarouselLegacyElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.MediaCarousel
+            override val context = this@MediaElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                val horizontalPadding =
+                    when (getLayoutType()) {
+                        LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
+                        LayoutType.NARROW ->
+                            dimensionResource(R.dimen.notification_side_paddings) +
+                                dimensionResource(R.dimen.notification_panel_margin_horizontal)
+                    }
+
+                val viewModel =
+                    rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
+
+                AnimatedVisibility(viewModel.isMediaVisible) {
+                    MediaCarousel(
+                        isVisible = true,
+                        mediaHost = mediaHost,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+                        carouselController = mediaCarouselController,
+                        onReleaseCallback = { context.onElementPositioned(key, VRectF.ZERO) },
+                    )
+                }
+            }
+        }
+}

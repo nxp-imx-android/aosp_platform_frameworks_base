@@ -16,24 +16,25 @@
 
 package com.android.systemui.keyguard.ui.composable.blueprint
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.element.AmbientIndicationElement
-import com.android.systemui.keyguard.ui.composable.element.AodNotificationIconsElement
-import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElement
+import com.android.systemui.keyguard.ui.composable.element.AodNotificationIconsElementProvider
+import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElementProvider
 import com.android.systemui.keyguard.ui.composable.element.ClockRegionElementProvider
 import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
 import com.android.systemui.keyguard.ui.composable.element.LockElement
-import com.android.systemui.keyguard.ui.composable.element.MediaCarouselElement
-import com.android.systemui.keyguard.ui.composable.element.NotificationElement
+import com.android.systemui.keyguard.ui.composable.element.LockscreenElementFactoryImpl
+import com.android.systemui.keyguard.ui.composable.element.LockscreenElementFactoryImpl.Companion.createRemembered
+import com.android.systemui.keyguard.ui.composable.element.LockscreenUpperRegionElementProvider
+import com.android.systemui.keyguard.ui.composable.element.MediaElementProvider
+import com.android.systemui.keyguard.ui.composable.element.NotificationStackElementProvider
 import com.android.systemui.keyguard.ui.composable.element.SettingsMenuElement
 import com.android.systemui.keyguard.ui.composable.element.ShortcutElement
 import com.android.systemui.keyguard.ui.composable.element.SmartspaceElementProvider
@@ -43,59 +44,50 @@ import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
-import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockSmall
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceCards
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import java.util.Optional
 import javax.inject.Inject
 
-/**
- * Renders the lockscreen scene when showing with the default layout (e.g. vertical phone form
- * factor).
- */
+/** Renders the lockscreen scene when showing a standard phone or tablet layout */
 class DefaultBlueprint
 @Inject
 constructor(
     private val keyguardClockViewModel: KeyguardClockViewModel,
     private val aodBurnInViewModel: AodBurnInViewModel,
     private val statusBarElement: StatusBarElement,
+    private val upperRegionElementProvider: LockscreenUpperRegionElementProvider,
     private val lockElement: LockElement,
     private val ambientIndicationElementOptional: Optional<AmbientIndicationElement>,
     private val shortcutElement: ShortcutElement,
     private val indicationAreaElement: IndicationAreaElement,
     private val settingsMenuElement: SettingsMenuElement,
-    private val notificationsElement: NotificationElement,
-    private val aodPromotedNotificationAreaElement: AodPromotedNotificationAreaElement,
-    private val aodNotificationIconsElement: AodNotificationIconsElement,
+    private val notificationStackElementProvider: NotificationStackElementProvider,
+    private val aodNotificationIconElementProvider: AodNotificationIconsElementProvider,
+    private val aodPromotedNotificationElementProvider: AodPromotedNotificationAreaElementProvider,
     private val smartspaceElementProvider: SmartspaceElementProvider,
     private val clockRegionElementProvider: ClockRegionElementProvider,
-    private val mediaCarouselElement: MediaCarouselElement,
-    @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
+    private val mediaElementProvider: MediaElementProvider,
+    private val elementFactoryBuilder: LockscreenElementFactoryImpl.Builder,
 ) : ComposableLockscreenSceneBlueprint {
 
     override val id: String = "default"
 
     @Composable
     override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
-        val currentClock = keyguardClockViewModel.currentClock.collectAsStateWithLifecycle()
+        val currentClock by keyguardClockViewModel.currentClock.collectAsStateWithLifecycle()
         val elementFactory =
-            remember(
-                currentClock,
-                smartspaceElementProvider.elements,
-                clockRegionElementProvider.elements,
-            ) {
-                LockscreenElementFactory.build(blueprintLog) { putAll ->
-                    putAll(smartspaceElementProvider.elements)
-                    putAll(clockRegionElementProvider.elements)
-                    currentClock.value?.apply {
-                        putAll(smallClock.layout.elements)
-                        putAll(largeClock.layout.elements)
-                    }
-                }
-            }
+            elementFactoryBuilder.createRemembered(
+                upperRegionElementProvider,
+                mediaElementProvider,
+                smartspaceElementProvider,
+                clockRegionElementProvider,
+                notificationStackElementProvider,
+                aodNotificationIconElementProvider,
+                aodPromotedNotificationElementProvider,
+                currentClock?.smallClock?.layout,
+                currentClock?.largeClock?.layout,
+            )
 
         val burnIn = rememberBurnIn(keyguardClockViewModel)
         val elementContext =
@@ -108,13 +100,16 @@ constructor(
                     ),
                 onElementPositioned = { key, rect ->
                     when (key) {
-                        ClockSmall -> {
+                        LockscreenElementKeys.Clock.Small -> {
                             burnIn.onSmallClockTopChanged(rect.top)
                             viewModel.setSmallClockBottom(rect.bottom)
                         }
-                        SmartspaceCards -> {
+                        LockscreenElementKeys.Smartspace.Cards -> {
                             burnIn.onSmartspaceTopChanged(rect.top)
                             viewModel.setSmartspaceCardBottom(rect.bottom)
+                        }
+                        LockscreenElementKeys.MediaCarousel -> {
+                            viewModel.setMediaPlayerBottom(rect.bottom)
                         }
                     }
                 },
@@ -130,27 +125,6 @@ constructor(
                 elementContext = elementContext,
                 statusBar = {
                     with(statusBarElement) { StatusBar(modifier = Modifier.fillMaxWidth()) }
-                },
-                media = {
-                    with(mediaCarouselElement) {
-                        KeyguardMediaCarousel(
-                            isFullWidthShade = viewModel.isFullWidthShade,
-                            onBottomChanged = viewModel::setMediaPlayerBottom,
-                        )
-                    }
-                },
-                notifications = {
-                    Box(modifier = Modifier.fillMaxHeight()) {
-                        Column {
-                            with(aodPromotedNotificationAreaElement) {
-                                AodPromotedNotificationArea()
-                            }
-                            with(aodNotificationIconsElement) { AodNotificationIcons() }
-                        }
-                        with(notificationsElement) {
-                            Notifications(areNotificationsVisible = true, burnInParams = null)
-                        }
-                    }
                 },
                 lockIcon = { with(lockElement) { LockIcon() } },
                 startShortcut = {

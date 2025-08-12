@@ -36,18 +36,14 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockLarge
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockRegionLarge
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockRegionSmall
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockSmall
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceCards
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceDateLargeClock
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceDateSmallClock
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceWeatherLargeClock
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceWeatherSmallClock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
+import kotlin.collections.List
 
 /** Provides default clock regions, if not overridden by the clock itself */
 class ClockRegionElementProvider
@@ -56,11 +52,13 @@ constructor(
     @ShadeDisplayAware private val context: Context,
     private val keyguardClockViewModel: KeyguardClockViewModel,
 ) : LockscreenElementProvider {
-    override val elements by lazy { listOf(smallClockRegionElement, largeClockRegionElement) }
+    override val elements: List<LockscreenElement> by lazy {
+        listOf(smallClockRegionElement, largeClockRegionElement)
+    }
 
     private val smallClockRegionElement =
         object : LockscreenElement {
-            override val key = ClockRegionSmall
+            override val key = LockscreenElementKeys.Clock.Region.Small
             override val context = this@ClockRegionElementProvider.context
 
             @Composable
@@ -82,7 +80,7 @@ constructor(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = paddingModifier,
                     ) {
-                        factory.lockscreenElement(ClockSmall, context)
+                        factory.lockscreenElement(Clock.Small, context)
 
                         if (!shouldDateWeatherBeBelowSmallClock) {
                             Column(
@@ -90,8 +88,8 @@ constructor(
                                 verticalArrangement = Arrangement.spacedBy(4.dp),
                                 modifier = context.burnInModifier,
                             ) {
-                                factory.lockscreenElement(SmartspaceDateSmallClock, context)
-                                factory.lockscreenElement(SmartspaceWeatherSmallClock, context)
+                                factory.lockscreenElement(Smartspace.Date.SmallClock, context)
+                                factory.lockscreenElement(Smartspace.Weather.SmallClock, context)
                             }
                         }
                     }
@@ -102,19 +100,19 @@ constructor(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = paddingModifier.then(context.burnInModifier),
                         ) {
-                            factory.lockscreenElement(SmartspaceDateSmallClock, context)
-                            factory.lockscreenElement(SmartspaceWeatherSmallClock, context)
+                            factory.lockscreenElement(Smartspace.Date.SmallClock, context)
+                            factory.lockscreenElement(Smartspace.Weather.SmallClock, context)
                         }
                     }
 
-                    factory.lockscreenElement(SmartspaceCards, context)
+                    factory.lockscreenElement(Smartspace.Cards, context)
                 }
             }
         }
 
     private val largeClockRegionElement =
         object : LockscreenElement {
-            override val key = ClockRegionLarge
+            override val key = LockscreenElementKeys.Clock.Region.Large
             override val context = this@ClockRegionElementProvider.context
 
             @Composable
@@ -126,17 +124,16 @@ constructor(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                 ) {
-                    factory.lockscreenElement(SmartspaceCards, context)
-                    factory.lockscreenElement(ClockLarge, context)
+                    factory.lockscreenElement(Smartspace.Cards, context)
+                    factory.lockscreenElement(Clock.Large, context)
 
-                    // TODO(b/432451019): This ends up with 0 height and doesn't render
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = context.burnInModifier,
                     ) {
-                        factory.lockscreenElement(SmartspaceDateLargeClock, context)
-                        factory.lockscreenElement(SmartspaceWeatherLargeClock, context)
+                        factory.lockscreenElement(Smartspace.Date.LargeClock, context)
+                        factory.lockscreenElement(Smartspace.Weather.LargeClock, context)
                     }
                 }
             }

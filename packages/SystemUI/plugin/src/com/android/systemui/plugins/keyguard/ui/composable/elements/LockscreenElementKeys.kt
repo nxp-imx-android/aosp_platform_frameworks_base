@@ -23,20 +23,62 @@ import com.android.compose.animation.scene.ElementKey
  * process and the client. These are similar to the view ids used previously.
  */
 object LockscreenElementKeys {
+    /** Root element of the entire lockcsreen */
     val Root = ElementKey("LockscreenRoot")
 
-    // Element Keys for top level large/small composables
-    val ClockLarge = ElementKey("LargeClock")
-    val ClockSmall = ElementKey("SmallClock")
+    /** All lockscreen elements above the lock icon */
+    val UpperRegion = ElementKey("LockscreenUpperRegion")
 
-    // Clock Regions include smartspace & the date/weather view
-    val ClockRegionLarge = ElementKey("LargeClockRegion")
-    val ClockRegionSmall = ElementKey("SmallClockRegion")
+    /** The UMO's lockscreen element */
+    val MediaCarousel = ElementKey("LockscreenMediaCarousel")
 
-    // Lockscreen Defined Elements - Smartspace
-    val SmartspaceCards = ElementKey("SmartspaceCards")
-    val SmartspaceDateLargeClock = ElementKey("SmartspaceDate-LargeClock")
-    val SmartspaceDateSmallClock = ElementKey("SmartspaceDate-SmallClock")
-    val SmartspaceWeatherLargeClock = ElementKey("SmartspaceWeather-LargeClock")
-    val SmartspaceWeatherSmallClock = ElementKey("SmartspaceWeather-SmallClock")
+    object Notifications {
+        /** The notification stack display on lockscreen */
+        val Stack = ElementKey("LockscreenNotificationStack")
+
+        object AOD {
+            /** Icon shelf for AOD display */
+            val IconShelf = ElementKey("AODNotificationIconShelf")
+
+            /** Notifications for the AOD Promoted Region */
+            val Promoted = ElementKey("AODPromotedNotifications")
+        }
+    }
+
+    /** Element Keys for composables which wrap clock views */
+    object Clock {
+        val Large = ElementKey("LargeClock")
+        val Small = ElementKey("SmallClock")
+
+        /** The clock regions include the clock, smartspace, and the date/weather view */
+        object Region {
+            val Large = ElementKey("LargeClockRegion")
+            val Small = ElementKey("SmallClockRegion")
+        }
+    }
+
+    /** Smartspace provided lockscreen elements */
+    object Smartspace {
+        /** The card view is the large smartspace view which shows contextual information. */
+        val Cards = ElementKey("SmartspaceCards")
+
+        /**
+         * Elements for the current date view. The large and small clock version use distinct keys
+         * so that we can differentiate between them for animations when they are both displayed.
+         */
+        object Date {
+            val LargeClock = ElementKey("SmartspaceDate-LargeClock")
+            val SmallClock = ElementKey("SmartspaceDate-SmallClock")
+        }
+
+        /**
+         * Elements for the standalone current weather view. The large and small clock version use
+         * distinct keys so that we can differentiate between them for animations when they are both
+         * displayed.
+         */
+        object Weather {
+            val LargeClock = ElementKey("SmartspaceWeather-LargeClock")
+            val SmallClock = ElementKey("SmartspaceWeather-SmallClock")
+        }
+    }
 }

@@ -21,7 +21,9 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -30,12 +32,13 @@ import kotlinx.coroutines.flow.flowOf
 class KeyguardMediaViewModel
 @AssistedInject
 constructor(
-    mediaCarouselInteractor: MediaCarouselInteractor,
-    keyguardInteractor: KeyguardInteractor,
-    shadeModeInteractor: ShadeModeInteractor,
+    val mediaViewModelFactory: MediaViewModel.Factory,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
+    private val keyguardInteractor: KeyguardInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("KeyguardMediaViewModel.hydrator")
+
     /**
      * Whether media carousel is visible on lockscreen. Media may be presented on lockscreen but
      * still hidden on certain surfaces like AOD
@@ -53,6 +56,15 @@ constructor(
                 },
             initialValue =
                 !keyguardInteractor.isDozing.value && mediaCarouselInteractor.hasActiveMedia.value,
+        )
+
+    fun onSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
+
+    val mediaUiBehavior =
+        MediaUiBehavior(
+            isCarouselDismissible = true,
+            isCarouselScrollingEnabled = true,
+            carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
         )
 
     override suspend fun onActivated(): Nothing {

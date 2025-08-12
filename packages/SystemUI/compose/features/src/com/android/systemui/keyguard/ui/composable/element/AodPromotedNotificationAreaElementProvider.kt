@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.composable.element
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -26,15 +27,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
-import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
-import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
@@ -42,23 +47,40 @@ import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
 import javax.inject.Inject
+import kotlin.collections.List
 
 @SysUISingleton
-class AodPromotedNotificationAreaElement
+class AodPromotedNotificationAreaElementProvider
 @Inject
 constructor(
-    private val aodBurnInViewModel: AodBurnInViewModel,
+    @ShadeDisplayAware private val context: Context,
     private val keyguardRootViewModel: KeyguardRootViewModel,
     private val aodPromotedNotificationViewModelFactory: AODPromotedNotificationViewModel.Factory,
-    private val keyguardClockViewModel: KeyguardClockViewModel,
-) {
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(promotedNotificationElement) }
 
-    @Composable
-    fun AodPromotedNotificationArea(modifier: Modifier = Modifier) {
-        if (!PromotedNotificationUi.isEnabled) {
-            return
+    private val promotedNotificationElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.Notifications.AOD.Promoted
+            override val context = this@AodPromotedNotificationAreaElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                if (PromotedNotificationUi.isEnabled) {
+                    AodPromotedNotificationArea(factory, context)
+                }
+            }
         }
 
+    @Composable
+    private fun ContentScope.AodPromotedNotificationArea(
+        factory: LockscreenElementFactory,
+        context: LockscreenElementContext,
+        modifier: Modifier = Modifier,
+    ) {
         val isVisible by
             keyguardRootViewModel.isAodPromotedNotifVisible.collectAsStateWithLifecycle()
         val transitionState = remember { MutableTransitionState(isVisible.value) }
@@ -68,13 +90,12 @@ constructor(
                 isVisible.stopAnimating()
             }
         }
-        val burnIn = rememberBurnIn(keyguardClockViewModel)
 
         AnimatedVisibility(
             visibleState = transitionState,
             enter = if (isVisible.isAnimating) fadeIn() else EnterTransition.None,
             exit = if (isVisible.isAnimating) fadeOut() else ExitTransition.None,
-            modifier = modifier.burnInAware(aodBurnInViewModel, burnIn.parameters),
+            modifier = modifier.then(context.burnInModifier),
         ) {
             AODPromotedNotification(
                 viewModelFactory = aodPromotedNotificationViewModelFactory,
