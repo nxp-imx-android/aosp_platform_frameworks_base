@@ -133,7 +133,7 @@ public final class MessageStack {
      * Iterates through messages and creates a reverse-ordered chain of messages to remove.
      * @return true if any messages were removed, false otherwise
      */
-    public boolean updateFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
+    public boolean moveMatchingToFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
             Object object, Runnable r, long when) {
         Message current = (Message) sTop.getAcquire(this);
         Message prev = null;
