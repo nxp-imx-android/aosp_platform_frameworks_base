@@ -123,6 +123,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
@@ -529,6 +530,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-ExitImmersiveToDesktopWithKeyboardShortcutTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutTest"],
 }
 
 test_module_config {

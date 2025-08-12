@@ -68,6 +68,7 @@ test_module_config {
         "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.EnterDesktopFromKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.MaximizeAppWithKeyboardFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.MinimizeAppsWithKeyboardFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardFlickerTest",
@@ -267,6 +268,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-ExitImmersiveToDesktopWithKeyboardShortcutFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutFlickerTest"],
 }
 
 test_module_config {
