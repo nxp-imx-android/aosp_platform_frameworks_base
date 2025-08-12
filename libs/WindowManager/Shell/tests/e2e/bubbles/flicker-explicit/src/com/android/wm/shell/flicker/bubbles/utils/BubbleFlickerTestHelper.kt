@@ -18,6 +18,7 @@ package com.android.wm.shell.flicker.bubbles.utils
 
 import android.content.Context
 import android.platform.systemui_tapl.ui.Bubble
+import android.platform.systemui_tapl.ui.BubbleBarItem
 import android.platform.systemui_tapl.ui.Root
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.apphelpers.CalculatorAppHelper
@@ -27,7 +28,6 @@ import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.parsers.WindowManagerStateHelper
-import androidx.annotation.IntRange
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -39,6 +39,12 @@ import com.android.launcher3.tapl.AppIcon
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.wm.shell.Flags
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_ALL_APPS
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_HOME_SCREEN
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_TASK_BAR
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.DismissSource.FROM_BUBBLE_BAR_HANDLE
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.DismissSource.FROM_BUBBLE_BAR_ITEM
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.DismissSource.FROM_FLOATING_BUBBLE_ICON
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import com.google.common.truth.Truth.assertWithMessage
 import java.io.File
@@ -56,13 +62,13 @@ internal object BubbleFlickerTestHelper {
      * @param testApp the test app to launch into bubble
      * @param tapl the [LauncherInstrumentation]
      * @param wmHelper the [WindowManagerStateHelper]
+     * @param fromSource the source of launching bubble
      */
     fun launchBubbleViaBubbleMenu(
         testApp: StandardAppHelper,
         tapl: LauncherInstrumentation,
         wmHelper: WindowManagerStateHelper,
-        @IntRange(from = FIRST_APP_ICON_SOURCE.toLong(), to = LAST_APP_ICON_SOURCE.toLong())
-        fromSource: Int = FROM_ALL_APPS,
+        fromSource: BubbleLaunchSource = FROM_ALL_APPS,
     ) {
         val appName = testApp.appName
         val workspace = tapl.goHome()
@@ -91,7 +97,6 @@ internal object BubbleFlickerTestHelper {
                     workspace.getWorkspaceAppIcon(appName)
                 }
             }
-            else -> error("Unknown fromSource: $fromSource")
         }
         launchAndWaitForBubbleAppExpanded(testApp, appIcon, wmHelper)
     }
@@ -200,8 +205,7 @@ internal object BubbleFlickerTestHelper {
 
         val bubbles = Root.get().expandedBubbleStack.bubbles
         val bubbleAppIcon = bubbles.find { bubble ->
-            // Bubble's content description contains app's package name.
-            bubble.contentDescription().contains(appSwitchTo.packageName)
+            bubble.containsBubbleApp(appSwitchTo)
         } ?: error(
             "Can't find the bubble with ${appSwitchTo.packageName}. "
                     + "Bubbles are ${bubbles.dumpBubbles()}"
@@ -244,22 +248,15 @@ internal object BubbleFlickerTestHelper {
     /**
      * Dismisses the bubble app via dragging the bubble to dismiss view.
      *
+     * @param testApp the bubble app to dismiss
      * @param wmHelper the [WindowManagerStateHelper]
+     * @param previousApp the last focused bubble app, which defaults to `null`
      */
-    fun dismissBubbleAppViaBubbleView(wmHelper: WindowManagerStateHelper) {
-        // Checks bubble is showing.
-        wmHelper
-            .StateSyncBuilder()
-            .add(ConditionsFactory.isWMStateComplete())
-            .withAppTransitionIdle()
-            .withBubbleShown()
-            .waitForAndVerify()
-
-        // Drag the bubble icon to the position of dismiss view to dismiss bubble app.
-        Root.get().expandedBubbleStack.bubbles[0].dismiss()
-
-        waitAndAssertBubbleAppDismissed(wmHelper)
-    }
+    fun dismissBubbleAppViaBubbleView(
+        testApp: StandardAppHelper,
+        wmHelper: WindowManagerStateHelper,
+        previousApp: StandardAppHelper? = null,
+    ) = dismissBubble(testApp, wmHelper, FROM_FLOATING_BUBBLE_ICON, previousApp)
 
     /**
      * Dismisses the bubble app via dragging the bubble bar handle to dismiss view.
@@ -270,12 +267,69 @@ internal object BubbleFlickerTestHelper {
     fun dismissBubbleAppViaBubbleBarHandle(
         testApp: StandardAppHelper,
         wmHelper: WindowManagerStateHelper,
+        previousApp: StandardAppHelper? = null,
+    ) = dismissBubble(testApp, wmHelper, FROM_BUBBLE_BAR_HANDLE, previousApp)
+
+    /**
+     * Dismisses the bubble app via dragging bubble bar item to dismiss view.
+     *
+     * @param testApp the bubble app to dismiss
+     * @param wmHelper the [WindowManagerStateHelper]
+     * @param previousApp the last focused bubble app, which defaults to `null`
+     */
+    fun dismissBubbleAppViaBubbleBarItem(
+        testApp: StandardAppHelper,
+        wmHelper: WindowManagerStateHelper,
+        previousApp: StandardAppHelper? = null,
+    ) = dismissBubble(testApp, wmHelper, FROM_BUBBLE_BAR_ITEM, previousApp)
+
+    private fun dismissBubble(
+        testApp: StandardAppHelper,
+        wmHelper: WindowManagerStateHelper,
+        from: DismissSource,
+        previousApp: StandardAppHelper? = null,
     ) {
-        waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+        if (from == FROM_BUBBLE_BAR_HANDLE) {
+            // bubble bar handle is only available when bubble app is expanded.
+            waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+        } else {
+            // Checks bubble is showing.
+            wmHelper
+                .StateSyncBuilder()
+                .add(ConditionsFactory.isWMStateComplete())
+                .withAppTransitionIdle()
+                .withBubbleShown()
+                .waitForAndVerify()
+        }
 
-        Root.get().expandedBubbleStack.bubbleBarHandle.dragToDismiss()
+        when (from) {
+            FROM_FLOATING_BUBBLE_ICON -> {
+                Root.get().expandedBubbleStack.bubbles.apply {
+                    find { bubble -> bubble.containsBubbleApp(testApp) }
+                    ?.dismiss()
+                    ?: error(
+                        "Can't find the bubble with ${testApp.packageName}. "
+                                + "Bubbles are ${dumpBubbles()}"
+                    )
+                }
+            }
+            FROM_BUBBLE_BAR_HANDLE -> {
+                Root.get().expandedBubbleStack.bubbleBarHandle.dragToDismiss()
+            }
+            FROM_BUBBLE_BAR_ITEM -> {
+                Root.get().bubbleBar.bubbles.find { item ->
+                    item.containsBubbleApp(testApp)
+                }
+                    ?.dragToDismiss()
+                    ?: error("Can't find the bubble bar item")
+            }
+        }
 
-        waitAndAssertBubbleAppDismissed(wmHelper)
+        if (previousApp != null) {
+            waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+        } else {
+            waitAndVerifyBubbleGone(wmHelper)
+        }
     }
 
     /**
@@ -417,30 +471,29 @@ internal object BubbleFlickerTestHelper {
             .waitForAndVerify()
     }
 
-    private fun waitAndAssertBubbleAppDismissed(wmHelper: WindowManagerStateHelper) {
-        wmHelper
-            .StateSyncBuilder()
-            .add(ConditionsFactory.isWMStateComplete())
-            .withAppTransitionIdle()
-            .withBubbleGone()
-            .waitForAndVerify()
-    }
-
     private val UiDevice.bubbleBar: UiObject2?
         get() = wait(Until.findObject(launcherSelector(RES_ID_BUBBLE_BAR)), FIND_OBJECT_TIMEOUT)
 
     private fun UiDevice.launcherSelector(resourcesId: String): BySelector =
         By.pkg(launcherPackageName).res(launcherPackageName, resourcesId)
 
-    /** Launches the bubble from all apps page. */
-    const val FROM_ALL_APPS = 0
-    /** Launches the bubble from home screen page. */
-    const val FROM_HOME_SCREEN = 1
-    /** Launches the bubble from the task bar. */
-    const val FROM_TASK_BAR = 2
+    private fun Bubble.containsBubbleApp(testApp: StandardAppHelper): Boolean =
+        contentDescription().contains(testApp.packageName)
 
-    private const val FIRST_APP_ICON_SOURCE = FROM_ALL_APPS
-    private const val LAST_APP_ICON_SOURCE = FROM_TASK_BAR
+    private fun BubbleBarItem.containsBubbleApp(testApp: StandardAppHelper): Boolean =
+        item.contentDescription.contains(testApp.packageName)
+
+    /** The source to launch the bubble app by bubble menu. */
+    internal enum class BubbleLaunchSource {
+        /** Launches the bubble from all apps page. */
+        FROM_ALL_APPS,
+
+        /** Launches the bubble from home screen page. */
+        FROM_HOME_SCREEN,
+
+        /** Launches the bubble from the task bar. */
+        FROM_TASK_BAR,
+    }
 
     private const val FIND_OBJECT_TIMEOUT = 4000L
     private const val RES_ID_BUBBLE_BAR = "taskbar_bubbles"
@@ -454,4 +507,13 @@ internal object BubbleFlickerTestHelper {
         MessagingAppHelper(),
         ClockAppHelper(),
     )
+
+    private enum class DismissSource {
+        /** Dismisses a bubble app from bubble icon. */
+        FROM_FLOATING_BUBBLE_ICON,
+        /** Dismisses a bubble app from bubble bar handle. */
+        FROM_BUBBLE_BAR_HANDLE,
+        /** Dismisses a bubble app from bubble bar. */
+        FROM_BUBBLE_BAR_ITEM,
+    }
 }

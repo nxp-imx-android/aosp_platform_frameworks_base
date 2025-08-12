@@ -20,14 +20,14 @@ import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import org.junit.Test
 
 /**
- * Verifies [testApp] is dismissed, and bubble window (represented as expanded bubble or bubble bar)
- * is also dismissed.
+ * Verifies a single bubble app [testApp] is dismissed, and bubble window
+ * (represented as expanded bubble or bubble bar) is also dismissed.
  *
  * - [BubbleAppBecomesNotExpandedTestCases]
  * - [LauncherAlwaysVisibleTestCases]
  * - [BUBBLE] is visible and then disappear
  */
-interface DismissExpandedBubbleTestCases : BubbleAppBecomesNotExpandedTestCases,
+interface DismissSingleExpandedBubbleTestCases : BubbleAppBecomesNotExpandedTestCases,
     LauncherAlwaysVisibleTestCases {
 
 // region Bubble related tests

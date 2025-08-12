@@ -19,6 +19,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaTouchOutsideTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarHandleTest"
     },
     {
