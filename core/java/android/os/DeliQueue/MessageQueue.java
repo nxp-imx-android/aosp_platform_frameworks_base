@@ -837,7 +837,11 @@ public final class MessageQueue {
                 Runnable r, long when);
     }
 
-    static final class MatchHandlerWhatAndObject extends MessageCompare {
+    /**
+     * Matches handler, what, and object if non-null.
+     * @hide
+     */
+    public static final class MatchHandlerWhatAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
