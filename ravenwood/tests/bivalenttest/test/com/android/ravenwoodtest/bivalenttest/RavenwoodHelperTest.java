@@ -42,7 +42,7 @@ public class RavenwoodHelperTest {
 
         assertTrue(path.exists());
         assertTrue(path.isDirectory());
-        assertTrue(new File(path, "100-framework-minus-apex.ravenwood.jar").exists());
+        assertTrue(new File(path, "framework-minus-apex.ravenwood.jar").exists());
     }
 
     @Test
