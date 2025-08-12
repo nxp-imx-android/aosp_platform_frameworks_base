@@ -454,6 +454,12 @@ public class VirtualDeviceManagerService extends SystemService {
                     associationInfo.getDeviceProfile())) {
                 throw new IllegalArgumentException("Unsupported CDM Association device profile "
                         + associationInfo.getDeviceProfile() + " for virtual device creation.");
+            } else {
+                synchronized (mVirtualDeviceManagerLock) {
+                    mActiveAssociations.put(
+                            VirtualDeviceImpl.createPersistentDeviceId(associationInfo.getId()),
+                            associationInfo);
+                }
             }
             return createVirtualDevice(token, attributionSource, associationInfo, params,
                     activityListener, soundEffectListener);
