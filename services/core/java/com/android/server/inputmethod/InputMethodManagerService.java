@@ -6458,7 +6458,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return true;
     }
 
-    /** @hide */
     @Override
     public IImeTracker getImeTrackerService() {
         return mImeTrackerService;
