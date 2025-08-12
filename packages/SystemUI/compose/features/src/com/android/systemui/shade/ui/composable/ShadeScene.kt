@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
@@ -105,7 +106,6 @@ object Shade {
     object Elements {
         val BackgroundScrim =
             ElementKey("ShadeBackgroundScrim", contentPicker = LowestZIndexContentPicker)
-        val SplitShadeStartColumn = ElementKey("SplitShadeStartColumn")
     }
 
     object Dimensions {
@@ -266,7 +266,14 @@ private fun ContentScope.SingleShade(
             )
         }
 
-    Box(modifier) {
+    Box(
+        modifier =
+            modifier.thenIf(shouldPunchHoleBehindScrim) {
+                // Render the scene to an offscreen buffer so that BlendMode.DstOut only clears this
+                // scene (and not the one under it) during a scene transition.
+                Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+            }
+    ) {
         ShadePanelScrim(viewModel.isTransparencyEnabled)
         Layout(
             modifier =
@@ -414,7 +421,7 @@ private fun ContentScope.SplitShade(
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 Box(
                     modifier =
-                        Modifier.element(QuickSettings.Elements.SplitShadeQuickSettings)
+                        Modifier.element(SplitShadeQuickSettings)
                             .overscroll(verticalOverscrollEffect)
                             .weight(1f)
                             .graphicsLayer { translationX = unfoldTranslationXForStartSide }
