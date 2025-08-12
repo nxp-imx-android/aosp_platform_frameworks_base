@@ -53,6 +53,18 @@ public final class RavenwoodNativeLoader {
     };
 
     /**
+     * When experimental APIs are enabled, we additionally initialize the following
+     * native code too.
+     */
+    private static final Class<?>[] sLibandroidExperimentalClasses = {
+            android.view.KeyCharacterMap.class,
+            android.view.KeyEvent.class,
+            android.view.InputDevice.class,
+            android.view.MotionEvent.class,
+            android.animation.PropertyValuesHolder.class,
+    };
+
+    /**
      * Classes with native methods that are backed by libhwui.
      *
      * See frameworks/base/libs/hwui/apex/LayoutlibLoader.cpp
@@ -155,8 +167,16 @@ public final class RavenwoodNativeLoader {
 
         // Build the property values
         final var joiner = Collectors.joining(",");
-        final var libandroidClasses =
-                Arrays.stream(sLibandroidClasses).map(Class::getName).collect(joiner);
+
+        // Libandroid classes. Maybe enable experimental classes too.
+        final var libandroidExperimentalClasses =
+                RavenwoodExperimentalApiChecker.isExperimentalApiEnabled()
+                ? sLibandroidExperimentalClasses : new Class[0];
+        final var libandroidClasses = Stream.concat(
+                Arrays.stream(sLibandroidClasses), Arrays.stream(libandroidExperimentalClasses))
+                .map(Class::getName).collect(joiner);
+
+        // Libhwui classes.
         final var libhwuiClasses = Stream.concat(
                 Arrays.stream(sLibhwuiClasses).map(Class::getName),
                 Arrays.stream(GRAPHICS_EXTRA_INIT_PARAMS)

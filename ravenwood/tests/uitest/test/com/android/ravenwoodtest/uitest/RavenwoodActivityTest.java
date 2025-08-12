@@ -24,15 +24,19 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
-import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.ravenwood.RavenwoodExperimentalApiChecker;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.compatibility.common.util.WindowUtil;
+
 import org.junit.Test;
 
+/**
+ * Simple tests with {@link Activity}.
+ */
 public class RavenwoodActivityTest {
     public static void assumeExperimentalApiAvailable() {
         if (RavenwoodRule.isOnRavenwood()) {
@@ -59,12 +63,11 @@ public class RavenwoodActivityTest {
     }
 
     @Test
-    @DisabledOnRavenwood(blockedBy = Activity.class)
     public void testStartActivity() {
+        assumeExperimentalApiAvailable();
+
         Intent intent = new Intent(sContext, TestActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // This must be supplied.
-        // Without FLAG_ACTIVITY_NEW_TASK, it'd fail with
-        // AndroidRuntimeException: Calling startActivity() from outside of an Activity context ...
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         Activity act = sInstrumentation.startActivitySync(intent);
         assertThat(act).isNotNull();
@@ -73,6 +76,31 @@ public class RavenwoodActivityTest {
             assertThat(act).isInstanceOf(TestActivity.class);
             assertThat(act.getPackageName()).isEqualTo(sContext.getPackageName());
             assertThat(act.isResumed()).isTrue();
+
+            sInstrumentation.waitForIdleSync();
+
+            WindowUtil.waitForFocus(act);
+
+        } finally {
+            RavenwoodUtils.runOnMainThreadSync(act::finish);
+        }
+    }
+
+    @Test
+    public void testWithContentView() {
+        assumeExperimentalApiAvailable();
+
+        Intent intent = new Intent(sContext, TestViewActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Activity act = sInstrumentation.startActivitySync(intent);
+        assertThat(act).isNotNull();
+        try {
+            assertThat(act).isInstanceOf(TestViewActivity.class);
+            assertThat(act.getPackageName()).isEqualTo(sContext.getPackageName());
+            assertThat(act.isResumed()).isTrue();
+
+            sInstrumentation.waitForIdleSync();
         } finally {
             RavenwoodUtils.runOnMainThreadSync(act::finish);
         }
