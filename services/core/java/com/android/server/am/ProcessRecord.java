@@ -95,7 +95,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     volatile ApplicationInfo info; // all about the first app in the process
     final ProcessInfo processInfo; // if non-null, process-specific manifest info
     final boolean appZygote;    // true if this is forked from the app zygote
-    final String processName;   // name of the process
     final String sdkSandboxClientAppPackage; // if this is an sdk sandbox process, name of the
                                              // app package for which it is running
     final String sdkSandboxClientAppVolumeUuid; // uuid of the app for which the sandbox is running
@@ -580,7 +579,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         processInfo = procInfo;
         appZygote = (UserHandle.getAppId(_uid) >= Process.FIRST_APP_ZYGOTE_ISOLATED_UID
                 && UserHandle.getAppId(_uid) <= Process.LAST_APP_ZYGOTE_ISOLATED_UID);
-        processName = _processName;
         sdkSandboxClientAppPackage = _sdkSandboxClientAppPackage;
         if (isSdkSandbox) {
             final ApplicationInfo clientInfo = getClientInfoForSdkSandbox();
@@ -1157,6 +1155,21 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
+    public boolean isFrozen() {
+        return mOptRecord.isFrozen();
+    }
+
+    @Override
+    public boolean isPendingFreeze() {
+        return mOptRecord.isPendingFreeze();
+    }
+
+    @Override
+    public boolean isFreezeExempt() {
+        return mOptRecord.isFreezeExempt();
+    }
+
+    @Override
     public boolean shouldNotFreeze() {
         return mOptRecord.shouldNotFreeze();
     }
@@ -1170,6 +1183,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @Override
     public @ShouldNotFreezeReason int shouldNotFreezeReason() {
         return mOptRecord.shouldNotFreezeReason();
+    }
+
+    @Override
+    public int shouldNotFreezeAdjSeq() {
+        return mOptRecord.shouldNotFreezeAdjSeq();
     }
 
     @Override

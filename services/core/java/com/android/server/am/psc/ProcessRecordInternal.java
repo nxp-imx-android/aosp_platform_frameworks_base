@@ -194,6 +194,21 @@ public abstract class ProcessRecordInternal {
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
 
+    /** Returns whether this process is frozen. */
+    public abstract boolean isFrozen();
+
+    /** Returns whether this process has been scheduled for freezing. */
+    public abstract boolean isPendingFreeze();
+
+    /** Returns whether this process is exempt from being frozen by the system's app freezer. */
+    public abstract boolean isFreezeExempt();
+
+    /**
+     * Returns the OOM adjustment sequence number when this process's
+     * {@link #shouldNotFreeze()} state was last updated.
+     */
+    public abstract int shouldNotFreezeAdjSeq();
+
     /** Returns whether this process should be exempt from freezing. */
     public abstract boolean shouldNotFreeze();
 
@@ -237,7 +252,7 @@ public abstract class ProcessRecordInternal {
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 
-    private final String mProcessName;
+    public final String processName;
     private String mTrackName;
 
     /**
@@ -699,7 +714,7 @@ public abstract class ProcessRecordInternal {
             new OomAdjusterImpl.ProcessRecordNode[NUM_NODE_TYPE];
 
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
-        mProcessName = processName;
+        this.processName = processName;
         this.uid = uid;
         userId = UserHandle.getUserId(uid);
         isSdkSandbox = Process.isSdkSandboxUid(this.uid);
@@ -1703,7 +1718,7 @@ public abstract class ProcessRecordInternal {
      */
     private String getTrackName() {
         if (mTrackName == null) {
-            mTrackName = "oom:" + mProcessName + "/u" + uid;
+            mTrackName = "oom:" + processName + "/u" + uid;
         }
         return mTrackName;
     }
