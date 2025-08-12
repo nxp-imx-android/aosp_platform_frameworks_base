@@ -22,6 +22,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringDef;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.hdmi.HdmiControlManager;
@@ -57,6 +58,13 @@ public class HdmiCecConfig {
     private static final String CONFIG_FILE = "cec_config.xml";
     private static final String SHARED_PREFS_DIR = "shared_prefs";
     private static final String SHARED_PREFS_NAME = "cec_config.xml";
+    /** Name of the file used to store preferences related to HDMI settings migration. */
+    private static final String HDMI_MIGRATION_PREF_FILE = "hdmi_migration_prefs.xml";
+    /**
+     * SharedPreferences key used as a flag to indicate whether the migration of HDMI settings from
+     * {@link android.provider.Settings.Global} to SharedPreferences has been completed.
+     */
+    private static final String MIGRATION_GLOBAL_TO_SHARED_DONE_KEY = "global_to_shared_migrated";
 
     private static final int STORAGE_SYSPROPS = 0;
     private static final int STORAGE_GLOBAL_SETTINGS = 1;
@@ -179,6 +187,16 @@ public class HdmiCecConfig {
         public void storeSharedPref(@NonNull String storageKey,
                                     @NonNull String value) {
             mSharedPrefs.edit().putString(storageKey, value).apply();
+        }
+
+        /**
+         * Checks if a shared preference with the given key exists.
+         *
+         * @param storageKey the key for the shared preference
+         * @return true if the shared preference exists, false otherwise
+         */
+        public boolean containsSharedPref(@NonNull String storageKey) {
+            return mSharedPrefs.contains(storageKey);
         }
     }
 
@@ -703,6 +721,71 @@ public class HdmiCecConfig {
 
     HdmiCecConfig(@NonNull Context context) {
         this(context, new StorageAdapter(context));
+        migrateSettingsIfNeeded();
+    }
+
+    /**
+     * Returns the {@link SharedPreferences} instance used to track the status of HDMI settings
+     * migrations.
+     */
+    private SharedPreferences getMigrationPrefs() {
+        Context deviceContext = mContext.createDeviceProtectedStorageContext();
+        // Construct the full path to the preferences file.
+        File prefsFile = new File(new File(Environment.getDataSystemDirectory(),
+                SHARED_PREFS_DIR), HDMI_MIGRATION_PREF_FILE);
+        return deviceContext.getSharedPreferences(prefsFile, Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Migrates HDMI CEC settings from {@link android.provider.Settings.Global} to
+     * {@link SharedPreferences}.
+     *
+     * <p>This is a one-time migration. It checks if the migration has been performed before by
+     * checking a flag in a dedicated SharedPreferences file. If not, it iterates through all known
+     * CEC settings, reads their values from Global Settings (if they exist), and writes them to the
+     * new SharedPreferences storage.
+     *
+     * <p>This ensures a seamless transition for users who have existing settings configured.
+     */
+    private void migrateSettingsIfNeeded() {
+        SharedPreferences migrationPrefs = getMigrationPrefs();
+        if (migrationPrefs.getBoolean(MIGRATION_GLOBAL_TO_SHARED_DONE_KEY, false)) {
+            Slog.i(TAG, "Settings migration already performed.");
+            return;
+        }
+        Slog.i(TAG, "Starting settings migration from Global.Settings to SharedPreferences.");
+        ContentResolver resolver = mContext.getContentResolver();
+
+        for (String settingName : getAllSettings()) {
+            String key = settingName;
+            // Skip if already present in the new SharedPreferences storage.
+            if (hasSettingValue(settingName)) {
+                continue;
+            }
+            // Try to read the old value from Global.Settings.
+            String globalValue = Global.getString(resolver, key);
+            if (globalValue != null) {
+                Slog.i(TAG, "Migrating setting: " + key);
+                try {
+                    if (isIntValueType(key)) {
+                        setIntValue(key, Integer.parseInt(globalValue));
+                    } else {
+                        setStringValue(key, globalValue);
+                    }
+                    Slog.i(TAG, "Migrated " + key + " = " + globalValue);
+                } catch (NumberFormatException e) {
+                    Slog.e(TAG, "Failed to parse Global setting " + key + ": " + globalValue, e);
+                } catch (IllegalArgumentException e) {
+                    Slog.e(TAG, "Failed to migrate setting " + key + ", value " + globalValue
+                            + " likely not allowed.", e);
+                } catch (Exception e) {
+                    Slog.e(TAG, "Unexpected error migrating setting " + key, e);
+                }
+            }
+        }
+        // Mark migration as completed.
+        migrationPrefs.edit().putBoolean(MIGRATION_GLOBAL_TO_SHARED_DONE_KEY, true).apply();
+        Slog.i(TAG, "Settings migration from Global.Settings to SharedPreferences complete.");
     }
 
     private Setting registerSetting(@NonNull @SettingName String name,
@@ -1180,5 +1263,30 @@ public class HdmiCecConfig {
         }
         HdmiLogger.debug("Updating CEC setting '" + name + "' to '" + value + "'.");
         storeValue(setting, Integer.toString(value));
+    }
+
+    /**
+     * Checks if a setting has a value stored in its persistent storage.
+     * This is used to determine if a setting has been explicitly set before,
+     * for example during migration from a different storage type.
+     *
+     * <p>Note: This currently only supports settings stored in SharedPreferences.
+     *
+     * @param name The name of the setting.
+     * @return {@code true} if the setting has a value in storage, {@code false} otherwise.
+     */
+    public boolean hasSettingValue(@NonNull @SettingName String name) {
+        Setting setting = getSetting(name);
+        if (setting == null) {
+            Slog.w(TAG, "hasSettingValue: Setting " + name + " not found.");
+            return false;
+        }
+        @Storage int storage = getStorage(setting);
+        String storageKey = getStorageKey(setting);
+
+        if (storage == STORAGE_SHARED_PREFS) {
+            return mStorageAdapter.containsSharedPref(storageKey);
+        }
+        return false;
     }
 }
