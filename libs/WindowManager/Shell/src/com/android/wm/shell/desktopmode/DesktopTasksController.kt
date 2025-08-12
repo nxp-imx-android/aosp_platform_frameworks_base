@@ -5605,15 +5605,14 @@ class DesktopTasksController(
                 ) {
                     // Inherit parent's bounds.
                     newWindowBounds.set(taskInfo.configuration.windowConfiguration.bounds)
-                    // TODO: (b/436504714) - Implement the new positioning logic here.
                 } else {
-                    // Use default bounds, but with the top-center at the drop point.
                     newWindowBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
-                    newWindowBounds.offsetTo(
+                }
+                // Create the new window from the top-center at the drop point.
+                newWindowBounds.offsetTo(
                         dragEvent.x.toInt() - (newWindowBounds.width() / 2),
                         dragEvent.y.toInt(),
                     )
-                }
             }
             IndicatorType.TO_SPLIT_RIGHT_INDICATOR -> {
                 newWindowBounds.set(getSnapBounds(destinationDisplay, SnapPosition.RIGHT))
