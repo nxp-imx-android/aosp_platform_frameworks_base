@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
+import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureRegion
@@ -56,8 +56,13 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
 
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
-                val scrimColor = MaterialTheme.colorScheme.surface.copy(alpha = .54f)
-                Box(modifier = Modifier.zIndex(0f).fillMaxSize().background(color = scrimColor)) {
+                // Dim the entire screen with a scrim before taking a fullscreen screenshot.
+                Box(
+                    modifier =
+                        Modifier.zIndex(0f)
+                            .fillMaxSize()
+                            .background(color = ScreenCaptureColors.scrimColor)
+                ) {
                     PrimaryButton(
                         modifier = Modifier.align(Alignment.Center),
                         icon =
