@@ -9,27 +9,45 @@ package {
 
 java_defaults {
     name: "ravenwood-uitest-defaults",
+    srcs: [
+        "test/**/*.java",
+    ],
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
         "androidx.test.rules",
         "truth",
+        "compatibility-device-util-axt",
     ],
-    srcs: [
-        "test/**/*.java",
+    libs: [
+        "ravenwood-junit-impl",
     ],
     uses_libs: [
         "android.test.runner",
         "android.test.base",
     ],
+    ravenizer: {
+        strip_mockito: true,
+    },
     auto_gen_config: true,
-}
 
-android_ravenwood_test {
-    name: "RavenwoodUiTest",
-    defaults: ["ravenwood-uitest-defaults"],
     package_name: "com.android.ravenwoodtest.uitest",
     build_resources: true,
+}
+
+// UI Test, we run it without enabling the experimental APIs.
+// This is what we run in presubmit too.
+android_ravenwood_test {
+    name: "RavenwoodUiTest_noexp",
+    defaults: ["ravenwood-uitest-defaults"],
+}
+
+// Alias to RavenwoodUiTest_noexp.
+// Using a different name for the same test module allows us to run
+// it with experimental APIs enabled.
+android_ravenwood_test {
+    name: "RavenwoodUiTest_exp",
+    defaults: ["ravenwood-uitest-defaults"],
 }
 
 android_test {
