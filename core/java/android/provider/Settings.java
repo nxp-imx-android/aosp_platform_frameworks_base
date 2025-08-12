@@ -20352,6 +20352,14 @@ public final class Settings {
         public static final String MINMODE_ACTIVE = "minmode_active";
 
         /**
+          * Indicates if watch ranging is available for the device.
+         *
+         * @hide
+         */
+        public static final String WATCH_RANGING_AVAILABLE =
+                "watch_ranging_available";
+
+        /**
          * Settings migrated from Wear OS settings provider.
          * @hide
          */

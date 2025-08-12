@@ -132,5 +132,6 @@ public class GlobalSettings {
         Settings.Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS,
         Settings.Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
         Settings.Global.MINMODE_ACTIVE,
+        Settings.Global.WATCH_RANGING_AVAILABLE,
     };
 }
