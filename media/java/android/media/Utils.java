@@ -66,6 +66,9 @@ import java.util.concurrent.Executor;
  * This class is hidden but public to allow CTS testing and verification
  * of the static methods and classes.
  *
+ * Also, this class provides the utility methods of System APIs for Mainlines to be able to handle
+ * ringtone/vibration uri check.
+ *
  * @hide
  */
 @TestApi
@@ -79,16 +82,18 @@ public class Utils {
 
     private static final String TAG = "Utils";
 
-    /** @hide
-     * The vibration uri key parameter
+    /**
+     * The vibration uri key parameter used to query its existence from the ringtone uri
+     * @hide
      */
     @TestApi
     @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
     @SystemApi(client = MODULE_LIBRARIES)
     public static final String VIBRATION_URI_PARAM = "vibration_uri";
 
-    /** @hide
-     * Indicates the synchronized vibration
+    /**
+     * The vibration uri path segment indicates the synchronized vibration
+     * @hide
      */
     @TestApi
     @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
