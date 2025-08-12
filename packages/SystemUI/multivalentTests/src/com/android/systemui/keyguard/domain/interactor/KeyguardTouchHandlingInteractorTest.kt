@@ -30,10 +30,10 @@ import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.Flags.FLAG_DOUBLE_TAP_TO_SLEEP
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -442,7 +442,7 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 secureSettingsRepository = secureSettingsRepository,
                 powerManager = powerManager,
                 systemClock = kosmos.fakeSystemClock,
-                bouncerInteractor = kosmos.bouncerInteractor,
+                pointerDeviceRepository = kosmos.pointerDeviceRepository,
             )
         setUpState()
     }
