@@ -113,6 +113,7 @@ import android.view.IWindowManager;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.util.CollectionUtils;
 import com.android.internal.util.DumpUtils;
@@ -3607,80 +3608,95 @@ public class ShortcutService extends IShortcutService.Stub {
      * Package event callbacks.
      */
     @VisibleForTesting
-    final BroadcastReceiver mPackageMonitor = new BroadcastReceiver() {
+    final BroadcastReceiver mPackageMonitor = new PackageMonitor() {
+        private long mToken;
+
+        /**
+         * Called by the system before any specific package event callbacks are invoked.
+         * We use this to clear the calling identity for all subsequent handler calls.
+         */
         @Override
-        public void onReceive(Context context, Intent intent) {
-            final int userId  = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, UserHandle.USER_NULL);
-            if (userId == UserHandle.USER_NULL) {
-                Slog.w(TAG, "Intent broadcast does not contain user handle: " + intent);
-                return;
-            }
+        public void onBeginPackageChanges() {
+            mToken = injectClearCallingIdentity();
+        }
 
-            final String action = intent.getAction();
+        /**
+         * Called by the system after all package event callbacks for a given
+         * broadcast have finished. We use this to restore the original calling identity.
+         */
+        @Override
+        public void onFinishPackageChanges() {
+            injectRestoreCallingIdentity(mToken);
+        }
 
-            // This is normally called on Handler, so clearCallingIdentity() isn't needed,
-            // but we still check it in unit tests.
-            final long token = injectClearCallingIdentity();
-            try {
-                synchronized (mServiceLock) {
-                    if (!isUserUnlockedL(userId)) {
-                        if (DEBUG) {
-                            Slog.d(TAG, "Ignoring package broadcast " + action
-                                    + " for locked/stopped userId=" + userId);
-                        }
-                        return;
+        /**
+         * Helper to check if the user for the current event is unlocked.
+         * All package-related events are ignored for locked or stopped users.
+         */
+        private boolean isUserUnlocked() {
+            synchronized (mServiceLock) {
+                int userId = getChangingUserId();
+                if (!isUserUnlockedL(userId)) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "Ignoring package event for locked/stopped userId=" + userId);
                     }
+                    return false;
                 }
-
-                final Uri intentUri = intent.getData();
-                final String packageName = (intentUri != null) ? intentUri.getSchemeSpecificPart()
-                        : null;
-                if (packageName == null) {
-                    Slog.w(TAG, "Intent broadcast does not contain package name: " + intent);
-                    return;
-                }
-
-                final boolean replacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
-                final boolean archival = intent.getBooleanExtra(Intent.EXTRA_ARCHIVAL, false);
-
-                Slog.d(TAG, "received package broadcast intent: " + intent);
-                switch (action) {
-                    case Intent.ACTION_PACKAGE_ADDED:
-                        if (replacing) {
-                            Slog.d(TAG, "replacing package: " + packageName + " userId=" + userId);
-                            handlePackageUpdateFinished(packageName, userId);
-                        } else {
-                            Slog.d(TAG, "adding package: " + packageName + " userId=" + userId);
-                            handlePackageAdded(packageName, userId);
-                        }
-                        break;
-                    case Intent.ACTION_PACKAGE_REMOVED:
-                        if (!replacing || (replacing && archival)) {
-                            if (!replacing) {
-                                Slog.d(TAG, "removing package: "
-                                        + packageName + " userId=" + userId);
-                            } else if (archival) {
-                                Slog.d(TAG, "archiving package: "
-                                        + packageName + " userId=" + userId);
-                            }
-                            handlePackageRemoved(packageName, userId);
-                        }
-                        break;
-                    case Intent.ACTION_PACKAGE_CHANGED:
-                        Slog.d(TAG, "changing package: " + packageName + " userId=" + userId);
-                        handlePackageChanged(packageName, userId);
-                        break;
-                    case Intent.ACTION_PACKAGE_DATA_CLEARED:
-                        Slog.d(TAG, "clearing data for package: "
-                                + packageName + " userId=" + userId);
-                        handlePackageDataCleared(packageName, userId);
-                        break;
-                }
-            } catch (Exception e) {
-                wtf("Exception in mPackageMonitor.onReceive", e);
-            } finally {
-                injectRestoreCallingIdentity(token);
+                return true;
             }
+        }
+
+        @Override
+        public void onPackageAdded(String packageName, int uid) {
+            if (!isUserUnlocked()) return;
+            Slog.d(TAG, "adding package: " + packageName + " userId=" + getChangingUserId());
+            handlePackageAdded(packageName, getChangingUserId());
+        }
+
+        @Override
+        public void onPackageUpdateFinished(String packageName, int uid) {
+            if (!isUserUnlocked()) return;
+            Slog.d(TAG, "replacing package: " + packageName + " userId=" + getChangingUserId());
+            handlePackageUpdateFinished(packageName, getChangingUserId());
+        }
+
+        @Override
+        public void onPackageRemoved(String packageName, int uid) {
+            if (!isUserUnlocked()) return;
+            Slog.d(TAG, "removing package: " + packageName + " userId=" + getChangingUserId());
+            handlePackageRemoved(packageName, getChangingUserId());
+        }
+
+        /**
+         * When a package is archived, ACTION_PACKAGE_REMOVED is sent with EXTRA_REPLACING=true
+         * and EXTRA_ARCHIVAL=true. PackageMonitor routes this event to onPackageUpdateStarted.
+         * We override the "WithExtras" version to access the archival flag and call the
+         * appropriate handler.
+         */
+        @Override
+        public void onPackageUpdateStartedWithExtras(String packageName, int uid, Bundle extras) {
+            if (isUserUnlocked() && extras.getBoolean(Intent.EXTRA_ARCHIVAL, false)) {
+                Slog.d(TAG, "archiving package: " + packageName + " userId=" + getChangingUserId());
+                handlePackageRemoved(packageName, getChangingUserId());
+            }
+            super.onPackageUpdateStartedWithExtras(packageName, uid, extras);
+        }
+
+        /** Called when a package's components or enabled state changes. */
+        @Override
+        public boolean onPackageChanged(String packageName, int uid, String[] components) {
+            if (isUserUnlocked()) {
+                Slog.d(TAG, "changing package: " + packageName + " userId=" + getChangingUserId());
+                handlePackageChanged(packageName, getChangingUserId());
+            }
+            return super.onPackageChanged(packageName, uid, components);
+        }
+
+        @Override
+        public void onPackageDataCleared(String packageName, int uid) {
+            if (!isUserUnlocked()) return;
+            Slog.d(TAG, "clearing data for package: " + packageName + " userId=" + getChangingUserId());
+            handlePackageDataCleared(packageName, getChangingUserId());
         }
     };
 
