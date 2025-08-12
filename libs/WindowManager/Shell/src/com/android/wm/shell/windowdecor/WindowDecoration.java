@@ -131,6 +131,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     final @NonNull DisplayController mDisplayController;
     final @NonNull DesktopModeEventLogger mDesktopModeEventLogger;
     final ShellTaskOrganizer mTaskOrganizer;
+
+    final Supplier<SurfaceControl> mSurfaceControlSupplier;
     final Supplier<SurfaceControl.Builder> mSurfaceControlBuilderSupplier;
     final Supplier<SurfaceControl.Transaction> mSurfaceControlTransactionSupplier;
     final Supplier<WindowContainerTransaction> mWindowContainerTransactionSupplier;
@@ -156,7 +158,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     public Context mDecorWindowContext;
     int mLayoutResId;
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public final SurfaceControl mTaskSurface;
+    private SurfaceControl mTaskSurface;
 
     Display mDisplay;
     SurfaceControl mDecorationContainerSurface;
@@ -219,6 +221,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         mTaskInfo = taskInfo;
         mTaskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier);
         mDesktopModeEventLogger = desktopModeEventLogger;
+        mSurfaceControlSupplier = surfaceControlSupplier;
         mSurfaceControlBuilderSupplier = surfaceControlBuilderSupplier;
         mSurfaceControlTransactionSupplier = surfaceControlTransactionSupplier;
         mWindowContainerTransactionSupplier = windowContainerTransactionSupplier;
@@ -258,7 +261,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
     void relayout(RelayoutParams params, SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT, WindowContainerTransaction wct, T rootView,
-            RelayoutResult<T> outResult) {
+            SurfaceControl newTaskSurface, RelayoutResult<T> outResult) {
         Trace.beginSection("WindowDecoration#relayout");
         outResult.reset();
         if (params.mRunningTaskInfo != null) {
@@ -268,6 +271,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         mExclusionRegion.set(params.mDisplayExclusionRegion);
         final int oldLayoutResId = mLayoutResId;
         mLayoutResId = params.mLayoutResId;
+
+        if (mDecorationContainerSurface != null && newTaskSurface != null
+                && !newTaskSurface.isSameSurface(mTaskSurface)) {
+            mTaskSurface.release();
+            mTaskSurface = cloneSurfaceControl(newTaskSurface, mSurfaceControlSupplier);
+            startT.reparent(mDecorationContainerSurface, mTaskSurface);
+        }
 
         if (!mTaskInfo.isVisible) {
             releaseViews(wct);

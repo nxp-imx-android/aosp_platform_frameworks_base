@@ -317,7 +317,7 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
                 globalExclusionRegion, mDesktopConfig.shouldSetBackground(taskInfo),
                 inSyncWithTransition, forceReinflation);
 
-        relayout(mRelayoutParams, startT, finishT, wct, oldRootView, mResult);
+        relayout(mRelayoutParams, startT, finishT, wct, oldRootView, getLeash(), mResult);
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo
 
         mBgExecutor.execute(() -> mTaskOrganizer.applyTransaction(wct));

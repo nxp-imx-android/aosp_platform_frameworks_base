@@ -75,8 +75,8 @@ private constructor(
         get() =
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().taskSurface
-                desktopWindowDecor != null -> requireDesktopWindowDecor().mTaskSurface
-                captionWindowDecoration != null -> requireCaptionWindowDecor().mTaskSurface
+                desktopWindowDecor != null -> requireDesktopWindowDecor().leash
+                captionWindowDecoration != null -> requireCaptionWindowDecor().leash
                 else -> error("Expected Non-null window decoration")
             }
 
@@ -264,6 +264,7 @@ private constructor(
                         displayExclusionRegion,
                         inSyncWithTransition,
                         /* forceReinflation= */ false,
+                        taskSurface,
                     )
             }
 
