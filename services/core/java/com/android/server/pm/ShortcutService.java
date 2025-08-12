@@ -1107,13 +1107,13 @@ public class ShortcutService extends IShortcutService.Stub {
                 }
 
                 synchronized (mServiceLock) {
-                    saveUserInternalLocked(userId, os, /* forBackup= */ false);
                     // Since we are not handling package deletion yet, or any single package
                     // changes, just clean the directory and rewrite all the ShortcutPackageItems.
                     final File root = injectUserDataPath(userId);
                     FileUtils.deleteContents(new File(root, DIRECTORY_PACKAGES));
                     FileUtils.deleteContents(new File(root, DIRECTORY_LAUNCHERS));
                     os = file.startWrite();
+                    saveUserInternalLocked(userId, os, /* forBackup= */ false);
                     getUserShortcutsLocked(userId).scheduleSaveAllLaunchersAndPackages();
                 }
 
