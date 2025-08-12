@@ -1189,13 +1189,6 @@ public final class AppStartInfoTracker {
                 return;
             }
 
-            if (!android.app.Flags.appStartInfoKeepRecordsSorted()) {
-                // Sort records so we can remove the least recent ones.
-                Collections.sort(mInfos, (a, b) ->
-                        Long.compare(b.getMonotonicCreationTimeMs(),
-                                a.getMonotonicCreationTimeMs()));
-            }
-
             // Remove records and trim list object back to size.
             mInfos.subList(0, mInfos.size() - getMaxCapacity()).clear();
             mInfos.trimToSize();
@@ -1209,34 +1202,11 @@ public final class AppStartInfoTracker {
 
         @GuardedBy("mLock")
         void addStartInfoLocked(ApplicationStartInfo info) {
-            if (android.app.Flags.appStartInfoKeepRecordsSorted()) {
-                while (mInfos.size() >= getMaxCapacity()) {
-                    // Expected to execute at most once.
-                    mInfos.removeLast();
-                }
-                mInfos.addFirst(info);
-            } else {
-                int size = mInfos.size();
-                if (size >= getMaxCapacity()) {
-                    // Remove oldest record if size is over max capacity.
-                    int oldestIndex = -1;
-                    long oldestTimeStamp = Long.MAX_VALUE;
-                    for (int i = 0; i < size; i++) {
-                        ApplicationStartInfo startInfo = mInfos.get(i);
-                        if (startInfo.getMonotonicCreationTimeMs() < oldestTimeStamp) {
-                            oldestTimeStamp = startInfo.getMonotonicCreationTimeMs();
-                            oldestIndex = i;
-                        }
-                    }
-                    if (oldestIndex >= 0) {
-                        mInfos.remove(oldestIndex);
-                    }
-                }
-                mInfos.add(info);
-                Collections.sort(mInfos, (a, b) ->
-                        Long.compare(b.getMonotonicCreationTimeMs(),
-                                a.getMonotonicCreationTimeMs()));
+            while (mInfos.size() >= getMaxCapacity()) {
+                // Expected to execute at most once.
+                mInfos.removeLast();
             }
+            mInfos.addFirst(info);
         }
 
         /**
@@ -1422,13 +1392,9 @@ public final class AppStartInfoTracker {
                         info.readFromProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO,
                                 byteArrayInputStream, objectInputStream, typedXmlPullParser);
                         info.setPackageName(packageName);
-                        if (android.app.Flags.appStartInfoKeepRecordsSorted()) {
-                            // Since the writes are done from oldest to newest, each additional
-                            // record will be newer than the previous so use addFirst.
-                            mInfos.addFirst(info);
-                        } else {
-                            mInfos.add(info);
-                        }
+                        // Since the writes are done from oldest to newest, each additional
+                        // record will be newer than the previous so use addFirst.
+                        mInfos.addFirst(info);
                         break;
                     case (int) AppsStartInfoProto.Package.User.MONITORING_ENABLED:
                         mMonitoringModeEnabled = proto.readBoolean(
