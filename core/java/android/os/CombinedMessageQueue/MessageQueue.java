@@ -26,7 +26,6 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
-import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -335,7 +334,8 @@ public final class MessageQueue {
     }
 
     /**
-     * Returns true if the looper has no pending messages which are due to be processed.
+     * Returns true if the looper has no pending messages which are due to be processed
+     * and is not blocked on a sync barrier.
      *
      * <p>This method is safe to call from any thread.
      *
