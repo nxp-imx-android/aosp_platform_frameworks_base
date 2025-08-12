@@ -21,8 +21,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -45,11 +43,8 @@ class CoroutineResultTest : SysuiTestCase() {
         assertThat(actual.exceptionOrNull()).isInstanceOf(Exception::class.java)
     }
 
-    @Test
-    fun suspendRunCatching_whenCancelled_shouldResumeWithException() =
-        assertThrows(IllegalArgumentException::class.java) {
-            runTest {
-                suspendRunCatching { cancel() }
-            }
-        }
+    @Test(expected = CancellationException::class)
+    fun suspendRunCatching_whenCancelled_shouldResumeWithException() = runTest {
+        suspendRunCatching { cancel() }
+    }
 }

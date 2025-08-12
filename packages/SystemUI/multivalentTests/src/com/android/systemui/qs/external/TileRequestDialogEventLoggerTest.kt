@@ -26,7 +26,6 @@ import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.systemui.InstanceIdSequenceFake
 import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -120,16 +119,14 @@ class TileRequestDialogEventLoggerTest : SysuiTestCase() {
         uiEventLogger[0].match(TileRequestDialogEvent.TILE_REQUEST_DIALOG_TILE_ADDED, instanceId)
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun testLogResponseInvalid_throws() {
         val instanceId = instanceIdSequence.newInstanceId()
-        assertThrows(IllegalArgumentException::class.java) {
-            logger.logUserResponse(
+        logger.logUserResponse(
                 -1,
                 PACKAGE_NAME,
                 instanceId
-            )
-        }
+        )
     }
 
     private fun UiEventLoggerFake.FakeUiEvent.match(

@@ -28,8 +28,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.anyInt
@@ -296,13 +294,11 @@ class TestableAlertDialogTest : SysuiTestCase() {
         inOrder.verify(listener).onClick(dialog, BUTTON_NEUTRAL)
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun clickBadButton() {
         val dialog = TestableAlertDialog(context)
 
-        assertThrows(IllegalArgumentException::class.java) {
-            dialog.clickButton(10000)
-        }
+        dialog.clickButton(10000)
     }
 
     @Test

@@ -35,7 +35,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
 import kotlin.time.Duration.Companion.milliseconds
 import org.junit.Before
 import org.junit.Test
@@ -63,25 +62,21 @@ class KeyguardTransitionAnimationFlowTest : SysuiTestCase() {
                 .setupWithoutSceneContainer(edge = Edge.create(from = LOCKSCREEN, to = DREAMING))
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun zeroDurationThrowsException() =
         kosmos.runTest {
-            assertThrows(IllegalArgumentException::class.java) {
-                val flow = underTest.sharedFlow(duration = 0.milliseconds, onStep = { it })
-            }
+            val flow = underTest.sharedFlow(duration = 0.milliseconds, onStep = { it })
         }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun startTimePlusDurationGreaterThanTransitionDurationThrowsException() =
         kosmos.runTest {
-            assertThrows(IllegalArgumentException::class.java) {
-                val flow =
-                    underTest.sharedFlow(
-                        startTime = 300.milliseconds,
-                        duration = 800.milliseconds,
-                        onStep = { it },
-                    )
-            }
+            val flow =
+                underTest.sharedFlow(
+                    startTime = 300.milliseconds,
+                    duration = 800.milliseconds,
+                    onStep = { it },
+                )
         }
 
     @Test

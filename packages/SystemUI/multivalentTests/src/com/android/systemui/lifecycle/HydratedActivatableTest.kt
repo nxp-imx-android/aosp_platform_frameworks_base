@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -110,8 +109,8 @@ class HydratedActivatableTest : SysuiTestCase() {
             assertThat(underTest.cancellationCount).isEqualTo(1)
         }
 
-    @Test
-    fun activate_whileActive_throws() = assertThrows(IllegalStateException::class.java) {
+    @Test(expected = IllegalStateException::class)
+    fun activate_whileActive_throws() =
         testScope.runTest {
             assertThat(underTest.activationCount).isEqualTo(0)
             assertThat(underTest.cancellationCount).isEqualTo(0)
@@ -124,7 +123,6 @@ class HydratedActivatableTest : SysuiTestCase() {
             underTest.activateIn(testScope)
             runCurrent()
         }
-    }
 
     @Test
     fun hydratedStateOf() {

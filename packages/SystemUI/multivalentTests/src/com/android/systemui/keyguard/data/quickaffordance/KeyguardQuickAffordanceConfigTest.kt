@@ -23,8 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.res.R
 import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -57,7 +55,7 @@ class KeyguardQuickAffordanceConfigTest : SysuiTestCase() {
         assertThat(intent).isNull()
     }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun appStoreIntent_packageNameMisconfigured_throwsIllegalStateException() {
         overrideResource(R.string.config_appStorePackageName, "app.store.package.name")
         overrideResource(
@@ -66,9 +64,7 @@ class KeyguardQuickAffordanceConfigTest : SysuiTestCase() {
         )
         val packageName = "com.app.package.name"
 
-        assertThrows(IllegalStateException::class.java) {
-            KeyguardQuickAffordanceConfig.appStoreIntent(context, packageName)
-        }
+        KeyguardQuickAffordanceConfig.appStoreIntent(context, packageName)
     }
 
     @Test

@@ -33,7 +33,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -56,24 +55,21 @@ class CustomTileAddedRepositoryUpgraderTest : SysuiTestCase() {
             assertThat(customTileAddedRepository.getVersion(userFlow.value)).isEqualTo(1)
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun upgradeSkip_exception() =
         kosmos.runTest {
             customTileAddedUpgradeSet = setOf(Optional.of(Upgrader(version = 3)))
-            assertThrows(IllegalStateException::class.java) {
-                underTest.start(userFlow)
-            }
+
+            underTest.start(userFlow)
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun repeatedVersions_exception() =
         kosmos.runTest {
             customTileAddedUpgradeSet =
                 setOf(Optional.of(Upgrader(version = 2)), Optional.of(Upgrader(version = 2)))
 
-            assertThrows(IllegalStateException::class.java) {
-                underTest.start(userFlow)
-            }
+            underTest.start(userFlow)
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)

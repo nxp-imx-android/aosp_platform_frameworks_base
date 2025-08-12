@@ -41,7 +41,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -122,15 +121,9 @@ class CustomTileInteractorTest : SysuiTestCase() {
             }
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun getTileBeforeInitThrows() =
-        with(kosmos) {
-            testScope.runTest {
-                assertThrows(IllegalStateException::class.java) {
-                    underTest.getTile(TEST_USER_1)
-                }
-            }
-        }
+        with(kosmos) { testScope.runTest { underTest.getTile(TEST_USER_1) } }
 
     @Test
     fun initSuspendsForActiveTileNotRestoredAndNotUpdated() =

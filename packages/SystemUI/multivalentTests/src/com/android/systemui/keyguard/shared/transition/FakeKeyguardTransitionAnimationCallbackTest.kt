@@ -24,8 +24,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -77,27 +75,23 @@ class FakeKeyguardTransitionAnimationCallbackTest : SysuiTestCase() {
             assertThat(underTest.activeAnimations).isEmpty()
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun onAnimationEnded_throwsWhenNoSuchAnimation() =
         kosmos.runTest {
             underTest.onAnimationStarted(KeyguardState.LOCKSCREEN, KeyguardState.AOD)
             underTest.onAnimationStarted(KeyguardState.AOD, KeyguardState.ALTERNATE_BOUNCER)
             assertThat(underTest.activeAnimations).hasSize(2)
 
-            assertThrows(IllegalStateException::class.java) {
-                underTest.onAnimationEnded(KeyguardState.AOD, KeyguardState.LOCKSCREEN)
-            }
+            underTest.onAnimationEnded(KeyguardState.AOD, KeyguardState.LOCKSCREEN)
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun onAnimationCanceled_throwsWhenNoSuchAnimation() =
         kosmos.runTest {
             underTest.onAnimationStarted(KeyguardState.LOCKSCREEN, KeyguardState.AOD)
             underTest.onAnimationStarted(KeyguardState.AOD, KeyguardState.ALTERNATE_BOUNCER)
             assertThat(underTest.activeAnimations).hasSize(2)
 
-            assertThrows(IllegalStateException::class.java) {
-                underTest.onAnimationCanceled(KeyguardState.AOD, KeyguardState.LOCKSCREEN)
-            }
+            underTest.onAnimationCanceled(KeyguardState.AOD, KeyguardState.LOCKSCREEN)
         }
 }

@@ -38,8 +38,6 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_SILENT
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -116,15 +114,13 @@ class NodeSpecBuilderTest : SysuiTestCase() {
         )
     }
 
-    @Test
+    @Test(expected = RuntimeException::class)
     fun testMultipleSectionsWithSameControllerNonConsecutive() {
         whenever(sectionHeaderVisibilityProvider.sectionHeadersVisible).thenReturn(true)
-        assertThrows(RuntimeException::class.java) {
-            checkOutput(
-                listOf(notif(0, section0), notif(1, section1), notif(2, section3), notif(3, section1)),
-                tree(),
-            )
-        }
+        checkOutput(
+            listOf(notif(0, section0), notif(1, section1), notif(2, section3), notif(3, section1)),
+            tree(),
+        )
     }
 
     @Test
@@ -253,18 +249,16 @@ class NodeSpecBuilderTest : SysuiTestCase() {
         )
     }
 
-    @Test
+    @Test(expected = RuntimeException::class)
     fun testRepeatedSectionsThrow() {
         whenever(sectionHeaderVisibilityProvider.sectionHeadersVisible).thenReturn(true)
-        assertThrows(RuntimeException::class.java) {
-            checkOutput(
-                // GIVEN a malformed list where sections are not contiguous
-                listOf(notif(0, section0), notif(1, section1), notif(2, section0)),
+        checkOutput(
+            // GIVEN a malformed list where sections are not contiguous
+            listOf(notif(0, section0), notif(1, section1), notif(2, section0)),
 
-                // THEN an exception is thrown
-                tree(),
-            )
-        }
+            // THEN an exception is thrown
+            tree(),
+        )
     }
 
     private fun checkOutput(list: List<ListEntry>, desiredTree: NodeSpecImpl) {
