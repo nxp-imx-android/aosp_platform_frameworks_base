@@ -42,6 +42,8 @@ pid_t ForkCommon(JNIEnv* env,bool is_system_server,
                  const std::vector<int>& fds_to_close,
                  const std::vector<int>& fds_to_ignore,
                  bool is_priority_fork,
+                 bool is_top_app = false,
+                 bool use_fifo_ui = false,
                  bool purge = true);
 
 /**
@@ -58,6 +60,8 @@ int forkApp(JNIEnv* env,
             const std::vector<int>& session_socket_fds,
             bool args_known,
             bool is_priority_fork,
+            bool is_top_app,
+            bool use_fifo_ui,
             bool purge);
 
 [[noreturn]]

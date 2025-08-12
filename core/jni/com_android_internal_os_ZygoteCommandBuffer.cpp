@@ -153,9 +153,9 @@ class NativeCommandBuffer {
   // and leaves the position at some indeterminate position in the buffer.
   // As a side effect, this sets mNiceName to a non-empty string, if possible.
   template<class FailFn>
-  bool isSimpleForkCommand(int minUid, FailFn fail_fn) {
+  std::pair<bool, bool> isSimpleForkCommand(int minUid, FailFn fail_fn) {
     if (mLinesLeft <= 0 || mLinesLeft >= static_cast<int32_t>(MAX_COMMAND_BYTES / 2)) {
-      return false;
+      return std::make_pair(false, false);
     }
     static const char* RUNTIME_ARGS = "--runtime-args";
     static const char* INVOKE_WITH = "--invoke-with";
@@ -164,6 +164,7 @@ class NativeCommandBuffer {
     static const char* SETGID = "--setgid=";
     static const char* CAPABILITIES = "--capabilities";
     static const char* NICE_NAME = "--nice-name=";
+    static const char* IS_TOP_APP = "--is-top-app";
     static const size_t RA_LENGTH = strlen(RUNTIME_ARGS);
     static const size_t IW_LENGTH = strlen(INVOKE_WITH);
     static const size_t CZ_LENGTH = strlen(CHILD_ZYGOTE);
@@ -171,14 +172,16 @@ class NativeCommandBuffer {
     static const size_t SG_LENGTH = strlen(SETGID);
     static const size_t CA_LENGTH = strlen(CAPABILITIES);
     static const size_t NN_LENGTH = strlen(NICE_NAME);
+    static const size_t ITA_LENGTH = strlen(IS_TOP_APP);
 
     bool saw_setuid = false, saw_setgid = false;
     bool saw_runtime_args = false;
+    bool is_top_app = false;
 
     while (mLinesLeft > 0) {
       auto read_result = readLine(fail_fn);
       if (!read_result.has_value()) {
-        return false;
+        return std::make_pair(false, false);
       }
       const auto [arg_start, arg_end] = read_result.value();
       if (static_cast<size_t>(arg_end - arg_start) == RA_LENGTH &&
@@ -193,28 +196,28 @@ class NativeCommandBuffer {
         memcpy(mNiceName, arg_start + NN_LENGTH, copy_len);
         mNiceName[copy_len] = '\0';
         if (haveWrapProperty()) {
-          return false;
+          return std::make_pair(false, false);
         }
         continue;
       }
       if (static_cast<size_t>(arg_end - arg_start) == IW_LENGTH &&
           strncmp(arg_start, INVOKE_WITH, IW_LENGTH) == 0) {
         // This also removes the need for invoke-with security checks here.
-        return false;
+        return std::make_pair(false, false);
       }
       if (static_cast<size_t>(arg_end - arg_start) == CZ_LENGTH &&
           strncmp(arg_start, CHILD_ZYGOTE, CZ_LENGTH) == 0) {
-        return false;
+        return std::make_pair(false, false);
       }
       if (static_cast<size_t>(arg_end - arg_start) >= CA_LENGTH &&
           strncmp(arg_start, CAPABILITIES, CA_LENGTH) == 0) {
-        return false;
+        return std::make_pair(false, false);
       }
       if (static_cast<size_t>(arg_end - arg_start) >= SU_LENGTH &&
           strncmp(arg_start, SETUID, SU_LENGTH) == 0) {
         int uid = digitsVal(arg_start + SU_LENGTH, arg_end);
         if (uid < minUid) {
-          return false;
+          return std::make_pair(false, false);
         }
         saw_setuid = true;
         continue;
@@ -223,14 +226,18 @@ class NativeCommandBuffer {
           strncmp(arg_start, SETGID, SG_LENGTH) == 0) {
         int gid = digitsVal(arg_start + SG_LENGTH, arg_end);
         if (gid == -1) {
-          return false;
+          return std::make_pair(false, false);
         }
         saw_setgid = true;
+      }
+      if (static_cast<size_t>(arg_end - arg_start) == ITA_LENGTH &&
+          strncmp(arg_start, IS_TOP_APP, ITA_LENGTH) == 0) {
+          is_top_app = true;
       }
       // ro.debuggable can be handled entirely in the child unless --invoke-with is also specified.
       // Thus we do not need to check it here.
     }
-    return saw_runtime_args && saw_setuid && saw_setgid;
+    return std::make_pair(saw_runtime_args && saw_setuid && saw_setgid, is_top_app);
   }
 
   void setFd(int new_fd) {
@@ -422,7 +429,9 @@ jboolean com_android_internal_os_ZygoteCommandBuffer_nativeForkRepeatedly(
             jint zygote_socket_fd,
             jint expected_uid,
             jint minUid,
-            jstring managed_nice_name) {
+            jstring managed_nice_name,
+            jboolean is_top_app,
+            jboolean use_fifo_ui) {
 
   ALOGI("Entering forkRepeatedly native zygote loop");
   NativeCommandBuffer* n_buffer = reinterpret_cast<NativeCommandBuffer*>(j_buffer);
@@ -454,11 +463,13 @@ jboolean com_android_internal_os_ZygoteCommandBuffer_nativeForkRepeatedly(
     return JNI_FALSE;
   }
   bool first_time = true;
+  bool is_simple_command = false;
   do {
     n_buffer->readAllLines(first_time ? fail_fn_1 : fail_fn_n);
     n_buffer->reset();
     int pid = zygote::forkApp(env, /* no pipe FDs */ -1, -1, session_socket_fds,
                               /*args_known=*/ true, /*is_priority_fork=*/ true,
+                              is_top_app == JNI_TRUE, use_fifo_ui == JNI_TRUE,
                               /*purge=*/ first_time);
     if (pid == 0) {
       return JNI_TRUE;
@@ -550,7 +561,8 @@ jboolean com_android_internal_os_ZygoteCommandBuffer_nativeForkRepeatedly(
       }
     }
     first_time = false;
-  } while (n_buffer->isSimpleForkCommand(minUid, fail_fn_n));
+    std::tie(is_simple_command, is_top_app) = n_buffer->isSimpleForkCommand(minUid, fail_fn_n);
+  } while (is_simple_command);
   ALOGW("forkRepeatedly terminated due to non-simple command");
   n_buffer->logState();
   n_buffer->reset();
@@ -566,7 +578,7 @@ static const JNINativeMethod gMethods[] = {
         {"nativeNextArg", "(J)Ljava/lang/String;", (void *) METHOD_NAME(nativeNextArg)},
         {"nativeReadFullyAndReset", "(J)V", (void *) METHOD_NAME(nativeReadFullyAndReset)},
         {"nativeGetCount", "(J)I", (void *) METHOD_NAME(nativeGetCount)},
-        {"nativeForkRepeatedly", "(JIIILjava/lang/String;)Z",
+        {"nativeForkRepeatedly", "(JIIILjava/lang/String;ZZ)Z",
           (void *) METHOD_NAME(nativeForkRepeatedly)},
 };
 
