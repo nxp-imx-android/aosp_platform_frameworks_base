@@ -127,11 +127,17 @@ public final class ComputerControlSession implements AutoCloseable {
     /** Callback for computer control session events. */
     public interface Callback {
 
-        /** Called when the session request was successfully fulfilled. */
+        /** Called when the session has been successfully created. */
         void onSessionCreated(@NonNull ComputerControlSession session);
 
         /** Called when the session failed to be created. */
         void onSessionCreationFailed(@SessionCreationError int errorCode);
+
+        /**
+         * Called when the session has been closed, either via an explicit call to {@link #close()},
+         * or due to an automatic closure event, triggered by the framework.
+         */
+        void onSessionClosed();
     }
 
     /** @hide */
@@ -156,6 +162,12 @@ public final class ComputerControlSession implements AutoCloseable {
         public void onSessionCreationFailed(@SessionCreationError int errorCode) {
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionCreationFailed(errorCode)));
+        }
+
+        @Override
+        public void onSessionClosed() {
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mCallback.onSessionClosed()));
         }
     }
 }

@@ -40,6 +40,7 @@ import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
+import android.platform.test.annotations.Presubmit;
 import android.view.Surface;
 import android.view.WindowManager;
 
@@ -56,6 +57,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+@Presubmit
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionTest {
 

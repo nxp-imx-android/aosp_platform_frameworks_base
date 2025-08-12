@@ -31,10 +31,14 @@ import android.companion.virtual.computercontrol.IComputerControlSessionCallback
 import android.content.AttributionSource;
 import android.content.Context;
 import android.os.Binder;
+import android.platform.test.annotations.Presubmit;
 import android.view.Surface;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.server.LocalServices;
+import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,9 +49,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+@Presubmit
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionProcessorTest {
 
+    @Mock
+    private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
@@ -76,6 +83,9 @@ public class ComputerControlSessionProcessorTest {
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
 
+        LocalServices.removeServiceForTest(WindowManagerInternal.class);
+        LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
+
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
@@ -103,16 +113,19 @@ public class ComputerControlSessionProcessorTest {
                     .onSessionCreationFailed(ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
 
             mSessionArgumentCaptor.getAllValues().getFirst().close();
+            mSessionArgumentCaptor.getAllValues().getFirst().close();
+            verify(mComputerControlSessionCallback, times(1)).onSessionClosed();
 
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                     mParams, mComputerControlSessionCallback);
-            verify(mComputerControlSessionCallback,
-                    times(MAXIMUM_CONCURRENT_SESSIONS + 1))
+            verify(mComputerControlSessionCallback, times(MAXIMUM_CONCURRENT_SESSIONS + 1))
                     .onSessionCreated(mSessionArgumentCaptor.capture());
         } finally {
             for (IComputerControlSession session : mSessionArgumentCaptor.getAllValues()) {
                 session.close();
             }
+            verify(mComputerControlSessionCallback, times(MAXIMUM_CONCURRENT_SESSIONS + 1))
+                    .onSessionClosed();
         }
     }
 }
