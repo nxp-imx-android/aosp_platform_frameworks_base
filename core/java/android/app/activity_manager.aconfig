@@ -42,16 +42,6 @@ flag {
 }
 
 flag {
-     namespace: "system_performance"
-     name: "app_start_info_timestamps"
-     description: "Additional timestamps."
-     bug: "287153617"
-     metadata {
-         purpose: PURPOSE_BUGFIX
-     }
-}
-
-flag {
      namespace: "backstage_power"
      name: "skip_bg_mem_trim_on_fg_app"
      description: "Skip background memory trim event on foreground processes."

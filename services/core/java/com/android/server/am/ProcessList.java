@@ -2604,10 +2604,8 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                 app.mProcessGroupCreated = true;
             }
 
-            if (android.app.Flags.appStartInfoTimestamps()) {
-                mAppStartInfoTracker.addTimestampToStart(app, forkTimeNs,
-                        ApplicationStartInfo.START_TIMESTAMP_FORK);
-            }
+            mAppStartInfoTracker.addTimestampToStart(app, forkTimeNs,
+                    ApplicationStartInfo.START_TIMESTAMP_FORK);
 
             if (!regularZygote) {
                 // webview and app zygote don't have the permission to create the nodes

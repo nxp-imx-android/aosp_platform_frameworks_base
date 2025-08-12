@@ -1217,7 +1217,6 @@ public final class ViewRootImpl implements ViewParent,
     private String mFpsTraceName;
     private String mLargestViewTraceName;
 
-    private final boolean mAppStartInfoTimestampsFlagValue;
     private AtomicBoolean mAppStartTimestampsSent = new AtomicBoolean(false);
     private boolean mAppStartTrackingStarted = false;
     private long mRenderThreadDrawStartTimeNs = -1;
@@ -1320,8 +1319,6 @@ public final class ViewRootImpl implements ViewParent,
         } else {
             mSensitiveContentProtectionService = null;
         }
-
-        mAppStartInfoTimestampsFlagValue = android.app.Flags.appStartInfoTimestamps();
 
         // Disable DRAW_WAKE_LOCK starting U.
         mDisableDrawWakeLock =
@@ -4641,7 +4638,7 @@ public final class ViewRootImpl implements ViewParent,
 
         // Only trigger once per {@link ViewRootImpl} instance, so don't add listener if
         // {link mTransactionCompletedTimeNs} has already been set.
-        if (mAppStartInfoTimestampsFlagValue && !mAppStartTrackingStarted) {
+        if (!mAppStartTrackingStarted) {
             mAppStartTrackingStarted = true;
             Transaction transaction = new Transaction();
             transaction.addTransactionCompletedListener(mSimpleExecutor,
@@ -5888,7 +5885,7 @@ public final class ViewRootImpl implements ViewParent,
                 mAttachInfo.mThreadedRenderer.draw(mView, mAttachInfo, this);
 
                 // Only trigger once per {@link ViewRootImpl} instance.
-                if (mAppStartInfoTimestampsFlagValue && mRenderThreadDrawStartTimeNs == -1) {
+                if (mRenderThreadDrawStartTimeNs == -1) {
                     mRenderThreadDrawStartTimeNs = timeNs;
                 }
             } else {
