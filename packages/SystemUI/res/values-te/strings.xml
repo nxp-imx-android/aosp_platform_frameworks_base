@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"రికార్డ్ చేయండి"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"షేర్ చేయండి"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"స్క్రీన్‌ను షేర్ చేస్తోంది"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"కంటెంట్‌ను షేర్ చేస్తోంది"</string>
@@ -226,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ప్రామాణీకరించబడింది"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ప్రామాణీకరణను రద్దు చేయండి"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"మరిన్ని ఆప్షన్‌లు"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"మరిన్ని ఆప్షన్‌లు"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"మరొక మార్గంలో వెరిఫై చేయండి"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ఐడెంటిటీ చెక్‌ను మేనేజ్ చేయండి"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ఐడెంటిటీ చెక్ ఆన్‌లో ఉన్నందున, అలాగే దానికి బయోమెట్రిక్ అవసరం కాబట్టి వెరిఫికేషన్ కోసం PINను ఉపయోగించలేరు. ఐడెంటిటీ చెక్ గురించి మరింత తెలుసుకోండి"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ఐడెంటిటీ చెక్ ఆన్‌లో ఉన్నందున, అలాగే దానికి బయోమెట్రిక్ అవసరం కాబట్టి వెరిఫికేషన్ కోసం ఆకృతిని ఉపయోగించలేరు. ఐడెంటిటీ చెక్ గురించి మరింత తెలుసుకోండి"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ఐడెంటిటీ చెక్ ఆన్‌లో ఉన్నందున, అలాగే దానికి బయోమెట్రిక్ అవసరం కాబట్టి వెరిఫికేషన్ కోసం పాస్‌వర్డ్‌ను ఉపయోగించలేరు. ఐడెంటిటీ చెక్ గురించి మరింత తెలుసుకోండి"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"ప్రమాదాన్ని అంచనా వేస్తోంది..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"అందుబాటులో లేదు"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PINను ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ఆకృతిని ఉపయోగించండి"</string>
@@ -994,7 +996,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"కుడి వైపు ప్రస్తుత యాప్‌తో స్ప్లిట్ స్క్రీన్‌ను ఉపయోగించండి"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ఎడమ వైపు ప్రస్తుత యాప్‌తో స్ప్లిట్ స్క్రీన్‌ను ఉపయోగించండి"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ఫుల్ స్క్రీన్‌ను ఉపయోగించండి"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"డెస్క్‌టాప్ విండోయింగ్‌ను ఉపయోగించండి"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"డెస్క్‌టాప్ విండో మోడ్‌ను ఉపయోగించండి"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"స్ప్లిట్ స్క్రీన్ ఉపయోగిస్తున్నప్పుడు కుడి లేదా కింద యాప్‌నకు మారండి"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"స్ప్లిట్ స్క్రీన్ ఉపయోగిస్తున్నప్పుడు ఎడమ లేదా పైన యాప్‌నకు మారండి"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"స్ప్లిట్ స్క్రీన్ సమయంలో: ఒక దాన్నుండి మరో దానికి యాప్ రీప్లేస్ చేయండి"</string>
@@ -1022,7 +1024,7 @@
     <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"బౌన్స్ కీలను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"మౌస్ కీలను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"స్టిక్కీ కీలను టోగుల్ చేయండి"</string>
-    <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"నిదానంగా పనిచేసే కీలను టోగుల్ చేయండి"</string>
+    <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"స్లో కీలను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Voice Accessను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"TalkBackను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"మ్యాగ్నిఫికేషన్‌ను టోగుల్ చేయండి"</string>

@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ቅረጽ"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"አጋራ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ማያ ገፅን በማጋራት ላይ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ይዘት በማጋራት ላይ"</string>
@@ -226,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"የተረጋገጠ"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ማረጋገጥን ሰርዝ"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ተጨማሪ አማራጮች"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"ተጨማሪ አማራጮች"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"በሌላ መንገድ ያረጋግጡ"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"የማንነት ማረጋገጫን ያስተዳድሩ"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"የማንነት ማረጋገጫ ስለበራ እና ባዮሜትሪክ ስለሚያስፈልገው ፒን ለማረጋገጫ ጥቅም ላይ መዋል አይችልም። ስለ የማንነት ማረጋገጫ የበለጠ ይወቁ"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"የማንነት ማረጋገጫ ስለበራ እና ባዮሜትሪክ ስለሚያስፈልገው ሥርዓተ ጥለት ለማረጋገጫ ጥቅም ላይ መዋል አይችልም። ስለ የማንነት ማረጋገጫ የበለጠ ይወቁ"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"የማንነት ማረጋገጫ ስለበራ እና ባዮሜትሪክ ስለሚያስፈልገው የይለፍ ቃል ለማረጋገጫ ጥቅም ላይ መዋል አይችልም። ስለ የማንነት ማረጋገጫ የበለጠ ይወቁ"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"የመድረድ ስጋት..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"አይገኝም"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ፒን ይጠቀሙ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ሥርዓተ ጥለትን ተጠቀም"</string>
@@ -815,7 +817,7 @@
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"በጥሪ ላይ"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"የስርዓት በይነገጽ መቃኛ"</string>
     <string name="status_bar" msgid="4357390266055077437">"የሁኔታ አሞሌ"</string>
-    <string name="demo_mode" msgid="263484519766901593">"የስርዓት ተጠቃሚ በይነገጽ ማሳያ ሁነታ"</string>
+    <string name="demo_mode" msgid="263484519766901593">"የሥርዓት ተጠቃሚ በይነገጽ ማሳያ ሁነታ"</string>
     <string name="enable_demo_mode" msgid="3180345364745966431">"የማሳያ ሁነታውን ያንቁ"</string>
     <string name="show_demo_mode" msgid="3677956462273059726">"ማሳያ ሁነታን አሳይ"</string>
     <string name="status_bar_ethernet" msgid="5690979758988647484">"ኤተርኔት"</string>

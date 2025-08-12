@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"บันทึก"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"แชร์"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"กำลังแชร์หน้าจอ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"กำลังแชร์เนื้อหา"</string>
@@ -202,10 +201,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"ตัวสแกนคิวอาร์โค้ด"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"ปลดล็อกแล้ว"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"อุปกรณ์ถูกล็อก"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"ยืนยันและปลดล็อกอุปกรณ์"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"ลองใช้การปลดล็อกด้วยใบหน้าอีกครั้ง"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"กำลังสแกนใบหน้า"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"ส่ง"</string>
     <string name="cancel" msgid="1089011503403416730">"ยกเลิก"</string>
@@ -226,13 +223,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ตรวจสอบสิทธิ์แล้ว"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ยกเลิกการตรวจสอบสิทธิ์"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ตัวเลือกเพิ่มเติม"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"ตัวเลือกเพิ่มเติม"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ยืนยันด้วยวิธีอื่น"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"จัดการการตรวจสอบตัวตน"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ใช้ PIN สำหรับการยืนยันไม่ได้เนื่องจากการตรวจสอบตัวตนเปิดอยู่และต้องใช้ข้อมูลไบโอเมตริก ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบตัวตน"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ใช้รูปแบบสำหรับการยืนยันไม่ได้เนื่องจากการตรวจสอบตัวตนเปิดอยู่และต้องใช้ข้อมูลไบโอเมตริก ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบตัวตน"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ใช้รหัสผ่านสำหรับการยืนยันไม่ได้เนื่องจากการตรวจสอบตัวตนเปิดอยู่และต้องใช้ข้อมูลไบโอเมตริก ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบตัวตน"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"กำลังประเมินความเสี่ยง..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"ไม่พร้อมใช้งาน"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ใช้ PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ใช้รูปแบบ"</string>
@@ -541,8 +541,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"ปัดขึ้นเพื่อเปิด"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"กดไอคอนปลดล็อกเพื่อเปิด"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"ปลดล็อกด้วยใบหน้าแล้ว ปัดขึ้นเพื่อเปิด"</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"ปลดล็อกด้วยใบหน้าแล้ว กด \"ยืนยัน\" เพื่อดำเนินการต่อ"</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"ปลดล็อกด้วยใบหน้าแล้ว กดไอคอนปลดล็อกเพื่อเปิด"</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"ปลดล็อกด้วยใบหน้าแล้ว กดเพื่อเปิด"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"จดจำใบหน้าได้ กดเพื่อเปิด"</string>
@@ -994,7 +993,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ใช้โหมดแยกหน้าจอโดยให้แอปอยู่ด้านขวา"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ใช้โหมดแยกหน้าจอโดยให้แอปอยู่ด้านซ้าย"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ใช้โหมดเต็มหน้าจอ"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ใช้หน้าต่างเดสก์ท็อป"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ใช้หน้าต่าง​เดสก์ท็อป"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"เปลี่ยนไปใช้แอปทางด้านขวาหรือด้านล่างขณะใช้โหมดแยกหน้าจอ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"เปลี่ยนไปใช้แอปทางด้านซ้ายหรือด้านบนขณะใช้โหมดแยกหน้าจอ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ระหว่างใช้โหมดแยกหน้าจอ: เปลี่ยนแอปหนึ่งเป็นอีกแอปหนึ่ง"</string>
@@ -1019,7 +1018,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="4229602992120154157">"ปฏิทิน"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6316043911946540137">"เครื่องคิดเลข"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7312554713993114342">"แผนที่"</string>
-    <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"เปิด/ปิดคีย์ตีกลับ"</string>
+    <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"เปิด/ปิด Bounce Key"</string>
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"เปิด/ปิดแป้นเมาส์"</string>
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"เปิด/ปิดคีย์ติดหนึบ"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"เปิด/ปิดการเพิ่มระยะเวลาในการกดปุ่ม"</string>

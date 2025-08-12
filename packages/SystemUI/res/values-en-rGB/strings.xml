@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Record"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Share"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sharing screen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Sharing content"</string>
@@ -226,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Authenticated"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancel authentication"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"More options"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"More options"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verify another way"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Manage Identity Check"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Pattern can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Password can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Assessing risk…"</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Unavailable"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Use PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Use pattern"</string>

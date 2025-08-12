@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
@@ -225,13 +222,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ದೃಢೀಕರಿಸಲಾಗಿದೆ"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ದೃಢೀಕರಣವನ್ನು ರದ್ದುಗೊಳಿಸಿ"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ಮತ್ತೊಂದು ರೀತಿಯಲ್ಲಿ ದೃಢೀಕರಿಸಿ"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಆನ್ ಆಗಿರುವುದರಿಂದ ಮತ್ತು ಬಯೋಮೆಟ್ರಿಕ್ ಅಗತ್ಯವಿರುವುದರಿಂದ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಪಿನ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಆನ್ ಆಗಿರುವುದರಿಂದ ಮತ್ತು ಬಯೋಮೆಟ್ರಿಕ್ ಅಗತ್ಯವಿರುವುದರಿಂದ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಪ್ಯಾಟರ್ನ್ ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಆನ್ ಆಗಿರುವುದರಿಂದ ಮತ್ತು ಬಯೋಮೆಟ್ರಿಕ್ ಅಗತ್ಯವಿರುವುದರಿಂದ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"ಅಪಾಯವನ್ನು ಅಂದಾಜಿಸಲಾಗುತ್ತಿದೆ..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"ಲಭ್ಯವಿಲ್ಲ"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ಪಿನ್ ಬಳಸಿ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ಪ್ಯಾಟರ್ನ್ ಬಳಸಿ"</string>

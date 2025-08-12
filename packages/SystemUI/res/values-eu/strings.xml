@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grabatu"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partekatu"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Pantaila partekatzen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Edukia partekatzen"</string>
@@ -226,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autentifikatuta"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Utzi bertan behera autentifikazioa"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Aukera gehiago"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Aukera gehiago"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Egiaztatu beste era batera"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Kudeatu Identitate-egiaztapena"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Ezin da egiaztatu PIN bidez; izan ere, Identitate-egiaztapena aktibatuta dago eta sistema biometriko bat behar da. Lortu identitate-egiaztapenari buruzko informazio gehiago"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Ezin da egiaztatu eredu bidez; izan ere, Identitate-egiaztapena aktibatuta dago eta sistema biometriko bat behar da. Lortu identitate-egiaztapenari buruzko informazio gehiago"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Ezin da egiaztatu pasahitz bidez; izan ere, Identitate-egiaztapena aktibatuta dago eta sistema biometriko bat behar da. Lortu identitate-egiaztapenari buruzko informazio gehiago"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Arriskua ebaluatzen…"</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Ez dago erabilgarri"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Erabili PINa"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Erabili eredua"</string>

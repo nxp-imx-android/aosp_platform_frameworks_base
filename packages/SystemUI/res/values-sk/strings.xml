@@ -143,7 +143,7 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Zobraziť dotyky"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vyberte aplikáciu na nahrávanie"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video bolo uložené"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Znova naskenovať"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Znova nasnímať"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Upraviť"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Odstrániť"</string>
     <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nahrať"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Zdieľať"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Zdieľa sa obrazovka"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Obsah sa zdieľa"</string>
@@ -226,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Overené"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Zrušiť overenie"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Ďalšie možnosti"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Ďalšie možnosti"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Overiť iným spôsobom"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Spravovať overenie totožnosti"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN sa nedá použiť na overenie, pretože je zapnuté overenie totožnosti a vyžaduje sa biometria. Ďalšie informácie o overení totožnosti"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Vzor sa nedá použiť na overenie, pretože je zapnuté overenie totožnosti a vyžaduje sa biometria. Ďalšie informácie o overení totožnosti"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Heslo sa nedá použiť na overenie, pretože je zapnuté overenie totožnosti a vyžaduje sa biometria. Ďalšie informácie o overení totožnosti"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Vyhodnocuje sa riziko…"</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Nedostupné"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Použiť PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Použiť vzor"</string>
@@ -994,7 +996,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Rozdeliť obrazovku, aktuálna aplikácia vpravo"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Rozdeliť obrazovku, aktuálna aplikácia vľavo"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Používať celú obrazovku"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Používať windowing na pracovnej ploche"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Používať režim aplikácií v oknách"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Prechod na aplikáciu vpravo alebo dole pri rozdelenej obrazovke"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Prechod na aplikáciu vľavo alebo hore pri rozdelenej obrazovke"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Počas rozdelenej obrazovky: nahradenie aplikácie inou"</string>
@@ -1023,7 +1025,7 @@
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"Prepnúť na myš klávesnicou"</string>
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Prepnúť na režim uzamknutia klávesa"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Prepnúť na pomalé klávesy"</string>
-    <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Prepnúť na Voice Access"</string>
+    <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Prepnúť na ovládanie hlasom"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Prepnúť TalkBack"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Prepnúť zväčšenie"</string>
     <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Aktivovať počúvanie vybraného textu"</string>
