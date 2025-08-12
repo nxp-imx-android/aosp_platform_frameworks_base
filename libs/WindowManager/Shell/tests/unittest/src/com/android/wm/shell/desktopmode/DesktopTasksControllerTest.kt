@@ -5869,8 +5869,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
 
         val focusedFullscreenTask = setUpFullscreenTask()
-        whenever(focusTransitionObserver.getFocusedTaskOnDisplay(any()))
-            .thenReturn(focusedFullscreenTask)
+        whenever(focusTransitionObserver.getFocusedTaskIdOnDisplay(any()))
+            .thenReturn(focusedFullscreenTask.taskId)
 
         val fullscreenTask = createFullscreenTask()
 
@@ -6267,8 +6267,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
 
         val focusedFullscreenTask = setUpFullscreenTask()
-        whenever(focusTransitionObserver.getFocusedTaskOnDisplay(any()))
-            .thenReturn(focusedFullscreenTask)
+        whenever(focusTransitionObserver.getFocusedTaskIdOnDisplay(any()))
+            .thenReturn(focusedFullscreenTask.taskId)
 
         val freeformTask = createFreeformTask(displayId = DEFAULT_DISPLAY)
 
