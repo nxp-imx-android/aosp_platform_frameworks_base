@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 
 import java.util.Objects;
@@ -43,6 +44,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class CameraCompatibilityInfo implements Parcelable {
     private final int mRotateAndCropRotation;
     private final boolean mShouldOverrideSensorOrientation;

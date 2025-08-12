@@ -1130,8 +1130,7 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM kortelės PIN kodo atrakinimas."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM kortelės PUK kodo atrakinimas."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"Atrakinimas įvedus slaptažodį."</string>
-    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
-    <skip />
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"Atrakinimas pagal biometrinius duomenis, kad įrenginys būtų saugiai užrakintas."</string>
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"Atrakinimo pagal piešinį sritis."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"Slydimo sritis."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>

@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.ui.composable.blueprint
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.element.AmbientIndicationElement
+import com.android.systemui.keyguard.ui.composable.element.AodNotificationIconsElement
 import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElement
 import com.android.systemui.keyguard.ui.composable.element.ClockRegionElementProvider
 import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
@@ -43,10 +45,10 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
-import com.android.systemui.plugins.clocks.LockscreenElementContext
-import com.android.systemui.plugins.clocks.LockscreenElementFactory
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockSmall
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceCards
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockSmall
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceCards
 import java.util.Optional
 import javax.inject.Inject
 
@@ -67,6 +69,7 @@ constructor(
     private val settingsMenuElement: SettingsMenuElement,
     private val notificationsElement: NotificationElement,
     private val aodPromotedNotificationAreaElement: AodPromotedNotificationAreaElement,
+    private val aodNotificationIconsElement: AodNotificationIconsElement,
     private val smartspaceElementProvider: SmartspaceElementProvider,
     private val clockRegionElementProvider: ClockRegionElementProvider,
     private val mediaCarouselElement: MediaCarouselElement,
@@ -138,7 +141,12 @@ constructor(
                 },
                 notifications = {
                     Box(modifier = Modifier.fillMaxHeight()) {
-                        with(aodPromotedNotificationAreaElement) { AodPromotedNotificationArea() }
+                        Column {
+                            with(aodPromotedNotificationAreaElement) {
+                                AodPromotedNotificationArea()
+                            }
+                            with(aodNotificationIconsElement) { AodNotificationIcons() }
+                        }
                         with(notificationsElement) {
                             Notifications(areNotificationsVisible = true, burnInParams = null)
                         }

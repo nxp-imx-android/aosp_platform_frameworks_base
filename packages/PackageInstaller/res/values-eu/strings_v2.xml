@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Aplikazioa leheneratzeko, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> instalatu beharko duzu"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Arazo bat izan da aplikazioa leheneratzean"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> aplikazio honen zati da: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Aplikazio hau blokeatu egin da. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen aplikazioak soilik instala daitezke.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Ez da eguneratu aplikazioa. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen eguneratzeak soilik instala daitezke.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Aplikazio hau ez da instalatu. Baliteke egiaztatu gabeko garatzaileen aplikazioak seguruak ez izatea.&lt;/p&gt; &lt;p&gt;Interneterako konexioa behar da aplikazioaren garatzailea egiaztatzeko. Ziurtatu gailua Internetera konektatuta dagoela, eta saiatu berriro aplikazioa instalatzen. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Ez da eguneratu aplikazioa. Baliteke egiaztatu gabeko garatzaileen eguneratzeak seguruak ez izatea.&lt;/p&gt; &lt;p&gt;Interneteko konexioa behar da aplikazioaren garatzailea egiaztatzeko. Ziurtatu gailua Internetera konektatuta dagoela, eta saiatu berriro aplikazioa eguneratzen. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Arazo bat izan da aplikazio honen garatzailea egiaztatzean. Baliteke egiaztatu gabeko garatzaileen aplikazioak seguruak ez izatea; beraz, aplikazioa ez da instalatu.&lt;/p&gt; &lt;p&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Arazo bat izan da aplikazio honen garatzailea egiaztatzean. Baliteke egiaztatu gabeko garatzaileen eguneratzeak seguruak ez izatea; beraz, aplikazioa ez da eguneratu.&lt;/p&gt; &lt;p&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Aplikazioa blokeatu egin da, arazo bat izan delako garatzailea egiaztatzean. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen aplikazioak soilik instala daitezke.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Aplikazioa ez da eguneratu, arazo bat izan delako garatzailea egiaztatzean. Gailua eta datuak seguru mantentzeko, garatzaile egiaztatuen eguneratzeak soilik instala daitezke.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Lortu garatzaileak egiaztatzeari buruzko informazio gehiago&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Egiaztatu gabe instalatzen baduzu, gogoan izan egiaztatu gabeko garatzaileen aplikazioek gailua eta datuak arriskuan jarriko dituztela agian."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Egiaztatu gabe eguneratzen baduzu, gogoan izan egiaztatu gabeko garatzaileen eguneratzeek gailua eta datuak arriskuan jarriko dituztela agian."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Ez da egiaztatu aplikazioaren garatzailea"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Leheneratu"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalatu eguneratzeak"</string>
     <string name="button_settings" msgid="3837571366246132287">"Ezarpenak"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> aplikazioaren klona"</string>
 </resources>

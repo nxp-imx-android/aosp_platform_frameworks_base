@@ -23,7 +23,7 @@ import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.DismissExpandedBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.DismissSingleExpandedBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleView
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
@@ -55,7 +55,7 @@ import org.junit.runners.Parameterized
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [DismissExpandedBubbleTestCases]
+ * - [DismissSingleExpandedBubbleTestCases]
  */
 @FlakyTest(bugId = 427850786)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -64,11 +64,11 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    DismissExpandedBubbleTestCases {
+    DismissSingleExpandedBubbleTestCases {
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = { dismissBubbleAppViaBubbleView(wmHelper) },
+            transition = { dismissBubbleAppViaBubbleView(testApp, wmHelper) },
             tearDownAfterTransition = { testApp.exit() }
         )
 
@@ -86,7 +86,6 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTest
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    // TODO(b/396020056): Verify expand bubble with bubble bar.
     @Before
     override fun setUp() {
         assumeFalse(tapl.isTablet)

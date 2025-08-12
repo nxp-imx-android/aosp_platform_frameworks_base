@@ -29,53 +29,52 @@ interface IImeTracker {
     /**
      * Called when an IME request is started.
      *
-     * @param tag the logging tag.
+     * @param statsToken the token tracking the request.
      * @param uid the uid of the client that started the request.
      * @param type the type of the request.
      * @param origin the origin of the request.
-     * @param fromUser whether this request was created directly from user interaction.
      * @param reason the reason for starting the request.
-     *
-     * @return An IME request tracking token.
+     * @param fromUser whether this request was created directly from user interaction.
+     * @param startTime the time in milliseconds when the request was started.
      */
-    ImeTracker.Token onStart(String tag, int uid, int type, int origin, int reason,
-        boolean fromUser);
+    oneway void onStart(in ImeTracker.Token statsToken, int uid, int type, int origin, int reason,
+        boolean fromUser, long startTime);
 
     /**
      * Called when the IME request progresses to a further phase.
      *
-     * @param binder the binder of token tracking the current IME request.
-     * @param phase the new phase the IME request reached.
+     * @param statsToken the token tracking the request.
+     * @param phase the new phase the request reached.
      */
-    oneway void onProgress(in IBinder binder, int phase);
+    oneway void onProgress(long id, int phase);
 
     /**
      * Called when the IME request fails.
      *
-     * @param statsToken the token tracking the current IME request.
-     * @param phase the phase the IME request failed at.
+     * @param statsToken the token tracking the request.
+     * @param phase the phase the request failed at.
      */
     oneway void onFailed(in ImeTracker.Token statsToken, int phase);
 
     /**
      * Called when the IME request is cancelled.
      *
-     * @param statsToken the token tracking the current IME request.
-     * @param phase the phase the IME request was cancelled at.
+     * @param statsToken the token tracking the request.
+     * @param phase the phase the request was cancelled at.
      */
     oneway void onCancelled(in ImeTracker.Token statsToken, int phase);
 
     /**
      * Called when the show IME request is successful.
      *
-     * @param statsToken the token tracking the current IME request.
+     * @param statsToken the token tracking the request.
      */
     oneway void onShown(in ImeTracker.Token statsToken);
 
     /**
      * Called when the hide IME request is successful.
      *
-     * @param statsToken the token tracking the current IME request.
+     * @param statsToken the token tracking the request.
      */
     oneway void onHidden(in ImeTracker.Token statsToken);
 
@@ -83,7 +82,7 @@ interface IImeTracker {
      * Called when the user-controlled IME request was dispatched to the requesting app. The
      * user animation can take an undetermined amount of time, so it shouldn't be tracked.
      *
-     * @param statsToken the token tracking the current IME request.
+     * @param statsToken the token tracking the request.
      */
     oneway void onDispatched(in ImeTracker.Token statsToken);
 

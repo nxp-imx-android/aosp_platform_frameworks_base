@@ -40,9 +40,9 @@ import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockFaceLayout
-import com.android.systemui.plugins.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.shade.LargeScreenHeaderHelper
 import com.android.systemui.shade.ShadeDisplayAware
@@ -138,8 +138,16 @@ constructor(
                     )
                 }
             } else {
-                setScaleX(getTargetClockFace(clock).views, aodBurnInViewModel.movement.value.scale)
-                setScaleY(getTargetClockFace(clock).views, aodBurnInViewModel.movement.value.scale)
+                if (aodBurnInViewModel.movement.value.scaleClockOnly) {
+                    setScaleX(
+                        getTargetClockFace(clock).views,
+                        aodBurnInViewModel.movement.value.scale,
+                    )
+                    setScaleY(
+                        getTargetClockFace(clock).views,
+                        aodBurnInViewModel.movement.value.scale,
+                    )
+                }
             }
         }
     }

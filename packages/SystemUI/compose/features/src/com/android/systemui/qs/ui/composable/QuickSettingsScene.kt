@@ -17,6 +17,7 @@
 package com.android.systemui.qs.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -38,49 +39,47 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.transitions
+import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
-import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.remedia.ui.compose.Media
-import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
-import com.android.systemui.qs.panels.ui.compose.TileGrid
-import com.android.systemui.qs.shared.ui.ElementKeys
-import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
+import com.android.systemui.qs.panels.ui.compose.EditMode
+import com.android.systemui.qs.ui.composable.QuickSettingsScene.Companion.InternalScenes.Edit
+import com.android.systemui.qs.ui.composable.QuickSettingsScene.Companion.InternalScenes.QS
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsSceneContentViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsUserActionsViewModel
 import com.android.systemui.res.R
@@ -89,6 +88,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.shade.ui.composable.CollapsedShadeHeader
 import com.android.systemui.shade.ui.composable.ExpandedShadeHeader
+import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.shade.ui.composable.ShadePanelScrim
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -132,15 +132,50 @@ constructor(
             rememberViewModel("QuickSettingsScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create()
             }
+
+        val brightnessMirrorShowing =
+            viewModel.qsContainerViewModel.brightnessSliderViewModel.showMirror
+        val contentAlpha by
+            animateFloatAsState(
+                targetValue = if (brightnessMirrorShowing) 0f else 1f,
+                label = "alphaAnimationBrightnessMirrorContentHiding",
+            )
+
+        LaunchedEffectWithLifecycle(key1 = Unit) {
+            try {
+                snapshotFlow { contentAlpha }
+                    .collect { notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(it) }
+            } finally {
+                notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(1f)
+            }
+        }
+
         QuickSettingsScene(
             notificationStackScrollView = notificationStackScrollView.get(),
             viewModel = viewModel,
             headerViewModel = viewModel.qsContainerViewModel.shadeHeaderViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-            modifier = modifier,
+            modifier = modifier.graphicsLayer { alpha = contentAlpha },
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
         )
+    }
+
+    companion object {
+        object InternalScenes {
+            val QS = SceneKey("QuickSettingsMainPanel")
+            val Edit = SceneKey("QuickSettingsEditPanel")
+
+            private const val EDIT_MODE_TIME_MILLIS = 500
+
+            val transitions = transitions {
+                from(QS, Edit) {
+                    spec = tween(durationMillis = EDIT_MODE_TIME_MILLIS)
+                    fractionRange(start = 0.5f) { fade(Edit.rootElementKey) }
+                    fractionRange(end = 0.5f) { fade(QS.rootElementKey) }
+                }
+            }
+        }
     }
 }
 
@@ -154,19 +189,80 @@ private fun ContentScope.QuickSettingsScene(
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
 ) {
-    val cutoutLocation = LocalDisplayCutout.current().location
-    val brightnessMirrorShowing =
-        viewModel.qsContainerViewModel.brightnessSliderViewModel.showMirror
-    val contentAlpha by
-        animateFloatAsState(
-            targetValue = if (brightnessMirrorShowing) 0f else 1f,
-            label = "alphaAnimationBrightnessMirrorContentHiding",
-        )
+    Box(modifier.fillMaxSize()) {
+        // This is the background for the whole scene, as the elements don't necessarily provide
+        // a background that extends to the edges.
+        ShadePanelScrim(viewModel.isTransparencyEnabled)
 
-    notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(contentAlpha)
-    DisposableEffect(Unit) {
-        onDispose { notificationsPlaceholderViewModel.setAlphaForBrightnessMirror(1f) }
+        val sceneState =
+            rememberMutableSceneTransitionLayoutState(
+                initialScene =
+                    remember { if (viewModel.qsContainerViewModel.isEditing) Edit else QS },
+                transitions = QuickSettingsScene.Companion.InternalScenes.transitions,
+            )
+
+        val coroutineScope = rememberCoroutineScope()
+
+        DisposableEffectWithLifecycle(key1 = viewModel, key2 = sceneState) {
+            onDispose {
+                viewModel.qsContainerViewModel.editModeViewModel.stopEditing()
+                sceneState.snapTo(QS)
+            }
+        }
+
+        LaunchedEffectWithLifecycle(
+            key1 = sceneState,
+            key2 = viewModel.qsContainerViewModel.isEditing,
+            key3 = coroutineScope,
+        ) {
+            if (viewModel.qsContainerViewModel.isEditing) {
+                sceneState.setTargetScene(Edit, coroutineScope)
+            } else {
+                sceneState.setTargetScene(QS, coroutineScope)
+            }
+        }
+
+        NestedSceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
+            scene(QS) {
+                Element(QS.rootElementKey, Modifier) {
+                    QuickSettingsContent(
+                        notificationsPlaceholderViewModel,
+                        Modifier,
+                        viewModel,
+                        headerViewModel,
+                        notificationStackScrollView,
+                        shadeSession,
+                        jankMonitor,
+                    )
+                }
+            }
+
+            scene(Edit) {
+                Element(Edit.rootElementKey, Modifier) {
+                    GridAnchor()
+                    EditMode(
+                        viewModel.qsContainerViewModel.editModeViewModel,
+                        Modifier.testTag("edit_mode_scene")
+                            .padding(horizontal = QuickSettingsShade.Dimensions.Padding)
+                            .padding(top = ShadeHeader.Dimensions.StatusBarHeight),
+                    )
+                }
+            }
+        }
     }
+}
+
+@Composable
+private fun ContentScope.QuickSettingsContent(
+    notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
+    modifier: Modifier,
+    viewModel: QuickSettingsSceneContentViewModel,
+    headerViewModel: ShadeHeaderViewModel,
+    notificationStackScrollView: NotificationScrollView,
+    shadeSession: SaveableSession,
+    jankMonitor: InteractionJankMonitor,
+) {
+    val cutoutLocation = LocalDisplayCutout.current().location
 
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
@@ -180,7 +276,6 @@ private fun ContentScope.QuickSettingsScene(
         modifier =
             modifier
                 .fillMaxSize()
-                .graphicsLayer { alpha = contentAlpha }
                 .thenIf(shouldPunchHoleBehindScrim) {
                     // Render the scene to an offscreen buffer so that BlendMode.DstOut only clears
                     // this scene (and not the one under it) during a scene transition.
@@ -223,7 +318,6 @@ private fun ContentScope.QuickSettingsScene(
         // ############# Media ###############
         val mediaInRow = viewModel.qsContainerViewModel.showMediaInRow
 
-        ShadePanelScrim(viewModel.isTransparencyEnabled)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier =
@@ -251,65 +345,7 @@ private fun ContentScope.QuickSettingsScene(
                             CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    var listening by remember { mutableStateOf(false) }
-                    LifecycleStartEffect(Unit) {
-                        listening = true
-
-                        onStopOrDispose { listening = false }
-                    }
-
-                    QuickSettingsPanelLayout(
-                        brightness =
-                            @Composable {
-                                BrightnessSliderContainer(
-                                    viewModel.qsContainerViewModel.brightnessSliderViewModel,
-                                    containerColors =
-                                        ContainerColors(
-                                            Color.Transparent,
-                                            ContainerColors.defaultContainerColor,
-                                        ),
-                                    modifier =
-                                        Modifier.padding(
-                                            vertical =
-                                                dimensionResource(
-                                                    id = R.dimen.qs_brightness_margin_top
-                                                )
-                                        ),
-                                )
-                            },
-                        tiles =
-                            @Composable {
-                                Box {
-                                    GridAnchor()
-                                    TileGrid(
-                                        viewModel.qsContainerViewModel.tileGridViewModel,
-                                        listening = { listening },
-                                    )
-                                }
-                            },
-                        media =
-                            @Composable {
-                                Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
-                                    Media(
-                                        viewModelFactory =
-                                            viewModel.qsContainerViewModel.mediaViewModelFactory,
-                                        presentationStyle = MediaPresentationStyle.Default,
-                                        behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
-                                        onDismissed =
-                                            viewModel.qsContainerViewModel::onMediaSwipeToDismiss,
-                                    )
-                                }
-                            },
-                        mediaInRow = mediaInRow,
-                        modifier =
-                            Modifier.element(ElementKeys.QuickSettingsContent)
-                                .padding(
-                                    horizontal =
-                                        dimensionResource(id = R.dimen.qs_horizontal_margin)
-                                )
-                                .sysuiResTag("quick_settings_panel"),
-                    )
+                    QuickSettingsContent(viewModel.qsContainerViewModel, mediaInRow)
                 }
             }
 

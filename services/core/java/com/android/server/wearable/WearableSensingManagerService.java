@@ -26,6 +26,7 @@ import android.app.ActivityOptions;
 import android.app.BroadcastOptions;
 import android.app.PendingIntent;
 import android.app.ambientcontext.AmbientContextEvent;
+import android.app.wearable.Flags;
 import android.app.wearable.IWearableSensingCallback;
 import android.app.wearable.IWearableSensingManager;
 import android.app.wearable.WearableSensingDataRequest;
@@ -47,11 +48,14 @@ import android.util.Slog;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.infra.AbstractMasterSystemService;
 import com.android.server.infra.FrameworkResourcesServiceNameResolver;
 import com.android.server.utils.quota.MultiRateLimiter;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Objects;
@@ -677,6 +681,22 @@ public class WearableSensingManagerService
                             out.getFileDescriptor(),
                             err.getFileDescriptor(),
                             args);
+        }
+
+
+        @Override
+        protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
+            if (!Flags.enableWearableSensingManagerServiceDump()) {
+                return;
+            }
+
+            if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) {
+                return;
+            }
+
+            synchronized (mLock) {
+                dumpLocked("", pw);
+            }
         }
 
         @Nullable

@@ -29,6 +29,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags.doubleTapToSleep
+import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -81,6 +82,7 @@ constructor(
     private val secureSettingsRepository: SecureSettingsRepository,
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
+    private val bouncerInteractor: BouncerInteractor,
 ) {
     private val _udfpsAccessibilityOverlayBounds: MutableStateFlow<Rect?> = MutableStateFlow(null)
 
@@ -221,7 +223,7 @@ constructor(
         pulsingGestureListener.onSingleTapUp(x, y)
         if (faceAuthInteractor.canFaceAuthRun()) {
             faceAuthInteractor.onNotificationPanelClicked()
-        } else {
+        } else if (bouncerInteractor.isImproveLargeScreenInteractionEnabled) {
             attemptDeviceEntry(loggingReason = "Lockscreen clicked")
         }
     }

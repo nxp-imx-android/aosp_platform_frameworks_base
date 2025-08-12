@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Gravar"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Compartilhar"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Compartilhando a tela"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Compartilhando conteúdo"</string>
@@ -202,10 +201,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"Leitor de QR code"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Desbloqueado"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Dispositivo bloqueado"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Confirmar e desbloquear"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Tente o desblq. facial de novo"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Verificando rosto"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Enviar"</string>
     <string name="cancel" msgid="1089011503403416730">"Cancelar"</string>
@@ -226,13 +223,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autenticado"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancelar autenticação"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Mais opções"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Mais opções"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verificar de outra forma"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gerenciar a Confirmação de Identidade"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Não é possível usar o PIN para fazer a verificação porque a Confirmação de Identidade está ativada e exige uma biometria. Saiba mais sobre a Confirmação de Identidade."</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Não é possível usar o padrão para fazer a verificação, porque a Confirmação de Identidade está ativada e exige uma biometria. Saiba mais sobre a Confirmação de Identidade."</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Não é possível usar a senha para fazer a verificação, porque a Confirmação de Identidade está ativada e exige uma biometria. Saiba mais sobre a Confirmação de Identidade."</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Analisando risco…"</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Indisponível"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Usar PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Usar padrão"</string>
@@ -541,8 +541,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Deslize para cima para abrir"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Pressione o ícone de desbloqueio para abrir"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Desbloqueado pelo rosto. Deslize para cima para abrir."</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Desbloqueado pelo rosto. Pressione Confirmar para continuar."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Desbloqueado pelo rosto. Toque no ícone do cadeado para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Desbloqueado pelo rosto. Pressione para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Rosto reconhecido. Pressione para abrir."</string>
@@ -1019,14 +1018,14 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="4229602992120154157">"Agenda"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6316043911946540137">"Calculadora"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7312554713993114342">"Mapas"</string>
-    <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"Alternar teclas de filtragem"</string>
+    <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"Ativar/desativar teclas de filtragem"</string>
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"Alternar teclas do mouse"</string>
-    <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Alternar teclas de aderência"</string>
-    <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Alternar teclas lentas"</string>
-    <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Alternar Voice Access"</string>
-    <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Alternar TalkBack"</string>
-    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Alternar ampliação"</string>
-    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Ativar Selecionar para ouvir"</string>
+    <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Ativar/desativar teclas de aderência"</string>
+    <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Ativar/desativar teclas lentas"</string>
+    <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Ativar/desativar Voice Access"</string>
+    <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Ativar/desativar TalkBack"</string>
+    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Ativar/desativar ampliação"</string>
+    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Ativar o Selecionar para Ouvir"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"Não perturbe"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"Atalho de botões de volume"</string>
     <string name="battery" msgid="769686279459897127">"Bateria"</string>

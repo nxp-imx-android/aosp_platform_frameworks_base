@@ -70,6 +70,8 @@ public class WatchRangingService implements WatchRangingServiceInternal {
                 R.string.proximity_provider_service_package_name);
         mProximityProviderServiceClassName = mContext.getString(
                 R.string.proximity_provider_service_class_name);
+
+        initializeAndScheduleIdentityCheckWatchRangingLogger(context);
     }
 
     /**
@@ -232,6 +234,14 @@ public class WatchRangingService implements WatchRangingServiceInternal {
             Slog.e(TAG, "Remote exception thrown when trying to start watch ranging " + e);
         }
         return null;
+    }
+
+    private void initializeAndScheduleIdentityCheckWatchRangingLogger(Context context) {
+        final IdentityCheckWatchRangingLogger logger = new IdentityCheckWatchRangingLogger(context,
+                mProximityProviderServiceClassName, mProximityProviderServicePackageName, mHandler,
+                mProximityProviderServiceFunction);
+        logger.registerReceiver();
+        logger.scheduleLogger();
     }
 
     /**

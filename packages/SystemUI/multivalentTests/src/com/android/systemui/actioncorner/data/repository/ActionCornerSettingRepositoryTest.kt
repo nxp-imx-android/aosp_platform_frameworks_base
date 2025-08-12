@@ -17,6 +17,7 @@
 package com.android.systemui.actioncorner.data.repository
 
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_HOME
+import android.provider.Settings.Secure.ACTION_CORNER_ACTION_LOCKSCREEN
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_NOTIFICATIONS
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_OVERVIEW
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_QUICK_SETTINGS
@@ -28,6 +29,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.actioncorner.data.model.ActionType.HOME
+import com.android.systemui.actioncorner.data.model.ActionType.LOCKSCREEN
 import com.android.systemui.actioncorner.data.model.ActionType.NONE
 import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
 import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
@@ -115,5 +117,16 @@ class ActionCornerSettingRepositoryTest : SysuiTestCase() {
             settingsRepository.setInt(ACTION_CORNER_BOTTOM_RIGHT_ACTION, ACTION_CORNER_ACTION_HOME)
             val model by collectLastValue(underTest.bottomRightCornerAction)
             assertThat(model).isEqualTo(HOME)
+        }
+
+    @Test
+    fun testLockscreenActionOnBottomRightCorner() =
+        kosmos.runTest {
+            settingsRepository.setInt(
+                ACTION_CORNER_BOTTOM_RIGHT_ACTION,
+                ACTION_CORNER_ACTION_LOCKSCREEN,
+            )
+            val model by collectLastValue(underTest.bottomRightCornerAction)
+            assertThat(model).isEqualTo(LOCKSCREEN)
         }
 }

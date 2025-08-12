@@ -56,11 +56,11 @@ class MultiDisplayDragMoveIndicatorController(
         val transaction = transactionSupplier()
         for (displayId in displayIds) {
             if (
-                displayId == startDisplayId ||
+                (displayId == startDisplayId &&
+                    !DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) ||
                     !desktopState.isDesktopModeSupportedOnDisplay(displayId)
             ) {
-                // No need to render indicators on the original display where the drag started,
-                // or on displays that do not support desktop mode.
+                // No need to render indicators on displays that do not support desktop mode.
                 continue
             }
             val displayLayout = displayController.getDisplayLayout(displayId) ?: continue

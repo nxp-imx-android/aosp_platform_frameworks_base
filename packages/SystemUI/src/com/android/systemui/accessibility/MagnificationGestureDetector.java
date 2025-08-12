@@ -22,9 +22,12 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.view.Display;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+
+import com.android.systemui.Flags;
 
 /**
  * Detects single tap and drag gestures using the supplied {@link MotionEvent}s. The {@link
@@ -194,8 +197,22 @@ class MagnificationGestureDetector {
                     break;
                 case MotionEvent.ACTION_MOVE:
                 case MotionEvent.ACTION_UP:
-                    float dx = event.getRawX() - mLastLocation.x;
-                    float dy = event.getRawY() - mLastLocation.y;
+                    float dx = 0;
+                    float dy = 0;
+                    if (Flags.windowMagnificationMoveWithMouseOnEdge() && isMouseEvent(event)) {
+                        // With mouse input, we use relative delta values so that user can drag
+                        // even at the edge of the screen, where the pointer location doesn't change
+                        // but input event still contain the delta value.
+                        for (int i = 0; i < event.getHistorySize(); i++) {
+                            dx += event.getHistoricalAxisValue(MotionEvent.AXIS_RELATIVE_X, i);
+                            dy += event.getHistoricalAxisValue(MotionEvent.AXIS_RELATIVE_Y, i);
+                        }
+                        dx += event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
+                        dy += event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
+                    } else {
+                        dx = event.getRawX() - mLastLocation.x;
+                        dy = event.getRawY() - mLastLocation.y;
+                    }
                     mAccumulatedDelta.offset(dx, dy);
                     mLastLocation.set(event.getRawX(), event.getRawY());
                     break;
@@ -226,6 +243,10 @@ class MagnificationGestureDetector {
         private static void resetPointF(PointF pointF) {
             pointF.x = Float.NaN;
             pointF.y = Float.NaN;
+        }
+
+        private static boolean isMouseEvent(MotionEvent event) {
+            return (event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE;
         }
     }
 }

@@ -41,7 +41,7 @@ import android.util.Slog;
 public class RemoteStorageService extends IRemoteStorageService.Stub {
     private static final String TAG = "RemoteStorageService";
 
-  private final Runnable mInitRunnable;
+    private final Runnable mInitRunnable;
     private final RemoteOnDeviceIntelligenceService mRemoteOnDeviceIntelligenceService;
     private final Executor mCallbackExecutor;
     private final Executor mResourceClosingExecutor;
@@ -92,7 +92,9 @@ public class RemoteStorageService extends IRemoteStorageService.Stub {
                         service.getReadOnlyFeatureFileDescriptorMap(
                                 feature,
                                 new RemoteCallback(
-                                        result -> handleFileDescriptorMapResult(result, remoteCallback))));
+                                        result ->
+                                            handleFileDescriptorMapResult(
+                                                        result, remoteCallback))));
     }
 
     @Override
@@ -106,55 +108,39 @@ public class RemoteStorageService extends IRemoteStorageService.Stub {
                                         result -> handleMetadataResult(result, remoteCallback))));
     }
 
-    private void handleFileDescriptorMapResult(
-            Bundle result,
-            RemoteCallback remoteCallback) {
-        mCallbackExecutor.execute(() -> {
-            try {
-                if (result == null) {
-                    remoteCallback.sendResult(null);
-                    return;
-                }
-                for (String key : result.keySet()) {
-                    ParcelFileDescriptor pfd =
-                            result.getParcelable(
-                                    key,
-                                    ParcelFileDescriptor
-                                            .class);
-                    validatePfdReadOnly(pfd);
-                }
-                remoteCallback.sendResult(result);
-            } catch (BadParcelableException e) {
-                Slog.e(TAG, "Failed to send result", e);
+    private void handleFileDescriptorMapResult(Bundle result, RemoteCallback remoteCallback) {
+        try {
+            if (result == null) {
                 remoteCallback.sendResult(null);
-            } finally {
-                mResourceClosingExecutor.execute(
-                        () -> tryCloseResource(result));
+                return;
             }
-        });
+            for (String key : result.keySet()) {
+                ParcelFileDescriptor pfd = result.getParcelable(key, ParcelFileDescriptor.class);
+                validatePfdReadOnly(pfd);
+            }
+            remoteCallback.sendResult(result);
+        } catch (BadParcelableException e) {
+            Slog.e(TAG, "Failed to send result", e);
+            remoteCallback.sendResult(null);
+        } finally {
+            mResourceClosingExecutor.execute(() -> tryCloseResource(result));
+        }
     }
 
     private void handleMetadataResult(Bundle result, RemoteCallback remoteCallback) {
-        mCallbackExecutor.execute(
-                () -> {
-                    try {
-                        if (result == null) {
-                            remoteCallback.sendResult(null);
-                            return;
-                        }
-                        sanitizeStateParams(result);
-                        remoteCallback.sendResult(result);
-                    } catch (BadParcelableException e) {
-                        Slog.e(
-                                TAG,
-                                "Failed to send result",
-                                e);
-                        remoteCallback.sendResult(null);
-                    } finally {
-                        mResourceClosingExecutor.execute(
-                                () -> tryCloseResource(result));
-                    }
-                });
+        try {
+            if (result == null) {
+                remoteCallback.sendResult(null);
+                return;
+            }
+            sanitizeStateParams(result);
+            remoteCallback.sendResult(result);
+        } catch (BadParcelableException e) {
+            Slog.e(TAG, "Failed to send result", e);
+            remoteCallback.sendResult(null);
+        } finally {
+            mResourceClosingExecutor.execute(() -> tryCloseResource(result));
+        }
     }
 
     private static void tryClosePfd(ParcelFileDescriptor pfd) {

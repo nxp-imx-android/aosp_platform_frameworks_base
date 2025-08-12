@@ -18,16 +18,6 @@ flag {
 }
 
 flag {
-    name: "floating_menu_remove_fullscreen_taps"
-    namespace: "accessibility"
-    description: "Stops MenuViewLayer from taking some inputs by making it unclickable."
-    bug: "411287116"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "redesign_magnification_window_size"
     namespace: "accessibility"
     description: "Redesigns the window magnification magnifier sizes provided in the settings panel."
@@ -73,6 +63,16 @@ flag {
     namespace: "accessibility"
     description: "Exposes the status bar privacy dot as a live region so it is announced when it appears."
     bug: "197201744"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "window_magnification_move_with_mouse_on_edge"
+    namespace: "accessibility"
+    description: "Allows window magnification to be moved by mouse further on the edge of the screen."
+    bug: "420776720"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -1,0 +1,139 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.extensions.computercontrol;
+
+import android.Manifest;
+import android.annotation.RequiresPermission;
+import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.view.accessibility.AccessibilityManager;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
+import java.util.Objects;
+import java.util.concurrent.Executor;
+
+/**
+ * Extensions for Computer Control features.
+ *
+ * Internally relies on multiple system features that may be unavailable. Getting an instance via
+ * {@link #getInstance(Context)} will enable the creation of new {@link ComputerControlSession}s
+ * that enable inputs and outputs for computer control features.
+ */
+public class ComputerControlExtensions {
+    // v0 is unstable and may change at any point in time.
+    @VisibleForTesting static final int EXTENSIONS_VERSION = 0;
+
+    private ComputerControlExtensions() {}
+
+    /**
+     * Retrieve the current version of the extensions.
+     */
+    public static int getVersion() {
+        return EXTENSIONS_VERSION;
+    }
+
+    /**
+     * Gets an instance of the ComputerControlExtensions. These extensions can be unavailable on
+     * devices. In such cases {@code null} is returned and the extensions won't be available on this
+     * device.
+     *
+     * @param context Context to fetch system features
+     * @return An instance of ComputerControlExtensions, or {@code null} if the extensions are
+     * unavailable.
+     */
+    @Nullable
+    public static ComputerControlExtensions getInstance(Context context) {
+        if (!isAvailable(context)) {
+            return null;
+        }
+        return new ComputerControlExtensions();
+    }
+
+    /**
+     * Requests a new {@link ComputerControlSession} for the given parameters. When the session is
+     * no longer used it should be closed by calling {@link ComputerControlSession#close()}.
+     *
+     * @param params parameters to use for this ComputerControlSession.
+     * @param executor An executor to run the callback on.
+     * @param callback A callback to get notified about the result of this operation.
+     */
+    @RequiresPermission(Manifest.permission.ACCESS_COMPUTER_CONTROL)
+    public void requestSession(@NonNull ComputerControlSession.Params params,
+            @NonNull Executor executor, @NonNull ComputerControlSession.Callback callback) {
+        Objects.requireNonNull(params, "Missing ComputerControlSession.Params");
+        Objects.requireNonNull(executor, "Missing Executor");
+        Objects.requireNonNull(callback, "Missing ComputerControlSession.Callback");
+
+        ComputerControlSessionParams sessionParams =
+                new ComputerControlSessionParams.Builder()
+                        .setName(params.getName())
+                        .setDisplayWidthPx(params.getDisplayWidthPx())
+                        .setDisplayHeightPx(params.getDisplayHeightPx())
+                        .setDisplayDpi(params.getDisplayDpi())
+                        .setDisplaySurface(params.getDisplaySurface())
+                        .setDisplayAlwaysUnlocked(params.isDisplayAlwaysUnlocked())
+                        .build();
+
+        var sessionCallback =
+                new android.companion.virtual.computercontrol.ComputerControlSession.Callback() {
+
+                    @Override
+                    public void onSessionCreated(
+                            @NonNull android.companion.virtual.computercontrol
+                                    .ComputerControlSession session) {
+                        AccessibilityManager accessibilityManager =
+                                params.getContext().getSystemService(AccessibilityManager.class);
+                        callback.onSessionCreated(
+                                new ComputerControlSession(session, params, accessibilityManager));
+                    }
+
+                    @Override
+                    public void onSessionCreationFailed(
+                            @android.companion.virtual.computercontrol.ComputerControlSession
+                                    .SessionCreationError int errorCode) {
+                        callback.onSessionCreationFailed(errorCode);
+                    }
+
+                    @Override
+                    public void onSessionClosed() {
+                        callback.onSessionClosed();
+                    }
+                };
+
+        VirtualDeviceManager vdm = params.getContext().getSystemService(VirtualDeviceManager.class);
+        vdm.requestComputerControlSession(sessionParams, executor, sessionCallback);
+    }
+
+    /**
+     * @return {@code true} if computer control is available and can be used. When the computer
+     * control extensions are not available the current Android device is missing some configuration
+     * that makes them unsupported. Computer control cannot be used on such devices.
+     */
+    private static boolean isAvailable(Context context) {
+        if (!context.getPackageManager().hasSystemFeature(
+                    PackageManager.FEATURE_ACTIVITIES_ON_SECONDARY_DISPLAYS)) {
+            return false;
+        }
+
+        return context.getSystemService(VirtualDeviceManager.class) != null;
+    }
+}

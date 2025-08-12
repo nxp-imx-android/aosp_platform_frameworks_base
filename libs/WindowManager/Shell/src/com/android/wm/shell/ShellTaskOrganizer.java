@@ -675,7 +675,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      */
     @Nullable
     public SurfaceControl getOverviewOverlayContainer(int displayId) {
-        return mOverviewOverlayLeashes.get(displayId);
+        return getOrCreateOverviewOverlayContainer(displayId);
     }
 
     /**

@@ -269,17 +269,19 @@ public class FocusTransitionObserver {
     }
 
     /**
-     * Gets the focused task on a specific display. Be careful when you access the properties of the
-     * returned value which may be stale (b/436462692).
+     * Gets the focused task ID on a specific display.
      *
      * @param displayId The ID of the display.
-     * @return The {@link RunningTaskInfo} of the focused task on the given display,
-     *         or {@code null} if no task is focused or display not recorded in the observer.
+     * @return The task ID of the focused task on the given display,
+     *         or {@code INVALID_TASK_ID} if no task is focused or display not recorded in the
+     *         observer.
      */
-    @Nullable
-    public RunningTaskInfo getFocusedTaskOnDisplay(int displayId) {
-        // TODO(b/436462692) - Make `getFocusedTaskOnDisplay` always returns the latest TaskInfo
-        return mFocusedTaskOnDisplay.get(displayId);
+    public int getFocusedTaskIdOnDisplay(int displayId) {
+        final RunningTaskInfo taskInfo = mFocusedTaskOnDisplay.get(displayId);
+        // Some properties of `taskInfo` can be stale as this observer only updates the cache when
+        // the focus changes. So we here returns only taskId to ask callers to fetch the TaskInfo
+        // if needed.
+        return taskInfo != null ? taskInfo.taskId : INVALID_TASK_ID;
     }
 
     /** Dumps focused display and tasks. */

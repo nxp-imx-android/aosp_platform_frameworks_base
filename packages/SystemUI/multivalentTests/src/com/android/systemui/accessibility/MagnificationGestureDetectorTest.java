@@ -26,13 +26,17 @@ import static org.mockito.Mockito.verify;
 
 import android.os.Handler;
 import android.os.SystemClock;
+import android.platform.test.annotations.EnableFlags;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+import androidx.test.core.view.PointerCoordsBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 
 import org.junit.After;
@@ -50,9 +54,9 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
 
     private static final float ACTION_DOWN_X = 100;
     private static final float ACTION_DOWN_Y = 200;
-    private int mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+    private final int mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
     private MagnificationGestureDetector mGestureDetector;
-    private MotionEventHelper mMotionEventHelper = new MotionEventHelper();
+    private final MotionEventHelper mMotionEventHelper = new MotionEventHelper();
     private View mSpyView;
     @Mock
     private MagnificationGestureDetector.OnGestureListener mListener;
@@ -134,6 +138,37 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
     }
 
     @Test
+    public void performSingleTapWithBatchedSmallTouchEvents_invokeCallback() {
+        mGestureDetector = new MagnificationGestureDetector(mContext, mHandler, mListener);
+
+        final long downTime = SystemClock.uptimeMillis();
+        final MotionEvent.PointerCoords coords = PointerCoordsBuilder.newBuilder()
+                .setCoords(ACTION_DOWN_X, ACTION_DOWN_Y).build();
+
+        final MotionEvent downEvent = mMotionEventHelper.obtainBatchedMotionEvent(downTime,
+                MotionEvent.ACTION_DOWN, InputDevice.SOURCE_TOUCHSCREEN,
+                MotionEvent.TOOL_TYPE_FINGER, coords);
+
+        // Move event without changing location.
+        final MotionEvent.PointerCoords dragCoords1 = PointerCoordsBuilder.newBuilder()
+                .setCoords(ACTION_DOWN_X + mTouchSlop / 2.f, ACTION_DOWN_Y).build();
+        final MotionEvent.PointerCoords dragCoords2 = new MotionEvent.PointerCoords(dragCoords1);
+        final MotionEvent moveEvent = mMotionEventHelper.obtainBatchedMotionEvent(downTime,
+                MotionEvent.ACTION_MOVE, InputDevice.SOURCE_TOUCHSCREEN,
+                MotionEvent.TOOL_TYPE_FINGER, dragCoords1, dragCoords2);
+
+        final MotionEvent upEvent = mMotionEventHelper.obtainBatchedMotionEvent(downTime,
+                MotionEvent.ACTION_UP, InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.TOOL_TYPE_FINGER,
+                coords);
+
+        mGestureDetector.onTouch(mSpyView, downEvent);
+        mGestureDetector.onTouch(mSpyView, moveEvent);
+        mGestureDetector.onTouch(mSpyView, upEvent);
+
+        verify(mListener).onSingleTap(mSpyView);
+    }
+
+    @Test
     public void performLongPress_invokeCallbacksInOrder() {
         final long downTime = SystemClock.uptimeMillis();
         final MotionEvent downEvent = mMotionEventHelper.obtainMotionEvent(downTime, downTime,
@@ -172,5 +207,40 @@ public class MagnificationGestureDetectorTest extends SysuiTestCase {
         inOrder.verify(mListener).onDrag(mSpyView, dragOffset, 0);
         inOrder.verify(mListener).onFinish(ACTION_DOWN_X, ACTION_DOWN_Y);
         verify(mListener, never()).onSingleTap(mSpyView);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_WINDOW_MAGNIFICATION_MOVE_WITH_MOUSE_ON_EDGE)
+    public void performDragWithMouse_invokeCallbacksUsingRelative() {
+        mGestureDetector = new MagnificationGestureDetector(mContext, mHandler, mListener);
+
+        final long downTime = SystemClock.uptimeMillis();
+        final MotionEvent.PointerCoords coords = PointerCoordsBuilder.newBuilder()
+                .setCoords(ACTION_DOWN_X, ACTION_DOWN_Y).build();
+
+        final MotionEvent downEvent = mMotionEventHelper.obtainBatchedMotionEvent(downTime,
+                MotionEvent.ACTION_DOWN, InputDevice.SOURCE_MOUSE, MotionEvent.TOOL_TYPE_MOUSE,
+                coords);
+
+        // Drag event without changing location but with relative delta on X axis.
+        final MotionEvent.PointerCoords dragCoords1 = new MotionEvent.PointerCoords(coords);
+        dragCoords1.setAxisValue(MotionEvent.AXIS_RELATIVE_X, mTouchSlop + 10);
+        final MotionEvent.PointerCoords dragCoords2 = new MotionEvent.PointerCoords(coords);
+        dragCoords2.setAxisValue(MotionEvent.AXIS_RELATIVE_X, 20);
+        final MotionEvent moveEvent = mMotionEventHelper.obtainBatchedMotionEvent(downTime,
+                MotionEvent.ACTION_MOVE, InputDevice.SOURCE_MOUSE, MotionEvent.TOOL_TYPE_MOUSE,
+                dragCoords1, dragCoords2);
+
+        final MotionEvent upEvent = mMotionEventHelper.obtainBatchedMotionEvent(downTime,
+                MotionEvent.ACTION_UP, InputDevice.SOURCE_MOUSE, MotionEvent.TOOL_TYPE_MOUSE,
+                coords);
+
+        mGestureDetector.onTouch(mSpyView, downEvent);
+        mGestureDetector.onTouch(mSpyView, moveEvent);
+        mGestureDetector.onTouch(mSpyView, upEvent);
+
+        verify(mListener).onStart(ACTION_DOWN_X, ACTION_DOWN_Y);
+        verify(mListener).onDrag(mSpyView, mTouchSlop + 30, 0);
+        verify(mListener).onFinish(ACTION_DOWN_X, ACTION_DOWN_Y);
     }
 }

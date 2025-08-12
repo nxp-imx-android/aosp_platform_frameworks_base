@@ -5063,7 +5063,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             Binder.restoreCallingIdentity(origId);
         }
 
-        if (android.app.Flags.appStartInfoTimestamps() && timestampApplicationOnCreateNs > 0) {
+        if (timestampApplicationOnCreateNs > 0) {
             addStartInfoTimestampInternal(ApplicationStartInfo.START_TIMESTAMP_APPLICATION_ONCREATE,
                     timestampApplicationOnCreateNs, UserHandle.getUserId(uid), uid);
         }

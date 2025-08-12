@@ -79,7 +79,6 @@ constructor(
     init {
         dumpManager.registerDumpable(this)
         earlyWakeupInfo.token = Binder()
-        earlyWakeupInfo.trace = BlurUtils::class.java.getName()
     }
 
     @VisibleForTesting
@@ -134,6 +133,7 @@ constructor(
         updateTransactionApplier(viewRootImpl)
         val builder =
             SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
+        earlyWakeupInfo.trace = PREPARE_BLUR_TRACE_NAME
         if (lastAppliedBlur == 0 && radius != 0) {
             earlyWakeupStart(builder, "eEarlyWakeup (prepareBlur)")
             transactionApplier.scheduleApply(builder.build())
@@ -155,6 +155,7 @@ constructor(
         updateTransactionApplier(viewRootImpl)
         val builder =
             SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
+        earlyWakeupInfo.trace = APPLY_BLUR_TRACE_NAME
         if (shouldBlur(radius)) {
             builder.withBackgroundBlurRadius(radius)
             if (shouldScaleWithTransaction()) {
@@ -287,6 +288,7 @@ constructor(
             } else {
                 null
             }
+        earlyWakeupInfo.trace = SET_PERSISTENT_EARLY_WAKEUP_TRACE_NAME
         if (persistentEarlyWakeupRequired) {
             if (earlyWakeupEnabled) return
             earlyWakeupStart(builder, "setEarlyWakeup")
@@ -308,6 +310,10 @@ constructor(
     companion object {
         const val TRACK_NAME = "BlurUtils"
         private const val TAG = "BlurUtils"
+        private val PREPARE_BLUR_TRACE_NAME = BlurUtils::class.java.name + "::prepareBlur"
+        private val APPLY_BLUR_TRACE_NAME = BlurUtils::class.java.name + "::applyBlur"
+        private val SET_PERSISTENT_EARLY_WAKEUP_TRACE_NAME =
+            BlurUtils::class.java.name + "::setPersistentEarlyWakeup"
         private val isLoggable = Log.isLoggable(TAG, Log.VERBOSE) || Build.IS_ENG
     }
 }

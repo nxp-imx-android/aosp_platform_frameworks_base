@@ -16,6 +16,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -25,6 +26,7 @@ class ShellDesktopStateImpl(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val focusTransitionObserver: FocusTransitionObserver,
     private val shellController: ShellController,
+    private val shellTaskOrganizer: ShellTaskOrganizer,
 ) : ShellDesktopState, DesktopState by desktopState {
     /** Checks if the given display has an active desktop session (i.e., running freeform tasks). */
     private fun isInDesktop(displayId: Int): Boolean =
@@ -34,7 +36,10 @@ class ShellDesktopStateImpl(
 
     /** Checks if the currently focused task on the given display is the home screen. */
     private fun isHomeFocused(displayId: Int): Boolean {
-        val focusedTask = focusTransitionObserver.getFocusedTaskOnDisplay(displayId)
+        val focusedTask =
+            shellTaskOrganizer.getRunningTaskInfo(
+                focusTransitionObserver.getFocusedTaskIdOnDisplay(displayId)
+            )
         if (focusedTask == null) {
             // A null focused task can occur if the Home activity launched before Shell was
             // fully initialized, and this display has not yet received focus. In this case,

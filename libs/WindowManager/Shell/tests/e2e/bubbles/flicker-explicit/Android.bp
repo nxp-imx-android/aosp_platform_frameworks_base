@@ -55,8 +55,11 @@ test_module_config {
     exclude_filters: [
         "com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest",
         "com.android.wm.shell.flicker.bubbles.BubbleBarVisibilityTest",
+        "com.android.wm.shell.flicker.bubbles.BubbleIconMoveTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaTouchOutsideTest",
+        "com.android.wm.shell.flicker.bubbles.DismissAllCollapsedBubbleAppsTest",
+        "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarHandleTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest",
@@ -80,6 +83,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-BubbleIconMoveTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.BubbleIconMoveTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-BubbleBarVisibilityTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
@@ -91,6 +101,20 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-DismissAllCollapsedBubbleAppsTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.DismissAllCollapsedBubbleAppsTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarTest"],
 }
 
 test_module_config {

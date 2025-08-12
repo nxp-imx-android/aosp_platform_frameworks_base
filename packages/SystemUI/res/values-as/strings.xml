@@ -146,15 +146,11 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"পুনৰ লওক"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"সম্পাদনা কৰক"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"মচক"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"গোটেই স্ক্ৰীনখনৰ স্ক্ৰীনশ্বট লওক"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"বাছনি কৰা এলেকাৰ স্ক্ৰীনশ্বট লওক"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"স্ক্ৰীনশ্বট"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ৰেকৰ্ড কৰক"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"শ্বেয়াৰ কৰক"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"স্ক্ৰীন শ্বেয়াৰ কৰি থকা হৈছে"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"সমল শ্বেয়াৰ কৰি থকা হৈছে"</string>
@@ -226,13 +222,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"বিশ্বাসযোগ্যতা প্ৰমাণীকৰণ কৰা হ’ল"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"বিশ্বাসযোগ্যতা প্ৰমাণীকৰণ বাতিল কৰক"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"অধিক বিকল্প"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"অধিক বিকল্প"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"অন্য উপায়েৰে সত্যাপন কৰক"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"পৰিচয় পৰীক্ষা পৰিচালনা কৰক"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"সত্যাপনৰ বাবে পিন ব্যৱহাৰ কৰিব নোৱাৰি, কাৰণ পৰিচয় পৰীক্ষা অন হৈ থকাৰ বাবে এটা বায়’মেট্ৰিকৰ আৱশ্যক। পৰিচয় পৰীক্ষা কৰাৰ বিষয়ে অধিক জানক"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"সত্যাপনৰ বাবে আৰ্হি ব্যৱহাৰ কৰিব নোৱাৰি, কাৰণ পৰিচয় পৰীক্ষা অন হৈ থকাৰ বাবে এটা বায়’মেট্ৰিকৰ আৱশ্যক। পৰিচয় পৰীক্ষা কৰাৰ বিষয়ে অধিক জানক"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"সত্যাপনৰ বাবে পাছৱৰ্ড ব্যৱহাৰ কৰিব নোৱাৰি, কাৰণ পৰিচয় পৰীক্ষা অন হৈ থকাৰ বাবে এটা বায়’মেট্ৰিকৰ আৱশ্যক। পৰিচয় পৰীক্ষা কৰাৰ বিষয়ে অধিক জানক"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"বিপদাশংকা মূল্যায়ন কৰি থকা হৈছে..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"উপলব্ধ নহয়"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"পিন ব্যৱহাৰ কৰক"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"আৰ্হি ব্যৱহাৰ কৰক"</string>

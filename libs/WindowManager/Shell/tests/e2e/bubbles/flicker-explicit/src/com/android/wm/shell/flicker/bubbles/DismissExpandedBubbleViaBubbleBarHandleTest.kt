@@ -22,7 +22,7 @@ import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.DismissExpandedBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.DismissSingleExpandedBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleBarHandle
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
@@ -54,7 +54,7 @@ import org.junit.runners.Parameterized
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [DismissExpandedBubbleTestCases]
+ * - [DismissSingleExpandedBubbleTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
@@ -62,7 +62,7 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class DismissExpandedBubbleViaBubbleBarHandleTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    DismissExpandedBubbleTestCases {
+    DismissSingleExpandedBubbleTestCases {
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },

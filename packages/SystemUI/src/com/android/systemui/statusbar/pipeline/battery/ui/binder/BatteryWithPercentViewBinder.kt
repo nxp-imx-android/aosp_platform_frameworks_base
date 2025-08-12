@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithChargeStatus
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercentMode
@@ -48,7 +49,11 @@ object BatteryWithPercentViewBinder {
                 view.apply {
                     isVisible = true
                     setViewCompositionStrategy(
-                        ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                        if (SceneContainerFlag.isEnabled) {
+                            ViewCompositionStrategy.Default
+                        } else {
+                            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                        }
                     )
                     setContent {
                         PlatformTheme {

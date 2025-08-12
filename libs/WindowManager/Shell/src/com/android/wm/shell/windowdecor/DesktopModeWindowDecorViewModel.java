@@ -148,6 +148,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.KeyguardChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -193,7 +194,7 @@ import java.util.function.Supplier;
 
 public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         FocusTransitionListener, SnapEventHandler,
-        LockTaskChangeListener.LockTaskModeChangedListener {
+        LockTaskChangeListener.LockTaskModeChangedListener, ConfigurationChangeListener {
     private static final String TAG = "DesktopModeWindowDecorViewModel";
 
     private final WindowDecorationWrapper.Factory mWindowDecoratioWrapperFactory;
@@ -533,6 +534,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @OptIn(markerClass = ExperimentalCoroutinesApi.class)
     private void onInit() {
         mShellController.addKeyguardChangeListener(mDesktopModeKeyguardChangeListener);
+        mShellController.addConfigurationChangeListener(this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
         mDisplayInsetsController.addGlobalInsetsChangedListener(
                 new DesktopModeOnInsetsChangedListener());
@@ -669,6 +671,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             decoration.relayout(taskInfo, decoration.getHasGlobalFocus(),
                     decoration.getExclusionRegion());
         });
+    }
+
+    @Override
+    /** TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings */
+    public void onThemeChanged() {
+        forAllWindowDecorations(WindowDecorationWrapper::onThemeChanged);
     }
 
     private void forAllWindowDecorations(Consumer<WindowDecorationWrapper> callback) {

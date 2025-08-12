@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -42,6 +43,11 @@ class StatusBarContentInsetsViewModelTest : SysuiTestCase() {
     private val configuration = Configuration()
 
     private val Kosmos.underTest by Kosmos.Fixture { statusBarContentInsetsViewModel }
+
+    @Before
+    fun setUp() {
+        kosmos.configurationController.fake.notifyLayoutDirectionChanged(isRtl = false)
+    }
 
     @Test
     fun contentArea_onMaxBoundsChanged_emitsNewValue() =

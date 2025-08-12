@@ -17,6 +17,7 @@
 package com.android.settingslib.widget
 
 import android.content.Context
+import android.os.Build
 import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
@@ -34,10 +35,12 @@ interface MenuHandler {
     var menuItemClickListener: OnMenuItemClickListener?
     var menuButton: MaterialButton?
     var preference: Preference?
+    var showIconsInPopupMenu: Boolean
 
     interface OnMenuItemClickListener {
         fun onMenuItemClick(item: MenuItem, pref: Preference): Boolean
     }
+
     /**
      * Shows the popup menu anchored to the specified view.
      *
@@ -51,6 +54,12 @@ interface MenuHandler {
                     setOnMenuItemClickListener { item ->
                         menuItemClickListener?.onMenuItemClick(item, preference!!) ?: false
                     }
+
+                    // setForceShowIcon() requires minimum Android 10
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        setForceShowIcon(showIconsInPopupMenu)
+                    }
+
                     show()
                 }
         }

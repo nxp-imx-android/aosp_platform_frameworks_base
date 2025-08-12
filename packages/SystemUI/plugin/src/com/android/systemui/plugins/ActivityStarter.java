@@ -173,6 +173,9 @@ public interface ActivityStarter {
             boolean afterKeyguardGone, @Nullable String customMessage);
 
     /** Starts an activity and dismisses keyguard. */
+    void startActivityDismissingKeyguard(ActivityStartOptions options);
+
+    /** Starts an activity and dismisses keyguard. */
     void startActivityDismissingKeyguard(Intent intent,
             boolean onlyProvisioned,
             boolean dismissShade,

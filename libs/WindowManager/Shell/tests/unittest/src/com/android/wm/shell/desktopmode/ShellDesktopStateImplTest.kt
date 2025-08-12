@@ -16,11 +16,14 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -47,6 +50,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
     private val mockShellController = mock<ShellController>()
+    private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
 
     private lateinit var mShellDesktopState: ShellDesktopStateImpl
 
@@ -61,12 +65,13 @@ class ShellDesktopStateImplTest : ShellTestCase() {
                 mockUserRepositories,
                 mockFocusTransitionObserver,
                 mockShellController,
+                mockShellTaskOrganizer,
             )
     }
 
-    private fun mockRunningTaskInfo(activityType: Int): ActivityManager.RunningTaskInfo {
-        val taskInfo = mock<ActivityManager.RunningTaskInfo>()
-        whenever(taskInfo.activityType).thenReturn(activityType)
+    private fun createTask(activityType: Int): ActivityManager.RunningTaskInfo {
+        val taskInfo = TestRunningTaskInfoBuilder().setActivityType(activityType).build()
+        whenever(mockShellTaskOrganizer.getRunningTaskInfo(taskInfo.taskId)).thenReturn(taskInfo)
         return taskInfo
     }
 
@@ -79,11 +84,11 @@ class ShellDesktopStateImplTest : ShellTestCase() {
 
     @Test
     fun testIsEligibleWindowDropTarget_homeFocusedOnDesktopSupportedDisplay_returnsTrue() {
-        val mockTaskInfo = mockRunningTaskInfo(ACTIVITY_TYPE_HOME)
+        val taskInfo = createTask(ACTIVITY_TYPE_HOME)
         desktopState.canEnterDesktopMode = true
         whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
-        whenever(mockFocusTransitionObserver.getFocusedTaskOnDisplay(DISPLAY_ID))
-            .thenReturn(mockTaskInfo)
+        whenever(mockFocusTransitionObserver.getFocusedTaskIdOnDisplay(DISPLAY_ID))
+            .thenReturn(taskInfo.taskId)
 
         assertTrue(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }
@@ -92,29 +97,30 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     fun testIsEligibleWindowDropTarget_focusedTaskIsNullOnDesktopSupportedDisplay_returnsTrue() {
         desktopState.canEnterDesktopMode = true
         whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
-        whenever(mockFocusTransitionObserver.getFocusedTaskOnDisplay(DISPLAY_ID)).thenReturn(null)
+        whenever(mockFocusTransitionObserver.getFocusedTaskIdOnDisplay(DISPLAY_ID))
+            .thenReturn(INVALID_TASK_ID)
 
         assertTrue(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }
 
     @Test
     fun testIsEligibleWindowDropTarget_notInDesktopAndHomeNotFocused_returnsFalse() {
-        val mockTaskInfo = mockRunningTaskInfo(ACTIVITY_TYPE_STANDARD)
+        val taskInfo = createTask(ACTIVITY_TYPE_STANDARD)
         desktopState.canEnterDesktopMode = true
         whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
-        whenever(mockFocusTransitionObserver.getFocusedTaskOnDisplay(DISPLAY_ID))
-            .thenReturn(mockTaskInfo)
+        whenever(mockFocusTransitionObserver.getFocusedTaskIdOnDisplay(DISPLAY_ID))
+            .thenReturn(taskInfo.taskId)
 
         assertFalse(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }
 
     @Test
     fun testIsEligibleWindowDropTarget_displayDoesNotSupportDesktop_returnsFalse() {
-        val mockTaskInfo = mockRunningTaskInfo(ACTIVITY_TYPE_HOME)
+        val taskInfo = createTask(ACTIVITY_TYPE_HOME)
         desktopState.canEnterDesktopMode = false
         whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
-        whenever(mockFocusTransitionObserver.getFocusedTaskOnDisplay(DISPLAY_ID))
-            .thenReturn(mockTaskInfo)
+        whenever(mockFocusTransitionObserver.getFocusedTaskIdOnDisplay(DISPLAY_ID))
+            .thenReturn(taskInfo.taskId)
 
         assertFalse(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }

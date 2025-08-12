@@ -1648,24 +1648,6 @@ public class StorageManager {
         }
     }
 
-    /** {@hide} */
-    public void prepareUserStorage(String volumeUuid, int userId, int flags) {
-        try {
-            mStorageManager.prepareUserStorage(volumeUuid, userId, flags);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    /** {@hide} */
-    public void destroyUserStorage(String volumeUuid, int userId, int flags) {
-        try {
-            mStorageManager.destroyUserStorage(volumeUuid, userId, flags);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
     /**
      * Returns true if the user's credential-encrypted (CE) storage is unlocked.
      *

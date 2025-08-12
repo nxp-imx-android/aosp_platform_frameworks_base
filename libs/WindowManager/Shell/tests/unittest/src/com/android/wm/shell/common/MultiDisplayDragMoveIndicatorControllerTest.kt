@@ -19,10 +19,12 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.graphics.RectF
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableResources
 import android.view.SurfaceControl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
@@ -85,6 +87,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         taskInfo.taskId = TASK_ID
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
         whenever(displayController.getDisplayLayout(1)).thenReturn(spyDisplayLayout1)
+        whenever(displayController.getDisplayContext(0)).thenReturn(mContext)
         whenever(displayController.getDisplayContext(1)).thenReturn(mContext)
         whenever(indicatorSurfaceFactory.create(eq(mContext), eq(taskLeash)))
             .thenReturn(indicatorSurface)
@@ -109,7 +112,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    fun onDrag_boundsIntersectWithStartDisplay_noIndicator() {
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun onDrag_boundsIntersectWithStartDisplay_showIndicator() {
         controller.onDragMove(
             RectF(100f, 100f, 200f, 200f), // intersect with display 0
             currentDisplayId = 0,
@@ -121,7 +125,17 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             transaction
         }
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any())
+        verify(indicatorSurfaceFactory, times(1)).create(eq(mContext), eq(taskLeash))
+        verify(indicatorSurface, times(1))
+            .show(
+                transaction,
+                taskInfo,
+                rootTaskDisplayAreaOrganizer,
+                0,
+                Rect(100, 100, 200, 200),
+                MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+                1.0f,
+            )
     }
 
     @Test

@@ -22,8 +22,8 @@ import android.transition.Transition
 import android.transition.TransitionValues
 import android.view.ViewGroup
 import com.android.app.animation.Interpolators
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPositionAnimationArgs
 import com.android.systemui.shared.R as sharedR
 
 class DefaultClockSteppingTransition(private val clock: ClockController) : Transition() {

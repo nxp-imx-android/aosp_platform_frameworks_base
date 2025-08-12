@@ -6414,22 +6414,34 @@ public final class PowerManagerService extends SystemService
                 Slog.e(TAG, "Event time " + eventTime + " cannot be newer than " + now);
                 throw new IllegalArgumentException("event time must not be in the future");
             }
+            int displayGroupId = getDisplayGroupId(displayId);
+            wakeupDisplayGroups(IntArray.wrap(new int[]{displayGroupId}), eventTime, reason,
+                    details, opPackageName);
+        }
 
+        private void wakeupDisplayGroups(IntArray groupIds, long eventTime,
+                @WakeReason int reason, String details, String opPackageName) {
             mContext.enforceCallingOrSelfPermission(
                     android.Manifest.permission.DEVICE_POWER, null);
 
             final int uid = Binder.getCallingUid();
             final long ident = Binder.clearCallingIdentity();
             try {
-                int displayGroupId = getDisplayGroupId(displayId);
                 synchronized (mLock) {
                     if (!mBootCompleted && sQuiescent) {
                         mDirty |= DIRTY_QUIESCENT;
                         updatePowerStateLocked();
                         return;
                     }
-                    wakePowerGroupLocked(mPowerGroups.get(displayGroupId), eventTime,
-                            reason, details, uid, opPackageName, uid);
+                    int size = groupIds.size();
+                    for (int i = 0; i < size; i++) {
+                        int groupId = groupIds.get(i);
+                        PowerGroup powerGroup = mPowerGroups.get(groupId);
+                        if (powerGroup != null) {
+                            wakePowerGroupLocked(mPowerGroups.get(groupId), eventTime,
+                                    reason, details, uid, opPackageName, uid);
+                        }
+                    }
                 }
             } finally {
                 Binder.restoreCallingIdentity(ident);

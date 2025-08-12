@@ -1,22 +1,28 @@
 {
   "wm": [
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest"
-    },
-    {
-      "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarVisibilityTest"
-    },
-    {
       "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarVisibilityTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-BubbleIconMoveTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaBackTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaTouchOutsideTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-DismissAllCollapsedBubbleAppsTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarHandleTest"

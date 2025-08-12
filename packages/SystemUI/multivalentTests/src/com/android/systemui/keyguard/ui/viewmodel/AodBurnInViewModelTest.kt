@@ -34,7 +34,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
@@ -64,10 +64,14 @@ class AodBurnInViewModelTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val keyguardClockRepository = kosmos.fakeKeyguardClockRepository
-    private lateinit var underTest: AodBurnInViewModel
+    private val underTest: AodBurnInViewModel by lazy {
+        kosmos.aodBurnInViewModel.apply { updateBurnInParams(burnInParameters) }
+    }
     // assign a smaller value to minViewY to avoid overflow
     private var burnInParameters = BurnInParameters(minViewY = Int.MAX_VALUE / 2)
-    private val burnInFlow = MutableStateFlow(BurnInModel())
+    private val burnInFlow: MutableStateFlow<BurnInModel> by lazy {
+        MutableStateFlow(BurnInModel())
+    }
 
     @Before
     @DisableSceneContainer
@@ -84,18 +88,26 @@ class AodBurnInViewModelTest : SysuiTestCase() {
         kosmos.goneToAodTransitionViewModel = goneToAodTransitionViewModel
         kosmos.lockscreenToAodTransitionViewModel = lockscreenToAodTransitionViewModel
         kosmos.fakeKeyguardClockRepository.setCurrentClock(clockController)
-
-        underTest = kosmos.aodBurnInViewModel
-        underTest.updateBurnInParams(burnInParameters)
     }
 
     @Test
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun movement_initializedToDefaultValues() =
         testScope.runTest {
             val movement by collectLastValue(underTest.movement)
             assertThat(movement?.translationY).isEqualTo(0)
             assertThat(movement?.translationX).isEqualTo(0)
             assertThat(movement?.scale).isEqualTo(1f)
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun movement_initializedToDefaultValues_reactiveSmartspace() =
+        testScope.runTest {
+            val movement by collectLastValue(underTest.movement)
+            assertThat(movement?.translationY).isEqualTo(0)
+            assertThat(movement?.translationX).isEqualTo(0)
+            assertThat(movement?.scale).isEqualTo(0.9f)
         }
 
     @Test

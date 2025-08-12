@@ -344,8 +344,19 @@ class DisplayWindowSettings {
 
         final DisplayInfo displayInfo = dc.getDisplayInfo();
         final SettingsProvider.SettingsEntry settings = mSettingsProvider.getSettings(displayInfo);
-        return settings.mImePolicy != null ? settings.mImePolicy
-                : DISPLAY_IME_POLICY_FALLBACK_DISPLAY;
+
+        if (settings.mImePolicy != null) {
+            return settings.mImePolicy;
+        }
+        // Show IME locally if display is eligible for desktop mode and the flag is enabled or the
+        // display has not explicitly requested for the IME to be hidden then it shall show the IME
+        // locally.
+        if (dc.isPublicSecondaryDisplayWithDesktopModeForceEnabled()
+                || (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && dc.isSystemDecorationsSupported() && dc.allowContentModeSwitch())) {
+            return DISPLAY_IME_POLICY_LOCAL;
+        }
+        return DISPLAY_IME_POLICY_FALLBACK_DISPLAY;
     }
 
     void setDisplayImePolicy(@NonNull DisplayContent dc, @DisplayImePolicy int imePolicy) {

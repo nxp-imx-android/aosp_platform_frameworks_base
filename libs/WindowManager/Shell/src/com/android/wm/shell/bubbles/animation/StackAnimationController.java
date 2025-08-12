@@ -765,7 +765,9 @@ public class StackAnimationController extends
         Runnable updateAllIcons = () -> {
             for (int newIndex = 0; newIndex < bubbleViews.size(); newIndex++) {
                 View view = bubbleViews.get(newIndex);
-                updateBadgesAndZOrder(view, newIndex);
+                if (view != null) {
+                    updateBadgesAndZOrder(view, newIndex);
+                }
             }
         };
 
@@ -775,6 +777,8 @@ public class StackAnimationController extends
             if (view != null) {
                 final int oldIndex = mLayout.indexOfChild(view);
                 swapped |= animateSwap(view, oldIndex, newIndex, updateAllIcons, after);
+            } else {
+                Log.w(TAG, "bubbleViews[" + newIndex + "] is null");
             }
         }
         if (!swapped) {

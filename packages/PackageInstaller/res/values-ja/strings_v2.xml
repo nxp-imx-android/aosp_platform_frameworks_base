@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"このアプリを復元するには、<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> をインストールする必要があります"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"このアプリを復元しようとしたときに問題が発生しました"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> はアプリ（<xliff:g id="APP_NAME">%2$s</xliff:g>）の一部です"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;このアプリはブロックされています。デバイスとデータを安全に保つため、インストールできるのは確認済みのデベロッパーのアプリのみです。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;このアプリは更新されませんでした。デバイスとデータの安全を保つため、インストールできるのは確認済みのデベロッパーによるアップデートのみです。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;このアプリはインストールされませんでした。未確認のデベロッパーのアプリは安全でない可能性があります。&lt;/p&gt; &lt;p&gt;アプリ デベロッパーを確認するには、インターネット接続が必要です。デバイスがインターネットに接続されていることを確認してから、アプリのインストールをもう一度お試しください。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;このアプリは更新されませんでした。未確認のデベロッパーによるアップデートは安全ではない恐れがあります。&lt;/p&gt;&lt;p&gt;アプリ デベロッパーを確認するには、インターネット接続が必要です。デバイスがインターネットに接続されていることを確認してから、アプリの更新をもう一度お試しください。&lt;/p&gt;&lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;このアプリのデベロッパーの確認中に問題が発生しました。未確認のデベロッパーのアプリは安全でない可能性があるため、インストールされませんでした。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;このアプリのデベロッパーの確認で問題が発生しました。未確認のデベロッパーによるアップデートは安全ではない恐れがあるため、アプリは更新されませんでした。&lt;/p&gt;&lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;デベロッパーの確認で問題が発生したため、このアプリはブロックされました。デバイスとデータの安全を保つため、インストールできるのは確認済みのデベロッパーのアプリのみです。&lt;/p&gt;&lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;デベロッパーの確認で問題が発生したため、このアプリは更新されませんでした。デバイスとデータの安全を保つため、インストールできるのは確認済みのデベロッパーによるアップデートのみです。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;デベロッパーの確認の詳細&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"確認せずにインストールする場合、未確認のデベロッパーのアプリはデバイスやデータを危険にさらす恐れがあることにご注意ください。"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"確認せずに更新する場合、未確認のデベロッパーによるアップデートはデバイスやデータを危険にさらす恐れがあることにご注意ください。"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"未確認のアプリ デベロッパーです"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"復元"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"アップデートをアンインストール"</string>
     <string name="button_settings" msgid="3837571366246132287">"設定"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> のクローン"</string>
 </resources>

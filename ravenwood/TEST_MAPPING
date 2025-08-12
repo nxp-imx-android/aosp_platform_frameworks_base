@@ -1,11 +1,17 @@
 {
   "presubmit": [
+    // Non-ravenwood host side tests.
     { "name": "tiny-framework-dump-test" },
     { "name": "hoststubgentest" },
     { "name": "ravenhelpertest" },
     { "name": "hoststubgen-test-tiny-test" },
     { "name": "hoststubgen-invoke-test" },
-    { "name": "ravenwood-scripts-sh-golden-test" },
+
+    // This test fails with mysterious errors on the server side. Commenting out for now.
+    // TODO(b/438195035) Un-comment it
+    // { "name": "ravenwood-scripts-sh-golden-test" },
+
+    // Device side tests for the bivalent tests.
     { "name": "RavenwoodMockitoTest_device" },
     { "name": "RavenwoodBivalentTest_device" },
     { "name": "RavenwoodBivalentTest_device_ravenizer" },

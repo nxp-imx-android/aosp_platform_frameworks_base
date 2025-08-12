@@ -385,8 +385,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             if ((types & WindowInsets.Type.ime()) == 0) {
                 return;
             }
-            ProtoLog.d(WM_SHELL_IME_CONTROLLER, "Ime shown, statsToken=%s",
-                    statsToken != null ? statsToken.getBinder() : "null");
+            ProtoLog.d(WM_SHELL_IME_CONTROLLER, "Ime shown, statsToken=%s", statsToken);
             startAnimation(true /* show */, false /* forceRestart */, statsToken);
         }
 
@@ -395,8 +394,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             if ((types & WindowInsets.Type.ime()) == 0) {
                 return;
             }
-            ProtoLog.d(WM_SHELL_IME_CONTROLLER, "Ime hidden, statsToken=%s",
-                    statsToken != null ? statsToken.getBinder() : "null");
+            ProtoLog.d(WM_SHELL_IME_CONTROLLER, "Ime hidden, statsToken=%s", statsToken);
             startAnimation(false /* show */, false /* forceRestart */, statsToken);
         }
 
@@ -411,7 +409,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                 @NonNull ImeTracker.Token statsToken) {
             ProtoLog.d(WM_SHELL_IME_CONTROLLER,
                     "Input target requested visibility, visible=%b statsToken=%s",
-                    visible, statsToken != null ? statsToken.getBinder() : "null");
+                    visible, statsToken);
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_WM_DISPLAY_IME_CONTROLLER_SET_IME_REQUESTED_VISIBLE);
             mImeRequestedVisible = visible;

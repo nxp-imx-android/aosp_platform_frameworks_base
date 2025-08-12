@@ -20,6 +20,7 @@ import android.content.applicationContext
 import android.os.powerManager
 import android.view.accessibility.accessibilityManagerWrapper
 import com.android.internal.logging.uiEventLogger
+import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
@@ -50,5 +51,6 @@ val Kosmos.keyguardTouchHandlingInteractor by
             secureSettingsRepository = userAwareSecureSettingsRepository,
             powerManager = powerManager,
             systemClock = fakeSystemClock,
+            bouncerInteractor = bouncerInteractor,
         )
     }

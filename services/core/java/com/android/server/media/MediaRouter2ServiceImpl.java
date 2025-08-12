@@ -466,6 +466,8 @@ class MediaRouter2ServiceImpl {
                     return;
                 }
                 setRouteListingPreferenceLocked(routerRecord, routeListingPreference);
+                mMediaRouterMetricLogger.notifyRouteListingPreferenceChanged(
+                        routerRecord.mUid, routeListingPreference);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -1365,6 +1367,7 @@ class MediaRouter2ServiceImpl {
         userRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::updateDiscoveryPreferenceOnHandler,
                         userRecord.mHandler));
+        mMediaRouterMetricLogger.notifyRouterUnregistered(routerRecord.mUid);
         routerRecord.dispose();
         disposeUserIfNeededLocked(userRecord); // since router removed from user
     }

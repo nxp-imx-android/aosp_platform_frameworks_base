@@ -3579,7 +3579,9 @@
   <java-symbol type="string" name="notification_messaging_title_template" />
 
   <!-- Notifications: MetricStyle -->
-  <java-symbol type="string" name="notification_metric_label_template" />
+  <java-symbol type="string" name="notification_metric_label_unit" />
+  <java-symbol type="string" name="notification_metric_label_unit_separator" />
+  <java-symbol type="string" name="notification_metric_label_separator" />
 
   <!-- Notifications: CallStyle -->
   <java-symbol type="layout" name="notification_template_material_call" />
@@ -6251,21 +6253,20 @@
   <!-- Advanced Protection Service USB feature -->
 
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_app_title" />
-  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_title" />
+
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_title" />
 
-  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_text" />
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" />
-
-  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" />
-  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" />
-
-  <java-symbol type="string" name="usb_apm_usb_plugged_in_for_power_brick_notification_text" />
-  <java-symbol type="string" name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_data_notification_text" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" />
 
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" />
+
   <java-symbol type="string" name="usb_apm_usb_notification_silenced_title" />
   <java-symbol type="string" name="usb_apm_usb_notification_silenced_text" />
+
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_title" />
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_text" />
 

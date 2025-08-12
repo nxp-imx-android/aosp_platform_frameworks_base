@@ -96,6 +96,36 @@ class PrioritizedRowTest : SysuiTestCase() {
     }
 
     @Test
+    fun width320dp_sameImportance_allShrinkablesShrink() {
+        rule.setContent {
+            CompositionLocalProvider(LocalDensity provides density) {
+                PlatformTheme {
+                    PrioritizedRow(modifier = Modifier.width(320.dp).testTag("row")) {
+                        // All children have the same importance (everything else stays the same)
+                        TestContent(forceSameImportance = true)
+                    }
+                }
+            }
+        }
+
+        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
+        // The required space is distributed across all 3 shrinkables, but they can't go below
+        // reducedWidth.
+        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(57.5.dp)
+        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(64.5.dp)
+        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+
+        rule.onNodeWithTag("row").assertWidthIsEqualTo(320.dp)
+    }
+
+    @Test
     fun width400dp_lowPriorityRowShrinks() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
@@ -183,21 +213,21 @@ class PrioritizedRowTest : SysuiTestCase() {
     }
 
     @Test
-    fun width290dp_firstIconShrinks() {
+    fun width280dp_startIconsShrink() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(290.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.width(280.dp).testTag("row")) {
                         TestContent()
                     }
                 }
             }
         }
 
-        // First icon starts shrinking before being hidden
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(16.dp)
+        // Start icons have the same importance, so they both start shrinking
+        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(15.dp)
         rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
+        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(15.dp)
         rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
         // High priority text doesn't shrink beyond reducedWidth
         rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
@@ -209,36 +239,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
         rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
 
-        rule.onNodeWithTag("row").assertWidthIsEqualTo(290.dp)
-    }
-
-    @Test
-    fun width240dp_firstIconHides() {
-        rule.setContent {
-            CompositionLocalProvider(LocalDensity provides density) {
-                PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(240.dp).testTag("row")) {
-                        TestContent()
-                    }
-                }
-            }
-        }
-
-        // First icon and corresponding spacer disappear
-        rule.onNodeWithTag("icon0").assertIsNotDisplayed()
-        rule.onNodeWithTag("spacer0").assertIsNotDisplayed()
-        // Second icon starts shrinking
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(5.dp)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
-
-        rule.onNodeWithTag("row").assertWidthIsEqualTo(240.dp)
+        rule.onNodeWithTag("row").assertWidthIsEqualTo(280.dp)
     }
 
     @Test
@@ -329,7 +330,7 @@ class PrioritizedRowTest : SysuiTestCase() {
 
     // Note: This composable is forked in the Compose Gallery app for interactive, manual testing.
     @Composable
-    private fun PrioritizedRowScope.TestContent() {
+    private fun PrioritizedRowScope.TestContent(forceSameImportance: Boolean = false) {
         // Note: This font family & size  (together with the fixed density configuration) means that
         // each character in a text composable will have a width of 5dp.
         val fontFamily = FontFamily.Monospace
@@ -355,7 +356,11 @@ class PrioritizedRowTest : SysuiTestCase() {
         // This text will be the last to shrink
         Text(
             text = "High Importance",
-            modifier = Modifier.shrinkable(importance = 3, minWidth = reducedWidth),
+            modifier =
+                Modifier.shrinkable(
+                    importance = if (forceSameImportance) 0 else 3,
+                    minWidth = reducedWidth,
+                ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontFamily = fontFamily,
@@ -371,7 +376,11 @@ class PrioritizedRowTest : SysuiTestCase() {
         // This text will shrink to its minWidth
         Text(
             text = "Medium (Shrinkable)",
-            modifier = Modifier.shrinkable(importance = 2, minWidth = reducedWidth),
+            modifier =
+                Modifier.shrinkable(
+                    importance = if (forceSameImportance) 0 else 2,
+                    minWidth = reducedWidth,
+                ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontFamily = fontFamily,
@@ -388,7 +397,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         Row(
             modifier =
                 Modifier.hideable(
-                        importance = 1,
+                        importance = if (forceSameImportance) 0 else 1,
                         reducedWidth = reducedWidth,
                         hideWidth = hideWidth,
                     )

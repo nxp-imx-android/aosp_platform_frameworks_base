@@ -5661,8 +5661,12 @@
     <!-- Tempalate for Notification.MessagingStyle to join a conversation name with the name of the sender of a message, to make a notification title [CHAR LIMIT=NONE] -->
     <string name="notification_messaging_title_template"><xliff:g id="conversation_title" example="Tasty Treat Team">%1$s</xliff:g>: <xliff:g id="sender_name" example="Adrian Baker">%2$s</xliff:g></string>
 
-    <!-- Template for Notification.MetricStyle to join Metric label with a separator e.g.: `:` -->
-    <string name="notification_metric_label_template"><xliff:g id="metric_label" example="Steps">%1$s</xliff:g>:</string>
+    <!-- Template for Notification.MetricStyle to join Metric label with its unit, e.g. "Speed (km/h)". -->
+    <string name="notification_metric_label_unit"><xliff:g id="metric_label" example="Speed">%1$s</xliff:g> (<xliff:g id="metric_unit" example="km/h">%2$s</xliff:g>)</string>
+    <!-- Template for Notification.MetricStyle to join Metric label with its unit and a separator, e.g. "Speed (km/h):". -->
+    <string name="notification_metric_label_unit_separator"><xliff:g id="metric_label" example="Speed">%1$s</xliff:g> (<xliff:g id="metric_unit" example="km/h">%2$s</xliff:g>):</string>
+    <!-- Template for Notification.MetricStyle to join Metric label with a separator e.g.: "Speed:". -->
+    <string name="notification_metric_label_separator"><xliff:g id="metric_label" example="Steps">%1$s</xliff:g>:</string>
 
     <!-- Action text to be displayed for the "answer" action of an incoming call [CHAR LIMIT=13] -->
     <string name="call_notification_answer_action">Answer</string>
@@ -6910,26 +6914,34 @@ ul.</string>
     <string name="fingerprint_loe_notification_msg">Your fingerprints can no longer be recognized. Set up Fingerprint Unlock again.</string>
 
     <!--  AdvancedProtectionService USB notifications -->
+    <!-- Notification app title for all notifications. -->
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title">Security &amp; privacy</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title">Unlock your screen first</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title">Unlock screen &amp; reconnect</string>
 
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text">Advanced Protection requires your usual screen unlock for USB data transfers</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text">Advanced Protection requires your usual screen unlock for USB data transfers</string>
+    <!-- Notification title for when USB is plugged in when USB is disabled with replug notification. -->
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title">Unlock screen and reconnect USB</string>
+    <!-- Notification title for when USB is plugged in when USB is disabled notification. -->
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title">Unlock screen to connect USB</string>
 
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text">Advanced Protection requires your screen unlock for USB transfer or fast charging</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text">Advanced Protection requires your screen unlock for USB transfer or fast charging</string>
+    <!-- Notification text for when USB is plugged in when USB is disabled with replug notification. -->
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text">Advanced Protection requires your screen to be unlocked to initiate USB connectivity</string>
+    <!-- Notification text for when a USB data device is plugged in when USB is disabled notification. -->
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text">Advanced Protection requires your screen to be unlocked to initiate USB connectivity
+</string>
+    <!-- Notification text for when a USB charger that needs data lines is plugged and USB is disabled notification. -->
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text">Advanced Protection requires your screen to be unlocked for faster charging</string>
+    <!-- Notification text for when a USB data device that also charges is plugged and USB is disabled notification. -->
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text">For faster charging or to initiate USB connectivity, Advanced Protection requires your screen to be unlocked</string>
 
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text">Advanced Protection requires your usual screen unlock for USB fast charging</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text">Advanced Protection requires your usual screen unlock for USB fast charging</string>
-
+    <!-- Notification button label to silence the notification. -->
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text">Silence</string>
 
+    <!-- Notification title when notifications are silenced. -->
     <string name="usb_apm_usb_notification_silenced_title">Notifications silenced</string>
-    <string name="usb_apm_usb_notification_silenced_text">Advanced Protection USB notifications silenced until you restart device</string>
+    <!-- Notification text when notifications are silenced. -->
+    <string name="usb_apm_usb_notification_silenced_text">You won’t receive Advanced Protection USB notifications until you restart your device</string>
 
     <string name="usb_apm_usb_suspicious_activity_notification_title">Suspicious USB activity</string>
-    <string name="usb_apm_usb_suspicious_activity_notification_text">USB data signal has been disabled.</string>
+    <string name="usb_apm_usb_suspicious_activity_notification_text">USB data signal has been disabled</string>
 
     <!-- Fingerprint failed rate too high notification title -->
     <string name="fingerprint_frr_notification_title">Having trouble with Fingerprint Unlock?</string>

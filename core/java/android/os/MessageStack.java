@@ -18,6 +18,10 @@ package android.os;
 
 import android.annotation.Nullable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.util.Printer;
+import android.util.proto.ProtoOutputStream;
+
+import dalvik.annotation.optimization.NeverCompile;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -129,7 +133,7 @@ public final class MessageStack {
      * Iterates through messages and creates a reverse-ordered chain of messages to remove.
      * @return true if any messages were removed, false otherwise
      */
-    public boolean updateFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
+    public boolean moveMatchingToFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
             Object object, Runnable r, long when) {
         Message current = (Message) sTop.getAcquire(this);
         Message prev = null;
@@ -386,4 +390,27 @@ public final class MessageStack {
         return mSyncHeap.size() + mAsyncHeap.size();
     }
 
+    @NeverCompile
+    int dump(Printer pw, String prefix, Handler h) {
+        final long now = SystemClock.uptimeMillis();
+        int n = 0;
+        Message msg = (Message) sTop.getAcquire(this);
+        while (msg != null) {
+            if (h == null || h == msg.target) {
+                pw.println(prefix + "Message " + n + ": " + msg.toString(now));
+            }
+            msg = msg.next;
+            n++;
+        }
+        return n;
+    }
+
+    @NeverCompile
+    void dumpDebug(ProtoOutputStream proto) {
+        Message msg = (Message) sTop.getAcquire(this);
+        while (msg != null) {
+            msg.dumpDebug(proto, MessageQueueProto.MESSAGES);
+            msg = msg.next;
+        }
+    }
 }

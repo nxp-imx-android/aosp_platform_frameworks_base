@@ -141,7 +141,7 @@ fun MobileIcon(viewModel: MobileIconViewModelCommon, modifier: Modifier = Modifi
 
 /** Composable for activity indicators (data in/out arrows) */
 @Composable
-private fun ActivityIndicators(
+fun ActivityIndicators(
     activityInVisible: Boolean,
     activityOutVisible: Boolean,
     color: Color,

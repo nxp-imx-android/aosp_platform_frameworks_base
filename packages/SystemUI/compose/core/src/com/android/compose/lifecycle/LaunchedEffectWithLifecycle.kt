@@ -17,11 +17,14 @@
 package com.android.compose.lifecycle
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffectResult
+import androidx.compose.runtime.DisposableEffectScope
+import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.currentComposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -51,18 +54,28 @@ private const val LaunchedEffectNoParamError =
  */
 @Composable
 @NonRestartableComposable
+@OptIn(InternalComposeApi::class)
 fun LaunchedEffectWithLifecycle(
     key1: Any?,
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit,
 ) {
-    LaunchedEffect(key1, lifecycle, minActiveState) {
-        lifecycle.repeatOnLifecycle(minActiveState) {
-            launch(context = this.coroutineContext + coroutineContext) { block() }
-        }
+    val parentContext = currentComposer.applyCoroutineContext
+    DisposableEffectWithLifecycle(key1, lifecycle = lifecycle, minActiveState = minActiveState) {
+        launchEffect(parentContext, coroutineContext, block)
     }
+}
+
+private fun DisposableEffectScope.launchEffect(
+    parentContext: CoroutineContext,
+    coroutineContext: CoroutineContext,
+    block: suspend CoroutineScope.() -> Unit,
+): DisposableEffectResult {
+    val scope = CoroutineScope(parentContext)
+    val job = scope.launch(coroutineContext, block = block)
+    return onDispose { job.cancel() }
 }
 
 /**
@@ -76,15 +89,23 @@ fun LaunchedEffectWithLifecycle(
  */
 @Composable
 @NonRestartableComposable
+@OptIn(InternalComposeApi::class)
 fun LaunchedEffectWithLifecycle(
     key1: Any?,
     key2: Any?,
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit,
 ) {
-    LaunchedEffect(key1, key2, lifecycle, minActiveState) {
-        lifecycle.repeatOnLifecycle(minActiveState, block)
+    val parentContext = currentComposer.applyCoroutineContext
+    DisposableEffectWithLifecycle(
+        key1,
+        key2,
+        lifecycle = lifecycle,
+        minActiveState = minActiveState,
+    ) {
+        launchEffect(parentContext, coroutineContext, block)
     }
 }
 
@@ -99,16 +120,25 @@ fun LaunchedEffectWithLifecycle(
  */
 @Composable
 @NonRestartableComposable
+@OptIn(InternalComposeApi::class)
 fun LaunchedEffectWithLifecycle(
     key1: Any?,
     key2: Any?,
     key3: Any?,
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit,
 ) {
-    LaunchedEffect(key1, key2, key3, lifecycle, minActiveState) {
-        lifecycle.repeatOnLifecycle(minActiveState, block)
+    val parentContext = currentComposer.applyCoroutineContext
+    DisposableEffectWithLifecycle(
+        key1,
+        key2,
+        key3,
+        lifecycle = lifecycle,
+        minActiveState = minActiveState,
+    ) {
+        launchEffect(parentContext, coroutineContext, block)
     }
 }
 
@@ -123,13 +153,16 @@ fun LaunchedEffectWithLifecycle(
  */
 @Composable
 @NonRestartableComposable
+@OptIn(InternalComposeApi::class)
 fun LaunchedEffectWithLifecycle(
     vararg keys: Any?,
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit,
 ) {
-    LaunchedEffect(keys, lifecycle, minActiveState) {
-        lifecycle.repeatOnLifecycle(minActiveState, block)
+    val parentContext = currentComposer.applyCoroutineContext
+    DisposableEffectWithLifecycle(keys, lifecycle, minActiveState) {
+        launchEffect(parentContext, coroutineContext, block)
     }
 }

@@ -318,7 +318,8 @@ public class AudioDeviceBroker {
         initAudioHalBluetoothState();
         initRoutingStrategyIds();
         mPreferredCommunicationDevice = null;
-        updateActiveCommunicationDevice();
+        AudioDeviceInfo device = getCommunicationDeviceInt();
+        mCurCommunicationPortId = device != null ? device.getId() : 0;
 
         mSystemServer.registerUserStartedReceiver(mContext);
     }

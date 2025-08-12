@@ -87,7 +87,8 @@ public class UnarchiveFragment extends DialogFragment {
     public void onPause() {
         super.onPause();
         Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
-        if (button != null) {
+        // If the button is not clickable, don't need to set enabled to false
+        if (button != null && button.isClickable()) {
             button.setEnabled(false);
         }
     }
@@ -231,11 +232,11 @@ public class UnarchiveFragment extends DialogFragment {
                 positiveButton.setVisibility(View.GONE);
             } else {
                 positiveButton.setVisibility(View.VISIBLE);
-                positiveButton.setEnabled(true);
                 positiveButton.setText(positiveBtnTextResId);
                 positiveButton.setOnClickListener(view -> {
-                    // Disable the button to avoid the user clicks it more than once quickly
-                    view.setEnabled(false);
+                    // Set clickable of the button to false to avoid the user clicks it
+                    // more than once quickly
+                    view.setClickable(false);
                     mUnarchiveActionListener.handleUnarchiveErrorAction(
                             unarchiveStage.getUnarchivalStatus(),
                             unarchiveStage.getInstallerPackageName(),
@@ -273,11 +274,11 @@ public class UnarchiveFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
-            positiveButton.setEnabled(true);
             positiveButton.setText(R.string.button_restore);
             positiveButton.setOnClickListener(view -> {
-                // Disable the button to avoid the user clicks it more than once quickly
-                view.setEnabled(false);
+                // Set clickable of the button to false to avoid the user clicks it
+                // more than once quickly
+                view.setClickable(false);
                 mUnarchiveActionListener.beginUnarchive();
             });
         }

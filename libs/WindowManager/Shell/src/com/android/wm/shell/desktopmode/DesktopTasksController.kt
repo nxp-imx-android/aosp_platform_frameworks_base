@@ -1516,7 +1516,7 @@ class DesktopTasksController(
      *
      * @param taskInfo task entering split that requires a bounds update
      */
-    fun onDesktopSplitSelectAnimComplete(taskInfo: RunningTaskInfo) {
+    fun onDesktopSplitSelectChoice(taskInfo: RunningTaskInfo) {
         val wct = WindowContainerTransaction()
         wct.setBounds(taskInfo.token, Rect())
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
@@ -4162,11 +4162,10 @@ class DesktopTasksController(
 
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue) {
             val anyDeskActive = repository.isAnyDeskActive(targetDisplayId)
-            // TODO(b/436462692) - Make `getFocusedTaskOnDisplay` always returns the latest TaskInfo
             val focusedTask =
-                focusTransitionObserver.getFocusedTaskOnDisplay(targetDisplayId)?.let {
-                    shellTaskOrganizer.getRunningTaskInfo(it.taskId)
-                }
+                shellTaskOrganizer.getRunningTaskInfo(
+                    focusTransitionObserver.getFocusedTaskIdOnDisplay(targetDisplayId)
+                )
             val isFullscreenFocused = focusedTask?.isFullscreen == true
             val isNonHomeFocused = focusedTask?.activityType != ACTIVITY_TYPE_HOME
             logV(
@@ -4609,7 +4608,7 @@ class DesktopTasksController(
 
     /**
      * Adds split screen changes to a transaction. Note that bounds are not reset here due to
-     * animation; see {@link onDesktopSplitSelectAnimComplete}
+     * animation; see {@link onDesktopSplitSelectChoice}
      */
     private fun addMoveToSplitChanges(wct: WindowContainerTransaction, taskInfo: RunningTaskInfo) {
         if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
@@ -6229,10 +6228,9 @@ class DesktopTasksController(
             )
         }
 
-        override fun onDesktopSplitSelectAnimComplete(taskInfo: RunningTaskInfo) {
-            executeRemoteCallWithTaskPermission(controller, "onDesktopSplitSelectAnimComplete") { c
-                ->
-                c.onDesktopSplitSelectAnimComplete(taskInfo)
+        override fun onDesktopSplitSelectChoice(taskInfo: RunningTaskInfo) {
+            executeRemoteCallWithTaskPermission(controller, "onDesktopSplitSelectChoice") { c ->
+                c.onDesktopSplitSelectChoice(taskInfo)
             }
         }
 

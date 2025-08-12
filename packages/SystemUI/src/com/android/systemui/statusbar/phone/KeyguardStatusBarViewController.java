@@ -168,6 +168,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final DreamViewModel mDreamViewModel;
     private final KeyguardInteractor mKeyguardInteractor;
 
+    @Nullable private ComposeView mBatteryComposeView;
     private ViewGroup mSystemIconsContainer;
     private final StatusOverlayHoverListenerFactory mStatusOverlayHoverListenerFactory;
 
@@ -448,6 +449,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 this::updateViewState
         );
         mStatusOverlayHoverListenerFactory = statusOverlayHoverListenerFactory;
+        if (NewStatusBarIcons.isEnabled() && SceneContainerFlag.isEnabled()) {
+            mBatteryComposeView = createAndBindComposeBattery();
+        }
     }
 
     private StatusBarContentInsetsProvider insetsProvider() {
@@ -529,9 +533,10 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             collectFlow(mView, mKeyguardInteractor.primaryBouncerShowing, x -> updateViewState());
         }
         if (NewStatusBarIcons.isEnabled()) {
-            ComposeView batteryComposeView = createAndBindComposeBattery();
-
-            mSystemIconsContainer.addView(batteryComposeView, -1);
+            if (!SceneContainerFlag.isEnabled()) {
+                mBatteryComposeView = createAndBindComposeBattery();
+            }
+            mSystemIconsContainer.addView(mBatteryComposeView, -1);
             // Set the margins for the system icons appropriately
             AlphaOptimizedLinearLayout systemIcons =
                     mSystemIconsContainer.findViewById(R.id.statusIcons);
@@ -573,6 +578,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         }
         if (SceneContainerFlag.isEnabled()) {
             mKeyguardStateController.removeCallback(mKeyguardStateControllerCallback);
+            if (mBatteryComposeView != null) {
+                mSystemIconsContainer.removeView(mBatteryComposeView);
+            }
         }
     }
 

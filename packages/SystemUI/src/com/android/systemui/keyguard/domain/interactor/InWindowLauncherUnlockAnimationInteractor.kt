@@ -86,11 +86,10 @@ constructor(
             // crashes, etc.) the worst case is that we fall back to the normal unlock animation (or
             // unnecessarily play the animation on Launcher when there's an app over it), which is
             // not a big deal.
-            transitionInteractor.currentKeyguardState
-                .map { it != GONE }
+            transitionInteractor.isCurrentlyIn(Scenes.Gone, GONE)
                 .distinctUntilChanged()
-                .collect { notOnGone ->
-                    if (notOnGone) {
+                .collect { gone ->
+                    if (!gone) {
                         updateIsLauncherUnderneath()
                     }
                 }

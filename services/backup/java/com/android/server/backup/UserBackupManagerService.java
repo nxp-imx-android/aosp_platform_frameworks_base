@@ -2997,7 +2997,7 @@ public class UserBackupManagerService {
         }
     }
 
-    synchronized boolean isFrameworkSchedulingEnabled() {
+    boolean isFrameworkSchedulingEnabled() {
         // By default scheduling is enabled
         final int defaultSetting = 1;
         int isEnabled =

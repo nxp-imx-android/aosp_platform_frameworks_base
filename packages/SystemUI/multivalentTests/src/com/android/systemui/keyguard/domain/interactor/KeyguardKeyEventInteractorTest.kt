@@ -43,6 +43,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.clearInvocations
@@ -275,7 +276,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionDownMenuKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keycode)
         assertThat(underTest.dispatchKeyEvent(actionDownMenuKeyEvent)).isFalse()
         if (SceneContainerFlag.isEnabled) {
-            verify(deviceEntryInteractor, never()).attemptDeviceEntry("test")
+            verify(deviceEntryInteractor, never()).attemptDeviceEntry(anyString(), isNull())
         } else {
             verify(statusBarKeyguardViewManager, never())
                 .showPrimaryBouncer(
@@ -288,7 +289,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionUpMenuKeyEvent = KeyEvent(KeyEvent.ACTION_UP, keycode)
         assertThat(underTest.dispatchKeyEvent(actionUpMenuKeyEvent)).isTrue()
         if (SceneContainerFlag.isEnabled) {
-            verify(deviceEntryInteractor).attemptDeviceEntry("test")
+            verify(deviceEntryInteractor).attemptDeviceEntry(anyString(), isNull())
         } else {
             verify(statusBarKeyguardViewManager)
                 .showPrimaryBouncer(
@@ -303,7 +304,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionDownMenuKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keycode)
         assertThat(underTest.dispatchKeyEvent(actionDownMenuKeyEvent)).isFalse()
         verify(shadeController, never()).animateCollapseShadeForced()
-        verify(deviceEntryInteractor, never()).attemptDeviceEntry("test")
+        verify(deviceEntryInteractor, never()).attemptDeviceEntry(anyString(), isNull())
         verify(statusBarKeyguardViewManager, never())
             .showPrimaryBouncer(
                 any(),
@@ -314,7 +315,7 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionUpMenuKeyEvent = KeyEvent(KeyEvent.ACTION_UP, keycode)
         assertThat(underTest.dispatchKeyEvent(actionUpMenuKeyEvent)).isFalse()
         verify(shadeController, never()).animateCollapseShadeForced()
-        verify(deviceEntryInteractor, never()).attemptDeviceEntry("test")
+        verify(deviceEntryInteractor, never()).attemptDeviceEntry(anyString(), isNull())
         verify(statusBarKeyguardViewManager, never())
             .showPrimaryBouncer(
                 any(),

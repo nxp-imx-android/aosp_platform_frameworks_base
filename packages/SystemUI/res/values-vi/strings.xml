@@ -153,10 +153,8 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ghi âm"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Chia sẻ"</string>
+    <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Đang chia sẻ màn hình"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Chia sẻ nội dung"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Dừng chia sẻ màn hình?"</string>
@@ -227,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Đã xác thực"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Huỷ quy trình xác thực"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Tuỳ chọn khác"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Tuỳ chọn khác"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Xác minh theo cách khác"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Quản lý tính năng Kiểm tra danh tính"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Bạn không thể dùng mã PIN để xác minh khi tính năng Kiểm tra danh tính đang bật và yêu cầu bạn cung cấp dữ liệu sinh trắc học. Tìm hiểu thêm về tính năng Kiểm tra danh tính"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Bạn không thể dùng hình mở khoá để xác minh khi tính năng Kiểm tra danh tính đang bật và yêu cầu bạn cung cấp dữ liệu sinh trắc học. Tìm hiểu thêm về tính năng Kiểm tra danh tính"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Bạn không thể dùng mật khẩu để xác minh khi tính năng Kiểm tra danh tính đang bật và yêu cầu bạn cung cấp dữ liệu sinh trắc học. Tìm hiểu thêm về tính năng Kiểm tra danh tính"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Đang đánh giá rủi ro..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Không có"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Dùng mã PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Dùng hình mở khóa"</string>
@@ -877,8 +878,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Giờ đây, các cuộc trò chuyện dài của bạn có thể được tóm tắt để cung cấp cho bạn bản tóm tắt nhanh"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Trình sắp xếp thông báo sẽ nhóm và tắt tiếng các thông báo có mức độ ưu tiên thấp. Bạn có thể thêm các danh mục khác trong phần Cài đặt."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# thông báo}other{# thông báo}}"</string>
-    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
-    <skip />
+    <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Xong"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Áp dụng"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Tắt"</string>

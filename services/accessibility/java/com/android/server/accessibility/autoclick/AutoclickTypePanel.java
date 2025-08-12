@@ -371,6 +371,12 @@ public class AutoclickTypePanel {
 
     /** Reset panel as collapsed state and only displays selected button. */
     public void collapsePanelWithClickType(@AutoclickType int clickType) {
+        // When collapsing the panel show these buttons again.
+        if (mIsExpandedPanelWiderThanScreen) {
+            mPauseButton.setVisibility(View.VISIBLE);
+            mPositionButton.setVisibility(View.VISIBLE);
+        }
+
         hideAllClickTypeButtons();
         final ImageButton selectedButton = getButtonFromClickType(clickType);
         selectedButton.setVisibility(View.VISIBLE);
@@ -486,12 +492,6 @@ public class AutoclickTypePanel {
     /** Toggles the panel expanded or collapsed state. */
     private void togglePanelExpansion(@AutoclickType int clickType) {
         if (mExpanded) {
-            // When collapsing the panel show these buttons again.
-            if (mIsExpandedPanelWiderThanScreen) {
-                mPauseButton.setVisibility(View.VISIBLE);
-                mPositionButton.setVisibility(View.VISIBLE);
-            }
-
             // If the panel is already in expanded state, we should collapse it by hiding all
             // buttons except the one user selected.
             collapsePanelWithClickType(clickType);

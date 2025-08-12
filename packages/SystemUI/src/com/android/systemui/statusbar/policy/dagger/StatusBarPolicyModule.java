@@ -299,7 +299,7 @@ public interface StatusBarPolicyModule {
     @SysUISingleton
     @BatteryControllerLog
     static LogBuffer provideBatteryControllerLog(LogBufferFactory factory) {
-        return factory.create(BatteryControllerLogger.TAG, 30);
+        return factory.create(BatteryControllerLogger.TAG, 150);
     }
 
     /** Provides a log buffer for CastControllerImpl */

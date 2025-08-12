@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Snimi"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Dijeli"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Dijeljenje zaslona"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Dijeljenje sadržaja"</string>
@@ -226,13 +225,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autentifikacija izvršena"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Otkaži autentifikaciju"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Više opcija"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Više opcija"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Izvršite potvrdu na drugi način"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Upravljanje provjerom identiteta"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN se ne može upotrebljavati za potvrdu jer je uključena provjera identiteta koja zahtijeva biometrijske podatke. Saznajte više o provjeri identiteta"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Uzorak se ne može upotrebljavati za potvrdu jer je uključena provjera identiteta koja zahtijeva biometrijske podatke. Saznajte više o provjeri identiteta"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Zaporka se ne može upotrebljavati za potvrdu jer je uključena provjera identiteta koja zahtijeva biometrijske podatke. Saznajte više o provjeri identiteta"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Procjena rizika..."</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Nedostupno"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Koristite PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Koristite uzorak"</string>
@@ -781,7 +783,7 @@
     <string name="media_device_cast" msgid="4786241789687569892">"Emitiraj"</string>
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"Nedostupno jer je zvono utišano"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"Nedostupno jer je uključen način Ne uznemiravaj"</string>
-    <string name="stream_media_unavailable" msgid="6823020894438959853">"Nedostupno jer je uključen način Ne uznemiravaj"</string>
+    <string name="stream_media_unavailable" msgid="6823020894438959853">"Nedostupno jer je uključena značajka Ne uznemiravaj"</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"Nedostupno jer je uključen način <xliff:g id="MODE">%s</xliff:g>"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"Nedostupno"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s. Dodirnite da biste uključili zvuk."</string>
@@ -1024,9 +1026,9 @@
     <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Uključivanje/isključivanje ljepljivih tipki"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Uključivanje/isključivanje sporih tipki"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Uključivanje/isključivanje Glasovnog pristupa"</string>
-    <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Uključi/isključi TalkBack"</string>
-    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Uključi/isključi povećavanje"</string>
-    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Aktiviraj Odabir za govor"</string>
+    <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Uključivanje/isključivanje TalkBacka"</string>
+    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Uključivanje/isključivanje povećavanja"</string>
+    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Aktiviranje Odabira za govor"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"Ne uznemiravaj"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"Prečac tipki za glasnoću"</string>
     <string name="battery" msgid="769686279459897127">"Baterija"</string>

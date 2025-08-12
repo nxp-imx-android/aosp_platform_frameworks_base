@@ -81,8 +81,8 @@ interface IDesktopMode {
     oneway void moveToFullscreen(int taskId, in DesktopModeTransitionSource transitionSource,
             in @nullable RemoteTransition remoteTransition);
 
-    /** Perform cleanup transactions after the animation to split select is complete */
-    oneway void onDesktopSplitSelectAnimComplete(in RunningTaskInfo taskInfo);
+    /** Perform cleanup transactions after choosing a split select task launch option. */
+    oneway void onDesktopSplitSelectChoice(in RunningTaskInfo taskInfo);
 
     /** Set listener that will receive callbacks about updates to desktop tasks */
     oneway void setTaskListener(IDesktopTaskListener listener);

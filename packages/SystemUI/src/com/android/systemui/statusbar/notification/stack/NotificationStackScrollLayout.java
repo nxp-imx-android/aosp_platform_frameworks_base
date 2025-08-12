@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.notification.stack;
 
 import static android.os.Trace.TRACE_TAG_APP;
 import static android.view.MotionEvent.ACTION_CANCEL;
+import static android.view.MotionEvent.ACTION_DOWN;
+import static android.view.MotionEvent.ACTION_POINTER_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
 
 import static com.android.app.tracing.TrackGroupUtils.trackGroup;
@@ -214,6 +216,10 @@ public class NotificationStackScrollLayout
     private boolean mTouchIsClick;
     private float mInitialTouchX;
     private float mInitialTouchY;
+
+
+    // Record the pointerId for the MotionEvents that's outside of drawBounds
+    private int mOutBoundsEventId = -1;
 
     private final boolean mDebugLines;
     private Paint mDebugPaint;
@@ -1276,6 +1282,9 @@ public class NotificationStackScrollLayout
                 || mScrollViewFields.interactive == interactive) {
             return;
         }
+
+        // Clear the outBoundsEventIds because otherwise, the ongoing event ids won't be cleared
+        mOutBoundsEventId = -1;
 
         mScrollViewFields.interactive = interactive;
         setImportantForAccessibility(
@@ -3903,10 +3912,119 @@ public class NotificationStackScrollLayout
                 : mTouchSlop;
     }
 
+    /**
+     * onInterceptTouchEvent is a gatekeeper, decides whether the NSSL want to steal te event from
+     * its children. Return true when the NSSL doesn't want its children to get the MotionEvent.
+     * It's not guaranteed that the NSSL will react to the touch event when onInterceptTouchEvent
+     * returns true, sometimes (eg. refuseTouchEvent), the NSSL intercepts the touch event just
+     * to avoid consuming it in itself or descendants.
+     *
+     * @param ev A MotionEvent that's dispatched to the NSSL
+     * @return True when the NSSL wants to prevent its descendants to get the MotionEvent.
+     */
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (SceneContainerFlag.isEnabled()) {
+            // TODO(b/433984972): this is especially useful because there are scenarios that the
+            //  NSSL children overlaps with other visible, interactive items.
+            if (shouldRefuseTouchEvent(ev)) {
+                return true;
+            }
+        }
+
+        if (mTouchHandler != null && mTouchHandler.onInterceptTouchEvent(ev)) {
+            return true;
+        }
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    /**
+     * When an ACTION_DOWN event is outside of the NSSL's draw bounds, that means a gesture started
+     * outside of the NSSL's draw bounds. The NSSL will intercept the gesture from its children and
+     * refuse it by returning false in NSSL#onTouchEvent.
+     *
+     * @param ev A MotionEvent
+     * @return true when the event is an ACTION_DOWN event that's outside of the NSSL's draw bounds
+     */
+
+    private boolean isOutBoundsDownEvent(MotionEvent ev) {
+        if (!SceneContainerFlag.isEnabled()) return false;
+        final int action = ev.getActionMasked();
+        if (action == ACTION_DOWN || action == ACTION_POINTER_DOWN) {
+            // Get the index of the pointer that just triggered the event.
+            final int pointerIndex = ev.getActionIndex();
+            // Get the unique ID for that pointer.
+            final int pointerId = ev.getPointerId(pointerIndex);
+
+            // onTouchEvent removes the pointerId
+            if (mOutBoundsEventId == pointerId) {
+                mOutBoundsEventId = -1;
+                return true;
+            }
+
+            // Get the coordinates for that pointer.
+            final float x = ev.getX(pointerIndex);
+            final float y = ev.getY(pointerIndex);
+
+            if (!isInDrawBounds(x, y)) {
+                // onInterceptTouchEvent records the pointerId
+                mOutBoundsEventId = pointerId;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * For some reason, the NSSL doesn't want to handle this MotionEvent and prevent its children
+     * from handling. The NSSL will 'intercept' the MotionEvent and return false in
+     * NSSL#onTouchEvent to return early and skip the touch handlers checking on the touch
+     * event.
+     *
+     * @param ev the MotionEvent to test
+     * @return true when the NSSL doesn't want this MotionEvent and want to prevent its children
+     * from getting the MotionEvent.
+     */
+    @VisibleForTesting
+    boolean shouldRefuseTouchEvent(MotionEvent ev) {
+        if (!SceneContainerFlag.isEnabled()) {
+            return false;
+        }
+
+        return !mScrollViewFields.interactive
+                // NSSL refuse gesture if it started outside of the touchable bounds
+                || isOutBoundsDownEvent(ev);
+    }
+
+    /**
+     * Whether position [x, y] is within the draw bounds of the NSSL. Note that
+     * NSSL#setDrawBounds() should be called to set the draw bounds before calling this method.
+     *
+     * @param x x coordinate for the initial touch of the current gesture
+     * @param y y coordinate for the initial touch of the current gesture
+     * @return Whether the position within the draw bounds of the NSSL.
+     */
+    private boolean isInDrawBounds(float x, float y) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return false;
+        }
+        RectF bounds = mAmbientState.getDrawBounds();
+        return bounds.contains(x, y);
+    }
+
+    /**
+     * @param ev A MotionEvent that's dispatched to the NSSL.
+     * @return True when the NSSL actuall consumes the MotionEvent.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        // When NSSL is not active for touch
-        if (SceneContainerFlag.isEnabled() && !mScrollViewFields.interactive) return false;
+        if (SceneContainerFlag.isEnabled()) {
+            if (shouldRefuseTouchEvent(ev)) {
+                return false;
+            }
+        }
 
         if (mTouchHandler != null) {
             boolean touchHandled = mTouchHandler.onTouchEvent(ev);
@@ -3925,10 +4043,10 @@ public class NotificationStackScrollLayout
         if (SceneContainerFlag.isEnabled()) {
             int action = ev.getActionMasked();
             boolean isTouchInGuts = mController.isTouchInGutsView(ev);
-            if (action == MotionEvent.ACTION_DOWN && !isTouchInGuts) {
+            if (action == ACTION_DOWN && !isTouchInGuts) {
                 mController.closeControlsDueToOutsideTouch();
             }
-            if (mIsBeingDragged || mExpandingNotification || !mScrollViewFields.interactive) {
+            if (shouldDispatchToSceneContainer()) {
                 // Dispatch TouchEvent to the scene framework
                 boolean isUpOrCancel = action == ACTION_UP || action == ACTION_CANCEL;
                 if (mSendingTouchesToSceneFramework) {
@@ -3943,7 +4061,7 @@ public class NotificationStackScrollLayout
                     // convert it into a synthetic DOWN event.
                     mSendingTouchesToSceneFramework = true;
                     MotionEvent downEvent = MotionEvent.obtain(ev);
-                    downEvent.setAction(MotionEvent.ACTION_DOWN);
+                    downEvent.setAction(ACTION_DOWN);
                     downEvent.setLocation(ev.getRawX(), ev.getRawY());
                     mScrollViewFields.sendCurrentGestureInGuts(isTouchInGuts);
                     mScrollViewFields.sendCurrentGestureExpandingNotification(
@@ -3965,7 +4083,7 @@ public class NotificationStackScrollLayout
 
     void dispatchDownEventToScroller(MotionEvent ev) {
         MotionEvent downEvent = MotionEvent.obtain(ev);
-        downEvent.setAction(MotionEvent.ACTION_DOWN);
+        downEvent.setAction(ACTION_DOWN);
         onScrollTouch(downEvent);
         downEvent.recycle();
     }
@@ -3975,6 +4093,17 @@ public class NotificationStackScrollLayout
     void startDraggingOnHun() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         setIsBeingDragged(true);
+    }
+
+    /**
+     * @return Whether NSSL should dispatch this event to the SceneContainer Framework. When false,
+     * the NSSL will handle the event itself.
+     */
+    private boolean shouldDispatchToSceneContainer() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return false;
+        }
+        return mIsBeingDragged || mExpandingNotification;
     }
 
     @Override
@@ -4029,7 +4158,7 @@ public class NotificationStackScrollLayout
         mVelocityTracker.addMovement(ev);
 
         final int action = ev.getActionMasked();
-        if (ev.findPointerIndex(mActivePointerId) == -1 && action != MotionEvent.ACTION_DOWN) {
+        if (ev.findPointerIndex(mActivePointerId) == -1 && action != ACTION_DOWN) {
             // Incomplete gesture, possibly due to window swap mid-gesture. Ignore until a new
             // one starts.
             Log.e(TAG, "Invalid pointerId=" + mActivePointerId + " in onTouchEvent "
@@ -4050,7 +4179,7 @@ public class NotificationStackScrollLayout
         }
 
         switch (action) {
-            case MotionEvent.ACTION_DOWN: {
+            case ACTION_DOWN: {
                 if (getChildCount() == 0 || !isInContentBounds(ev)) {
                     return false;
                 }
@@ -4170,7 +4299,7 @@ public class NotificationStackScrollLayout
                     endDrag();
                 }
                 break;
-            case MotionEvent.ACTION_POINTER_DOWN: {
+            case ACTION_POINTER_DOWN: {
                 final int index = ev.getActionIndex();
                 mLastMotionY = (int) ev.getY(index);
                 mDownX = (int) ev.getX(index);
@@ -4282,21 +4411,6 @@ public class NotificationStackScrollLayout
         }
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (!mScrollViewFields.interactive) {
-            // When mScrollViewFields.interactive is false, NSSL will intercept TouchEvents to
-            // prevent its children from handling touches. NSSL#onTouchEvent() will return false so
-            // that neither NSSL or its children consume TouchEvents. Instead, the SceneContainer
-            // Framework will handle.
-            return true;
-        }
-        if (mTouchHandler != null && mTouchHandler.onInterceptTouchEvent(ev)) {
-            return true;
-        }
-        return super.onInterceptTouchEvent(ev);
-    }
-
     void handleEmptySpaceClick(MotionEvent ev) {
         if (SceneContainerFlag.isEnabled()) return;
         logEmptySpaceClick(ev, isBelowLastNotification(mInitialTouchX, mInitialTouchY),
@@ -4341,7 +4455,7 @@ public class NotificationStackScrollLayout
     }
 
     void initDownStates(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+        if (ev.getAction() == ACTION_DOWN) {
             mExpandedInThisMotion = false;
             mOnlyScrollingInThisMotion = !mScroller.isFinished();
             mDisallowScrollingInThisMotion = false;
@@ -4418,7 +4532,7 @@ public class NotificationStackScrollLayout
                 break;
             }
 
-            case MotionEvent.ACTION_DOWN: {
+            case ACTION_DOWN: {
                 final int y = (int) ev.getY();
                 mScrolledToTopOnFirstDown = mScrollAdapter.isScrolledToTop();
                 final ExpandableView childAtTouchPos = getChildAtPosition(

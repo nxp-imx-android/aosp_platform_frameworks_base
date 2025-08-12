@@ -42,7 +42,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.qs.ui.adapter.fakeQSSceneAdapter
+import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.resolver.homeSceneFamilyResolver
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
@@ -197,11 +197,11 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun upOrBackTransitionSceneKey_customizing_noTransition() =
+    fun upOrBackTransitionSceneKey_editing_noTransition() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
 
-            fakeQSSceneAdapter.setCustomizing(true)
+            editModeViewModel.startEditing()
             assertThat(
                     actions!!.keys.filterIsInstance<Swipe>().filter {
                         it.direction == SwipeDirection.Up

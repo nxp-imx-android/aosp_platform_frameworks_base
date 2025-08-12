@@ -40,9 +40,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 /**
  * Models UI state needed for rendering the content of the quick settings scene.
@@ -96,16 +93,6 @@ constructor(
             launch { hydrator.activate() }
 
             launch { qsContainerViewModel.activate() }
-
-            qsContainerViewModel.editModeViewModel.isEditing
-                .filter { it }
-                .onEach {
-                    sceneInteractor.changeScene(
-                        Scenes.QSEditMode,
-                        loggingReason = "Entering edit mode",
-                    )
-                }
-                .launchIn(this)
 
             launch(context = mainDispatcher) {
                 shadeModeInteractor.shadeMode.collect { shadeMode ->

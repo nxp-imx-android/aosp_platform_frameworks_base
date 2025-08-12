@@ -224,9 +224,6 @@ interface IInputMethodManager {
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
     void setStylusWindowIdleTimeoutForTest(in IInputMethodClient client, long timeout);
 
-    /**
-     * Returns the singleton instance for the Ime Tracker Service.
-     * {@hide}
-     */
+    /** Returns the singleton instance for the Ime Tracker Service. */
     IImeTracker getImeTrackerService();
 }

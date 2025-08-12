@@ -20,7 +20,7 @@ import android.icu.text.SimpleDateFormat
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
 import android.icu.util.ULocale
-import com.android.systemui.plugins.clocks.TimeFormatKind
+import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
 import java.util.Date
 import java.util.Locale
 

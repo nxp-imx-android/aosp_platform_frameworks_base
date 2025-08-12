@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.WeaklyReferencedCallback;
 import com.android.settingslib.fuelgauge.BatteryStatus;
-import com.android.systemui.plugins.clocks.WeatherData;
+import com.android.systemui.plugins.keyguard.data.model.WeatherData;
 import com.android.systemui.statusbar.KeyguardIndicationController;
 
 import java.util.TimeZone;

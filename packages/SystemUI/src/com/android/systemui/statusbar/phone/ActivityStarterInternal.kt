@@ -25,6 +25,7 @@ import android.os.UserHandle
 import android.view.View
 import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.animation.ActivityTransitionAnimator
+import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import kotlinx.coroutines.CoroutineScope
 
@@ -65,6 +66,7 @@ interface ActivityStarterInternal {
     )
 
     /** Starts an activity after dismissing keyguard. */
+    @Deprecated("Use startActivityDismissingKeyguard(options: ActivityStartOptions) instead")
     fun startActivityDismissingKeyguard(
         intent: Intent,
         dismissShade: Boolean,
@@ -77,6 +79,9 @@ interface ActivityStarterInternal {
         userHandle: UserHandle? = null,
         activityOptions: ActivityOptions? = null,
     )
+
+    /** Starts an activity after dismissing keyguard. */
+    fun startActivityDismissingKeyguard(options: ActivityStartOptions)
 
     /** Starts an Activity. */
     fun startActivity(

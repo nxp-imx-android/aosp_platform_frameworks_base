@@ -17,7 +17,7 @@
 package com.android.systemui.customization.clocks.view
 
 import android.view.View
-import com.android.systemui.customization.clocks.FontUtils.set
+import com.android.systemui.customization.clocks.utils.FontUtils.set
 
 data class DigitalAlignment(
     val horizontalAlignment: HorizontalAlignment? = null,

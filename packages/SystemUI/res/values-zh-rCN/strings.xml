@@ -153,8 +153,7 @@
     <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
     <skip />
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"录制"</string>
-    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
-    <skip />
+    <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"共享"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在共享屏幕"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"分享内容"</string>
@@ -202,10 +201,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"二维码扫描器"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"已解锁"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"设备已锁定"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"确认并解锁设备"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"重新尝试人脸解锁"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"正在扫描面孔"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"发送"</string>
     <string name="cancel" msgid="1089011503403416730">"取消"</string>
@@ -226,13 +223,16 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"已经过身份验证"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"取消身份验证"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"更多选项"</string>
-    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"更多选项"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
+    <skip />
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"换种验证方式"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"管理“身份检查”"</string>
-    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"无法使用 PIN 码进行验证，因为“身份检查”功能已开启，要求提供生物识别信息。详细了解“身份检查”"</string>
-    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"无法使用解锁图案进行验证，因为“身份检查”功能已开启，要求提供生物识别信息。详细了解“身份检查”"</string>
-    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"无法使用密码进行验证，因为“身份检查”功能已开启，要求提供生物识别信息。详细了解“身份检查”"</string>
-    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"正在评估风险…"</string>
+    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
+    <skip />
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"不可用"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"使用 PIN 码"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"使用解锁图案"</string>
@@ -541,8 +541,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"向上滑动即可打开"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"按下解锁图标即可打开"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"已通过面孔识别解锁。向上滑动即可打开。"</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"已通过面孔识别解锁。按“确认”即可继续。"</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"已通过面孔识别解锁。按下解锁图标即可打开。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"已通过面孔识别解锁。点按即可打开。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"识别出面孔。点按即可打开。"</string>
@@ -1123,8 +1122,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 页，共 <xliff:g id="ID_2">%2$d</xliff:g> 页"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要开启<xliff:g id="ID_1">%1$s</xliff:g>吗？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"操作 "<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的键盘快捷键。<xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"这可让您快速放大界面上的内容。"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款屏幕阅读器，可让您听到大声朗读的内容。对于查看界面有困难的用户，这项功能非常实用。"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"这项功能可以快速放大界面上的内容。"</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款屏幕阅读器，可大声朗读屏幕上的内容。对于无法看清楚界面的用户，这项功能非常实用。"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"借助<xliff:g id="ID_1">%1$s</xliff:g>，您无需动手就能控制设备。"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"开启"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"锁定屏幕"</string>
@@ -1565,7 +1564,7 @@
     <string name="shortcutHelper_category_split_screen" msgid="1159669813444812244">"分屏"</string>
     <string name="shortcutHelper_category_accessibility" msgid="8068337792277570938">"无障碍"</string>
     <string name="shortcut_helper_category_input" msgid="8674018654124839566">"输入"</string>
-    <string name="shortcut_helper_category_app_shortcuts" msgid="8010249408308587117">"应用快捷键"</string>
+    <string name="shortcut_helper_category_app_shortcuts" msgid="8010249408308587117">"应用快捷方式"</string>
     <string name="shortcut_helper_category_current_app_shortcuts" msgid="4017840565974573628">"当前应用"</string>
     <string name="shortcut_helper_category_a11y" msgid="6314444792641773464">"无障碍功能"</string>
     <string name="shortcut_helper_title" msgid="8567500639300970049">"键盘快捷键"</string>
