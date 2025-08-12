@@ -140,7 +140,11 @@ public final class ComputerControlSession implements AutoCloseable {
         /** Called when the session has been successfully created. */
         void onSessionCreated(@NonNull ComputerControlSession session);
 
-        /** Called when the session failed to be created. */
+        /**
+         * Called when the session failed to be created.
+         *
+         * @param errorCode The reason for failure.
+         */
         void onSessionCreationFailed(@SessionCreationError int errorCode);
 
         /**

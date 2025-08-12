@@ -130,7 +130,9 @@ public class ComputerControlSessionProcessorTest {
             verify(mComputerControlSessionCallback)
                     .onSessionCreationFailed(ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
 
+            // Close the first session.
             mSessionArgumentCaptor.getAllValues().getFirst().close();
+            // Closing an already-closed session should be a no-op.
             mSessionArgumentCaptor.getAllValues().getFirst().close();
             verify(mComputerControlSessionCallback, times(1)).onSessionClosed();
 
