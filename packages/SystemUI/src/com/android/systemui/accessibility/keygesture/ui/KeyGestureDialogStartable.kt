@@ -62,6 +62,8 @@ constructor(
 ) : CoreStartable {
     @VisibleForTesting var currentDialog: ComponentSystemUIDialog? = null
 
+    @VisibleForTesting var dialogType: Int = 0
+
     override fun start() {
         if (
             !Flags.enableTalkbackAndMagnifierKeyGestures() && !Flags.enableVoiceAccessKeyGestures()
@@ -77,11 +79,14 @@ constructor(
     }
 
     private fun createDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
-        if (keyGestureConfirmInfo == null) {
-            dismissDialog()
+        // Ignore other type of first-time keyboard shortcuts while the dialog is showing.
+        if (currentDialog != null) {
             return
         }
-        dismissDialog()
+
+        if (keyGestureConfirmInfo == null) {
+            return
+        }
 
         currentDialog =
             dialogFactory.create { dialog ->
@@ -122,22 +127,20 @@ constructor(
             }
 
         currentDialog?.let { dialog ->
-            dialog.show()
+            dialogType = keyGestureConfirmInfo.keyGestureType
+            val tts =
+                if (dialogType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
+                    interactor.performTtsPromptForText(keyGestureConfirmInfo.contentText)
+                } else {
+                    null
+                }
 
-            // We need to announce the text for the TalkBack dialog.
-            if (
-                keyGestureConfirmInfo.keyGestureType ==
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
-            ) {
-                val tts = interactor.performTtsPromptForText(keyGestureConfirmInfo.contentText)
-                dialog.setOnDismissListener { tts.dismiss() }
+            dialog.setOnDismissListener {
+                tts?.dismiss()
+                currentDialog = null
             }
+            dialog.show()
         }
-    }
-
-    private fun dismissDialog() {
-        currentDialog?.dismiss()
-        currentDialog = null
     }
 
     private fun buildAnnotatedStringFromResource(resourceText: CharSequence): AnnotatedString {
