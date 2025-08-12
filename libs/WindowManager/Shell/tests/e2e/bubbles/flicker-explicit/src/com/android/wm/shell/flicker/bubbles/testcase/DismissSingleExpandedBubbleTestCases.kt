@@ -16,73 +16,13 @@
 
 package com.android.wm.shell.flicker.bubbles.testcase
 
-import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
-import org.junit.Test
-
 /**
  * Verifies a single bubble app [testApp] is dismissed, and bubble window
  * (represented as expanded bubble or bubble bar) is also dismissed.
  *
  * - [BubbleAppBecomesNotExpandedTestCases]
  * - [LauncherAlwaysVisibleTestCases]
- * - [BUBBLE] is visible and then disappear
+ * - [BubbleDismissesTestCases]
  */
 interface DismissSingleExpandedBubbleTestCases : BubbleAppBecomesNotExpandedTestCases,
-    LauncherAlwaysVisibleTestCases {
-
-// region Bubble related tests
-
-    /**
-     * Verifies [BUBBLE] window is gone at the end of the transition.
-     */
-    @Test
-    fun bubbleWindowIsGoneAtEnd() {
-        wmStateSubjectAtEnd.notContains(BUBBLE)
-    }
-
-    /**
-     * Verifies [BUBBLE] layer is gone at the end of the transition.
-     */
-    @Test
-    fun bubbleLayerIsGoneAtEnd() {
-        layerTraceEntrySubjectAtEnd.notContains(BUBBLE)
-    }
-
-    /**
-     * Verifies [BUBBLE] window was visible then disappear.
-     */
-    @Test
-    fun bubbleWindowWasVisibleThenDisappear() {
-        wmTraceSubject
-            .isAboveAppWindowVisible(BUBBLE)
-            .then()
-            // Use #isNonAppWindowInvisible here because the BUBBLE window may have been removed
-            // from WM hierarchy.
-            .isNonAppWindowInvisible(BUBBLE)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies [BUBBLE] layer was visible then disappear.
-     */
-    @Test
-    fun bubbleLayerWasVisibleThenDisappear() {
-        layersTraceSubject
-            .isVisible(BUBBLE)
-            .then()
-            .isInvisible(BUBBLE)
-            .forAllEntries()
-    }
-
-// endregion
-
-// region bubble app related tests
-
-    /**
-     * Verifies bubble app window is gone at the end of the transition.
-     */
-    @Test
-    fun appWindowIsGoneAtEnd() {
-        wmStateSubjectAtEnd.notContains(testApp)
-    }
-}
+   LauncherAlwaysVisibleTestCases, BubbleDismissesTestCases
