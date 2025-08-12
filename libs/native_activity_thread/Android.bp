@@ -70,6 +70,7 @@ rust_library {
         "libdlext_bindgen",
         "liblogger",
         "liblibc",
+        "libnix",
         "liblog_rust",
         "liblooper_bindgen",
         "libnative_service_bindgen",
