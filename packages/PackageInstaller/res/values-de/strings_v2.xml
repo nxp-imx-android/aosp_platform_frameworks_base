@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Wenn du diese App wiederherstellen möchtest, musst du <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> installieren"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Beim Versuch, diese App wiederherzustellen, gab es ein Problem"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"„<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>“ gehört zu folgender App: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Diese App wurde blockiert. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Diese App wurde nicht aktualisiert. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Diese App wurde nicht installiert. Apps von nicht überprüften Entwicklern können unsicher sein.&lt;/p&gt; &lt;p&gt;Zur Überprüfung des App-Entwicklers ist eine Internetverbindung erforderlich. Vergewissere dich, dass dein Gerät mit dem Internet verbunden ist, und versuche dann noch einmal, die App zu installieren. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Diese App wurde nicht aktualisiert. Updates von nicht überprüften Entwicklern sind möglicherweise unsicher.&lt;/p&gt; &lt;p&gt;Für die Überprüfung von App-Entwicklern ist eine Internetverbindung erforderlich. Vergewissere dich, dass dein Gerät mit dem Internet verbunden ist, und versuche dann noch einmal, die App zu aktualisieren. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Beim Überprüfen des Entwicklers dieser App ist ein Problem aufgetreten. Apps von nicht überprüften Entwicklern können unsicher sein. Deshalb wurde die App nicht installiert.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;Beim Überprüfen des Entwicklers dieser App ist ein Problem aufgetreten. Updates von nicht überprüften Entwicklern sind möglicherweise unsicher, daher wurde die App nicht aktualisiert.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Diese App wurde blockiert, weil der Entwickler nicht überprüft werden konnte. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Diese App wurde wegen eines Problems mit der Überprüfung des Entwicklers nicht aktualisiert. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Wenn du die Installation ohne Überprüfung durchführst, solltest du bedenken, dass Apps von nicht überprüften Entwicklern dein Gerät und deine Daten gefährden können."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Wenn du das Update ohne Überprüfung durchführst, solltest du bedenken, dass Updates von nicht überprüften Entwicklern dein Gerät und deine Daten gefährden können."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"App-Entwickler nicht überprüft"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Wiederherstellen"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Updates deinstallieren"</string>
     <string name="button_settings" msgid="3837571366246132287">"Einstellungen"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>-Klon"</string>
 </resources>

@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"To restore this app, you\'ll need to install <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"There was a problem trying to restore this app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> is part of the following app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;This app was blocked. To help keep your device and data safe, only apps from verified developers can be installed.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;This app was not updated. To help keep your device and data safe, only updates from verified developers can be installed.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;This app was not installed. Apps from unverified developers may be unsafe.&lt;/p&gt; &lt;p&gt;An Internet connection is required to verify the app developer. Make sure that your device is connected to the Internet, then try installing the app again. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;This app was not updated. Updates from unverified developers may be unsafe.&lt;/p&gt; &lt;p&gt;An Internet connection is required to verify the app developer. Make sure that your device is connected to the Internet, then try updating the app again. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;There was a problem verifying this app\'s developer. Apps from unverified developers may be unsafe, so the app was not installed.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;There was a problem verifying this app\'s developer. Updates from unverified developers may be unsafe, so the app was not updated.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;This app was blocked because there was a problem verifying the developer. To help keep your device and data safe, only apps from verified developers can be installed.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;This app was not updated because there was a problem verifying the developer. To help keep your device and data safe, only updates from verified developers can be installed.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Learn more about developer verification&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"If you install without verifying, bear in mind that apps from unverified developers may put your device and data at risk."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"If you update without verifying, bear in mind that updates from unverified developers may put your device and data at risk."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"App developer unverified"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Restore"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Uninstall updates"</string>
     <string name="button_settings" msgid="3837571366246132287">"Settings"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> clone"</string>
 </resources>

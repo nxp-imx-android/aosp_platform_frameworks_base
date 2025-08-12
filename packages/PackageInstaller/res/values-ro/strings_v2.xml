@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Pentru a restabili aplicația, va trebui să instalezi <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"A apărut o problemă la restabilirea aplicației"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> face parte din următoarea aplicație: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Aplicația a fost blocată. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai aplicații de la dezvoltatori verificați.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;Aplicația nu a fost actualizată. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai actualizări de la dezvoltatori verificați.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Aplicația nu a fost instalată. Aplicațiile de la dezvoltatori neverificați pot fi nesigure.&lt;/p&gt; &lt;p&gt;Este necesară o conexiune la internet pentru a verifica dezvoltatorul aplicației. Asigură-te că dispozitivul este conectat la internet, apoi încearcă din nou să instalezi aplicația. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;Aplicația nu a fost actualizată. Actualizările de la dezvoltatori neverificați pot fi nesigure.&lt;/p&gt; &lt;p&gt;Este necesară o conexiune la internet pentru a verifica dezvoltatorul aplicației. Asigură-te că dispozitivul este conectat la internet, apoi încearcă din nou să actualizezi aplicația. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;A apărut o problemă la verificarea dezvoltatorului aplicației. Aplicațiile de la dezvoltatori neverificați pot fi nesigure, așadar aplicația nu a fost instalată.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;A apărut o problemă la verificarea dezvoltatorului aplicației. Actualizările de la dezvoltatori neverificați pot fi nesigure, așadar aplicația nu a fost actualizată.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;Aplicația a fost blocată deoarece a apărut o problemă la verificarea dezvoltatorului. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai aplicații de la dezvoltatori verificați.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;Aplicația nu a fost actualizată deoarece a apărut o problemă la verificarea dezvoltatorului. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai actualizări de la dezvoltatori verificați.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Dacă instalezi fără verificare, reține că aplicațiile de la dezvoltatori neverificați pot fi periculoase pentru dispozitiv și date."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Dacă actualizezi fără verificare, reține că actualizările de la dezvoltatori neverificați pot fi periculoase pentru dispozitiv și date."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Dezvoltatorul aplicației nu a fost verificat"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Restabilește"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Dezinstalează actualizările"</string>
     <string name="button_settings" msgid="3837571366246132287">"Setări"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clonează <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

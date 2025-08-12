@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"如要還原這個應用程式，請安裝「<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>」"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"嘗試還原這個應用程式時發生問題"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"「<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>」是下列應用程式的活動：<xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;系統已封鎖這個應用程式。你只能安裝已驗證開發人員的應用程式，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;這個應用程式未更新。你只能安裝已驗證開發人員的更新項目，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;未安裝這個應用程式。如果開發人員未經驗證，應用程式可能不安全。&lt;/p&gt; &lt;p&gt;如要驗證應用程式開發人員，必須連上網際網路。請確認裝置已連上網際網路，然後再試一次。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;這個應用程式未更新。如果開發人員未經驗證，更新項目可能不安全。&lt;/p&gt; &lt;p&gt;如要驗證應用程式開發人員，必須連上網際網路。請確認裝置已連上網際網路，再嘗試更新應用程式。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;驗證這個應用程式的開發人員時發生問題。如果開發人員未經驗證，應用程式可能不安全，因此裝置並未安裝該應用程式。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;驗證這個應用程式的開發人員時發生問題。如果開發人員未經驗證，更新項目可能不安全，因此應用程式未更新。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;驗證開發人員時發生問題，因此系統已封鎖這個應用程式。你只能安裝已驗證開發人員的應用程式，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;驗證開發人員時發生問題，因此這個應用程式未更新。你只能安裝已驗證開發人員的更新項目，確保裝置和資料安全。&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;進一步瞭解開發人員驗證&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"請注意，如果未驗證開發人員就安裝，應用程式可能會讓裝置和資料暴露在風險中。"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"請注意，如果未驗證開發人員就更新，更新項目可能會讓裝置和資料暴露在風險中。"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"應用程式開發人員未經驗證"</string>
@@ -127,5 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"還原"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"解除安裝更新"</string>
     <string name="button_settings" msgid="3837571366246132287">"設定"</string>
+    <!-- no translation found for button_retry (81109241832968353) -->
+    <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"「<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>」副本"</string>
 </resources>
