@@ -448,9 +448,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
             };
 
         } else {
-            String deviceAddress =
-                    com.android.media.flags.Flags.enableDeviceAddressAsIdentifierInMediaRouter2()
-                            ? mediaRoute2InfoHolder.mMediaRoute2Info.getAddress() : "";
+            String deviceAddress = "";
+
+            if (com.android.media.flags.Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
+                deviceAddress = mediaRoute2InfoHolder.mMediaRoute2Info.getAddress();
+                if (deviceAddress == null) {
+                    deviceAddress = "";
+                }
+            }
 
             AudioDeviceAttributes deviceAttributes =
                     new AudioDeviceAttributes(
@@ -697,7 +702,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
                         currentOutputIsBLEBroadcast ? mSelectedRoutes : Collections.emptyList();
 
                 if (currentOutputIsBLEBroadcast
-                        || mSelectedRoutes.getFirst().getType()
+                        || mSelectedRoutes.get(0).getType()
                                 != MediaRoute2Info.TYPE_BLE_HEADSET) {
                     mSelectableRoutes = Collections.emptyList();
                 } else {
@@ -826,7 +831,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         List<AudioDeviceAttributes> devicesForMedia =
                 mAudioManager.getDevicesForAttributes(MEDIA_USAGE_AUDIO_ATTRIBUTES);
         return !devicesForMedia.isEmpty()
-                && devicesForMedia.getFirst().getType() == AudioDeviceInfo.TYPE_BLE_BROADCAST;
+                && devicesForMedia.get(0).getType() == AudioDeviceInfo.TYPE_BLE_BROADCAST;
     }
 
     /**
