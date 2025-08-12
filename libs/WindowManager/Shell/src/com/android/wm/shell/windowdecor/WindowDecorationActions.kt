@@ -19,6 +19,7 @@ package com.android.wm.shell.windowdecor
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Intent
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
+import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.AmbiguousSource
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 
 /**
@@ -27,7 +28,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
  */
 interface WindowDecorationActions {
     /** Maximizes a window or restores previous sized if already maximized. */
-    fun onMaximizeOrRestore(taskId: Int, inputMethod: InputMethod)
+    fun onMaximizeOrRestore(taskId: Int, ambiguousSource: AmbiguousSource, inputMethod: InputMethod)
 
     /** Minimizes the task. */
     fun onMinimize(taskInfo: RunningTaskInfo)
@@ -82,4 +83,7 @@ interface WindowDecorationActions {
 
     /** Creates new instance of task. */
     fun onNewWindow(taskId: Int)
+
+    /** Opens the handle menu. */
+    fun onOpenHandleMenu(taskId: Int)
 }
