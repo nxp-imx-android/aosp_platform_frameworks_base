@@ -17,18 +17,38 @@
 package com.android.systemui.media.remedia.data.repository
 
 import android.content.Context
+import android.os.UserHandle
+import android.provider.Settings
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.controls.data.model.MediaSortKeyModel
 import com.android.systemui.media.controls.shared.areIconsEqual
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
+import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** An abstract repository class that holds fields and functions called by media pipeline. */
-abstract class MediaPipelineRepository(@Application private val applicationContext: Context) {
+abstract class MediaPipelineRepository(
+    @Application private val applicationContext: Context,
+    @Application applicationScope: CoroutineScope,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
+    private val secureSettings: SecureSettings,
+) {
 
     protected val mutableUserEntries: MutableStateFlow<Map<InstanceId, MediaData>> =
         MutableStateFlow(LinkedHashMap())
@@ -37,6 +57,10 @@ abstract class MediaPipelineRepository(@Application private val applicationConte
     private val mutableAllEntries: MutableStateFlow<Map<String, MediaData>> =
         MutableStateFlow(LinkedHashMap())
     val allMediaEntries: StateFlow<Map<String, MediaData>> = mutableAllEntries.asStateFlow()
+
+    private val mutableAllowMediaPlayerOnLockscreen = MutableStateFlow(true)
+    val allowMediaPlayerOnLockscreen: StateFlow<Boolean> =
+        mutableAllowMediaPlayerOnLockscreen.asStateFlow()
 
     protected val comparator =
         compareByDescending<MediaSortKeyModel> {
@@ -51,6 +75,10 @@ abstract class MediaPipelineRepository(@Application private val applicationConte
             .thenByDescending { it.lastActive }
             .thenByDescending { it.updateTime }
             .thenByDescending { it.notificationKey }
+
+    init {
+        listenForLockscreenSettingChanges(applicationScope)
+    }
 
     fun addMediaEntry(key: String, data: MediaData) {
         val entries = LinkedHashMap<String, MediaData>(mutableAllEntries.value)
@@ -117,5 +145,27 @@ abstract class MediaPipelineRepository(@Application private val applicationConte
             isBackgroundUpdated = !areIconsEqual(applicationContext, new.artwork, old.artwork),
             isAppIconUpdated = !areIconsEqual(applicationContext, new.appIcon, old.appIcon),
         )
+    }
+
+    private fun listenForLockscreenSettingChanges(scope: CoroutineScope): Job {
+        return scope.launch {
+            secureSettings
+                .observerFlow(UserHandle.USER_ALL, Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN)
+                .onStart { emit(Unit) }
+                .map { getMediaLockScreenSetting() }
+                .distinctUntilChanged()
+                .flowOn(backgroundDispatcher)
+                .collectLatest { mutableAllowMediaPlayerOnLockscreen.value = it }
+        }
+    }
+
+    private suspend fun getMediaLockScreenSetting(): Boolean {
+        return withContext(backgroundDispatcher) {
+            secureSettings.getBoolForUser(
+                Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN,
+                true,
+                UserHandle.USER_CURRENT,
+            )
+        }
     }
 }
