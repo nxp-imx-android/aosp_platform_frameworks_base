@@ -100,14 +100,11 @@ public class OffscreenTouchZone {
 
     /** Sets up a touch zone. */
     public void inflate(Context context, SurfaceControl rootLeash, TaskInfo rootTaskInfo) {
+        mGestureDetector = new GestureDetector(context, mTapDetector);
         mInterceptLayer = new TouchInterceptLayer(TAG + (mIsTopLeft ? "TopLeft" : "BottomRight"));
-        mInterceptLayer.inflate(context, rootLeash, rootTaskInfo);
-
-        View rootView = mInterceptLayer.getRootView();
-
-        mGestureDetector = new GestureDetector(rootView.getContext(), mTapDetector);
-        rootView.setOnTouchListener(mTouchListener);
-        rootView.setOnDragListener(mDragListener);
+        mInterceptLayer.inflate(rootLeash, rootTaskInfo);
+        mInterceptLayer.setTouchListener(mTouchListener);
+        mInterceptLayer.setDragListener(mDragListener);
     }
 
     /** Releases the touch zone when it's no longer needed. */

@@ -1569,7 +1569,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
 
         final TouchInterceptLayer touchInterceptLayer = new TouchInterceptLayer();
-        touchInterceptLayer.inflate(mContext,
+        touchInterceptLayer.inflate(
                 mSplitMultiDisplayHelper.getDisplayRootTaskLeash(DEFAULT_DISPLAY),
                 mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY));
 
