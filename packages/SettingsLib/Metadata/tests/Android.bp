@@ -5,6 +5,10 @@ package {
 android_app {
     name: "SettingsLibMetadataShell",
     platform_apis: true,
+    static_libs: [
+        "androidx.fragment_fragment-testing",
+        "androidx.preference_preference",
+    ],
 }
 
 android_robolectric_test {
@@ -12,6 +16,7 @@ android_robolectric_test {
     srcs: ["src/**/*.kt"],
     static_libs: [
         "SettingsLibMetadata",
+        "SettingsLibPreference-testutils",
         "androidx.test.ext.junit",
         "kotlin-parcelize-runtime",
         "mockito-robolectric-prebuilt", // mockito deps order matters!
