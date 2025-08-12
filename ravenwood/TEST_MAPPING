@@ -1,14 +1,11 @@
 {
   "presubmit": [
-    // Non-ravenwood host side tests.
-    { "name": "tiny-framework-dump-test", "host": true },
-    { "name": "hoststubgentest", "host": true },
-    { "name": "ravenhelpertest", "host": true },
-    { "name": "hoststubgen-test-tiny-test", "host": true },
-    { "name": "hoststubgen-invoke-test", "host": true },
-    { "name": "ravenwood-scripts-sh-golden-test", "host": true },
-
-    // Device side tests for the bivalent tests.
+    { "name": "tiny-framework-dump-test" },
+    { "name": "hoststubgentest" },
+    { "name": "ravenhelpertest" },
+    { "name": "hoststubgen-test-tiny-test" },
+    { "name": "hoststubgen-invoke-test" },
+    { "name": "ravenwood-scripts-sh-golden-test" },
     { "name": "RavenwoodMockitoTest_device" },
     { "name": "RavenwoodBivalentTest_device" },
     { "name": "RavenwoodBivalentTest_device_ravenizer" },
