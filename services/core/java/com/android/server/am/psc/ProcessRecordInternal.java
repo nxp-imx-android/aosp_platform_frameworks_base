@@ -174,6 +174,28 @@ public abstract class ProcessRecordInternal {
     /** @return {@code true} if the process is associated with any recent tasks. */
     public abstract boolean hasRecentTasks();
 
+    /** Checks if the process is currently showing UI while the device is in doze mode. */
+    public abstract boolean isShowingUiWhileDozing();
+
+    /**
+     * Retrieves the activity state flags from the underlying window process controller.
+     * TODO: b/401350380 - Remove it after the feature of pushing activity state is launched.
+     */
+    public abstract int getActivityStateFlagsLegacy();
+
+    /**
+     * Retrieves the perceptible task stopped time in milliseconds from the underlying window
+     * process controller.
+     * TODO: b/401350380 - Remove it after the feature of pushing activity state is launched.
+     */
+    public abstract long getPerceptibleTaskStoppedTimeMillisLegacy();
+
+    /** Retrieves the last reported PSS (Proportional Set Size) for this process. */
+    public abstract long getLastPss();
+
+    /** Retrieves the last reported RSS (Resident Set Size) for this process. */
+    public abstract long getLastRss();
+
     /**
      * Checks if the process is currently receiving a broadcast.
      *
@@ -242,6 +264,12 @@ public abstract class ProcessRecordInternal {
 
     /** Returns the process ID. */
     public abstract int getPid();
+
+    /** Checks if the process is currently running (i.e. has an active thread). */
+    public abstract boolean isProcessRunning();
+
+    /** Sends the given process state to the application thread. */
+    public abstract void setProcessStateToThread(int state);
 
     /** Determines if UI scheduling for this process should use FIFO priority. */
     public abstract boolean useFifoUiScheduling();

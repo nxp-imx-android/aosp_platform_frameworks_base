@@ -134,7 +134,6 @@ import android.net.NetworkPolicyManager;
 import android.os.Handler;
 import android.os.PowerManagerInternal;
 import android.os.Process;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.util.ArraySet;
@@ -461,7 +460,7 @@ public abstract class OomAdjuster {
         boolean hasExpandedNotificationShade();
 
         /** The current Top process. */
-        @Nullable ProcessRecord getTopProcess();
+        @Nullable ProcessRecordInternal getTopProcess();
 
         /** The current Home process. */
         @Nullable ProcessRecordInternal getHomeProcess();
@@ -470,7 +469,7 @@ public abstract class OomAdjuster {
         @Nullable ProcessRecordInternal getHeavyWeightProcess();
 
         /** The current process showing UI if the device is in doze. */
-        @Nullable ProcessRecord getShowingUiWhileDozingProcess();
+        @Nullable ProcessRecordInternal getShowingUiWhileDozingProcess();
 
         /** The previous process that showed an activity. */
         @Nullable ProcessRecordInternal getPreviousProcess();
@@ -978,7 +977,7 @@ public abstract class OomAdjuster {
                 } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
                     state.setCurAdj(nextPreviousAppAdj);
                     nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
-                } else if (!app.isKilledByAm() && app.getThread() != null && (curAdj >= UNKNOWN_ADJ
+                } else if (!app.isKilledByAm() && app.isProcessRunning() && (curAdj >= UNKNOWN_ADJ
                             || (state.getHasShownUi() && curAdj >= CACHED_APP_MIN_ADJ))) {
                     final ProcessServiceRecord psr = app.mServices;
                     int targetAdj = CACHED_APP_MIN_ADJ;
@@ -1053,8 +1052,7 @@ public abstract class OomAdjuster {
                 } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
                     state.setCurAdj(nextPreviousAppAdj);
                     nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
-                } else if (!app.isKilledByAm() && app.getThread() != null
-                               && curAdj >= UNKNOWN_ADJ) {
+                } else if (!app.isKilledByAm() && app.isProcessRunning() && curAdj >= UNKNOWN_ADJ) {
                     // If we haven't yet assigned the final cached adj to the process, do that now.
                     final ProcessServiceRecordInternal psr = app.mServices;
                     switch (state.getCurProcState()) {
@@ -1185,7 +1183,7 @@ public abstract class OomAdjuster {
         for (int i = numLru - 1; i >= 0; i--) {
             ProcessRecord app = lruList.get(i);
             final ProcessRecordInternal state = app;
-            if (!app.isKilledByAm() && app.getThread() != null) {
+            if (!app.isKilledByAm() && app.isProcessRunning()) {
                 if (!Flags.fixApplyOomadjOrder()) {
                     // We don't need to apply the update for the process which didn't get computed
                     if (state.getCompletedAdjSeq() == mAdjSeq) {
@@ -1298,7 +1296,7 @@ public abstract class OomAdjuster {
             for (int i = 0; i < numLru; i++) {
                 ProcessRecord app = lruList.get(i);
                 // We don't need to apply the update for the process which didn't get computed
-                if (!app.isKilledByAm() && app.getThread() != null
+                if (!app.isKilledByAm() && app.isProcessRunning()
                         && app.getCompletedAdjSeq() == mAdjSeq) {
                     applyOomAdjLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
                 }
@@ -1329,7 +1327,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     protected void updateAppUidRecIfNecessaryLSP(final ProcessRecord app) {
-        if (!app.isKilledByAm() && app.getThread() != null) {
+        if (!app.isKilledByAm() && app.isProcessRunning()) {
             if (app.isolated && app.mServices.numberOfRunningServices() <= 0
                     && app.getIsolatedEntryPoint() == null) {
                 // No op.
@@ -1538,7 +1536,7 @@ public abstract class OomAdjuster {
      * The method is called during computeOomAdjLSP(), on the same thread.
      */
     final class OomAdjWindowCalculator {
-        private ProcessRecord mApp;
+        private ProcessRecordInternal mApp;
         private int mAdj;
         private boolean mForegroundActivities;
         private boolean mHasVisibleActivities;
@@ -1554,7 +1552,7 @@ public abstract class OomAdjuster {
         }
 
         @GuardedBy("this.OomAdjuster.mService")
-        void computeOomAdjFromActivitiesIfNecessary(ProcessRecord app, int adj,
+        void computeOomAdjFromActivitiesIfNecessary(ProcessRecordInternal app, int adj,
                 boolean foregroundActivities, boolean hasVisibleActivities, int procState,
                 int schedGroup, int processCurTop, boolean reportDebugMsgs) {
             if (app.getCachedAdj() != ProcessList.INVALID_ADJ) {
@@ -1567,7 +1565,7 @@ public abstract class OomAdjuster {
             if (Flags.pushActivityStateToOomadjuster()) {
                 flags = mApp.getActivityStateFlags();
             } else {
-                flags = mApp.getWindowProcessController().getActivityStateFlags();
+                flags = mApp.getActivityStateFlagsLegacy();
             }
 
             if ((flags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0) {
@@ -1581,7 +1579,7 @@ public abstract class OomAdjuster {
                 if (Flags.pushActivityStateToOomadjuster()) {
                     ts = mApp.getPerceptibleTaskStoppedTimeMillis();
                 } else {
-                    ts = mApp.getWindowProcessController().getPerceptibleTaskStoppedTimeMillis();
+                    ts = mApp.getPerceptibleTaskStoppedTimeMillisLegacy();
                 }
                 onOtherActivity(ts);
             }
@@ -1610,7 +1608,7 @@ public abstract class OomAdjuster {
             mApp.setCachedAdjType(mAdjType);
         }
 
-        void initialize(ProcessRecord app, int adj, boolean foregroundActivities,
+        void initialize(ProcessRecordInternal app, int adj, boolean foregroundActivities,
                 boolean hasVisibleActivities, int procState, int schedGroup,
                 int processStateCurTop, boolean reportDebugMsgs) {
             this.mApp = app;
@@ -1820,7 +1818,7 @@ public abstract class OomAdjuster {
         }
     }
 
-    protected ProcessRecord getTopProcess() {
+    protected ProcessRecordInternal getTopProcess() {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mGlobalState.getTopProcess();
         } else {
@@ -1844,11 +1842,11 @@ public abstract class OomAdjuster {
         }
     }
 
-    protected boolean isVisibleDozeUiProcess(ProcessRecord proc) {
+    protected boolean isVisibleDozeUiProcess(ProcessRecordInternal proc) {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mGlobalState.getShowingUiWhileDozingProcess() == proc;
         } else {
-            return proc.getWindowProcessController().isShowingUiWhileDozing();
+            return proc.isShowingUiWhileDozing();
         }
     }
 
@@ -2264,17 +2262,7 @@ public abstract class OomAdjuster {
 
         if (state.getReportedProcState() != state.getCurProcState()) {
             state.setReportedProcState(state.getCurProcState());
-            if (app.getThread() != null) {
-                try {
-                    if (false) {
-                        //RuntimeException h = new RuntimeException("here");
-                        Slog.i(TAG, "Sending new process state " + state.getReportedProcState()
-                                + " to " + app /*, h*/);
-                    }
-                    app.getThread().setProcessState(state.getReportedProcState());
-                } catch (RemoteException e) {
-                }
-            }
+            app.setProcessStateToThread(state.getReportedProcState());
         }
         boolean forceUpdatePssTime = false;
         if (state.getSetProcState() == PROCESS_STATE_NONEXISTENT

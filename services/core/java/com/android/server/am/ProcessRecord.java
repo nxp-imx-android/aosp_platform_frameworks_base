@@ -688,6 +688,25 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mThread;
     }
 
+    @Override
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    public boolean isProcessRunning() {
+        return mThread != null;
+    }
+
+    @Override
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    public void setProcessStateToThread(int state) {
+        if (mThread == null) {
+            return;
+        }
+
+        try {
+            mThread.setProcessState(state);
+        } catch (RemoteException ignored) {
+        }
+    }
+
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     IApplicationThread getOnewayThread() {
         return mOnewayThread;
@@ -1129,6 +1148,22 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
+    public boolean isShowingUiWhileDozing() {
+        return mWindowProcessController.isShowingUiWhileDozing();
+    }
+
+    @Override
+    public int getActivityStateFlagsLegacy() {
+        return mWindowProcessController.getActivityStateFlags();
+    }
+
+    @Override
+    public long getPerceptibleTaskStoppedTimeMillisLegacy() {
+        return mWindowProcessController.getPerceptibleTaskStoppedTimeMillis();
+    }
+
+
+    @Override
     public boolean isReceivingBroadcast(int[] outSchedGroup) {
         return mService.isReceivingBroadcastLocked(this, outSchedGroup);
     }
@@ -1193,6 +1228,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @Override
     public int getApplicationUid() {
         return info.uid;
+    }
+
+    @Override
+    public long getLastPss() {
+        return mProfile.getLastPss();
+    }
+
+    @Override
+    public long getLastRss() {
+        return mProfile.getLastRss();
     }
 
     boolean hasActivitiesOrRecentTasks() {
