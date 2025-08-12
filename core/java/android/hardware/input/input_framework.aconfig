@@ -238,3 +238,10 @@ flag {
     is_exported: true
     bug: "403531245"
 }
+
+flag {
+  name: "keyboard_backlight_shortcuts"
+  namespace: "desktop_input"
+  description: "Enables new keyboard shortcuts to adjust keyboard backlight"
+  bug: "401626732"
+}
