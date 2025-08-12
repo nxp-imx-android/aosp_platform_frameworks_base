@@ -80,6 +80,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
     private var startDisplayId = 0
     private var hasMoved = false
     private val displayIds = mutableSetOf<Int>()
+    private var hasMovedTaskSurfaceOffScreen = false
 
     constructor(
         taskOrganizer: ShellTaskOrganizer,
@@ -111,6 +112,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
     override fun onDragPositioningStart(ctrlType: Int, displayId: Int, x: Float, y: Float): Rect {
         this.ctrlType = ctrlType
         startDisplayId = displayId
+        hasMovedTaskSurfaceOffScreen = false
         taskBoundsAtDragStart.set(
             windowDecoration.taskInfo.configuration.windowConfiguration.bounds
         )
@@ -207,20 +209,35 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     displayIds,
                     transactionSupplier,
                 )
-
-                t.setPosition(
-                    windowDecoration.taskSurface,
-                    repositionTaskBounds.left.toFloat(),
-                    repositionTaskBounds.top.toFloat(),
-                )
-                // Make the window translucent in the case when the cursor moves to another display.
-                val alpha =
-                    if (startDisplayId == displayId) {
-                        ALPHA_FOR_WINDOW_ON_DISPLAY_WITH_CURSOR
-                    } else {
-                        ALPHA_FOR_WINDOW_ON_NON_CURSOR_DISPLAY
+                if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
+                    // Move the original task surface off-screen to hide it. A mirrored surface is
+                    // used for the drag indicator on all displays, including the start display.
+                    // This is necessary for independent opacity control, as a mirror's alpha is
+                    // capped by its source.
+                    if (!hasMovedTaskSurfaceOffScreen) {
+                        hasMovedTaskSurfaceOffScreen = true
+                        t.setPosition(
+                            windowDecoration.taskSurface,
+                            startDisplayLayout.width().toFloat(),
+                            startDisplayLayout.height().toFloat(),
+                        )
                     }
-                t.setAlpha(windowDecoration.taskSurface, alpha)
+                } else {
+                    t.setPosition(
+                        windowDecoration.taskSurface,
+                        repositionTaskBounds.left.toFloat(),
+                        repositionTaskBounds.top.toFloat(),
+                    )
+                    // Make the window translucent in the case when the cursor moves to another
+                    // display.
+                    val alpha =
+                        if (startDisplayId == displayId) {
+                            ALPHA_FOR_WINDOW_ON_DISPLAY_WITH_CURSOR
+                        } else {
+                            ALPHA_FOR_WINDOW_ON_NON_CURSOR_DISPLAY
+                        }
+                    t.setAlpha(windowDecoration.taskSurface, alpha)
+                }
             }
             t.setFrameTimeline(Choreographer.getInstance().vsyncId)
             t.apply()
@@ -324,6 +341,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
         ctrlType = DragPositioningCallback.CTRL_TYPE_UNDEFINED
         taskBoundsAtDragStart.setEmpty()
         repositionStartPoint[0f] = 0f
+        hasMovedTaskSurfaceOffScreen = false
         return Rect(repositionTaskBounds)
     }
 
