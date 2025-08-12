@@ -138,8 +138,16 @@ constructor(
                     )
                 }
             } else {
-                setScaleX(getTargetClockFace(clock).views, aodBurnInViewModel.movement.value.scale)
-                setScaleY(getTargetClockFace(clock).views, aodBurnInViewModel.movement.value.scale)
+                if (aodBurnInViewModel.movement.value.scaleClockOnly) {
+                    setScaleX(
+                        getTargetClockFace(clock).views,
+                        aodBurnInViewModel.movement.value.scale,
+                    )
+                    setScaleY(
+                        getTargetClockFace(clock).views,
+                        aodBurnInViewModel.movement.value.scale,
+                    )
+                }
             }
         }
     }
