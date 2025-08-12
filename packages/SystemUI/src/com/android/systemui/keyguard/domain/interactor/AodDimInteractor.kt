@@ -20,13 +20,21 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.data.repository.AodDimRepository
 import javax.inject.Inject
 
-/** Encapsulates business-logic related to Ambient Display dimming to apply over all AOD UI */
+/** Encapsulates business-logic related to Ambient Display dimming to apply when AOD is showing */
 @SysUISingleton
 class AodDimInteractor @Inject constructor(private val repository: AodDimRepository) {
+
     val dimAmount: Float
         get() = repository.dimAmount
 
+    val wallpaperDimAmount: Float
+        get() = repository.wallpaperDimAmount
+
     fun setDimAmount(dimAmount: Float) {
         repository.dimAmount = dimAmount
+    }
+
+    fun setWallpaperDimAmount(dimAmount: Float) {
+        repository.wallpaperDimAmount = dimAmount
     }
 }

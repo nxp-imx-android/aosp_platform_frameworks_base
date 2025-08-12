@@ -219,6 +219,7 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         mDevicePostureController.removeCallback(mDevicePostureCallback);
         if (SceneContainerFlag.isEnabled()) {
             mDozeHost.setAodDimmingScrim(0f);
+            mDozeHost.setAodWallpaperDimmingScrim(0f);
         }
     }
 
@@ -246,15 +247,21 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
             }
 
             int scrimOpacity = -1;
+            int wallpaperScrimOpacity = -1;
             if (!isLightSensorPresent()) {
                 // No light sensor, scrims are always transparent.
                 scrimOpacity = 0;
+                wallpaperScrimOpacity = 0;
             } else if (brightnessReady) {
                 // Only unblank scrim once brightness is ready.
                 scrimOpacity = computeScrimOpacity(sensorValue);
+                wallpaperScrimOpacity = computeWallpaperScrimOpacity(sensorValue);
             }
             if (scrimOpacity >= 0) {
                 mDozeHost.setAodDimmingScrim(scrimOpacity / 255f);
+            }
+            if (wallpaperScrimOpacity >= 0) {
+                mDozeHost.setAodWallpaperDimmingScrim(wallpaperScrimOpacity / 255f);
             }
         }
     }
@@ -294,6 +301,16 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         return max(wallpaperScrimOpacity, mSensorToScrimOpacity[sensorValue]);
     }
 
+    private int computeWallpaperScrimOpacity(int sensorValue) {
+        if (!SceneContainerFlag.isEnabled()
+                || !mWallpaperSupportsAmbientMode
+                || sensorValue < 0
+                || sensorValue >= mSensorToWallpaperScrimOpacity.length) {
+            return -1;
+        }
+        return mSensorToWallpaperScrimOpacity[sensorValue];
+    }
+
     private float computeBrightness(int sensorValue) {
         if (sensorValue < 0 || sensorValue >= mSensorToBrightness.length) {
             return -1;
@@ -309,6 +326,7 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         mDozeService.setDozeScreenBrightness(clampToDimBrightnessForScreenOff(
                 clampToUserSettingOrAutoBrightness(mDefaultDozeBrightness)));
         mDozeHost.setAodDimmingScrim(0f);
+        mDozeHost.setAodWallpaperDimmingScrim(0f);
     }
 
     private float clampToUserSetting(float brightness) {

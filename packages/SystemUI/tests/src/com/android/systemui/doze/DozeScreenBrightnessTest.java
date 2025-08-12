@@ -56,6 +56,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.flags.DisableSceneContainer;
+import com.android.systemui.flags.EnableSceneContainer;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.phone.DozeParameters;
@@ -86,7 +87,7 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
     private static final float[] SENSOR_TO_BRIGHTNESS = new float[]{-1, 0.01f, 0.05f, 0.7f, 0.1f};
     private static final int[] SENSOR_TO_BRIGHTNESS_INT = new int[]{-1, 1, 2, 3, 4};
     private static final int[] SENSOR_TO_OPACITY = new int[]{-1, 10, 0, 0, 1};
-    private static final int[] SENSOR_TO_WALLPAPER_SCRIM_OPACITY = new int[]{-1, 12, 0, 0, 0};
+    private static final int[] SENSOR_TO_WALLPAPER_SCRIM_OPACITY = new int[]{-1, 12, 3, 2, 1};
     private static final float DELTA = BrightnessSynchronizer.EPSILON;
 
     private DozeServiceFake mServiceFake;
@@ -560,6 +561,32 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
         // SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue]
         verify(mDozeHost).setAodDimmingScrim(
                 eq(SENSOR_TO_OPACITY[sensorValue] / 255f)
+        );
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void ambientAod_propagateWallpaperScrimOpacity() {
+        mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
+        mScreen.transitionTo(INITIALIZED, DOZE_AOD);
+        mKosmos.getWallpaperRepository().setWallpaperSupportsAmbientMode(true);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+        waitForSensorManager();
+
+        int sensorValue = 1;
+        mSensor.sendSensorEvent(sensorValue);
+
+        // set SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue]
+        verify(mDozeHost).setAodWallpaperDimmingScrim(
+                eq(SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue] / 255f)
+        );
+
+        sensorValue = 4;
+        mSensor.sendSensorEvent(sensorValue);
+
+        // update SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue]
+        verify(mDozeHost).setAodWallpaperDimmingScrim(
+                eq(SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue] / 255f)
         );
     }
 

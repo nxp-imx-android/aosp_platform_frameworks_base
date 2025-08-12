@@ -482,6 +482,15 @@ public final class DozeServiceHost implements DozeHost {
     }
 
     @Override
+    public void setAodWallpaperDimmingScrim(float scrimOpacity) {
+        if (!SceneContainerFlag.isEnabled()) {
+            return;
+        }
+        mDozeLog.traceSetAodWallpaperDimmingScrim(scrimOpacity);
+        mAodDimInteractor.setWallpaperDimAmount(scrimOpacity);
+    }
+
+    @Override
     public void prepareForGentleSleep(Runnable onDisplayOffCallback) {
         if (mPendingScreenOffCallback != null) {
             Log.w(TAG, "Overlapping onDisplayOffCallback. Ignoring previous one.");
