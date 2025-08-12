@@ -420,7 +420,7 @@ private fun ContentScope.SplitShade(
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 Box(
                     modifier =
-                        Modifier.element(SplitShadeQuickSettings)
+                        Modifier.element(QuickSettings.Elements.SplitShadeQuickSettings)
                             .overscroll(verticalOverscrollEffect)
                             .weight(1f)
                             .graphicsLayer { translationX = unfoldTranslationXForStartSide }
