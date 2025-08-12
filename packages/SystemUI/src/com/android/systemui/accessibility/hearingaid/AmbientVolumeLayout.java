@@ -23,7 +23,6 @@ import static android.bluetooth.AudioInputControl.MUTE_NOT_MUTED;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
@@ -42,6 +41,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.primitives.Ints;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A view of ambient volume controls.
@@ -231,8 +231,8 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
     }
 
     @Override
-    public void setupSliders(@NonNull Map<Integer, BluetoothDevice> sideToDeviceMap) {
-        sideToDeviceMap.forEach((side, device) -> createSlider(side));
+    public void setupSliders(@NonNull Set<Integer> sides) {
+        sides.forEach(this::createSlider);
         createSlider(SIDE_UNIFIED);
 
         LinearLayout controlContainer = requireViewById(R.id.ambient_control_container);
@@ -278,8 +278,7 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
         }
     }
 
-    @Override
-    public void updateLayout() {
+    private void updateLayout() {
         mSideToSliderMap.forEach((side, slider) -> {
             if (side == SIDE_UNIFIED) {
                 slider.setVisibility(mExpanded ? GONE : VISIBLE);

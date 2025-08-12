@@ -84,7 +84,7 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
         mLayout.setControlExpandable(true);
 
         prepareDevices();
-        mLayout.setupSliders(mSideToDeviceMap);
+        mLayout.setupSliders(mSideToDeviceMap.keySet());
         mLayout.getSliders().forEach((side, slider) -> {
             slider.setMin(0);
             slider.setMax(4);
@@ -110,6 +110,9 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
 
     @Test
     public void setControlExpandable_notExpandable_expandIconGone() {
+        // Change the state from its default (false) to true. This ensures that the subsequent call
+        // to setControlExpandable(false) will trigger the update logic.
+        mLayout.setControlExpandable(true);
         mLayout.setControlExpandable(false);
 
         assertThat(mExpandIcon.getVisibility()).isEqualTo(View.GONE);
@@ -120,29 +123,18 @@ public class AmbientVolumeLayoutTest extends SysuiTestCase {
         mLayout.setControlExpanded(true);
 
         assertControlUiCorrect();
-    }
-
-    @Test
-    public void setControlExpanded_notExpanded_assertControlUiCorrect() {
-        mLayout.setControlExpanded(false);
-
-        assertControlUiCorrect();
-    }
-
-    @Test
-    public void updateLayout_expanded_volumeIconIsCorrect() {
-        mLayout.setControlExpanded(true);
-        mLayout.updateLayout();
-
         int expectedLevel = calculateVolumeLevel(TEST_LEFT_VOLUME_LEVEL, TEST_RIGHT_VOLUME_LEVEL);
         assertThat(mVolumeIcon.getDrawable().getLevel()).isEqualTo(expectedLevel);
     }
 
     @Test
-    public void updateLayout_notExpanded_volumeIconIsCorrect() {
+    public void setControlExpanded_notExpanded_assertControlUiCorrect() {
+        // Change the state from its default (false) to true. This ensures that the subsequent call
+        // to setControlExpanded(false) will trigger the update logic.
+        mLayout.setControlExpanded(true);
         mLayout.setControlExpanded(false);
-        mLayout.updateLayout();
 
+        assertControlUiCorrect();
         int expectedLevel = calculateVolumeLevel(TEST_UNIFIED_VOLUME_LEVEL,
                 TEST_UNIFIED_VOLUME_LEVEL);
         assertThat(mVolumeIcon.getDrawable().getLevel()).isEqualTo(expectedLevel);
