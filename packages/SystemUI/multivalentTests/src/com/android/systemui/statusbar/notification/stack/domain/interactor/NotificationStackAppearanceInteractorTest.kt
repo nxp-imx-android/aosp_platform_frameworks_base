@@ -29,8 +29,6 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -89,23 +87,19 @@ class NotificationStackAppearanceInteractorTest : SysuiTestCase() {
                 .isEqualTo(ShadeScrimRounding(isTopRounded = true, isBottomRounded = true))
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun stackNotificationScrimBounds_withImproperBounds_throwsException() =
         kosmos.runTest {
-            assertThrows(IllegalStateException::class.java) {
-                underTest.setNotificationShadeScrimBounds(ShadeScrimBounds(top = 100f, bottom = 99f))
-            }
+            underTest.setNotificationShadeScrimBounds(ShadeScrimBounds(top = 100f, bottom = 99f))
         }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun setQsPanelShape_withImproperBounds_throwsException() =
         kosmos.runTest {
             val invalidBounds = ShadeScrimBounds(top = 0f, bottom = -10f)
-            assertThrows(IllegalStateException::class.java) {
-                underTest.setQsPanelShapeInWindow(
-                    ShadeScrimShape(bounds = invalidBounds, topRadius = 10, bottomRadius = 10)
-                )
-            }
+            underTest.setQsPanelShapeInWindow(
+                ShadeScrimShape(bounds = invalidBounds, topRadius = 10, bottomRadius = 10)
+            )
         }
 
     @Test

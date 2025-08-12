@@ -26,8 +26,6 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -160,13 +158,11 @@ class DeviceItemActionInteractorTest : SysuiTestCase() {
         }
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun onActionIconClick_audioSharingDeviceType_throwException() {
         with(kosmos) {
-            assertThrows(IllegalArgumentException::class.java) {
-                testScope.runTest {
-                    actionInteractorImpl.onActionIconClick(audioSharingDeviceItem) {}
-                }
+            testScope.runTest {
+                actionInteractorImpl.onActionIconClick(audioSharingDeviceItem) {}
             }
         }
     }

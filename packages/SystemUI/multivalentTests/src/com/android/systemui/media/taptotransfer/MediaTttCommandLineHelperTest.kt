@@ -34,7 +34,6 @@ import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.nullable
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,22 +70,18 @@ class MediaTttCommandLineHelperTest : SysuiTestCase() {
         mediaTttCommandLineHelper.start()
     }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun constructor_senderCommandAlreadyRegistered() {
         // Since creating the chip controller should automatically register the sender command, it
         // should throw when registering it again.
-        assertThrows(IllegalStateException::class.java) {
-            commandRegistry.registerCommand(SENDER_COMMAND) { EmptyCommand() }
-        }
+        commandRegistry.registerCommand(SENDER_COMMAND) { EmptyCommand() }
     }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun constructor_receiverCommandAlreadyRegistered() {
         // Since creating the chip controller should automatically register the receiver command, it
         // should throw when registering it again.
-        assertThrows(IllegalStateException::class.java) {
-            commandRegistry.registerCommand(RECEIVER_COMMAND) { EmptyCommand() }
-        }
+        commandRegistry.registerCommand(RECEIVER_COMMAND) { EmptyCommand() }
     }
 
     @Test

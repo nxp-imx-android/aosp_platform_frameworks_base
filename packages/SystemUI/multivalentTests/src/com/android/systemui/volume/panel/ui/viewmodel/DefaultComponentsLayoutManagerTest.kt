@@ -25,8 +25,6 @@ import com.android.systemui.volume.panel.shared.model.mockVolumePanelUiComponent
 import com.android.systemui.volume.panel.ui.layout.ComponentsLayoutManager
 import com.android.systemui.volume.panel.ui.layout.DefaultComponentsLayoutManager
 import com.google.common.truth.Truth
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -76,20 +74,17 @@ class DefaultComponentsLayoutManagerTest : SysuiTestCase() {
             .inOrder()
     }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun bottomBarAbsence_throwsException() {
         val component1State = ComponentState(COMPONENT_1, kosmos.mockVolumePanelUiComponent, false)
         val component2State = ComponentState(COMPONENT_2, kosmos.mockVolumePanelUiComponent, false)
-
-        assertThrows(IllegalStateException::class.java) {
-            underTest.layout(
-                VolumePanelState(orientation = 0, isLargeScreen = false),
-                setOf(
-                    component1State,
-                    component2State,
-                )
+        underTest.layout(
+            VolumePanelState(orientation = 0, isLargeScreen = false),
+            setOf(
+                component1State,
+                component2State,
             )
-        }
+        )
     }
 
     private companion object {

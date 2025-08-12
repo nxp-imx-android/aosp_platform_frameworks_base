@@ -33,8 +33,6 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
-import org.junit.Assert.assertThrows
 import java.util.concurrent.Executor
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Test
@@ -271,8 +269,8 @@ class FlashlightRepositoryTest : SysuiTestCase() {
             assertThat(state).isEqualTo(FlashlightModel.Unavailable.Temporarily.CameraInUse)
         }
 
-    @Test
-    fun setLevel0_throwsException() = assertThrows(IllegalArgumentException::class.java) {
+    @Test(expected = IllegalArgumentException::class)
+    fun setLevel0_throwsException() =
         kosmos.runTest {
             injectCameraCharacteristics(true, CameraCharacteristics.LENS_FACING_BACK)
 
@@ -286,10 +284,11 @@ class FlashlightRepositoryTest : SysuiTestCase() {
             assertThat(state).isEqualTo(disabledAtDefaultLevel)
 
             underTest.setLevel(0)
-        }
-    }
 
-    @Test
+            assertThat(state).isEqualTo(disabledAtDefaultLevel)
+        }
+
+    @Test(expected = IllegalArgumentException::class)
     fun setLevelNegative_throwsException() =
         kosmos.runTest {
             injectCameraCharacteristics(true, CameraCharacteristics.LENS_FACING_BACK)
@@ -303,12 +302,12 @@ class FlashlightRepositoryTest : SysuiTestCase() {
 
             assertThat(state).isEqualTo(disabledAtDefaultLevel)
 
-            assertThrows(IllegalArgumentException::class.java) {
-                underTest.setLevel(-1) // exception thrown
-            }
+            underTest.setLevel(-1) // exception thrown
+
+            assertThat(state).isEqualTo(disabledAtDefaultLevel)
         }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun setLevelAboveMax_throwsException() =
         kosmos.runTest {
             injectCameraCharacteristics(true, CameraCharacteristics.LENS_FACING_BACK)
@@ -321,9 +320,9 @@ class FlashlightRepositoryTest : SysuiTestCase() {
                 FlashlightModel.Available.Level(false, DEFAULT_DEFAULT_LEVEL, DEFAULT_MAX_LEVEL)
             assertThat(state).isEqualTo(disabledAtDefaultLevel)
 
-            assertThrows(IllegalArgumentException::class.java) {
-                underTest.setLevel(DEFAULT_MAX_LEVEL + 1)
-            }
+            underTest.setLevel(DEFAULT_MAX_LEVEL + 1)
+
+            assertThat(state).isEqualTo(disabledAtDefaultLevel)
         }
 
     @Test

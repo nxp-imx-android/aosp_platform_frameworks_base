@@ -29,7 +29,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -508,26 +507,19 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             assertThat(resizeInfo).isNull()
         }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun testIllegalState_maxHeightLessThanMinHeight() =
-        Assert.assertThrows(IllegalArgumentException::class.java) {
-            testScope.runTest {
-                updateGridLayout(singleSpanGrid.copy(maxHeightPx = 50, minHeightPx = 100))
-            }
+        testScope.runTest {
+            updateGridLayout(singleSpanGrid.copy(maxHeightPx = 50, minHeightPx = 100))
         }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun testIllegalState_currentSpanExceedsTotalSpans() =
-        Assert.assertThrows(IllegalArgumentException::class.java) {
-            testScope.runTest {
-                updateGridLayout(singleSpanGrid.copy(currentSpan = 3, totalSpans = 2)) }
-        }
+        testScope.runTest { updateGridLayout(singleSpanGrid.copy(currentSpan = 3, totalSpans = 2)) }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun testIllegalState_resizeMultipleZeroOrNegative() =
-        Assert.assertThrows(IllegalArgumentException::class.java) {
-            testScope.runTest { updateGridLayout(singleSpanGrid.copy(resizeMultiple = 0)) }
-        }
+        testScope.runTest { updateGridLayout(singleSpanGrid.copy(resizeMultiple = 0)) }
 
     @Test
     fun testZeroHeights_cannotResize() =

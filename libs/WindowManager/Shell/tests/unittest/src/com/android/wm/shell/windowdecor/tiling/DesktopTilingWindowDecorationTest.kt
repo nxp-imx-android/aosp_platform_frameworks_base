@@ -60,7 +60,6 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -712,7 +711,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
 
     // Construction of a tiling divider with null config expects a null pointer here
     // which is a sign a new divider is being created due to dpi changes.
-    @Test
+    @Test(expected = NullPointerException::class)
     fun tilingDividerDestroyed_whenDpiChanges() {
         val task1 = createVisibleTask()
         val additionalTaskHelper: DesktopTilingWindowDecoration.AppResizingHelper = mock()
@@ -737,9 +736,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
 
         tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
-        assertThrows(NullPointerException::class.java) {
-            tilingDecoration.onDensityOrFontScaleChanged()
-        }
+        tilingDecoration.onDensityOrFontScaleChanged()
+
+        verify(desktopTilingDividerWindowManager, times(1)).release()
     }
 
     @Test

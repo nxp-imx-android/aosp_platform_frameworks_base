@@ -20,7 +20,6 @@ import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import org.junit.Assert.assertThrows
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.concurrent.Executor
@@ -58,13 +57,11 @@ class CommandRegistryTest : SysuiTestCase() {
         registry = CommandRegistry(context, inLineExecutor)
     }
 
-    @Test
+    @Test(expected = IllegalStateException::class)
     fun testRegisterCommand_throwsWhenAlreadyRegistered() {
         registry.registerCommand(COMMAND) { FakeCommand() }
         // Should throw when registering the same command twice
-        assertThrows(IllegalStateException::class.java) {
-            registry.registerCommand(COMMAND) { FakeCommand() }
-        }
+        registry.registerCommand(COMMAND) { FakeCommand() }
     }
 
     @Test
