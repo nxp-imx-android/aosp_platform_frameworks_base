@@ -34,6 +34,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -105,18 +106,19 @@ class FlashlightSliderViewModelTest : SysuiTestCase() {
             assertThat(enabled).isEqualTo(false)
         }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun setLevelBelowZero_stateUnchanged() =
-        kosmos.runTest {
-            runCurrent()
+    @Test
+    fun setLevelBelowZero_stateUnchanged() {
+        assertThrows(IllegalArgumentException::class.java) {
+            kosmos.runTest {
+                runCurrent()
 
-            val originalState = underTest.currentFlashlightLevel!!
+                val originalState = underTest.currentFlashlightLevel!!
 
-            underTest.setFlashlightLevel(-1)
-            runCurrent()
-
-            assertThat(underTest.currentFlashlightLevel).isEqualTo(originalState)
+                underTest.setFlashlightLevel(-1)
+                runCurrent()
+            }
         }
+    }
 
     @Test
     fun setLevelMax_stateMax() =
@@ -148,17 +150,18 @@ class FlashlightSliderViewModelTest : SysuiTestCase() {
             assertThat(underTest.currentFlashlightLevel!!.level).isEqualTo(1)
         }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun setLevelAboveMax_stateUnchanged() =
-        kosmos.runTest {
-            runCurrent()
-            val originalState = underTest.currentFlashlightLevel!!
+    @Test
+    fun setLevelAboveMax_stateUnchanged() {
+        assertThrows(IllegalArgumentException::class.java) {
+            kosmos.runTest {
+                runCurrent()
+                val originalState = underTest.currentFlashlightLevel!!
 
-            underTest.setFlashlightLevel(MAX_LEVEL + 1)
-            runCurrent()
-
-            assertThat(underTest.currentFlashlightLevel).isEqualTo(originalState)
+                underTest.setFlashlightLevel(MAX_LEVEL + 1)
+                runCurrent()
+            }
         }
+    }
 
     @Test
     fun updateInteractor_updatesLevel() =

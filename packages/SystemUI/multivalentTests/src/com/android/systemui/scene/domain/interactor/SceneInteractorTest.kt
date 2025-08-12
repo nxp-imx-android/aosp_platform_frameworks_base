@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -152,9 +153,12 @@ class SceneInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun changeScene_toGoneWhenStillLocked_throws() =
-        kosmos.runTest { underTest.changeScene(Scenes.Gone, "reason") }
+        kosmos.runTest {
+            assertThrows(IllegalStateException::class.java) {
+                underTest.changeScene(Scenes.Gone, "reason")
+            } }
 
     @Test
     fun changeScene_toGoneWhenTransitionToLockedFromGone() =
@@ -273,9 +277,13 @@ class SceneInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun snapToScene_toGoneWhenStillLocked_throws() =
-        kosmos.runTest { underTest.snapToScene(Scenes.Gone, loggingReason = "reason") }
+        kosmos.runTest {
+            assertThrows(IllegalStateException::class.java) {
+                underTest.snapToScene(Scenes.Gone, loggingReason = "reason")
+            }
+        }
 
     @Test
     fun snapToScene_toHomeSceneFamily() =
@@ -702,46 +710,58 @@ class SceneInteractorTest : SysuiTestCase() {
             assertThat(isVisible).isFalse()
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun changeScene_toIncorrectShade_crashes() =
         kosmos.runTest {
             enableDualShade()
-            underTest.changeScene(Scenes.Shade, "reason")
+            assertThrows(IllegalStateException::class.java) {
+                underTest.changeScene(Scenes.Shade, "reason")
+            }
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun changeScene_toIncorrectQuickSettings_crashes() =
         kosmos.runTest {
             enableDualShade()
-            underTest.changeScene(Scenes.QuickSettings, "reason")
+            assertThrows(IllegalStateException::class.java) {
+                underTest.changeScene(Scenes.QuickSettings, "reason")
+            }
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun snapToScene_toIncorrectShade_crashes() =
         kosmos.runTest {
             enableDualShade()
-            underTest.snapToScene(Scenes.Shade, loggingReason = "reason")
+            assertThrows(IllegalStateException::class.java) {
+                underTest.snapToScene(Scenes.Shade, loggingReason = "reason")
+            }
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun snapToScene_toIncorrectQuickSettings_crashes() =
         kosmos.runTest {
             enableDualShade()
-            underTest.changeScene(Scenes.QuickSettings, "reason")
+            assertThrows(IllegalStateException::class.java) {
+                underTest.changeScene(Scenes.QuickSettings, "reason")
+            }
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun showOverlay_incorrectShadeOverlay_crashes() =
         kosmos.runTest {
             disableDualShade()
-            underTest.showOverlay(Overlays.NotificationsShade, "reason")
+            assertThrows(IllegalStateException::class.java) {
+                underTest.showOverlay(Overlays.NotificationsShade, "reason")
+            }
         }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun showOverlay_incorrectQuickSettingsOverlay_crashes() =
         kosmos.runTest {
             disableDualShade()
-            underTest.showOverlay(Overlays.QuickSettingsShade, "reason")
+            assertThrows(IllegalStateException::class.java) {
+                underTest.showOverlay(Overlays.QuickSettingsShade, "reason")
+            }
         }
 
     @Test

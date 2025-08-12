@@ -23,6 +23,7 @@ import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -40,9 +41,11 @@ class QSTileConfigProviderTest : SysuiTestCase() {
         assertThat(underTest.getConfig(VALID_SPEC.spec)).isNotNull()
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun throwsForInvalidSpec() {
-        underTest.getConfig(INVALID_SPEC.spec)
+        assertThrows(IllegalArgumentException::class.java) {
+            underTest.getConfig(INVALID_SPEC.spec)
+        }
     }
 
     @Test
@@ -55,11 +58,13 @@ class QSTileConfigProviderTest : SysuiTestCase() {
         assertThat(underTest.hasConfig(INVALID_SPEC.spec)).isFalse()
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun validatesSpecUponCreation() {
-        createQSTileConfigProviderImpl(
-            mapOf(VALID_SPEC.spec to QSTileConfigTestBuilder.build { tileSpec = INVALID_SPEC })
-        )
+        assertThrows(IllegalArgumentException::class.java) {
+            createQSTileConfigProviderImpl(
+                mapOf(VALID_SPEC.spec to QSTileConfigTestBuilder.build { tileSpec = INVALID_SPEC })
+            )
+        }
     }
 
     private fun createQSTileConfigProviderImpl(
