@@ -49,7 +49,6 @@ import android.window.WindowProvider;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
-import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -177,10 +176,9 @@ public final class WindowManagerImpl implements WindowManager {
     }
 
     private void applyTokens(@NonNull ViewGroup.LayoutParams params) {
-        if (!(params instanceof WindowManager.LayoutParams)) {
+        if (!(params instanceof LayoutParams wparams)) {
             throw new IllegalArgumentException("Params must be WindowManager.LayoutParams");
         }
-        final WindowManager.LayoutParams wparams = (WindowManager.LayoutParams) params;
         assertWindowContextTypeMatches(wparams.type);
         // Only use the default token if we don't have a parent window and a token.
         if (mDefaultToken != null && mParentWindow == null && wparams.token == null) {
@@ -214,9 +212,6 @@ public final class WindowManagerImpl implements WindowManager {
     private void applyWindowTypeOverrideIfNeeded(
             @NonNull ViewGroup.LayoutParams params,
             @NonNull View view) {
-        if (!Flags.enableWindowContextOverrideType()) {
-            return;
-        }
         if (!(params instanceof WindowManager.LayoutParams wparams)) {
             throw new IllegalArgumentException("Params must be WindowManager.LayoutParams");
         }

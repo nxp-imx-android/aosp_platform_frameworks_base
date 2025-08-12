@@ -60,8 +60,6 @@ import android.view.View.OnApplyWindowInsetsListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.window.OnBackInvokedDispatcher;
 
-import com.android.window.flags.Flags;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -334,7 +332,6 @@ public abstract class Window {
     private boolean mDestroyed;
 
     private boolean mOverlayWithDecorCaptionEnabled = true;
-    private boolean mCloseOnSwipeEnabled = false;
 
     /**
      * To check if toolkitSetFrameRateReadOnly flag is enabled
@@ -364,7 +361,7 @@ public abstract class Window {
          *
          * @return boolean Return true if this event was consumed.
          */
-        public boolean dispatchKeyEvent(KeyEvent event);
+        boolean dispatchKeyEvent(KeyEvent event);
 
         /**
          * Called to process a key shortcut event.
@@ -375,7 +372,7 @@ public abstract class Window {
          * @param event The key shortcut event.
          * @return True if this event was consumed.
          */
-        public boolean dispatchKeyShortcutEvent(KeyEvent event);
+        boolean dispatchKeyShortcutEvent(KeyEvent event);
 
         /**
          * Called to process touch screen events.  At the very least your
@@ -387,7 +384,7 @@ public abstract class Window {
          *
          * @return boolean Return true if this event was consumed.
          */
-        public boolean dispatchTouchEvent(MotionEvent event);
+        boolean dispatchTouchEvent(MotionEvent event);
 
         /**
          * Called to process trackball events.  At the very least your
@@ -399,7 +396,7 @@ public abstract class Window {
          *
          * @return boolean Return true if this event was consumed.
          */
-        public boolean dispatchTrackballEvent(MotionEvent event);
+        boolean dispatchTrackballEvent(MotionEvent event);
 
         /**
          * Called to process generic motion events.  At the very least your
@@ -411,7 +408,7 @@ public abstract class Window {
          *
          * @return boolean Return true if this event was consumed.
          */
-        public boolean dispatchGenericMotionEvent(MotionEvent event);
+        boolean dispatchGenericMotionEvent(MotionEvent event);
 
         /**
          * Called to process population of {@link AccessibilityEvent}s.
@@ -420,7 +417,7 @@ public abstract class Window {
          *
          * @return boolean Return true if event population was completed.
          */
-        public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event);
+        boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event);
 
         /**
          * Instantiate the view to display in the panel for 'featureId'.
@@ -434,7 +431,7 @@ public abstract class Window {
          * @see #onPreparePanel
          */
         @Nullable
-        public View onCreatePanelView(int featureId);
+        View onCreatePanelView(int featureId);
 
         /**
          * Initialize the contents of the menu for panel 'featureId'.  This is
@@ -498,7 +495,7 @@ public abstract class Window {
          * This is called whenever the current window attributes change.
          *
          */
-        public void onWindowAttributesChanged(WindowManager.LayoutParams attrs);
+        void onWindowAttributesChanged(WindowManager.LayoutParams attrs);
 
         /**
          * This hook is called whenever the content view of the screen changes
@@ -508,7 +505,7 @@ public abstract class Window {
          * {@link Window#addContentView(View, android.view.ViewGroup.LayoutParams)
          * Window.addContentView}).
          */
-        public void onContentChanged();
+        void onContentChanged();
 
         /**
          * This hook is called whenever the window focus changes.  See
@@ -517,21 +514,21 @@ public abstract class Window {
          *
          * @param hasFocus Whether the window now has focus.
          */
-        public void onWindowFocusChanged(boolean hasFocus);
+        void onWindowFocusChanged(boolean hasFocus);
 
         /**
          * Called when the window has been attached to the window manager.
          * See {@link View#onAttachedToWindow() View.onAttachedToWindow()}
          * for more information.
          */
-        public void onAttachedToWindow();
+        void onAttachedToWindow();
 
         /**
          * Called when the window has been detached from the window manager.
          * See {@link View#onDetachedFromWindow() View.onDetachedFromWindow()}
          * for more information.
          */
-        public void onDetachedFromWindow();
+        void onDetachedFromWindow();
 
         /**
          * Called when a panel is being closed.  If another logical subsequent
@@ -551,7 +548,7 @@ public abstract class Window {
          *
          * @see android.app.Activity#onSearchRequested()
          */
-        public boolean onSearchRequested();
+        boolean onSearchRequested();
 
         /**
          * Called when the user signals the desire to start a search.
@@ -560,7 +557,7 @@ public abstract class Window {
          *                   start a search.
          * @return true if search launched, false if activity refuses (blocks)
          */
-        public boolean onSearchRequested(SearchEvent searchEvent);
+        boolean onSearchRequested(SearchEvent searchEvent);
 
         /**
          * Called when an action mode is being started for this window. Gives the
@@ -574,7 +571,7 @@ public abstract class Window {
          * @return The ActionMode that was started, or null if the system should present it
          */
         @Nullable
-        public ActionMode onWindowStartingActionMode(ActionMode.Callback callback);
+        ActionMode onWindowStartingActionMode(ActionMode.Callback callback);
 
         /**
          * Called when an action mode is being started for this window. Gives the
@@ -587,7 +584,7 @@ public abstract class Window {
          * @return The ActionMode that was started, or null if the system should present it
          */
         @Nullable
-        public ActionMode onWindowStartingActionMode(ActionMode.Callback callback, int type);
+        ActionMode onWindowStartingActionMode(ActionMode.Callback callback, int type);
 
         /**
          * Called when an action mode has been started. The appropriate mode callback
@@ -595,7 +592,7 @@ public abstract class Window {
          *
          * @param mode The new mode that has just been started.
          */
-        public void onActionModeStarted(ActionMode mode);
+        void onActionModeStarted(ActionMode mode);
 
         /**
          * Called when an action mode has been finished. The appropriate mode callback
@@ -603,7 +600,7 @@ public abstract class Window {
          *
          * @param mode The mode that was just finished.
          */
-        public void onActionModeFinished(ActionMode mode);
+        void onActionModeFinished(ActionMode mode);
 
         /**
          * Called when Keyboard Shortcuts are requested for the current window.
@@ -612,15 +609,15 @@ public abstract class Window {
          * @param menu The current menu, which may be null.
          * @param deviceId The id for the connected device the shortcuts should be provided for.
          */
-        default public void onProvideKeyboardShortcuts(
-                List<KeyboardShortcutGroup> data, @Nullable Menu menu, int deviceId) { };
+        default void onProvideKeyboardShortcuts(
+                List<KeyboardShortcutGroup> data, @Nullable Menu menu, int deviceId) { }
 
         /**
          * Called when pointer capture is enabled or disabled for the current window.
          *
          * @param hasCapture True if the window has pointer capture.
          */
-        default public void onPointerCaptureChanged(boolean hasCapture) { };
+        default void onPointerCaptureChanged(boolean hasCapture) { }
     }
 
     /** @hide */
@@ -931,8 +928,6 @@ public abstract class Window {
             @Nullable String appName,
             boolean hardwareAccelerated,
             boolean createLocalWindowManager) {
-        // If the flag is not enabled, we can only create a new instance of WindowManager.
-        createLocalWindowManager |= !Flags.enableWindowContextOverrideType();
         mAppToken = appToken;
         mAppName = appName;
         mHardwareAccelerated = hardwareAccelerated;
@@ -1709,10 +1704,7 @@ public abstract class Window {
         final boolean isOutside =
                 event.getAction() == MotionEvent.ACTION_UP && isOutOfBounds(context, event)
                 || event.getAction() == MotionEvent.ACTION_OUTSIDE;
-        if (mCloseOnTouchOutside && peekDecorView() != null && isOutside) {
-            return true;
-        }
-        return false;
+        return mCloseOnTouchOutside && peekDecorView() != null && isOutside;
     }
 
     /* Sets the Sustained Performance requirement for the calling window.
