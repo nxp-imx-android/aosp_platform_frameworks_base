@@ -649,6 +649,8 @@ fun ContentScope.NotificationScrollingStack(
                         }
                         .verticalScroll(scrollState, overscrollEffect = overScrollEffect)
                         .fillMaxWidth()
+                        // Added extra bottom padding for keeping footerView inside parent Viewbounds during overscroll, refer to b/437347340#comment3
+                        .padding(bottom = 4.dp)
                         .onGloballyPositioned { coordinates ->
                             stackBoundsOnScreen.value = coordinates.boundsInWindow()
                         }
