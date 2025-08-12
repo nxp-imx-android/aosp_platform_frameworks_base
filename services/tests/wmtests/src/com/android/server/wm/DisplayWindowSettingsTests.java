@@ -523,6 +523,28 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(com.android.server.display.feature.flags.Flags
+            .FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void testShouldShowImeOnDisplayForDisplayWithEligibleForDesktopMode() {
+        mWm.mAtmService.mSupportsFreeformWindowManagement = true;
+
+        final DisplayContent mockDc = mock(DisplayContent.class);
+        doReturn(mDefaultDisplay.getDisplayId() + 1).when(mockDc).getDisplayId();
+        doReturn(true).when(mockDc).isSystemDecorationsSupported();
+        doReturn(true).when(mockDc).allowContentModeSwitch();
+        doReturn(false).when(mockDc).isPublicSecondaryDisplayWithDesktopModeForceEnabled();
+
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.displayId = mDefaultDisplay.getDisplayId() + 1;
+        displayInfo.uniqueId = "testid";
+        doReturn(displayInfo).when(mockDc).getDisplayInfo();
+
+        assertEquals(
+                DISPLAY_IME_POLICY_LOCAL,
+                mDisplayWindowSettings.getImePolicyLocked(mockDc));
+    }
+
+    @Test
     public void testDisplayWindowSettingsAppliedOnDisplayReady() {
         // Set forced densities for two displays in DisplayWindowSettings
         final DisplayContent dc = createMockSimulatedDisplay();
