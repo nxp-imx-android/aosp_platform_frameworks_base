@@ -446,6 +446,32 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 
+    @Test
+    public void enqueueRunningExternal_clearedFromPendingWithoutStarting() {
+        // Add a normal transition to the queue first.
+        mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, true);
+        assertThat(mTaskViewTransitions.findPending(mTaskViewTaskController,
+                TRANSIT_TO_FRONT)).isNotNull();
+
+        // Simulate an already running external transition by adding its binder ref.
+        IBinder externalTransition = new Binder();
+        mTaskViewTransitions.enqueueRunningExternal(mTaskViewTaskController, externalTransition);
+
+        // Verify that both transitions are in the pending queue.
+        assertThat(mTaskViewTransitions.findPending(mTaskViewTaskController,
+                TRANSIT_TO_FRONT)).isNotNull();
+        assertThat(mTaskViewTransitions.findPending(externalTransition)).isNotNull();
+
+        // Now, clear the external gate transition.
+        mTaskViewTransitions.onExternalDone(externalTransition);
+
+        // Verify that the external gate is removed, but the original transition is still pending.
+        assertThat(mTaskViewTransitions.findPending(externalTransition)).isNull();
+        assertThat(mTaskViewTransitions.findPending(mTaskViewTaskController,
+                TRANSIT_TO_FRONT)).isNotNull();
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+    }
+
     private ActivityManager.RunningTaskInfo createMockTaskInfo(int taskId,
             WindowContainerToken token) {
         ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();

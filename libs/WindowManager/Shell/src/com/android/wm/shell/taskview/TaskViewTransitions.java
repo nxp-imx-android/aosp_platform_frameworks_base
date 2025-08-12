@@ -218,6 +218,25 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     }
 
     /**
+     * Add an already running external transition into the pending queue.
+     * This transition has to be started externally. And it will block any new transitions from
+     * starting in the pending queue.
+     *
+     * The external operation *must* call {@link #onExternalDone(IBinder)} once it has finished.
+     */
+    public void enqueueRunningExternal(@NonNull TaskViewTaskController taskView,
+            IBinder transition) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                "Transitions.enqueueRunningExternal(): taskView=%d pending=%d",
+                taskView.hashCode(), mPending.size());
+        final PendingTransition pending = new PendingTransition(
+                TRANSIT_NONE, null /* wct */, taskView, null /* cookie */);
+        pending.mExternalTransition = () -> transition;
+        pending.mClaimed = transition;
+        mPending.add(pending);
+    }
+
+    /**
      * An external transition run in this "queue" is required to call this once it becomes ready.
      */
     public void onExternalDone(IBinder key) {
