@@ -1,16 +1,16 @@
 {
   "wm": [
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarVisibilityTest"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
-    },
-    {
-      "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-BubbleIconMoveTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaBackTest"
