@@ -16,6 +16,10 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -119,6 +123,9 @@ public class ComputerControlSessionTest {
                 eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture(), any());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue().getName())
                 .isEqualTo(mParams.getName());
+        assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
+                .getDevicePolicy(POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
 
         verify(mVirtualDevice).addActivityPolicyExemption(
                 mActivityPolicyExemptionArgumentCaptor.capture());
@@ -167,6 +174,7 @@ public class ComputerControlSessionTest {
     @Test
     public void closeSession_closesVirtualDevice() throws Exception {
         mSession.close();
+        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_DEFAULT);
         verify(mVirtualDevice).close();
         verify(mOnClosedListener).onClosed(mSession.asBinder());
     }
