@@ -76,9 +76,7 @@ public class DeviceStateAutoRotateSettingController {
     private static final String TAG = "DSAutoRotateCtrl";
     private static final int ACCELEROMETER_ROTATION_OFF = 0;
     private static final int ACCELEROMETER_ROTATION_ON = 1;
-    // TODO(b/413598268): Disable debugging after the
-    //  com.android.window.flags.enable_device_state_auto_rotate_setting_refactor flag is rolled-out
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final int MSG_UPDATE_STATE = 1;
 
     private final Handler mHandler;

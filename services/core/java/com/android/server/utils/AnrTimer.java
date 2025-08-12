@@ -103,7 +103,7 @@ public class AnrTimer<V> implements AutoCloseable {
     /**
      * Enable debug messages.
      */
-    private static boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
     /**
      * The trace tag is the same usd by ActivityManager.
@@ -1000,13 +1000,6 @@ public class AnrTimer<V> implements AutoCloseable {
             mFeature.dump(pw, false);
             pw.decreaseIndent();
         }
-    }
-
-    /**
-     * Enable or disable debugging.
-     */
-    static void debug(boolean f) {
-        DEBUG = f;
     }
 
     /**
