@@ -16,6 +16,7 @@
 package com.android.server.pm
 
 import android.content.Context
+import android.content.pm.Flags
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
 import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
@@ -30,6 +31,9 @@ import android.os.PersistableBundle
 import android.os.Process
 import android.os.UserHandle
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.CheckFlagsRule
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.util.AtomicFile
 import android.util.Slog
 import android.util.Xml
@@ -49,18 +53,23 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 
 @Presubmit
 class PackageInstallerSessionTest {
+
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     companion object {
         private const val TAG_SESSIONS = "sessions"
@@ -351,6 +360,30 @@ class PackageInstallerSessionTest {
             updateOwnerName, mSnapshot)).isTrue()
     }
 
+    @RequiresFlagsEnabled(Flags.FLAG_VERIFICATION_SERVICE)
+    @Test
+    fun testShouldBindToVerifierOnNewlyCreatedSession() {
+        val verifierPackageName = "verifierPackageName"
+        whenever(mMockDeveloperVerifierController.verifierPackageName).thenReturn(
+            verifierPackageName)
+
+        createSession()
+        verify(mMockDeveloperVerifierController).bindToVerifierServiceIfNeeded(
+            any(), anyInt(), any())
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_VERIFICATION_SERVICE)
+    @Test
+    fun testShouldNotBindToVerifierOnRestoredSession() {
+        val verifierPackageName = "verifierPackageName"
+        whenever(mMockDeveloperVerifierController.verifierPackageName).thenReturn(
+            verifierPackageName)
+
+        createSession(restoredOnReboot = true)
+        verify(mMockDeveloperVerifierController, never()).bindToVerifierServiceIfNeeded(
+            any(), anyInt(), any())
+    }
+
     private fun createSession(
         staged: Boolean = false,
         sessionId: Int = 123,
@@ -358,6 +391,7 @@ class PackageInstallerSessionTest {
         parentSessionId: Int = PackageInstaller.SessionInfo.INVALID_ID,
         childSessionIds: List<Int> = emptyList(),
         installerPackageName: String = "testInstaller",
+        restoredOnReboot: Boolean = false,
         block: (SessionParams) -> Unit = {},
     ): PackageInstallerSession {
         val bundle = PersistableBundle()
@@ -409,7 +443,8 @@ class PackageInstallerSessionTest {
             /* VerifierController */ mMockDeveloperVerifierController,
             /* initialVerificationPolicy */ DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
             /* currentVerificationPolicy */ DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-            /* installDependencyHelper */ null
+            /* installDependencyHelper */ null,
+            /* restoredOnReboot= */ restoredOnReboot
         )
     }
 

@@ -767,7 +767,8 @@ public class StagingManagerTest {
                 PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                 /* currentVerificationPolicy */
                 PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                /* installDependencyHelper */ null);
+                /* installDependencyHelper */ null,
+                /* restoredOnReboot= */ false);
 
         StagingManager.StagedSession stagedSession = spy(session.mStagedSession);
         doReturn(packageName).when(stagedSession).getPackageName();

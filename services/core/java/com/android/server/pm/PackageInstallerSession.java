@@ -1290,7 +1290,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             @NonNull DeveloperVerifierController developerVerifierController,
             @PackageInstaller.DeveloperVerificationPolicy int initialVerificationPolicy,
             @PackageInstaller.DeveloperVerificationPolicy int currentVerificationPolicy,
-            InstallDependencyHelper installDependencyHelper) {
+            InstallDependencyHelper installDependencyHelper, boolean restoredOnReboot) {
         mCallback = callback;
         mContext = context;
         mPm = pm;
@@ -1392,12 +1392,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 createdMillis, committedMillis, committed, childSessionIds, parentSessionId,
                 sessionErrorCode, mInitialVerificationPolicy);
 
-        if (shouldUseVerificationService()) {
-            // Start binding to the verification service, if not bound already.
+        // Proactively bind to the verification service if it's not already bound, for newly
+        // created sessions. Notify verifier about package name if it has been set in the session.
+        if (!restoredOnReboot && shouldUseVerificationService()) {
             mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mPm::snapshotComputer,
                     userId, mDeveloperVerifierCallback);
             if (!TextUtils.isEmpty(params.appPackageName)) {
-                // Opportunistically notify verifier about package name so no need to check results.
                 mDeveloperVerifierController.notifyPackageNameAvailable(params.appPackageName,
                         userId);
             }
@@ -7058,6 +7058,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 childSessionIdsArray, parentSessionId, isReady, isFailed, isApplied,
                 sessionErrorCode, sessionErrorMessage, preVerifiedDomains,
                 developerVerifierController,
-                initialVerificationPolicy, currentVerificationPolicy, installDependencyHelper);
+                initialVerificationPolicy, currentVerificationPolicy, installDependencyHelper,
+                /* restoredOnReboot= */ true);
     }
 }
