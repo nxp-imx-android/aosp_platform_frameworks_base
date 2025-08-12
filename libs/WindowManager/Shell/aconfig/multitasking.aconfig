@@ -312,3 +312,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "dismiss_pip_from_lockscreen"
+    namespace: "multitasking"
+    description: "Fixes a bug where tapping on a notification for a PiP-ed app while on Lockscreen does not launch it in fullscreen."
+    bug: "373314569"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
