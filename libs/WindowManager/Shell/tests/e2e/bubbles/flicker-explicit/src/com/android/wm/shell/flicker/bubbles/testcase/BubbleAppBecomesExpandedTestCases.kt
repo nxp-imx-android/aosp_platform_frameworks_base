@@ -18,8 +18,10 @@ package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
+import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE_TASK_VIEW
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.IComponentNameMatcher
+import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
@@ -144,5 +146,41 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     fun bubbleLayerCoversBubbleAppLayer() {
         layerTraceEntrySubjectAtEnd.visibleRegion(BUBBLE)
             .coversAtLeast(layerTraceEntrySubjectAtEnd.visibleRegion(testApp).region)
+    }
+
+    /**
+     * Verifies whether the below bounds match:
+     * - Bubble task bounds in WM hierarchy
+     * - Bubble task layer bounds
+     * - Bubble task view layer bounds
+     */
+    @Test
+    fun bubbleTaskBoundsMatchBubbleTaskView() {
+        // Get the WM task bounds of bubble app.
+        val bubbleAppTask = wmStateSubjectAtEnd.wmState.getTaskForActivity(testApp)
+            ?: error("Bubble app task not found")
+        val taskBounds = bubbleAppTask.bounds
+        // Get the task layer bounds of bubble app.
+        val taskLayer = layerTraceEntrySubjectAtEnd
+            .findAncestorLayer(testApp) { it.isTask }
+            ?: error("Bubble app task layer not found")
+        val taskLayerBounds = taskLayer.screenBounds
+        // Get the bounds of bubble task view layer.
+        val bubbleTaskViewLayer = layerTraceEntrySubjectAtEnd
+            .findAncestorLayer(testApp) {
+                BUBBLE_TASK_VIEW.layerMatchesAnyOf(it)
+            } ?: error("Bubble app task view not found")
+        val bubbleTaskViewLayerBounds = bubbleTaskViewLayer.screenBounds
+
+        if (testApp is ImeAppHelper) {
+            // If the IME shows, the task and task view layer may be resized to fit the IME layer,
+            // while WM task bounds remain unchanged.
+            bubbleTaskViewLayerBounds.coversExactly(taskLayerBounds.region)
+            bubbleTaskViewLayerBounds.coversAtMost(taskBounds)
+        } else {
+            // Otherwise, bubble task view bounds must match task bounds.
+            bubbleTaskViewLayerBounds.coversExactly(taskLayerBounds.region)
+            taskLayerBounds.coversExactly(taskBounds)
+        }
     }
 }

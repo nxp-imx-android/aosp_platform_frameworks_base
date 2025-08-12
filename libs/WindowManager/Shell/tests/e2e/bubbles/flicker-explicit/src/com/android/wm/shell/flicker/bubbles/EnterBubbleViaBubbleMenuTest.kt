@@ -40,8 +40,8 @@ import org.junit.runners.Parameterized
  *
  * Actions:
  * ```
- *     Long press [simpleApp] icon to show [AppIconMenu].
- *     Click the bubble menu to launch [simpleApp] into bubble.
+ *     Long press [testApp] icon to show app icon menu.
+ *     Click the bubble menu to launch [testApp] into bubble.
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
