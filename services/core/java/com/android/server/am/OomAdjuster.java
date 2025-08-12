@@ -41,6 +41,7 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BATCH_UPDATE_REQUEST;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BIND_SERVICE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_COMPONENT_DISABLED;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_COUNT;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_EXECUTING_SERVICE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_FINISH_RECEIVER;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_FOLLOW_UP;
@@ -167,8 +168,15 @@ import java.util.List;
 /**
  * All of the code required to compute proc states and oom_adj values.
  */
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
 public abstract class OomAdjuster {
     static final String TAG = "OomAdjuster";
+
+    public static final String[] OOM_ADJ_REASON_TAGS = new String[OOM_ADJ_REASON_COUNT];
+    static {
+        Arrays.setAll(OOM_ADJ_REASON_TAGS,
+                i -> "updateOomAdj_" + oomAdjReasonToStringSuffix(i));
+    }
 
     /** To be used when the process does not have PROCESS_CAPABILITY_CPU_TIME. */
     public static final int CPU_TIME_REASON_NONE = 0;
@@ -230,66 +238,48 @@ public abstract class OomAdjuster {
     public @interface ImplicitCpuTimeReasons {
     }
 
-    public static final String oomAdjReasonToString(@OomAdjReason int oomReason) {
-        final String OOM_ADJ_REASON_METHOD = "updateOomAdj";
-        switch (oomReason) {
-            case OOM_ADJ_REASON_NONE:
-                return OOM_ADJ_REASON_METHOD + "_meh";
-            case OOM_ADJ_REASON_ACTIVITY:
-                return OOM_ADJ_REASON_METHOD + "_activityChange";
-            case OOM_ADJ_REASON_FINISH_RECEIVER:
-                return OOM_ADJ_REASON_METHOD + "_finishReceiver";
-            case OOM_ADJ_REASON_START_RECEIVER:
-                return OOM_ADJ_REASON_METHOD + "_startReceiver";
-            case OOM_ADJ_REASON_BIND_SERVICE:
-                return OOM_ADJ_REASON_METHOD + "_bindService";
-            case OOM_ADJ_REASON_UNBIND_SERVICE:
-                return OOM_ADJ_REASON_METHOD + "_unbindService";
-            case OOM_ADJ_REASON_START_SERVICE:
-                return OOM_ADJ_REASON_METHOD + "_startService";
-            case OOM_ADJ_REASON_GET_PROVIDER:
-                return OOM_ADJ_REASON_METHOD + "_getProvider";
-            case OOM_ADJ_REASON_REMOVE_PROVIDER:
-                return OOM_ADJ_REASON_METHOD + "_removeProvider";
-            case OOM_ADJ_REASON_UI_VISIBILITY:
-                return OOM_ADJ_REASON_METHOD + "_uiVisibility";
-            case OOM_ADJ_REASON_ALLOWLIST:
-                return OOM_ADJ_REASON_METHOD + "_allowlistChange";
-            case OOM_ADJ_REASON_PROCESS_BEGIN:
-                return OOM_ADJ_REASON_METHOD + "_processBegin";
-            case OOM_ADJ_REASON_PROCESS_END:
-                return OOM_ADJ_REASON_METHOD + "_processEnd";
-            case OOM_ADJ_REASON_SHORT_FGS_TIMEOUT:
-                return OOM_ADJ_REASON_METHOD + "_shortFgs";
-            case OOM_ADJ_REASON_SYSTEM_INIT:
-                return OOM_ADJ_REASON_METHOD + "_systemInit";
-            case OOM_ADJ_REASON_BACKUP:
-                return OOM_ADJ_REASON_METHOD + "_backup";
-            case OOM_ADJ_REASON_SHELL:
-                return OOM_ADJ_REASON_METHOD + "_shell";
-            case OOM_ADJ_REASON_REMOVE_TASK:
-                return OOM_ADJ_REASON_METHOD + "_removeTask";
-            case OOM_ADJ_REASON_UID_IDLE:
-                return OOM_ADJ_REASON_METHOD + "_uidIdle";
-            case OOM_ADJ_REASON_STOP_SERVICE:
-                return OOM_ADJ_REASON_METHOD + "_stopService";
-            case OOM_ADJ_REASON_EXECUTING_SERVICE:
-                return OOM_ADJ_REASON_METHOD + "_executingService";
-            case OOM_ADJ_REASON_RESTRICTION_CHANGE:
-                return OOM_ADJ_REASON_METHOD + "_restrictionChange";
-            case OOM_ADJ_REASON_COMPONENT_DISABLED:
-                return OOM_ADJ_REASON_METHOD + "_componentDisabled";
-            case OOM_ADJ_REASON_FOLLOW_UP:
-                return OOM_ADJ_REASON_METHOD + "_followUp";
-            case OOM_ADJ_REASON_RECONFIGURATION:
-                return OOM_ADJ_REASON_METHOD + "_reconfiguration";
-            case OOM_ADJ_REASON_SERVICE_BINDER_CALL:
-                return OOM_ADJ_REASON_METHOD + "_serviceBinderCall";
-            case OOM_ADJ_REASON_BATCH_UPDATE_REQUEST:
-                return OOM_ADJ_REASON_METHOD + "_batchUpdateRequest";
-            default:
-                return "_unknown";
-        }
+    /**
+     * Return a human readable string for OomAdjuster updates with {@link OomAdjReason}.
+     */
+    public static String oomAdjReasonToString(@OomAdjReason int oomReason) {
+        return OOM_ADJ_REASON_TAGS[oomReason];
+    }
+
+    /**
+     * Return a human readable string for {@link OomAdjReason} to append to debug messages.
+     */
+    @android.ravenwood.annotation.RavenwoodKeep
+    public static String oomAdjReasonToStringSuffix(@OomAdjReason int oomReason) {
+        return switch (oomReason) {
+            case OOM_ADJ_REASON_NONE -> "meh";
+            case OOM_ADJ_REASON_ACTIVITY -> "activityChange";
+            case OOM_ADJ_REASON_FINISH_RECEIVER -> "finishReceiver";
+            case OOM_ADJ_REASON_START_RECEIVER -> "startReceiver";
+            case OOM_ADJ_REASON_BIND_SERVICE -> "bindService";
+            case OOM_ADJ_REASON_UNBIND_SERVICE -> "unbindService";
+            case OOM_ADJ_REASON_START_SERVICE -> "startService";
+            case OOM_ADJ_REASON_GET_PROVIDER -> "getProvider";
+            case OOM_ADJ_REASON_REMOVE_PROVIDER -> "removeProvider";
+            case OOM_ADJ_REASON_UI_VISIBILITY -> "uiVisibility";
+            case OOM_ADJ_REASON_ALLOWLIST -> "allowlistChange";
+            case OOM_ADJ_REASON_PROCESS_BEGIN -> "processBegin";
+            case OOM_ADJ_REASON_PROCESS_END -> "processEnd";
+            case OOM_ADJ_REASON_SHORT_FGS_TIMEOUT -> "shortFgs";
+            case OOM_ADJ_REASON_SYSTEM_INIT -> "systemInit";
+            case OOM_ADJ_REASON_BACKUP -> "backup";
+            case OOM_ADJ_REASON_SHELL -> "shell";
+            case OOM_ADJ_REASON_REMOVE_TASK -> "removeTask";
+            case OOM_ADJ_REASON_UID_IDLE -> "uidIdle";
+            case OOM_ADJ_REASON_STOP_SERVICE -> "stopService";
+            case OOM_ADJ_REASON_EXECUTING_SERVICE -> "executingService";
+            case OOM_ADJ_REASON_RESTRICTION_CHANGE -> "restrictionChange";
+            case OOM_ADJ_REASON_COMPONENT_DISABLED -> "componentDisabled";
+            case OOM_ADJ_REASON_FOLLOW_UP -> "followUp";
+            case OOM_ADJ_REASON_RECONFIGURATION -> "reconfiguration";
+            case OOM_ADJ_REASON_SERVICE_BINDER_CALL -> "serviceBinderCall";
+            case OOM_ADJ_REASON_BATCH_UPDATE_REQUEST -> "batchUpdateRequest";
+            default -> "unknown";
+        };
     }
 
     /**

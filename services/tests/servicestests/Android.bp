@@ -214,6 +214,7 @@ android_ravenwood_test {
         "services.core.ravenwood",
     ],
     srcs: [
+        "src/com/android/server/am/psc/**/*.java",
         "src/com/android/server/am/BoundServiceSessionTests.java",
     ],
 }
