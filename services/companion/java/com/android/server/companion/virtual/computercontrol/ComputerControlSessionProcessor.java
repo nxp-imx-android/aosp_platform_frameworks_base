@@ -37,6 +37,12 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.wm.WindowManagerInternal;
 
+/**
+ * Handles creation and lifecycle of {@link ComputerControlSession}s.
+ *
+ * <p>This class enforces session creation policies, such as limiting the number of concurrent
+ * sessions and preventing creation when the device is locked.
+ */
 public class ComputerControlSessionProcessor {
 
     private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
@@ -49,6 +55,8 @@ public class ComputerControlSessionProcessor {
     private final KeyguardManager mKeyguardManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final WindowManagerInternal mWindowManagerInternal;
+
+    /** The binders of all currently active sessions. */
     private final ArraySet<IBinder> mSessions = new ArraySet<>();
 
     public ComputerControlSessionProcessor(
@@ -61,6 +69,10 @@ public class ComputerControlSessionProcessor {
 
     /**
      * Process a new session creation request.
+     *
+     * <p>A new session will be created. In case of failure, the
+     * {@link IComputerControlSessionCallback#onSessionCreationFailed} method on the provided
+     * {@code callback} will be invoked.
      */
     public void processNewSessionRequest(
             @NonNull AttributionSource attributionSource,
@@ -91,6 +103,7 @@ public class ComputerControlSessionProcessor {
         }
     }
 
+    /** Notifies the client that session creation failed. */
     private void dispatchSessionCreationFailed(IComputerControlSessionCallback callback,
             ComputerControlSessionParams params, int reason) {
         try {
@@ -101,6 +114,11 @@ public class ComputerControlSessionProcessor {
         }
     }
 
+    /**
+     * Listener for when a {@link ComputerControlSessionImpl} is closed.
+     *
+     * <p>Removes the session from the set of active sessions and notifies the client.
+     */
     private class OnSessionClosedListener implements ComputerControlSessionImpl.OnClosedListener {
         private final String mSessionName;
         private final IComputerControlSessionCallback mAppCallback;
@@ -115,6 +133,8 @@ public class ComputerControlSessionProcessor {
         public void onClosed(IBinder token) {
             synchronized (mSessions) {
                 if (!mSessions.remove(token)) {
+                    // The session was already removed, which can happen if close() is called
+                    // multiple times.
                     return;
                 }
             }
