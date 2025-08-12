@@ -27,8 +27,8 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.widget.FrameLayout
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockFaceController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceController
 import com.android.systemui.res.R
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shared.clocks.ClockRegistry

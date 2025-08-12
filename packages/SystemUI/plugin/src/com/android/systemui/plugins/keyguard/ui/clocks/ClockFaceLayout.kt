@@ -11,13 +11,14 @@
  * KIND, either express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package com.android.systemui.plugins.clocks
+package com.android.systemui.plugins.keyguard.ui.clocks
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintSet
 import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 
 /** Specifies layout information for the clock face */
 @ProtectedInterface

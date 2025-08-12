@@ -28,13 +28,13 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.customization.clocks.ViewUtils.animateToAlpha
+import com.android.systemui.customization.clocks.utils.ViewUtils.animateToAlpha
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardPreviewClockViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockFaceController.Companion.updateTheme
-import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceController.Companion.updateTheme
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
 import com.android.systemui.shared.clocks.ClockRegistry
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.DIM_ALPHA
 import kotlinx.coroutines.flow.combine

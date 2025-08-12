@@ -31,7 +31,7 @@ import com.android.systemui.keyguard.ui.composable.layout.LockscreenLayoutViewMo
 import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor

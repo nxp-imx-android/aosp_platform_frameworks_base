@@ -29,7 +29,7 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.plugins.clocks.VRectF
+import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.res.R
 import com.android.systemui.shared.R as sharedR
 import kotlinx.coroutines.DisposableHandle
@@ -101,7 +101,10 @@ object KeyguardSmartspaceViewBinder {
 
                     launch("$TAG#smartspaceViewModel.isLargeClockVisible") {
                         clockViewModel.isLargeClockVisible.collect { isLargeClock ->
-                            if (isLargeClock && clockViewModel.shouldDateWeatherBeBelowLargeClock.value) {
+                            if (
+                                isLargeClock &&
+                                    clockViewModel.shouldDateWeatherBeBelowLargeClock.value
+                            ) {
                                 // hide small clock date/weather
                                 keyguardRootView.findViewById<View>(smallViewId)?.let {
                                     it.visibility = View.GONE
@@ -129,7 +132,13 @@ object KeyguardSmartspaceViewBinder {
                                 ::Pair,
                             )
                             .collect { (isLargeClock, clockBounds) ->
-                                val viewId = if (isLargeClock && clockViewModel.shouldDateWeatherBeBelowLargeClock.value) smallViewId else largeViewId
+                                val viewId =
+                                    if (
+                                        isLargeClock &&
+                                            clockViewModel.shouldDateWeatherBeBelowLargeClock.value
+                                    )
+                                        smallViewId
+                                    else largeViewId
                                 keyguardRootView.findViewById<View>(viewId)?.let {
                                     it.visibility = View.GONE
                                 }

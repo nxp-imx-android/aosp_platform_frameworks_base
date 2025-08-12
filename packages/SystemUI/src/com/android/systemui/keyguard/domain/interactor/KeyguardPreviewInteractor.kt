@@ -23,7 +23,7 @@ import android.os.IBinder
 import android.view.Display
 import com.android.systemui.keyguard.data.repository.KeyguardPreviewRepository
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
-import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory

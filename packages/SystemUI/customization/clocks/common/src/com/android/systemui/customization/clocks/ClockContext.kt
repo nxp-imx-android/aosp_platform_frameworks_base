@@ -17,7 +17,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Vibrator
 import com.android.systemui.log.core.MessageBuffer
-import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 
 data class ClockContext(
     val context: Context,

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.customization.clocks
+package com.android.systemui.customization.clocks.utils
 
 import android.graphics.Paint
 import android.graphics.Rect
-import com.android.systemui.customization.clocks.FontUtils.set
-import com.android.systemui.plugins.clocks.VRectF
+import com.android.systemui.customization.clocks.utils.FontUtils.set
+import com.android.systemui.plugins.keyguard.VRectF
 
-object PaintUtil {
+object PaintUtils {
     private val tempRect = Rect()
 
     fun Paint.getTextBounds(text: CharSequence): VRectF {

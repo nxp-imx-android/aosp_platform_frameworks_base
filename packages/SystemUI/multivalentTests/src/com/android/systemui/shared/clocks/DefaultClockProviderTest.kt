@@ -29,10 +29,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.customization.R
-import com.android.systemui.plugins.clocks.ClockId
-import com.android.systemui.plugins.clocks.ClockSettings
-import com.android.systemui.plugins.clocks.ThemeConfig
-import com.android.systemui.plugins.clocks.TimeFormatKind
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockId
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
+import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
+import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
 import com.android.systemui.shared.Flags
 import com.android.systemui.shared.clocks.DefaultClockController.Companion.DOZE_COLOR
 import com.android.systemui.util.mockito.any

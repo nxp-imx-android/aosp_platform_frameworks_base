@@ -41,9 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import com.android.compose.modifiers.padding
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
-import com.android.systemui.plugins.clocks.LockscreenElementContext
-import com.android.systemui.plugins.clocks.LockscreenElementFactory
-import com.android.systemui.plugins.clocks.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.math.max
 import kotlin.math.min
 

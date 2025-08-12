@@ -19,8 +19,8 @@ package com.android.systemui.keyguard.data.repository
 import com.android.keyguard.ClockEventController
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
-import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockId
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockId
 import com.android.systemui.shared.clocks.DEFAULT_CLOCK_ID
 import com.android.systemui.util.mockito.mock
 import dagger.Binds

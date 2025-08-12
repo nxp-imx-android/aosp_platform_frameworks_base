@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.customization.clocks
+package com.android.systemui.customization.clocks.utils
 
 import android.graphics.Canvas
-import com.android.systemui.plugins.clocks.VPoint
-import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.keyguard.VPoint
+import com.android.systemui.plugins.keyguard.VPointF
 
-object CanvasUtil {
+object CanvasUtils {
     fun Canvas.translate(pt: VPointF) = this.translate(pt.x, pt.y)
 
     fun Canvas.translate(pt: VPoint) = this.translate(pt.x.toFloat(), pt.y.toFloat())

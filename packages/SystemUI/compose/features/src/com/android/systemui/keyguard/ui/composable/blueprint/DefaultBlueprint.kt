@@ -45,10 +45,10 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
-import com.android.systemui.plugins.clocks.LockscreenElementContext
-import com.android.systemui.plugins.clocks.LockscreenElementFactory
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockSmall
-import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceCards
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.ClockSmall
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SmartspaceCards
 import java.util.Optional
 import javax.inject.Inject
 

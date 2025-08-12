@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.customization.clocks
+package com.android.systemui.customization.clocks.utils
 
 import android.graphics.Rect
 import android.view.View
-import com.android.systemui.plugins.clocks.VPoint.Companion.center
-import com.android.systemui.plugins.clocks.VPointF
-import com.android.systemui.plugins.clocks.VPointF.Companion.center
+import com.android.systemui.plugins.keyguard.VPoint.Companion.center
+import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VPointF.Companion.center
 
 object ViewUtils {
     fun View.computeLayoutDiff(targetRegion: Rect, isLargeClock: Boolean): VPointF {

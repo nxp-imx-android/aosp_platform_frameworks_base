@@ -34,7 +34,7 @@ import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscree
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.NotificationLockscreenScrim
-import com.android.systemui.plugins.clocks.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationLockscreenScrimViewModel
 
 /**

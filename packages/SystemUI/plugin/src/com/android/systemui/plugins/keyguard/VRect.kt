@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.plugins.clocks
+package com.android.systemui.plugins.keyguard
 
 import android.graphics.Rect
 import android.graphics.RectF
