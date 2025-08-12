@@ -441,10 +441,10 @@
     <dimen name="notification_expand_button_pill_height">24dp</dimen>
 
     <!-- the height of the expand button pill (2025 redesign version) -->
-    <dimen name="notification_2025_expand_button_pill_height">20dp</dimen>
+    <dimen name="notification_2025_expand_button_pill_height">18dp</dimen>
 
     <!-- the width of the expand button pill (2025 redesign version) -->
-    <dimen name="notification_2025_expand_button_pill_width">28dp</dimen>
+    <dimen name="notification_2025_expand_button_pill_width">26dp</dimen>
 
     <!-- the size of the expand arrow (2025 redesign version) -->
     <dimen name="notification_2025_expand_button_icon_size">16sp</dimen>
@@ -453,13 +453,13 @@
     <dimen name="notification_expand_button_icon_padding">2dp</dimen>
 
     <!-- the padding of the expand icon in the notification header -->
-    <dimen name="notification_2025_expand_button_vertical_icon_padding">2dp</dimen>
+    <dimen name="notification_2025_expand_button_vertical_icon_padding">1dp</dimen>
 
     <!-- the padding of the expand icon in the notification header -->
-    <dimen name="notification_2025_expand_button_horizontal_icon_padding">6dp</dimen>
+    <dimen name="notification_2025_expand_button_horizontal_icon_padding">5dp</dimen>
 
     <!-- smaller padding for the end of the expand icon, for use when showing the number -->
-    <dimen name="notification_2025_expand_button_reduced_end_padding">4dp</dimen>
+    <dimen name="notification_2025_expand_button_reduced_end_padding">3dp</dimen>
 
     <!-- the space needed between the expander pill and the large icon when visible -->
     <dimen name="notification_2025_expand_button_right_icon_spacing">8dp</dimen>
