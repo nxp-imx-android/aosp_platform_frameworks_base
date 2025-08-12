@@ -2056,6 +2056,69 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         assertThat(mStackScroller.getOwnScrollY()).isEqualTo(100 - childHeight);
     }
 
+    @Test
+    @EnableSceneContainer
+    public void testRequestScrollToRemoteInput_singleRow() {
+        final Consumer<Float> scroller = mock(FloatConsumer.class);
+        mStackScroller.setRemoteInputRowBottomBoundConsumer(scroller);
+
+        // GIVEN a non-grouped notification row with specific dimensions and offsets
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        when(row.getTranslationY()).thenReturn(100f);
+        when(row.getActualHeight()).thenReturn(200);
+        when(row.getRemoteInputActionsContainerExpandedOffset()).thenReturn(50f);
+        mTestableResources.addOverride(
+                com.android.internal.R.dimen.notification_content_margin, 10);
+
+        // WHEN requestScrollToRemoteInput is called
+        mStackScroller.requestScrollToRemoteInput(row);
+
+        // THEN the correct bottom bound is sent
+        // expected = translationY + height + remoteInputOffset + contentMargin
+        // expected = 100 + 200 + 50 + 10 = 360
+        verify(scroller).accept(360f);
+
+        // WHEN requestScrollToRemoteInput is called with null
+        mStackScroller.requestScrollToRemoteInput(null);
+
+        // THEN null is sent
+        verify(scroller).accept(null);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void testRequestScrollToRemoteInput_childInGroup() {
+        final Consumer<Float> scroller = mock(FloatConsumer.class);
+        mStackScroller.setRemoteInputRowBottomBoundConsumer(scroller);
+
+        // GIVEN a grouped notification row
+        ExpandableNotificationRow parent = mock(ExpandableNotificationRow.class);
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        when(row.getEntryAdapter()).thenReturn(mock(EntryAdapter.class));
+        when(mGroupMembershipManger.isChildInGroup(row.getEntryAdapter())).thenReturn(true);
+        when(row.getTranslationY()).thenReturn(100f);
+        when(row.getActualHeight()).thenReturn(200);
+        when(row.getRemoteInputActionsContainerExpandedOffset()).thenReturn(50f);
+        when(parent.getTranslationY()).thenReturn(50f);
+        when(row.getNotificationParent()).thenReturn(parent);
+        mTestableResources.addOverride(
+                com.android.internal.R.dimen.notification_content_margin, 10);
+
+        // WHEN requestScrollToRemoteInput is called for the grouped row
+        mStackScroller.requestScrollToRemoteInput(row);
+
+        // THEN the correct bottom bound is sent, including the parent's translation
+        // expected = parentTranslationY + translationY + height + remoteInputOffset + contentMargin
+        // expected = 50 + 100 + 200 + 50 + 10 = 410
+        verify(scroller).accept(410f);
+
+        // WHEN requestScrollToRemoteInput is called with null
+        mStackScroller.requestScrollToRemoteInput(null);
+
+        // THEN null is sent
+        verify(scroller).accept(null);
+    }
+
     private MotionEvent captureTouchSentToSceneFramework() {
         ArgumentCaptor<MotionEvent> captor = ArgumentCaptor.forClass(MotionEvent.class);
         verify(mStackScrollLayoutController).sendTouchToSceneFramework(captor.capture());
@@ -2149,6 +2212,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     private abstract static class BooleanConsumer implements Consumer<Boolean> { }
+
+    private abstract static class FloatConsumer implements Consumer<Float> { }
 
     private ShadeScrimShape createScrimShape(int left, int top, int right, int bottom) {
         ShadeScrimBounds bounds = new ShadeScrimBounds(left, top, right, bottom);

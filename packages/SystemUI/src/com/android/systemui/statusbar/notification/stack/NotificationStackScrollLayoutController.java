@@ -1670,14 +1670,16 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             public void setRemoteInputActive(RemoteInputEntryAdapter entry,
                     boolean remoteInputActive) {
                 if (SceneContainerFlag.isEnabled()) {
-                    sendRemoteInputRowBottomBound(entry, remoteInputActive);
+                    setRemoteInputActiveRow(entry, remoteInputActive);
                 }
                 entry.setRemoteInputActive(mHeadsUpManager, remoteInputActive);
                 entry.notifyHeightChanged(true /* needsAnimation */);
             }
 
             public void lockScrollTo(ExpandableNotificationRow row) {
-                mView.lockScrollTo(row);
+                if (!SceneContainerFlag.isEnabled()) {
+                    mView.lockScrollTo(row);
+                }
             }
 
             public void requestDisallowLongPressAndDismiss() {
@@ -1685,13 +1687,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 mView.requestDisallowDismiss();
             }
 
-            private void sendRemoteInputRowBottomBound(RemoteInputEntryAdapter entry,
+            private void setRemoteInputActiveRow(RemoteInputEntryAdapter entry,
                     boolean remoteInputActive) {
                 ExpandableNotificationRow row = entry.getRow();
-                float top = row.getTranslationY();
-                int height = row.getActualHeight();
-                float bottom = top + height + row.getRemoteInputActionsContainerExpandedOffset();
-                mView.sendRemoteInputRowBottomBound(remoteInputActive ? bottom : null);
+                mView.requestScrollToRemoteInput(remoteInputActive ? row : null);
             }
         };
     }

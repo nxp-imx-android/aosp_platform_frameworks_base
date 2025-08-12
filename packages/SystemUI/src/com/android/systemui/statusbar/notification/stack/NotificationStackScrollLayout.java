@@ -766,13 +766,39 @@ public class NotificationStackScrollLayout
         mSectionsManager.reinflateViews();
     }
 
-    void sendRemoteInputRowBottomBound(Float bottom) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (bottom != null) {
-            bottom += getResources().getDimensionPixelSize(
-                    com.android.internal.R.dimen.notification_content_margin);
+    /**
+     * Requests to scroll to the RemoteInput view of the given row.
+     * @param row currently holding the active RemoteInput, or null if the RemoteInput is inactive.
+     */
+    void requestScrollToRemoteInput(@Nullable ExpandableNotificationRow row) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return;
         }
+        // When SceneContainer is enabled, the NSSL doesn't handle its own scrolling.
+        // Instead, it calculates the required scroll amount and emits it as a "synthetic scroll"
+        // event. The Compose-based UI (`NotificationScrollingStack.kt`) consumes this event
+        // and performs the actual scroll, synchronizing it with the IME animation.
+        Float bottom = (row != null) ? getRemoteInputViewBottom(row) : null;
         mScrollViewFields.sendRemoteInputRowBottomBound(bottom);
+    }
+
+    /**
+     * Calculates the Y position of the bottom of the remoteInput view, relative to the NSSL.
+     *
+     * @param row with an active remoteInput
+     * @return The bottom Y position of the view relative to this layout.
+     */
+    private float getRemoteInputViewBottom(ExpandableNotificationRow row) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
+        // Calculate the base top position
+        float topPosition = row.getTranslationY()
+                // For nested notifications, add the parent's translation.
+                + (isChildInGroup(row) ? row.getNotificationParent().getTranslationY() : 0f);
+        int height = row.getActualHeight();
+        float remoteInputOffset = row.getRemoteInputActionsContainerExpandedOffset();
+        float contentMargin = getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.notification_content_margin);
+        return topPosition + height + remoteInputOffset + contentMargin;
     }
 
     void updateBgColor() {
