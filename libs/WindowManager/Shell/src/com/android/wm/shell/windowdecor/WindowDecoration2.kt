@@ -481,22 +481,26 @@ abstract class WindowDecoration2<T>(
     }
 
     /** Releases all window decoration views. */
-    private fun releaseViews(wct: WindowContainerTransaction) {
-        val t = surfaceControlTransactionSupplier()
-        var released = false
+    private fun releaseViews(wct: WindowContainerTransaction) =
+        traceSection(
+            traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+            name = "WindowDecoration2#releaseViews",
+        ) {
+            val t = surfaceControlTransactionSupplier()
+            var released = false
 
-        decorationContainerSurface?.let {
-            t.remove(it)
-            decorationContainerSurface = null
-            released = true
+            decorationContainerSurface?.let {
+                t.remove(it)
+                decorationContainerSurface = null
+                released = true
+            }
+
+            released = released or (captionController?.releaseViews(wct, t) == true)
+
+            if (released) {
+                t.apply()
+            }
         }
-
-        released = released or (captionController?.releaseViews(wct, t) == true)
-
-        if (released) {
-            t.apply()
-        }
-    }
 
     override fun close() =
         traceSection(traceTag = Trace.TRACE_TAG_WINDOW_MANAGER, name = "WindowDecoration2#close") {
