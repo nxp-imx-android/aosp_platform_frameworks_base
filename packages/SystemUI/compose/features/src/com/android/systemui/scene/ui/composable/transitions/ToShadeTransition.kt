@@ -21,7 +21,7 @@ import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.notifications.ui.composable.Notifications
-import com.android.systemui.qs.ui.composable.QuickSettings
+import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
