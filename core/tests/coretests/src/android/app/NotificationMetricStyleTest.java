@@ -679,6 +679,32 @@ public class NotificationMetricStyleTest {
         assertThat(container.findViewById(R.id.metric_unit_1).getVisibility()).isEqualTo(GONE);
     }
 
+    @Test
+    public void makeContentViews_emptyMetrics_noException() {
+        FrameLayout container = new FrameLayout(mContext);
+        Notification.Builder noMetrics = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle());
+
+        RemoteViews basic = noMetrics.getStyle().makeContentView();
+        RemoteViews expanded = noMetrics.getStyle().makeExpandedContentView();
+        RemoteViews headsUp = noMetrics.getStyle().makeHeadsUpContentView();
+        RemoteViews compactHeadsUp = noMetrics.getStyle().makeCompactHeadsUpContentView();
+
+        if (basic != null) {
+            container.addView(basic.apply(mContext, container));
+        }
+        if (expanded != null) {
+            container.addView(expanded.apply(mContext, container));
+        }
+        if (headsUp != null) {
+            container.addView(headsUp.apply(mContext, container));
+        }
+        if (compactHeadsUp != null) {
+            container.addView(compactHeadsUp.apply(mContext, container));
+        }
+        // No crashes.
+    }
+
     private void withLocale(Locale locale, Runnable r) {
         Locale previous = Locale.getDefault();
         try {
