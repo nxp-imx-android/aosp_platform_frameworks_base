@@ -76,7 +76,8 @@ public class ComputerControlSessionProcessor {
             }
             IComputerControlSession session = new ComputerControlSessionImpl(
                     callback.asBinder(), params, attributionSource, mPackageManager,
-                    mVirtualDeviceFactory, mWindowManagerInternal, this::onSessionClosed);
+                    mVirtualDeviceFactory, mWindowManagerInternal,
+                    new OnSessionClosedListener(params.getName(), callback));
             mSessions.add(session.asBinder());
             try {
                 callback.onSessionCreated(session);
@@ -87,9 +88,29 @@ public class ComputerControlSessionProcessor {
         }
     }
 
-    private void onSessionClosed(IBinder token) {
-        synchronized (mSessions) {
-            mSessions.remove(token);
+    private class OnSessionClosedListener implements ComputerControlSessionImpl.OnClosedListener {
+        private final String mSessionName;
+        private final IComputerControlSessionCallback mAppCallback;
+
+        OnSessionClosedListener(@NonNull String sessionName,
+                @NonNull IComputerControlSessionCallback appCallback) {
+            mSessionName = sessionName;
+            mAppCallback = appCallback;
+        }
+
+        @Override
+        public void onClosed(IBinder token) {
+            synchronized (mSessions) {
+                if (!mSessions.remove(token)) {
+                    return;
+                }
+            }
+            try {
+                mAppCallback.onSessionClosed();
+            } catch (RemoteException e) {
+                Slog.w(TAG, "Failed to notify ComputerControlSession " + mSessionName
+                        + " about session closure");
+            }
         }
     }
 

@@ -30,4 +30,7 @@ oneway interface IComputerControlSessionCallback {
 
     /** Called when the session failed to be created. */
     void onSessionCreationFailed(int errorCode);
+
+    /** Called when the session has been closed. */
+    void onSessionClosed();
 }
