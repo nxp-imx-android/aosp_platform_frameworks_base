@@ -3894,6 +3894,9 @@ public class PackageInstaller {
          *              <li>{@link android.os.Build.VERSION_CODES#TIRAMISU API 33} or higher on
          *              Android V ({@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35})
          *              </li>
+         *              <li>{@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE API 34} or
+         *              higher on Android B ({@link android.os.Build.VERSION_CODES#BAKLAVA API 36})
+         *              </li>
          *          </ul>
          *     </li>
          *     <li>The installer is:
