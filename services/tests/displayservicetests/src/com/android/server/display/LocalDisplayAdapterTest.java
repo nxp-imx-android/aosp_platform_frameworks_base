@@ -51,6 +51,8 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Spline;
 import android.view.Display;
 import android.view.DisplayAddress;
@@ -78,6 +80,7 @@ import com.google.common.truth.Truth;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -154,6 +157,9 @@ public class LocalDisplayAdapterTest {
     private static final float[] BACKLIGHT_RANGE_ZERO_TO_ONE = { 0.0f, 1.0f };
     private static final List<Integer> mDisplayOffloadSupportedStates
             = new ArrayList<>(List.of(Display.STATE_DOZE_SUSPEND));
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() throws Exception {
@@ -941,6 +947,7 @@ public class LocalDisplayAdapterTest {
     }
 
     @Test
+    @EnableFlags(com.android.graphics.surfaceflinger.flags.Flags.FLAG_SUPPORTED_REFRESH_RATE_UPDATE)
     public void testOnModeAndFrameRateOverridesChanged() throws Exception {
         doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
         doReturn(true).when(mFlags).isSingleAppEventForModeAndFrameRateOverrideEnabled();
@@ -974,9 +981,10 @@ public class LocalDisplayAdapterTest {
         long newPresentationDeadlineNanos = 500;
 
         FrameRateOverride[] frameRateOverrides = new FrameRateOverride[1];
+        float[] supportedRefreshRates = {120.f, 60.f, 40.f, 30.f, 24.f, 20.f};
         mInjector.getTransmitter().sendOnModeAndFrameRateOverridesChanged(display,
                 /*modeId*/ 1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
-                newPresentationDeadlineNanos, frameRateOverrides);
+                newPresentationDeadlineNanos, frameRateOverrides, supportedRefreshRates);
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         assertTrue(mListener.traversalRequested);
 
@@ -989,6 +997,7 @@ public class LocalDisplayAdapterTest {
         assertThat(mListener.changedDisplays.size()).isEqualTo(1);
         activeMode = getModeById(displayDeviceInfo, displayDeviceInfo.modeId);
         assertThat(activeMode.matches(1920, 1080, 120f)).isTrue();
+        assertEquals(supportedRefreshRates.length, displayDeviceInfo.supportedRefreshRates.length);
     }
 
     @Test
@@ -1977,18 +1986,19 @@ public class LocalDisplayAdapterTest {
                 throws InterruptedException {
             mHandler.post(() -> mListener.onModeChanged(/* timestampNanos = */ 0,
                     display.address.getPhysicalDisplayId(), modeId, renderPeriod,
-                    appVsyncOffsetNanos, presentationDeadlineNanos));
+                    appVsyncOffsetNanos, presentationDeadlineNanos, /*supportedRefreshRate*/ null));
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
 
         public void sendOnModeAndFrameRateOverridesChanged(FakeDisplay display, int modeId,
                 long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos,
-                FrameRateOverride[] frameRateOverrides) throws InterruptedException {
+                FrameRateOverride[] frameRateOverrides, float[] supportedRefreshRates)
+                throws InterruptedException {
 
             mHandler.post(() -> mListener.onModeAndFrameRateOverridesChanged(
                     /* timestampNanos = */ 0, display.address.getPhysicalDisplayId(), modeId,
                     renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos,
-                    frameRateOverrides));
+                    frameRateOverrides, supportedRefreshRates));
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
     }

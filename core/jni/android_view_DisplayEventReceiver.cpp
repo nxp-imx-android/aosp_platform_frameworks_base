@@ -92,6 +92,18 @@ jobjectArray getFrameRateOverrides(std::vector<FrameRateOverride> overrides, JNI
     return frameRateOverrideArray;
 }
 
+jfloatArray getSupportedRefreshRates(std::vector<SupportedRefreshRate> supportedRefreshRates,
+                                     JNIEnv* env) {
+    jfloatArray floatArray = env->NewFloatArray(supportedRefreshRates.size());
+    std::vector<jfloat> refreshRates(supportedRefreshRates.size());
+
+    for (size_t i = 0; i < supportedRefreshRates.size(); i++) {
+        refreshRates[i] = supportedRefreshRates[i].refreshRate;
+    }
+    env->SetFloatArrayRegion(floatArray, 0, supportedRefreshRates.size(), refreshRates.data());
+    return floatArray;
+}
+
 class NativeDisplayEventReceiver : public DisplayEventDispatcher {
 public:
     NativeDisplayEventReceiver(JNIEnv* env, jobject receiverWeak, jobject vsyncEventDataWeak,
@@ -115,7 +127,8 @@ private:
     void dispatchModeChangedWithFrameRateOverrides(
             nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId, nsecs_t renderPeriod,
             nsecs_t appVsyncOffset, nsecs_t presentationDeadline,
-            std::vector<FrameRateOverride> overrides) override;
+            std::vector<FrameRateOverride> overrides,
+            std::vector<SupportedRefreshRate> supportedRefreshRates) override;
     void dispatchModeChanged(nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId,
                              nsecs_t renderPeriod, nsecs_t appVsyncOffset,
                              nsecs_t presentationDeadline) override;
@@ -302,17 +315,19 @@ void NativeDisplayEventReceiver::dispatchModeChanged(nsecs_t timestamp, Physical
 void NativeDisplayEventReceiver::dispatchModeChangedWithFrameRateOverrides(
         nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId, nsecs_t renderPeriod,
         nsecs_t appVsyncOffset, nsecs_t presentationDeadline,
-        std::vector<FrameRateOverride> overrides) {
+        std::vector<FrameRateOverride> overrides, std::vector<SupportedRefreshRate> refreshRates) {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     ScopedLocalRef<jobject> receiverObj(env, GetReferent(env, mReceiverWeakGlobal));
     if (receiverObj.get()) {
         ALOGV("receiver %p ~ Invoking modeWithFrameRateOverride changed handler.", this);
         auto frameRateOverrideArray = getFrameRateOverrides(overrides, env);
+        auto supportedRefreshRateArray = getSupportedRefreshRates(refreshRates, env);
         env->CallVoidMethod(receiverObj.get(),
                             gDisplayEventReceiverClassInfo
                                     .dispatchModeChangedWithFrameRateOverrides,
                             timestamp, displayId.value, modeId, renderPeriod, appVsyncOffset,
-                            presentationDeadline, frameRateOverrideArray);
+                            presentationDeadline, frameRateOverrideArray,
+                            supportedRefreshRateArray);
         ALOGV("receiver %p ~ Returned from modeWithFrameRateOverride changed handler.", this);
     }
 
@@ -456,7 +471,7 @@ int register_android_view_DisplayEventReceiver(JNIEnv* env) {
     gDisplayEventReceiverClassInfo.dispatchModeChangedWithFrameRateOverrides =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz,
                              "dispatchModeChangedWithFrameRateOverrides",
-                             "(JJIJJJ[Landroid/view/DisplayEventReceiver$FrameRateOverride;)V");
+                             "(JJIJJJ[Landroid/view/DisplayEventReceiver$FrameRateOverride;[F)V");
     gDisplayEventReceiverClassInfo.dispatchModeRejected =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz, "dispatchModeRejected",
                              "(JI)V");
