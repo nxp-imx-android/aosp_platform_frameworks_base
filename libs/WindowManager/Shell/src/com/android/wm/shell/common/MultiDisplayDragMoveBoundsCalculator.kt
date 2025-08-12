@@ -20,6 +20,7 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.MathUtils.min
+import kotlin.math.ceil
 
 /**
  * Utility class for calculating bounds during multi-display drag operations.
@@ -91,6 +92,7 @@ object MultiDisplayDragMoveBoundsCalculator {
         displayLayout: DisplayLayout?,
         isResizeable: Boolean,
         pointerX: Float,
+        captionInsets: Int,
     ): Rect {
         if (displayLayout == null) {
             return originalBounds
@@ -123,7 +125,9 @@ object MultiDisplayDragMoveBoundsCalculator {
         }
 
         val scaleFactorHorizontal = intersectBounds.width().toFloat() / originalBounds.width()
-        val scaleFactorVertical = intersectBounds.height().toFloat() / originalBounds.height()
+        val scaleFactorVertical =
+            (intersectBounds.height() - captionInsets).toFloat() /
+                (originalBounds.height() - captionInsets)
         val scaleFactor = min(scaleFactorHorizontal, scaleFactorVertical)
 
         val isLeftCornerIn = displayBoundsOverhang.contains(originalBounds.left, originalBounds.top)
@@ -131,13 +135,14 @@ object MultiDisplayDragMoveBoundsCalculator {
             displayBoundsOverhang.contains(originalBounds.right, originalBounds.top)
         if (isLeftCornerIn && isRightCornerIn) {
             // Case 1: Both top corners are on-screen. Anchor to the pointer's horizontal position.
-            return scaleWithHorizontalOrigin(originalBounds, scaleFactor, pointerX)
+            return scaleWithHorizontalOrigin(originalBounds, scaleFactor, pointerX, captionInsets)
         } else if (isLeftCornerIn) {
             // Case 2: Only the top-left corner is on-screen. Anchor to that corner.
             return scaleWithHorizontalOrigin(
                 originalBounds,
                 scaleFactor,
                 originalBounds.left.toFloat(),
+                captionInsets,
             )
         } else if (isRightCornerIn) {
             // Case 3: Only the top-right corner is on-screen. Anchor to that corner.
@@ -145,6 +150,7 @@ object MultiDisplayDragMoveBoundsCalculator {
                 originalBounds,
                 scaleFactor,
                 originalBounds.right.toFloat(),
+                captionInsets,
             )
         }
 
@@ -152,7 +158,12 @@ object MultiDisplayDragMoveBoundsCalculator {
         if (scaleFactorHorizontal > scaleFactorVertical) {
             // The height is the limiting factor. We can still safely anchor to the pointer's
             // horizontal position while scaling to fit vertically.
-            return scaleWithHorizontalOrigin(originalBounds, scaleFactorVertical, pointerX)
+            return scaleWithHorizontalOrigin(
+                originalBounds,
+                scaleFactorVertical,
+                pointerX,
+                captionInsets,
+            )
         }
         // The width is the limiting factor. To prevent anchoring to a potentially far-off-screen
         // point, we force the window's width to match the allowed display width, and then scales
@@ -161,21 +172,23 @@ object MultiDisplayDragMoveBoundsCalculator {
             displayBoundsOverhang.left,
             originalBounds.top,
             displayBoundsOverhang.right,
-            originalBounds.top + (originalBounds.height() * scaleFactorHorizontal).toInt(),
+            originalBounds.top +
+                ceil((originalBounds.height() - captionInsets) * scaleFactorHorizontal).toInt() +
+                captionInsets,
         )
     }
 
-    /**
-     * Scales a Rect from a horizontal anchor point, keeping the top edge fixed.
-     */
+    /** Scales a Rect from a horizontal anchor point, keeping the top edge fixed. */
     private fun scaleWithHorizontalOrigin(
         originalBounds: Rect,
         scaleFactor: Float,
         originX: Float,
+        captionInsets: Int,
     ): Rect {
-        val height = (originalBounds.height() * scaleFactor).toInt()
-        val left = (originX + (originalBounds.left - originX) * scaleFactor).toInt()
-        val right = (originX + (originalBounds.right - originX) * scaleFactor).toInt()
+        val left = ceil(originX + (originalBounds.left - originX) * scaleFactor).toInt()
+        val right = ceil(originX + (originalBounds.right - originX) * scaleFactor).toInt()
+        val height =
+            ceil((originalBounds.height() - captionInsets) * scaleFactor).toInt() + captionInsets
         return Rect(left, originalBounds.top, right, originalBounds.top + height)
     }
 
