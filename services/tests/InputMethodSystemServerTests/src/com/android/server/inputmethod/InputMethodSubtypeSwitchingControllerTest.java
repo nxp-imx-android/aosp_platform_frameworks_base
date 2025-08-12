@@ -55,98 +55,11 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     private static final int TEST_IS_DEFAULT_RES_ID = 0;
     private static final String SYSTEM_LOCALE = "en_US";
 
-    @NonNull
-    private static InputMethodSubtype createTestSubtype(@NonNull String locale) {
-        return new InputMethodSubtypeBuilder()
-                .setSubtypeNameResId(0)
-                .setSubtypeIconResId(0)
-                .setSubtypeLocale(locale)
-                .setIsAsciiCapable(true)
-                .build();
-    }
-
-    static void addTestImeSubtypeListItems(@NonNull List<ImeSubtypeListItem> items,
-            @NonNull String imeName, @NonNull String imeLabel,
-            @Nullable List<String> subtypeLocales, boolean supportsSwitchingToNextInputMethod) {
-        final ApplicationInfo ai = new ApplicationInfo();
-        ai.packageName = TEST_PACKAGE_NAME;
-        ai.enabled = true;
-        final ServiceInfo si = new ServiceInfo();
-        si.applicationInfo = ai;
-        si.enabled = true;
-        si.packageName = TEST_PACKAGE_NAME;
-        si.name = imeName;
-        si.exported = true;
-        si.nonLocalizedLabel = imeLabel;
-        final ResolveInfo ri = new ResolveInfo();
-        ri.serviceInfo = si;
-        List<InputMethodSubtype> subtypes = null;
-        if (subtypeLocales != null) {
-            subtypes = new ArrayList<>();
-            for (String subtypeLocale : subtypeLocales) {
-                subtypes.add(createTestSubtype(subtypeLocale));
-            }
-        }
-        final InputMethodInfo imi = new InputMethodInfo(ri, TEST_IS_AUX_IME,
-                TEST_SETTING_ACTIVITY_NAME, subtypes, TEST_IS_DEFAULT_RES_ID,
-                TEST_FORCE_DEFAULT, supportsSwitchingToNextInputMethod, TEST_IS_VR_IME);
-        if (subtypes == null) {
-            items.add(new ImeSubtypeListItem(imeName, null /* subtypeName */, null /* layoutName */,
-                    imi, NOT_A_SUBTYPE_INDEX, null, SYSTEM_LOCALE));
-        } else {
-            for (int i = 0; i < subtypes.size(); ++i) {
-                final String subtypeLocale = subtypeLocales.get(i);
-                items.add(new ImeSubtypeListItem(imeName, subtypeLocale, null /* layoutName */,
-                        imi, i, subtypeLocale, SYSTEM_LOCALE));
-            }
-        }
-    }
-
-    @NonNull
-    private static ImeSubtypeListItem createTestItem(@NonNull ComponentName imeComponentName,
-            @NonNull String imeName, @NonNull String subtypeName,
-            @NonNull String subtypeLocale, int subtypeIndex) {
-        final var ai = new ApplicationInfo();
-        ai.packageName = imeComponentName.getPackageName();
-        ai.enabled = true;
-        final var si = new ServiceInfo();
-        si.applicationInfo = ai;
-        si.enabled = true;
-        si.packageName = imeComponentName.getPackageName();
-        si.name = imeComponentName.getClassName();
-        si.exported = true;
-        si.nonLocalizedLabel = TEST_IME_LABEL;
-        final var ri = new ResolveInfo();
-        ri.serviceInfo = si;
-        final var subtypes = new ArrayList<InputMethodSubtype>();
-        subtypes.add(new InputMethodSubtypeBuilder()
-                .setSubtypeNameResId(0)
-                .setSubtypeIconResId(0)
-                .setSubtypeLocale(subtypeLocale)
-                .setIsAsciiCapable(true)
-                .build());
-        final InputMethodInfo imi = new InputMethodInfo(ri, TEST_IS_AUX_IME,
-                TEST_SETTING_ACTIVITY_NAME, subtypes, TEST_IS_DEFAULT_RES_ID,
-                TEST_FORCE_DEFAULT, true /* supportsSwitchingToNextInputMethod */, TEST_IS_VR_IME);
-        return new ImeSubtypeListItem(imeName, subtypeName, null /* layoutName */, imi,
-                subtypeIndex, subtypeLocale, SYSTEM_LOCALE);
-    }
-
-    private boolean onUserAction(@NonNull InputMethodSubtypeSwitchingController controller,
-            @NonNull ImeSubtypeListItem subtypeListItem) {
-        InputMethodSubtype subtype = null;
-        if (subtypeListItem.mSubtypeName != null) {
-            subtype = createTestSubtype(subtypeListItem.mSubtypeName.toString());
-        }
-        return controller.onUserActionLocked(subtypeListItem.mImi, subtype);
-    }
-
     @Test
     public void testImeSubtypeListItem() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en_US", "fr", "en", "en_uk", "enn", "e", "EN_US"),
-                true /* supportsSwitchingToNextInputMethod*/);
+        createTestItems(items, "LatinIme",
+                List.of("en_US", "fr", "en", "en_uk", "enn", "e", "EN_US"));
         final ImeSubtypeListItem item_en_us = items.get(0);
         final ImeSubtypeListItem item_fr = items.get(1);
         final ImeSubtypeListItem item_en = items.get(2);
@@ -176,10 +89,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testModeStatic() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(items, "SimpleIme", "SimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", List.of("en", "fr", "it"));
+        createTestItems(items, "SimpleIme", null);
 
         final var english = items.get(0);
         final var french = items.get(1);
@@ -189,10 +100,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         final var simpleIme = List.of(simple);
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareLatinIme", "HardwareLatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(hardwareItems, "HardwareSimpleIme", "HardwareSimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareLatinIme", List.of("en", "fr", "it"));
+        createTestItems(hardwareItems, "HardwareSimpleIme", null);
 
         final var hardwareEnglish = hardwareItems.get(0);
         final var hardwareFrench = hardwareItems.get(1);
@@ -238,10 +147,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testModeRecent() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(items, "SimpleIme", "SimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", List.of("en", "fr", "it"));
+        createTestItems(items, "SimpleIme", null);
 
         final var english = items.get(0);
         final var french = items.get(1);
@@ -251,10 +158,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         final var simpleIme = List.of(simple);
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareLatinIme", "HardwareLatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(hardwareItems, "HardwareSimpleIme", "HardwareSimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareLatinIme", List.of("en", "fr", "it"));
+        createTestItems(hardwareItems, "HardwareSimpleIme", null);
 
         final var hardwareEnglish = hardwareItems.get(0);
         final var hardwareFrench = hardwareItems.get(1);
@@ -320,10 +225,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testModeAuto() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(items, "SimpleIme", "SimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", List.of("en", "fr", "it"));
+        createTestItems(items, "SimpleIme", null);
 
         final var english = items.get(0);
         final var french = items.get(1);
@@ -333,10 +236,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         final var simpleIme = List.of(simple);
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareLatinIme", "HardwareLatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(hardwareItems, "HardwareSimpleIme", "HardwareSimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareLatinIme", List.of("en", "fr", "it"));
+        createTestItems(hardwareItems, "HardwareSimpleIme", null);
 
         final var hardwareEnglish = hardwareItems.get(0);
         final var hardwareFrench = hardwareItems.get(1);
@@ -428,10 +329,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testUpdateList() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(items, "SimpleIme", "SimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", List.of("en", "fr", "it"));
+        createTestItems(items, "SimpleIme", null);
 
         final var english = items.get(0);
         final var french = items.get(1);
@@ -442,10 +341,8 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         final var simpleIme = List.of(simple);
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareLatinIme", "HardwareLatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
-        addTestImeSubtypeListItems(hardwareItems, "HardwareSimpleIme", "HardwareSimpleIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareLatinIme", List.of("en", "fr", "it"));
+        createTestItems(hardwareItems, "HardwareSimpleIme", null);
 
         final var hardwareEnglish = hardwareItems.get(0);
         final var hardwareFrench = hardwareItems.get(1);
@@ -529,30 +426,30 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testSwitchAwareAndUnawareCombined() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "switchAware", "switchAware",
-                null, true /* supportsSwitchingToNextInputMethod*/);
-        addTestImeSubtypeListItems(items, "switchUnaware", "switchUnaware",
-                null, false /* supportsSwitchingToNextInputMethod*/);
+        createTestItems(items, "switchAware", null,
+                true /* supportsSwitchingToNextInputMethod*/);
+        createTestItems(items, "switchUnaware", null,
+                false /* supportsSwitchingToNextInputMethod*/);
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "hardwareSwitchAware", "hardwareSwitchAware",
-                null, true /* supportsSwitchingToNextInputMethod*/);
-        addTestImeSubtypeListItems(hardwareItems, "hardwareSwitchUnaware", "hardwareSwitchUnaware",
-                null, false /* supportsSwitchingToNextInputMethod*/);
+        createTestItems(hardwareItems, "hardwareSwitchAware", null,
+                true /* supportsSwitchingToNextInputMethod*/);
+        createTestItems(hardwareItems, "hardwareSwitchUnaware", null,
+                false /* supportsSwitchingToNextInputMethod*/);
 
         final var controller = new InputMethodSubtypeSwitchingController();
         controller.update(items, hardwareItems);
 
         for (int mode = MODE_STATIC; mode <= MODE_AUTO; mode++) {
-            assertNextOrder(controller, false /* forHardware */, false /* onlyCurrentIme */,
-                    mode, true /* forward */, items);
-            assertNextOrder(controller, false /* forHardware */, false /* onlyCurrentIme */,
-                    mode, false /* forward */, items.reversed());
+            assertNextOrder(controller, false /* onlyCurrentIme */, false /* forHardware */, mode,
+                    true /* forward */, items);
+            assertNextOrder(controller, false /* onlyCurrentIme */, false /* forHardware */, mode,
+                    false /* forward */, items.reversed());
 
-            assertNextOrder(controller, true /* forHardware */, false /* onlyCurrentIme */,
-                    mode, true /* forward */, hardwareItems);
-            assertNextOrder(controller, true /* forHardware */, false /* onlyCurrentIme */,
-                    mode, false /* forward */, hardwareItems.reversed());
+            assertNextOrder(controller, false /* onlyCurrentIme */, true /* forHardware */, mode,
+                    true /* forward */, hardwareItems);
+            assertNextOrder(controller, false /* onlyCurrentIme */, true /* forHardware */, mode,
+                    false /* forward */, hardwareItems.reversed());
         }
     }
 
@@ -560,12 +457,10 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testEmptyList() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en", "fr"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", List.of("en", "fr"));
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareIme", "HardwareIme",
-                List.of("en", "fr"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareIme", List.of("en", "fr"));
 
         final var controller = new InputMethodSubtypeSwitchingController();
 
@@ -582,18 +477,14 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testSingleItemList() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", null);
         final var unknownItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(unknownItems, "UnknownIme", "UnknownIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(unknownItems, "UnknownIme", List.of("en", "fr", "it"));
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareIme", "HardwareIme",
-                null, true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareIme", null);
         final var unknownHardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(unknownHardwareItems, "HardwareUnknownIme", "HardwareUnknownIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(unknownHardwareItems, "HardwareUnknownIme", List.of("en", "fr", "it"));
 
         final var controller = new InputMethodSubtypeSwitchingController();
         controller.update(items, hardwareItems);
@@ -601,11 +492,11 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         assertNextItemNoAction(controller, false /* forHardware */, items,
                 null /* expectedNext */);
         assertNextItemNoAction(controller, false /* forHardware */, unknownItems,
-                items.get(0));
+                items.getFirst());
         assertNextItemNoAction(controller, true /* forHardware */, hardwareItems,
                 null /* expectedNext */);
         assertNextItemNoAction(controller, true /* forHardware */, unknownHardwareItems,
-                hardwareItems.get(0));
+                hardwareItems.getFirst());
     }
 
     /**
@@ -615,23 +506,19 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     @Test
     public void testUnknownItems() {
         final var items = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(items, "LatinIme", "LatinIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(items, "LatinIme", List.of("en", "fr", "it"));
 
         final var english = items.get(0);
         final var french = items.get(1);
         final var italian = items.get(2);
 
         final var unknownItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(unknownItems, "UnknownIme", "UnknownIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(unknownItems, "UnknownIme", List.of("en", "fr", "it"));
 
         final var hardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(hardwareItems, "HardwareIme", "HardwareIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(hardwareItems, "HardwareIme", List.of("en", "fr", "it"));
         final var unknownHardwareItems = new ArrayList<ImeSubtypeListItem>();
-        addTestImeSubtypeListItems(unknownHardwareItems, "HardwareUnknownIme", "HardwareUnknownIme",
-                List.of("en", "fr", "it"), true /* supportsSwitchingToNextInputMethod */);
+        createTestItems(unknownHardwareItems, "HardwareUnknownIme", List.of("en", "fr", "it"));
 
         final var controller = new InputMethodSubtypeSwitchingController();
         controller.update(items, hardwareItems);
@@ -643,7 +530,7 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         assertNextItemNoAction(controller, false /* forHardware */, unknownItems,
                 french);
         assertNextItemNoAction(controller, true /* forHardware */, unknownHardwareItems,
-                hardwareItems.get(0));
+                hardwareItems.getFirst());
 
         // Known items must not be able to switch to unknown items.
         assertNextOrder(controller, false /* forHardware */, MODE_STATIC, items,
@@ -754,6 +641,128 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     }
 
     /**
+     * Same as {@link #createTestItems} below, with {@code supportsSwitchingToNextInputMethod} set
+     * to {@code true}.
+     *
+     * @param items          the list to add the created items to.
+     * @param imeName        the name of the IME.
+     * @param subtypeLocales the list of subtype locales, or {@code null} for no subtypes.
+     */
+    static void createTestItems(@NonNull List<ImeSubtypeListItem> items,
+            @NonNull String imeName, @Nullable List<String> subtypeLocales) {
+        createTestItems(items, imeName, subtypeLocales,
+                true /* supportsSwitchingToNextInputMethod*/);
+    }
+
+    /**
+     * Creates test {@link ImeSubtypeListItem} based on the given IME name, label and subtype
+     * locales, and adds them to the given list.
+     *
+     * @param items                              the list to add the created items to.
+     * @param imeName                            the name of the IME.
+     * @param subtypeLocales                     the list of subtype locales, or {@code null}
+     *                                           for no subtypes.
+     * @param supportsSwitchingToNextInputMethod whether the item supports switching to the next.
+     */
+    private static void createTestItems(@NonNull List<ImeSubtypeListItem> items,
+            @NonNull String imeName, @Nullable List<String> subtypeLocales,
+            boolean supportsSwitchingToNextInputMethod) {
+        final ApplicationInfo ai = new ApplicationInfo();
+        ai.packageName = TEST_PACKAGE_NAME;
+        ai.enabled = true;
+        final var si = new ServiceInfo();
+        si.applicationInfo = ai;
+        si.enabled = true;
+        si.packageName = TEST_PACKAGE_NAME;
+        si.name = imeName;
+        si.exported = true;
+        si.nonLocalizedLabel = imeName;
+        final var ri = new ResolveInfo();
+        ri.serviceInfo = si;
+        List<InputMethodSubtype> subtypes = null;
+        if (subtypeLocales != null) {
+            subtypes = new ArrayList<>();
+            for (String subtypeLocale : subtypeLocales) {
+                subtypes.add(createTestSubtype(subtypeLocale));
+            }
+        }
+        final InputMethodInfo imi = new InputMethodInfo(ri, TEST_IS_AUX_IME,
+                TEST_SETTING_ACTIVITY_NAME, subtypes, TEST_IS_DEFAULT_RES_ID,
+                TEST_FORCE_DEFAULT, supportsSwitchingToNextInputMethod, TEST_IS_VR_IME);
+        if (subtypes == null) {
+            items.add(new ImeSubtypeListItem(imeName, null /* subtypeName */, null /* layoutName */,
+                    imi, NOT_A_SUBTYPE_INDEX, false /* showInImeSwitcherMenu */,
+                    false /* isAuxiliary */, true /* suitableForHardware */, null, SYSTEM_LOCALE));
+        } else {
+            for (int i = 0; i < subtypes.size(); ++i) {
+                final String subtypeLocale = subtypeLocales.get(i);
+                items.add(new ImeSubtypeListItem(imeName, subtypeLocale, null /* layoutName */,
+                        imi, i, true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                        true /* suitableForHardware */, subtypeLocale, SYSTEM_LOCALE));
+            }
+        }
+    }
+
+    /**
+     * Creates a single test {@link ImeSubtypeListItem}, based on the given IME and IME subtype
+     * parameters.
+     *
+     * @param imeComponentName the component name of the IME.
+     * @param imeName          the name of the IME.
+     * @param subtypeName      the name of the subtype.
+     * @param subtypeLocale    the locale of the subtype.
+     * @param subtypeIndex     the index in the array of subtypes of the IME.
+     */
+    @NonNull
+    private static ImeSubtypeListItem createTestItem(@NonNull ComponentName imeComponentName,
+            @NonNull String imeName, @NonNull String subtypeName,
+            @NonNull String subtypeLocale, int subtypeIndex) {
+        final var ai = new ApplicationInfo();
+        ai.packageName = imeComponentName.getPackageName();
+        ai.enabled = true;
+        final var si = new ServiceInfo();
+        si.applicationInfo = ai;
+        si.enabled = true;
+        si.packageName = imeComponentName.getPackageName();
+        si.name = imeComponentName.getClassName();
+        si.exported = true;
+        si.nonLocalizedLabel = TEST_IME_LABEL;
+        final var ri = new ResolveInfo();
+        ri.serviceInfo = si;
+        final var subtypes = new ArrayList<InputMethodSubtype>();
+        subtypes.add(createTestSubtype(subtypeLocale));
+        final InputMethodInfo imi = new InputMethodInfo(ri, TEST_IS_AUX_IME,
+                TEST_SETTING_ACTIVITY_NAME, subtypes, TEST_IS_DEFAULT_RES_ID,
+                TEST_FORCE_DEFAULT, true /* supportsSwitchingToNextInputMethod */, TEST_IS_VR_IME);
+        return new ImeSubtypeListItem(imeName, subtypeName, null /* layoutName */,
+                imi, subtypeIndex, true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
+                true /* suitableForHardware */, subtypeLocale, SYSTEM_LOCALE);
+    }
+
+    /**
+     * Creates a test {@link InputMethodSubtype} from the given locale.
+     *
+     * @param locale the locale to create a test subtype for.
+     */
+    @NonNull
+    private static InputMethodSubtype createTestSubtype(@NonNull String locale) {
+        return new InputMethodSubtypeBuilder()
+                .setSubtypeNameResId(0)
+                .setSubtypeIconResId(0)
+                .setSubtypeLocale(locale)
+                .setIsAsciiCapable(true)
+                .build();
+    }
+
+    private static boolean onUserAction(@NonNull InputMethodSubtypeSwitchingController controller,
+            @NonNull ImeSubtypeListItem subtypeListItem) {
+        final var subtype = subtypeListItem.mSubtypeName != null
+                ? createTestSubtype(subtypeListItem.mSubtypeName.toString())
+                : null;
+        return controller.onUserAction(subtypeListItem.mImi, subtype);
+    }
+
+    /**
      * Verifies that the controller's next item order matches the given one, and cycles back at
      * the end, both across all IMEs, and also per each IME. If a single item is given, verifies
      * that no next item is returned.
@@ -769,12 +778,12 @@ public final class InputMethodSubtypeSwitchingControllerTest {
             boolean forHardware, @SwitchMode int mode, boolean forward,
             @NonNull List<ImeSubtypeListItem> allItems,
             @NonNull List<List<ImeSubtypeListItem>> perImeItems) {
-        assertNextOrder(controller, forHardware, false /* onlyCurrentIme */, mode,
-                forward, allItems);
+        assertNextOrder(controller, false /* onlyCurrentIme */, forHardware, mode, forward,
+                allItems);
 
         for (var imeItems : perImeItems) {
-            assertNextOrder(controller, forHardware, true /* onlyCurrentIme */, mode,
-                    forward, imeItems);
+            assertNextOrder(controller, true /* onlyCurrentIme */, forHardware, mode, forward,
+                    imeItems);
         }
     }
 
@@ -793,15 +802,15 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     private static void assertNextOrder(@NonNull InputMethodSubtypeSwitchingController controller,
             boolean forHardware, @SwitchMode int mode, @NonNull List<ImeSubtypeListItem> allItems,
             @NonNull List<List<ImeSubtypeListItem>> perImeItems) {
-        assertNextOrder(controller, forHardware, false /* onlyCurrentIme */, mode,
+        assertNextOrder(controller, false /* onlyCurrentIme */, forHardware, mode,
                 true /* forward */, allItems);
-        assertNextOrder(controller, forHardware, false /* onlyCurrentIme */, mode,
+        assertNextOrder(controller, false /* onlyCurrentIme */, forHardware, mode,
                 false /* forward */, allItems.reversed());
 
         for (var imeItems : perImeItems) {
-            assertNextOrder(controller, forHardware, true /* onlyCurrentIme */, mode,
+            assertNextOrder(controller, true /* onlyCurrentIme */, forHardware, mode,
                     true /* forward */, imeItems);
-            assertNextOrder(controller, forHardware, true /* onlyCurrentIme */, mode,
+            assertNextOrder(controller, true /* onlyCurrentIme */, forHardware, mode,
                     false /* forward */, imeItems.reversed());
         }
     }
@@ -812,26 +821,26 @@ public final class InputMethodSubtypeSwitchingControllerTest {
      * no next item is returned.
      *
      * @param controller     the controller to use for finding the next items.
-     * @param forHardware    whether to find the next hardware item, or software item.
      * @param onlyCurrentIme whether to consider only subtypes of the current input method.
+     * @param forHardware    whether to find the next hardware item, or software item.
      * @param mode           the switching mode.
      * @param forward        whether to search forwards or backwards in the list.
      * @param items          the list of items to verify, in the expected order.
      */
     private static void assertNextOrder(@NonNull InputMethodSubtypeSwitchingController controller,
-            boolean forHardware, boolean onlyCurrentIme, @SwitchMode int mode, boolean forward,
+            boolean onlyCurrentIme, boolean forHardware, @SwitchMode int mode, boolean forward,
             @NonNull List<ImeSubtypeListItem> items) {
         final int numItems = items.size();
         if (numItems == 0) {
             return;
         } else if (numItems == 1) {
             // Single item controllers should never return a next item.
-            assertNextItem(controller, forHardware, onlyCurrentIme, mode, forward, items.get(0),
+            assertNextItem(controller, onlyCurrentIme, forHardware, mode, forward, items.getFirst(),
                     null /* expectedNext*/);
             return;
         }
 
-        var item = items.get(0);
+        var item = items.getFirst();
 
         final var expectedNextItems = new ArrayList<>(items);
         // Add first item in the last position of expected order, to ensure the order is cyclic.
@@ -843,7 +852,7 @@ public final class InputMethodSubtypeSwitchingControllerTest {
 
         // Compute the nextItems starting from the first given item, and compare the order.
         for (int i = 0; i < numItems; i++) {
-            item = getNextItem(controller, forHardware, onlyCurrentIme, mode, forward, item);
+            item = getNextItem(controller, onlyCurrentIme, forHardware, mode, forward, item);
             assertNotNull("Next item shouldn't be null.", item);
             nextItems.add(item);
         }
@@ -855,27 +864,26 @@ public final class InputMethodSubtypeSwitchingControllerTest {
      * Verifies that the controller gets the expected next value from the given item.
      *
      * @param controller     the controller to sue for finding the next value.
-     * @param forHardware    whether to find the next hardware item, or software item.
      * @param onlyCurrentIme whether to consider only subtypes of the current input method.
+     * @param forHardware    whether to find the next hardware item, or software item.
      * @param mode           the switching mode.
      * @param forward        whether to search forwards or backwards in the list.
      * @param item           the item to find the next value from.
      * @param expectedNext   the expected next value.
      */
     private static void assertNextItem(@NonNull InputMethodSubtypeSwitchingController controller,
-            boolean forHardware, boolean onlyCurrentIme, @SwitchMode int mode, boolean forward,
+            boolean onlyCurrentIme, boolean forHardware, @SwitchMode int mode, boolean forward,
             @NonNull ImeSubtypeListItem item, @Nullable ImeSubtypeListItem expectedNext) {
-        final var nextItem = getNextItem(controller, forHardware, onlyCurrentIme, mode, forward,
-                item);
-        assertEquals("Next item doesn't match.", expectedNext, nextItem);
+        final var next = getNextItem(controller, onlyCurrentIme, forHardware, mode, forward, item);
+        assertEquals("Next item doesn't match.", expectedNext, next);
     }
 
     /**
      * Gets the next value from the given item.
      *
      * @param controller     the controller to use for finding the next value.
-     * @param forHardware    whether to find the next hardware item, or software item.
      * @param onlyCurrentIme whether to consider only subtypes of the current input method.
+     * @param forHardware    whether to find the next hardware item, or software item.
      * @param mode           the switching mode.
      * @param forward        whether to search forwards or backwards in the list.
      * @param item           the item to find the next value from.
@@ -883,16 +891,15 @@ public final class InputMethodSubtypeSwitchingControllerTest {
      */
     @Nullable
     private static ImeSubtypeListItem getNextItem(
-            @NonNull InputMethodSubtypeSwitchingController controller, boolean forHardware,
-            boolean onlyCurrentIme, @SwitchMode int mode, boolean forward,
+            @NonNull InputMethodSubtypeSwitchingController controller, boolean onlyCurrentIme,
+            boolean forHardware, @SwitchMode int mode, boolean forward,
             @NonNull ImeSubtypeListItem item) {
         final var subtype = item.mSubtypeName != null
                 ? createTestSubtype(item.mSubtypeName.toString()) : null;
         return forHardware
-                ? controller.getNextInputMethodForHardware(
-                        onlyCurrentIme, item.mImi, subtype, mode, forward)
-                : controller.getNextInputMethodLocked(
-                        onlyCurrentIme, item.mImi, subtype, mode, forward);
+                ? controller.getNextInputMethodForHardware(item.mImi, subtype, onlyCurrentIme, mode,
+                    forward)
+                : controller.getNextInputMethod(item.mImi, subtype, onlyCurrentIme, mode, forward);
     }
 
     /**
@@ -904,18 +911,18 @@ public final class InputMethodSubtypeSwitchingControllerTest {
      * @param items        the list of items to verify.
      * @param expectedNext the expected next item.
      */
-    private void assertNextItemNoAction(@NonNull InputMethodSubtypeSwitchingController controller,
-            boolean forHardware, @NonNull List<ImeSubtypeListItem> items,
-            @Nullable ImeSubtypeListItem expectedNext) {
+    private static void assertNextItemNoAction(
+            @NonNull InputMethodSubtypeSwitchingController controller, boolean forHardware,
+            @NonNull List<ImeSubtypeListItem> items, @Nullable ImeSubtypeListItem expectedNext) {
         for (var item : items) {
             for (int mode = MODE_STATIC; mode <= MODE_AUTO; mode++) {
-                assertNextItem(controller, forHardware, false /* onlyCurrentIme */, mode,
+                assertNextItem(controller, false /* onlyCurrentIme */, forHardware, mode,
                         false /* forward */, item, expectedNext);
-                assertNextItem(controller, forHardware, false /* onlyCurrentIme */, mode,
+                assertNextItem(controller, false /* onlyCurrentIme */, forHardware, mode,
                         true /* forward */, item, expectedNext);
-                assertNextItem(controller, forHardware, true /* onlyCurrentIme */, mode,
+                assertNextItem(controller, true /* onlyCurrentIme */, forHardware, mode,
                         false /* forward */, item, expectedNext);
-                assertNextItem(controller, forHardware, true /* onlyCurrentIme */, mode,
+                assertNextItem(controller, true /* onlyCurrentIme */, forHardware, mode,
                         true /* forward */, item, expectedNext);
             }
 
