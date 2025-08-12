@@ -130,16 +130,6 @@ flag {
 }
 
 flag {
-    name: "app_start_info_isolated_process"
-    namespace: "system_performance"
-    description: "Adjust handling of isolated process records to be discarded."
-    bug: "374032823"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "perceptible_tasks"
     namespace: "system_performance"
     description: "Boost the oom_score_adj of activities in perceptible tasks"
