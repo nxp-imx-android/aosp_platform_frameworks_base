@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.server.pm;
 
 import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemProperties;
@@ -26,8 +26,6 @@ import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.SparseIntArray;
-
-import java.io.PrintWriter;
 
 /**
  * Class used to report events that indicate the potential existence of non-multiuser-compliant
@@ -73,32 +71,26 @@ final class MultiuserNonComplianceLogger {
         }
     }
 
-    // TODO(b/414326600): add unit tests (once the proper formats are determined).
-    void logGetMainUserCall() {
-        logMainUserCall(mGetMainUserCalls);
+    void logGetMainUserCall(int callingUid) {
+        logMainUserCall(mGetMainUserCalls, callingUid);
     }
 
-    // TODO(b/414326600): add unit tests (once the proper formats are determined).
-    void logIsMainUserCall() {
-        logMainUserCall(mIsMainUserCalls);
+    void logIsMainUserCall(int callingUid) {
+        logMainUserCall(mIsMainUserCalls, callingUid);
     }
 
-    private void logMainUserCall(@Nullable SparseIntArray calls) {
+    private void logMainUserCall(@Nullable SparseIntArray calls, int callingUid) {
         if (calls == null) {
             return;
         }
 
-        // Must set before posting to the handler (otherwise it would always return the system UID)
-        int uid = Binder.getCallingUid();
-
         mHandler.post(() -> {
-            int canonicalUid = UserHandle.getAppId(uid);
+            int canonicalUid = UserHandle.getAppId(callingUid);
             int newCount = calls.get(canonicalUid, 0) + 1;
             calls.put(canonicalUid, newCount);
         });
     }
 
-    // TODO(b/414326600): add unit tests (once the proper formats are determined).
     void logLaunchedHsuActivity(ComponentName activity) {
         if (mLaunchedHsuActivities == null) {
             return;
@@ -107,7 +99,6 @@ final class MultiuserNonComplianceLogger {
     }
 
     void dump(IndentingPrintWriter pw) {
-        // TODO(b/414326600): add unit tests (once the proper formats are determined).
         dumpDeprecatedCalls(pw, "getMainUser", mGetMainUserCalls);
         pw.println();
         dumpDeprecatedCalls(pw, "isMainUser", mIsMainUserCalls);
@@ -124,7 +115,6 @@ final class MultiuserNonComplianceLogger {
 
         // TODO(b/414326600): should dump in the mHandler thread (as its state is written in that
         // thread), but it would require blocking the caller until it's done
-
 
         // TODO(b/414326600): should also dump on proto, but we need to wait until the format is
         // properly defined (for example, we might want to log a generic "user violation" that would
@@ -162,8 +152,7 @@ final class MultiuserNonComplianceLogger {
         pw.decreaseIndent();
     }
 
-    // TODO(b/414326600): add unit tests
-    void reset(PrintWriter pw) {
+    void reset() {
         // TODO(b/414326600): should reset in the mHandler thread (as its state is written in that
         // thread), but it would require blocking the caller until it's done
 
@@ -176,7 +165,6 @@ final class MultiuserNonComplianceLogger {
         if (mLaunchedHsuActivities != null) {
             mLaunchedHsuActivities.clear();
         }
-        pw.println("Reset");
     }
 
     private String getPackageNameForLoggingPurposes(int uid) {

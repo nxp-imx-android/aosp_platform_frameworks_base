@@ -1394,7 +1394,7 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public @CanBeNULL @UserIdInt int getMainUserId() {
         checkQueryOrCreateUsersPermission("get main user id");
-        mNonComplianceLogger.logGetMainUserCall();
+        mNonComplianceLogger.logGetMainUserCall(Binder.getCallingUid());
         return getMainUserIdUnchecked();
     }
 
@@ -1419,7 +1419,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public boolean isMainUser(int userId) {
-        mNonComplianceLogger.logIsMainUserCall();
+        mNonComplianceLogger.logIsMainUserCall(Binder.getCallingUid());
         UserInfo user = getUserInfo(userId);
         return user != null && user.isMainUnlogged();
     }
@@ -8245,7 +8245,8 @@ public class UserManagerService extends IUserManager.Stub {
                     return;
                 case "--non-compliance":
                     if (args.length > 1 && args[1].equals("reset")) {
-                        mNonComplianceLogger.reset(pw);
+                        mNonComplianceLogger.reset();
+                        pw.println("Reset");
                     } else {
                         try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
                             mNonComplianceLogger.dump(ipw);
