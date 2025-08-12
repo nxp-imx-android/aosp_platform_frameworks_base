@@ -273,11 +273,14 @@ fun BouncerContent(
                 border =
                     BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
             ) {
                 Text(
                     text = stringResource(R.string.back_button_on_bouncer),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
