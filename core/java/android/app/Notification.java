@@ -11824,18 +11824,34 @@ public class Notification implements Parcelable
                     final Metric.MetricValue metricValue = metric.getValue();
                     final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
                             mBuilder.mContext);
+
                     final String metricLabel;
                     if (isExpandedView) {
-                        metricLabel = metric.getLabel();
+                        if (Flags.metricStyleUnitInLabel()
+                                && !TextUtils.isEmpty(valueString.subtext())) {
+                            metricLabel = mBuilder.mContext.getString(
+                                    R.string.notification_metric_label_unit,
+                                    metric.getLabel(), valueString.subtext());
+                        } else {
+                            metricLabel = metric.getLabel();
+                        }
                     } else {
+                        // No unit shown in collapsed view.
                         metricLabel = mBuilder.mContext.getString(
-                                com.android.internal.R.string.notification_metric_label_template,
+                                R.string.notification_metric_label_separator,
                                 metric.getLabel());
                     }
+
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
-                    contentView.setViewVisibility(metricView.unitId(),
-                            TextUtils.isEmpty(valueString.subtext()) ? View.GONE : View.VISIBLE);
-                    contentView.setTextViewText(metricView.unitId(), valueString.subtext());
+                    if (Flags.metricStyleUnitInLabel()) {
+                        contentView.setViewVisibility(metricView.unitId(), View.GONE);
+                    } else if (isExpandedView) {
+                        contentView.setViewVisibility(metricView.unitId(),
+                                TextUtils.isEmpty(valueString.subtext())
+                                        ? View.GONE
+                                        : View.VISIBLE);
+                        contentView.setTextViewText(metricView.unitId(), valueString.subtext());
+                    }
 
                     if (metricValue instanceof Metric.TimeDifference timeDifference
                             && timeDifference.getPausedDuration() == null) {
