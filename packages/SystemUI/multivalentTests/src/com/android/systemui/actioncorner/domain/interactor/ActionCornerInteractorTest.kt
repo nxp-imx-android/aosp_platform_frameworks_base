@@ -17,6 +17,7 @@
 package com.android.systemui.actioncorner.domain.interactor
 
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_HOME
+import android.provider.Settings.Secure.ACTION_CORNER_ACTION_LOCKSCREEN
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_NOTIFICATIONS
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_OVERVIEW
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_QUICK_SETTINGS
@@ -25,6 +26,7 @@ import android.provider.Settings.Secure.ACTION_CORNER_BOTTOM_RIGHT_ACTION
 import android.provider.Settings.Secure.ACTION_CORNER_TOP_LEFT_ACTION
 import android.provider.Settings.Secure.ACTION_CORNER_TOP_RIGHT_ACTION
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.IWindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.LauncherProxyService
@@ -58,6 +60,7 @@ import com.android.systemui.util.settings.data.repository.userAwareSecureSetting
 import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -75,6 +78,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
     }
 
     private val Kosmos.launcherProxyService by Fixture { mock<LauncherProxyService>() }
+    private val Kosmos.windowManager by Fixture { mock<IWindowManager>() }
     private val Kosmos.commandQueue by Fixture { mock<CommandQueue>() }
     private val Kosmos.fakePointerRepository by Fixture { FakePointerDeviceRepository() }
 
@@ -87,6 +91,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             windowManagerLockscreenVisibilityInteractor,
             fakeUserSetupRepository,
             commandQueue,
+            windowManager,
         )
     }
 
@@ -143,6 +148,16 @@ class ActionCornerInteractorTest : SysuiTestCase() {
         )
 
         verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
+    fun actionCornerActivated_lockscreenActionConfigured_lockScreen() = unlockScreenAndRunTest {
+        settingsRepository.setInt(
+            ACTION_CORNER_BOTTOM_RIGHT_ACTION,
+            ACTION_CORNER_ACTION_LOCKSCREEN,
+        )
+        actionCornerRepository.addState(ActiveActionCorner(BOTTOM_RIGHT, DEFAULT_DISPLAY))
+        verify(windowManager).lockNow(eq(null))
     }
 
     @Test
