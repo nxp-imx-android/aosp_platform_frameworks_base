@@ -6228,7 +6228,7 @@ class Task extends TaskFragment {
         // cases, we can just request that the root task is put at top here.
         // Don't bother moving task to top if this task is force hidden and invisible to user.
         if (!isForceHidden()) {
-            getDisplayArea().positionChildAt(POSITION_TOP, this, false /* includingParents */);
+            getParent().positionChildAt(POSITION_TOP, this, false /* includingParents */);
         }
     }
 
