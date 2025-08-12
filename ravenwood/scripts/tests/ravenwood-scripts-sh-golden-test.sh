@@ -33,6 +33,7 @@ esac
 done
 shift $(($OPTIND - 1))
 
+
 # Find the script directory:
 # - `../` when running directly.
 # - './scripts/` when running with atest.
@@ -41,20 +42,9 @@ if [[ -e ./scripts/run-ravenwood-tests.sh ]] ; then
     script_dir=./scripts/
 fi
 
-target_script="$script_dir/run-ravenwood-tests.sh"
-
-echo "# Installed files:"
-echo
-ls -lRa .
-echo
-
-echo "# Target script:"
-echo "$target_script"
-echo
-
 # Command to run "run-ravenwood-tests.sh"
 run-ravenwood-tests-wrapper() {
-    "$target_script" -d "$@"
+    $script_dir/run-ravenwood-tests.sh -d "$@"
 }
 
 # We "inject" into list-ravenwood-tests.sh and use them as the test module names.

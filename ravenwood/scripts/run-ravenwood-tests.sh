@@ -113,17 +113,12 @@ all_tests+=( "${all_raven_tests[@]}" )
 : ${ROLLING_TF_SUBPROCESS_OUTPUT:=0}
 export ROLLING_TF_SUBPROCESS_OUTPUT
 
-# Cat all the files in the argument with all the "#" comments removed.
-remove_comments() {
-    sed -e '/^#/d; s/[ \t][ \t]*//g; /^$/d' "$@"
-}
-
 get_smoke_re() {
     # Extract tests from smoke-excluded-tests.txt
     # - Skip lines starting with #
     # - Remove all spaces and tabs
     # - Skip empty lines
-    local tests=($(remove_comments ../texts/smoke-excluded-tests.txt))
+    local tests=($(sed -e '/^#/d; s/[ \t][ \t]*//g; /^$/d' smoke-excluded-tests.txt))
 
     # Then convert it to a regex.
     # - Wrap in "^( ... )$"
@@ -191,13 +186,7 @@ if [[ "$RAVENWOOD_TEST_ENABLEMENT_POLICY" == "" ]] && (( "${#default_enablement_
     # This path must be a full path.
     combined_enablement_policy=/tmp/ravenwood-enablement-@@@$$@@@.txt
 
-    # Join all the enablement policy files, but we add a newline
-    # after each file. (so that it wouldn't break if any of the files
-    # don't end with a newline.)
-    for file in "${default_enablement_policy[@]}"; do
-        cat "$file"
-        echo
-    done >$combined_enablement_policy
+    cat "${default_enablement_policy[@]}" >$combined_enablement_policy
 
     export RAVENWOOD_TEST_ENABLEMENT_POLICY=$combined_enablement_policy
 fi
