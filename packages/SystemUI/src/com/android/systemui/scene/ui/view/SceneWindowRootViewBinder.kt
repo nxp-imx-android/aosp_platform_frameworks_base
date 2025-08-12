@@ -21,9 +21,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.FrameLayout
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -31,6 +33,8 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.common.ui.compose.windowinsets.ScreenDecorProvider
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.initOnBackPressedDispatcherOwner
+import com.android.systemui.keyboard.shortcut.ui.composable.InteractionsConfig
+import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelperIndication
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
@@ -168,16 +172,31 @@ object SceneWindowRootViewBinder {
                 PlatformTheme {
                     ScreenDecorProvider(windowInsets = { windowInsets.value }) {
                         WithStatusIconContext(tintedIconManagerFactory = tintedIconManagerFactory) {
-                            SceneContainer(
-                                viewModel = viewModel,
-                                sceneByKey = sceneByKey,
-                                overlayByKey = overlayByKey,
-                                initialSceneKey = containerConfig.initialSceneKey,
-                                transitionsBuilder = containerConfig.transitionsBuilder,
-                                dataSourceDelegator = dataSourceDelegator,
-                                sceneJankMonitorFactory = sceneJankMonitorFactory,
-                                modifier = Modifier.sysUiResTagContainer(),
-                            )
+                            // Avoid using default Compose indication as it causes jank
+                            // (b/437075590)
+                            ProvideShortcutHelperIndication(
+                                interactionsConfig =
+                                    InteractionsConfig(
+                                        hoverOverlayColor = MaterialTheme.colorScheme.onSurface,
+                                        hoverOverlayAlpha = 0.11f,
+                                        pressedOverlayColor = MaterialTheme.colorScheme.onSurface,
+                                        pressedOverlayAlpha = 0.15f,
+                                        // we are OK using this as our content is clipped and all
+                                        // corner radius are larger than this
+                                        surfaceCornerRadius = 16.dp,
+                                    )
+                            ) {
+                                SceneContainer(
+                                    viewModel = viewModel,
+                                    sceneByKey = sceneByKey,
+                                    overlayByKey = overlayByKey,
+                                    initialSceneKey = containerConfig.initialSceneKey,
+                                    transitionsBuilder = containerConfig.transitionsBuilder,
+                                    dataSourceDelegator = dataSourceDelegator,
+                                    sceneJankMonitorFactory = sceneJankMonitorFactory,
+                                    modifier = Modifier.sysUiResTagContainer(),
+                                )
+                            }
                         }
                     }
                 }
