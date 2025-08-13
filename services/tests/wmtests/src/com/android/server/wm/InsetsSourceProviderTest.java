@@ -22,6 +22,9 @@ import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -34,6 +37,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
 import android.view.InsetsSource;
+import android.view.SurfaceControl;
 
 import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
@@ -143,10 +147,25 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
 
         // We must not have control or control target if the insets source window doesn't have a
         // surface.
+        final SurfaceControl sc = statusBar.mSurfaceControl;
         statusBar.setSurfaceControl(null);
         mProvider.updateControlForTarget(target, true /* force */, null /* statsToken */);
         assertNull(mProvider.getControl(target));
         assertNull(mProvider.getControlTarget());
+
+        // Verifies that the control is revoked immediately if the target becomes null even if
+        // InsetsSourceProvider#mHasPendingPosition is true.
+        statusBar.setSurfaceControl(sc);
+        mProvider.setWindow(statusBar, null, null);
+        mProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
+        assertNotNull(statusBar.getAnimationLeash());
+        statusBar.getFrame().offset(100, 100);
+        spyOn(statusBar.mWinAnimator);
+        doReturn(true).when(statusBar.mWinAnimator).getShown();
+        mProvider.updateInsetsControlPosition(statusBar);
+        assertTrue(statusBar.shouldSyncWithBuffers());
+        mProvider.updateControlForTarget(null, false /* force */, null /* statsToken */);
+        assertNull(statusBar.getAnimationLeash());
     }
 
     @Test
