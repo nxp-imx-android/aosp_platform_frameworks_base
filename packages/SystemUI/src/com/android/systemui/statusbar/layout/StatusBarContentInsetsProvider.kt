@@ -332,7 +332,17 @@ constructor(
         val currentRotation = getExactRotation(context)
 
         val roundedCornerPadding =
-            rotatedResources.getDimensionPixelSize(R.dimen.rounded_corner_content_padding)
+            if (context.displayId == DEFAULT_DISPLAY || !StatusBarConnectedDisplays.isEnabled) {
+                rotatedResources.getDimensionPixelSize(R.dimen.rounded_corner_content_padding)
+            } else {
+                // Currently the padding is hardcoded for each device default display, and there is
+                // no mapping between the rounded corner radius (that you could get from
+                // Display#getRoundedCorner) and a padding value. The proper way of doing this is
+                // using safe insets, that take this into account already.
+                // For now, as external displays with corner radius are extremely uncommon, we're
+                // just returning zero.
+                0
+            }
         val minDotPadding =
             if (isPrivacyDotEnabled)
                 rotatedResources.getDimensionPixelSize(R.dimen.ongoing_appops_dot_min_padding)
