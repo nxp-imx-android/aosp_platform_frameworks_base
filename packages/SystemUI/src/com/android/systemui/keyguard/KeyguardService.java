@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.security.Flags.secureLockDevice;
 import static android.service.dreams.Flags.dismissDreamOnKeyguardDismiss;
 import static android.view.RemoteAnimationTarget.MODE_OPENING;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_APPEARING;
@@ -92,6 +93,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.domain.startable.KeyguardStateCallbackStartable;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.wm.shell.shared.CounterRotator;
 import com.android.wm.shell.shared.ShellTransitions;
@@ -126,6 +128,7 @@ public class KeyguardService extends Service {
     private final Executor mMainExecutor;
     private final Lazy<KeyguardStateCallbackStartable> mKeyguardStateCallbackStartableLazy;
     private final KeyguardStateCallbackInteractor mKeyguardStateCallbackInteractor;
+    private final Lazy<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
 
     private static RemoteAnimationTarget[] wrap(TransitionInfo info, boolean wallpapers,
             SurfaceControl.Transaction t, ArrayMap<SurfaceControl, SurfaceControl> leashMap,
@@ -353,7 +356,8 @@ public class KeyguardService extends Service {
             KeyguardStateCallbackInteractor keyguardStateCallbackInteractor,
             KeyguardServiceShowLockscreenInteractor keyguardServiceShowLockscreenInteractor,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
-            ActivityManager activityManager) {
+            ActivityManager activityManager,
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor) {
         super();
         mKeyguardViewMediator = keyguardViewMediator;
         mKeyguardLifecyclesDispatcher = keyguardLifecyclesDispatcher;
@@ -388,6 +392,7 @@ public class KeyguardService extends Service {
         mKeyguardServiceShowLockscreenInteractor = keyguardServiceShowLockscreenInteractor;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mActivityManager = activityManager;
+        mSecureLockDeviceInteractor = secureLockDeviceInteractor;
     }
 
     @Override
@@ -620,6 +625,14 @@ public class KeyguardService extends Service {
         public void setKeyguardEnabled(boolean enabled) {
             trace("setKeyguardEnabled enabled" + enabled);
             checkPermission();
+            // Ignore if secure lock device is enabled and authenticated but pending dismissal.
+            // This is needed because successful two-factor authentication in secure lock device
+            // updates device policy manager state, which is linked to a broadcast that otherwise
+            // re-enables keyguard.
+            if (secureLockDevice() && mSecureLockDeviceInteractor.get()
+                    .isAuthenticatedButPendingDismissal().getValue()) {
+                return;
+            }
             mKeyguardEnabledInteractor.notifyKeyguardEnabled(enabled);
             mKeyguardViewMediator.setKeyguardEnabled(enabled);
         }

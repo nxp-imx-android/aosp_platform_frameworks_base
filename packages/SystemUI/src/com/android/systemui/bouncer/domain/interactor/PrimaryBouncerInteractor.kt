@@ -105,7 +105,7 @@ constructor(
     val resourceUpdateRequests: Flow<Boolean> = repository.resourceUpdateRequests.filter { it }
     val keyguardPosition: Flow<Float> = repository.keyguardPosition.filterNotNull()
     val panelExpansionAmount: Flow<Float> = repository.panelExpansionAmount
-    val lastShownSecurityMode: Flow<KeyguardSecurityModel.SecurityMode> =
+    val lastShownSecurityMode: StateFlow<KeyguardSecurityModel.SecurityMode> =
         repository.lastShownSecurityMode
 
     /** 0f = bouncer fully hidden. 1f = bouncer fully visible. */

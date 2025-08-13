@@ -55,6 +55,7 @@ public class KeyguardSecurityModel {
 
     private final boolean mIsPukScreenAvailable;
     private boolean mRequiresBiometricForSecureLockDevice;
+    private boolean mAuthenticatedInSecureLockDevice;
 
     private final LockPatternUtils mLockPatternUtils;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
@@ -83,6 +84,10 @@ public class KeyguardSecurityModel {
                             .getRequiresStrongBiometricAuthForSecureLockDevice(),
                     this::onRequiresStrongBiometricAuthForSecureLockDevice
             );
+            mJavaAdapter.get().alwaysCollectFlow(
+                    mSecureLockDeviceInteractor.get().isAuthenticatedButPendingDismissal(),
+                    this::onSecureLockDeviceAuthenticationComplete
+            );
         }
     }
 
@@ -90,8 +95,13 @@ public class KeyguardSecurityModel {
         mRequiresBiometricForSecureLockDevice = requiresBiometricAuth;
     }
 
+    private void onSecureLockDeviceAuthenticationComplete(boolean authenticatedInSecureLockDevice) {
+        mAuthenticatedInSecureLockDevice = authenticatedInSecureLockDevice;
+    }
+
     public SecurityMode getSecurityMode(int userId) {
-        if (secureLockDevice() && mRequiresBiometricForSecureLockDevice) {
+        if (secureLockDevice()
+                && (mRequiresBiometricForSecureLockDevice || mAuthenticatedInSecureLockDevice)) {
             return SecurityMode.SecureLockDeviceBiometricAuth;
         }
 

@@ -16,6 +16,8 @@
 
 package com.android.systemui.bouncer.ui.binder
 
+import android.security.Flags.secureLockDevice
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -40,10 +42,16 @@ import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.log.BouncerLogger
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.AuthContextPlugin
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import com.android.systemui.util.kotlin.sample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
+
+private const val TAG = "KeyguardBouncerViewBinder"
 
 /** Binds the bouncer container to its view model. */
 object KeyguardBouncerViewBinder {
@@ -154,59 +162,137 @@ object KeyguardBouncerViewBinder {
                 try {
                     viewModel.setBouncerViewDelegate(delegate)
                     launch {
-                        viewModel.isShowing.collect { isShowing ->
-                            view.visibility = if (isShowing) View.VISIBLE else View.INVISIBLE
-                            if (isShowing) {
-                                // Reset security container because these views are not reinflated.
-                                securityContainerController.prepareToShow()
-                                securityContainerController.reinflateViewFlipper {
-                                    // Reset Security Container entirely.
-                                    securityContainerController.onBouncerVisibilityChanged(
-                                        /* isVisible= */ true
-                                    )
-                                    securityContainerController.showPrimarySecurityScreen(
-                                        /* turningOff= */ false
-                                    )
-                                    securityContainerController.setInitialMessage()
-                                    // Delay bouncer appearing animation when opening it from the
-                                    // glanceable hub in landscape, until after orientation changes
-                                    // to portrait. This prevents bouncer from showing in landscape
-                                    // layout, if bouncer rotation is not allowed.
-                                    if (
-                                        glanceableHubToPrimaryBouncerTransitionViewModel
-                                            .willDelayAppearAnimation(
-                                                securityContainerController.isLandscapeOrientation
-                                            )
-                                    ) {
-                                        securityContainerController.setupForDelayedAppear()
-                                    } else {
-                                        securityContainerController.appear()
-                                    }
-                                    securityContainerController.onResume(
-                                        KeyguardSecurityView.SCREEN_ON
-                                    )
-                                    bouncerLogger.bindingBouncerMessageView()
-                                    it.bindMessageView(
-                                        bouncerMessageInteractor,
-                                        messageAreaControllerFactory,
-                                        bouncerLogger,
-                                    )
-                                }
+                        val isTransitionToGoneFinished =
+                            if (secureLockDevice()) {
+                                viewModel.isTransitionToGoneFinished
                             } else {
-                                securityContainerController.onBouncerVisibilityChanged(
-                                    /* isVisible= */ false
-                                )
-                                securityContainerController.cancelDismissAction()
-                                securityContainerController.reset()
-                                securityContainerController.onPause()
+                                flowOf(false)
                             }
-                            plugins?.apply {
+                        viewModel.isShowing.sample(isTransitionToGoneFinished, ::Pair)
+                            .collect { (isShowing, isTransitionToGoneFinished) ->
+                                view.visibility = if (isShowing) View.VISIBLE else View.INVISIBLE
                                 if (isShowing) {
-                                    notifyBouncerShowing(view)
+                                    // Reset security container because these views are not
+                                    // reinflated.
+                                    securityContainerController.prepareToShow()
+                                    securityContainerController.reinflateViewFlipper {
+                                        // Reset Security Container entirely.
+                                        securityContainerController.onBouncerVisibilityChanged(
+                                            /* isVisible= */ true
+                                        )
+                                        securityContainerController.showPrimarySecurityScreen(
+                                            /* turningOff= */ false
+                                        )
+                                        securityContainerController.setInitialMessage()
+                                        // Delay bouncer appearing animation when opening it from
+                                        // the
+                                        // glanceable hub in landscape, until after orientation
+                                        // changes
+                                        // to portrait. This prevents bouncer from showing in
+                                        // landscape
+                                        // layout, if bouncer rotation is not allowed.
+                                        if (
+                                            glanceableHubToPrimaryBouncerTransitionViewModel
+                                                .willDelayAppearAnimation(
+                                                    securityContainerController
+                                                        .isLandscapeOrientation
+                                                )
+                                        ) {
+                                            securityContainerController.setupForDelayedAppear()
+                                        } else {
+                                            securityContainerController.appear()
+                                        }
+                                        securityContainerController.onResume(
+                                            KeyguardSecurityView.SCREEN_ON
+                                        )
+                                        bouncerLogger.bindingBouncerMessageView()
+                                        it.bindMessageView(
+                                            bouncerMessageInteractor,
+                                            messageAreaControllerFactory,
+                                            bouncerLogger,
+                                        )
+                                    }
                                 } else {
-                                    notifyBouncerGone()
+                                    securityContainerController.onBouncerVisibilityChanged(
+                                        /* isVisible= */ false
+                                    )
+
+                                    val isTransitionFromSecureLockDeviceToGone =
+                                        secureLockDevice()
+                                                && isTransitionToGoneFinished 
+                                                && viewModel.lastShownSecurityMode.value ==
+                                                KeyguardSecurityModel.SecurityMode
+                                                    .SecureLockDeviceBiometricAuth
+
+                                    if (isTransitionFromSecureLockDeviceToGone) {
+                                        // Skips below actions because we don't want to retrigger
+                                        // the security screen while the biometric bouncer is
+                                        // animating out.
+                                        Log.d(
+                                            TAG,
+                                            "Hiding bouncer after completing two-factor " +
+                                                "authentication for secure lock device.",
+                                        )
+                                        securityContainerController.onSecureLockDeviceUnlock()
+                                        bouncerMessageInteractor.onSecureLockDeviceUnlock()
+                                    } else {
+                                        securityContainerController.cancelDismissAction()
+                                        securityContainerController.reset()
+                                        securityContainerController.onPause()
+                                    }
+                                }
+                                plugins?.apply {
+                                    if (isShowing) {
+                                        notifyBouncerShowing(view)
+                                    } else {
+                                        notifyBouncerGone()
+                                    }
                                 }
                             }
+                    }
+
+                    if (secureLockDevice() && !SceneContainerFlag.isEnabled) {
+                        launch {
+                            combine(
+                                    viewModel.requiresPrimaryAuthForSecureLockDevice,
+                                    viewModel.requiresStrongBiometricAuthForSecureLockDevice,
+                                    viewModel.isReadyToDismissSecureLockDeviceOnUnlock,
+                                    ::Triple,
+                                )
+                                .collect {
+                                    (
+                                        shouldShowPrimaryAuth,
+                                        shouldShowBiometricAuth,
+                                        readyToDismissSecureLockDevice) ->
+                                    if (
+                                        readyToDismissSecureLockDevice
+                                    ) { // Secure lock device bio auth -> gone transition
+                                        plugins?.notifyBouncerGone()
+                                    } else if (shouldShowPrimaryAuth && !shouldShowBiometricAuth) {
+                                        // Secure lock device bio auth -> primary auth transition
+                                        securityContainerController
+                                            .onSecureLockDeviceBiometricAuthInterrupted {
+                                                securityContainerController
+                                                    .onBouncerVisibilityChanged(
+                                                        /* isVisible= */ false
+                                                    )
+                                                securityContainerController.cancelDismissAction()
+                                                securityContainerController.reset()
+                                                securityContainerController.onPause()
+                                            }
+                                        plugins?.notifyBouncerGone()
+                                    } else if (!shouldShowPrimaryAuth && shouldShowBiometricAuth) {
+                                        // Secure lock device primary auth -> bio auth transition
+                                        view.visibility = View.VISIBLE
+                                        showSecureLockDeviceBiometricAuth(
+                                            securityContainerController,
+                                            bouncerLogger,
+                                            bouncerMessageInteractor,
+                                            messageAreaControllerFactory,
+                                        )
+                                        plugins?.notifyBouncerShowing(view)
+                                    }
+                                }
                         }
                     }
 
@@ -267,6 +353,30 @@ object KeyguardBouncerViewBinder {
                     plugins?.notifyBouncerGone()
                 }
             }
+        }
+    }
+
+    private fun showSecureLockDeviceBiometricAuth(
+        securityContainerController: KeyguardSecurityContainerController,
+        bouncerLogger: BouncerLogger,
+        bouncerMessageInteractor: BouncerMessageInteractor,
+        messageAreaControllerFactory: KeyguardMessageAreaController.Factory,
+    ) {
+        // Reset security container because these views are not reinflated.
+        securityContainerController.prepareToShow()
+        securityContainerController.showSecureLockDeviceView {
+            // Reset Security Container entirely.
+            securityContainerController.onBouncerVisibilityChanged(/* isVisible= */ true)
+            securityContainerController.showPrimarySecurityScreen(/* turningOff= */ false)
+            securityContainerController.setInitialMessage()
+            securityContainerController.appear()
+            securityContainerController.onResume(KeyguardSecurityView.SCREEN_ON)
+            bouncerLogger.bindingBouncerMessageView()
+            it.bindMessageView(
+                bouncerMessageInteractor,
+                messageAreaControllerFactory,
+                bouncerLogger,
+            )
         }
     }
 }
