@@ -1887,4 +1887,14 @@ flag {
     }
 }
 
+flag {
+    name: "toggle_fullscreen_state_via_fullscreen_key"
+    namespace: "lse_desktop_experience"
+    description: "Toggles the focused task's fullscreen state when the fullscreen key is pressed."
+    bug: "396483171"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end

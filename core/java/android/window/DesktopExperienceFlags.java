@@ -338,6 +338,9 @@ public enum DesktopExperienceFlags {
     SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT(
             Flags::skipDeactivationOfDeskWithNothingInFront, true,
             Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT),
+    TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY(
+            Flags::toggleFullscreenStateViaFullscreenKey, false,
+            Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY),
     USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS(
             com.android.graphics.flags.Flags::useResourcesFromContextToCreateDrawableIcons,
             true,
