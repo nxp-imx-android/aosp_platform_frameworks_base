@@ -556,7 +556,7 @@ public final class DisplayManagerGlobal {
     private int findDisplayListenerLocked(DisplayListener listener) {
         final int numListeners = mDisplayListeners.size();
         for (int i = 0; i < numListeners; i++) {
-            if (mDisplayListeners.get(i).mListener == listener) {
+            if (mDisplayListeners.get(i).getListener() == listener) {
                 return i;
             }
         }
@@ -573,7 +573,7 @@ public final class DisplayManagerGlobal {
                     || mShouldImplicitlyRegisterRrChanges) {
                 displayListenerDelegate.implicitlyRegisterForRRChanges();
             }
-            mask |= displayListenerDelegate.mInternalEventFlagsMask;
+            mask |= displayListenerDelegate.getInternalEventFlagsMask();
         }
 
         if (mDispatchNativeCallbacks) {
@@ -1575,15 +1575,15 @@ public final class DisplayManagerGlobal {
 
     @VisibleForTesting
     public static final class DisplayListenerDelegate {
-        public final DisplayListener mListener;
-        public volatile long mInternalEventFlagsMask;
+        private final DisplayListener mListener;
+        private volatile long mInternalEventFlagsMask;
 
         // Indicates if the client explicitly supplied the display events to be subscribed to.
         private final boolean mIsEventFilterExplicit;
 
         private final DisplayInfo mDisplayInfo = new DisplayInfo();
         private final Executor mExecutor;
-        private AtomicLong mGenerationId = new AtomicLong(1);
+        private final AtomicLong mGenerationId = new AtomicLong(1);
         private final String mPackageName;
 
         DisplayListenerDelegate(DisplayListener listener, @NonNull Executor executor,
@@ -1596,15 +1596,23 @@ public final class DisplayManagerGlobal {
             mIsEventFilterExplicit = isEventFilterExplicit;
         }
 
+        public DisplayListener getListener() {
+            return mListener;
+        }
+
+        public @InternalEventFlag long getInternalEventFlagsMask() {
+            return mInternalEventFlagsMask;
+        }
+
         void sendDisplayEvent(int displayId, @DisplayEvent int event, @Nullable DisplayInfo info,
                 boolean forceUpdate) {
             if (extraLogging()) {
                 Slog.i(TAG, "Sending Display Event: " + eventToString(event));
             }
-            long generationId = mGenerationId.get();
+            long generationId = this.mGenerationId.get();
             mExecutor.execute(() -> {
                 // If the generation id's don't match we were canceled
-                if (generationId == mGenerationId.get()) {
+                if (generationId == this.mGenerationId.get()) {
                     handleDisplayEventInner(displayId, event, info, forceUpdate);
                 }
             });
@@ -1620,7 +1628,7 @@ public final class DisplayManagerGlobal {
         }
 
         void setEventsMask(@InternalEventFlag long newInternalEventFlagsMask) {
-            mInternalEventFlagsMask = newInternalEventFlagsMask;
+            this.mInternalEventFlagsMask = newInternalEventFlagsMask;
         }
 
         private void implicitlyRegisterForRRChanges() {
