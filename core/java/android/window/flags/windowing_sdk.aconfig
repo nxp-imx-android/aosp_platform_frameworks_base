@@ -84,17 +84,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "enable_window_context_override_type"
-    description: "Enable WindowContext to attach parent window and override window type"
-    bug: "398759994"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "enable_experimental_bubbles_controller"
     description: "Experiment to allow apps to request Bubbles actions in WM Shell"
     bug: "407149510"

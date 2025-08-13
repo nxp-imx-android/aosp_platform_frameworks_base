@@ -414,7 +414,6 @@ public class WindowContextTest {
         );
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testAttachWindow() throws InterruptedException {
         final View window = new View(mWindowContext);
@@ -441,7 +440,6 @@ public class WindowContextTest {
         assertThat(subWindowParams.token).isEqualTo(window.getWindowToken());
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testSetWindowTypeOverride() {
         int windowType = INVALID_WINDOW_TYPE;
@@ -461,7 +459,6 @@ public class WindowContextTest {
                 () -> mWindowContext.setWindowTypeOverride(invalidType));
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testSetWindowTypeOverrideAndAddView_invalidWindowType_noOverride() {
         WindowManager.LayoutParams params =
@@ -473,7 +470,6 @@ public class WindowContextTest {
         assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testSetWindowTypeOverrideAndAddView_windowContextType_override() {
         int windowType = mWindowContext.getWindowType();
@@ -485,7 +481,6 @@ public class WindowContextTest {
         assertThat(params.type).isEqualTo(windowType);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testSetWindowTypeOverrideAndAddView_subWindowWithoutParentWindow_throwException() {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
@@ -497,7 +492,6 @@ public class WindowContextTest {
                         wm.addView(new View(mWindowContext), params)));
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testSetWindowTypeOverrideAndAddView_subWindowWithParentWindow_override()
             throws InterruptedException {
@@ -519,7 +513,6 @@ public class WindowContextTest {
         assertThat(params.type).isEqualTo(TYPE_APPLICATION_ATTACHED_DIALOG);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testSetWindowTypeOverrideAndUpdateLayout_diffType_noOverride() {
         final View view = new View(mWindowContext);
@@ -537,7 +530,6 @@ public class WindowContextTest {
         assertThat(params.type).isEqualTo(TYPE_APPLICATION_OVERLAY);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_CONTEXT_OVERRIDE_TYPE)
     @Test
     public void testBuildInteractionJankMonitorConfigWithWindowAttached_notCrash() {
         final ApplicationInfo appInfo = mWindowContext.getApplicationInfo();
@@ -668,7 +660,7 @@ public class WindowContextTest {
 
     private static class ConfigurationListener implements ComponentCallbacks {
         private Configuration mConfiguration;
-        private CountDownLatch mLatch = new CountDownLatch(1);
+        private final CountDownLatch mLatch = new CountDownLatch(1);
 
         @Override
         public void onConfigurationChanged(@NonNull Configuration newConfig) {
