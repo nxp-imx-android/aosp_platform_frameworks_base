@@ -76,6 +76,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.InputMethodManager;
 
@@ -115,6 +116,7 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.ILauncherProxy;
 import com.android.systemui.shared.recents.ISystemUiProxy;
@@ -175,6 +177,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final NotificationShadeWindowController mStatusBarWinController;
     private final Provider<SceneInteractor> mSceneInteractor;
     private final Provider<ShadeInteractor> mShadeInteractor;
+    private final Provider<ShadeModeInteractor> mShadeModeInteractor;
     private final StatusBarTouchShadeDisplayPolicy mShadeDisplayPolicy;
 
     private final Runnable mConnectionRunnable = () ->
@@ -276,8 +279,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                         } else if (action == ACTION_UP) {
                             // Gesture was too short to be picked up by scene container touch
                             // handling; programmatically start the transition to the shade.
-                            mShadeInteractor.get()
-                                    .expandNotificationsShade("short launcher swipe", null);
+                            onShadeExpansionGesture(event, "short launcher swipe");
                         }
                     }
                     event.recycle();
@@ -317,11 +319,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 if (SceneContainerFlag.isEnabled()) {
                     int action = event.getActionMasked();
                     if (action == ACTION_DOWN) {
-                        mSceneInteractor.get().onRemoteUserInputStarted(
-                                "trackpad swipe");
+                        mSceneInteractor.get().onRemoteUserInputStarted("trackpad swipe");
                     } else if (action == ACTION_UP) {
-                        mShadeInteractor.get()
-                                .expandNotificationsShade("short trackpad swipe", null);
+                        onShadeExpansionGesture(event, "short trackpad swipe");
                     }
                     mStatusBarWinController.getWindowRootView().dispatchTouchEvent(event);
                 } else {
@@ -506,6 +506,31 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         public void toggleQuickSettingsPanel() {
             verifyCallerAndClearCallingIdentityPostMain("toggleQuickSettingsPanel", () ->
                     mCommandQueue.toggleQuickSettingsPanel());
+        }
+
+        private void onShadeExpansionGesture(MotionEvent event, String reason) {
+            if (!SceneContainerFlag.isEnabled()) {
+                return;
+            }
+            if (!mShadeModeInteractor.get().isDualShade()) {
+                mShadeInteractor.get().expandNotificationsShade(reason, null);
+            }
+
+            final DisplayInfo displayInfo = new DisplayInfo();
+            mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
+            boolean isLeftSide = event.getX() < displayInfo.logicalWidth / 2f;
+
+            boolean isRtlLayout =
+                    mContext.getResources().getConfiguration().getLayoutDirection()
+                            == View.LAYOUT_DIRECTION_RTL;
+
+            boolean isStartSide = (isLeftSide && !isRtlLayout) || (!isLeftSide && isRtlLayout);
+
+            if (isStartSide) {
+                mShadeInteractor.get().expandNotificationsShade(reason, null);
+            } else {
+                mShadeInteractor.get().expandQuickSettingsShade(reason, null);
+            }
         }
 
         private boolean verifyCaller(String reason) {
@@ -745,6 +770,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             PerDisplayRepository<SysUiState> perDisplaySysUiStateRepository,
             Provider<SceneInteractor> sceneInteractor,
             Provider<ShadeInteractor> shadeInteractor,
+            Provider<ShadeModeInteractor> shadeModeInteractor,
             StatusBarTouchShadeDisplayPolicy shadeDisplayPolicy,
             UserTracker userTracker,
             UserManager userManager,
@@ -788,6 +814,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         mStatusBarWinController = statusBarWinController;
         mSceneInteractor = sceneInteractor;
         mShadeInteractor = shadeInteractor;
+        mShadeModeInteractor = shadeModeInteractor;
         mShadeDisplayPolicy = shadeDisplayPolicy;
         mUserTracker = userTracker;
         mConnectionBackoffAttempts = 0;
