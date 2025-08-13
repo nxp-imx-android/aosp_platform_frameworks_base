@@ -29,7 +29,6 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
 import org.junit.FixMethodOrder
@@ -62,7 +61,7 @@ import org.junit.runners.MethodSorters
 class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
     EnterBubbleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         val testApp2: StandardAppHelper = ShowWhenLockedAppHelper(instrumentation)
 
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -73,7 +72,7 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
                     uiDevice,
                     primaryApp = testApp,
                     secondaryApp = testApp2,
-                    Rotation.ROTATION_0
+                    Rotation.ROTATION_0,
                 )
                 tapl.goHome()
             },
@@ -81,7 +80,7 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
                 launchBubbleViaBubbleMenu(
                     testApp,
                     tapl,
-                    wmHelper
+                    wmHelper,
                 )
             },
             tearDownAfterTransition = {
@@ -93,7 +92,7 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(),
 
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
-        Utils.testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule)
+        Utils.testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
     )
 
     override val traceDataReader

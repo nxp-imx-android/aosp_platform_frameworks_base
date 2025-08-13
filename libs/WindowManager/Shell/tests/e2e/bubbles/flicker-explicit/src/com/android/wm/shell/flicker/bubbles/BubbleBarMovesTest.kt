@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.bubbles
 
+import android.graphics.Point
 import android.platform.systemui_tapl.ui.Root
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
@@ -28,7 +29,6 @@ import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Assume.assumeTrue
@@ -66,12 +66,11 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubbleTestCases {
-    companion object : FlickerPropertyInitializer() {
 
-        /**
-         * Whether the bubble bar position is changed.
-         */
-        private var bubbleBarPosChanges: Boolean = false
+    companion object {
+
+        private lateinit var bubbleBarBeforeTransition: Point
+        private lateinit var bubbleBarAfterTransition: Point
 
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
@@ -80,10 +79,9 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
                 collapseBubbleAppViaTouchOutside(testApp, wmHelper)
             },
             transition = {
-                val bubbleBarBeforeTransition = Root.get().bubbleBar.visibleCenter
+                bubbleBarBeforeTransition = Root.get().bubbleBar.visibleCenter
                 Root.get().bubbleBar.dragToTheOtherSide()
-                val bubbleBarAfterTransition = Root.get().bubbleBar.visibleCenter
-                bubbleBarPosChanges = (bubbleBarBeforeTransition != bubbleBarAfterTransition)
+                bubbleBarAfterTransition = Root.get().bubbleBar.visibleCenter
                 expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
             },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
@@ -97,7 +95,7 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader
@@ -116,7 +114,7 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
     @Test
     fun bubbleBarMovesToTheOtherSide() {
         assertWithMessage("The bubble bar position must be changed")
-            .that(bubbleBarPosChanges)
-            .isTrue()
+            .that(bubbleBarAfterTransition)
+            .isNotEqualTo(bubbleBarBeforeTransition)
     }
 }

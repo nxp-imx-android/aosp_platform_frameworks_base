@@ -27,7 +27,6 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaDragToBubbleBar
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.Assume.assumeTrue
@@ -66,7 +65,7 @@ import org.junit.runners.Parameterized
 class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
     EnterBubbleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, testApp.appName)
@@ -83,7 +82,7 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
     @get:Rule
     val setUpRule: TestRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader
