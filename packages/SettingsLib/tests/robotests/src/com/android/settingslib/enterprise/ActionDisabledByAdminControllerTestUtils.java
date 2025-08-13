@@ -20,6 +20,8 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.app.admin.DeviceAdminAuthority;
 import android.app.admin.EnforcingAdmin;
+import android.app.admin.SystemAuthority;
+import android.app.supervision.SupervisionManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.UserHandle;
@@ -51,6 +53,13 @@ public final class ActionDisabledByAdminControllerTestUtils {
                     DeviceAdminAuthority.DEVICE_ADMIN_AUTHORITY,
                     UserHandle.of(ENFORCEMENT_ADMIN_USER_ID),
                     ADMIN_COMPONENT);
+
+    static final EnforcingAdmin SUPERVISION_SYSTEM =
+            new EnforcingAdmin(
+                    "",
+                    new SystemAuthority(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
+                    UserHandle.of(UserHandle.USER_SYSTEM)
+            );
 
     static final String URL = "https://testexample.com";
 

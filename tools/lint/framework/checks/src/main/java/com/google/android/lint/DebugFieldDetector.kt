@@ -126,8 +126,7 @@ class DebugFieldDetector : Detector(), SourceCodeScanner {
         // Somewhat arbitrary priority, where `10` is the highest.
         private val ISSUE_PRIORITY = 6
 
-        // TODO(b/436095548): Upgrade to ERROR after updating appropriate lint baselines.
-        private val ISSUE_SEVERITY = Severity.WARNING
+        private val ISSUE_SEVERITY = Severity.ERROR
 
         private val DEBUG_TRUE_EXPLANATION =
             """

@@ -15,26 +15,13 @@
 package com.android.systemui.plugins.keyguard.ui.composable.elements
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import com.android.compose.animation.scene.ElementKey
-import com.android.systemui.log.core.Logger
-import com.android.systemui.log.core.MessageBuffer
-import com.android.systemui.plugins.keyguard.VRectF
-import kotlin.sequences.associateBy
 
 @Immutable
 /** Factory to build composable lockscreen elements based on keys */
-class LockscreenElementFactory(
-    private val elements: Map<ElementKey, LockscreenElement>,
-    messageBuffer: MessageBuffer,
-) {
-    private val logger = Logger(messageBuffer, LockscreenElementFactory::class.simpleName!!)
-
+interface LockscreenElementFactory {
     /**
      * Finds and renders the composable element at the specified key.
      *
@@ -44,46 +31,20 @@ class LockscreenElementFactory(
     fun lockscreenElement(
         key: ElementKey,
         context: LockscreenElementContext,
-        modifier: Modifier = Modifier,
-    ): Boolean {
-        if (!context.history.add(key)) {
-            // TODO(b/432451019): Remove when more stable or upgrade to wtf log
-            // Prevent crashes when the same element is rendered in two locations
-            logger.e({ "Lockscreen Element has already been rendered: $str1" }) { str1 = "$key" }
-            return false
-        }
-
-        val element = elements[key]
-        if (element == null) {
-            logger.e({ "No lockscreen element available at key: $str1" }) { str1 = "$key" }
-            return false
-        }
-
-        CompositionLocalProvider(LocalContext provides element.context) {
-            with(context.scope) {
-                Element(
-                    key = key,
-                    modifier =
-                        modifier.onGloballyPositioned { coordinates ->
-                            context.onElementPositioned(key, VRectF(coordinates.boundsInWindow()))
-                        },
-                ) {
-                    with(element) { LockscreenElement(this@LockscreenElementFactory, context) }
-                }
-            }
-        }
-        return true
-    }
+        modifier: Modifier,
+    ): Boolean
 
     companion object {
-        /** Convenience method for building an element factory */
-        fun build(
-            messageBuffer: MessageBuffer,
-            builder: ((List<LockscreenElement>) -> Unit) -> Unit,
-        ): LockscreenElementFactory {
-            val map = mutableMapOf<ElementKey, LockscreenElement>()
-            builder { map.putAll(it.associateBy { e -> e.key }) }
-            return LockscreenElementFactory(map, messageBuffer)
+        /**
+         * Finds and renders the composable at the specified key with the default modifier. This is
+         * provided because compose doesn't seem to like interface methods with default arguments.
+         */
+        @Composable
+        fun LockscreenElementFactory.lockscreenElement(
+            key: ElementKey,
+            context: LockscreenElementContext,
+        ): Boolean {
+            return lockscreenElement(key, context, Modifier)
         }
     }
 }

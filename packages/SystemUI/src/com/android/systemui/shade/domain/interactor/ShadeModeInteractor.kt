@@ -95,17 +95,19 @@ constructor(
             flowOf(false)
         }
 
-    private val isSplitShadeEnabled: Boolean =
-        !SceneContainerFlag.isEnabled ||
-            !context.resources.getBoolean(R.bool.config_disableSplitShade)
+    private val isSplitShadeDisabled: Boolean =
+        SceneContainerFlag.isEnabled &&
+            context.resources.getBoolean(R.bool.config_disableSplitShade)
 
     override val isFullWidthShade: StateFlow<Boolean> =
         isDualShadeSettingEnabled
             .flatMapLatest { isDualShadeSettingEnabled ->
-                if (isDualShadeSettingEnabled) {
+                if (isDualShadeSettingEnabled || isSplitShadeDisabled) {
+                    // Dual Shade should be shown; derive the layout from the screen width.
                     Log.d(TAG, "Shade layout is derived from screen width")
                     repository.isWideScreen.map { !it }
                 } else {
+                    // Single/Split shade should be shown; derive the layout from the config.
                     Log.d(TAG, "Shade layout is derived from the legacy config")
                     repository.legacyUseSplitShade.map { !it }
                 }
@@ -146,15 +148,15 @@ constructor(
                         "the setting is 'combined', and the device is a phone " +
                             "(in any orientation) or large screen in portrait"
 
-                isSplitShadeEnabled ->
-                    ShadeMode.Split to
-                        "the setting is 'combined', split shade is enabled, " +
-                            "and the device has a large screen in landscape orientation"
-
-                else ->
+                isSplitShadeDisabled ->
                     ShadeMode.Dual to
                         "the setting is 'combined', " +
                             "but split shade disabled and the device has a large screen"
+
+                else ->
+                    ShadeMode.Split to
+                        "the setting is 'combined', split shade is enabled, " +
+                            "and the device has a large screen in landscape orientation"
             }
         Log.d(TAG, "Shade mode is $newMode because $reason")
         return newMode

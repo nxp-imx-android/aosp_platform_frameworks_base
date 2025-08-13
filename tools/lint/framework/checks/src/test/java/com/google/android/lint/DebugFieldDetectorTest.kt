@@ -68,8 +68,26 @@ class DebugFieldDetectorTest : LintDetectorTest() {
                     .indented()
             )
             .run()
-            .expectWarningCount(1)
+            .expectErrorCount(1)
             .checkFix(null, after = expectedCleanJavaField)
+    }
+
+    fun testJavaStaticFinalDebugTrueSuppressLint() {
+        lint()
+            .files(
+                java(
+                        """
+                package test.pkg;
+                class TestClass {
+                    @SuppressWarnings("DebugTrue")
+                    static final boolean DEBUG = true;
+                }
+                """
+                    )
+                    .indented()
+            )
+            .run()
+            .expectClean()
     }
 
     fun testJavaStaticDebugTrue() {
@@ -86,7 +104,7 @@ class DebugFieldDetectorTest : LintDetectorTest() {
                     .indented()
             )
             .run()
-            .expectWarningCount(2)
+            .expectErrorCount(2)
             .checkFix(null, after = expectedCleanJavaField)
     }
 
@@ -121,7 +139,7 @@ class DebugFieldDetectorTest : LintDetectorTest() {
                     .indented()
             )
             .run()
-            .expectWarningCount(1)
+            .expectErrorCount(1)
             .checkFix(null, after = expectedCleanJavaField)
     }
 
@@ -158,7 +176,7 @@ class DebugFieldDetectorTest : LintDetectorTest() {
                     .indented()
             )
             .run()
-            .expectWarningCount(2)
+            .expectErrorCount(2)
             .checkFix(null, after = expectedCleanKotlinField)
     }
 
@@ -178,7 +196,7 @@ class DebugFieldDetectorTest : LintDetectorTest() {
                     .indented()
             )
             .run()
-            .expectWarningCount(1)
+            .expectErrorCount(1)
             .checkFix(null, after = expectedCleanKotlinField)
     }
 }

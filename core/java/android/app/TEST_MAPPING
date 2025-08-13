@@ -219,5 +219,11 @@
             "file_patterns": ["(/|^)AppOpsManager.java"],
             "name": "CtsAppOpsTestCases"
         }
+    ],
+    "desktop-presubmit": [
+        {
+            "name": "CtsWindowManagerDevicePip_wm_cts",
+            "file_patterns": ["(/|^)ContextImpl.java"]
+        }
     ]
 }

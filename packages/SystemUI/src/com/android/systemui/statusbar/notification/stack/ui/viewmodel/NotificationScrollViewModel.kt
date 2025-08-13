@@ -152,13 +152,26 @@ constructor(
         }
     }
 
+    val qsExpandFraction: Flow<Float> =
+        shadeInteractor.qsExpansion.dumpWhileCollecting("qsExpandFraction")
+
     /** Are notification stack height updates suppressed? */
     val suppressHeightUpdates: Flow<Boolean> =
-        sceneInteractor.transitionState.map { transition: ObservableTransitionState ->
-            transition is Transition &&
-                transition.fromContent == Scenes.Lockscreen &&
-                (transition.toContent == Overlays.Bouncer || transition.toContent == Scenes.Gone)
-        }
+        sceneInteractor.transitionState
+            .map { state: ObservableTransitionState ->
+                when (state) {
+                    is Idle -> {
+                        state.currentScene == Scenes.QuickSettings
+                    }
+                    is Transition -> {
+                        state.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings) ||
+                            state.fromContent == Scenes.Lockscreen &&
+                                (state.toContent == Overlays.Bouncer ||
+                                    state.toContent == Scenes.Gone)
+                    }
+                }
+            }
+            .dumpWhileCollecting("suppressHeightUpdates")
 
     /**
      * The expansion fraction of the notification stack. It should go from 0 to 1 when transitioning
@@ -207,9 +220,6 @@ constructor(
             }
             .distinctUntilChanged()
             .dumpWhileCollecting("expandFraction")
-
-    val qsExpandFraction: Flow<Float> =
-        shadeInteractor.qsExpansion.dumpWhileCollecting("qsExpandFraction")
 
     val isOccluded: Flow<Boolean> =
         bouncerInteractor.bouncerExpansion

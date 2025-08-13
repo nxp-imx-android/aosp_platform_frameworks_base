@@ -115,6 +115,16 @@ flag {
 }
 
 flag {
+    name: "notify_qs_tile_changed_after_user_initialization"
+    namespace: "accessibility"
+    description: "Pause SysUI notifying QuickSettings tiles changed until the user in AMS finishes initialization."
+    bug: "392560794"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "only_reset_magnification_if_needed_when_destroy_handler"
     namespace: "accessibility"
     description: "Don't reset the activated magnification if the magnification feature is still enabled when AccessibilityInputFilter recreates gesture handler."

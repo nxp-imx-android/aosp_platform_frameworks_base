@@ -62,6 +62,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_CLOSE_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MINIMIZE_BUTTON
+import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.AmbiguousSource
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
@@ -260,6 +261,7 @@ class AppHeaderViewHolder(
                             )
                             windowDecorationActions.onMaximizeOrRestore(
                                 currentTaskInfo.taskId,
+                                AmbiguousSource.HEADER_BUTTON,
                                 InputMethod.ACCESSIBILITY,
                             )
                         }
@@ -324,6 +326,7 @@ class AppHeaderViewHolder(
                             )
                             windowDecorationActions.onMaximizeOrRestore(
                                 currentTaskInfo.taskId,
+                                AmbiguousSource.HEADER_BUTTON,
                                 InputMethod.ACCESSIBILITY,
                             )
                         }

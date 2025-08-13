@@ -105,6 +105,8 @@ import android.window.StartingWindowInfo;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskAppearedInfo;
 import android.window.TaskFragmentOrganizer;
+import android.window.TransitionInfo;
+import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -1382,6 +1384,13 @@ public class WindowOrganizerTests extends WindowTestsBase {
         }
         @Override
         public void onAppSplashScreenViewRemoved(int taskId) {
+        }
+        @Override
+        public void onTransitionReady(IBinder iBinder, TransitionInfo transitionInfo,
+                SurfaceControl.Transaction t, SurfaceControl.Transaction finishT) {
+        }
+        @Override
+        public void requestStartTransition(IBinder iBinder, TransitionRequestInfo request) {
         }
     };
 

@@ -251,7 +251,6 @@ constructor(
     private var isCharging = false
     private var isKeyguardVisible = false
     private var isRegistered = false
-    private var disposableHandle: DisposableHandle? = null
     private val regionSamplingEnabled = featureFlags.isEnabled(REGION_SAMPLING)
     private var largeClockOnSecondaryDisplay = false
 
@@ -460,11 +459,25 @@ constructor(
                 }
     }
 
-    fun registerListeners(parent: View) {
-        if (isRegistered) {
-            return
+    fun bind(parent: View): DisposableHandle {
+        return parent.repeatWhenAttached {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                listenForDnd(this)
+                listenForDozeAmountTransition(this)
+                listenForAnyStateToAodTransition(this)
+                listenForAnyStateToLockscreenTransition(this)
+                listenForAnyStateToDozingTransition(this)
+                if (com.android.systemui.Flags.newDozingKeyguardStates()) {
+                    listenForDozingToLockscreen(this)
+                }
+            }
         }
+    }
+
+    fun registerListeners() {
+        if (isRegistered) return
         isRegistered = true
+
         broadcastDispatcher.registerReceiver(
             localeBroadcastReceiver,
             IntentFilter(Intent.ACTION_LOCALE_CHANGED),
@@ -482,19 +495,6 @@ constructor(
                 }
             )
         }
-        disposableHandle =
-            parent.repeatWhenAttached {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    listenForDnd(this)
-                    listenForDozeAmountTransition(this)
-                    listenForAnyStateToAodTransition(this)
-                    listenForAnyStateToLockscreenTransition(this)
-                    listenForAnyStateToDozingTransition(this)
-                    if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-                        listenForDozingToLockscreen(this)
-                    }
-                }
-            }
         smallTimeListener?.update(shouldTimeListenerRun)
         largeTimeListener?.update(shouldTimeListenerRun)
 
@@ -505,12 +505,9 @@ constructor(
     }
 
     fun unregisterListeners() {
-        if (!isRegistered) {
-            return
-        }
+        if (!isRegistered) return
         isRegistered = false
 
-        disposableHandle?.dispose()
         broadcastDispatcher.unregisterReceiver(localeBroadcastReceiver)
         configurationController.removeCallback(configListener)
         batteryController.removeCallback(batteryCallback)

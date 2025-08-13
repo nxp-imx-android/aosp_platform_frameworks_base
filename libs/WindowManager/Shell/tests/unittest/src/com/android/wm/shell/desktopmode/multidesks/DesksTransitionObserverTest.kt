@@ -109,7 +109,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 /* shellController= */ mockShellController,
                 /* persistentRepository= */ mock(),
                 /* repositoryInitializer= */ mock(),
-                testScope,
+                testScope.backgroundScope,
                 testScope.backgroundScope,
                 /* userManager= */ mock(),
                 desktopState,

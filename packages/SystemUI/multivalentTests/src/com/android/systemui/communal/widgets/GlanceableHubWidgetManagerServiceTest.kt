@@ -166,6 +166,9 @@ class GlanceableHubWidgetManagerServiceTest : SysuiTestCase() {
 
             appWidgetHostListener.onViewDataChanged(1)
             verify(listener).onViewDataChanged(1)
+
+            appWidgetHostListener.collectWidgetEvent()
+            verify(listener).collectWidgetEvent()
         }
 
     @Test

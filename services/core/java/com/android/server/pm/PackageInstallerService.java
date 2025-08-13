@@ -1153,7 +1153,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                 null, null, false, false, false, false, null, SessionInfo.INVALID_ID,
                 false, false, false, PackageManager.INSTALL_UNKNOWN, "", null,
                 mDeveloperVerifierController, verificationPolicy, verificationPolicy,
-                mInstallDependencyHelper);
+                mInstallDependencyHelper, /* restoredOnReboot= */ false);
 
         synchronized (mSessions) {
             mSessions.put(sessionId, session);

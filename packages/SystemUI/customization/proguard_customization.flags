@@ -28,6 +28,8 @@
 -keep class androidx.compose.foundation.layout.SizeKt {
     *** heightIn*$default(...);
     *** fillMaxSize*$default(...);
+    *** fillMaxWidth*$default(...);
+    *** fillMaxHeight*$default(...);
     *** wrapContentSize*$default(...);
 }
 
@@ -65,6 +67,7 @@
     *** getBottom(...);
     *** getStart(...);
     *** getEnd(...);
+    *** getSpaceBetween(...);
 }
 
 -keep class androidx.compose.ui.Alignment {
@@ -105,4 +108,9 @@
 
 -keep class androidx.compose.runtime.internal.ComposableLambdaKt {
     *** rememberComposableLambda(...);
+}
+
+-keep class androidx.compose.foundation.layout.IntrinsicKt {
+    *** height(...);
+    *** width(...);
 }

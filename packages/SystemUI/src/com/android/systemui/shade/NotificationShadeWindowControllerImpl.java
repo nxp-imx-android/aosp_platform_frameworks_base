@@ -296,7 +296,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         // Attach the notification shade window as the parent window to add attached dialogs.
         // It's essential because attached dialogs are sub-windows, which require a parent window
         // to attach.
-        if (windowContext != null && isWindowContextOverrideTypeEnabled()) {
+        if (windowContext != null) {
             windowContext.attachWindow(mWindowRootView);
         }
         mWindowManager.addView(mWindowRootView, mLp);
@@ -307,7 +307,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         // the shade window we just attached, we should make sure the override window type is reset
         // (via windowContext.setWindowTypeOverride(INVALID_WINDOW_TYPE)) before adding the shade
         // window to prevent its type is overridden unexpectedly.
-        if (windowContext != null && isWindowContextOverrideTypeEnabled()) {
+        if (windowContext != null) {
             windowContext.setWindowTypeOverride(TYPE_APPLICATION_ATTACHED_DIALOG);
         }
 
@@ -332,10 +332,6 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     @Nullable
     private static WindowContext asWindowContext(@NonNull Context context) {
         return (context instanceof WindowContext windowContext) ? windowContext : null;
-    }
-
-    private static boolean isWindowContextOverrideTypeEnabled() {
-        return com.android.window.flags.Flags.enableWindowContextOverrideType();
     }
 
     @Override

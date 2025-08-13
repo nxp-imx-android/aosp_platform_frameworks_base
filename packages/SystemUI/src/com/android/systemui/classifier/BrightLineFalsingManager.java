@@ -108,7 +108,7 @@ public class BrightLineFalsingManager implements FalsingManager {
                     "{belief=%s confidence=%s}",
                     mHistoryTracker.falseBelief(),
                     mHistoryTracker.falseConfidence()));
-            if (belief > FALSE_BELIEF_THRESHOLD) {
+            if (belief > FALSE_BELIEF_THRESHOLD && !skipFalsing(GENERIC)) {
                 mFalsingBeliefListeners.forEach(FalsingBeliefListener::onFalse);
                 logInfo("Triggering False Event (Threshold: " + FALSE_BELIEF_THRESHOLD + ")");
             }

@@ -73,6 +73,7 @@ import java.util.TimeZone
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
@@ -134,6 +135,7 @@ class ClockEventControllerTest : SysuiTestCase() {
 
     @Mock private lateinit var zenModeController: ZenModeController
     private var zenModeControllerCallback: ZenModeController.Callback? = null
+    private var bindHandle: DisposableHandle? = null
 
     @Before
     fun setUp() {
@@ -183,8 +185,8 @@ class ClockEventControllerTest : SysuiTestCase() {
         underTest.clock = clock
 
         runBlocking(IMMEDIATE) {
-            underTest.registerListeners(parentView)
-
+            underTest.registerListeners()
+            bindHandle = underTest.bind(parentView)
             repository.setIsDozing(true)
         }
 

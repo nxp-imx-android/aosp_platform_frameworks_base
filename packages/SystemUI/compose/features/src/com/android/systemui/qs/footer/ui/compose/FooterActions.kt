@@ -105,7 +105,7 @@ import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsSecurityButtonVi
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.FooterTextButtonViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackViewModel
-import com.android.systemui.qs.ui.composable.QuickSettings
+import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R

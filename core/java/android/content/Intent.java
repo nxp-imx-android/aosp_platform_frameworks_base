@@ -13006,7 +13006,7 @@ public class Intent implements Parcelable, Cloneable {
         if (mComponent != null) {
             out.attribute(null, ATTR_COMPONENT, mComponent.flattenToShortString());
         }
-        if (android.content.flags.Flags.intentSaveToXmlPackage() && mPackage != null) {
+        if (mPackage != null) {
             out.attribute(null, ATTR_PACKAGE, mPackage);
         }
         out.attribute(null, ATTR_FLAGS, Integer.toHexString(getFlags()));
@@ -13042,8 +13042,7 @@ public class Intent implements Parcelable, Cloneable {
                 intent.setComponent(ComponentName.unflattenFromString(attrValue));
             } else if (ATTR_FLAGS.equals(attrName)) {
                 intent.setFlags(Integer.parseInt(attrValue, 16));
-            } else if (android.content.flags.Flags.intentSaveToXmlPackage()
-                    && ATTR_PACKAGE.equals(attrName)) {
+            } else if (ATTR_PACKAGE.equals(attrName)) {
                 intent.setPackage(attrValue);
             } else {
                 Log.e(TAG, "restoreFromXml: unknown attribute=" + attrName);

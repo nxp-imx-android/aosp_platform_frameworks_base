@@ -85,6 +85,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -203,6 +204,119 @@ class SupervisionServiceTest {
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(service.getActiveSupervisionAppPackage(USER_ID)).isNull()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SYNC_WITH_DPM)
+    fun onUserStarting_supervisionNotEnabled_doesNotApplyRestriction() {
+        // Sets supervision not enabled.
+        setSupervisionEnabledForUserInternal(USER_ID, false)
+
+        // Starts the user.
+        simulateUserStarting(USER_ID)
+
+        // Verifies restriction not enabled.
+        verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SYNC_WITH_DPM)
+    fun onUserStarting_supervisionEnabled_hasPendingRecoveryInfo_doesNotRestrictFactoryReset() {
+        // Sets supervision recovery info to pending.
+        setSupervisionRecoveryInfo(state = STATE_PENDING)
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        val inOrder = inOrder(mockDpmInternal)
+        inOrder
+            .verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+
+        // Starts the user.
+        simulateUserStarting(USER_ID)
+
+        // Verifies restriction not enabled.
+        inOrder
+            .verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SYNC_WITH_DPM)
+    fun onUserStarting_supervisionEnabled_hasSupervisionRoleHolders_doesNotRestrictFactoryReset() {
+        // Sets supervision recovery info and supervision role holders.
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf("com.example.supervisionapp1"),
+        )
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        val inOrder = inOrder(mockDpmInternal)
+        inOrder
+            .verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+
+        // Starts the user.
+        simulateUserStarting(USER_ID)
+
+        // Verifies restriction not enabled.
+        inOrder
+            .verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+    }
+
+    @Test
+    fun onUserStarting_supervisionEnabled_hasVerifiedRecoveryInfo_restrictsFactoryReset() {
+        // Sets supervision recovery info.
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        val inOrder = inOrder(mockDpmInternal)
+        inOrder
+            .verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ true,
+                USER_ID,
+            )
+
+        // Starts the user.
+        simulateUserStarting(USER_ID)
+
+        // Verifies restriction is enabled.
+        inOrder
+            .verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ true,
+                USER_ID,
+            )
     }
 
     @Test

@@ -252,3 +252,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "psc_batch_update"
+    namespace: "backstage_power"
+    description: "Batch ProcessStateController updates triggered while a BatchSession is active."
+    bug: "399680824"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -22,7 +22,7 @@ import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.UserActionDistance
 import com.android.systemui.bouncer.ui.composable.Bouncer
 
-val BOUNCER_INITIAL_TRANSLATION = 300.dp
+val BOUNCER_INITIAL_TRANSLATION = 48.dp
 
 fun TransitionBuilder.fromBouncerTransition() {
     spec = tween(durationMillis = 500)
@@ -32,7 +32,7 @@ fun TransitionBuilder.fromBouncerTransition() {
         fromContentSize.height * TO_BOUNCER_SWIPE_DISTANCE_FRACTION
     }
 
-    translate(Bouncer.Elements.Content, y = BOUNCER_INITIAL_TRANSLATION)
+    translate(Bouncer.Elements.Content, y = -BOUNCER_INITIAL_TRANSLATION)
     fractionRange(end = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Background) }
     fractionRange(start = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Content) }
 }

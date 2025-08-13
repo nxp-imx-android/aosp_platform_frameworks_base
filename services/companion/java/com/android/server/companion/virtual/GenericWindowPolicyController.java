@@ -316,12 +316,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
             logActivityLaunchBlocked("Mirror virtual displays cannot contain activities.");
             return false;
         }
-        if (!android.companion.virtualdevice.flags.Flags.gwpcAwareWindowingMode()
-                && !isWindowingModeSupported(windowingMode)) {
-            logActivityLaunchBlocked(
-                    "Virtual device doesn't support windowing mode " + windowingMode);
-            return false;
-        }
         if (!mIsSecureDisplay && (activityInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0) {
             logActivityLaunchBlocked("Display requires android:canDisplayOnRemoteDevices=true");
             return false;

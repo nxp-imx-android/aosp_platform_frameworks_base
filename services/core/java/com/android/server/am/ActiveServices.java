@@ -26,6 +26,7 @@ import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_HEAVY_WEIGHT;
 import static android.app.ActivityManager.PROCESS_STATE_RECEIVER;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BATCH_UPDATE_REQUEST;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BIND_SERVICE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_COMPONENT_DISABLED;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_EXECUTING_SERVICE;
@@ -144,6 +145,7 @@ import android.app.ActivityThread;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.BackgroundStartPrivileges;
+import android.app.BindUpdateInfo;
 import android.app.ForegroundServiceDelegationOptions;
 import android.app.ForegroundServiceStartNotAllowedException;
 import android.app.ForegroundServiceTypePolicy;
@@ -4558,6 +4560,42 @@ public final class ActiveServices {
         }
     }
 
+    boolean unbindServiceConnectionsLocked(IBinder binder,
+                                           ArrayList<ConnectionRecord> clist) {
+        boolean needOomAdj = false;
+        while (clist.size() > 0) {
+            final ConnectionRecord r = clist.get(0);
+            final int serviceBindingOomAdjPolicy = removeConnectionLocked(r, null, null, true);
+            if (clist.size() > 0 && clist.get(0) == r) {
+                // In case it didn't get removed above, do it now.
+                Slog.wtf(TAG, "Connection " + r + " not removed for binder " + binder);
+                clist.remove(0);
+            }
+
+            final ProcessRecord app = r.binding.service.app;
+            if (app != null) {
+                final ProcessServiceRecord psr = app.mServices;
+                if (psr.mAllowlistManager) {
+                    updateAllowlistManagerLocked(psr);
+                }
+                // This could have made the service less important.
+                if (r.hasFlag(Context.BIND_TREAT_LIKE_ACTIVITY)) {
+                    // TODO(b/367545398): the following line is a bug. A service unbind
+                    //  should potentially lower a process's importance, not elevate it.
+                    mAm.mProcessStateController.setTreatLikeActivity(psr, true);
+                    mAm.updateLruProcessLocked(app, true, null);
+                }
+                // If the bindee is more important than the binder, we may skip the OomAdjuster.
+                if (serviceBindingOomAdjPolicy == SERVICE_BIND_OOMADJ_POLICY_LEGACY) {
+                    mAm.enqueueOomAdjTargetLocked(app);
+                    needOomAdj = true;
+                }
+            }
+        }
+
+        return needOomAdj;
+    }
+
     boolean unbindServiceLocked(IServiceConnection connection) {
         IBinder binder = connection.asBinder();
         if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "unbindService: conn=" + binder);
@@ -4582,36 +4620,7 @@ public final class ActiveServices {
                 Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "unbindServiceLocked: " + info);
             }
 
-            boolean needOomAdj = false;
-            while (clist.size() > 0) {
-                ConnectionRecord r = clist.get(0);
-                int serviceBindingOomAdjPolicy = removeConnectionLocked(r, null, null, true);
-                if (clist.size() > 0 && clist.get(0) == r) {
-                    // In case it didn't get removed above, do it now.
-                    Slog.wtf(TAG, "Connection " + r + " not removed for binder " + binder);
-                    clist.remove(0);
-                }
-
-                final ProcessRecord app = r.binding.service.app;
-                if (app != null) {
-                    final ProcessServiceRecord psr = app.mServices;
-                    if (psr.mAllowlistManager) {
-                        updateAllowlistManagerLocked(psr);
-                    }
-                    // This could have made the service less important.
-                    if (r.hasFlag(Context.BIND_TREAT_LIKE_ACTIVITY)) {
-                        // TODO(b/367545398): the following line is a bug. A service unbind
-                        //  should potentially lower a process's importance, not elevate it.
-                        mAm.mProcessStateController.setTreatLikeActivity(psr, true);
-                        mAm.updateLruProcessLocked(app, true, null);
-                    }
-                    // If the bindee is more important than the binder, we may skip the OomAdjuster.
-                    if (serviceBindingOomAdjPolicy == SERVICE_BIND_OOMADJ_POLICY_LEGACY) {
-                        mAm.enqueueOomAdjTargetLocked(app);
-                        needOomAdj = true;
-                    }
-                }
-            }
+            boolean needOomAdj = unbindServiceConnectionsLocked(binder, clist);
 
             if (needOomAdj) {
                 mAm.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_UNBIND_SERVICE);
@@ -4623,6 +4632,103 @@ public final class ActiveServices {
         }
 
         return true;
+    }
+
+    boolean rebindServiceConnectionsLocked(IBinder binder,
+                                           ArrayList<ConnectionRecord> clist,
+                                           long flags) {
+        boolean needOomAdj = false;
+        for (int i = 0, size = clist.size(); i < size; i++) {
+            final ConnectionRecord r = clist.get(i);
+            final long updatedFlags = r.getFlags() ^ flags;
+            if (updatedFlags != (updatedFlags & Context.BIND_UPDATEABLE_FLAGS)) {
+                throw new IllegalArgumentException("Attempting to update non-updatedable flags");
+            }
+            if (r.updateFlags(flags)) {
+                final ProcessRecord app = r.binding.service.app;
+                if (app != null) {
+                    mAm.updateLruProcessLocked(app, true, null);
+                    mAm.enqueueOomAdjTargetLocked(app);
+                    needOomAdj = true;
+                }
+            }
+        }
+        return needOomAdj;
+    }
+
+    private boolean updateServiceBindingsSingleUnbindLocked(IBinder binder,
+                                          ArrayList<ConnectionRecord> clist) {
+        if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "updateServiceBindingsSingleUnbind: conn=" + binder);
+
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                            "updateServiceBindingsSingleUnbindLocked()");
+        }
+        boolean needOomAdj = false;
+        try {
+            needOomAdj = unbindServiceConnectionsLocked(binder, clist);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        }
+        return needOomAdj;
+    }
+
+    private boolean updateServiceBindingsSingleRebindLocked(IBinder binder,
+                                          ArrayList<ConnectionRecord> clist,
+                                          long flags) {
+        if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "updateServiceBindingsSingleRebind: conn=" + binder);
+
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                            "updateServiceBindingsSingleRebindLocked()");
+        }
+        boolean needOomAdj = false;
+        try {
+            needOomAdj = rebindServiceConnectionsLocked(binder, clist, flags);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        }
+        return needOomAdj;
+    }
+
+    private boolean updateServiceBindingsSingleLocked(BindUpdateInfo update) {
+        final IBinder binder = update.connection;
+        final ArrayList<ConnectionRecord> clist = mServiceConnections.get(binder);
+        if (clist == null) {
+            throw new IllegalArgumentException("Could not find connection for " + binder);
+        }
+
+        boolean needOomAdj = false;
+        if (update.unbind) {
+            needOomAdj = updateServiceBindingsSingleUnbindLocked(binder, clist);
+        } else {
+            needOomAdj = updateServiceBindingsSingleRebindLocked(binder, clist, update.flags);
+        }
+
+        return needOomAdj;
+    }
+
+    void updateServiceBindingsLocked(List<BindUpdateInfo> updates) {
+        final int callingPid = mAm.mInjector.getCallingPid();
+        final long origId = mAm.mInjector.clearCallingIdentity();
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "updateServiceBindingsLocked()");
+        }
+        try {
+            boolean needOomAdj = false;
+            for (int i = 0, size = updates.size(); i < size; i++) {
+                if (updateServiceBindingsSingleLocked(updates.get(i))) {
+                    needOomAdj = true;
+                }
+            }
+
+            if (needOomAdj) {
+                mAm.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_BATCH_UPDATE_REQUEST);
+            }
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            mAm.mInjector.restoreCallingIdentity(origId);
+        }
     }
 
     void unbindFinishedLocked(ServiceRecord r, IntentBindRecord b) {
@@ -7551,6 +7657,43 @@ public final class ActiveServices {
             }
         }
         return null;
+    }
+
+    /**
+     * Create a ConnectionInfo for test verification from a ConnectionRecord
+     */
+    ActivityManager.ConnectionInfo makeConnectionInfoLocked(ConnectionRecord r) {
+        final ActivityManager.ConnectionInfo info =
+                new ActivityManager.ConnectionInfo(r.getFlags(),
+                                r.getClientProcessName(),
+                                r.getClientPackageName());
+        return info;
+    }
+
+    /**
+     * Get a list of connections to a given service for test verification.
+     */
+    public List<ActivityManager.ConnectionInfo> getRunningServiceConnectionsLocked(
+                    ComponentName name) {
+
+        final int userId = UserHandle.getUserId(mAm.mInjector.getCallingUid());
+        final ServiceRecord r = getServiceByNameLocked(name, userId);
+        if (r == null) {
+            return new ArrayList<ActivityManager.ConnectionInfo>();
+        }
+
+        final ArrayMap<IBinder, ArrayList<ConnectionRecord>> connections = r.getConnections();
+        final ArrayList<ActivityManager.ConnectionInfo> res =
+                new ArrayList<ActivityManager.ConnectionInfo>(connections.size());
+        for (int conni = 0; conni < connections.size(); conni++) {
+            final ArrayList<ConnectionRecord> conn = connections.valueAt(conni);
+            for (int i = 0; i < conn.size(); i++) {
+                final ConnectionRecord cr = conn.get(i);
+                res.add(makeConnectionInfoLocked(conn.get(i)));
+            }
+        }
+
+        return res;
     }
 
     void serviceTimeout(ProcessRecord proc) {

@@ -65,26 +65,10 @@ public final class HsumBootUserInitializer {
     private final ActivityManagerService mAms;
     private final PackageManagerService mPms;
     private final ContentResolver mContentResolver;
+    // TODO(b/322150148): Change the type to HsuDeviceProvisioner and remove the cast once the flag
+    // is completely pushed.
+    private final ContentObserver mDeviceProvisionedObserver;
 
-    private final ContentObserver mDeviceProvisionedObserver =
-            new ContentObserver(new Handler(Looper.getMainLooper())) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    boolean isDeviceProvisioned = isDeviceProvisioned();
-                    if (DEBUG) {
-                        Slogf.d(TAG, "onChange(%b): isDeviceProvisioned=%b", selfChange,
-                                isDeviceProvisioned);
-                    }
-                    // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
-                    // has been set up at least once.
-                    if (isDeviceProvisioned) {
-                        Slogf.i(TAG, "Marking USER_SETUP_COMPLETE for system user");
-                        Settings.Secure.putInt(mContentResolver,
-                                Settings.Secure.USER_SETUP_COMPLETE, 1);
-                        mContentResolver.unregisterContentObserver(mDeviceProvisionedObserver);
-                    }
-                }
-            };
 
     /** Whether it should create a main user on first boot. */
     private final boolean mShouldDesignateMainUser;
@@ -114,6 +98,31 @@ public final class HsumBootUserInitializer {
         mContentResolver = contentResolver;
         mShouldDesignateMainUser = shouldDesignateMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
+        mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
+                    ? new HsuDeviceProvisioner(new Handler(Looper.getMainLooper()), contentResolver)
+                    : new ContentObserver(new Handler(Looper.getMainLooper())) {
+                        @Override
+                        public void onChange(boolean selfChange) {
+                            boolean isDeviceProvisioned = isDeviceProvisioned();
+                            if (DEBUG) {
+                                Slogf.d(
+                                        TAG,
+                                        "onChange(%b): isDeviceProvisioned=%b",
+                                        selfChange,
+                                        isDeviceProvisioned);
+                            }
+                            // Set USER_SETUP_COMPLETE for the (headless) system user only when the
+                            // device
+                            // has been set up at least once.
+                            if (isDeviceProvisioned) {
+                                Slogf.i(TAG, "Marking USER_SETUP_COMPLETE for system user");
+                                Settings.Secure.putInt(
+                                        mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1);
+                                mContentResolver.unregisterContentObserver(
+                                        mDeviceProvisionedObserver);
+                            }
+                        }
+                    });
     }
 
     // TODO(b/409650316): remove after flag's completely pushed
@@ -359,6 +368,10 @@ public final class HsumBootUserInitializer {
 
     @VisibleForTesting
     void observeDeviceProvisioning() {
+        if (Flags.hsuDeviceProvisioner()) {
+            ((HsuDeviceProvisioner) mDeviceProvisionedObserver).init();
+            return;
+        }
         if (isDeviceProvisioned()) {
             return;
         }

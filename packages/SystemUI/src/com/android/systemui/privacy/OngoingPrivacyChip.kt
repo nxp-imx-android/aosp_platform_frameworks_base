@@ -164,6 +164,10 @@ constructor(
             context.resources.getDimensionPixelSize(R.dimen.ongoing_appops_chip_side_padding)
         iconsContainer.layoutParams.height = height
         iconsContainer.setPaddingRelative(padding, 0, padding, 0)
+        if (Flags.fixShadeHeaderWrongIconSize()) {
+            iconsContainer.minimumWidth =
+                context.resources.getDimensionPixelSize(R.dimen.ongoing_appops_chip_min_width)
+        }
         if (locationIndicatorsEnabled()) {
             if (chipDrawable == null) {
                 chipDrawable =

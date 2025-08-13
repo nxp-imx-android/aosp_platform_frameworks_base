@@ -74,6 +74,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_MAXIMIZE_MENU_MAXIMIZE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_MAXIMIZE_MENU_RESIZE_LEFT
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_MAXIMIZE_MENU_RESIZE_RIGHT
+import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.AmbiguousSource
 import com.android.wm.shell.desktopmode.isTaskMaximized
 import com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED_DECELERATE
 import com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_LINEAR_IN
@@ -469,6 +470,7 @@ class MaximizeMenu(
                             desktopModeUiEventLogger.log(taskInfo, A11Y_MAXIMIZE_MENU_MAXIMIZE)
                             windowDecorationActions.onMaximizeOrRestore(
                                 taskInfo.taskId,
+                                AmbiguousSource.MAXIMIZE_MENU,
                                 InputMethod.ACCESSIBILITY,
                             )
                         }
@@ -583,7 +585,11 @@ class MaximizeMenu(
                     windowDecorationActions.onImmersiveOrRestore(taskInfo)
                 }
                 R.id.maximize_menu_size_toggle_button -> {
-                    windowDecorationActions.onMaximizeOrRestore(taskInfo.taskId, lastInputMethod)
+                    windowDecorationActions.onMaximizeOrRestore(
+                        taskInfo.taskId,
+                        AmbiguousSource.MAXIMIZE_MENU,
+                        lastInputMethod,
+                    )
                 }
                 R.id.maximize_menu_snap_right_button -> {
                     windowDecorationActions.onRightSnap(taskInfo.taskId, lastInputMethod)

@@ -143,6 +143,9 @@ interface MobileConnectionRepository {
     /** Observable tracking [TelephonyManager.isDataConnectionAllowed] */
     val dataEnabled: StateFlow<Boolean>
 
+    /** Enables/disables data. See [TelephonyManager.setDataEnabledForReason] */
+    fun setDataEnabled(enabled: Boolean)
+
     /**
      * See [TelephonyManager.getCdmaEnhancedRoamingIndicatorDisplayNumber]. This bit only matters if
      * the connection type is CDMA.

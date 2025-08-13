@@ -31,20 +31,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.plugins.keyguard.VRectF
 
 /** Container for lockscreen content that handles inputs including long-press and double tap. */
 @Composable
 fun LockscreenTouchHandling(
     viewModelFactory: KeyguardTouchHandlingViewModel.Factory,
     modifier: Modifier = Modifier,
-    content: @Composable BoxScope.(onSettingsMenuPlaces: (coordinates: Rect?) -> Unit) -> Unit,
+    content: @Composable BoxScope.(onSettingsMenuPlaces: (coordinates: VRectF) -> Unit) -> Unit,
 ) {
     val viewModel = rememberViewModel("LockscreenLongPress") { viewModelFactory.create() }
-    val (settingsMenuBounds, setSettingsMenuBounds) = remember { mutableStateOf<Rect?>(null) }
+    val (settingsMenuBounds, setSettingsMenuBounds) = remember { mutableStateOf(VRectF.ZERO) }
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
@@ -64,7 +64,7 @@ fun LockscreenTouchHandling(
                 .pointerInput(settingsMenuBounds) {
                     awaitEachGesture {
                         val pointerInputChange = awaitFirstDown()
-                        if (settingsMenuBounds?.contains(pointerInputChange.position) == false) {
+                        if (!settingsMenuBounds.contains(pointerInputChange.position)) {
                             viewModel.onTouchedOutside()
                         }
                     }

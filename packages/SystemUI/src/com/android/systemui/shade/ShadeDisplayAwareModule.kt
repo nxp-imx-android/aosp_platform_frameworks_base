@@ -61,7 +61,6 @@ import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInter
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.utils.windowmanager.WindowManagerProvider
-import com.android.window.flags.Flags
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -111,15 +110,9 @@ object ShadeDisplayAwareModule {
     @ShadeDisplayAware
     @SysUISingleton
     fun provideShadeContextBuildOptions(): Bundle? =
-        if (Flags.reparentToDefaultWithDisplayRemoval()) {
-            // Enables to reparent this WindowContext to the default display if the currently
-            // attached display is removed.
-            Bundle().apply {
-                putBoolean(KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL, true)
-            }
-        } else {
-            null
-        }
+        // Enables to reparent this WindowContext to the default display if the currently
+        // attached display is removed.
+        Bundle().apply { putBoolean(KEY_REPARENT_TO_DEFAULT_DISPLAY_WITH_DISPLAY_REMOVAL, true) }
 
     @Provides
     @ShadeDisplayAware

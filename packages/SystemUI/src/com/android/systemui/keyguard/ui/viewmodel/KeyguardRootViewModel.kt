@@ -71,6 +71,7 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -256,6 +257,24 @@ constructor(
                 .dumpWhileCollecting("zoomOutFromGlanceableHub")
         }
 
+    private fun dozingToLockscreenAlpha(viewState: ViewStateAccessor) =
+        alphaOnShadeExpansion
+            .map { it < 1f }
+            .distinctUntilChanged()
+            .onStart { emit(false) }.flatMapLatest { isExpanding ->
+                if (Flags.deferDozeTransitionOnShadeDrag() && isExpanding) {
+                    // If shade is expanding, switch to a flow that never emits.
+                    emptyFlow()
+                } else {
+                    // Otherwise, use the original flow.
+                    if (Flags.newDozingKeyguardStates()) {
+                        dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
+                    } else {
+                        dozingToLockscreenTransitionViewModel.lockscreenAlpha
+                    }
+                }
+            }
+
     /** Last point that the root view was tapped */
     val lastRootViewTapPosition: Flow<Point?> =
         keyguardInteractor.lastRootViewTapPosition.dumpWhileCollecting("lastRootViewTapPosition")
@@ -314,11 +333,7 @@ constructor(
                         aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState),
                         dozingToDreamingTransitionViewModel.lockscreenAlpha,
                         dozingToGoneTransitionViewModel.lockscreenAlpha(viewState),
-                        if (Flags.newDozingKeyguardStates()) {
-                            dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
-                        } else {
-                            dozingToLockscreenTransitionViewModel.lockscreenAlpha
-                        },
+                        dozingToLockscreenAlpha(viewState),
                         dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState),
                         dozingToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
                         dreamingToAodTransitionViewModel.lockscreenAlpha,

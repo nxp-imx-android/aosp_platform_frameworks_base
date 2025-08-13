@@ -42,6 +42,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.snapping.SnapPosition
@@ -72,6 +73,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridLayoutInfo
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -1017,6 +1019,9 @@ private fun BoxScope.CommunalHubLazyGrid(
                 } else {
                     null
                 }
+            val isVisible by remember {
+                derivedStateOf { gridState.layoutInfo.isIndexVisible(index) }
+            }
             if (viewModel.isEditMode && dragDropState != null) {
                 val isItemDragging = dragDropState.draggingItemKey == item.key
                 val outlineAlpha by
@@ -1084,6 +1089,7 @@ private fun BoxScope.CommunalHubLazyGrid(
                             interactionHandler = interactionHandler,
                             widgetSection = widgetSection,
                             resizeableItemFrameViewModel = resizeableItemFrameViewModel,
+                            isVisible = isVisible,
                         )
                     }
                 }
@@ -1108,6 +1114,7 @@ private fun BoxScope.CommunalHubLazyGrid(
                     widgetSection = widgetSection,
                     resizeableItemFrameViewModel = resizeableItemFrameViewModel,
                     contentScope = contentScope,
+                    isVisible = isVisible,
                 )
             }
         }
@@ -1367,6 +1374,7 @@ private fun CommunalContent(
     widgetSection: CommunalAppWidgetSection,
     resizeableItemFrameViewModel: ResizeableItemFrameViewModel,
     contentScope: ContentScope? = null,
+    isVisible: Boolean,
 ) {
     when (model) {
         is CommunalContentModel.WidgetContent.Widget ->
@@ -1381,6 +1389,7 @@ private fun CommunalContent(
                 contentListState,
                 widgetSection,
                 resizeableItemFrameViewModel,
+                isVisible,
             )
         is CommunalContentModel.WidgetPlaceholder -> HighlightedItem(modifier)
         is CommunalContentModel.WidgetContent.DisabledWidget ->
@@ -1516,6 +1525,7 @@ private fun WidgetContent(
     contentListState: ContentListState,
     widgetSection: CommunalAppWidgetSection,
     resizeableItemFrameViewModel: ResizeableItemFrameViewModel,
+    isVisible: Boolean,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -1653,6 +1663,7 @@ private fun WidgetContent(
                 model = model,
                 size = size,
                 modifier = Modifier.fillMaxSize().allowGestures(allowed = !viewModel.isEditMode),
+                isVisible = isVisible,
             )
         }
         if (
@@ -2268,6 +2279,18 @@ private fun calculatePercentVisible(state: LazyGridState, index: Int): Float {
         0f
     }
 }
+
+private fun LazyGridLayoutInfo.isIndexVisible(index: Int) =
+    visibleItemsInfo
+        .firstOrNull { it.index == index }
+        ?.let { item ->
+            val (start, end) =
+                when (orientation) {
+                    Orientation.Vertical -> item.offset.y to item.offset.y + item.size.height
+                    Orientation.Horizontal -> item.offset.x to item.offset.x + item.size.width
+                }
+            start >= viewportStartOffset && end <= viewportEndOffset
+        } ?: false
 
 private object Colors {
     val DisabledColorFilter by lazy { disabledColorMatrix() }

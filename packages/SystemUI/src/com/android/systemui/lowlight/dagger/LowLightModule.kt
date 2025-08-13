@@ -23,6 +23,7 @@ import com.android.systemui.lowlight.data.repository.dagger.LowLightRepositoryMo
 import com.android.systemui.lowlight.data.repository.dagger.LowLightSettingsRepositoryModule
 import com.android.systemui.lowlight.shared.model.LightSensor
 import com.android.systemui.lowlightclock.LowLightDisplayController
+import com.android.systemui.util.kotlin.getOrNull
 import dagger.Binds
 import dagger.BindsOptionalOf
 import dagger.Module
@@ -59,8 +60,9 @@ abstract class LowLightModule {
             factory: AmbientLightModeComponent.Factory,
             @Named(LIGHT_SENSOR) sensor: Optional<Provider<LightSensor>>,
         ): AmbientLightModeMonitor? {
-            return if (sensor.isEmpty) null
-            else factory.create(sensor.get().get()).getAmbientLightModeMonitor()
+            return sensor.getOrNull()?.get()?.let {
+                factory.create(it).getAmbientLightModeMonitor()
+            }
         }
     }
 }

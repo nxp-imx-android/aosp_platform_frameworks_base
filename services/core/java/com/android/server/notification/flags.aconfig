@@ -230,3 +230,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "show_noisy_bundled_notifications"
+  namespace: "notifications"
+  description: "If a classification arrived late and the notification made noise, show the notification as unclassified temporarily"
+  bug: "430573835"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

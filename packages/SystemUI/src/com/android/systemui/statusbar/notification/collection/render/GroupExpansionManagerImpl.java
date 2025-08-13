@@ -236,10 +236,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
     public void collapseGroups() {
         if (NotificationBundleUi.isEnabled()) {
             for (EntryAdapter entry : mExpandedCollections) {
-                // don't collapse system expanded groups
-                if (entry.getRow() != null && entry.getRow().isUserExpanded()) {
-                    setGroupExpanded(entry, false);
-                }
+                setGroupExpanded(entry, false);
             }
         } else {
             for (NotificationEntry entry : mExpandedGroups) {

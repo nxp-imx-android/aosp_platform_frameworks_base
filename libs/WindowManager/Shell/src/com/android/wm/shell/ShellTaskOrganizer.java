@@ -25,10 +25,12 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 
+import static com.android.window.flags.Flags.unifyShellBinders;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_APPEARED;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_CLICKED;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_ORG;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_ORG_NOISY;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -51,6 +53,8 @@ import android.window.StartingWindowInfo;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskAppearedInfo;
 import android.window.TaskOrganizer;
+import android.window.TransitionInfo;
+import android.window.TransitionRequestInfo;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransactionCallback;
 
@@ -68,6 +72,7 @@ import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.unfold.UnfoldAnimationController;
 
 import java.io.PrintWriter;
@@ -281,6 +286,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     @Nullable
     private RunningTaskInfo mLastFocusedTaskInfo;
 
+    private Transitions mTransitions;
+
     public ShellTaskOrganizer(ShellExecutor mainExecutor) {
         this(null /* shellInit */, null /* shellCommandHandler */,
                 null /* taskOrganizerController */, null /* compatUI */,
@@ -337,7 +344,10 @@ public class ShellTaskOrganizer extends TaskOrganizer {
                 }
             });
         }
-        registerOrganizer();
+        if (!unifyShellBinders()) {
+            // wait to register until Transitions is initialized
+            registerOrganizer();
+        }
     }
 
     @Override
@@ -361,6 +371,14 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (mStartingWindow != null) {
             mStartingWindow.clearAllWindows();
         }
+    }
+
+    /**
+     * Initialize this organizer with required components.
+     */
+    public void initializeDependencies(Transitions transitions) {
+        mTransitions = transitions;
+        registerOrganizer();
     }
 
     @Override
@@ -1231,6 +1249,26 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         return (Flags.enableLauncherOverviewInWindow()
                 || Flags.enableFallbackOverviewInWindow()
                 || (Flags.enableOverviewOnConnectedDisplays() && displayId != DEFAULT_DISPLAY));
+    }
+
+    @Override
+    public void onTransitionReady(IBinder iBinder, TransitionInfo transitionInfo,
+            SurfaceControl.Transaction t, SurfaceControl.Transaction finishT) {
+        if (!unifyShellBinders()) return;
+        if (mTransitions == null) {
+            throw new IllegalStateException("No transition player registered!");
+        }
+        ProtoLog.v(WM_SHELL_TRANSITIONS, "onTransitionReady(transaction=%d)", t.getId());
+        mTransitions.onTransitionReady(iBinder, transitionInfo, t, finishT);
+    }
+
+    @Override
+    public void requestStartTransition(IBinder iBinder, TransitionRequestInfo request) {
+        if (!unifyShellBinders()) return;
+        if (mTransitions == null) {
+            throw new IllegalStateException("No transition player registered!");
+        }
+        mTransitions.requestStartTransition(iBinder, request);
     }
 
     public void dump(@NonNull PrintWriter pw, String prefix) {

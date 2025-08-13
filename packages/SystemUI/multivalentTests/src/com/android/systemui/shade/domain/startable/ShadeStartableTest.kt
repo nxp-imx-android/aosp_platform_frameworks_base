@@ -277,7 +277,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
             assertThat(scrimController.clipQsScrim).isFalse()
             assertThat(isWideScreen).isTrue()
-            assertThat(legacyUseSplitShade).isFalse()
+            assertThat(legacyUseSplitShade).isTrue()
         }
 
     private fun Kosmos.changeScene(

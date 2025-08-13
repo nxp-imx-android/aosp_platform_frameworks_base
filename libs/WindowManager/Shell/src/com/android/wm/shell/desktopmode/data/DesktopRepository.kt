@@ -32,6 +32,7 @@ import androidx.tracing.Trace
 import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.common.WorkSerializer
 import com.android.wm.shell.desktopmode.DisplayDeskState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
@@ -67,8 +68,14 @@ class DesktopRepository(
     private val activeTasksListeners = ArraySet<ActiveTasksListener>()
     private val visibleTasksListeners = ArrayMap<VisibleTasksListener, Executor>()
 
-    private val persistentUpdateQueue = WorkSerializer(bgCoroutineScope)
-
+    private val persistentUpdateQueue =
+        WorkSerializer(
+            if (Flags.repositoryBasedPersistenceBgThread()) {
+                bgCoroutineScope
+            } else {
+                mainCoroutineScope
+            }
+        )
     /* Tracks corner/caption regions of desktop tasks, used to determine gesture exclusion. */
     private val desktopExclusionRegions = SparseArray<Region>()
 

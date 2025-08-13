@@ -1190,7 +1190,7 @@ public class WindowDecorationTests extends ShellTestCase {
 
         decor.onInsetsStateChanged(createInsetsState(statusBars(), false /* visible */));
 
-        verify(decor, times(2)).relayout(any(), any(), any(), any(), any(), any());
+        verify(decor, times(2)).relayout(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -1204,7 +1204,7 @@ public class WindowDecorationTests extends ShellTestCase {
 
         decor.onInsetsStateChanged(createInsetsState(statusBars(), true /* visible */));
 
-        verify(decor, times(1)).relayout(any(), any(), any(), any(), any(), any());
+        verify(decor, times(1)).relayout(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -1219,7 +1219,7 @@ public class WindowDecorationTests extends ShellTestCase {
         decor.onKeyguardStateChanged(true /* visible */, true /* occluding */);
 
         assertTrue(decor.mIsKeyguardVisibleAndOccluded);
-        verify(decor, times(2)).relayout(any(), any(), any(), any(), any(), any());
+        verify(decor, times(2)).relayout(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -1233,7 +1233,7 @@ public class WindowDecorationTests extends ShellTestCase {
 
         decor.onKeyguardStateChanged(false /* visible */, true /* occluding */);
 
-        verify(decor, times(1)).relayout(any(), any(), any(), any(), any(), any());
+        verify(decor, times(1)).relayout(any(), any(), any(), any(), any(), any(), any());
     }
 
     private ActivityManager.RunningTaskInfo createTaskInfo() {
@@ -1359,7 +1359,7 @@ public class WindowDecorationTests extends ShellTestCase {
             mRelayoutParams.mDisplayExclusionRegion.set(displayExclusionRegion);
             mRelayoutParams.mLayoutResId = R.layout.caption_layout;
             relayout(mRelayoutParams, mMockSurfaceControlStartT, mMockSurfaceControlFinishT,
-                    mMockWindowContainerTransaction, mMockView, mRelayoutResult);
+                    mMockWindowContainerTransaction, mMockView, mMockTaskSurface, mRelayoutResult);
         }
 
         @Override

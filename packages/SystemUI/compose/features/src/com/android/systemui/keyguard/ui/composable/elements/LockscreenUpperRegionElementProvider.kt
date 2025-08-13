@@ -1,0 +1,282 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.keyguard.ui.composable.elements
+
+import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import com.android.compose.animation.scene.ContentScope
+import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.systemui.keyguard.shared.model.ClockSize
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenUpperRegionViewModel
+import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
+import com.android.systemui.log.dagger.KeyguardBlueprintLog
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.MediaCarousel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Notifications
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Region
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.shared.model.ShadeMode
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import javax.inject.Inject
+import kotlin.collections.List
+
+/** Provides a combined element for all lockscreen ui above the lock icon */
+class LockscreenUpperRegionElementProvider
+@Inject
+constructor(
+    @ShadeDisplayAware private val context: Context,
+    @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
+    private val viewModelFactory: LockscreenUpperRegionViewModel.Factory,
+) : LockscreenElementProvider {
+    private val logger = Logger(blueprintLog, "LockscreenUpperRegionElementProvider")
+    override val elements: List<LockscreenElement> by lazy { listOf(upperRegionElement) }
+
+    private val wideLayout = WideLayout()
+    private val narrowLayout = NarrowLayout()
+
+    private val upperRegionElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.Region.Upper
+            override val context = this@LockscreenUpperRegionElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                val viewModel =
+                    rememberViewModel("LockscreenUpperRegion") { viewModelFactory.create() }
+                when (getLayoutType()) {
+                    LayoutType.WIDE -> with(wideLayout) { Layout(viewModel, factory, context) }
+                    LayoutType.NARROW -> with(narrowLayout) { Layout(viewModel, factory, context) }
+                }
+            }
+        }
+
+    /** The Narrow Layouts are intended for phones */
+    private inner class NarrowLayout {
+        @Composable
+        fun Layout(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            when (viewModel.clockSize) {
+                ClockSize.LARGE -> LargeClock(viewModel, factory, context, modifier)
+                ClockSize.SMALL -> Content(viewModel, factory, context, modifier)
+            }
+        }
+
+        @Composable
+        private fun LargeClock(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            // TODO(b/432451019): Ensure large clock is centered correctly
+            factory.lockscreenElement(Region.Clock.Large, context, modifier)
+        }
+
+        @Composable
+        private fun Content(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            // TODO(b/432451019): Check the small clock + date/weather aren't rendering in shade
+            // TODO(b/432451019): Ensure larger display/font sizes are working as expected
+            Column(modifier = modifier) {
+                factory.lockscreenElement(Region.Clock.Small, context)
+                factory.lockscreenElement(MediaCarousel, context)
+                Notifications(viewModel, factory, context)
+            }
+        }
+    }
+
+    /** The wide layouts are intended for tablets / foldables */
+    private inner class WideLayout {
+        @Composable
+        fun Layout(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            val isTwoColumn =
+                viewModel.isNotificationsVisible ||
+                    viewModel.isMediaVisible ||
+                    viewModel.clockSize == ClockSize.SMALL
+
+            when {
+                !isTwoColumn -> LargeClockCentered(viewModel, factory, context, modifier)
+                viewModel.shadeMode == ShadeMode.Dual ->
+                    TwoColumnNotifStart(viewModel, factory, context, modifier)
+                viewModel.shadeMode == ShadeMode.Split ->
+                    TwoColumnNotifEnd(viewModel, factory, context, modifier)
+                else -> {
+                    logger.e("WideLayout state is invalid")
+                    LargeClockCentered(viewModel, factory, context, modifier)
+                }
+            }
+        }
+
+        @Composable
+        private fun LargeClockCentered(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            factory.lockscreenElement(Region.Clock.Large, context, modifier)
+        }
+
+        @Composable
+        private fun TwoColumnNotifEnd(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            TwoColumn(
+                viewModel = viewModel,
+                modifier = modifier,
+                startContent = {
+                    Column {
+                        if (viewModel.clockSize == ClockSize.SMALL) {
+                            factory.lockscreenElement(Region.Clock.Small, context)
+                        }
+                        factory.lockscreenElement(MediaCarousel, context)
+                    }
+                    if (viewModel.clockSize == ClockSize.LARGE) {
+                        factory.lockscreenElement(Region.Clock.Large, context)
+                    }
+                },
+                endContent = { Notifications(viewModel, factory, context) },
+            )
+        }
+
+        @Composable
+        private fun TwoColumnNotifStart(
+            viewModel: LockscreenUpperRegionViewModel,
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+            modifier: Modifier = Modifier,
+        ) {
+            TwoColumn(
+                viewModel = viewModel,
+                modifier = modifier,
+                startContent = {
+                    Column {
+                        if (viewModel.clockSize == ClockSize.SMALL) {
+                            factory.lockscreenElement(Region.Clock.Small, context)
+                        }
+                        factory.lockscreenElement(MediaCarousel, context)
+                        Notifications(viewModel, factory, context)
+                    }
+                },
+                endContent = {
+                    if (viewModel.clockSize == ClockSize.LARGE) {
+                        factory.lockscreenElement(Region.Clock.Large, context)
+                    }
+                },
+            )
+        }
+
+        @Composable
+        private fun TwoColumn(
+            viewModel: LockscreenUpperRegionViewModel,
+            startContent: @Composable BoxScope.() -> Unit,
+            endContent: @Composable BoxScope.() -> Unit,
+            modifier: Modifier = Modifier,
+        ) {
+            Row(modifier = modifier) {
+                Box(
+                    content = startContent,
+                    modifier =
+                        Modifier.fillMaxWidth(0.5f).fillMaxHeight().graphicsLayer {
+                            translationX = viewModel.unfoldTranslations.start
+                        },
+                )
+                Box(
+                    content = endContent,
+                    modifier =
+                        Modifier.fillMaxWidth(1f).fillMaxHeight().graphicsLayer {
+                            translationX = viewModel.unfoldTranslations.end
+                        },
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun Notifications(
+        viewModel: LockscreenUpperRegionViewModel,
+        factory: LockscreenElementFactory,
+        context: LockscreenElementContext,
+        modifier: Modifier = Modifier,
+    ) {
+        AnimatedVisibility(viewModel.isNotificationsVisible) {
+            Box(modifier = modifier.fillMaxHeight()) {
+                Column {
+                    if (PromotedNotificationUi.isEnabled) {
+                        factory.lockscreenElement(Notifications.AOD.Promoted, context)
+                    }
+                    factory.lockscreenElement(Notifications.AOD.IconShelf, context)
+                }
+                factory.lockscreenElement(Notifications.Stack, context)
+            }
+        }
+    }
+
+    companion object {
+        enum class LayoutType {
+            WIDE,
+            NARROW,
+        }
+
+        @Composable
+        fun getLayoutType(): LayoutType {
+            val windowSizeClass = LocalWindowSizeClass.current
+            val isWindowLarge =
+                windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium &&
+                    windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
+            return if (isWindowLarge) LayoutType.WIDE else LayoutType.NARROW
+        }
+    }
+}

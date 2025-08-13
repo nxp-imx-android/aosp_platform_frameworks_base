@@ -129,3 +129,11 @@ class RedirectTo {
     public static void redirect() {
     }
 }
+
+enum ExpC8_Enum {
+    A,
+    B,
+    C;
+    public void foo() {
+    }
+}

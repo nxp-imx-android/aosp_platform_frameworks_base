@@ -22,10 +22,13 @@ import static com.android.systemui.flags.SceneContainerFlagParameterizationKt.pa
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_ALL;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_GENTLE;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.RUBBER_BAND_FACTOR_NORMAL;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -101,6 +104,8 @@ import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController;
 
+import kotlin.Unit;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -111,13 +116,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import kotlin.Unit;
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 /**
  * Tests for {@link NotificationStackScrollLayout}.
@@ -250,6 +254,78 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
+    public void updateInterpolatedStackHeight_qsExpanded_shouldSkipUpdateStackEndHeight() {
+        // Before: QS is fully expanded
+        final float expansionFraction = 0.2f;
+        final float endHeight = 200f;
+
+        mStackScroller.setQsExpandFraction(1f);
+        mStackScroller.suppressHeightUpdates(true);
+        mAmbientState.setExpansionFraction(expansionFraction);
+        mAmbientState.setStackEndHeight(endHeight);
+
+        // When: update StackEndHeightAndStackHeight
+        mStackScroller.updateStackEndHeightAndStackHeight(expansionFraction);
+
+        // Then: stackEndHeight is not updated
+        float expected = mStackScroller
+                .calculateInterpolatedStackHeight(endHeight, expansionFraction);
+
+        assertThat(mAmbientState.getInterpolatedStackHeight()).isEqualTo(expected);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void updateInterpolatedStackHeight_onLockScreenStack_shouldUpdateStackEndHeight() {
+        // Before: QS is fully collapsed, on lockscreen
+        final float expansionFraction = 0.2f;
+        final float endHeight = 200f;
+
+        mStackScroller.setQsExpandFraction(0f);
+        mStackScroller.suppressHeightUpdates(false);
+        mStackScroller.setMaxDisplayedNotifications(2);
+        mAmbientState.setExpansionFraction(expansionFraction);
+        mAmbientState.setStackEndHeight(endHeight);
+
+
+        // When: update StackEndHeightAndStackHeight
+        mStackScroller.updateStackEndHeightAndStackHeight(expansionFraction);
+
+        // Then: updatedEndHeight should be mStackScroller.getIntrinsicStackHeight()
+        float updatedEndHeight = mStackScroller.getIntrinsicStackHeight();
+        float expected = mStackScroller.calculateInterpolatedStackHeight(
+                updatedEndHeight, expansionFraction);
+        assertThat(mAmbientState.getInterpolatedStackHeight()).isEqualTo(expected);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void updateInterpolatedStackHeight_onExpandedShade_shouldUpdateStackEndHeight() {
+        // Before: QS is fully collapsed, on expanded Shade
+        final float expansionFraction = 0.2f;
+        final float endHeight = 200f;
+
+        mStackScroller.setQsExpandFraction(0f);
+        mStackScroller.suppressHeightUpdates(false);
+        mStackScroller.setMaxDisplayedNotifications(-1);
+        mAmbientState.setExpansionFraction(expansionFraction);
+        mAmbientState.setStackEndHeight(endHeight);
+
+
+        // When: update StackEndHeightAndStackHeight
+        mStackScroller.updateStackEndHeightAndStackHeight(expansionFraction);
+
+        // Then: updatedEndHeight should be determined by the stack cutoffs
+        float updatedEndHeight = Math.max(
+                0f, mAmbientState.getStackCutoff() - mAmbientState.getStackTop());
+        float expected = mStackScroller.calculateInterpolatedStackHeight(
+                updatedEndHeight, expansionFraction);
+        assertThat(mAmbientState.getInterpolatedStackHeight()).isEqualTo(expected);
+    }
+
+
+    @Test
+    @EnableSceneContainer
     public void testIntrinsicStackHeight() {
         int stackHeight = 300;
         when(mStackSizeCalculator.computeHeight(eq(mStackScroller), anyInt(), anyFloat(), any()))
@@ -281,8 +357,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     public void testUpdateStackHeight_withExpansionAmount_whenDozeNotChanging() {
         final float endHeight = 8f;
         final float expansionFraction = 0.5f;
-        final float expected = MathUtils.lerp(
-                endHeight * StackScrollAlgorithm.START_FRACTION,
+        final float expected = mStackScroller.calculateInterpolatedStackHeight(
                 endHeight, expansionFraction);
 
         mStackScroller.updateInterpolatedStackHeight(endHeight, expansionFraction);
@@ -2056,6 +2131,69 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         assertThat(mStackScroller.getOwnScrollY()).isEqualTo(100 - childHeight);
     }
 
+    @Test
+    @EnableSceneContainer
+    public void testRequestScrollToRemoteInput_singleRow() {
+        final Consumer<Float> scroller = mock(FloatConsumer.class);
+        mStackScroller.setRemoteInputRowBottomBoundConsumer(scroller);
+
+        // GIVEN a non-grouped notification row with specific dimensions and offsets
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        when(row.getTranslationY()).thenReturn(100f);
+        when(row.getActualHeight()).thenReturn(200);
+        when(row.getRemoteInputActionsContainerExpandedOffset()).thenReturn(50f);
+        mTestableResources.addOverride(
+                com.android.internal.R.dimen.notification_content_margin, 10);
+
+        // WHEN requestScrollToRemoteInput is called
+        mStackScroller.requestScrollToRemoteInput(row);
+
+        // THEN the correct bottom bound is sent
+        // expected = translationY + height + remoteInputOffset + contentMargin
+        // expected = 100 + 200 + 50 + 10 = 360
+        verify(scroller).accept(360f);
+
+        // WHEN requestScrollToRemoteInput is called with null
+        mStackScroller.requestScrollToRemoteInput(null);
+
+        // THEN null is sent
+        verify(scroller).accept(null);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void testRequestScrollToRemoteInput_childInGroup() {
+        final Consumer<Float> scroller = mock(FloatConsumer.class);
+        mStackScroller.setRemoteInputRowBottomBoundConsumer(scroller);
+
+        // GIVEN a grouped notification row
+        ExpandableNotificationRow parent = mock(ExpandableNotificationRow.class);
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        when(row.getEntryAdapter()).thenReturn(mock(EntryAdapter.class));
+        when(mGroupMembershipManger.isChildInGroup(row.getEntryAdapter())).thenReturn(true);
+        when(row.getTranslationY()).thenReturn(100f);
+        when(row.getActualHeight()).thenReturn(200);
+        when(row.getRemoteInputActionsContainerExpandedOffset()).thenReturn(50f);
+        when(parent.getTranslationY()).thenReturn(50f);
+        when(row.getNotificationParent()).thenReturn(parent);
+        mTestableResources.addOverride(
+                com.android.internal.R.dimen.notification_content_margin, 10);
+
+        // WHEN requestScrollToRemoteInput is called for the grouped row
+        mStackScroller.requestScrollToRemoteInput(row);
+
+        // THEN the correct bottom bound is sent, including the parent's translation
+        // expected = parentTranslationY + translationY + height + remoteInputOffset + contentMargin
+        // expected = 50 + 100 + 200 + 50 + 10 = 410
+        verify(scroller).accept(410f);
+
+        // WHEN requestScrollToRemoteInput is called with null
+        mStackScroller.requestScrollToRemoteInput(null);
+
+        // THEN null is sent
+        verify(scroller).accept(null);
+    }
+
     private MotionEvent captureTouchSentToSceneFramework() {
         ArgumentCaptor<MotionEvent> captor = ArgumentCaptor.forClass(MotionEvent.class);
         verify(mStackScrollLayoutController).sendTouchToSceneFramework(captor.capture());
@@ -2149,6 +2287,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     private abstract static class BooleanConsumer implements Consumer<Boolean> { }
+
+    private abstract static class FloatConsumer implements Consumer<Float> { }
 
     private ShadeScrimShape createScrimShape(int left, int top, int right, int bottom) {
         ShadeScrimBounds bounds = new ShadeScrimBounds(left, top, right, bottom);

@@ -204,6 +204,12 @@ fi
 
 echo "RAVENWOOD_TEST_ENABLEMENT_POLICY=$RAVENWOOD_TEST_ENABLEMENT_POLICY"
 
+# Set experimental API flag
+for test in $(remove_comments ../texts/experimental-api-allowed-tests.txt); do
+    echo "Test \"$test\" can use experimental APIs".
+    export RAVENWOOD_ENABLE_EXP_API_${test}=1
+done
+
 # =========================================================
 
 run() {

@@ -32,7 +32,10 @@ import com.android.server.wm.flicker.helpers.LetterboxAppHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
 import com.android.server.wm.flicker.helpers.NotificationAppHelper
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
+
 import org.junit.After
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -48,6 +51,9 @@ abstract class OpenUnlimitedApps(val rotation: Rotation = Rotation.ROTATION_0) :
     private val device = UiDevice.getInstance(instrumentation)
 
     val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
+
+    private val maxNum = desktopConfig.maxTaskLimit
 
     val appLaunchedInDesktop: List<DesktopModeAppHelper> = listOf(
         MailAppHelper(instrumentation),
@@ -63,6 +69,7 @@ abstract class OpenUnlimitedApps(val rotation: Rotation = Rotation.ROTATION_0) :
 
     @Before
     fun setup() {
+        Assume.assumeTrue(maxNum == 0)
         testApp.enterDesktopMode(wmHelper, device)
     }
 

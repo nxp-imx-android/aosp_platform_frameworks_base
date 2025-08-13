@@ -60,18 +60,10 @@ public final class InferenceServiceExecutor
             });
             return null;
         }
-        if (!manager.ensureRemoteInferenceServiceInitialized(/* shouldThrow= */ false)) {
-            Slog.w(OnDeviceIntelligenceManagerService.TAG, "Service not available");
-            executeOnRemoteExecutor(() -> {
-                try {
-                    mFailureConsumer.accept(FailureType.SERVICE_UNAVAILABLE);
-                } catch (RemoteException e) {
-                    Slog.e(OnDeviceIntelligenceManagerService.TAG,
-                            "Failed to call service unavailable callback", e);
-                }
-            });
-            return null;
-        }
+
+        // Ensure the remote service is initialized.
+        manager.ensureRemoteInferenceServiceInitialized(/* shouldThrow= */ true);
+
         AndroidFuture<?> future = manager.getRemoteInferenceService().postAsync(remoteCall::run);
         future.whenComplete(
                 (res, ex) -> {

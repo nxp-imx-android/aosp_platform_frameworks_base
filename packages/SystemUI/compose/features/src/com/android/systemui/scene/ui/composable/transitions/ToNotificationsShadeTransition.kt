@@ -35,7 +35,7 @@ fun TransitionBuilder.toNotificationsShadeTransition(
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
     // Ensure the clock isn't clipped by the shade outline during the transition from lockscreen.
-    sharedElement(LockscreenElementKeys.ClockSmall, elevateInContent = Overlays.NotificationsShade)
+    sharedElement(LockscreenElementKeys.Clock.Small, elevateInContent = Overlays.NotificationsShade)
 
     verticalContainerReveal(NotificationsShade.Elements.Panel, shadeExpansionMotion, revealHaptics)
 

@@ -52,6 +52,9 @@
       "name": "FunctionalTestsDesktopMode-MoveToNextDisplayTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-MoveToNextDisplayProjectedTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest"
     },
     {

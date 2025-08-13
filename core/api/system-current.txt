@@ -18732,6 +18732,8 @@ package android.telephony.ims.stub {
     method public void acknowledgeSms(int, @IntRange(from=0, to=65535) int, int, @NonNull byte[]);
     method public void acknowledgeSmsReport(int, @IntRange(from=0, to=65535) int, int);
     method public String getSmsFormat();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_sms_smma") public void onMemoryAvailable(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_sms_smma") public final void onMemoryAvailableResult(int, int, int) throws java.lang.RuntimeException;
     method public void onReady();
     method @Deprecated public final void onSendSmsResult(int, @IntRange(from=0, to=65535) int, int, int) throws java.lang.RuntimeException;
     method public final void onSendSmsResultError(int, @IntRange(from=0, to=65535) int, int, int, int) throws java.lang.RuntimeException;

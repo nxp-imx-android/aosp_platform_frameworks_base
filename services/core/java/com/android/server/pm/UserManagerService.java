@@ -7155,8 +7155,8 @@ public class UserManagerService extends IUserManager.Stub {
      * See also {@link UserManager#isRemoveResultSuccessful}.
      */
     @GuardedBy("mUsersLock")
-    private @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId,
-            String msg) {
+    @VisibleForTesting
+    @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId, String msg) {
         if (userId == UserHandle.USER_SYSTEM) {
             Slogf.e(LOG_TAG, "User %d can not be %s, system user cannot be removed.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;

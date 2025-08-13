@@ -196,14 +196,27 @@ final class InputMethodSubtypeSwitchingController {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (o == this) {
+        public boolean equals(Object obj) {
+            if (obj == this) {
                 return true;
             }
-            if (o instanceof ImeSubtypeListItem that) {
-                return Objects.equals(mImi, that.mImi) && mSubtypeIndex == that.mSubtypeIndex;
+            if (!(obj instanceof ImeSubtypeListItem that)) {
+                return false;
             }
-            return false;
+            return TextUtils.equals(mImeName, that.mImeName)
+                    && TextUtils.equals(mSubtypeName, that.mSubtypeName)
+                    && TextUtils.equals(mLayoutName, that.mLayoutName)
+                    && mImi.equals(that.mImi)
+                    && mSubtypeIndex == that.mSubtypeIndex
+                    && mShowInImeSwitcherMenu == that.mShowInImeSwitcherMenu
+                    && mIsAuxiliary == that.mIsAuxiliary
+                    && mSuitableForHardware == that.mSuitableForHardware;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mImeName, mSubtypeName, mLayoutName, mImi, mSubtypeIndex,
+                    mShowInImeSwitcherMenu, mIsAuxiliary, mSuitableForHardware);
         }
 
         /**
@@ -224,47 +237,29 @@ final class InputMethodSubtypeSwitchingController {
             if (empty1 || empty2) {
                 return (empty1 ? 1 : 0) - (empty2 ? 1 : 0);
             }
-            return cs1.toString().compareTo(cs2.toString());
+            return CharSequence.compare(cs1, cs2);
         }
     }
 
     /**
-     * Gets the list of enabled input methods and subtypes used for switching.
+     * Gets the list of enabled input methods and subtypes.
      *
-     * @param forHardware whether to filter by subtypes suitable for hardware keyboard only.
-     */
-    @GuardedBy("ImfLock.class")
-    @NonNull
-    List<ImeSubtypeListItem> getItemsForSwitching(boolean forHardware) {
-        final var res = new ArrayList<ImeSubtypeListItem>();
-        for (int i = 0; i < mEnabledItems.size(); i++) {
-            final var item = mEnabledItems.get(i);
-            final boolean valid = forHardware ? item.mSuitableForHardware : !item.mIsAuxiliary;
-            if (valid) {
-                res.add(item);
-            }
-        }
-        return res;
-    }
-
-    /**
-     * Gets the list of enabled input method and subtypes shown in the IME Switcher Menu.
-     *
+     * @param forMenu          whether to filter by items to be shown in the IME Switcher Menu.
      * @param includeAuxiliary whether to include auxiliary subtypes.
      */
     @GuardedBy("ImfLock.class")
     @NonNull
-    List<ImeSubtypeListItem> getItemsForImeSwitcherMenu(boolean includeAuxiliary) {
+    List<ImeSubtypeListItem> getItems(boolean forMenu, boolean includeAuxiliary) {
         final var res = new ArrayList<ImeSubtypeListItem>();
         for (int i = 0; i < mEnabledItems.size(); i++) {
             final var item = mEnabledItems.get(i);
-            if (!item.mShowInImeSwitcherMenu) {
+            if (forMenu && !item.mShowInImeSwitcherMenu) {
                 continue;
             }
-
-            if (includeAuxiliary || !item.mIsAuxiliary) {
-                res.add(item);
+            if (!includeAuxiliary && item.mIsAuxiliary) {
+                continue;
             }
+            res.add(item);
         }
         return res;
     }
@@ -304,14 +299,14 @@ final class InputMethodSubtypeSwitchingController {
                         false /* isAuxiliary */, true /* suitableForHardware */, null,
                         mSystemLocaleStr));
             } else {
-                final var hashCodes = new ArraySet<String>();
+                final var hashCodes = new ArraySet<Integer>();
                 for (int j = 0; j < subtypes.size(); j++) {
-                    hashCodes.add(String.valueOf(subtypes.get(j).hashCode()));
+                    hashCodes.add(subtypes.get(j).hashCode());
                 }
                 final int subtypeCount = imi.getSubtypeCount();
                 for (int j = 0; j < subtypeCount; j++) {
                     final InputMethodSubtype subtype = imi.getSubtypeAt(j);
-                    final String hashCode = String.valueOf(subtype.hashCode());
+                    final int hashCode = subtype.hashCode();
                     if (!hashCodes.contains(hashCode)) {
                         continue;
                     }
@@ -371,13 +366,14 @@ final class InputMethodSubtypeSwitchingController {
          * @param imi            the input method to find the next value from.
          * @param subtype        the input method subtype to find the next value from, if any.
          * @param onlyCurrentIme whether to consider only subtypes of the current input method.
+         * @param forHardware    whether to consider only subtypes suitable for hardware keyboard.
          * @param useRecency     whether to use the recency order, or the static order.
          * @param forward        whether to search forwards to backwards in the list.
          * @return the next input method and subtype if found, otherwise {@code null}.
          */
         @Nullable
         ImeSubtypeListItem next(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype,
-                boolean onlyCurrentIme, boolean useRecency, boolean forward) {
+                boolean onlyCurrentIme, boolean forHardware, boolean useRecency, boolean forward) {
             if (mItems.isEmpty()) {
                 return null;
             }
@@ -396,9 +392,11 @@ final class InputMethodSubtypeSwitchingController {
                 final int nextIndex = (index + i * incrementSign + size) % size;
                 final int mappedIndex = useRecency ? mRecencyMap[nextIndex] : nextIndex;
                 final var nextItem = mItems.get(mappedIndex);
-                if (!onlyCurrentIme || nextItem.mImi.equals(imi)) {
-                    return nextItem;
+                if ((onlyCurrentIme && !nextItem.mImi.equals(imi))
+                        || (forHardware && !nextItem.mSuitableForHardware)) {
+                    continue;
                 }
+                return nextItem;
             }
             return null;
         }
@@ -495,11 +493,6 @@ final class InputMethodSubtypeSwitchingController {
     @NonNull
     private RotationList mRotationList = new RotationList(Collections.emptyList());
 
-    /** List of input methods and subtypes suitable for hardware keyboards. */
-    @GuardedBy("ImfLock.class")
-    @NonNull
-    private RotationList mHardwareRotationList = new RotationList(Collections.emptyList());
-
     /**
      * Whether there was a user action since the last input method and subtype switch.
      * Used to determine the switching behaviour for {@link #MODE_AUTO}.
@@ -512,20 +505,13 @@ final class InputMethodSubtypeSwitchingController {
      * equal to the existing ones (regardless of recency order), the update is skipped and the
      * current recency order is kept. Otherwise, the recency order is reset.
      *
-     * @param sortedEnabledItems    the sorted list of enabled input methods and subtypes.
-     * @param hardwareKeyboardItems the unsorted list of enabled input method and subtypes
-     *                              suitable for hardware keyboards.
+     * @param enabledItems the list of enabled input methods and subtypes.
      */
     @GuardedBy("ImfLock.class")
     @VisibleForTesting
-    void update(@NonNull List<ImeSubtypeListItem> sortedEnabledItems,
-            @NonNull List<ImeSubtypeListItem> hardwareKeyboardItems) {
-        if (!Objects.equals(mRotationList.mItems, sortedEnabledItems)) {
-            mRotationList = new RotationList(sortedEnabledItems);
-        }
-
-        if (!Objects.equals(mHardwareRotationList.mItems, hardwareKeyboardItems)) {
-            mHardwareRotationList = new RotationList(hardwareKeyboardItems);
+    void update(@NonNull List<ImeSubtypeListItem> enabledItems) {
+        if (!mRotationList.mItems.equals(enabledItems)) {
+            mRotationList = new RotationList(enabledItems);
         }
     }
 
@@ -538,39 +524,19 @@ final class InputMethodSubtypeSwitchingController {
      * @param imi            the input method to find the next value from.
      * @param subtype        the input method subtype to find the next value from, if any.
      * @param onlyCurrentIme whether to consider only subtypes of the current input method.
+     * @param forHardware    whether to consider only subtypes
+     *                       {@link InputMethodSubtype#isSuitableForPhysicalKeyboardLayoutMapping
+     *                       suitable for hardware keyboard}.
      * @param mode           the switching mode.
      * @param forward        whether to search search forwards or backwards in the list.
      * @return the next input method and subtype if found, otherwise {@code null}.
      */
     @GuardedBy("ImfLock.class")
     @Nullable
-    ImeSubtypeListItem getNextInputMethod(@NonNull InputMethodInfo imi,
-            @Nullable InputMethodSubtype subtype, boolean onlyCurrentIme, @SwitchMode int mode,
-            boolean forward) {
-        return mRotationList.next(imi, subtype, onlyCurrentIme, isRecency(mode, forward), forward);
-    }
-
-    /**
-     * Gets the next input method and subtype suitable for hardware keyboards, starting from the
-     * given ones, in the given direction.
-     *
-     * <p>If the given input method and subtype are not found, this returns the most recent
-     * input method and subtype.
-     *
-     * @param imi            the input method to find the next value from.
-     * @param subtype        the input method subtype to find the next value from, if any.
-     * @param onlyCurrentIme whether to consider only subtypes of the current input method.
-     * @param mode           the switching mode
-     * @param forward        whether to search search forwards or backwards in the list.
-     * @return the next input method and subtype if found, otherwise {@code null}.
-     */
-    @GuardedBy("ImfLock.class")
-    @Nullable
-    ImeSubtypeListItem getNextInputMethodForHardware(@NonNull InputMethodInfo imi,
-            @Nullable InputMethodSubtype subtype, boolean onlyCurrentIme,
-            @SwitchMode int mode, boolean forward) {
-        return mHardwareRotationList.next(imi, subtype, onlyCurrentIme, isRecency(mode, forward),
-                forward);
+    ImeSubtypeListItem getNext(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype,
+            boolean onlyCurrentIme, boolean forHardware, @SwitchMode int mode, boolean forward) {
+        return mRotationList.next(imi, subtype, onlyCurrentIme, forHardware,
+                isRecency(mode, forward), forward);
     }
 
     /**
@@ -584,9 +550,7 @@ final class InputMethodSubtypeSwitchingController {
      */
     @GuardedBy("ImfLock.class")
     boolean onUserAction(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype) {
-        boolean recencyUpdated = false;
-        recencyUpdated |= mRotationList.setMostRecent(imi, subtype);
-        recencyUpdated |= mHardwareRotationList.setMostRecent(imi, subtype);
+        final boolean recencyUpdated = mRotationList.setMostRecent(imi, subtype);
         if (recencyUpdated) {
             mUserActionSinceSwitch = true;
         }
@@ -618,8 +582,6 @@ final class InputMethodSubtypeSwitchingController {
     void dump(@NonNull Printer pw, @NonNull String prefix) {
         pw.println(prefix + "mRotationList:");
         mRotationList.dump(pw, prefix + "  ");
-        pw.println(prefix + "mHardwareRotationList:");
-        mHardwareRotationList.dump(pw, prefix + "  ");
         pw.println(prefix + "mEnabledItems:");
         for (int i = 0; i < mEnabledItems.size(); i++) {
             final var item = mEnabledItems.get(i);
@@ -641,7 +603,6 @@ final class InputMethodSubtypeSwitchingController {
     @GuardedBy("ImfLock.class")
     void update(@NonNull Context context, @NonNull InputMethodSettings settings) {
         mEnabledItems = getEnabledInputMethodsAndSubtypes(context, settings);
-        update(getItemsForSwitching(false /* forHardware */),
-                getItemsForSwitching(true /* forHardware */));
+        update(getItems(false /* forMenu */, false /* includeAuxiliary */));
     }
 }

@@ -47,12 +47,13 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import kotlin.collections.List
 
 /** A ClockFaceLayout that applies the default lockscreen layout to a single view */
 open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     override val views = listOf(view)
 
-    override val elements by lazy {
+    override val elements: List<LockscreenElement> by lazy {
         if (view.id == ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE) {
             listOf(largeClockElement)
         } else {
@@ -62,7 +63,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
 
     private val smallClockElement =
         object : LockscreenElement {
-            override val key = LockscreenElementKeys.ClockSmall
+            override val key = LockscreenElementKeys.Clock.Small
             override val context = view.context
 
             @Composable
@@ -91,7 +92,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
 
     private val largeClockElement =
         object : LockscreenElement {
-            override val key = LockscreenElementKeys.ClockLarge
+            override val key = LockscreenElementKeys.Clock.Large
             override val context = view.context
 
             @Composable

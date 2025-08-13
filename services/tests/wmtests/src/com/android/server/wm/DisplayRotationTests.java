@@ -53,6 +53,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 
 import android.app.WindowConfiguration;
 import android.content.ContentResolver;
@@ -1161,6 +1162,20 @@ public class DisplayRotationTests {
     }
 
     @Test
+    public void testHalfFoldOverrideDisabled_halfFolded_rotationOverrideIsNotApplied() throws Exception {
+        mBuilder.setSupportHalfFoldAutoRotateOverride(false);
+        mBuilder.build();
+        configureDisplayRotation(SCREEN_ORIENTATION_LANDSCAPE, false, false);
+        enableOrientationSensor();
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.OPEN);
+        freezeRotation(Surface.ROTATION_270);
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
+
+        verify(mMockDisplayRotationReversionController, never()).beforeOverrideApplied(anyInt());
+    }
+
+    @Test
     public void sensorRotation_locked_halfFolded_configOff_rotationUnchanged() throws Exception {
         mBuilder.setIsFoldable(true);
         mBuilder.setSupportHalfFoldAutoRotateOverride(false);
@@ -1182,7 +1197,7 @@ public class DisplayRotationTests {
         // ... half-fold -> still no rotation
         mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.HALF_FOLDED);
         assertTrue(waitForUiHandler());
-        verify(sMockWm).updateRotation(false, false);
+        verify(sMockWm, never()).updateRotation(false, false);
         assertTrue(waitForUiHandler());
         assertEquals(Surface.ROTATION_270, mTarget.rotationForOrientation(
                 SCREEN_ORIENTATION_UNSPECIFIED, Surface.ROTATION_0));

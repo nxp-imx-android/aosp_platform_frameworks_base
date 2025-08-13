@@ -28,6 +28,12 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Metadata of preference screen.
  *
+ * [PreferenceScreenMetadata] class is reused for both screen container and entry points to maintain
+ * the states (availability, enable, restriction, title, etc.) consistently. Different instances are
+ * created for screen container and entry points respectively. In case the implementation would like
+ * to perform action for container (or entry point) only, [isContainer] and [isEntryPoint] could be
+ * leveraged to distinguish current screen metadata instance is acting as container or entry point.
+ *
  * For parameterized preference screen that relies on additional information (e.g. package name,
  * language code) to build its content, the subclass must:
  * - override [arguments] in constructor
@@ -62,6 +68,14 @@ interface PreferenceScreenMetadata : PreferenceGroup {
 
     /** Returns dynamic screen title, use [screenTitle] whenever possible. */
     fun getScreenTitle(context: Context): CharSequence? = null
+
+    /** Returns if current screen metadata instance is acting as container. */
+    fun isContainer(context: PreferenceLifecycleContext): Boolean =
+        bindingKey == context.preferenceScreenKey
+
+    /** Returns if current screen metadata instance is acting as entry point. */
+    fun isEntryPoint(context: PreferenceLifecycleContext): Boolean =
+        bindingKey != context.preferenceScreenKey
 
     /** Returns the fragment class to show the preference screen. */
     fun fragmentClass(): Class<out Fragment>?

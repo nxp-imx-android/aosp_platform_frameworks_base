@@ -24,7 +24,6 @@ import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.NotificationSectionsFeatureManager
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.Summarization
-import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
@@ -98,9 +97,6 @@ constructor(
 
             override fun getRowController(entry: NotificationEntry): NotifRowController =
                 viewBarn.requireRowController(entry)
-
-            override fun getBundleController(entry: BundleEntry): NotifRowController =
-                bundleBarn.requireNodeController(entry) as NotifRowController
         }
 }
 

@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.widgets
 
+import android.appwidget.AppWidgetEvent
 import android.appwidget.AppWidgetHost.AppWidgetHostListener
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
@@ -211,6 +212,10 @@ constructor(
 
             override fun onViewDataChanged(viewId: Int) {
                 listener.onViewDataChanged(viewId)
+            }
+
+            override fun collectWidgetEvent(): AppWidgetEvent? {
+                return listener.collectWidgetEvent()
             }
         }
     }

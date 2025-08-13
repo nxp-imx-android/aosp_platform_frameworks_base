@@ -65,7 +65,7 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
             new ComponentCallbacksController();
     private final WindowContextController mController;
 
-    private WindowManager mWindowManager;
+    private final WindowManager mWindowManager;
 
     private Window mWindow;
 
@@ -98,11 +98,6 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         WindowTokenClient token = (WindowTokenClient) requireNonNull(getWindowContextToken());
         mController = new WindowContextController(requireNonNull(token));
 
-        if (!Flags.reparentToDefaultWithDisplayRemoval()
-                && shouldFallbackToDefaultDisplay(mOptions)) {
-            throw new UnsupportedOperationException(
-                    Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL + " is not enabled");
-        }
         Reference.reachabilityFence(this);
         if (android.view.accessibility.Flags.forceInvertColor()) {
             // Use the theme of the application as the default theme for this window context.
@@ -203,9 +198,6 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
      *     window type mentioned above.
      */
     public void setWindowTypeOverride(@WindowType int windowTypeOverride) {
-        if (!Flags.enableWindowContextOverrideType()) {
-            return;
-        }
         if (!isValidWindowType(windowTypeOverride) && windowTypeOverride != INVALID_WINDOW_TYPE) {
             throw new IllegalArgumentException(
                     "The window type override must be either "
@@ -231,9 +223,6 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
      * @throws IllegalStateException if window has been attached.
      */
     public void attachWindow(@NonNull View window) {
-        if (!Flags.enableWindowContextOverrideType()) {
-            return;
-        }
         if (mWindow != null) {
             throw new IllegalStateException(
                     "This WindowContext has already attached a window. Window=" + mWindow

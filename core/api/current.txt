@@ -11180,6 +11180,7 @@ package android.content {
     method @Nullable public abstract String getSystemServiceName(@NonNull Class<?>);
     method @NonNull public final CharSequence getText(@StringRes int);
     method public abstract android.content.res.Resources.Theme getTheme();
+    method @FlaggedApi("android.content.flags.enable_update_service_bindings") @NonNull public android.content.Context.BindServiceFlags getUpdateableFlags();
     method @Deprecated public abstract android.graphics.drawable.Drawable getWallpaper();
     method @Deprecated public abstract int getWallpaperDesiredMinimumHeight();
     method @Deprecated public abstract int getWallpaperDesiredMinimumWidth();
@@ -11244,6 +11245,7 @@ package android.content {
     method public void unregisterComponentCallbacks(android.content.ComponentCallbacks);
     method public void unregisterDeviceIdChangeListener(@NonNull java.util.function.IntConsumer);
     method public abstract void unregisterReceiver(android.content.BroadcastReceiver);
+    method @FlaggedApi("android.content.flags.enable_update_service_bindings") public void updateServiceBindings(@NonNull java.util.List<android.content.Context.UpdateBindingParams>);
     method public void updateServiceGroup(@NonNull android.content.ServiceConnection, int, int);
     field public static final String ACCESSIBILITY_SERVICE = "accessibility";
     field public static final String ACCOUNT_SERVICE = "account";
@@ -11385,6 +11387,21 @@ package android.content {
 
   public static final class Context.BindServiceFlags {
     method @NonNull public static android.content.Context.BindServiceFlags of(long);
+  }
+
+  @FlaggedApi("android.content.flags.enable_update_service_bindings") public static final class Context.UpdateBindingParams {
+    method @NonNull public android.content.ServiceConnection getConnection();
+    method @NonNull public android.content.Context.BindServiceFlags getFlags();
+    method public boolean isRebind();
+    method public boolean isUnbind();
+    method public void setRebind(@NonNull android.content.Context.BindServiceFlags);
+    method public void setUnbind();
+  }
+
+  public static final class Context.UpdateBindingParams.Builder {
+    ctor public Context.UpdateBindingParams.Builder(@NonNull android.content.ServiceConnection);
+    ctor public Context.UpdateBindingParams.Builder(@NonNull android.content.ServiceConnection, @NonNull android.content.Context.BindServiceFlags);
+    method @NonNull public android.content.Context.UpdateBindingParams build();
   }
 
   public final class ContextParams {

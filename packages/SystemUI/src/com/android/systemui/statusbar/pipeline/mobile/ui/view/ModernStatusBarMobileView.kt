@@ -17,11 +17,13 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.view
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.android.keyguard.AlphaOptimizedLinearLayout
+import com.android.systemui.Flags
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.buildSpec
@@ -50,6 +52,12 @@ class ModernStatusBarMobileView(context: Context, attrs: AttributeSet?) :
             "isCollecting=${binding.isCollecting()}, " +
             "visibleState=${getVisibleStateString(visibleState)}); " +
             "viewString=${super.toString()}"
+    }
+
+    public override fun onConfigurationChanged(newConfig: Configuration?) {
+        if (Flags.fixShadeHeaderWrongIconSize()) {
+            configureLayoutForNewStatusBarIcons()
+        }
     }
 
     /**

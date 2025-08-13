@@ -33,14 +33,18 @@ import static org.mockito.Mockito.when;
 import android.app.admin.Authority;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyResourcesManager;
+import android.app.admin.DpcAuthority;
 import android.app.admin.EnforcingAdmin;
 import android.app.admin.SystemAuthority;
+import android.app.admin.flags.Flags;
 import android.app.ecm.EnhancedConfirmationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
@@ -51,6 +55,7 @@ import androidx.test.core.app.ApplicationProvider;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -59,6 +64,9 @@ import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class RestrictedSwitchPreferenceTest {
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final int SIZE = 50;
     private final Authority mAdvancedProtectionAuthority = new SystemAuthority(
@@ -183,6 +191,27 @@ public class RestrictedSwitchPreferenceTest {
 
         mPreference.checkEcmRestrictionAndSetDisabled("setting", "pkg.test",
                 /* settingEnabled */ false);
+
+        assertThat(mPreference.getSummary().toString()).isEqualTo("test");
+
+        mPreference.performClick();
+
+        assertThat(mPreference.getSummary().toString()).isEqualTo("test");
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void setDisabledByAdmin_withAccessibility_keepsDisabledSummary() {
+        when(mDevicePolicyResourcesManager.getString(any(), any())).thenReturn("test");
+        when(mContext.getString(
+                com.android.settingslib.widget.restricted.R.string.disabled_by_admin))
+                .thenReturn("test");
+        doNothing().when(mContext).startActivityAsUser(any(), any());
+        when(mAccessibilityManager.isEnabled()).thenReturn(true);
+        EnforcingAdmin enforcingAdmin = new EnforcingAdmin("pkg.test", DpcAuthority.DPC_AUTHORITY,
+                UserHandle.of(UserHandle.myUserId()), new ComponentName("admin", "adminclass"));
+
+        mPreference.setDisabledByAdmin(enforcingAdmin);
 
         assertThat(mPreference.getSummary().toString()).isEqualTo("test");
 

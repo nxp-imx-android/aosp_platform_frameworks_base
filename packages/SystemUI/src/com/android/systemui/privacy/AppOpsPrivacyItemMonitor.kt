@@ -240,29 +240,31 @@ constructor(
                 }
                 .distinct()
 
-        // Types of location accesses were stored when iterating through the app ops in
-        // #shouldDisplayLocationOp and now they will be logged and the state will be cleared
-        logLocationAccesses()
+        if (locationAvailable) {
+            // Types of location accesses were stored when iterating through the app ops in
+            // #shouldDisplayLocationOp and now they will be logged and the state will be cleared
+            logLocationAccesses()
 
-        // Keep track of the current privacy items in order to determine whether to log the next
-        // round of privacy item changes.
-        val locationItems =
-            activeAppOps
-                .filter { item ->
-                    (item.code == AppOpsManager.OP_FINE_LOCATION ||
-                        item.code == AppOpsManager.OP_COARSE_LOCATION)
-                }
-                .distinct()
-        val locationOpBySystem = locationItems.any { item -> isSystemApp(item) }
-        val locationOpByBackground = locationItems.any { item -> isBackgroundApp(item) }
-        synchronized(lock) {
-            lastLocationIndicator = items.any { it.privacyType == PrivacyType.TYPE_LOCATION }
-            lastLocationIndicatorWithSystem = lastLocationIndicator || locationOpBySystem
-            lastLocationIndicatorWithBackround = lastLocationIndicator || locationOpByBackground
-            lastLocationIndicatorWithSystemAndBackround =
-                lastLocationIndicator || locationOpBySystem || locationOpByBackground
-            lastHighPowerLocationOp =
-                activeAppOps.any { it.code == AppOpsManager.OP_MONITOR_HIGH_POWER_LOCATION }
+            // Keep track of the current privacy items in order to determine whether to log the next
+            // round of privacy item changes.
+            val locationOp =
+                activeAppOps
+                    .filter {
+                        currentUserProfiles.any { user -> user.id == UserHandle.getUserId(it.uid) }
+                    }
+                    .filter { item -> item.code == AppOpsManager.OP_FINE_LOCATION }
+                    .distinct()
+            val locationOpBySystem = locationOp.any { item -> isSystemApp(item) }
+            val locationOpByBackground = locationOp.any { item -> isBackgroundApp(item) }
+            synchronized(lock) {
+                lastLocationIndicator = items.any { it.privacyType == PrivacyType.TYPE_LOCATION }
+                lastLocationIndicatorWithSystem = lastLocationIndicator || locationOpBySystem
+                lastLocationIndicatorWithBackround = lastLocationIndicator || locationOpByBackground
+                lastLocationIndicatorWithSystemAndBackround =
+                    lastLocationIndicator || locationOpBySystem || locationOpByBackground
+                lastHighPowerLocationOp =
+                    activeAppOps.any { it.code == AppOpsManager.OP_MONITOR_HIGH_POWER_LOCATION }
+            }
         }
 
         return items
@@ -333,7 +335,6 @@ constructor(
             when (appOpItem.code) {
                 AppOpsManager.OP_PHONE_CALL_CAMERA,
                 AppOpsManager.OP_CAMERA -> PrivacyType.TYPE_CAMERA
-                AppOpsManager.OP_COARSE_LOCATION,
                 AppOpsManager.OP_FINE_LOCATION -> PrivacyType.TYPE_LOCATION
                 AppOpsManager.OP_PHONE_CALL_MICROPHONE,
                 AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO,
@@ -367,10 +368,15 @@ constructor(
      * [hasHighPowerLocationAccess]
      */
     private fun shouldDisplayLocationOp(item: AppOpItem): Boolean {
-        if (
-            item.code == AppOpsManager.OP_FINE_LOCATION ||
-                item.code == AppOpsManager.OP_COARSE_LOCATION
-        ) {
+        if (!locationAvailable) {
+            // This is to avoid unnecessary work in updating haXXXLocationAccess booleans, although
+            // updating them does nothing since logLocationAccess() is not invoked in this case.
+            // Note that the logic for "filtering locationOps by locationAvailable" is in
+            // toPrivacyItemLocked(), not this method.
+            return true
+        }
+
+        if (item.code == AppOpsManager.OP_FINE_LOCATION) {
             val isSystem = isSystemApp(item)
             val isBackground = isBackgroundApp(item)
             if (isSystem) {
@@ -385,11 +391,9 @@ constructor(
             }
             return result
         }
-
         if (item.code == AppOpsManager.OP_MONITOR_HIGH_POWER_LOCATION) {
             synchronized(lock) { hasHighPowerLocationAccess = true }
         }
-
         return true
     }
 

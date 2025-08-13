@@ -29,6 +29,8 @@ import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -120,12 +122,14 @@ class StatusBarWindowControllerImplTest : SysuiTestCase() {
         assertThat(fakeWindowManager.addedViews).isEmpty()
     }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun stop_connectedDisplaysFlagDisabled_crashes() {
         val underTest = kosmos.statusBarWindowControllerImpl
 
-        underTest.stop()
+        assertThrows(IllegalStateException::class.java) {
+            underTest.stop()
+        }
     }
 
     @Test

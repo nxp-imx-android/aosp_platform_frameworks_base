@@ -217,8 +217,8 @@ public class BubbleTransitions {
             ProtoLog.d(
                     WM_SHELL_BUBBLES, "notifyUnfoldTransitionStarting transition=%s", transition);
             Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
-            mTaskViewTransitions.enqueueExternal(
-                    bubble.getTaskView().getController(), () -> transition);
+            mTaskViewTransitions.enqueueRunningExternal(bubble.getTaskView().getController(),
+                    transition);
         }
     }
 
@@ -539,7 +539,7 @@ public class BubbleTransitions {
             // Remove any intermediate queued transitions that were started as a result of the
             // inflation (the task view will be in the right bounds)
             mTaskViewTransitions.removePendingTransitions(tv.getController());
-            mTaskViewTransitions.enqueueExternal(tv.getController(), () -> mTransition);
+            mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
         }
 
         @Override
@@ -826,6 +826,7 @@ public class BubbleTransitions {
                 }
                 opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
                 opts.setLaunchBounds(launchBounds);
+                // TODO(b/437451940): start the pending intent or shortcut via WCT
                 if (mBubble.isShortcut()) {
                     final LauncherApps launcherApps = mContext.getSystemService(
                             LauncherApps.class);
@@ -1769,7 +1770,8 @@ public class BubbleTransitions {
             final TaskView tv = mBubble.getTaskView();
             mTransition = mTransitions.startTransition(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR,
                     mWct, this);
-            mTaskViewTransitions.enqueueExternal(tv.getController(), () -> mTransition);
+            mTaskViewTransitions.removePendingTransitions(tv.getController());
+            mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
         }
 
         @Override

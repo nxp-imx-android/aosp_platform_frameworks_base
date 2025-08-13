@@ -1228,6 +1228,83 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertEquals(listOf(false, true, false), aodVisibility)
         }
 
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibility_notVisibleCollapsingShadeOverLockscreen() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+
+            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            assertThat(lockscreenVisibility).isTrue()
+
+            setSceneTransition(Idle(Scenes.Shade))
+            sceneInteractor.changeScene(Scenes.Shade, "")
+            assertThat(lockscreenVisibility).isTrue()
+
+            // Ensure that LS remains not visible during Shade -> Lockscreen. Since Shade is not
+            // explicitly a Keyguard scene, we've had regressions where lockscreen becomes visible
+            // during transitions from Shade.
+            setSceneTransition(Transition(from = Scenes.Shade, to = Scenes.Lockscreen))
+            assertThat(lockscreenVisibility).isTrue()
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+            sceneInteractor.changeScene(Scenes.Lockscreen, "")
+            assertThat(lockscreenVisibility).isTrue()
+
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+            assertThat(lockscreenVisibility).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibility_remainsVisibleDuringLsGone() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+
+            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            assertThat(lockscreenVisibility).isTrue()
+
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            assertThat(lockscreenVisibility).isTrue()
+
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+            assertThat(lockscreenVisibility).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibility_remainsNotVisibleDuringGoneLs() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+
+            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            assertThat(lockscreenVisibility).isFalse()
+
+            // Lockscreen vis remains false during Gone -> LS so the unlocked app content is visible
+            // during the screen off animation.
+            setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
+            assertThat(lockscreenVisibility).isFalse()
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+            sceneInteractor.changeScene(Scenes.Lockscreen, "")
+            assertThat(lockscreenVisibility).isTrue()
+        }
+
     companion object {
         private val progress = MutableStateFlow(0f)
 

@@ -189,10 +189,11 @@ status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outWindow
             goto fail_silent;
         }
 
-        window->mData = malloc(window->mSize);
-        if (!window->mData) goto fail;
-
-        if (parcel->read(window->mData, window->mSize)) goto fail;
+        if (window->mSize > 0) {
+            window->mData = malloc(window->mSize);
+            if (!window->mData) goto fail;
+            if (parcel->read(window->mData, window->mSize)) goto fail;
+        }
     }
 
     // We just came from a remote source, so we're read-only
@@ -219,9 +220,12 @@ status_t CursorWindow::writeToParcel(Parcel* parcel) {
     if (parcel->writeString8(mName)) goto fail;
     if (parcel->writeUint32(mNumRows)) goto fail;
     if (parcel->writeUint32(mNumColumns)) goto fail;
-    if (mAshmemFd != -1) {
+    if (mNumRows == 0) {
+        if (parcel->writeUint32(/*size=*/0)) goto fail;
+        if (parcel->writeBool(/*isAshmem=*/false)) goto fail;
+    } else if (mAshmemFd != -1) {
         if (parcel->writeUint32(mSize)) goto fail;
-        if (parcel->writeBool(true)) goto fail;
+        if (parcel->writeBool(/*isAshmem=*/true)) goto fail;
         if (parcel->writeDupFileDescriptor(mAshmemFd)) goto fail;
     } else {
         // Since we know we're going to be read-only on the remote side,
@@ -229,7 +233,7 @@ status_t CursorWindow::writeToParcel(Parcel* parcel) {
         size_t slotsSize = sizeOfSlots();
         size_t compactedSize = sizeInUse();
         if (parcel->writeUint32(compactedSize)) goto fail;
-        if (parcel->writeBool(false)) goto fail;
+        if (parcel->writeBool(/*isAshmem=*/false)) goto fail;
         void* dest = parcel->writeInplace(compactedSize);
         if (!dest) goto fail;
         memcpy(static_cast<uint8_t*>(dest),

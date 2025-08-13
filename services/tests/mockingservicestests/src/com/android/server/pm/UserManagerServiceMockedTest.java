@@ -31,10 +31,17 @@ import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
+import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
 import static android.os.UserManager.DISALLOW_SMS;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
+import static android.os.UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
+import static android.os.UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
+import static android.os.UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
+import static android.os.UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
+import static android.os.UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
+import static android.os.UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
@@ -84,12 +91,14 @@ import android.os.ServiceSpecificException;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.UserManager.RemoveResult;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.telecom.TelecomManager;
+import android.util.DebugUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -97,7 +106,6 @@ import android.util.Xml;
 
 import androidx.test.annotation.UiThreadTest;
 
-import com.android.dx.mockito.inline.extended.MockedVoidMethod;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.LocalServices;
@@ -1940,6 +1948,97 @@ public final class UserManagerServiceMockedTest {
         assertThat(result).isSameInstanceAs(bundle1);
     }
 
+    @Test
+    public void testGetUserRemovabilityLocked_mainUserDevice() {
+        int mainUserId = assumeHasMainUser();
+
+        int expectedResult;
+        if (mainUserId == USER_SYSTEM) {
+            expectedResult = REMOVE_RESULT_ERROR_SYSTEM_USER;
+        } else {
+            boolean isMUPA = mUms.isMainUserPermanentAdmin();
+            Log.d(TAG, "testGetUserRemovabilityLocked_mainUser(): isMUPA=" + isMUPA);
+            expectedResult = isMUPA
+                    ? REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN
+                    : REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
+        }
+
+        expectGetUserRemovability("main user", mainUserId, expectedResult);
+    }
+
+    @Test
+    public void testGetUserRemovabilityLocked_mainlessUserDevice() {
+        assumeDoesntHaveMainUser();
+        var mainUser = createMainUser();
+        int mainUserId = mainUser.id;
+
+        mockIsMainUserPermanentAdmin(true);
+        expectGetUserRemovability("main user that is permanent admin",
+                mainUserId, REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN);
+
+        mockIsMainUserPermanentAdmin(false);
+        expectGetUserRemovability("main user that is not permanent admin",
+                mainUserId, REMOVE_RESULT_USER_IS_REMOVABLE);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    public void testGetUserRemovabilityLocked_lastAdmin_flagEnabled() {
+        assumeDoesntHaveMainUser();
+
+        var adminUser = addUser(
+                new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+
+        mockDisallowRemovingLastAdminUser(true);
+        expectGetUserRemovability("last admin when config is true",
+                adminUser.id, REMOVE_RESULT_ERROR_LAST_ADMIN_USER);
+
+        mockDisallowRemovingLastAdminUser(false);
+        expectGetUserRemovability("last admin when config is false",
+                adminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    public void testGetUserRemovabilityLocked_lastAdmin_flagDisabled() {
+        assumeDoesntHaveMainUser();
+
+        var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+
+        mockDisallowRemovingLastAdminUser(true);
+        expectGetUserRemovability("last admin when config is true",
+                adminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+
+        mockDisallowRemovingLastAdminUser(false);
+        expectGetUserRemovability("last admin when config is false",
+                adminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+    }
+
+    @Test
+    public void testGetUserRemovabilityLocked_otherUsers() {
+        var nonAdminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var adminUser1 = addUser(
+                new UserInfo(USER_ID2, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+        var adminUser2 = addUser(
+                new UserInfo(USER_ID3, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+        var dyingUser = addDyingUser(new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL));
+        var deviceOwnerUser = addUser(
+                new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+
+        // Failure cases first
+        expectGetUserRemovability("system user", USER_SYSTEM, REMOVE_RESULT_ERROR_SYSTEM_USER);
+        expectGetUserRemovability("null user", USER_NULL, REMOVE_RESULT_ERROR_USER_NOT_FOUND);
+        expectGetUserRemovability("dying user", dyingUser.id, REMOVE_RESULT_ALREADY_BEING_REMOVED);
+
+        // Then success ones
+        expectGetUserRemovability("non-admin", nonAdminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+        // It's ok to remove any admin user because there's more than one - removing the last one
+        // will be tested on their one methods below (as it depends on the flag value)
+        expectGetUserRemovability("admin 1", adminUser1.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+        expectGetUserRemovability("admin 2", adminUser2.id, REMOVE_RESULT_USER_IS_REMOVABLE);
+    }
+
+
     /**
      * Returns true if the user's XML file has Default restrictions
      * @param userId Id of the user.
@@ -2059,8 +2158,8 @@ public final class UserManagerServiceMockedTest {
         boolean previousValue = mSpyResources
                 .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser);
 
-        Log.d(TAG, "mockCanSwitchToHeadlessSystemUser(): will return " + canSwitch + " instad of "
-                + previousValue);
+        Log.d(TAG, "mockCanSwitchToHeadlessSystemUser(): config_canSwitchToHeadlessSystemUser will "
+                + "return " + canSwitch + " instad of " + previousValue);
         doReturn(canSwitch)
                 .when(mSpyResources)
                 .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser);
@@ -2070,7 +2169,8 @@ public final class UserManagerServiceMockedTest {
         int previousValue = mSpyResources
                 .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
         Log.d(TAG,
-                "mockHsumBootStrategy(): will return " + strategy + " instead of " + previousValue);
+                "mockHsumBootStrategy(): config_hsumBootStrategy will return " + strategy
+                + " instead of " + previousValue);
         doReturn(strategy)
                 .when(mSpyResources)
                 .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
@@ -2079,11 +2179,21 @@ public final class UserManagerServiceMockedTest {
     private void mockDisallowRemovingLastAdminUser(boolean disallow) {
         boolean previousValue = mSpyResources
                 .getBoolean(com.android.internal.R.bool.config_disallowRemovingLastAdminUser);
-        Log.d(TAG, "mockDisallowRemovingLastAdminUser(): will return " + disallow + " instead of "
-                + previousValue);
+        Log.d(TAG, "mockDisallowRemovingLastAdminUser(): config_disallowRemovingLastAdminUser will "
+                + "return " + disallow + " instead of " + previousValue);
         doReturn(disallow)
                 .when(mSpyResources)
                 .getBoolean(com.android.internal.R.bool.config_disallowRemovingLastAdminUser);
+    }
+
+    private void mockIsMainUserPermanentAdmin(boolean value) {
+        boolean previousValue = mSpyResources
+                .getBoolean(com.android.internal.R.bool.config_isMainUserPermanentAdmin);
+        Log.d(TAG, "mockIsMainUserPermanentAdmin(): config_isMainUserPermanentAdmin will return "
+                + value + " instead of " + previousValue);
+        doReturn(value)
+                .when(mSpyResources)
+                .getBoolean(com.android.internal.R.bool.config_isMainUserPermanentAdmin);
     }
 
     private void mockUserIsInCall(boolean isInCall) {
@@ -2160,17 +2270,20 @@ public final class UserManagerServiceMockedTest {
             .that(mUsers.get(userId).info.isAdmin()).isFalse();
     }
 
+    // TODO(b/438216701): tests should not need to assume anything, but set the desired behavior
     private void assumeMainUserIsNotTheSystemUser() {
         var mainUserId = mUms.getMainUserId();
         assumeFalse("main user is the system user", mainUserId == USER_SYSTEM);
     }
 
+    // TODO(b/438216701): tests should not need to assume anything, but set the desired behavior
     private void assumeMainUserIsTheSystemUser() {
         var mainUserId = mUms.getMainUserId();
         assumeTrue("main user (" + mainUserId + ") is not the system user",
                 mainUserId == USER_SYSTEM);
     }
 
+    // TODO(b/438216701): tests should not need to assume anything, but set the desired behavior
     @UserIdInt
     private int assumeHasMainUser() {
         var mainUserId = mUms.getMainUserId();
@@ -2178,6 +2291,7 @@ public final class UserManagerServiceMockedTest {
         return mainUserId;
     }
 
+    // TODO(b/438216701): tests should not need to assume anything, but set the desired behavior
     private void assumeDoesntHaveMainUser() {
         var mainUserId = mUms.getMainUserId();
         assumeTrue("main user doesn't exsit", mainUserId == UserHandle.USER_NULL);
@@ -2307,6 +2421,20 @@ public final class UserManagerServiceMockedTest {
             }
         }
         return file.delete();
+    }
+
+    private void expectGetUserRemovability(String who, @UserIdInt int userId,
+            @RemoveResult int expectedResult) {
+        int actualResult = mUms.getUserRemovabilityLockedLU(userId, /* msg= */ "not used");
+        expect.withMessage("getUserRemovabilityLockedLU(%s) (where user is %s, %s=%s, and %s=%s)",
+                who, userId,
+                expectedResult, removeResultToString(expectedResult),
+                actualResult, removeResultToString(actualResult))
+                .that(expectedResult).isEqualTo(actualResult);
+    }
+
+    private static String removeResultToString(@RemoveResult int result) {
+        return DebugUtils.constantToString(UserManager.class, "REMOVE_RESULT_", result);
     }
 
     private static final class TestUserData extends UserData {

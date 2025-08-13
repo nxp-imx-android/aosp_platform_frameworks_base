@@ -18,12 +18,15 @@ package com.android.ravenwoodtest.uitest;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.platform.test.annotations.DisabledOnRavenwood;
+import android.platform.test.ravenwood.RavenwoodExperimentalApiChecker;
+import android.platform.test.ravenwood.RavenwoodRule;
 import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -31,6 +34,12 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 
 public class RavenwoodActivityTest {
+    public static void assumeExperimentalApiAvailable() {
+        if (RavenwoodRule.isOnRavenwood()) {
+            assumeTrue(RavenwoodExperimentalApiChecker.isExperimentalApiEnabled());
+        }
+    }
+
     private static final Instrumentation sInstrumentation =
             InstrumentationRegistry.getInstrumentation();
 
@@ -39,6 +48,14 @@ public class RavenwoodActivityTest {
     @Test
     public void testResourcesAvailable() {
         assertEquals("Test string", sContext.getString(R.string.test_string));
+    }
+
+    @Test
+    public void testExperimentalApi() {
+        assumeExperimentalApiAvailable();
+
+        // This API is an experimental API.
+        sInstrumentation.getTargetContext().isUiContext();
     }
 
     @Test

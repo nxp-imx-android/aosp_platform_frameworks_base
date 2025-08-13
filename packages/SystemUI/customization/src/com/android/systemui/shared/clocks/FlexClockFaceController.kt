@@ -25,6 +25,7 @@ import android.widget.FrameLayout
 import com.android.app.animation.Interpolators
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockContext
+import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
@@ -77,6 +78,9 @@ class FlexClockFaceController(
     override val view: View
         get() = layerController.view
 
+    private val logger =
+        ClockLogger(null, clockCtx.messageBuffer, FlexClockFaceController::class.simpleName!!)
+
     override val config = ClockFaceConfig(hasCustomPositionUpdatedAnimation = true)
 
     override var theme = ThemeConfig(true, clockCtx.settings.seedColor)
@@ -124,16 +128,19 @@ class FlexClockFaceController(
         }
 
         override fun onTimeZoneChanged(timeZone: TimeZone) {
+            logger.onTimeZoneChanged(timeZone)
             clockCtx.timeKeeper.timeZone = timeZone
             layerController.events.onTimeZoneChanged(timeZone)
         }
 
         override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+            logger.onTimeFormatChanged(formatKind)
             timeFormatter.formatKind = formatKind
             layerController.events.onTimeFormatChanged(formatKind)
         }
 
         override fun onLocaleChanged(locale: Locale) {
+            logger.onLocaleChanged(locale)
             timeFormatter.locale = locale
             layerController.events.onLocaleChanged(locale)
         }

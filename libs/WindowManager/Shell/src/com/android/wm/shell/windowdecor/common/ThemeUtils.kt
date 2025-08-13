@@ -18,6 +18,7 @@ package com.android.wm.shell.windowdecor.common
 import android.annotation.ColorInt
 import android.annotation.IntRange
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ActivityManager.TaskDescription
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_MASK
@@ -71,9 +72,17 @@ internal class DecorThemeUtil(private val context: Context) {
 
     /** Returns the [Theme] used by the app with the given [RunningTaskInfo]. */
     fun getAppTheme(task: RunningTaskInfo): Theme {
+        return task.taskDescription?.let { getAppTheme(it) } ?: systemTheme
+    }
+
+    /** Returns the [Theme] used by the app with the given [TaskDescription]. */
+    fun getAppTheme(description: TaskDescription): Theme {
         // TODO: use app's uiMode to find its actual light/dark value. It needs to be added to the
         //   TaskInfo/TaskDescription.
-        val backgroundColor = task.taskDescription?.backgroundColor ?: return systemTheme
+        val backgroundColor = description.backgroundColor
+        if (backgroundColor == Color.TRANSPARENT) {
+            return systemTheme
+        }
         return if (Color.valueOf(backgroundColor).luminance() < 0.5) {
             Theme.DARK
         } else {

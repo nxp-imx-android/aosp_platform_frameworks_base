@@ -19,8 +19,9 @@ package com.android.settingslib.enterprise;
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ADMIN_COMPONENT;
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ADMIN_PACKAGE_NAME;
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCED_ADMIN;
-import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCING_ADMIN;
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCEMENT_ADMIN_USER_ID;
+import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCING_ADMIN;
+import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.SUPERVISION_SYSTEM;
 import static com.android.settingslib.enterprise.FakeDeviceAdminStringProvider.DEFAULT_DEVICE_ADMIN_STRING_PROVIDER;
 
 import static junit.framework.Assert.assertNotNull;
@@ -31,12 +32,14 @@ import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.supervision.flags.Flags;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 
 import org.junit.Before;
@@ -109,6 +112,29 @@ public class SupervisedDeviceActionDisabledByAdminControllerTest {
                 nextIntent.getAction());
         assertEquals(restrictionUri, nextIntent.getData());
         assertEquals(ADMIN_PACKAGE_NAME, nextIntent.getPackage());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SUPERVISION_MANAGER_APIS)
+    public void buttonClicked_enforcingAdmin_supervisionSystem() {
+        String restriction = "no_add_user";
+        Intent intent =
+                new Intent(Settings.ACTION_BYPASS_SUPERVISION_RESTRICTION)
+                        .putExtra(Settings.EXTRA_SUPERVISION_RESTRICTION, restriction);
+        ResolveInfo resolveInfo =
+                ShadowResolveInfo.newResolveInfo(
+                        "Bypass Activity", ADMIN_COMPONENT.getPackageName(), "BypassActivity");
+        shadowOf(mContext.getPackageManager()).addResolveInfoForIntent(intent, resolveInfo);
+
+        DialogInterface.OnClickListener listener =
+                mController.getPositiveButtonListener(mContext, SUPERVISION_SYSTEM);
+        assertNotNull("Supervision controller must supply a non-null listener", listener);
+        listener.onClick(mock(DialogInterface.class), 0 /* which */);
+
+        Intent nextIntent = shadowOf(RuntimeEnvironment.application).getNextStartedActivity();
+        assertEquals(Settings.ACTION_BYPASS_SUPERVISION_RESTRICTION, nextIntent.getAction());
+        assertEquals(
+                restriction, nextIntent.getStringExtra(Settings.EXTRA_SUPERVISION_RESTRICTION));
     }
 
     @Test

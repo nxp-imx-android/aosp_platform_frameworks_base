@@ -509,6 +509,17 @@ public abstract class SessionProcessor {
             mPostviewSurface = postviewSurface;
             mImageCaptureSurface = imageCaptureSurface;
 
+            // Extract the vendor ID from the camera characteristics. This is needed to ensure that
+            // the vendor-specific capture results are correctly processed by the framework.
+            Object thisClass = CameraCharacteristics.Key.class;
+            Class<CameraCharacteristics.Key<?>> keyClass =
+                    (Class<CameraCharacteristics.Key<?>>)thisClass;
+            ArrayList<CameraCharacteristics.Key<?>> vendorKeys =
+                    charsMap.get(cameraId).getAllVendorKeys(keyClass);
+            if ((vendorKeys != null) && !vendorKeys.isEmpty()) {
+                mVendorId = vendorKeys.get(0).getVendorId();
+            }
+
             ExtensionConfiguration config;
             if (Flags.efvCaptureLatency()) {
                 CameraConfiguration cameraConfig = new CameraConfiguration(
@@ -527,14 +538,6 @@ public abstract class SessionProcessor {
                 throw  new  IllegalArgumentException("Invalid extension configuration");
             }
 
-            Object thisClass = CameraCharacteristics.Key.class;
-            Class<CameraCharacteristics.Key<?>> keyClass =
-                    (Class<CameraCharacteristics.Key<?>>)thisClass;
-            ArrayList<CameraCharacteristics.Key<?>> vendorKeys =
-                    charsMap.get(cameraId).getAllVendorKeys(keyClass);
-            if ((vendorKeys != null) && !vendorKeys.isEmpty()) {
-                mVendorId = vendorKeys.get(0).getVendorId();
-            }
             return config.getCameraSessionConfig();
         }
 
