@@ -19,13 +19,12 @@ package com.android.systemui.lifecycle
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.lifecycle.Lifecycle
 import com.android.app.tracing.TraceUtils
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.traceCoroutine
-import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -41,10 +40,6 @@ import kotlinx.coroutines.CoroutineScope
  * performance findings with actual code. One recommendation: prefer whole string literals instead
  * of some complex concatenation or templating scheme.
  *
- * The remembered view-model is activated every time the [minActiveState] is reached and deactivated
- * each time the lifecycle state falls "below" the [minActiveState]. This can be used to have more
- * granular control over when exactly a view-model becomes active.
- *
  * Note that, by default, `rememberViewModel` will activate its view-model in the [CoroutineContext]
  * from which it was called. To configure this, either pass a [coroutineContext] to this method or
  * use [WithConfiguredRememberViewModels] to bulk-configure all usages of `rememberViewModel`s
@@ -54,18 +49,15 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun <T> rememberViewModel(
     traceName: String,
-    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
-    coroutineContext: CoroutineContext = LocalCoroutineContext.current,
     key: Any = Unit,
+    coroutineContext: CoroutineContext = LocalCoroutineContext.current,
     factory: () -> T,
 ): T {
     val instance = remember(key) { factory() }
     if (instance is Activatable) {
-        LaunchedEffectWithLifecycle(
-            key1 = instance,
-            coroutineContext = coroutineContext,
-            minActiveState = minActiveState,
-        ) {
+        // TODO(b/436984081): Pass the coroutineContext once we use LaunchedEffectWithLifecycle
+        // again.
+        LaunchedEffect(instance) {
             TraceUtils.traceAsync("SystemUI.rememberViewModel", traceName) {
                 traceCoroutine(traceName) { instance.activate() }
             }
