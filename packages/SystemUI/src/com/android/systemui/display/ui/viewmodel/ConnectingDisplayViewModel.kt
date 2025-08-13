@@ -15,6 +15,8 @@
  */
 package com.android.systemui.display.ui.viewmodel
 
+import android.app.ActivityManager
+import android.app.ActivityManager.LOCK_TASK_MODE_LOCKED
 import android.app.Dialog
 import android.content.Context
 import android.provider.Settings.Secure.MIRROR_BUILT_IN_DISPLAY
@@ -73,6 +75,7 @@ constructor(
     private val context: Context,
     private val desktopState: DesktopState,
     private val secureSettings: SecureSettings,
+    private val activityManager: ActivityManager,
     private val connectedDisplayInteractor: ConnectedDisplayInteractor,
     @Application private val scope: CoroutineScope,
     @Background private val bgDispatcher: CoroutineDispatcher,
@@ -137,7 +140,10 @@ constructor(
                 .apply { show() }
     }
 
-    private fun PendingDisplay.showNewDialog(showConcurrentDisplayInfo: Boolean) {
+    private fun PendingDisplay.showNewDialog(
+        showConcurrentDisplayInfo: Boolean,
+        isInKioskMode: Boolean,
+    ) {
         var saveChoice = false
         dismissDialog()
 
@@ -152,6 +158,7 @@ constructor(
                 },
                 insetsProvider = { getInsetsOf(context, displayCutout() or navigationBars()) },
                 showConcurrentDisplayInfo = showConcurrentDisplayInfo,
+                isInKioskMode = isInKioskMode,
             )
 
         dialog =
@@ -173,14 +180,20 @@ constructor(
             return
         }
 
-        if (isInExtendedMode()) {
+        val isInKioskMode = activityManager.lockTaskModeState == LOCK_TASK_MODE_LOCKED
+        val isInExtendedMode = desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+
+        if (isInKioskMode) {
+            pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode)
+        } else if (isInExtendedMode) {
             pendingDisplay.enableForDesktop()
             showExtendedDisplayConnectionToast()
         } else {
             when (pendingDisplay.connectionType) {
                 DESKTOP -> pendingDisplay.enableForDesktop()
                 MIRROR -> pendingDisplay.enableForMirroring()
-                NOT_SPECIFIED -> pendingDisplay.showNewDialog(concurrentDisplaysInProgress)
+                NOT_SPECIFIED ->
+                    pendingDisplay.showNewDialog(concurrentDisplaysInProgress, isInKioskMode)
             }
         }
     }
@@ -230,8 +243,6 @@ constructor(
         dialog?.dismiss()
         dialog = null
     }
-
-    private fun isInExtendedMode() = desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
 
     private fun showExtendedDisplayConnectionToast() =
         Toast.makeText(context, R.string.connected_display_extended_mode_text, LENGTH_LONG).show()

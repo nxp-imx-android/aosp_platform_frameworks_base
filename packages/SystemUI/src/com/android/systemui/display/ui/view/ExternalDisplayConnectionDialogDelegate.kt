@@ -51,7 +51,8 @@ class ExternalDisplayConnectionDialogDelegate
 @AssistedInject
 constructor(
     @Application private val context: Context,
-    @Assisted private val showConcurrentDisplayInfo: Boolean = false,
+    @Assisted("showConcurrentDisplayInfo") private val showConcurrentDisplayInfo: Boolean = false,
+    @Assisted("isInKioskMode") private val isInKioskMode: Boolean = false,
     @Assisted private val rememberChoiceCheckBoxListener: CompoundButton.OnCheckedChangeListener,
     @Assisted("onStartDesktop") private val onStartDesktopClickListener: View.OnClickListener,
     @Assisted("onStartMirroring") private val onStartMirroringClickListener: View.OnClickListener,
@@ -79,15 +80,25 @@ constructor(
 
         desktopButton =
             dialog.requireViewById<Button>(R.id.start_desktop_mode).apply {
-                setOnClickListener(onStartDesktopClickListener)
-                optionSelected = true
+                if (isInKioskMode) {
+                    visibility = View.GONE
+                } else {
+                    visibility = View.VISIBLE
+                    setOnClickListener {
+                        optionSelected = true
+                        onStartDesktopClickListener.onClick(this)
+                    }
+                }
             }
 
         mirrorButton =
             dialog.requireViewById<Button>(R.id.start_mirroring).apply {
-                setOnClickListener(onStartMirroringClickListener)
-                optionSelected = true
+                setOnClickListener {
+                    optionSelected = true
+                    onStartMirroringClickListener.onClick(this)
+                }
             }
+
         dismissButton =
             dialog.requireViewById<Button>(R.id.cancel).apply {
                 setOnClickListener(onCancelClickListener)
@@ -159,7 +170,8 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            showConcurrentDisplayInfo: Boolean,
+            @Assisted("showConcurrentDisplayInfo") showConcurrentDisplayInfo: Boolean,
+            @Assisted("isInKioskMode") isInKioskMode: Boolean,
             rememberChoiceCheckBoxListener: CompoundButton.OnCheckedChangeListener,
             @Assisted("onStartDesktop") onStartDesktopClickListener: View.OnClickListener,
             @Assisted("onStartMirroring") onStartMirroringClickListener: View.OnClickListener,
