@@ -98,11 +98,6 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         WindowTokenClient token = (WindowTokenClient) requireNonNull(getWindowContextToken());
         mController = new WindowContextController(requireNonNull(token));
 
-        if (!Flags.reparentToDefaultWithDisplayRemoval()
-                && shouldFallbackToDefaultDisplay(mOptions)) {
-            throw new UnsupportedOperationException(
-                    Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL + " is not enabled");
-        }
         Reference.reachabilityFence(this);
         if (android.view.accessibility.Flags.forceInvertColor()) {
             // Use the theme of the application as the default theme for this window context.

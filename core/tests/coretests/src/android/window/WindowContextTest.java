@@ -561,19 +561,13 @@ public class WindowContextTest {
         }
     }
 
-    @EnableFlags({
-            Flags.FLAG_REPARENT_WINDOW_TOKEN_API,
-            Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL,
-    })
+    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     @Test
     public void testDisplayRemovePolicyReparentToDefault_notAddWindow_reparent() {
         testDisplayRemovePolicyReparentToDefault(false /* shouldVerifyAddingView */);
     }
 
-    @EnableFlags({
-            Flags.FLAG_REPARENT_WINDOW_TOKEN_API,
-            Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL,
-    })
+    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     @Test
     public void testDisplayRemovePolicyReparentToDefault_addWindow_reparent() {
         testDisplayRemovePolicyReparentToDefault(true /* shouldVerifyAddingView */);
