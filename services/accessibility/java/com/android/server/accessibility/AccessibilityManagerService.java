@@ -1886,9 +1886,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             @UserIdInt int userId, @NonNull List<ComponentName> tileComponentNames) {
         notifyQuickSettingsTilesChanged_enforcePermission();
 
-        Slog.d(LOG_TAG, TextUtils.formatSimple(
-                "notifyQuickSettingsTilesChanged userId: %s, tileComponentNames: %s",
-                userId, tileComponentNames));
         final Set<ComponentName> newTileComponentNames = new ArraySet<>(tileComponentNames);
         final Set<ComponentName> addedTiles;
         final Set<ComponentName> removedTiles;
@@ -1897,6 +1894,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         // update in-memory copy of QS_TILES in AccessibilityManager
         synchronized (mLock) {
+            Slog.d(LOG_TAG, TextUtils.formatSimple(
+                    "notifyQuickSettingsTilesChanged userId: %s, tileComponentNames: %s, "
+                            + "userInitializationCompleted? %s",
+                    userId, tileComponentNames, isServiceInitializedLocked()));
+
             AccessibilityUserState userState = getUserStateLocked(userId);
 
             tileServiceToA11yServiceInfo = userState.getTileServiceToA11yServiceInfoMapLocked();
@@ -2192,7 +2194,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         mMagnificationController.updateUserIdIfNeeded(userId);
         List<AccessibilityServiceInfo> parsedAccessibilityServiceInfos;
         List<AccessibilityShortcutInfo> parsedAccessibilityShortcutInfos;
-
+        Slog.d(LOG_TAG, "switchUser, userId to switch: " + userId);
         synchronized (mLock) {
             if (Flags.managerLifecycleUserChange()) {
                 userId = mSecurityPolicy.resolveProfileParentLocked(userId);
@@ -2251,7 +2253,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 try {
                     callback.onUserInitializationComplete(mCurrentUserId);
                 } catch (RemoteException re) {
-                    Log.e("AccessibilityManagerService",
+                    Slog.e(LOG_TAG,
                             "Error while dispatching userInitializationComplete callback: ",
                             re);
                 }
@@ -4039,10 +4041,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return false;
         });
 
-        final Set<String> shortcutKeyTargets =
-                userState.getShortcutTargetsLocked(HARDWARE);
-        final Set<String> qsShortcutTargets =
-                userState.getShortcutTargetsLocked(QUICK_SETTINGS);
+        final Set<String> currentQsShortcutTargets = Collections.unmodifiableSet(
+                userState.getShortcutTargetsLocked(QUICK_SETTINGS));
+        final Set<String> newQsShortcutTargets = new ArraySet<>(currentQsShortcutTargets);
         final Set<String> shortcutTargets = userState.getShortcutTargetsLocked(ALL);
         userState.mEnabledServices.forEach(componentName -> {
             if (packageName != null && componentName != null
@@ -4072,16 +4073,53 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // be assigned to a shortcut.
             Slog.v(LOG_TAG, "A enabled service requesting a11y button " + componentName
                     + " should be assign to the button or shortcut.");
-            buttonTargets.add(serviceName);
+            if (Flags.notifyQsTileChangedAfterUserInitialization()) {
+                boolean hasQsTile = !TextUtils.isEmpty(serviceInfo.getTileServiceName());
+                boolean isAccessibilityTool = serviceInfo.isAccessibilityTool();
+                if (hasQsTile && isAccessibilityTool) {
+                    newQsShortcutTargets.add(serviceName);
+                } else {
+                    buttonTargets.add(serviceName);
+                }
+            } else {
+                buttonTargets.add(serviceName);
+            }
         });
-        if (!userState.updateShortcutTargetsLocked(buttonTargets, SOFTWARE)) {
-            return;
-        }
 
-        // Update setting key with new value.
-        persistColonDelimitedSetToSettingLocked(Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
-                userState.mUserId, buttonTargets, str -> str);
-        scheduleNotifyClientsOfServicesStateChangeLocked(userState);
+        if (Flags.notifyQsTileChangedAfterUserInitialization()) {
+            boolean softwareShortcutChanged = userState.updateShortcutTargetsLocked(
+                    buttonTargets, SOFTWARE);
+            boolean qsShortcutChanged = userState.updateShortcutTargetsLocked(
+                    newQsShortcutTargets, QUICK_SETTINGS);
+            if (!softwareShortcutChanged && !qsShortcutChanged) {
+                return;
+            }
+
+            // Update setting key with new value.
+            if (softwareShortcutChanged) {
+                persistColonDelimitedSetToSettingLocked(
+                        Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
+                        userState.mUserId, buttonTargets, str -> str);
+            }
+            if (qsShortcutChanged) {
+                persistColonDelimitedSetToSettingLocked(Settings.Secure.ACCESSIBILITY_QS_TARGETS,
+                        userState.mUserId, newQsShortcutTargets, str -> str);
+
+                mMainHandler.sendMessage(obtainMessage(
+                        AccessibilityManagerService::updateA11yTileServicesInQuickSettingsPanel,
+                        this, newQsShortcutTargets, currentQsShortcutTargets, userState.mUserId));
+            }
+            scheduleNotifyClientsOfServicesStateChangeLocked(userState);
+        } else {
+            if (!userState.updateShortcutTargetsLocked(buttonTargets, SOFTWARE)) {
+                return;
+            }
+
+            // Update setting key with new value.
+            persistColonDelimitedSetToSettingLocked(Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
+                    userState.mUserId, buttonTargets, str -> str);
+            scheduleNotifyClientsOfServicesStateChangeLocked(userState);
+        }
     }
 
     /**
@@ -4607,6 +4645,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 LocalServices.getService(StatusBarManagerInternal.class);
         // In case it's not initialized yet
         if (statusBarManagerInternal == null) {
+            Slog.d(LOG_TAG,
+                    "statusBarManager is not yet initialized");
             return;
         }
 
@@ -6647,6 +6687,19 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             IUserInitializationCompleteCallback callback) {
         synchronized (mLock) {
             mUserInitializationCompleteCallbacks.add(callback);
+            if (Flags.notifyQsTileChangedAfterUserInitialization()
+                    && isServiceInitializedLocked()) {
+                // If the user has been initialized before the caller register the callback,
+                // send the userInitializationComplete directly.
+                try {
+                    callback.onUserInitializationComplete(getCurrentUserIdLocked());
+                } catch (RemoteException e) {
+                    Slog.e(
+                            LOG_TAG,
+                            "Error while dispatching userInitializationComplete callback: ",
+                            e);
+                }
+            }
         }
     }
 
