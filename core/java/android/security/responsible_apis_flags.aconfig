@@ -174,6 +174,13 @@ flag {
 }
 
 flag {
+    name: "enable_intent_firewall_component_class_filter"
+    namespace: "responsible_apis"
+    description: "Flag for enabling component-class-filter in IntentFirewall"
+    bug: "428733109"
+}
+
+flag {
     name: "fail_on_parcel_size_mismatch"
     namespace: "responsible_apis"
     description: "Flag for failing instead of logging in case of parcel size mismatches"
