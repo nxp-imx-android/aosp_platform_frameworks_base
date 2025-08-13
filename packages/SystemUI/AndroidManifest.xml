@@ -547,9 +547,7 @@
 
         <activity
             android:name=".screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity"
-            android:excludeFromRecents="true"
             android:exported="false"
-            android:finishOnCloseSystemDialogs="true"
             android:showForAllUsers="true"
             android:theme="@style/ScreenCapture.PostRecord" />
 

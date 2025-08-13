@@ -364,6 +364,15 @@
     <string name="screen_record_edit">Edit</string>
     <!-- Button to delete a screen recording [CHAR LIMIT=20] -->
     <string name="screen_record_delete">Delete</string>
+    <!-- Button to play record preview video [CHAR LIMIT=20] -->
+    <string name="screen_record_play">Play</string>
+    <!-- Button to pause record preview video [CHAR LIMIT=20] -->
+    <string name="screen_record_pause">Pause</string>
+    <!-- Button to mute record preview video [CHAR LIMIT=20] -->
+    <string name="screen_record_mute">Mute</string>
+    <!-- Button to unmute record preview video [CHAR LIMIT=20] -->
+    <string name="screen_record_unmute">Unmute</string>
+    <string name="screen_record_video_preview_elapsed_time_template" translatable="false">%s / %s</string>
 
     <!-- Button text for taking a fullscreen screenshot [CHAR LIMIT=50] -->
     <string name="screen_capture_fullscreen_screenshot_button">Take screenshot of entire screen</string>
