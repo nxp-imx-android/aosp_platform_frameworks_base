@@ -1217,5 +1217,11 @@ public class BubbleExpandedView extends LinearLayout {
         pw.print(prefix); pw.print("  stackView: "); pw.println(mStackView);
         pw.print(prefix); pw.print("  contentVisibility: "); pw.println(mIsContentVisible);
         pw.print(prefix); pw.print("  isAnimating: "); pw.println(mIsAnimating);
+        if (mTaskView != null) {
+            pw.print(prefix); pw.print("  tv-alpha: "); pw.println(mTaskView.getAlpha());
+            pw.print(prefix); pw.print("  tv-viewVis: "); pw.println(mTaskView.getVisibility());
+        }
+        pw.print(prefix); pw.print("  v-alpha: "); pw.println(getAlpha());
+        pw.print(prefix); pw.print("  v-viewVis: "); pw.println(getVisibility());
     }
 }
