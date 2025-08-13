@@ -64,7 +64,6 @@ void ColorArea::addArea(const SkRect& bounds, const SkPaint& paint,
             addArea(area, Dark);
             break;
         case android::BitmapPalette::Colorful:
-        case android::BitmapPalette::Barcode:
         case android::BitmapPalette::Unknown:
             addArea(area, Unknown);
             break;
