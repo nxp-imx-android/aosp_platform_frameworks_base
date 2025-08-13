@@ -944,7 +944,7 @@ class MediaRouter2ServiceImpl {
                 }
                 return showOutputSwitcher(
                         proxyRouterRecord.mTargetPackageName,
-                        UserHandle.of(proxyRouterRecord.mUserRecord.mUserId),
+                        proxyRouterRecord.mUserRecord.mUserHandle,
                         sessionToken);
             }
         } finally {
@@ -1902,7 +1902,9 @@ class MediaRouter2ServiceImpl {
                 TAG,
                 TextUtils.formatSimple(
                         "unregisterManager | %s, user: %d, died: %b",
-                        managerRecord.getDebugString(), userRecord.mUserId, died));
+                        managerRecord.getDebugString(),
+                        userRecord.mUserHandle.getIdentifier(),
+                        died));
 
         userRecord.mManagerRecords.remove(managerRecord);
         managerRecord.dispose();
@@ -2276,7 +2278,7 @@ class MediaRouter2ServiceImpl {
         // and purge the user record and all of its associated state.  If the user is current
         // then leave it alone since we might be connected to a route or want to query
         // the same route information again soon.
-        if (!isUserActiveLocked(userRecord.mUserId)
+        if (!isUserActiveLocked(userRecord.mUserHandle.getIdentifier())
                 && userRecord.mRouterRecords.isEmpty()
                 && userRecord.mManagerRecords.isEmpty()) {
             if (DEBUG) {
@@ -2284,7 +2286,7 @@ class MediaRouter2ServiceImpl {
             }
             userRecord.mHandler.sendMessage(
                     obtainMessage(UserHandler::stop, userRecord.mHandler));
-            mUserRecords.remove(userRecord.mUserId);
+            mUserRecords.remove(userRecord.mUserHandle.getIdentifier());
             // Note: User already stopped (by switchUser) so no need to send stop message here.
         }
     }
@@ -2327,7 +2329,7 @@ class MediaRouter2ServiceImpl {
     }
 
     final class UserRecord {
-        public final int mUserId;
+        public final UserHandle mUserHandle;
         //TODO: make records private for thread-safety
         private final ArrayList<RouterRecord> mRouterRecords = new ArrayList<>();
         final ArrayList<ManagerRecord> mManagerRecords = new ArrayList<>();
@@ -2342,7 +2344,7 @@ class MediaRouter2ServiceImpl {
         final UserHandler mHandler;
 
         UserRecord(int userId, @NonNull Looper looper) {
-            mUserId = userId;
+            mUserHandle = UserHandle.of(userId);
             mHandler = new UserHandler(/* userRecord= */ this, looper);
         }
 
@@ -2408,7 +2410,7 @@ class MediaRouter2ServiceImpl {
 
             String indent = prefix + "  ";
 
-            pw.println(indent + "mUserId=" + mUserId);
+            pw.println(indent + "user id=" + mUserHandle.getIdentifier());
 
             pw.println(indent + "Router Records:");
             if (!mRouterRecords.isEmpty()) {
@@ -2706,7 +2708,7 @@ class MediaRouter2ServiceImpl {
             UserHandle transferInitiatorUserHandle = sessionInfo.getTransferInitiatorUserHandle();
             String transferInitiatorPackageName = sessionInfo.getTransferInitiatorPackageName();
 
-            if (!Objects.equals(UserHandle.of(mUserRecord.mUserId), transferInitiatorUserHandle)
+            if (!Objects.equals(mUserRecord.mUserHandle, transferInitiatorUserHandle)
                     || !Objects.equals(mPackageName, transferInitiatorPackageName)) {
                 return new RoutingSessionInfo.Builder(sessionInfo)
                         .setTransferInitiator(null, null)
@@ -2772,7 +2774,7 @@ class MediaRouter2ServiceImpl {
         private String getDebugString() {
             return TextUtils.formatSimple(
                     "Router %s (id=%d,pid=%d,userId=%d,uid=%d)",
-                    mPackageName, mRouterId, mPid, mUserRecord.mUserId, mUid);
+                    mPackageName, mRouterId, mPid, mUserRecord.mUserHandle.getIdentifier(), mUid);
         }
     }
 
@@ -2956,7 +2958,7 @@ class MediaRouter2ServiceImpl {
                     mOwnerPackageName,
                     mManagerId,
                     mOwnerPid,
-                    mUserRecord.mUserId,
+                    mUserRecord.mUserHandle.getIdentifier(),
                     mOwnerUid,
                     mTargetPackageName);
         }
@@ -3023,11 +3025,13 @@ class MediaRouter2ServiceImpl {
             mSystemProvider =
                     Flags.enableMirroringInMediaRouter2()
                             ? SystemMediaRoute2Provider2.create(
-                                    mContext, UserHandle.of(userRecord.mUserId), looper)
+                                    mContext, userRecord.mUserHandle, looper)
                             : SystemMediaRoute2Provider.create(
-                                    mContext, UserHandle.of(userRecord.mUserId), looper);
+                                    mContext, userRecord.mUserHandle, looper);
             mRouteProviders.add(getSystemProvider());
-            mWatcher = new MediaRoute2ProviderWatcher(mContext, this, this, mUserRecord.mUserId);
+            mWatcher =
+                    new MediaRoute2ProviderWatcher(
+                            mContext, this, this, mUserRecord.mUserHandle.getIdentifier());
         }
 
         void init() {
@@ -3404,7 +3408,7 @@ class MediaRouter2ServiceImpl {
                     route.getOriginalId(),
                     sessionHints,
                     transferReason,
-                    UserHandle.of(routerRecord.mUserRecord.mUserId),
+                    routerRecord.mUserRecord.mUserHandle,
                     routerRecord.mPackageName);
         }
 
