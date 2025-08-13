@@ -203,16 +203,6 @@ flag {
 }
 
 flag {
-    name: "gwpc_aware_windowing_mode"
-    namespace: "virtual_devices"
-    description: "Fallback to FULLSCREEN when the windowing mode is unsupported"
-    bug: "378663612"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "device_aware_ui_mode"
     namespace: "virtual_devices"
     description: "Device and display awareness for UiModeManager"
