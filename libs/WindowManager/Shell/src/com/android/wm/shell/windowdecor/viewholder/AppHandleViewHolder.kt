@@ -15,20 +15,22 @@
  */
 package com.android.wm.shell.windowdecor.viewholder
 
+import android.animation.ValueAnimator
+import android.annotation.ColorInt
 import android.app.ActivityManager.RunningTaskInfo
-import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.Point
 import android.hardware.input.InputManager
 import android.os.Bundle
 import android.os.Handler
+import android.view.InsetsFlags
 import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.SurfaceControl
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.ViewDebug
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
@@ -39,16 +41,20 @@ import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
+import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.SystemBarUtils
+import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_OPENED
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
-import com.android.wm.shell.windowdecor.AppHandleAnimator
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
+import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.extension.identityHashCode
 
 /**
@@ -86,6 +92,7 @@ class AppHandleViewHolder(
     private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
     private val captionHandle: ImageButton = rootView.requireViewById(R.id.caption_handle)
     private val inputManager = context.getSystemService(InputManager::class.java)
+    private val decorThemeUtil = DecorThemeUtil(context)
     private val animator: AppHandleAnimator = AppHandleAnimator(rootView, captionHandle)
     private var statusBarInputLayerExists = false
 
@@ -144,7 +151,11 @@ class AppHandleViewHolder(
         isCaptionVisible: Boolean,
     ) {
         setVisibility(isCaptionVisible)
-        captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
+        if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_ANIMATIONS.isTrue) {
+            animator.animateColorChange(getCaptionHandleBarColor(taskInfo))
+        } else {
+            captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
+        }
         this.taskInfo = taskInfo
         if (
             DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue &&
@@ -300,6 +311,10 @@ class AppHandleViewHolder(
     }
 
     private fun setVisibility(visible: Boolean) {
+        if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_ANIMATIONS.isTrue) {
+            animator.animateVisibilityChange(visible)
+            return
+        }
         val v = if (visible) View.VISIBLE else View.GONE
         if (
             captionView.visibility == v ||
@@ -307,11 +322,10 @@ class AppHandleViewHolder(
         ) {
             return
         }
-        // TODO(b/405251465): animate app handle visibility change after creation and animation are
-        //  moved to a background thread.
         captionView.visibility = v
     }
 
+    @ColorInt
     private fun getCaptionHandleBarColor(taskInfo: RunningTaskInfo): Int {
         return if (shouldUseLightCaptionColors(taskInfo)) {
             context.getColor(R.color.desktop_mode_caption_handle_bar_light)
@@ -325,16 +339,42 @@ class AppHandleViewHolder(
      * with the caption background color.
      */
     private fun shouldUseLightCaptionColors(taskInfo: RunningTaskInfo): Boolean {
-        return taskInfo.taskDescription?.let { taskDescription ->
-            if (
-                Color.alpha(taskDescription.statusBarColor) != 0 &&
-                    taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
-            ) {
-                Color.valueOf(taskDescription.statusBarColor).luminance() < 0.5
-            } else {
-                taskDescription.systemBarsAppearance and APPEARANCE_LIGHT_STATUS_BARS == 0
+        val description = taskInfo.taskDescription
+        if (description == null) {
+            logD("color calculation: using light color, reason: null description")
+            return false
+        }
+        if (description.systemBarsAppearance == 0) {
+            val bgColor = description.backgroundColor
+            when (decorThemeUtil.getAppTheme(description)) {
+                Theme.LIGHT -> {
+                    logD(
+                        "color calculation: using light color, reason: light app theme (bgColor=%s)",
+                        bgColor,
+                    )
+                    return false
+                }
+                Theme.DARK -> {
+                    logD(
+                        "color calculation: using dark color, reason: dark app theme (bgColor=%s)",
+                        bgColor,
+                    )
+                    return true
+                }
             }
-        } ?: false
+        }
+        val hasDarkSystemBarsAppearance =
+            description.systemBarsAppearance and APPEARANCE_LIGHT_STATUS_BARS == 0
+        logD(
+            "color calculation: using %s color, reason: systemBarsAppearance=%s",
+            if (hasDarkSystemBarsAppearance) "light" else "dark",
+            ViewDebug.flagsToString(
+                InsetsFlags::class.java,
+                "appearance",
+                description.systemBarsAppearance,
+            ),
+        )
+        return hasDarkSystemBarsAppearance
     }
 
     /** Sets whether the caption's handle is currently being hovered over. */
@@ -354,6 +394,12 @@ class AppHandleViewHolder(
     override fun close() {
         animator.cancel()
     }
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
+    }
+
+    @VisibleForTesting fun getAnimator(): ValueAnimator? = animator.getAnimator()
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String {
@@ -384,5 +430,9 @@ class AppHandleViewHolder(
                 handler,
                 desktopModeUiEventLogger,
             )
+    }
+
+    companion object {
+        private const val TAG = "AppHandleViewHolder"
     }
 }
