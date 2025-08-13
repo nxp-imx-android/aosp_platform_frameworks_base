@@ -34717,6 +34717,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         if (mAttachInfo != null && mAttachInfo.mViewVelocityApi) {
             mFrameContentVelocity = Math.abs(pixelsPerSecond);
 
+            if (Trace.isTagEnabled(TRACE_TAG_VIEW)) {
+                Trace.instant(TRACE_TAG_VIEW,
+                        getClass().getSimpleName()
+                            + " - setFrameContentVelocity: " + mFrameContentVelocity);
+            }
+
             if (sToolkitMetricsForFrameRateDecisionFlagValue) {
                 Trace.setCounter("Set frame velocity", (long) mFrameContentVelocity);
             }
