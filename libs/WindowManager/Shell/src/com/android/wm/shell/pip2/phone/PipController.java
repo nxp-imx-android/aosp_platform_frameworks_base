@@ -35,6 +35,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
 import android.util.Log;
+import android.view.DisplayCutout;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
@@ -503,6 +504,26 @@ public class PipController implements ConfigurationChangeListener,
             // boundsScale in PipBoundsState would be updated when we set the bounds.
             toBounds.set(0, 0,
                     mPipBoundsState.getMinSize().x, mPipBoundsState.getMinSize().y);
+        }
+
+        // We do not allow stash on an edge with display cutouts to avoid the visual artifact.
+        // If the stashed PiP is moving to an edge with cutout upon display change, unstash it.
+        if (mPipBoundsState.isStashed()) {
+            final DisplayCutout displayCutout =
+                    mPipBoundsState.getDisplayLayout().getDisplayCutout();
+            boolean requireUnstash = false;
+            if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_LEFT
+                    && !displayCutout.getBoundingRectLeft().isEmpty()) {
+                requireUnstash = true;
+            } else if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_RIGHT
+                    && !displayCutout.getBoundingRectRight().isEmpty()) {
+                requireUnstash = true;
+            }
+            if (requireUnstash) {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "Stashing on an edge with display cutout is not supported");
+                mPipBoundsState.setStashed(PipBoundsState.STASH_TYPE_NONE);
+            }
         }
 
         // The policy is to keep PiP snap fraction invariant.
