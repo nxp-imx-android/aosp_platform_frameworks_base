@@ -15,13 +15,12 @@
  */
 package com.android.platform.test.ravenwood.ravenhelper.stats
 
+import com.android.hoststubgen.HostStubGenErrors
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
 import com.android.hoststubgen.asm.CTOR_NAME
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.getClassNameFromFullClassName
 import com.android.hoststubgen.asm.getPackageNameFromFullClassName
-import com.android.hoststubgen.asm.isAbstract
-import com.android.hoststubgen.asm.isPublic
 import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.csvEscape
 import com.android.hoststubgen.filters.FilterPolicy
@@ -29,8 +28,9 @@ import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
 import com.android.hoststubgen.filters.StatsLabel
 import com.android.hoststubgen.log
+import com.android.hoststubgen.visitors.checkSubstitutionMethodCompatibility
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.MethodNode
 import java.io.PrintWriter
 
 /**
@@ -41,6 +41,7 @@ class ApiDumper(
     val classes: ClassNodes,
     val frameworkClasses: ClassNodes?,
     val filter: OutputFilter,
+    val errors: HostStubGenErrors,
 ) {
     private data class MethodKey(
         val name: String,
@@ -113,7 +114,8 @@ class ApiDumper(
     }
 
     private fun resolveMethodLabel(
-        mn: MethodNode,
+        methodName: String,
+        methodAccess: Int,
         methodPolicy: FilterPolicyWithReason,
         classLabel: StatsLabel,
     ): StatsLabel {
@@ -127,7 +129,8 @@ class ApiDumper(
         }
 
         // Use heuristics to override the label.
-        if (!mn.isPublic()) {
+        if ((methodAccess and Opcodes.ACC_PUBLIC) == 0) {
+            // If it's not public, mark it as "boring".
             return StatsLabel.SupportedButBoring
         }
 
@@ -139,14 +142,14 @@ class ApiDumper(
             return StatsLabel.Supported
         }
 
-        if (mn.isAbstract()) {
+        if ((methodAccess and Opcodes.ACC_ABSTRACT) != 0) {
             // An abstract method is normally boring -- but if it's a throw-but-interesting,
-            // that's actually not boring.
+            // that's actually not boring. So this check has to be after the other checks.
             return StatsLabel.SupportedButBoring
         }
 
         // Mark ctors and clinits as boring.
-        when (mn.name) {
+        when (methodName) {
             CTOR_NAME, CLASS_INITIALIZER_NAME -> return StatsLabel.SupportedButBoring
         }
 
@@ -199,7 +202,27 @@ class ApiDumper(
 
             val renameTo = filter.getRenameTo(methodClass.name, method.name, method.desc)
 
-            val methodLabel = resolveMethodLabel(method, methodPolicy, classLabel)
+            // The method's "access" bits affect the "method label". But if we're renaming a method,
+            // we need to use rename-to's access bits.
+            val methodAccess = if (renameTo == null) {
+                method.access
+            } else {
+                checkSubstitutionMethodCompatibility(
+                    classes,
+                    methodClass.name,
+                    renameTo, // method name with the annotation.
+                    method.name, // the current method (i.e. `*$ravenwood`).
+                    method.desc,
+                    errors
+                )
+            }
+
+            val methodLabel = resolveMethodLabel(
+                method.name,
+                methodAccess,
+                methodPolicy,
+                classLabel,
+            )
 
             if (methodLabel != StatsLabel.Ignored) {
                 dumpMethod(pkg, cls, isSuperClass, methodClass.name.toHumanReadableClassName(),

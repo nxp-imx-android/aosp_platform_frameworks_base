@@ -16,6 +16,7 @@
 package com.android.platform.test.ravenwood.ravenhelper.stats
 
 import com.android.hoststubgen.HostStubGenClassProcessor
+import com.android.hoststubgen.HostStubGenErrors
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.filters.printAsTextPolicy
 import com.android.hoststubgen.log
@@ -28,6 +29,8 @@ class StatsHandler : SubcommandHandler {
     override fun handle(args: List<String>) {
         val options = StatsOptions().apply { parseArgs(args) }
         log.i("Options: $options")
+
+        val errors = HostStubGenErrors()
 
         val inJar = ConcurrentZipFile(options.inJar.get, DEFAULT_SHARD_COUNT)
 
@@ -58,7 +61,7 @@ class StatsHandler : SubcommandHandler {
                 PrintWriter(it).use { pw ->
                     // TODO, when dumping a jar that's not framework-minus-apex.jar, we need to feed
                     // framework-minus-apex.jar so that we can dump inherited methods from it.
-                    ApiDumper(pw, allClasses, null, filter).dump()
+                    ApiDumper(pw, allClasses, null, filter, errors).dump()
                 }
             }
         }
