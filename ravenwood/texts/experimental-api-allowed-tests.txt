@@ -3,3 +3,4 @@
 
 RavenwoodUiTest_exp
 CtsViewTestCasesRavenwood
+SystemUiRavenTests
