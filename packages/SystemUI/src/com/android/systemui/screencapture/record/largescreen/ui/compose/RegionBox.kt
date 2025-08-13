@@ -216,6 +216,25 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
     }
 
     fun dragEnd() {
+        // Apply the minimum region box size after the drag.
+        rect?.let { currentRect ->
+            // Coerce the box dimensions to be within the min size and screen size.
+            val finalWidth = currentRect.width.coerceIn(minSizePx, screenWidth)
+            val finalHeight = currentRect.height.coerceIn(minSizePx, screenHeight)
+
+            // Ensure the box's top-left corner is positioned so the box remains
+            // entirely within the screen bounds.
+            val finalLeft = currentRect.left.coerceAtMost(screenWidth - finalWidth)
+            val finalTop = currentRect.top.coerceAtMost(screenHeight - finalHeight)
+
+            rect =
+                Rect(
+                    left = finalLeft,
+                    top = finalTop,
+                    right = finalLeft + finalWidth,
+                    bottom = finalTop + finalHeight,
+                )
+        }
         dragMode = DragMode.NONE
         resizeZone = null
     }
@@ -243,7 +262,7 @@ fun RegionBox(
     val density = LocalDensity.current
 
     // The minimum size allowed for the box.
-    val minSize = 1.dp
+    val minSize = 48.dp
     val minSizePx = remember(density) { with(density) { minSize.toPx() } }
 
     // The touch area for detecting an edge or corner resize drag.
