@@ -3503,9 +3503,12 @@ public class ActivityManagerService extends IActivityManager.Stub
                 app.forEachConnectionHost((host) -> enqueueOomAdjTargetLocked(host));
             }
 
-            EventLogTags.writeAmProcDied(app.userId, pid, app.processName, setAdj, setProcState);
-            if (DEBUG_CLEANUP) Slog.v(TAG_CLEANUP,
-                "Dying app: " + app + ", pid: " + pid + ", thread: " + thread.asBinder());
+            EventLogTags.writeAmProcDied(app.userId, pid, app.processName, setAdj,
+                    setProcState);
+            if (DEBUG_CLEANUP) {
+                Slog.v(TAG_CLEANUP, "Dying app: " + app + ", pid: " + pid + ", thread: "
+                        + thread.asBinder());
+            }
             handleAppDiedLocked(app, pid, false, true, fromBinderDied);
 
             if (doOomAdj) {
@@ -17478,10 +17481,14 @@ public class ActivityManagerService extends IActivityManager.Stub
             final ActivityServiceConnectionsHolder holder =
                     (ActivityServiceConnectionsHolder) connectionHolder;
             synchronized (ActivityManagerService.this) {
-                synchronized (mProcLock) {
-                    holder.forEachConnection(cr -> mServices.removeConnectionLocked(
-                            (ConnectionRecord) cr, null /* skipApp */, holder /* skipAct */,
-                            false /* enqueueOomAdj */));
+                try (var unused = mProcessStateController.startServiceBatchSession(
+                        OOM_ADJ_REASON_UNBIND_SERVICE)) {
+                    synchronized (mProcLock) {
+                        holder.forEachConnection(
+                                cr -> mServices.removeConnectionLocked((ConnectionRecord) cr,
+                                        null /* skipApp */, holder /* skipAct */,
+                                        false /* enqueueOomAdj */));
+                    }
                 }
             }
         }

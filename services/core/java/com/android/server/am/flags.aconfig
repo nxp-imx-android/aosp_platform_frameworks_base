@@ -262,3 +262,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "psc_batch_service_updates"
+    namespace: "backstage_power"
+    description: "Batch Service related ProcessStateController updates and auto trigger the update on state changes."
+    bug: "399680824"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -44,6 +44,7 @@ import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.SyncBatchSession;
+import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
@@ -99,6 +100,18 @@ public class ProcessStateController {
             }
         });
 
+    }
+
+    /**
+     * Start a batch session for specifically service state changes. ProcessStateController updates
+     * will not be triggered until until the returned SyncBatchSession is closed.
+     */
+    public SyncBatchSession startServiceBatchSession(@OomAdjReason int reason) {
+        if (!Flags.pscBatchServiceUpdates()) return null;
+
+        final SyncBatchSession batchSession = getBatchSession();
+        batchSession.start(reason);
+        return batchSession;
     }
 
     /**
@@ -641,6 +654,7 @@ public class ProcessStateController {
      * Note that a process has started hosting a service.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public boolean startService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         return psr.startService(sr);
     }
@@ -649,6 +663,7 @@ public class ProcessStateController {
      * Note that a process has stopped hosting a service.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public boolean stopService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         return psr.stopService(sr);
     }
@@ -657,6 +672,7 @@ public class ProcessStateController {
      * Remove all services that the process is hosting.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void stopAllServices(@NonNull ProcessServiceRecord psr) {
         psr.stopAllServices();
     }
@@ -665,6 +681,7 @@ public class ProcessStateController {
      * Note that a process's service has started executing.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void startExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         psr.startExecutingService(sr);
     }
@@ -673,6 +690,7 @@ public class ProcessStateController {
      * Note that a process's service has stopped executing.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void stopExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         psr.stopExecutingService(sr);
     }
@@ -681,6 +699,7 @@ public class ProcessStateController {
      * Note all executing services a process has has stopped.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void stopAllExecutingServices(@NonNull ProcessServiceRecord psr) {
         psr.stopAllExecutingServices();
     }
@@ -689,6 +708,7 @@ public class ProcessStateController {
      * Note that process has bound to a service.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void addConnection(@NonNull ProcessServiceRecord psr, ConnectionRecord cr) {
         psr.addConnection(cr);
     }
@@ -697,6 +717,7 @@ public class ProcessStateController {
      * Note that process has unbound from a service.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void removeConnection(@NonNull ProcessServiceRecord psr, ConnectionRecord cr) {
         psr.removeConnection(cr);
     }
@@ -705,6 +726,7 @@ public class ProcessStateController {
      * Remove all bindings a process has to services.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void removeAllConnections(@NonNull ProcessServiceRecord psr) {
         psr.removeAllConnections();
         psr.removeAllSdkSandboxConnections();
@@ -714,6 +736,7 @@ public class ProcessStateController {
      * Note whether an executing service should be considered in the foreground or not.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void setExecServicesFg(@NonNull ProcessServiceRecord psr, boolean execServicesFg) {
         psr.setExecServicesFg(execServicesFg);
     }
@@ -722,6 +745,7 @@ public class ProcessStateController {
      * Note whether a service is in the foreground or not and what type of FGS, if so.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void setHasForegroundServices(@NonNull ProcessServiceRecord psr,
             boolean hasForegroundServices,
             int fgServiceTypes, boolean hasTypeNoneFgs) {
@@ -732,6 +756,7 @@ public class ProcessStateController {
      * Note whether a service has a client activity or not.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void setHasClientActivities(@NonNull ProcessServiceRecord psr,
             boolean hasClientActivities) {
         psr.setHasClientActivities(hasClientActivities);
@@ -741,6 +766,7 @@ public class ProcessStateController {
      * Note whether a service should be treated like an activity or not.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void setTreatLikeActivity(@NonNull ProcessServiceRecord psr, boolean treatLikeActivity) {
         psr.setTreatLikeActivity(treatLikeActivity);
     }
@@ -757,6 +783,7 @@ public class ProcessStateController {
      * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void setHasAboveClient(@NonNull ProcessServiceRecord psr, boolean hasAboveClient) {
         psr.setHasAboveClient(hasAboveClient);
     }
@@ -766,6 +793,7 @@ public class ProcessStateController {
      * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
      */
     @GuardedBy("mLock")
+    @RequiresEnclosingBatchSession
     public void updateHasAboveClientLocked(@NonNull ProcessServiceRecord psr) {
         psr.updateHasAboveClientLocked();
     }
