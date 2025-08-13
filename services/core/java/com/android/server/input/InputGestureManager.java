@@ -20,6 +20,7 @@ import static android.hardware.input.InputGestureData.createKeyTrigger;
 
 import static com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
+import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 
@@ -210,6 +211,14 @@ final class InputGestureManager {
                             /* allowCaptureByFocusedWindow = */false
                     ));
         }
+        if (enableSelectToSpeakKeyGestures()) {
+            systemShortcuts.add(
+                    createKeyGesture(KeyEvent.KEYCODE_S,
+                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
+        }
         if (enableTalkbackAndMagnifierKeyGestures()) {
             systemShortcuts.add(
                     createKeyGesture(KeyEvent.KEYCODE_T,
@@ -221,12 +230,6 @@ final class InputGestureManager {
                     createKeyGesture(KeyEvent.KEYCODE_M,
                             KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-            systemShortcuts.add(
-                    createKeyGesture(KeyEvent.KEYCODE_S,
-                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
                             /* allowCaptureByFocusedWindow = */true
                     ));
         }

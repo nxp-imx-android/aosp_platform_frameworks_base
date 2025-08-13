@@ -2109,7 +2109,7 @@ public class AccessibilityManagerServiceTest {
                 KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                 KeyEvent.KEYCODE_M);
 
-        // Send the expetced broadcast for launching the system ui dialog
+        // Send the expected broadcast for launching the system ui dialog
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mTestableContext.getMockContext())
                 .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
@@ -2123,7 +2123,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES)
     public void handleKeyGestureEvent_activateSelectToSpeak_trustedService() {
         setupAccessibilityServiceConnection(FLAG_REQUEST_ACCESSIBILITY_BUTTON);
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
@@ -2148,7 +2148,7 @@ public class AccessibilityManagerServiceTest {
                 KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                 KeyEvent.KEYCODE_S);
 
-        // Send the expetced broadcast for launching the system ui dialog
+        // Send the expected broadcast for launching the system ui dialog
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mTestableContext.getMockContext())
                 .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
@@ -2162,7 +2162,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES)
     public void handleKeyGestureEvent_activateSelectToSpeak_preinstalledService() {
         setupAccessibilityServiceConnection(FLAG_REQUEST_ACCESSIBILITY_BUTTON);
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
@@ -2188,7 +2188,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES)
     public void handleKeyGestureEvent_activateSelectToSpeak_downloadedService() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
 
@@ -2216,7 +2216,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES)
     public void handleKeyGestureEvent_activateSelectToSpeak_defaultNotInstalled() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
 
@@ -2247,7 +2247,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES)
     public void handleKeyGestureEvent_activateSelectToSpeak_noDefault() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
 
@@ -2297,7 +2297,7 @@ public class AccessibilityManagerServiceTest {
                 KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                 KeyEvent.KEYCODE_V);
 
-        // Send the expetced broadcast for launching the system ui dialog
+        // Send the expected broadcast for launching the system ui dialog
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mTestableContext.getMockContext())
                 .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
@@ -2336,7 +2336,7 @@ public class AccessibilityManagerServiceTest {
                 KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
                 KeyEvent.KEYCODE_T);
 
-        // Send the expetced broadcast for launching the system ui dialog
+        // Send the expected broadcast for launching the system ui dialog
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mTestableContext.getMockContext())
                 .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
