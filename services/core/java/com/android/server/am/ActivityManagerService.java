@@ -3467,7 +3467,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mProcessList.noteAppKill(app, ApplicationExitInfo.REASON_OTHER,
                         ApplicationExitInfo.SUBREASON_UNKNOWN, reason);
             }
-            app.killProcessGroupIfNecessaryLocked(true);
+            app.killProcessGroupIfNecessaryLocked(true, reason);
             synchronized (mProcLock) {
                 app.setKilled(true);
             }

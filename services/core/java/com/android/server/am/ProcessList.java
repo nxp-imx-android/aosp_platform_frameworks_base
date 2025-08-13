@@ -22,6 +22,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_PROCESS_END;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_RESTRICTION_CHANGE;
 import static android.app.ActivityThread.PROC_START_SEQ_IDENT;
+import static android.app.ApplicationExitInfo.subreasonToString;
 import static android.content.pm.Flags.appCompatOption16kb;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AUTO;
 import static android.net.NetworkPolicyManager.isProcStateAllowedWhileIdleOrPowerSaveMode;
@@ -853,8 +854,14 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case KILL_PROCESS_GROUP_MSG:
-                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "killProcessGroup");
-                    Process.killProcessGroup(msg.arg1 /* uid */, msg.arg2 /* pid */);
+                    final int uid = msg.arg1;
+                    final int pid = msg.arg2;
+                    final String reason = (String) msg.obj;
+                    if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+                        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                                "killProcessGroup/" + uid + "/" + pid + "/" + reason);
+                    }
+                    Process.killProcessGroup(uid, pid);
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                     break;
                 case LMKD_RECONNECT_MSG:
@@ -1723,11 +1730,12 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         return sLmkdConnection.exchange(buf, repl);
     }
 
-    static void killProcessGroup(int uid, int pid) {
+    static void killProcessGroup(int uid, int pid, String reason) {
         /* static; one-time init here */
         if (sKillHandler != null) {
             sKillHandler.sendMessage(
-                    sKillHandler.obtainMessage(KillHandler.KILL_PROCESS_GROUP_MSG, uid, pid));
+                    sKillHandler.obtainMessage(KillHandler.KILL_PROCESS_GROUP_MSG, uid, pid,
+                            reason));
         } else {
             Slog.w(TAG, "Asked to kill process group before system bringup!");
             Process.killProcessGroup(uid, pid);
@@ -2737,7 +2745,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
             // clean it up now.
             if (DEBUG_PROCESSES) Slog.v(TAG_PROCESSES, "App died: " + app);
             checkSlow(startTime, "startProcess: bad proc running, killing");
-            ProcessList.killProcessGroup(app.uid, app.getPid());
+            ProcessList.killProcessGroup(app.uid, app.getPid(), "old process attached");
             checkSlow(startTime, "startProcess: done killing old proc");
 
             if (!app.isKilled()) {
@@ -2969,7 +2977,8 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                         Slog.wtfStack(TAG, "Removing process that hasn't been killed: " + app);
                         if (app.getPid() > 0) {
                             killProcessQuiet(app.getPid());
-                            ProcessList.killProcessGroup(app.uid, app.getPid());
+                            ProcessList.killProcessGroup(app.uid, app.getPid(),
+                                    subreasonToString(ApplicationExitInfo.SUBREASON_REMOVE_LRU));
                             noteAppKill(app, ApplicationExitInfo.REASON_OTHER,
                                     ApplicationExitInfo.SUBREASON_REMOVE_LRU, "hasn't been killed");
                         } else {
@@ -5703,7 +5712,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         if (DEBUG_PROCESSES) {
             Slog.i(TAG, "note: " + app + " is being killed, reason: "
                     + ApplicationExitInfo.reasonCodeToString(reason) + ", sub-reason: "
-                    + ApplicationExitInfo.subreasonToString(subReason) + ", message: " + msg);
+                    + subreasonToString(subReason) + ", message: " + msg);
         }
         if (app.getPid() > 0 && !app.isolated && app.getDeathRecipient() != null) {
             // We are killing it, put it into the dying process list.

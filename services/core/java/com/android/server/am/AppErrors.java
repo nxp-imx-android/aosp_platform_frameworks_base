@@ -17,6 +17,7 @@
 package com.android.server.am;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.app.ApplicationExitInfo.reasonCodeToString;
 import static android.content.pm.ApplicationInfo.FLAG_SYSTEM;
 
 import static com.android.server.am.ActivityManagerConstants.PROCESS_CRASH_COUNT_LIMIT;
@@ -772,7 +773,8 @@ class AppErrors {
                     } else {
                         // Huh.
                         Process.killProcess(pid);
-                        ProcessList.killProcessGroup(uid, pid);
+                        ProcessList.killProcessGroup(uid, pid,
+                                reasonCodeToString(ApplicationExitInfo.REASON_CRASH));
                         mService.mProcessList.noteAppKill(pid, uid,
                                 ApplicationExitInfo.REASON_CRASH,
                                 ApplicationExitInfo.SUBREASON_UNKNOWN,
