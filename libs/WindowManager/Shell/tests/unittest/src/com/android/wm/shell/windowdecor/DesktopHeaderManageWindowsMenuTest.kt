@@ -43,6 +43,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestScope
 import org.junit.After
 import org.junit.Assert.fail
@@ -71,6 +72,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
     private lateinit var desktopConfig: FakeDesktopConfig
 
     private var menu: DesktopHeaderManageWindowsMenu? = null
+    private val testScope = TestScope()
 
     @Before
     fun setUp() {
@@ -92,8 +94,8 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
                 shellController = mock(),
                 persistentRepository = mock(),
                 repositoryInitializer = mock(),
-                mainCoroutineScope = mock(),
-                bgCoroutineScope = TestScope(),
+                mainCoroutineScope = testScope.backgroundScope,
+                bgCoroutineScope = testScope.backgroundScope,
                 userManager = mockUserManager,
                 desktopState = desktopState,
                 desktopConfig = desktopConfig,
@@ -108,6 +110,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
     fun tearDown() {
         menu?.removeFromContainer()
         mockitoSession.finishMocking()
+        testScope.cancel()
     }
 
     @Test
