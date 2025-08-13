@@ -45,9 +45,7 @@ import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_ALLOW;
 import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_FG_ONLY;
 import static com.android.server.wm.ActivityTaskSupervisor.getApplicationLabel;
 import static com.android.server.wm.PendingRemoteAnimationRegistry.TIMEOUT_MS;
-import static com.android.window.flags.Flags.balAdditionalLogging;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
-import static com.android.window.flags.Flags.balShowToastsBlocked;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.util.Objects.requireNonNull;
@@ -67,6 +65,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
@@ -978,7 +977,7 @@ public class BackgroundActivityStartController {
     private BalVerdict abortLaunch(BalState state) {
         Slog.wtf(TAG, "Background activity launch blocked! goo.gle/android-bal "
                 + state);
-        if (balShowToastsBlocked()
+        if (Build.IS_DEBUGGABLE
                 && (state.mResultForCaller.allows() || state.mResultForRealCaller.allows())) {
             // only show a toast if either caller or real caller could launch if they opted in
             showToast("BAL blocked. goo.gle/android-bal");
@@ -2176,7 +2175,7 @@ public class BackgroundActivityStartController {
                 return false;
             } else {
                 // log to determine grace period length distribution
-                if (balAdditionalLogging()) {
+                if (Build.IS_DEBUGGABLE) {
                     Slog.wtf(TAG, "Activity start ONLY allowed by " + balCodeToString(balCode) + " "
                             + finalVerdict.mMessage + ": " + state);
                 }
