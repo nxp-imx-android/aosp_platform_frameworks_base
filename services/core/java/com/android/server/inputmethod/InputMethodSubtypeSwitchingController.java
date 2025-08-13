@@ -196,14 +196,27 @@ final class InputMethodSubtypeSwitchingController {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (o == this) {
+        public boolean equals(Object obj) {
+            if (obj == this) {
                 return true;
             }
-            if (o instanceof ImeSubtypeListItem that) {
-                return Objects.equals(mImi, that.mImi) && mSubtypeIndex == that.mSubtypeIndex;
+            if (!(obj instanceof ImeSubtypeListItem that)) {
+                return false;
             }
-            return false;
+            return TextUtils.equals(mImeName, that.mImeName)
+                    && TextUtils.equals(mSubtypeName, that.mSubtypeName)
+                    && TextUtils.equals(mLayoutName, that.mLayoutName)
+                    && mImi.equals(that.mImi)
+                    && mSubtypeIndex == that.mSubtypeIndex
+                    && mShowInImeSwitcherMenu == that.mShowInImeSwitcherMenu
+                    && mIsAuxiliary == that.mIsAuxiliary
+                    && mSuitableForHardware == that.mSuitableForHardware;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mImeName, mSubtypeName, mLayoutName, mImi, mSubtypeIndex,
+                    mShowInImeSwitcherMenu, mIsAuxiliary, mSuitableForHardware);
         }
 
         /**
