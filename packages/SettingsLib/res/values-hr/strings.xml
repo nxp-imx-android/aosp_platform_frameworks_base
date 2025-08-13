@@ -270,10 +270,10 @@
     <string name="adb_wireless_error" msgid="721958772149779856">"Pogreška"</string>
     <string name="adb_wireless_settings" msgid="2295017847215680229">"Bežično otklanjanje pogrešaka"</string>
     <string name="adb_wireless_list_empty_off" msgid="1713707973837255490">"Da biste vidjeli i upotrebljavali dostupne uređaje, uključite bežično otklanjanje pogrešaka"</string>
-    <string name="adb_pair_method_qrcode_title" msgid="6982904096137468634">"Uparivanje uređaja pomoću QR koda"</string>
-    <string name="adb_pair_method_qrcode_summary" msgid="7130694277228970888">"Uparivanje novih uređaja pomoću čitača QR koda"</string>
-    <string name="adb_pair_method_code_title" msgid="1122590300445142904">"Uparivanje uređaja pomoću koda za uparivanje"</string>
-    <string name="adb_pair_method_code_summary" msgid="6370414511333685185">"Uparivanje novih uređaja pomoću šesteroznamenkastog koda"</string>
+    <string name="adb_pair_method_qrcode_title" msgid="6982904096137468634">"Uparite uređaj pomoću QR koda"</string>
+    <string name="adb_pair_method_qrcode_summary" msgid="7130694277228970888">"Uparite nove uređaje pomoću čitača QR koda"</string>
+    <string name="adb_pair_method_code_title" msgid="1122590300445142904">"Uparite uređaj pomoću koda za uparivanje"</string>
+    <string name="adb_pair_method_code_summary" msgid="6370414511333685185">"Uparite nove uređaje pomoću šesteroznamenkastog koda"</string>
     <string name="adb_paired_devices_title" msgid="5268997341526217362">"Upareni uređaji"</string>
     <string name="adb_wireless_device_connected_summary" msgid="3039660790249148713">"Trenutačno povezano"</string>
     <string name="adb_wireless_device_details_title" msgid="7129369670526565786">"Pojedinosti o uređaju"</string>
@@ -340,7 +340,7 @@
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Unesite naziv hosta davatelja usluge DNS-a"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Povezivanje nije moguće"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Prikaži opcije za certifikaciju bežičnog prikaza"</string>
-    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Povećana razina prijave na Wi‑Fi, prikaz po SSID RSSI-ju u Biraču Wi‑Fi-ja"</string>
+    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Povećava razinu bilježenja za Wi‑Fi. Prikaz po SSID RSSI-ju u biraču Wi‑Fija"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Smanjuje potrošnju baterije i poboljšava rad mreže"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Kada je omogućen taj način, MAC adresa ovog uređaja može se promijeniti svaki put kad se uređaj poveže s mrežom na kojoj je omogućen nasumični odabir MAC-a"</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"S ograničenim prometom"</string>
