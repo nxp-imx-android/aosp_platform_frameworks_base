@@ -88,7 +88,7 @@ public class RestrictedSliderPreference extends SliderPreference implements
     @Override
     public void setEnabled(boolean enabled) {
         if (enabled && mHelper.isDisabledByAdmin()) {
-            mHelper.setDisabledByAdmin(null);
+            mHelper.setDisabledByEnforcingAdmin(null);
             return;
         }
 
