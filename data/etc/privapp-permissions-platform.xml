@@ -656,6 +656,9 @@ applications that come with the platform
         <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
         <!-- Permission required for CTS test - CtsRoleTestCases -->
         <permission name="android.permission.GET_ROLE_HOLDERS"/>
+
+        <!-- Permission required for CTS test - CtsTelephonyTestCases -->
+        <permission name="android.permission.MANAGE_USERS" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
