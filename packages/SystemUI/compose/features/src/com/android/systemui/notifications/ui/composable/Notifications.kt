@@ -85,9 +85,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.lerp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -296,15 +298,6 @@ fun ContentScope.ConstrainedNotificationStack(
     }
 }
 
-private fun ContentScope.isAlwaysComposedContentVisible(): Boolean {
-    val thisContent = this.contentKey
-    return layoutState.currentScene == thisContent ||
-        layoutState.currentOverlays.contains(thisContent) ||
-        layoutState.currentTransitions.fastAny {
-            it.fromContent == thisContent || it.toContent == thisContent
-        }
-}
-
 /**
  * Adds the space where notification stack should appear in the scene, with a scrim and nested
  * scrolling.
@@ -327,7 +320,8 @@ fun ContentScope.NotificationScrollingStack(
     supportNestedScrolling: Boolean,
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
-    if (!isAlwaysComposedContentVisible()) {
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)) {
         // Some scenes or overlays that use this Composable may be using alwaysCompose=true which
         // will cause them to compose everything but not be visible. Because this Composable has
         // many side effects that push UI state upstream to its view-model, interactors, and
