@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Rect as IntRect
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -247,6 +251,7 @@ fun RegionBox(
     val touchAreaPx = remember(density) { with(density) { touchArea.toPx() } }
 
     val state = remember { RegionBoxState(minSizePx, touchAreaPx) }
+    val scrimColor = ScreenCaptureColors.scrimColor
 
     Box(
         modifier =
@@ -284,6 +289,23 @@ fun RegionBox(
                     )
                 }
     ) {
+        // Dim the area outside the selected region by drawing a full-screen scrim,
+        // and then punching a transparent hole in it that matches the selected region.
+        // Before a region is drawn, the entire canvas is covered by the scrim.
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawRect(scrimColor)
+            // This clears the scrim within the bounds of the selected region, highlighting
+            // the actual screenshot area.
+            state.rect?.let {
+                drawRect(
+                    topLeft = it.topLeft,
+                    size = it.size,
+                    color = Color.Transparent,
+                    blendMode = BlendMode.Clear,
+                )
+            }
+        }
+
         // The width of the border stroke around the region box.
         val borderStrokeWidth = 4.dp
 
