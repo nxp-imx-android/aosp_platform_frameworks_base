@@ -522,7 +522,6 @@ public class NotificationChildrenContainer extends ViewGroup
 
     public void setBundleHeaderViewModel(@Nullable BundleHeaderViewModel viewModel) {
         mBundleHeaderViewModel = viewModel;
-        setChildrenExpanded(mContainingNotification.isGroupExpanded());
         invalidate();
     }
 
@@ -1006,18 +1005,10 @@ public class NotificationChildrenContainer extends ViewGroup
 
     @VisibleForTesting
     int getMaxAllowedVisibleChildren(boolean likeCollapsed) {
-        if (isBundle()) {
-            if (mContainingNotification.isGroupExpanded()) {
-                return getNumberOfChildrenWhenExpanded();
-            } else {
-                return getNumberOfChildrenWhenCollapsed();
-            }
-        }
         if (!likeCollapsed && (mChildrenExpanded || mContainingNotification.isUserLocked())
                 && !showingAsLowPriority()) {
             return getNumberOfChildrenWhenExpanded();
         }
-
         if (mIsMinimized
                 || (!mContainingNotification.isOnKeyguard() && mContainingNotification.isExpanded())
                 || (mContainingNotification.isHeadsUpState()

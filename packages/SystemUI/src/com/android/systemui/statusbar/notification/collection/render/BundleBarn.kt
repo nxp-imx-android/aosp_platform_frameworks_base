@@ -180,7 +180,6 @@ private fun HeaderComposeViewContent(
                 traceName = "BundleHeaderViewModel",
                 factory = bundleHeaderViewModelFactory,
             )
-        BundleHeader(viewModel)
         DisposableEffect(viewModel) {
             row.setBundleHeaderViewModel(viewModel)
             row.setOnClickListener {
@@ -192,6 +191,7 @@ private fun HeaderComposeViewContent(
                 row.setBundleHeaderViewModel(null)
             }
         }
+        BundleHeader(viewModel)
     }
 }
 
