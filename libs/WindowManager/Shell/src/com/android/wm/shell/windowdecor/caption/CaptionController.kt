@@ -497,15 +497,19 @@ abstract class CaptionController<T>(
     }
 
     /** Releases all caption views. Returns true if caption view host is released. */
-    open fun releaseViews(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean {
-        captionInsets?.remove(wct)
-        captionInsets = null
+    open fun releaseViews(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean =
+        traceSection(
+            traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+            name = "CaptionController#releaseViews",
+        ) {
+            captionInsets?.remove(wct)
+            captionInsets = null
 
-        val viewHost = captionViewHost ?: return false
-        windowDecorViewHostSupplier.release(viewHost, t)
-        captionViewHost = null
-        return true
-    }
+            val viewHost = captionViewHost ?: return false
+            windowDecorViewHostSupplier.release(viewHost, t)
+            captionViewHost = null
+            return true
+        }
 
     private fun getOrCreateViewHost(context: Context, display: Display): WindowDecorViewHost =
         traceSection(
