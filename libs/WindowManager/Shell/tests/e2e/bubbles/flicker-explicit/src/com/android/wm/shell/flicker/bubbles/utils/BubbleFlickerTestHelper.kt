@@ -87,14 +87,12 @@ internal object BubbleFlickerTestHelper {
                     // If there's an icon on the homeScreen, just use it.
                     homeScreenIcon
                 } else {
-                    // Here we do a trick:
-                    // We move the app icon from all apps to hotseat, and then drag it to a new
-                    // created empty page of home screen.
-                    SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, appName)
-                    val hotseatIcon = workspace.getHotseatAppIcon(appName)
-                    val pageDelta = workspace.pageCount - workspace.currentPage
-                    workspace.dragIcon(hotseatIcon, pageDelta)
-                    workspace.getWorkspaceAppIcon(appName)
+                    // If not, create a shortcut on the workspace by dragging it from all apps.
+                    workspace
+                        .switchToAllApps()
+                        .getAppIcon(appName)
+                        .dragToWorkspace(false /* startActivity */, false /* isWidgetShortcut */)
+                    tapl.workspace.getWorkspaceAppIcon(appName)
                 }
             }
         }
@@ -328,8 +326,11 @@ internal object BubbleFlickerTestHelper {
         }
 
         if (previousApp != null) {
+            // If there's a previous app, the app will be expanded.
             waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
         } else {
+            // Otherwise, if there's no previous app, the bubble bar or floating icon will be
+            // dismissed.
             waitAndVerifyBubbleGone(wmHelper)
         }
     }
