@@ -92,6 +92,7 @@ object CredentialPasswordViewBinder {
                                         0, // flag
                                     )
                                     host.onCredentialMatched(attestation, isAllowed)
+                                    viewModel.resetAttestation()
                                 } else {
                                     passwordField.setText("")
                                 }
@@ -106,6 +107,7 @@ object CredentialPasswordViewBinder {
                                     0, // flag
                                 )
                                 host.onCredentialMatched(attestation)
+                                viewModel.resetAttestation()
                             } else {
                                 passwordField.setText("")
                             }
