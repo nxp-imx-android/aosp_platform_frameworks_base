@@ -357,7 +357,7 @@ private fun SimArea(viewModel: PinBouncerViewModel) {
             Image(
                 painter = painterResource(id = R.drawable.ic_lockscreen_sim),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(colorResource(id = R.color.background_protected)),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
             )
         }
     }
