@@ -1128,8 +1128,7 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"சிம் பின் அன்லாக்."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"சிம் Puk அன்லாக்."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"கடவுச்சொல் மூலம் அன்லாக் செய்தல்."</string>
-    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
-    <skip />
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"\'சாதனத்தைப் பாதுகாப்பாகப் பூட்டுதல்\' அம்சத்திற்கான பயோமெட்ரிக் அன்லாக்."</string>
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"வடிவப் பகுதி."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"ஸ்லைடு பகுதி."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2048,7 +2047,12 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"பெரிதாக்கு"</string>
     <string name="close_button_text" msgid="10603510034455258">"மூடு"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"பதிலளி"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"வீடியோ"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"நிராகரி"</string>
@@ -2576,19 +2580,25 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ஆப்ஸ்"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"உங்கள் கைரேகைகளை இனி அடையாளம் காண முடியாது. கைரேகை அன்லாக் அம்சத்தை மீண்டும் அமையுங்கள்."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"பாதுகாப்பு &amp; தனியுரிமை"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"முதலில் உங்கள் திரையை அன்லாக் செய்யுங்கள்"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"திரையை அன்லாக் செய்தலும் மீண்டும் இணைத்தலும்"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"USB தரவுப் பரிமாற்றத்திற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"USB தரவுப் பரிமாற்றத்திற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"USB மாற்றம் அல்லது விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"USB மாற்றம் அல்லது விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"USB விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"USB விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ஒலியடக்கு"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"அறிவிப்புகள் ஒலியடக்கப்பட்டன"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"சாதனத்தை மீண்டும் தொடங்கும் வரை மேம்பட்ட பாதுகாப்பு அமைப்பு USB அறிவிப்புகளை ஒலியடக்கியுள்ளது"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"சந்தேகத்திற்குரிய USB செயல்பாடு"</string>
-    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB தரவு சிக்னல் முடக்கப்பட்டுள்ளது."</string>
+    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
+    <skip />
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"கைரேகை அன்லாக் அம்சத்தில் ஏதேனும் சிக்கலை எதிர்கொள்கிறீர்களா?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"அன்லாக் செய்யும் அனுபவத்தை மேம்படுத்தும் உதவிக்குறிப்புகளைப் பார்க்க தட்டவும்"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"பிளிங் ஆகாது"</string>

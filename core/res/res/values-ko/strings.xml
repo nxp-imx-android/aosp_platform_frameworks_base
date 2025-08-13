@@ -1128,8 +1128,7 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM PIN 잠금 해제"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM PUK 잠금 해제"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"비밀번호를 사용하여 잠금해제합니다."</string>
-    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
-    <skip />
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"보안 잠금 기기에 생체 인식 잠금 해제를 사용합니다."</string>
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"패턴을 그리는 부분입니다."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"슬라이드하는 부분입니다."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2048,7 +2047,12 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"최대화"</string>
     <string name="close_button_text" msgid="10603510034455258">"닫기"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"통화"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"동영상"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"거절"</string>
@@ -2576,19 +2580,25 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"애플리케이션"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"지문을 더 이상 인식할 수 없습니다. 지문 잠금 해제를 다시 설정하세요."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"보안 및 개인 정보 보호"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"먼저 화면을 잠금 해제하세요"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"화면을 잠금 해제한 후 다시 연결하세요"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"고급 보호를 사용 설정한 경우 USB 데이터 전송을 하려면 평소처럼 화면을 잠금 해제해야 합니다."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"고급 보호를 사용 설정한 경우 USB 데이터 전송을 하려면 평소처럼 화면을 잠금 해제해야 합니다."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"고급 보호를 사용 설정한 경우 USB 전송 또는 급속 충전을 하려면 화면을 잠금 해제해야 합니다."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"고급 보호를 사용 설정한 경우 USB 전송 또는 급속 충전을 하려면 화면을 잠금 해제해야 합니다."</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"고급 보호를 사용 설정한 경우 USB 급속 충전을 하려면 평소처럼 화면을 잠금 해제해야 합니다."</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"고급 보호를 사용 설정한 경우 USB 급속 충전을 하려면 평소처럼 화면을 잠금 해제해야 합니다."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"음소거"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"알림 음소거됨"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"기기를 다시 시작할 때까지 고급 보호 USB 알림이 음소거됩니다."</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"의심스러운 USB 활동"</string>
-    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 데이터 신호가 사용 중지됨"</string>
+    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
+    <skip />
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"지문 잠금 해제에 문제가 있나요?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"잠금 해제 환경을 개선하기 위한 도움말을 검토하려면 탭하세요."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"깜박이지 않음"</string>

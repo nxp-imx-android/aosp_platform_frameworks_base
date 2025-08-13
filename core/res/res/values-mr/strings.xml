@@ -105,7 +105,7 @@
     <string name="notification_channel_sms" msgid="1243384981025535724">"SMS मेसेज"</string>
     <string name="notification_channel_voice_mail" msgid="8457433203106654172">"व्हॉइसमेल मेसेज"</string>
     <string name="notification_channel_wfc" msgid="9048240466765169038">"वाय-फाय कॉलिंग"</string>
-    <string name="notification_channel_sim" msgid="5098802350325677490">"सिम स्थिती"</string>
+    <string name="notification_channel_sim" msgid="5098802350325677490">"सिम स्टेटस"</string>
     <string name="notification_channel_sim_high_prio" msgid="642361929452850928">"उच्च प्राधान्य सिम स्थिती"</string>
     <string name="peerTtyModeFull" msgid="337553730440832160">"समवयस्क व्यक्तीने TTY मोड पूर्ण ची विनंती केली"</string>
     <string name="peerTtyModeHco" msgid="5626377160840915617">"समवयस्क व्यक्तीने TTY मोड HCO ची विनंती केली"</string>
@@ -1128,8 +1128,7 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"सिम पिन अनलॉक करा"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"सिम PUK अनलॉक करा"</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"पासवर्ड अनलॉक."</string>
-    <!-- no translation found for keyguard_accessibility_secure_lock_device_biometric_unlock (1884638289137214044) -->
-    <skip />
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"Secure lock device साठी बायोमेट्रिक अनलॉक."</string>
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"पॅटर्न क्षेत्र."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"स्लाइड क्षेत्र."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -2048,7 +2047,12 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"मोठे करा"</string>
     <string name="close_button_text" msgid="10603510034455258">"बंद करा"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"उत्तर द्या"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"व्हिडिओ"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"नकार द्या"</string>
@@ -2576,19 +2580,25 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"अ‍ॅप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"तुमची फिंगरप्रिंट यापुढे ओळखता येणार नाहीत. फिंगरप्रिंट अनलॉक पुन्हा सेट करा."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"सुरक्षा आणि गोपनीयता"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"आधी तुमची स्क्रीन अनलॉक करा"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"स्क्रीन अनलॉक करून पुन्हा कनेक्ट करा"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"प्रगत संरक्षण यासाठी तुम्हाला USB डेटा ट्रान्सफर करण्याकरिता नेहमीप्रमाणे स्क्रीन अनलॉक करावी लागेल"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"प्रगत संरक्षण यासाठी तुम्हाला USB डेटा ट्रान्सफर करण्याकरिता नेहमीप्रमाणे स्क्रीन अनलॉक करावी लागेल"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"प्रगत संरक्षण यासाठी तुम्हाला USB ट्रान्सफर किंवा फास्ट चार्जिंग करण्याकरिता नेहमीप्रमाणे स्क्रीन अनलॉक करावी लागेल"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"प्रगत संरक्षण यासाठी तुम्हाला USB ट्रान्सफर किंवा फास्ट चार्जिंग करण्याकरिता नेहमीप्रमाणे स्क्रीन अनलॉक करावी लागेल"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"प्रगत संरक्षण यासाठी तुम्हाला USB फास्ट चार्जिंग करण्याकरिता नेहमीप्रमाणे स्क्रीन अनलॉक करावी लागेल"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"प्रगत संरक्षण यासाठी तुम्हाला USB फास्ट चार्जिंग करण्याकरिता नेहमीप्रमाणे स्क्रीन अनलॉक करावी लागेल"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"सायलंट करा"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"नोटिफिकेशन सायलंट केली आहेत"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"तुम्ही डिव्हाइस रीस्टार्ट करेपर्यंत, प्रगत संरक्षण USB नोटिफिकेशन सायलंट केली आहेत"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"संशयास्पद USB ॲक्टिव्हिटी"</string>
-    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB डेटा सिग्नल बंद करण्यात आला आहे."</string>
+    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
+    <skip />
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"फिंगरप्रिंट अनलॉक यासंबंधित समस्या येत आहे का?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"तुमच्या अनलॉक करण्याच्या अनुभवामध्ये सुधारणा करण्यासाठी टिपांचे पुनरावलोकन करण्याकरिता टॅप करा"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ब्लिंक करू नका"</string>

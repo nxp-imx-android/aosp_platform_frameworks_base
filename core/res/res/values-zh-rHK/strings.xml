@@ -2047,7 +2047,12 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"最大化"</string>
     <string name="close_button_text" msgid="10603510034455258">"關閉"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>：<xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>："</string>
+    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"接聽"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"視像"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"拒接"</string>
@@ -2575,19 +2580,25 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"應用程式"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"無法再辨識你的指紋。請重新設定「指紋解鎖」功能。"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"安全性和私隱權"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"請先解鎖螢幕"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"解鎖螢幕並重新連接"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 資料轉移功能"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 資料轉移功能"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"「進階保護功能」要求你解鎖螢幕以使用 USB 轉移或快速充電功能"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"「進階保護功能」要求你解鎖螢幕以使用 USB 轉移或快速充電功能"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 快速充電功能"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 快速充電功能"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"靜音"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"通知已設定為靜音"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"「USB 進階保護功能」通知已設定為靜音，直至你重新啟動裝置為止"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"可疑的 USB 活動"</string>
-    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 資料訊號已停用。"</string>
+    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
+    <skip />
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用「指紋解鎖」時遇到問題嗎？"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕按即可查看關於改善解鎖體驗的貼士"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不要閃動"</string>
