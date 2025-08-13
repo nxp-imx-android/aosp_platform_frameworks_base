@@ -56,6 +56,7 @@ fun TransitionBuilder.verticalContainerReveal(
     container: ElementKey,
     motionSpec: VerticalExpandContainerSpec,
     haptics: ContainerRevealHaptics,
+    useMechanics: Boolean = VerticalContainerRevealFlag.isEnabled,
 ) {
     // Make the swipe distance be exactly the target height of the container.
     // TODO(b/376438969): Make sure that this works correctly when the target size of the element
@@ -75,7 +76,7 @@ fun TransitionBuilder.verticalContainerReveal(
         (targetSizeInToContent?.height ?: targetSizeInFromContent?.height)?.toFloat() ?: 0f
     }
 
-    if (!VerticalContainerRevealFlag.isEnabled) {
+    if (!useMechanics) {
         scaleSize(container, height = 0f)
         return
     }
