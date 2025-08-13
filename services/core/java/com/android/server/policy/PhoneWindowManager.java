@@ -89,10 +89,10 @@ import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
@@ -282,6 +282,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     static final boolean DEBUG_INPUT = false;
     static final boolean DEBUG_KEYGUARD = false;
     static final boolean DEBUG_WAKEUP = false;
+    static final boolean DEBUG_DREAMS = false;
 
     // Whether to allow dock apps with METADATA_DOCK_HOME to temporarily take over the Home key.
     // No longer recommended for desk docks;
@@ -1295,10 +1296,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 dreamManagerInternal.stopDream(false /*immediate*/, "short press power" /*reason*/);
                 return;
             }
-            Slog.d(TAG,
-                    "Can't start dreaming and the device is not dreaming when attempting to start "
-                    + "or stop dream from short power press (isScreenOn="
-                            + isScreenOn + ", awakeWhenDream=" + awakeWhenDream + ")");
+            if (DEBUG_DREAMS) {
+                Slog.d(TAG,
+                        "Can't start dreaming and the device is not dreaming when attempting to "
+                                + "start or stop dream from short power press (isScreenOn="
+                                + isScreenOn + ", awakeWhenDream=" + awakeWhenDream + ")");
+            }
             noDreamAction.run();
             return;
         }
