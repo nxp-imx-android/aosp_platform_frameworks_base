@@ -80,7 +80,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
+        mService.onProgress(token, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
         mService.onShown(token);
         synchronized (mService.mLock) {
@@ -112,7 +112,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_CLIENT_ALREADY_HIDDEN);
+        mService.onProgress(token, ImeTracker.PHASE_CLIENT_ALREADY_HIDDEN);
 
         mService.onHidden(token);
         synchronized (mService.mLock) {
@@ -144,7 +144,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_CLIENT_CONTROL_ANIMATION);
+        mService.onProgress(token, ImeTracker.PHASE_CLIENT_CONTROL_ANIMATION);
 
         mService.onCancelled(token, ImeTracker.PHASE_CLIENT_ANIMATION_CANCEL);
         synchronized (mService.mLock) {
@@ -176,7 +176,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_IME_SHOW_WINDOW);
+        mService.onProgress(token, ImeTracker.PHASE_IME_SHOW_WINDOW);
 
         mService.onFailed(token, ImeTracker.PHASE_CLIENT_SHOW_INSETS);
         synchronized (mService.mLock) {
@@ -208,7 +208,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_CLIENT_ANIMATION_RUNNING);
+        mService.onProgress(token, ImeTracker.PHASE_CLIENT_ANIMATION_RUNNING);
 
         mService.onDispatched(token);
         synchronized (mService.mLock) {
@@ -247,7 +247,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("One active entry").that(mHistory.activeEntries()).hasSize(1);
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_SERVER_SYSTEM_READY);
+        mService.onProgress(token, ImeTracker.PHASE_SERVER_SYSTEM_READY);
 
         mService.onShown(token);
         synchronized (mService.mLock) {
@@ -310,6 +310,53 @@ public class ImeTrackerServiceTest {
     }
 
     /**
+     * Check that a start from a completed entry won't affect a new entry that is
+     * re-using the id.
+     */
+    @Test
+    public void testStartOnReusedId() {
+        final int id = 0;
+        final var tag = "A";
+        final var token = new ImeTracker.Token(id, tag);
+        final int uid = 10;
+        final int type = ImeTracker.TYPE_SHOW;
+        final int origin = ImeTracker.ORIGIN_CLIENT;
+        final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
+        final boolean fromUser = false;
+
+        final var secondTag = "B";
+        final var secondToken = new ImeTracker.Token(id, secondTag);
+        final int secondType = ImeTracker.TYPE_HIDE;
+        mService.onCancelled(secondToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
+        synchronized (mService.mLock) {
+            assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
+        }
+
+        // Emulate start on token of completed entry. Completing an entry with the id will allow
+        // re-using the id for token creation only in onStart, but that scenario is already
+        // checked in testStartTwice. This emulated scenario can happen if the completed entry is
+        // old, and the history is flushed due to many new entries.
+        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage("One active entry").that(mHistory.activeEntries()).hasSize(1);
+        }
+
+        mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
+                System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
+                    .isEmpty();
+        }
+
+        advanceTime(TIMEOUT_MS);
+
+        assertWithMessage("One recorded").that(mRecordedEntries).hasSize(1);
+        verifyEntry(mRecordedEntries.getFirst(), secondTag, uid, secondType,
+                ImeTracker.STATUS_CANCEL, origin, reason, ImeTracker.PHASE_SERVER_SHOULD_HIDE,
+                fromUser);
+    }
+
+    /**
      * Check that an entry that is first progressed, then started and then finished will be
      * completed normally, and contain the given data.
      */
@@ -324,7 +371,7 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onProgress(id, ImeTracker.PHASE_SERVER_HAS_IME);
+        mService.onProgress(token, ImeTracker.PHASE_SERVER_HAS_IME);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -364,7 +411,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_SERVER_CLIENT_KNOWN);
+        mService.onProgress(token, ImeTracker.PHASE_SERVER_CLIENT_KNOWN);
 
         mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
         synchronized (mService.mLock) {
@@ -399,7 +446,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
+        mService.onProgress(token, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
         mService.onShown(token);
         synchronized (mService.mLock) {
@@ -407,7 +454,7 @@ public class ImeTrackerServiceTest {
                     .isEmpty();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_SERVER_CLIENT_KNOWN);
+        mService.onProgress(token, ImeTracker.PHASE_SERVER_CLIENT_KNOWN);
         synchronized (mService.mLock) {
             assertWithMessage("No entry created for progress after complete")
                     .that(mHistory.getActive(id)).isNull();
@@ -418,6 +465,62 @@ public class ImeTrackerServiceTest {
         assertWithMessage("One entry recorded").that(mRecordedEntries).hasSize(1);
         verifyEntry(mRecordedEntries.getFirst(), tag, uid, type, ImeTracker.STATUS_SUCCESS, origin,
                 reason, ImeTracker.PHASE_CLIENT_VIEW_SERVED, fromUser);
+    }
+
+    /**
+     * Check that a progress from a completed entry won't affect a new entry that is
+     * re-using the id.
+     */
+    @Test
+    public void testProgressOnReusedId() {
+        final int id = 0;
+        final var tag = "A";
+        final var token = new ImeTracker.Token(id, tag);
+        final int uid = 10;
+        final int type = ImeTracker.TYPE_SHOW;
+        final int origin = ImeTracker.ORIGIN_CLIENT;
+        final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
+        final boolean fromUser = false;
+
+        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
+        }
+
+        mService.onShown(token);
+        synchronized (mService.mLock) {
+            assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
+                    .isEmpty();
+        }
+
+        final var secondTag = "B";
+        final var secondToken = new ImeTracker.Token(id, secondTag);
+        final int secondType = ImeTracker.TYPE_HIDE;
+        mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
+                System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
+        }
+
+        // Progress on token of completed entry.
+        mService.onProgress(token, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
+        synchronized (mService.mLock) {
+            assertWithMessage("One active entry").that(mHistory.activeEntries()).hasSize(1);
+        }
+
+        mService.onCancelled(secondToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
+        synchronized (mService.mLock) {
+            assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
+                    .isEmpty();
+        }
+
+        advanceTime(TIMEOUT_MS);
+
+        assertWithMessage("Two entries recorded").that(mRecordedEntries).hasSize(2);
+        verifyEntry(mRecordedEntries.get(0), tag, uid, type, ImeTracker.STATUS_SUCCESS, origin,
+                reason, ImeTracker.PHASE_NOT_SET, fromUser);
+        verifyEntry(mRecordedEntries.get(1), secondTag, uid, secondType, ImeTracker.STATUS_CANCEL,
+                origin, reason, ImeTracker.PHASE_SERVER_SHOULD_HIDE, fromUser);
     }
 
     /**
@@ -528,6 +631,62 @@ public class ImeTrackerServiceTest {
                 reason, ImeTracker.PHASE_NOT_SET, fromUser);
     }
 
+    /**
+     * Check that a finish from a completed entry won't affect a new entry that is
+     * re-using the id.
+     */
+    @Test
+    public void testFinishOnReusedId() {
+        final int id = 0;
+        final var tag = "A";
+        final var token = new ImeTracker.Token(id, tag);
+        final int uid = 10;
+        final int type = ImeTracker.TYPE_SHOW;
+        final int origin = ImeTracker.ORIGIN_CLIENT;
+        final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
+        final boolean fromUser = false;
+
+        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
+        }
+
+        mService.onShown(token);
+        synchronized (mService.mLock) {
+            assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
+                    .isEmpty();
+        }
+
+        final var secondTag = "B";
+        final var secondToken = new ImeTracker.Token(id, secondTag);
+        final int secondType = ImeTracker.TYPE_HIDE;
+        mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
+                System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
+        }
+
+        // Finish on token of completed entry.
+        mService.onFailed(token, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
+        synchronized (mService.mLock) {
+            assertWithMessage("One active entry").that(mHistory.activeEntries()).hasSize(1);
+        }
+
+        mService.onCancelled(secondToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
+        synchronized (mService.mLock) {
+            assertWithMessage("No active entries remaining").that(
+                    mHistory.activeEntries()).isEmpty();
+        }
+
+        advanceTime(TIMEOUT_MS);
+
+        assertWithMessage("Two entries recorded").that(mRecordedEntries).hasSize(2);
+        verifyEntry(mRecordedEntries.get(0), tag, uid, type, ImeTracker.STATUS_SUCCESS, origin,
+                reason, ImeTracker.PHASE_NOT_SET, fromUser);
+        verifyEntry(mRecordedEntries.get(1), secondTag, uid, secondType, ImeTracker.STATUS_CANCEL,
+                origin, reason, ImeTracker.PHASE_SERVER_SHOULD_HIDE, fromUser);
+    }
+
     /** Check that a started entry that is not completed will time out. */
     @Test
     public void testTimeoutFromStart() {
@@ -545,7 +704,7 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onProgress(id, ImeTracker.PHASE_SERVER_WAIT_IME);
+        mService.onProgress(token, ImeTracker.PHASE_SERVER_WAIT_IME);
 
         advanceTime(TIMEOUT_MS);
 
@@ -562,14 +721,15 @@ public class ImeTrackerServiceTest {
     @Test
     public void testTimeoutFromProgress() {
         final int id = 0;
-        final var tag = "not set";
+        final var tag = "A";
+        final var token = new ImeTracker.Token(id, tag);
         final int uid = -1;
         final int type = ImeTracker.TYPE_NOT_SET;
         final int origin = ImeTracker.ORIGIN_NOT_SET;
         final int reason = SoftInputShowHideReason.NOT_SET;
         final boolean fromUser = false;
 
-        mService.onProgress(id, ImeTracker.PHASE_SERVER_HAS_IME);
+        mService.onProgress(token, ImeTracker.PHASE_SERVER_HAS_IME);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }

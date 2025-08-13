@@ -112,6 +112,11 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             final String tag = statsToken.getTag();
             final var entry = mHistory.getActive(id);
             if (entry != null) {
+                if (!entry.mTag.equals(tag)) {
+                    // Tags don't match as the ID is being reused after the initial entry completed.
+                    Log.i(TAG, tag + ": onStart on previously finished token");
+                    return;
+                }
                 if (entry.mStarted) {
                     Log.i(TAG, tag + ": onStart on previously started and not finished token: "
                             + entry.mTag);
@@ -136,10 +141,16 @@ public final class ImeTrackerService extends IImeTracker.Stub {
     }
 
     @Override
-    public void onProgress(long id, @ImeTracker.Phase int phase) {
+    public void onProgress(@NonNull ImeTracker.Token statsToken, @ImeTracker.Phase int phase) {
         synchronized (mLock) {
+            final long id = statsToken.getId();
+            final String tag = statsToken.getTag();
             final var entry = mHistory.getActive(id);
             if (entry != null) {
+                if (!entry.mTag.equals(tag)) {
+                    // Tags don't match as the ID is being reused after the initial entry completed.
+                    return;
+                }
                 if (entry.mFinished) {
                     return;
                 }
@@ -151,6 +162,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 }
 
                 final var newEntry = new History.Entry();
+                newEntry.mTag = tag;
                 newEntry.onProgress(phase);
 
                 mHistory.putActive(id, newEntry);
@@ -174,6 +186,13 @@ public final class ImeTrackerService extends IImeTracker.Stub {
         final String tag = statsToken.getTag();
         final var entry = mHistory.getActive(id);
         if (entry != null) {
+            if (!entry.mTag.equals(tag)) {
+                //  Tags don't match as the ID is being reused after the initial entry completed.
+                Log.i(TAG, tag + ": onFinished on previously finished token at "
+                        + ImeTracker.Debug.phaseToString(phase) + " with "
+                        + ImeTracker.Debug.statusToString(status));
+                return;
+            }
             if (entry.mFinished) {
                 Log.i(TAG, tag + ": onFinished on previously finished but active token at "
                         + ImeTracker.Debug.phaseToString(phase)

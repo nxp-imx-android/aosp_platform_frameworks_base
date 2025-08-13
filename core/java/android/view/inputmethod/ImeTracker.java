@@ -646,7 +646,7 @@ public interface ImeTracker {
         @Override
         public void onProgress(@Nullable Token token, @Phase int phase) {
             if (token == null) return;
-            IInputMethodManagerGlobalInvoker.onProgress(token.mId, phase);
+            IInputMethodManagerGlobalInvoker.onProgress(token, phase);
 
             if (mLogProgress) {
                 log("%s: onProgress at %s", token.mTag, Debug.phaseToString(phase));

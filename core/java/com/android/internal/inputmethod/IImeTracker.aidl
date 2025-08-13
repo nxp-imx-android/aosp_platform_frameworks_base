@@ -46,7 +46,7 @@ interface IImeTracker {
      * @param statsToken the token tracking the request.
      * @param phase the new phase the request reached.
      */
-    oneway void onProgress(long id, int phase);
+    oneway void onProgress(in ImeTracker.Token statsToken, int phase);
 
     /**
      * Called when the IME request fails.
