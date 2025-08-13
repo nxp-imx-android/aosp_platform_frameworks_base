@@ -833,6 +833,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             if (Flags.enableSyncWithDpm() && !user.isPreCreated()) {
                 mSupervisionService.syncStateWithDevicePolicyManager(user.getUserIdentifier());
             }
+            mSupervisionService.maybeApplyUserRestrictionsFor(user.getUserHandle());
         }
 
         private final class ProfileOwnerBroadcastReceiver extends BroadcastReceiver {
