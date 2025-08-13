@@ -686,7 +686,6 @@ public class ApplicationStartInfoTest {
      * retention length.
      */
     @Test
-    @EnableFlags(android.app.Flags.FLAG_APP_START_INFO_CLEANUP_OLD_RECORDS)
     public void testOldRecordsCleanup() throws Exception {
         // Use a different start timestamp for each record so we can identify which was removed.
         // This timestamp is not used for ordering and has no impact on removal.

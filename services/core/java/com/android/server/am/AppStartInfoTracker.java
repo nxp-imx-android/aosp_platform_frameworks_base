@@ -1347,21 +1347,13 @@ public final class AppStartInfoTracker {
             long token = proto.start(fieldId);
             proto.write(AppsStartInfoProto.Package.User.UID, mUid);
             int size = mInfos.size();
-            if (android.app.Flags.appStartInfoCleanupOldRecords()) {
-                long removeOlderThan = getMonotonicTimeMs() - APP_START_INFO_HISTORY_LENGTH_MS;
-                // Iterate backwards so we can remove old records as we go.
-                for (int i = size - 1; i >= 0; i--) {
-                    if (mInfos.get(i).getMonotonicCreationTimeMs() < removeOlderThan) {
-                        // Remove the record.
-                        mInfos.remove(i);
-                    } else {
-                        mInfos.get(i).writeToProto(
-                                proto, AppsStartInfoProto.Package.User.APP_START_INFO,
-                                byteArrayOutputStream, objectOutputStream, typedXmlSerializer);
-                    }
-                }
-            } else {
-                for (int i = 0; i < size; i++) {
+            long removeOlderThan = getMonotonicTimeMs() - APP_START_INFO_HISTORY_LENGTH_MS;
+            // Iterate backwards so we can remove old records as we go.
+            for (int i = size - 1; i >= 0; i--) {
+                if (mInfos.get(i).getMonotonicCreationTimeMs() < removeOlderThan) {
+                    // Remove the record.
+                    mInfos.remove(i);
+                } else {
                     mInfos.get(i).writeToProto(
                             proto, AppsStartInfoProto.Package.User.APP_START_INFO,
                             byteArrayOutputStream, objectOutputStream, typedXmlSerializer);
