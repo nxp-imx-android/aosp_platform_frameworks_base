@@ -694,6 +694,16 @@
       ]
     }
   ],
+  "desktop-presubmit": [
+    {
+      "name": "CtsPackageInstallTestCases",
+      "file_patterns": [
+        "core/java/.*Install.*",
+        "services/core/.*Install.*",
+        "services/core/java/com/android/server/pm/.*"
+      ]
+    }
+  ],
   "imports": [
     {
       "path": "frameworks/base/core/java/android/content/pm"
