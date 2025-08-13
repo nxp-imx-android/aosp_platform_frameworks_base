@@ -959,7 +959,6 @@ public class DisplayModeDirector {
         private final Uri mMatchContentFrameRateSetting =
                 Settings.Secure.getUriFor(Settings.Secure.MATCH_CONTENT_FRAME_RATE);
 
-        private final boolean mVsyncLowPowerVoteEnabled;
         private final boolean mPeakRefreshRatePhysicalLimitEnabled;
 
         private final Context mContext;
@@ -996,7 +995,6 @@ public class DisplayModeDirector {
             super(handler);
             mContext = context;
             mHandler = handler;
-            mVsyncLowPowerVoteEnabled = flags.isVsyncLowPowerVoteEnabled();
             mPeakRefreshRatePhysicalLimitEnabled = flags.isPeakRefreshRatePhysicalLimitEnabled();
             // We don't want to load from the DeviceConfig while constructing since this leads to
             // a spike in the latency of DisplayManagerService startup. This happens because
@@ -1125,9 +1123,6 @@ public class DisplayModeDirector {
 
         @GuardedBy("mLock")
         private void updateLowPowerModeAllowedModesLocked() {
-            if (!mVsyncLowPowerVoteEnabled) {
-                return;
-            }
             if (mIsLowPower) {
                 for (int i = 0; i < mDisplayDeviceConfigByDisplay.size(); i++) {
                     DisplayDeviceConfig config = mDisplayDeviceConfigByDisplay.valueAt(i);
