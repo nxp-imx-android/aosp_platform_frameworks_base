@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
+import com.android.systemui.ambientcue.ui.utils.AmbientCueAnimationState
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
@@ -91,6 +92,7 @@ fun ShortPill(
     rotation: Int = 0,
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
+    onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit = { _, _ -> },
 ) {
     val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
@@ -101,6 +103,10 @@ fun ShortPill(
     val shortPillBoxWidth = 48.dp
     val shortPillBoxLength = 68.dp
     val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
+    val showAnimationInProgress = remember { mutableStateOf(false) }
+    val hideAnimationInProgress = remember { mutableStateOf(false) }
+    val expandAnimationInProgress = remember { mutableStateOf(false) }
+    val collapseAnimationInProgress = remember { mutableStateOf(false) }
 
     val visibleState = remember { MutableTransitionState(false) }
     visibleState.targetState = visible
@@ -139,6 +145,18 @@ fun ShortPill(
         ) {
             if (it) 0.4f else 0f
         }
+
+    AmbientCueJankMonitorComposable(
+        visibleTargetState = visibleState.targetState,
+        enterProgress = enterProgress,
+        expanded = expanded,
+        expansionAlpha = expansionAlpha,
+        showAnimationInProgress = showAnimationInProgress,
+        hideAnimationInProgress = hideAnimationInProgress,
+        expandAnimationInProgress = expandAnimationInProgress,
+        collapseAnimationInProgress = collapseAnimationInProgress,
+        onAnimationStateChange = onAnimationStateChange,
+    )
 
     // State variables to store the measured size and position of the main pill.
     var pillContentSize by remember { mutableStateOf(IntSize.Zero) }

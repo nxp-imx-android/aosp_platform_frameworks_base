@@ -28,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.tracing.trace
 import com.android.compose.theme.PlatformTheme
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.ambientcue.ui.compose.AmbientCueContainer
+import com.android.systemui.ambientcue.ui.utils.AmbientCueJankMonitor
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
 import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.dagger.qualifiers.Application
@@ -41,6 +43,7 @@ constructor(
     private val windowManager: WindowManager,
     @Application applicationContext: Context,
     ambientCueViewModelFactory: AmbientCueViewModel.Factory,
+    interactionJankMonitor: InteractionJankMonitor,
 ) : FrameLayout(applicationContext) {
     init {
         layoutParams =
@@ -60,6 +63,7 @@ constructor(
                         defaultFocusHighlightEnabled = true
                         fitsSystemWindows = false
                     }
+                val ambientCueJankMonitor = AmbientCueJankMonitor(interactionJankMonitor, this)
                 setContent {
                     PlatformTheme {
                         AmbientCueContainer(
@@ -85,6 +89,12 @@ constructor(
                                     AmbientCueUtils.getAmbientCueLayoutParams(
                                         spyTouches = !interceptTouches
                                     ),
+                                )
+                            },
+                            onAnimationStateChange = { cujType, animationState ->
+                                ambientCueJankMonitor.onAnimationStateChange(
+                                    cujType,
+                                    animationState,
                                 )
                             },
                         )
