@@ -133,16 +133,6 @@ flag {
 }
 
 flag {
-    name: "virtual_power_group_sleep_no_doze"
-    namespace: "virtual_devices"
-    description: "Sleep non-default power groups directly, skipping doze"
-    bug: "416220040"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "migrate_viewconfiguration_constants_to_resources"
     namespace: "virtual_devices"
     description: "Use resources instead of constants in ViewConfiguration"
