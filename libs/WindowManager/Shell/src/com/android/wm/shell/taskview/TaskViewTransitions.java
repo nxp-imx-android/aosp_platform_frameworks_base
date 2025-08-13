@@ -27,6 +27,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_CHANGE_IN_WRONG_TRANSITION;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
@@ -208,8 +209,9 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      * In practice, the external is usually another transition on a different handler.
      */
     public void enqueueExternal(@NonNull TaskViewTaskController taskView, ExternalTransition ext) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.enqueueExternal(): taskView=%d pending=%d",
-                taskView.hashCode(), mPending.size());
+        ProtoLog.d(WM_SHELL_BUBBLES,
+                "TaskViewTransitions.enqueueExternal(): transition=%s taskView=%d pending=%d",
+                ext, taskView.hashCode(), mPending.size());
         final PendingTransition pending = new PendingTransition(
                 TRANSIT_NONE, null /* wct */, taskView, null /* cookie */);
         pending.mExternalTransition = ext;
@@ -226,9 +228,10 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      */
     public void enqueueRunningExternal(@NonNull TaskViewTaskController taskView,
             IBinder transition) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                "Transitions.enqueueRunningExternal(): taskView=%d pending=%d",
-                taskView.hashCode(), mPending.size());
+        ProtoLog.d(WM_SHELL_BUBBLES,
+                "TaskViewTransitions.enqueueRunningExternal(): "
+                    + "transition=%s taskView=%d pending=%d",
+                transition, taskView.hashCode(), mPending.size());
         final PendingTransition pending = new PendingTransition(
                 TRANSIT_NONE, null /* wct */, taskView, null /* cookie */);
         pending.mExternalTransition = () -> transition;

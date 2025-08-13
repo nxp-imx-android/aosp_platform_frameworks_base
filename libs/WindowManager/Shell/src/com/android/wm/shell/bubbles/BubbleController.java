@@ -449,6 +449,8 @@ public class BubbleController implements ConfigurationChangeListener,
                         mSkipAddingBackBubbleOnMoveToFullScreen = true;
                     } else {
                         mBarToFloatingTransition = new Binder();
+                        ProtoLog.d(WM_SHELL_BUBBLES, "enqueuing bar to floating transition %s",
+                                mBarToFloatingTransition);
                         mBubbleTransitions.mTaskViewTransitions.enqueueExternal(
                                 bubble.getTaskView().getController(),
                                 () -> mBarToFloatingTransition);
@@ -2995,6 +2997,7 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.print(prefix); pw.println("  bubbleStateListenerSet= " + (mBubbleStateListener != null));
         pw.print(prefix); pw.println("  stackViewSet= " + (mStackView != null));
         pw.print(prefix); pw.println("  layerViewSet= " + (mLayerView != null));
+        pw.print(prefix); pw.println("  mBarToFloatingTransition= " + mBarToFloatingTransition);
         pw.println();
 
         mBubbleData.dump(pw);
