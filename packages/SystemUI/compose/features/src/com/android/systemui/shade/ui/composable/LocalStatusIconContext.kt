@@ -27,6 +27,8 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
+import com.android.systemui.statusbar.systemstatusicons.ui.compose.MovableSystemStatusIconLegacy
+import com.android.systemui.statusbar.systemstatusicons.ui.compose.movableSystemStatusIconsLegacyAndroidView
 
 /**
  * Defines interface for classes that can provide a context for UI that renders the status bar
@@ -45,6 +47,12 @@ interface StatusIconContext {
      * cached in the [StatusIconContext].
      */
     fun iconManager(contentKey: ContentKey): TintedIconManager
+
+    /**
+     * Returns a [MovableSystemStatusIconLegacy] movable content for the given [TintedIconManager].
+     * This movable content will be cached in the [StatusIconContext].
+     */
+    fun movableContent(tintedIconManager: TintedIconManager): MovableSystemStatusIconLegacy
 }
 
 val LocalStatusIconContext =
@@ -63,6 +71,8 @@ fun WithStatusIconContext(
                 private val iconContainerByContentKey =
                     mutableMapOf<ContentKey, StatusIconContainer>()
                 private val iconManagerByContentKey = mutableMapOf<ContentKey, TintedIconManager>()
+                private val movableContentByIconManager =
+                    mutableMapOf<TintedIconManager, MovableSystemStatusIconLegacy>()
 
                 override fun iconContainer(contentKey: ContentKey): StatusIconContainer {
                     return iconContainerByContentKey.getOrPut(contentKey) {
@@ -82,6 +92,14 @@ fun WithStatusIconContext(
                             iconContainer(contentKey),
                             StatusBarLocation.QS,
                         )
+                    }
+                }
+
+                override fun movableContent(
+                    tintedIconManager: TintedIconManager
+                ): MovableSystemStatusIconLegacy {
+                    return movableContentByIconManager.getOrPut(tintedIconManager) {
+                        movableSystemStatusIconsLegacyAndroidView(tintedIconManager)
                     }
                 }
             }
