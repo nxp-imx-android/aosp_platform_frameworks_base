@@ -877,13 +877,11 @@ public final class MessageQueue {
     }
 
     private void removeAllMessages() {
-        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null,
-                0);
+        mStack.moveMatchingToFreelist(sMatchAllMessages, null, -1, null, null, 0);
     }
 
     private void removeAllFutureMessages(long when) {
-        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null,
-                when);
+        mStack.moveMatchingToFreelist(sMatchAllFutureMessages, null, -1, null, null, when);
     }
 
     /**
