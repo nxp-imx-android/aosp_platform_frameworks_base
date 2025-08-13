@@ -16,56 +16,15 @@
 
 package com.android.wm.shell.flicker.bubbles.testcase
 
-import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
 /**
- * Verifies bubble and its app are dismissed.
+ * Verifies a bubble and its associated app window are fully dismissed.
+ *
+ * This test case builds upon [BubbleExitTestCases] by adding a verification
+ * to ensure the application window itself is also gone at the end of the transition.
  */
-interface BubbleDismissesTestCases : BubbleFlickerSubjects {
-
-    /**
-     * Verifies [BUBBLE] window is gone at the end of the transition.
-     */
-    @Test
-    fun bubbleWindowIsGoneAtEnd() {
-        wmStateSubjectAtEnd.notContains(BUBBLE)
-    }
-
-    /**
-     * Verifies [BUBBLE] layer is gone at the end of the transition.
-     */
-    @Test
-    fun bubbleLayerIsGoneAtEnd() {
-        layerTraceEntrySubjectAtEnd.notContains(BUBBLE)
-    }
-
-    /**
-     * Verifies [BUBBLE] window was visible then disappears.
-     */
-    @Test
-    fun bubbleWindowWasVisibleThenDisappear() {
-        wmTraceSubject
-            .isAboveAppWindowVisible(BUBBLE)
-            .then()
-            // Use #isNonAppWindowInvisible here because the BUBBLE window may have been removed
-            // from WM hierarchy.
-            .isNonAppWindowInvisible(BUBBLE)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies [BUBBLE] layer was visible then disappears.
-     */
-    @Test
-    fun bubbleLayerWasVisibleThenDisappear() {
-        layersTraceSubject
-            .isVisible(BUBBLE)
-            .then()
-            .isInvisible(BUBBLE)
-            .forAllEntries()
-    }
+interface BubbleDismissesTestCases : BubbleExitTestCases {
 
     /**
      * Verifies bubble app window is gone at the end of the transition.

@@ -27,7 +27,10 @@ import android.tools.device.apphelpers.MapsAppHelper
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.ConditionsFactory
+import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
+import android.tools.traces.parsers.WindowManagerStateHelper.StateSyncBuilder
+import android.view.Display
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -355,14 +358,20 @@ internal object BubbleFlickerTestHelper {
     }
 
     /**
+     * Waits for the bubble to be fully dismissed and gone from the screen.
+     *
+     * @param displayId The ID of the target display.
+     */
+    fun StateSyncBuilder.withBubbleFullyDismissedAndGone(displayId: Int = Display.DEFAULT_DISPLAY) =
+        withAppTransitionIdle(displayId)
+            .add(ConditionsFactory.isWMStateComplete())
+            .withBubbleGone()
+
+    /**
      * Waits and verifies the bubble (represented as bubble icon or bubble bar) is gone.
      */
     fun waitAndVerifyBubbleGone(wmHelper: WindowManagerStateHelper) {
-        wmHelper
-            .StateSyncBuilder()
-            .add(ConditionsFactory.isWMStateComplete())
-            .withBubbleGone()
-            .waitForAndVerify()
+        wmHelper.StateSyncBuilder().withBubbleFullyDismissedAndGone().waitForAndVerify()
     }
 
     fun launchMultipleBubbleAppsViaBubbleMenuAndCollapse(
@@ -418,6 +427,36 @@ internal object BubbleFlickerTestHelper {
         }
     }
 
+    /**
+     * Waits for a bubble app matching [componentMatcher] to be visible and expanded.
+     *
+     * @param componentMatcher component to search for.
+     * @param displayId of the target display
+     */
+    fun StateSyncBuilder.withBubbleExpanded(
+        componentMatcher: IComponentMatcher,
+        displayId: Int = Display.DEFAULT_DISPLAY,
+    ) =
+        withAppTransitionIdle(displayId)
+            .add(ConditionsFactory.isWMStateComplete())
+            .withTopVisibleApp(componentMatcher)
+            .withBubbleShown()
+
+    /**
+     * Waits for a bubble app matching [componentMatcher] to be in a collapsed state.
+     *
+     * @param componentMatcher component to search for.
+     * @param displayId of the target display
+     */
+    fun StateSyncBuilder.withBubbleCollapsed(
+        componentMatcher: IComponentMatcher,
+        displayId: Int = Display.DEFAULT_DISPLAY,
+    ) =
+        withAppTransitionIdle(displayId)
+            .add(ConditionsFactory.isWMStateComplete())
+            .withWindowSurfaceDisappeared(componentMatcher)
+            .withBubbleShown()
+
     private fun assertBubbleIconsAligned(tapl: LauncherInstrumentation) {
         val isBubbleIconsAligned = Root.get().expandedBubbleStack.bubbles.stream()
             .mapToInt { bubbleIcon: Bubble ->
@@ -465,12 +504,7 @@ internal object BubbleFlickerTestHelper {
         testApp: StandardAppHelper,
         wmHelper: WindowManagerStateHelper,
     ) {
-        wmHelper
-            .StateSyncBuilder()
-            .add(ConditionsFactory.isWMStateComplete())
-            .withTopVisibleApp(testApp)
-            .withBubbleShown()
-            .waitForAndVerify()
+        wmHelper.StateSyncBuilder().withBubbleExpanded(testApp).waitForAndVerify()
 
         // Don't check the overflow if the testApp is IME because IME occludes the overflow.
         if (testApp !is ImeAppHelper) {
@@ -482,12 +516,7 @@ internal object BubbleFlickerTestHelper {
         testApp: StandardAppHelper,
         wmHelper: WindowManagerStateHelper,
     ) {
-        wmHelper
-            .StateSyncBuilder()
-            .add(ConditionsFactory.isWMStateComplete())
-            .withWindowSurfaceDisappeared(testApp)
-            .withBubbleShown()
-            .waitForAndVerify()
+        wmHelper.StateSyncBuilder().withBubbleCollapsed(testApp).waitForAndVerify()
     }
 
     private val UiDevice.bubbleBar: UiObject2?
