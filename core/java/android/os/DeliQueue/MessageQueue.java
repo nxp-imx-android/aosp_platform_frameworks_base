@@ -647,6 +647,56 @@ public final class MessageQueue {
         return false;
     }
 
+    /**
+     * Returns the message with the latest scheduled execution time.
+     *
+     *
+     * Caller must ensure that this doesn't race 'next' from the Looper thread.
+     * @hide
+     */
+    public @Nullable Message peekLastMessageForTest() {
+        ActivityThread.throwIfNotInstrumenting();
+        return mStack.peekLastMessageForTest();
+    }
+
+    /**
+     * Resets this queue's state.
+     *
+     * @hide
+     */
+    public void resetForTest() {
+        ActivityThread.throwIfNotInstrumenting();
+        // This queue is already quitting, so we can't reset its state and continue using it.
+        if (mWorkerShouldQuit) {
+            return;
+        }
+        synchronized (mIdleHandlersLock) {
+            mIdleHandlers.clear();
+        }
+        synchronized (mFileDescriptorRecordsLock) {
+            removeAllFdRecords();
+        }
+        removeAllMessages();
+        mStack.drainFreelist();
+
+        // We reset the sync barrier tokens to reflect the queue's state reset. This helps ensure
+        // that the queue's behavior is deterministic in both individual tests and in a test suite.
+        resetSyncBarrierTokens();
+    }
+
+    private void removeAllFdRecords() {
+        if (mFileDescriptorRecords != null) {
+            while (mFileDescriptorRecords.size() > 0) {
+                removeOnFileDescriptorEventListener(mFileDescriptorRecords.valueAt(0).mDescriptor);
+            }
+        }
+    }
+
+    private void resetSyncBarrierTokens() {
+        mNextBarrierTokenAtomic.set(1);
+        mNextBarrierToken = 0;
+    }
+
     void quit(boolean safe) {
         if (!mQuitAllowed) {
             throw new IllegalStateException("Main thread not allowed to quit.");

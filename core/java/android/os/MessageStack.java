@@ -355,6 +355,18 @@ public final class MessageStack {
         removeMessage(m, /* removeFromHeap= */ true);
     }
 
+    Message peekLastMessageForTest() {
+        Message lastMsg = null;
+        Message current = (Message) sTop.getAcquire(this);
+        while (current != null) {
+            if (lastMsg == null || (current.when > lastMsg.when && !lastMsg.isRemoved())) {
+                lastMsg = current;
+            }
+            current = current.next;
+        }
+        return lastMsg;
+    }
+
     /**
      * Returns the number of non-removed messages in this stack.
      */

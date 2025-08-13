@@ -1093,6 +1093,120 @@ public final class MessageQueue {
         }
     }
 
+    /**
+     * Returns the last message in the queue in execution order.
+     *
+     * Caller must ensure that this doesn't race 'next' from the Looper thread.
+     * @hide
+     */
+    public @Nullable Message peekLastMessageForTest() {
+        ActivityThread.throwIfNotInstrumenting();
+        if (sUseConcurrent) {
+            return peekLastMessageConcurrent();
+        } else {
+            return peekLastMessageLegacy();
+        }
+    }
+
+    /**
+     * Matches no messages, but stores the message with the latest execution time.
+     */
+    static final class FindLastMessage extends MessageCompare {
+        Message lastMsg;
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target != null && (lastMsg == null || lastMsg.when <= m.when)) {
+                lastMsg = m;
+            }
+            return false;
+        }
+    }
+
+    private Message peekLastMessageConcurrent() {
+        final FindLastMessage findLastMessage = new FindLastMessage();
+        findOrRemoveMessages(null, 0, null, null, 0, findLastMessage, false);
+        return findLastMessage.lastMsg;
+    }
+
+    private Message peekLastMessageLegacy() {
+        synchronized (this) {
+            Message lastMsg = null;
+
+            Message current = mMessages;
+            while (current != null) {
+                if (current.target != null && (lastMsg == null || lastMsg.when <= current.when)) {
+                    lastMsg = current;
+                }
+                current = current.next;
+            }
+
+            return lastMsg;
+        }
+    }
+
+    /**
+     * Resets this queue's state and allows it to continue being used.
+     *
+     * @hide
+     */
+    public void resetForTest() {
+        ActivityThread.throwIfNotInstrumenting();
+        if (sUseConcurrent) {
+            resetConcurrent();
+        } else {
+            resetLegacy();
+        }
+    }
+
+    private void resetConcurrent() {
+        // This queue is already quitting, so we can't reset its state and continue using it.
+        if (getQuitting()) {
+            return;
+        }
+        synchronized (mIdleHandlersLock) {
+            mIdleHandlers.clear();
+        }
+        synchronized (mFileDescriptorRecordsLock) {
+            removeAllFdRecords();
+        }
+        removeAllMessages();
+
+        // We reset the sync barrier tokens to reflect the queue's state reset. This helps ensure
+        // that the queue's behavior is deterministic in both individual tests and in a test suite.
+        resetSyncBarrierTokens();
+    }
+
+    private void resetLegacy() {
+        synchronized (this) {
+            // This queue is already quitting, so we can't reset its state and continue using it.
+            if (mQuitting) {
+                return;
+            }
+            mIdleHandlers.clear();
+            removeAllFdRecords();
+            removeAllMessagesLocked();
+            // We reset the sync barrier tokens to reflect the queue's state reset. This helps
+            // ensure that the queue's behavior is deterministic in both individual tests and in a
+            // test suite.
+            resetSyncBarrierTokens();
+            nativeWake(mPtr);
+        }
+    }
+
+    private void removeAllFdRecords() {
+        if (mFileDescriptorRecords != null) {
+            while (mFileDescriptorRecords.size() > 0) {
+                removeOnFileDescriptorEventListener(mFileDescriptorRecords.valueAt(0).mDescriptor);
+            }
+        }
+    }
+
+    private void resetSyncBarrierTokens() {
+        mNextBarrierTokenAtomic.set(1);
+        mNextBarrierToken = 0;
+    }
+
     void quit(boolean safe) {
         if (!mQuitAllowed) {
             throw new IllegalStateException("Main thread not allowed to quit.");
