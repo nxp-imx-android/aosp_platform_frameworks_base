@@ -778,6 +778,8 @@ public class PipController implements ConfigurationChangeListener,
         @Override
         public void addPipExclusionBoundsChangeListener(Consumer<Rect> listener) {
             mMainExecutor.execute(() -> {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "addPipExclusionBoundsChangeListener: %s", listener);
                 mPipBoundsState.addPipExclusionBoundsChangeCallback(listener);
             });
         }
@@ -785,6 +787,8 @@ public class PipController implements ConfigurationChangeListener,
         @Override
         public void removePipExclusionBoundsChangeListener(Consumer<Rect> listener) {
             mMainExecutor.execute(() -> {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "removePipExclusionBoundsChangeListener: %s", listener);
                 mPipBoundsState.removePipExclusionBoundsChangeCallback(listener);
             });
         }
