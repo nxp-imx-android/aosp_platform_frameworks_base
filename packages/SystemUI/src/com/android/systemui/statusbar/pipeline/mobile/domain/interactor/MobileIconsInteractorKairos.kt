@@ -373,7 +373,7 @@ constructor(
         mobileConnectionsRepo.defaultDataSubRatConfig.map { it.alwaysShowCdmaRssi }
 
     override val isSingleCarrier: State<Boolean> =
-        mobileConnectionsRepo.subscriptions
+        filteredSubscriptions
             .map { it.size == 1 }
             .also {
                 onActivated {
