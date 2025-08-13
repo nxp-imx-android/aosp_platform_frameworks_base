@@ -98,8 +98,10 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> merupakan sebahagian daripada apl yang berikut: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Apl ini disekat. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya apl daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Apl ini tidak dikemaskinikan. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya kemaskinian daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="3282697661874336467">"&lt;p&gt;Apl ini tidak dipasang. Apl daripada pembangun yang tidak disahkan mungkin tidak selamat.&lt;/p&gt; &lt;p&gt;Sambungan Internet diperlukan untuk mengesahkan pembangun apl. Pastikan peranti anda disambungkan kepada Internet, kemudian cuba pasang apl sekali lagi. &lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="4652374962587535425">"&lt;p&gt;Apl ini tidak dikemaskinikan. Kemaskinian daripada pembangun yang tidak disahkan mungkin tidak selamat.&lt;/p&gt; &lt;p&gt;Sambungan Internet diperlukan untuk mengesahkan pembangun apl. Pastikan peranti anda disambungkan kepada Internet, kemudian cuba kemas kinikan apl sekali lagi. &lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
+    <skip />
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Terdapat masalah semasa mengesahkan pembangun apl ini. Apl daripada pembangun yang tidak disahkan mungkin tidak selamat, maka apl tidak dipasangkan.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Terdapat masalah semasa mengesahkan pembangun apl ini. Kemaskinian daripada pembangun yang tidak disahkan mungkin tidak selamat, maka apl tidak dikemaskinikan.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Apl ini telah disekat kerana terdapat masalah semasa mengesahkan pembangun apl. Untuk membantu anda memastikan peranti dan data anda kekal selamat, hanya apl daripada pembangun yang disahkan boleh dipasang.&lt;/p&gt; &lt;a href=&gt;Ketahui pengesahan pembangun dengan lebih lanjut&lt;/a&gt;"</string>
@@ -127,7 +129,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Pulihkan"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Nyahpasang kemaskinian"</string>
     <string name="button_settings" msgid="3837571366246132287">"Tetapan"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Klon <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

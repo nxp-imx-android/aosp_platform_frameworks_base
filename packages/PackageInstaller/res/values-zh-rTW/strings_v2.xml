@@ -100,9 +100,9 @@
     <skip />
     <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
     <skip />
@@ -135,7 +135,7 @@
     <string name="button_restore" msgid="4388317532933866637">"還原"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"解除安裝更新"</string>
     <string name="button_settings" msgid="3837571366246132287">"設定"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"「<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>」副本"</string>
 </resources>

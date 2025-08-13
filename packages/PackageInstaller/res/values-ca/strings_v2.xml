@@ -96,22 +96,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Per restaurar l\'aplicació, cal que instal·lis <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hi ha hagut un problema en intentar restaurar aquesta aplicació"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma part de l\'aplicació següent: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Aquesta aplicació s\'ha bloquejat. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar aplicacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar actualitzacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Hi ha hagut un problema en verificar el desenvolupador d\'aquesta aplicació. És possible que les aplicacions de desenvolupadors no verificats no siguin segures, de manera que l\'aplicació no s\'ha instal·lat.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Hi ha hagut un problema en verificar el desenvolupador d\'aquesta aplicació. És possible que les actualitzacions de desenvolupadors no verificats no siguin segures, de manera que l\'aplicació no s\'ha actualitzat.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Aquesta aplicació s\'ha bloquejat perquè hi ha hagut un problema en verificar el desenvolupador. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar aplicacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat perquè hi ha hagut un problema en verificar el desenvolupador. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar actualitzacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si l\'instal·les sense fer la verificació, tingues en compte que les aplicacions de desenvolupadors no verificats poden posar en perill el dispositiu i les teves dades."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si l\'actualitzes sense fer la verificació, tingues en compte que les actualitzacions de desenvolupadors no verificats poden posar en perill el teu dispositiu i les teves dades."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desenvolupador de l\'aplicació no verificat"</string>
@@ -135,7 +129,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Restaura"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstal·la les actualitzacions"</string>
     <string name="button_settings" msgid="3837571366246132287">"Configuració"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clon de <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>
