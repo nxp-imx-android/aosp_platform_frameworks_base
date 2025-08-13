@@ -287,7 +287,8 @@ abstract class WindowDecoration2<T>(
     private fun releaseCaptionController() {
         val wct = windowContainerTransactionSupplier()
         val t = surfaceControlTransactionSupplier()
-        captionController?.releaseViews(wct, t)
+        captionController?.close(wct, t)
+        captionController = null
         t.apply()
         taskOrganizer.applyTransaction(wct)
     }
@@ -523,7 +524,8 @@ abstract class WindowDecoration2<T>(
                 released = true
             }
 
-            released = released or (captionController?.releaseViews(wct, t) == true)
+            released = released or (captionController?.close(wct, t) == true)
+            captionController = null
 
             if (released) {
                 t.apply()
@@ -534,7 +536,6 @@ abstract class WindowDecoration2<T>(
         traceSection(traceTag = Trace.TRACE_TAG_WINDOW_MANAGER, name = "WindowDecoration2#close") {
             displayController.removeDisplayWindowListener(onDisplaysChangedListener)
             taskDragResizer?.close()
-            captionController?.close()
             val wct = windowContainerTransactionSupplier()
             releaseViews(wct)
             taskOrganizer.applyTransaction(wct)

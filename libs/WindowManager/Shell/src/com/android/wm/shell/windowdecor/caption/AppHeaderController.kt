@@ -725,17 +725,7 @@ class AppHeaderController(
         viewHolder.a11yAnnounceFocused()
     }
 
-    override fun releaseViews(
-        wct: WindowContainerTransaction,
-        t: SurfaceControl.Transaction,
-    ): Boolean {
-        closeHandleMenu()
-        closeManageWindowsMenu()
-        closeMaximizeMenu()
-        return super.releaseViews(wct, t)
-    }
-
-    override fun close() {
+    override fun close(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean {
         loadAppInfoJob?.cancel()
         closeHandleMenu()
         closeManageWindowsMenu()
@@ -744,6 +734,7 @@ class AppHeaderController(
         if (desktopState.canEnterDesktopMode && isEducationEnabled) {
             notifyNoCaption()
         }
+        return super.close(wct, t)
     }
 
     private companion object {
