@@ -1226,8 +1226,21 @@ final class AccessibilityController {
                 // Gets the top focused display Id and window token for supporting multi-display.
                 if (Flags.useInputReportedFocusForAccessibility()) {
                     topFocusedDisplayId = mAccessibilityController.mFocusedDisplay;
-                    topFocusedWindowToken = mAccessibilityController.mFocusedWindow.get(
+                    final IBinder focusedInputToken = mAccessibilityController.mFocusedWindow.get(
                             topFocusedDisplayId);
+                    if (focusedInputToken != null) {
+                        topFocusedWindowToken = focusedInputToken;
+                    } else {
+                        // If there is no focused target as reported by input, then fall back to the
+                        // currently focused window in WM (if it exists). This can happen if there
+                        // are other input windows that are focused that are neither WindowStates
+                        // nor EmbeddedWindows (ie. input consumers)
+                        final WindowState topFocusedWindowState =
+                                mService.mRoot.getDisplayContent(topFocusedDisplayId).mCurrentFocus;
+                        topFocusedWindowToken = topFocusedWindowState != null
+                                ? topFocusedWindowState.mClient.asBinder()
+                                : null;
+                    }
                 } else {
                     final WindowState topFocusedWindowState =
                             mService.mRoot.getTopFocusedDisplayContent().mCurrentFocus;
