@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
@@ -25,8 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.Flags.mediaControlsInCompose
-import com.android.systemui.keyguard.ui.composable.element.LockscreenUpperRegionElementProvider.Companion.LayoutType
-import com.android.systemui.keyguard.ui.composable.element.LockscreenUpperRegionElementProvider.Companion.getLayoutType
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.getLayoutType
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardMediaViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.composable.MediaCarousel

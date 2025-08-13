@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -58,7 +58,7 @@ constructor(
 
     private val smallClockRegionElement =
         object : LockscreenElement {
-            override val key = LockscreenElementKeys.Clock.Region.Small
+            override val key = LockscreenElementKeys.Region.Clock.Small
             override val context = this@ClockRegionElementProvider.context
 
             @Composable
@@ -112,7 +112,7 @@ constructor(
 
     private val largeClockRegionElement =
         object : LockscreenElement {
-            override val key = LockscreenElementKeys.Clock.Region.Large
+            override val key = LockscreenElementKeys.Region.Clock.Large
             override val context = this@ClockRegionElementProvider.context
 
             @Composable

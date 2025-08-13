@@ -16,10 +16,10 @@
 
 package com.android.systemui.plugins.keyguard
 
-import android.graphics.Point
-import android.graphics.PointF
-import android.graphics.Rect
-import android.graphics.RectF
+import android.graphics.Point as AndroidPoint
+import android.graphics.PointF as AndroidPointF
+import android.graphics.Rect as AndroidRect
+import android.graphics.RectF as AndroidRectF
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -44,7 +44,7 @@ value class VPointF(val data: ULong) {
     val y: Float
         get() = Float.fromBits(unpackY(data))
 
-    constructor(pt: PointF) : this(pt.x, pt.y)
+    constructor(pt: AndroidPointF) : this(pt.x, pt.y)
 
     constructor(value: Int) : this(value.toFloat())
 
@@ -58,7 +58,7 @@ value class VPointF(val data: ULong) {
 
     constructor(x: Float, y: Float) : this(pack(x.toBits(), y.toBits()))
 
-    fun toPointF() = PointF(x, y)
+    fun toPointF() = AndroidPointF(x, y)
 
     fun toLong(): Long = data.toLong()
 
@@ -136,10 +136,10 @@ value class VPointF(val data: ULong) {
 
         operator fun Float.div(value: VPointF) = VPointF(this / value.x, this / value.y)
 
-        val RectF.center: VPointF
+        val AndroidRectF.center: VPointF
             get() = VPointF(centerX(), centerY())
 
-        val RectF.size: VPointF
+        val AndroidRectF.size: VPointF
             get() = VPointF(width(), height())
     }
 }
@@ -156,7 +156,7 @@ value class VPoint(val data: ULong) {
 
     constructor(x: Int, y: Int) : this(pack(x, y))
 
-    fun toPoint() = Point(x, y)
+    fun toPoint() = AndroidPoint(x, y)
 
     fun toLong(): Long = data.toLong()
 
@@ -225,10 +225,10 @@ value class VPoint(val data: ULong) {
 
         operator fun Float.div(value: VPoint) = VPointF(this / value.x, this / value.y)
 
-        val Rect.center: VPoint
+        val AndroidRect.center: VPoint
             get() = VPoint(centerX(), centerY())
 
-        val Rect.size: VPoint
+        val AndroidRect.size: VPoint
             get() = VPoint(width(), height())
     }
 }

@@ -14,40 +14,77 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
+import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import androidx.annotation.IdRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
+import com.android.compose.modifiers.padding
 import com.android.systemui.animation.view.LaunchableImageView
 import com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordanceViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.KeyguardIndicationController
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
-class ShortcutElement
+class ShortcutElementProvider
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     private val viewModel: KeyguardQuickAffordancesCombinedViewModel,
     private val keyguardQuickAffordanceViewBinder: KeyguardQuickAffordanceViewBinder,
     private val indicationController: KeyguardIndicationController,
-) {
+) : LockscreenElementProvider {
+    override val elements by lazy { listOf(startButtonElement, endButtonElement) }
+
+    private val startButtonElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.Shortcuts.Start
+            override val context = this@ShortcutElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                Shortcut(isStart = true, applyPadding = false)
+            }
+        }
+
+    private val endButtonElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.Shortcuts.End
+            override val context = this@ShortcutElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                Shortcut(isStart = false, applyPadding = false)
+            }
+        }
 
     /**
      * Renders a single lockscreen shortcut.
@@ -63,27 +100,14 @@ constructor(
         onTopChanged: ((Float) -> Unit)? = null,
         modifier: Modifier = Modifier,
     ) {
-        Element(
-            key = if (isStart) StartButtonElementKey else EndButtonElementKey,
-            modifier = modifier,
-        ) {
-            Shortcut(
-                viewId = if (isStart) R.id.start_button else R.id.end_button,
-                viewModel = if (isStart) viewModel.startButton else viewModel.endButton,
-                transitionAlpha = viewModel.transitionAlpha,
-                indicationController = indicationController,
-                binder = keyguardQuickAffordanceViewBinder,
-                modifier =
-                    (if (applyPadding) {
-                            Modifier.shortcutPadding()
-                        } else {
-                            Modifier
-                        })
-                        .onGloballyPositioned { coordinates ->
-                            onTopChanged?.invoke(coordinates.boundsInWindow().top)
-                        },
-            )
-        }
+        Shortcut(
+            viewId = if (isStart) R.id.start_button else R.id.end_button,
+            viewModel = if (isStart) viewModel.startButton else viewModel.endButton,
+            transitionAlpha = viewModel.transitionAlpha,
+            indicationController = indicationController,
+            binder = keyguardQuickAffordanceViewBinder,
+            modifier = if (applyPadding) modifier.shortcutPadding() else modifier,
+        )
     }
 
     @Composable
@@ -153,6 +177,3 @@ constructor(
             .padding(bottom = dimensionResource(R.dimen.keyguard_affordance_vertical_offset))
     }
 }
-
-private val StartButtonElementKey = ElementKey("StartButton")
-private val EndButtonElementKey = ElementKey("EndButton")

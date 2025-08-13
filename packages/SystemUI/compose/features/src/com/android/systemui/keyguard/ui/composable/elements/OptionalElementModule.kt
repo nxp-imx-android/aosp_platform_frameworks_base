@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
 import dagger.BindsOptionalOf
 import dagger.Module
@@ -25,5 +25,6 @@ import dagger.Module
  */
 @Module
 interface OptionalElementModule {
-    @BindsOptionalOf fun ambientIndicationElement(): AmbientIndicationElement
+    // TODO(b/432451019): This would be better as a list of OEM element providers
+    @BindsOptionalOf fun ambientIndicationElementProvider(): AmbientIndicationElementProvider
 }

@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.android.compose.animation.scene.ContentScope
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 
 /** Defines interface for classes that can render the ambient indication area. */
-interface AmbientIndicationElement {
-    @Composable fun ContentScope.AmbientIndication(modifier: Modifier)
-}
+interface AmbientIndicationElementProvider : LockscreenElementProvider

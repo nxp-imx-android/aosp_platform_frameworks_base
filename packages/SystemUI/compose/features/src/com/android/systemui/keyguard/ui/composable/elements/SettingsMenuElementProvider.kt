@@ -14,42 +14,66 @@
  * limitations under the License.
  */
 
-package com.android.systemui.keyguard.ui.composable.element
+package com.android.systemui.keyguard.ui.composable.elements
 
+import android.content.Context
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
+import com.android.compose.animation.scene.ContentScope
+import com.android.compose.modifiers.padding
 import com.android.systemui.keyguard.ui.binder.KeyguardSettingsViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSettingsMenuViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.VibratorHelper
 import javax.inject.Inject
+import kotlin.collections.List
 import kotlinx.coroutines.DisposableHandle
 
-class SettingsMenuElement
+class SettingsMenuElementProvider
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     private val viewModel: KeyguardSettingsMenuViewModel,
     private val touchHandlingViewModelFactory: KeyguardTouchHandlingViewModel.Factory,
     private val vibratorHelper: VibratorHelper,
     private val activityStarter: ActivityStarter,
-) {
+) : LockscreenElementProvider {
+    override val elements: List<LockscreenElement> by lazy { listOf(settingsMenuElement) }
+
+    private val settingsMenuElement =
+        object : LockscreenElement {
+            override val key = LockscreenElementKeys.SettingsMenu
+            override val context = this@SettingsMenuElementProvider.context
+
+            @Composable
+            override fun ContentScope.LockscreenElement(
+                factory: LockscreenElementFactory,
+                context: LockscreenElementContext,
+            ) {
+                SettingsMenu()
+            }
+        }
 
     @Composable
     @SuppressWarnings("InflateParams") // null is passed into the inflate call, on purpose.
-    fun SettingsMenu(onPlaced: (Rect?) -> Unit, modifier: Modifier = Modifier) {
+    fun SettingsMenu(modifier: Modifier = Modifier) {
         val (disposableHandle, setDisposableHandle) =
             remember { mutableStateOf<DisposableHandle?>(null) }
         AndroidView(
@@ -81,16 +105,7 @@ constructor(
                     .padding(
                         horizontal =
                             dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
-                    )
-                    .onPlaced { coordinates ->
-                        onPlaced(
-                            if (!coordinates.size.toSize().isEmpty()) {
-                                Rect(coordinates.positionInParent(), coordinates.size.toSize())
-                            } else {
-                                null
-                            }
-                        )
-                    },
+                    ),
         )
     }
 }

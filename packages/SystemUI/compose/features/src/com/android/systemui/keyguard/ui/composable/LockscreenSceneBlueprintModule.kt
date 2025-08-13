@@ -17,7 +17,7 @@
 package com.android.systemui.keyguard.ui.composable
 
 import com.android.systemui.keyguard.ui.composable.blueprint.CommunalBlueprintModule
-import com.android.systemui.keyguard.ui.composable.element.OptionalElementModule
+import com.android.systemui.keyguard.ui.composable.elements.OptionalElementModule
 import dagger.Module
 
 @Module(includes = [CommunalBlueprintModule::class, OptionalElementModule::class])

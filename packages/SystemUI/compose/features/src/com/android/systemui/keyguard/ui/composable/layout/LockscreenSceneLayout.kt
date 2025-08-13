@@ -16,18 +16,9 @@
 
 package com.android.systemui.keyguard.ui.composable.layout
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.VerticalAlignmentLine
@@ -35,26 +26,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastRoundToInt
-import com.android.compose.modifiers.padding
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.math.max
 import kotlin.math.min
-
-/**
- * Models the UI state of the [LockscreenSceneLayout]. Properties should be backed by snapshot
- * state.
- */
-@Immutable
-interface LockscreenLayoutViewModel {
-    /** Whether the ambient indication UI should currently be showing. */
-    val isAmbientIndicationVisible: Boolean
-    /** Amount of horizontal translation that should be applied to elements in the scene. */
-    val unfoldTranslations: UnfoldTranslations
-}
 
 @Immutable
 interface UnfoldTranslations {
@@ -126,26 +103,15 @@ object LockIconAlignmentLines {
  * Takes care of figuring out the correct layout configuration based on the device form factor,
  * orientation, and the current UI state.
  *
- * Notes about some non-obvious parameters:
- * - [lockIcon] is drawn according to the [LockIconAlignmentLines] that it must supply. The layout
+ * Notes about some non-obvious behaviors:
+ * - [LockIcon] is drawn according to the [LockIconAlignmentLines] that it must supply. The layout
  *   logic uses those alignment lines to make sure other elements don't overlap with the lock icon
  *   as it may be drawn on top of the UDFPS (under display fingerprint sensor)
- * - the [ambientIndication] is drawn between the start-side and end-side shortcuts, showing ambient
- *   information like the song that's currently being detected
- * - the [bottomIndication] is drawn between the start-side and end-side shortcuts, along the bottom
  */
 @Composable
 fun LockscreenSceneLayout(
-    viewModel: LockscreenLayoutViewModel,
     elementFactory: LockscreenElementFactory,
     elementContext: LockscreenElementContext,
-    statusBar: @Composable () -> Unit,
-    lockIcon: @Composable () -> Unit,
-    startShortcut: @Composable () -> Unit,
-    ambientIndication: @Composable () -> Unit,
-    bottomIndication: @Composable () -> Unit,
-    endShortcut: @Composable () -> Unit,
-    settingsMenu: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -154,28 +120,11 @@ fun LockscreenSceneLayout(
 
     Layout(
         content = {
-            Box(
-                Modifier.padding(
-                    horizontal = { viewModel.unfoldTranslations.start.fastRoundToInt() }
-                )
-            ) {
-                statusBar()
-            }
-
-            elementFactory.lockscreenElement(LockscreenElementKeys.UpperRegion, elementContext)
-
-            BottomArea(
-                startShortcut = startShortcut,
-                isAmbientIndicationVisible = viewModel.isAmbientIndicationVisible,
-                ambientIndication = ambientIndication,
-                bottomIndication = bottomIndication,
-                endShortcut = endShortcut,
-                unfoldTranslations = viewModel.unfoldTranslations,
-                modifier = Modifier.navigationBarsPadding(),
-            )
-
-            lockIcon()
-            settingsMenu()
+            elementFactory.lockscreenElement(LockscreenElementKeys.StatusBar, elementContext)
+            elementFactory.lockscreenElement(LockscreenElementKeys.Region.Upper, elementContext)
+            elementFactory.lockscreenElement(LockscreenElementKeys.Region.Lower, elementContext)
+            elementFactory.lockscreenElement(LockscreenElementKeys.LockIcon, elementContext)
+            elementFactory.lockscreenElement(LockscreenElementKeys.SettingsMenu, elementContext)
         },
         modifier = modifier,
     ) { measurables, constraints ->
@@ -229,36 +178,6 @@ fun LockscreenSceneLayout(
                 x = (constraints.maxWidth - settingsMenuPleaceable.measuredWidth) / 2,
                 y = constraints.maxHeight - settingsMenuPleaceable.measuredHeight,
             )
-        }
-    }
-}
-
-/** Draws the bottom area of the layout. */
-@Composable
-private fun BottomArea(
-    startShortcut: @Composable () -> Unit,
-    isAmbientIndicationVisible: Boolean,
-    ambientIndication: @Composable () -> Unit,
-    bottomIndication: @Composable () -> Unit,
-    endShortcut: @Composable () -> Unit,
-    unfoldTranslations: UnfoldTranslations,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
-    ) {
-        if (isAmbientIndicationVisible) {
-            ambientIndication()
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Box(Modifier.graphicsLayer { translationX = unfoldTranslations.start }) {
-                startShortcut()
-            }
-            Box(Modifier.weight(1f)) { bottomIndication() }
-            Box(Modifier.graphicsLayer { translationX = unfoldTranslations.end }) { endShortcut() }
         }
     }
 }
