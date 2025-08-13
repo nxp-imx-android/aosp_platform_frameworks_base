@@ -21,6 +21,7 @@ import android.app.ActivityTaskManager;
 import android.app.ApplicationStartInfo;
 import android.app.ApplicationErrorReport;
 import android.app.ApplicationExitInfo;
+import android.app.BindUpdateInfo;
 import android.app.ContentProviderHolder;
 import android.app.GrantedUriPermission;
 import android.app.IApplicationStartInfoCompleteListener;
@@ -220,6 +221,7 @@ interface IActivityManager {
             in List<ContentProviderHolder> providers);
     boolean refContentProvider(in IBinder connection, int stableDelta, int unstableDelta);
     PendingIntent getRunningServiceControlPanel(in ComponentName service);
+    List<ActivityManager.ConnectionInfo> getRunningServiceConnections(in ComponentName service);
     ComponentName startService(in IApplicationThread caller, in Intent service,
             in String resolvedType, boolean requireForeground, in String callingPackage,
             in String callingFeatureId, int userId);
@@ -235,6 +237,7 @@ interface IActivityManager {
             in String resolvedType, in IServiceConnection connection, long flags,
             in String instanceName, in String callingPackage, int userId);
     void updateServiceGroup(in IServiceConnection connection, int group, int importance);
+    void updateServiceBindings(in List<BindUpdateInfo> updates);
     @UnsupportedAppUsage
     boolean unbindService(in IServiceConnection connection);
     void publishService(in IBinder token, in IBinder bindToken, in IBinder service);

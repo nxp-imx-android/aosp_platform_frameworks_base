@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 
 import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.util.Slog;
 
 import com.android.server.am.OomAdjuster;
 import com.android.server.am.OomAdjusterImpl;
@@ -29,8 +30,10 @@ import com.android.server.wm.ActivityServiceConnectionsHolder;
  */
 @RavenwoodKeepWholeClass
 public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connection {
+    private static final String TAG = "ConnectionRecordInternal";
+
     /** The service binding operation. */
-    private final long mFlags;
+    private long mFlags;
     /** Whether there are currently ongoing transactions over this service connection. */
     private boolean mOngoingCalls;
 
@@ -79,6 +82,24 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     /** Checks if all of the specific flag (long) are NOT set for this connection. */
     public boolean notHasFlag(final long flag) {
         return !hasFlag(flag);
+    }
+
+    /**
+     * Updates flags to match the new set, only adding or removing those
+     * within Context.BIND_UPDATEABLE_FLAGS.
+     *
+     * @return The combined set of flags that were modified.
+     */
+    public boolean updateFlags(final long newFlags) {
+        final long updatedFlags = mFlags ^ newFlags;
+        if (updatedFlags != (updatedFlags & Context.BIND_UPDATEABLE_FLAGS)) {
+            Slog.wtf(TAG, "Attempt to update flags outside of BIND_UPDATEABLE_FLAGS with "
+                            + updatedFlags);
+            return false;
+        }
+
+        mFlags = newFlags;
+        return updatedFlags != 0;
     }
 
     public boolean getOngoingCalls() {

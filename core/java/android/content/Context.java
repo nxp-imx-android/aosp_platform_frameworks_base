@@ -20,6 +20,7 @@ import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANA
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE_MODULE;
 import static android.app.userrecovery.flags.Flags.FLAG_ENABLE_USER_RECOVERY_MANAGER;
 import static android.content.flags.Flags.FLAG_ENABLE_BIND_PACKAGE_ISOLATED_PROCESS;
+import static android.content.flags.Flags.FLAG_ENABLE_UPDATE_SERVICE_BINDINGS;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 
 import android.annotation.AttrRes;
@@ -128,6 +129,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -781,6 +783,41 @@ public abstract class Context {
             Context.BIND_ALLOW_OOM_MANAGEMENT | Context.BIND_WAIVE_PRIORITY
                     | Context.BIND_NOT_PERCEPTIBLE | Context.BIND_NOT_VISIBLE;
 
+    /**
+     * These bind flags may be updated (i.e. added or removed) for an existing
+     * connection.
+     * @hide
+     */
+    public static final long BIND_UPDATEABLE_FLAGS =
+            Context.BIND_NOT_FOREGROUND
+                    | Context.BIND_ABOVE_CLIENT
+                    | Context.BIND_ALLOW_OOM_MANAGEMENT
+                    | Context.BIND_WAIVE_PRIORITY
+                    | Context.BIND_IMPORTANT
+                    | Context.BIND_ADJUST_WITH_ACTIVITY
+                    | Context.BIND_NOT_PERCEPTIBLE;
+
+    /**
+     * Gets the list of bind flags that may be updated (i.e. added or removed) for an
+     * existing connection.
+     * Includes:
+     * <ul>
+     *     <li>{@link #BIND_NOT_FOREGROUND}</li>
+     *     <li>{@link #BIND_ABOVE_CLIENT}</li>
+     *     <li>{@link #BIND_ALLOW_OOM_MANAGEMENT}</li>
+     *     <li>{@link #BIND_WAIVE_PRIORITY}</li>
+     *     <li>{@link #BIND_IMPORTANT}</li>
+     *     <li>{@link #BIND_ADJUST_WITH_ACTIVITY}</li>
+     *     <li>{@link #BIND_NOT_PERCEPTIBLE}</li>
+     * </ul>
+     * @return The set of flags that may be updated.
+     */
+    @NonNull
+    @FlaggedApi(FLAG_ENABLE_UPDATE_SERVICE_BINDINGS)
+    public BindServiceFlags getUpdateableFlags() {
+        return BindServiceFlags.of(BIND_UPDATEABLE_FLAGS);
+    }
+
     /** @hide */
     @IntDef(flag = true, prefix = { "RECEIVER_VISIBLE" }, value = {
             RECEIVER_VISIBLE_TO_INSTANT_APPS, RECEIVER_EXPORTED, RECEIVER_NOT_EXPORTED,
@@ -847,6 +884,124 @@ public abstract class Context {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PermissionRequestState {}
+
+    /**
+     * Interface for a single unbind or rebind request within a batch update
+     * operation.
+     */
+    @FlaggedApi(FLAG_ENABLE_UPDATE_SERVICE_BINDINGS)
+    public static final class UpdateBindingParams {
+        private ServiceConnection mConnection;
+        private boolean mUnbind;
+        private BindServiceFlags mFlags;
+
+        private UpdateBindingParams(Builder builder) {
+            mConnection = builder.mConnection;
+            mUnbind = builder.mUnbind;
+            mFlags = builder.mFlags;
+        }
+
+        /**
+         * Modify the request to unbind the connection.
+         */
+        public void setUnbind() {
+            mUnbind = true;
+            mFlags = null;
+        }
+
+        /**
+         * Modify the request to rebind the connection with the specified flags
+         * which will completely replace the existing set of flags.
+         * Only flags returned from {@link #getUpdateableFlags} may be added
+         * or removed.
+         * Any invalid additions or removals will trigger an
+         * {@link IllegalArgumentException} when the update call is made.
+         *
+         * @param flags The BindServiceFlags for the rebind request.
+         */
+        public void setRebind(@NonNull BindServiceFlags flags) {
+            mUnbind = false;
+            mFlags = Objects.requireNonNull(flags);
+        }
+
+        /**
+         * @return Returns connection being updated.
+         */
+        @NonNull
+        public ServiceConnection getConnection() {
+            return mConnection;
+        }
+
+        /**
+         * @return Returns if the request is an unbind request.
+         */
+        public boolean isUnbind() {
+            return mUnbind;
+        }
+
+        /**
+         * @return Returns if the request is an rebind request.
+         */
+        public boolean isRebind() {
+            return !mUnbind;
+        }
+
+        /**
+         * @return Returns updated bind service flags for a rebind request.
+         */
+        @NonNull
+        public BindServiceFlags getFlags() {
+            return mFlags;
+        }
+
+        /**
+         * Builder class for a {@link UpdateBindingParams}
+         */
+        public static final class Builder {
+            private final ServiceConnection mConnection;
+            private boolean mUnbind;
+            private BindServiceFlags mFlags;
+
+            /**
+             * Create a new builder for an unbind request of the connection.
+             *
+             * @param connection The ServiceConnection this update applies to.
+             */
+            public Builder(@NonNull ServiceConnection connection) {
+                mConnection = Objects.requireNonNull(connection);
+                mUnbind = true;
+                mFlags = null;
+            }
+
+            /**
+             * Create a new builder for a rebind request of the connection
+             * with the specified flags which will completely replace the
+             * existing set of flags.
+             * Only flags returned from {@link #getUpdateableFlags} may be added
+             * or removed.
+             * Any invalid additions or removals will trigger an
+             * {@link IllegalArgumentException} when the update call is made.
+             *
+             * @param connection The ServiceConnection this update applies to.
+             * @param flags The BindServiceFlags for the rebind request.
+             */
+            public Builder(@NonNull ServiceConnection connection, @NonNull BindServiceFlags flags) {
+                mConnection = Objects.requireNonNull(connection);
+                mUnbind = false;
+                mFlags = Objects.requireNonNull(flags);
+            }
+
+            /**
+             * Creates a new instance.
+             *
+             * @return The new instance.
+             */
+            @NonNull
+            public UpdateBindingParams build() {
+                return new UpdateBindingParams(this);
+            }
+        }
+    }
 
     /**
      * Returns an AssetManager instance for the application's package.
@@ -4282,6 +4437,21 @@ public abstract class Context {
      */
     public void updateServiceGroup(@NonNull ServiceConnection conn, int group,
             int importance) {
+        throw new RuntimeException("Not implemented. Must override in a subclass.");
+    }
+
+    /**
+     * Perform a batch update of existing bindings.  Existing bindings can
+     * be rebound with an updated set of flags, or unbound.
+     * Only flags returned from {@link #getUpdateableFlags} may be added
+     * or removed.
+     *
+     * @param params The list of bindings to be updated.
+     * @throws IllegalArgumentException Any invalid additions or removals
+     * will trigger an exception.
+     */
+    @FlaggedApi(FLAG_ENABLE_UPDATE_SERVICE_BINDINGS)
+    public void updateServiceBindings(@NonNull java.util.List<UpdateBindingParams> params) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
