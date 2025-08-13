@@ -272,6 +272,16 @@ flag {
 }
 
 flag {
+    name: "enable_compat_ui_desktop_mode_synchronization_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables synchronization logic so that app-compat UI is properly synchronized with desktop mode state"
+    bug: "436418744"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_compat_ui_visibility_status"
     namespace: "lse_desktop_experience"
     description: "Enables the tracking of the status for compat ui elements."

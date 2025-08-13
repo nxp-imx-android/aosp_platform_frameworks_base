@@ -86,6 +86,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX),
     ENABLE_CLEAR_REUSABLE_SCVH_ON_RELEASE(Flags::clearReusableScvhOnRelease, false,
             Flags.FLAG_CLEAR_REUSABLE_SCVH_ON_RELEASE),
+    ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX(
+            Flags::enableCompatUiDesktopModeSynchronizationBugfix, false,
+            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX),
     ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true,
             Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_DND),
     ENABLE_CONNECTED_DISPLAYS_PIP(Flags::enableConnectedDisplaysPip, true,
