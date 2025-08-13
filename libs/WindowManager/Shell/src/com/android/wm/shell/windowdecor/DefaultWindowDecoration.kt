@@ -147,6 +147,8 @@ constructor(
         surfaceControlSupplier,
         taskOrganizer,
         handler,
+        mainScope,
+        transitions,
     ) {
     private var appToWebRepository =
         AppToWebRepository(userContext, taskInfo.taskId, assistContentRequester, genericLinksParser)

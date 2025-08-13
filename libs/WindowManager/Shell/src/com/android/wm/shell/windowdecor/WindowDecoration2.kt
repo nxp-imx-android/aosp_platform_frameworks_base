@@ -35,6 +35,7 @@ import android.view.SurfaceControlViewHost
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager.LayoutParams
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowlessWindowManager
 import android.window.DesktopExperienceFlags
 import android.window.TaskConstants
@@ -45,9 +46,12 @@ import com.android.wm.shell.common.BoxShadowHelper
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.caption.CaptionController
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isVisible
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Manages a container surface and a windowless window to show window decorations. Responsible to
@@ -72,6 +76,8 @@ abstract class WindowDecoration2<T>(
     private val surfaceControlSupplier: () -> SurfaceControl,
     private val taskOrganizer: ShellTaskOrganizer,
     @ShellMainThread private val handler: Handler,
+    @ShellMainThread private val mainScope: CoroutineScope,
+    private val transitions: Transitions,
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
         SurfaceControl.Builder()
     },
@@ -289,7 +295,15 @@ abstract class WindowDecoration2<T>(
         val t = surfaceControlTransactionSupplier()
         captionController?.releaseViews(wct, t)
         t.apply()
-        taskOrganizer.applyTransaction(wct)
+        if (!wct.isEmpty) {
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue) {
+                mainScope.launch {
+                    transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+                }
+            } else {
+                taskOrganizer.applyTransaction(wct)
+            }
+        }
     }
 
     private fun updateTaskSurface(
@@ -537,7 +551,15 @@ abstract class WindowDecoration2<T>(
             captionController?.close()
             val wct = windowContainerTransactionSupplier()
             releaseViews(wct)
-            taskOrganizer.applyTransaction(wct)
+            if (!wct.isEmpty) {
+                if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue) {
+                    mainScope.launch {
+                        transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+                    }
+                } else {
+                    taskOrganizer.applyTransaction(wct)
+                }
+            }
             taskSurface.release()
         }
 
