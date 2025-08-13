@@ -5807,9 +5807,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @return Whether this windowing mode is supported.
      */
     boolean isWindowingModeSupported(@WindowConfiguration.WindowingMode int windowingMode) {
-        if (!android.companion.virtualdevice.flags.Flags.gwpcAwareWindowingMode()) {
-            return true;
-        }
         if (mDwpcHelper != null && !mDwpcHelper.isWindowingModeSupported(windowingMode)) {
             return false;
         }
