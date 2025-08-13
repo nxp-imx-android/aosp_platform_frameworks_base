@@ -111,10 +111,6 @@ constructor(
             },
         ) {
             Column {
-                if (isFullWidth) {
-                    // TODO(b/432451019): Integrate with smallClock for correct transition
-                }
-
                 if (viewModel.showMedia) {
                     Element(
                         key = Media.Elements.mediaCarousel,
