@@ -385,6 +385,14 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final boolean isOnlyTranslucent = isOnlyTranslucent(info);
         final boolean isActivityLevel = isActivityLevelOnly(info);
 
+        // Don't create a background color layer if there is only one change in the transition.
+        // This is to avoid incorrectly occluding other layers when a transition only contains a
+        // single "close" change, for example. With only one change, there are no other layers
+        // within the transition to interact with, so a background is unnecessary.
+        final boolean allowBackground =
+                !com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
+                        || info.getChanges().size() > 1;
+
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
             if (change.hasAllFlags(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY
@@ -514,7 +522,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     final boolean isTranslucent = (change.getFlags() & FLAG_TRANSLUCENT) != 0;
                     if (!isTranslucent && TransitionUtil.isOpenOrCloseMode(mode)
                             && TransitionUtil.isOpenOrCloseMode(info.getType())
-                            && wallpaperTransit == WALLPAPER_TRANSITION_NONE) {
+                            && wallpaperTransit == WALLPAPER_TRANSITION_NONE
+                            && allowBackground) {
                         // Use the overview background as the background for the animation
                         final Context uiContext = ActivityThread.currentActivityThread()
                                 .getSystemUiContext();
@@ -569,8 +578,10 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     cornerRadius = 0;
                 }
 
-                backgroundColorForTransition = getTransitionBackgroundColorIfSet(change, a,
-                        backgroundColorForTransition);
+                if (allowBackground) {
+                    backgroundColorForTransition = getTransitionBackgroundColorIfSet(change, a,
+                            backgroundColorForTransition);
+                }
 
                 final Rect clipRect = TransitionUtil.isClosingType(mode)
                         ? new Rect(mRotator.getEndBoundsInStartRotation(change))
