@@ -820,7 +820,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             proc = mProcessRecordProcStateNodes.poll();
         }
 
-        // 2st pass, iterate all nodes in order of procState importance.
+        // 2nd pass, iterate all nodes in order of adj importance.
         proc = mProcessRecordAdjNodes.poll();
         while (proc != null) {
             mTmpOomAdjusterArgs.mApp = proc;
