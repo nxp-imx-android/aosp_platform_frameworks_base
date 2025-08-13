@@ -16,6 +16,7 @@
 
 package com.android.systemui.screenshot
 
+import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Trace
 import android.util.Log
@@ -83,6 +84,7 @@ class TakeScreenshotExecutorImpl
 constructor(
     private val interactiveScreenshotHandlerFactory: InteractiveScreenshotHandler.Factory,
     private val displayRepository: DisplayRepository,
+    private val displayManager: DisplayManager,
     @Application private val mainScope: CoroutineScope,
     private val screenshotRequestProcessor: ScreenshotRequestProcessor,
     private val uiEventLogger: UiEventLogger,
@@ -213,23 +215,23 @@ constructor(
             // was shown, if available.
             ScreenshotSource.SCREENSHOT_OVERVIEW,
             ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI ->
-                displayRepository.getDisplay(screenshotRequest.displayId)
-                    ?: displayRepository.getDisplay(Display.DEFAULT_DISPLAY)
+                displayManager.getDisplay(screenshotRequest.displayId)
+                    ?: displayManager.getDisplay(Display.DEFAULT_DISPLAY)
                     ?: error("Can't find default display")
 
             // Key chord and vendor gesture occur on the device itself, so screenshot the device's
             // display
             ScreenshotSource.SCREENSHOT_KEY_CHORD,
             ScreenshotSource.SCREENSHOT_VENDOR_GESTURE ->
-                displayRepository.getDisplay(Display.DEFAULT_DISPLAY)
+                displayManager.getDisplay(Display.DEFAULT_DISPLAY)
                     ?: error("Can't find default display")
 
             // All other invocations use the focused display
             else -> {
                 val focusedDisplay = getFocusedDisplay()
                 Log.i(TAG, "Focused display ID is $focusedDisplay")
-                displayRepository.getDisplay(focusedDisplay)
-                    ?: displayRepository.getDisplay(Display.DEFAULT_DISPLAY)
+                displayManager.getDisplay(focusedDisplay)
+                    ?: displayManager.getDisplay(Display.DEFAULT_DISPLAY)
                     ?: error("Can't find default display")
             }
         }

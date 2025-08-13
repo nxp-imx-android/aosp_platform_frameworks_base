@@ -2,6 +2,7 @@ package com.android.systemui.screenshot
 
 import android.content.ComponentName
 import android.graphics.Bitmap
+import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -54,6 +55,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     private val controllerFactory = mock<InteractiveScreenshotHandler.Factory>()
     private val callback = mock<TakeScreenshotService.RequestCallback>()
     private val notificationControllerFactory = mock<ScreenshotNotificationsController.Factory>()
+    private val displayManager = mock<DisplayManager>()
 
     private val fakeDisplayRepository = FakeDisplayRepository()
     private val requestProcessor = FakeRequestProcessor()
@@ -72,6 +74,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         TakeScreenshotExecutorImpl(
             controllerFactory,
             fakeDisplayRepository,
+            displayManager,
             testScope,
             requestProcessor,
             eventLogger,
@@ -728,6 +731,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
 
     private suspend fun TestScope.setDisplays(vararg displays: Display) {
         fakeDisplayRepository.emit(displays.toSet())
+        displays.forEach { whenever(displayManager.getDisplay(it.displayId)).thenReturn(it) }
         runCurrent()
     }
 
