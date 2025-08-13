@@ -1178,6 +1178,15 @@
     <!-- Indicates post recording flow to use flat bottom bar to save vertical space -->
     <bool name="screen_record_post_recording_flat_bottom_bar">false</bool>
 
+    <!-- List of allowed tiles for headless system user's quick settings.
+
+         Some example values are 'alarm', 'internet', 'bt' (bluetooth),
+         as defined by QSTile.getTileSpec().
+    -->
+    <string-array name="hsu_allow_list_qs_tiles" translatable="false">
+        <!-- default empty and all tiles will be allowed -->
+    </string-array>
+
     <!-- Indicates whether the blurred wallpaper is supported -->
     <bool name="config_supportBlurredWallpaper">true</bool>
 </resources>

@@ -339,6 +339,7 @@ constructor(
         NEW_TILE_NOT_AVAILABLE("New tile not available"),
         EXISTING_TILE_NOT_AVAILABLE("Existing tile not available"),
         TILE_NOT_PRESENT_IN_NEW_USER("Tile not present in new user"),
+        TILE_NOT_ALLOWED_FOR_HSU("Tile not allowed for headless system user"),
     }
 
     enum class RestorePreprocessorStep {

@@ -22,6 +22,7 @@ import android.content.Intent
 import android.os.UserHandle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.Flags.resetTilesRemovesCustomTiles
 import com.android.systemui.ProtoDumpable
 import com.android.systemui.dagger.SysUISingleton
@@ -36,6 +37,7 @@ import com.android.systemui.qs.external.CustomTileStatePersister
 import com.android.systemui.qs.external.TileLifecycleManager
 import com.android.systemui.qs.external.TileServiceKey
 import com.android.systemui.qs.pipeline.data.repository.CustomTileAddedRepository
+import com.android.systemui.qs.pipeline.data.repository.HsuTilesRepository
 import com.android.systemui.qs.pipeline.data.repository.InstalledTilesComponentRepository
 import com.android.systemui.qs.pipeline.data.repository.MinimumTilesRepository
 import com.android.systemui.qs.pipeline.data.repository.TileSpecRepository
@@ -48,6 +50,7 @@ import com.android.systemui.qs.toProto
 import com.android.systemui.retail.data.repository.RetailModeRepository
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.util.kotlin.pairwiseBy
 import dagger.Lazy
 import java.io.PrintWriter
@@ -152,6 +155,8 @@ constructor(
     private val customTileAddedRepository: CustomTileAddedRepository,
     private val tileLifecycleManagerFactory: TileLifecycleManager.Factory,
     private val userTracker: UserTracker,
+    private val hsum: HeadlessSystemUserMode,
+    private val hsuTilesRepository: HsuTilesRepository,
     @Main private val mainDispatcher: CoroutineDispatcher,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     @Application private val scope: CoroutineScope,
@@ -369,6 +374,14 @@ constructor(
     }
 
     private suspend fun createTile(spec: TileSpec): QSTile? {
+        if (
+            hsuQsChanges() &&
+                hsum.isHeadlessSystemUser(userRepository.getSelectedUserInfo().id) &&
+                !hsuTilesRepository.isTileAllowed(spec)
+        ) {
+            return null
+        }
+
         val tile = withContext(mainDispatcher) { createTileSync(spec) }
         if (tile == null) {
             logger.logTileNotFoundInFactory(spec)
@@ -397,9 +410,18 @@ constructor(
             is TileOrNotInstalled.NotInstalled -> null
             is TileOrNotInstalled.Tile -> {
                 val qsTile = tileOrNotInstalled.tile
+
                 when {
                     qsTile.isDestroyed -> {
                         logger.logTileDestroyedIgnored(tileSpec)
+                        null
+                    }
+                    !hsuTilesRepository.isTileAllowed(tileSpec) -> {
+                        logger.logTileDestroyed(
+                            tileSpec,
+                            QSPipelineLogger.TileDestroyedReason.TILE_NOT_ALLOWED_FOR_HSU,
+                        )
+                        qsTile.destroy()
                         null
                     }
                     !qsTile.isAvailable -> {

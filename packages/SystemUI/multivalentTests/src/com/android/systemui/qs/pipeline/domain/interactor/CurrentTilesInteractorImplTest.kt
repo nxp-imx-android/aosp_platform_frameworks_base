@@ -26,12 +26,14 @@ import android.service.quicksettings.Tile
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
+import com.android.systemui.Flags.FLAG_HSU_QS_CHANGES
 import com.android.systemui.Flags.FLAG_QS_NEW_TILES
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dump.nano.SystemUIProtoDump
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.qs.QSTile
 import com.android.systemui.plugins.qs.QSTile.BooleanState
@@ -55,10 +57,12 @@ import com.android.systemui.qs.pipeline.shared.logging.qsLogger
 import com.android.systemui.qs.qsTileFactory
 import com.android.systemui.qs.tiles.base.ui.model.newQSTileFactory
 import com.android.systemui.qs.toProto
+import com.android.systemui.res.R
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.data.repository.userRepository
+import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
@@ -811,6 +815,52 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
             }
         }
 
+    @EnableFlags(FLAG_HSU_QS_CHANGES)
+    @Test
+    fun createAllowedTilesForHeadlessSystemUser() =
+        with(kosmos) {
+            testScope.runTest(USER_INFO_0) {
+                val expectedTile = TileSpec.create("b")
+                fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
+                val allowList = arrayOf("b")
+                overrideAllowListResource(allowList)
+                val tiles by collectLastValue(underTest.currentTiles)
+                val specs = listOf(TileSpec.create("a"), TileSpec.create("b"), TileSpec.create("d"))
+                tileSpecRepository.setTiles(USER_INFO_0.id, specs)
+
+                assertThat(tiles).hasSize(1)
+                assertThat(tiles!![0].spec).isEqualTo(expectedTile)
+            }
+        }
+
+    @EnableFlags(FLAG_HSU_QS_CHANGES)
+    @Test
+    fun userChangeToHeadlessSystemUser_notAllowedTileDestroyed() =
+        with(kosmos) {
+            testScope.runTest(USER_INFO_1) {
+                val tiles by collectLastValue(underTest.currentTiles)
+                val notAllowedTileForHsum = TileSpec.create("b")
+                val specs1 = listOf(notAllowedTileForHsum)
+                fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
+                tileSpecRepository.setTiles(USER_INFO_1.id, specs1)
+                val originalTileB = tiles!![0].tile
+
+                val allowList = arrayOf("a")
+                fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
+                overrideAllowListResource(allowList)
+                val expectedTile = TileSpec.create("a")
+                val specs0 = listOf(expectedTile)
+                tileSpecRepository.setTiles(USER_INFO_0.id, specs0)
+
+                switchUser(USER_INFO_0)
+                runCurrent()
+
+                assertThat(originalTileB.isDestroyed).isTrue()
+                assertThat(tiles).hasSize(1)
+                assertThat(tiles!![0].spec).isEqualTo(expectedTile)
+            }
+        }
+
     private fun QSTile.State.fillIn(state: Int, label: CharSequence, secondaryLabel: CharSequence) {
         this.state = state
         this.label = label
@@ -846,6 +896,13 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
             in VALID_TILES -> FakeQSTile(currentUser, available = spec !in unavailableTiles)
             else -> null
         }
+    }
+
+    private fun Kosmos.overrideAllowListResource(allowList: Array<String>) {
+        testCase.context.orCreateTestableResources.addOverride(
+            R.array.hsu_allow_list_qs_tiles,
+            allowList,
+        )
     }
 
     private fun TestScope.runTest(user: UserInfo, body: suspend TestScope.() -> Unit) {
