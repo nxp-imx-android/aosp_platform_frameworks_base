@@ -379,7 +379,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                     setAllReadyIfNeeded(nextTransition, wct);
                                 }
                                 mService.mChainTracker.end();
-                            });
+                            }, true /* noopIfDuringDisplayChange */);
                     return nextTransition.getToken();
                 }
                 // The transition already started collecting before sending a request to shell,
