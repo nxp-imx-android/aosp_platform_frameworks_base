@@ -2509,6 +2509,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     @Override
     public void registerTransitionPlayer(ITransitionPlayer player) {
         enforceTaskPermission("registerTransitionPlayer()");
+        if (Flags.unifyShellBinders()) {
+            throw new IllegalStateException("TransitionPlayer is not independent anymore");
+        }
         final int callerPid = Binder.getCallingPid();
         final int callerUid = Binder.getCallingUid();
         final long ident = Binder.clearCallingIdentity();
@@ -2526,6 +2529,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     @Override
     public void unregisterTransitionPlayer(ITransitionPlayer player) {
         enforceTaskPermission("unregisterTransitionPlayer()");
+        if (Flags.unifyShellBinders()) {
+            throw new IllegalStateException("TransitionPlayer is not independent anymore");
+        }
         final long ident = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
