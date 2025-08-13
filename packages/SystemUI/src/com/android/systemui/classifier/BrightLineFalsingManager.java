@@ -395,6 +395,7 @@ public class BrightLineFalsingManager implements FalsingManager {
                 || mDataProvider.isFromTrackpad()
                 || mDataProvider.isFromKeyboard()
                 || !mDataProvider.isTouchScreenSource()
+                || mDataProvider.isDesktop()
                 || mDataProvider.isUnfolded()
                 || mDataProvider.isShowingCommunalHub();
     }
