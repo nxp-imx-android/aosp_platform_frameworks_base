@@ -504,6 +504,7 @@ abstract class CaptionController<T>(
         ) {
             captionInsets?.remove(wct)
             captionInsets = null
+            windowDecorationViewHolder = null
 
             val viewHost = captionViewHost ?: return false
             windowDecorViewHostSupplier.release(viewHost, t)

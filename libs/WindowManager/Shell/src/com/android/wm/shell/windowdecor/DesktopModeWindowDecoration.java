@@ -429,22 +429,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         final boolean applyTransactionOnDraw = taskInfo.isFreeform();
         relayout(taskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 hasGlobalFocus, displayExclusionRegion, /* inSyncWithTransition= */ false,
-                /* forceReinflation= */ false, getLeash());
-        if (!applyTransactionOnDraw) {
-            t.apply();
-        }
-    }
-
-    /** TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings */
-    void onThemeChanged() {
-        final SurfaceControl.Transaction t = mSurfaceControlTransactionSupplier.get();
-        final boolean shouldSetTaskVisibilityPositionAndCrop =
-                !mDesktopConfig.isVeiledResizeEnabled()
-                        && mTaskDragResizer.isResizingOrAnimating();
-        final boolean applyTransactionOnDraw = mTaskInfo.isFreeform();
-        relayout(mTaskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
-                mHasGlobalFocus, mExclusionRegion, /* inSyncWithTransition= */ false,
-                /* forceReinflation= */ true, getLeash());
+                getLeash());
         if (!applyTransactionOnDraw) {
             t.apply();
         }
@@ -467,12 +452,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         updateDragResizeListenerIfNeeded(mDecorationContainerSurface, inFullImmersive);
     }
 
-    /** TODO(b/437224867): Remove forceReinflation param */
     void relayout(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
             boolean hasGlobalFocus, @NonNull Region displayExclusionRegion,
-            boolean inSyncWithTransition, boolean forceReinflation, SurfaceControl taskSurface) {
+            boolean inSyncWithTransition, SurfaceControl taskSurface) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
 
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
@@ -520,7 +504,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
                 mDesktopConfig, inSyncWithTransition,
-                mLockTaskChangeListener.isTaskLocked(), forceReinflation,
+                mLockTaskChangeListener.isTaskLocked(),
                 /* occludingElementsCalculator = */ () -> getOccludingElements());
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
@@ -1013,7 +997,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     @VisibleForTesting
-    /** TODO(b/437224867): Remove forceReinflation param */
     static void updateRelayoutParams(
             RelayoutParams relayoutParams,
             Context context,
@@ -1033,7 +1016,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopConfig desktopConfig,
             boolean inSyncWithTransition,
             boolean isTaskLocked,
-            boolean forceReinflation,
             Supplier<List<OccludingElement>> occludingElementsCalculator) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
@@ -1046,7 +1028,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 taskInfo.getWindowingMode());
         relayoutParams.mCaptionWidthId = getCaptionWidthId(relayoutParams.mLayoutResId);
         relayoutParams.mHasGlobalFocus = hasGlobalFocus;
-        relayoutParams.mForceReinflation = forceReinflation;
         relayoutParams.mDisplayExclusionRegion.set(displayExclusionRegion);
         // Allow the handle view to be delayed since the handle is just a small addition to the
         // window, whereas the header cannot be delayed because it is expected to be visible from

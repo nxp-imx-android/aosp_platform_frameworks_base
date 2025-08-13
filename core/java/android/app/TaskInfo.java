@@ -551,6 +551,7 @@ public class TaskInfo {
                 && Objects.equals(displayCutoutInsets, that.displayCutoutInsets)
                 && getWindowingMode() == that.getWindowingMode()
                 && configuration.uiMode == that.configuration.uiMode
+                && configuration.assetsSeq == that.configuration.assetsSeq
                 && Objects.equals(taskDescription, that.taskDescription)
                 && isFocused == that.isFocused
                 && isVisible == that.isVisible
