@@ -9,13 +9,13 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.FalsingCollectorFake
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.plugins.qs.QS
-import com.android.systemui.qs.ui.adapter.FakeQSSceneAdapter
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
@@ -73,8 +73,6 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
     private val configurationController = kosmos.fakeConfigurationController
     private val disableFlagsRepository = kosmos.fakeDisableFlagsRepository
     private val testScope = kosmos.testScope
-
-    private val qsSceneAdapter = FakeQSSceneAdapter({ mock() })
 
     lateinit var row: ExpandableNotificationRow
 
@@ -162,7 +160,6 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
                 splitShadeStateController = ResourcesSplitShadeStateController(),
                 shadeLockscreenInteractorLazy = { shadeLockscreenInteractor },
                 naturalScrollingSettingObserver = naturalScrollingSettingObserver,
-                lazyQSSceneAdapter = { qsSceneAdapter },
             )
 
         transitionController.addCallback(transitionControllerCallback)
@@ -528,14 +525,12 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableSceneContainer
     fun nullQs_canDragDownFromAdapter() =
         testScope.runTest {
             transitionController.qS = null
 
-            qsSceneAdapter.isQsFullyCollapsed = true
             assertTrue("Can't drag down on keyguard", transitionController.canDragDown())
-            qsSceneAdapter.isQsFullyCollapsed = false
-            assertFalse("Can drag down when QS is expanded", transitionController.canDragDown())
         }
 
     private fun enableSplitShade() {

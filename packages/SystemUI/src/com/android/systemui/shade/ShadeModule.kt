@@ -20,8 +20,6 @@ import android.os.UserHandle
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
-import com.android.systemui.plugins.qs.QSContainerController
-import com.android.systemui.qs.ui.adapter.QSSceneAdapterImpl
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
@@ -172,12 +170,6 @@ abstract class ShadeModule {
             } else {
                 sceneContainerOff.get()
             }
-        }
-
-        @Provides
-        @SysUISingleton
-        fun providesQSContainerController(impl: QSSceneAdapterImpl): QSContainerController {
-            return impl
         }
 
         @Provides

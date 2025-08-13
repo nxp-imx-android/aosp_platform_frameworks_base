@@ -80,8 +80,8 @@ import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
-import com.android.systemui.qs.ui.composable.QuickSettings
-import com.android.systemui.qs.ui.composable.QuickSettings.Elements.SplitShadeQuickSettings
+import com.android.systemui.qs.shared.ui.QuickSettings
+import com.android.systemui.qs.shared.ui.QuickSettings.Elements.SplitShadeQuickSettings
 import com.android.systemui.qs.ui.composable.QuickSettingsContent
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.res.R
@@ -106,7 +106,6 @@ object Shade {
     object Elements {
         val BackgroundScrim =
             ElementKey("ShadeBackgroundScrim", contentPicker = LowestZIndexContentPicker)
-        val SplitShadeStartColumn = ElementKey("SplitShadeStartColumn")
     }
 
     object Dimensions {
