@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
@@ -52,6 +53,7 @@ import java.util.concurrent.Executors;
 @RequiresFlagsEnabled(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlExtensionsTest {
+    private static final int CALLBACK_TIMEOUT_MS = 1_000;
     private static final int DISPLAY_DPI = 100;
     private static final int DISPLAY_HEIGHT = 200;
     private static final int DISPLAY_WIDTH = 300;
@@ -123,7 +125,7 @@ public class ComputerControlExtensionsTest {
     }
 
     @Test
-    public void requestSession_withNullParams_throwsException() {
+    public void requestSession_withNullParams_throwsNullPointerException() {
         mContext.setMockPackageManager(mPackageManager);
 
         when(mPackageManager.hasSystemFeature(
@@ -136,7 +138,7 @@ public class ComputerControlExtensionsTest {
     }
 
     @Test
-    public void requestSession_withNullExecutor_throwsException() {
+    public void requestSession_withNullExecutor_throwsNullPointerException() {
         mContext.setMockPackageManager(mPackageManager);
 
         when(mPackageManager.hasSystemFeature(
@@ -149,7 +151,7 @@ public class ComputerControlExtensionsTest {
     }
 
     @Test
-    public void requestSession_withNullCallback_throwsException() {
+    public void requestSession_withNullCallback_throwsNullPointerException() {
         mContext.setMockPackageManager(mPackageManager);
 
         when(mPackageManager.hasSystemFeature(
@@ -198,7 +200,7 @@ public class ComputerControlExtensionsTest {
                 createParams(), Executors.newSingleThreadExecutor(), mSessionCallback);
 
         verify(mIVirtualDeviceManager).requestComputerControlSession(any(), any(), any());
-        verify(mSessionCallback).onSessionCreated(any());
+        verify(mSessionCallback, timeout(CALLBACK_TIMEOUT_MS)).onSessionCreated(any());
     }
 
     @Test
@@ -222,7 +224,7 @@ public class ComputerControlExtensionsTest {
                 createParams(), Executors.newSingleThreadExecutor(), mSessionCallback);
 
         verify(mIVirtualDeviceManager).requestComputerControlSession(any(), any(), any());
-        verify(mSessionCallback).onSessionCreationFailed(ERROR_CODE);
+        verify(mSessionCallback, timeout(CALLBACK_TIMEOUT_MS)).onSessionCreationFailed(ERROR_CODE);
     }
 
     private ComputerControlSession.Params createParams() {
