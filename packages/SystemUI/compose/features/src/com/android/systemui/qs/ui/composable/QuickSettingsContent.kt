@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -94,6 +95,7 @@ fun ContentScope.QuickSettingsContent(
     )
 }
 
+@Suppress("NAME_SHADOWING")
 @Composable
 private fun QuickSettingsPanelLayout(
     brightness: @Composable () -> Unit,
@@ -102,6 +104,10 @@ private fun QuickSettingsPanelLayout(
     mediaInRow: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val brightness = remember(brightness) { movableContentOf { brightness() } }
+    val tiles = remember(tiles) { movableContentOf { tiles() } }
+    val media = remember(media) { movableContentOf { media() } }
+
     if (mediaInRow) {
         Column(
             verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
