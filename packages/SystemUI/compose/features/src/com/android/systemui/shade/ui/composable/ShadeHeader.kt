@@ -19,6 +19,7 @@ package com.android.systemui.shade.ui.composable
 
 import android.view.ContextThemeWrapper
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -40,6 +41,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -140,6 +142,18 @@ object ShadeHeader {
             }
     }
 
+    object Colors {
+        val textColor: Color
+            @Composable
+            @ReadOnlyComposable
+            get() = if (isSystemInDarkTheme()) Color.White else Color.Black
+
+        val inverseTextColor: Color
+            @Composable
+            @ReadOnlyComposable
+            get() = if (isSystemInDarkTheme()) Color.Black else Color.White
+    }
+
     object TestTags {
         const val Root = "shade_header_root"
         const val BatteryTestTag = "battery_meter_composable_view"
@@ -166,7 +180,7 @@ fun ContentScope.CollapsedShadeHeader(
             }
         }
 
-    val textColor = if (isSystemInDarkTheme()) Color.White else Color.Black
+    val textColor = ShadeHeader.Colors.textColor
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
@@ -220,6 +234,8 @@ fun ContentScope.CollapsedShadeHeader(
                         StatusIcons(
                             viewModel = viewModel,
                             useExpandedFormat = useExpandedTextFormat,
+                            foregroundColor = textColor.toArgb(),
+                            backgroundColor = ShadeHeader.Colors.inverseTextColor.toArgb(),
                             modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                         )
                         BatteryInfo(
@@ -246,6 +262,8 @@ fun ContentScope.ExpandedShadeHeader(
         derivedStateOf { shouldUseExpandedFormat(layoutState.transitionState) }
     }
 
+    val textColor = ShadeHeader.Colors.textColor
+
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
         if (viewModel.isPrivacyChipVisible) {
             Box(modifier = Modifier.height(ShadeHeader.Dimensions.StatusBarHeight).fillMaxWidth()) {
@@ -267,7 +285,7 @@ fun ContentScope.ExpandedShadeHeader(
                     onClick = viewModel::onClockClicked,
                     modifier = Modifier.align(Alignment.CenterStart),
                     scale = 2.57f,
-                    textColor = MaterialTheme.colorScheme.onSurface,
+                    textColor = textColor,
                 )
                 Box(
                     modifier =
@@ -287,7 +305,7 @@ fun ContentScope.ExpandedShadeHeader(
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
-                    textColor = MaterialTheme.colorScheme.onSurface,
+                    textColor = textColor,
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
                 ShadeHighlightChip {
@@ -298,13 +316,15 @@ fun ContentScope.ExpandedShadeHeader(
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = useExpandedFormat,
+                        foregroundColor = textColor.toArgb(),
+                        backgroundColor = ShadeHeader.Colors.inverseTextColor.toArgb(),
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                     )
                     BatteryInfo(
                         viewModel = viewModel,
                         showIcon = true,
                         useExpandedFormat = useExpandedFormat,
-                        textColor = MaterialTheme.colorScheme.onSurface,
+                        textColor = textColor,
                     )
                 }
             }
@@ -324,6 +344,14 @@ fun ContentScope.OverlayShadeHeader(
     showClock: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val localContext = LocalContext.current
+    val themedContext =
+        ContextThemeWrapper(localContext, R.style.Theme_SystemUI_QuickSettings_Header)
+    val primaryColor =
+        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimary)
+    val inverseColor =
+        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
+
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
@@ -390,7 +418,8 @@ fun ContentScope.OverlayShadeHeader(
                         viewModel = viewModel,
                         useExpandedFormat = false,
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
-                        isHighlighted = isHighlighted,
+                        foregroundColor = if (isHighlighted) primaryColor else inverseColor,
+                        backgroundColor = if (isHighlighted) inverseColor else primaryColor,
                     )
                     BatteryInfo(
                         viewModel = viewModel,
@@ -687,17 +716,10 @@ private fun ShadeCarrierGroupKairos(
 private fun ContentScope.StatusIcons(
     viewModel: ShadeHeaderViewModel,
     useExpandedFormat: Boolean,
+    @ColorInt foregroundColor: Int,
+    @ColorInt backgroundColor: Int,
     modifier: Modifier = Modifier,
-    isHighlighted: Boolean = false,
 ) {
-    val localContext = LocalContext.current
-    val themedContext =
-        ContextThemeWrapper(localContext, R.style.Theme_SystemUI_QuickSettings_Header)
-    val primaryColor =
-        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimary)
-    val inverseColor =
-        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
-
     val statusIconContext = LocalStatusIconContext.current
     val iconContainer = statusIconContext.iconContainer(contentKey)
     val iconManager = statusIconContext.iconManager(contentKey)
@@ -706,16 +728,9 @@ private fun ContentScope.StatusIcons(
     if (SystemStatusIconsInCompose.isEnabled) {
         SystemStatusIcons(
             viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
-            tint =
-                if (isHighlighted) {
-                    Color(inverseColor)
-                } else {
-                    Color(primaryColor)
-                },
+            tint = Color(foregroundColor),
         )
     } else {
-        val foregroundColor = if (isHighlighted) inverseColor else primaryColor
-        val backgroundColor = if (isHighlighted) primaryColor else inverseColor
         val isTransitioning = layoutState.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings)
 
         SystemStatusIconsLegacy(
