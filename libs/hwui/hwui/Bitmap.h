@@ -50,7 +50,6 @@ enum class BitmapPalette {
     Light,
     Dark,
     Colorful,
-    Barcode,
 };
 
 namespace uirenderer {
@@ -170,11 +169,6 @@ public:
             mPaletteGenerationId = getGenerationID();
         }
         return mPalette;
-    }
-
-    void setPalette(BitmapPalette palette) {
-        mPalette = palette;
-        mPaletteGenerationId = getGenerationID();
     }
 
   // returns true if rowBytes * height can be represented by a positive int32_t value
