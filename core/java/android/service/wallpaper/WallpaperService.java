@@ -2486,6 +2486,13 @@ public abstract class WallpaperService extends Service {
 
             return ret;
         }
+
+        /**
+         * @hide
+         */
+        public SurfaceControl getRenderingSurfaceControl() {
+            return mBbqSurfaceControl;
+        }
     }
 
     /**
