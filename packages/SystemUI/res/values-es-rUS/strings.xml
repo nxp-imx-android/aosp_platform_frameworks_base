@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Volver a tomar"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Borrar"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Tomar una captura de la pantalla completa"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Tomar captura de pantalla del área seleccionada"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de pantalla"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grabar"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Compartir"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
@@ -201,10 +198,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"Escáner de código QR"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Desbloqueado"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Dispositivo bloqueado"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Confirmar y desbloquear el dispositivo"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Vuelve a probar Desbloqueo facial"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Escaneando rostro"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Enviar"</string>
     <string name="cancel" msgid="1089011503403416730">"Cancelar"</string>
@@ -225,16 +220,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autenticado"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancelar autenticación"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Más opciones"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Verificar de otra manera"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verificar de otra manera"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Administrar la Verificación de identidad"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Más información sobre la Verificación de identidad"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"La Verificación de Identidad está activada y requiere que verifiques con tu huella dactilar o rostro. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Evaluando el riesgo…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"No disponible"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Usar PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Usar patrón"</string>
@@ -404,6 +395,8 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Dispositivo sin nombre"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"No hay dispositivos disponibles"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"No hay conexión Ethernet ni Wi-Fi"</string>
+    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Brillo"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversión de colores"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Corrección de colores"</string>
@@ -413,6 +406,8 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Cerrar"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Conectado"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Conectando…"</string>
+    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
+    <skip />
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Hotspot"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Activando…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Ahorro de datos act."</string>
@@ -543,8 +538,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Desliza el dedo hacia arriba para abrir"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Presiona el ícono de desbloquear para abrir"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Desbloqueo con rostro. Desliza hacia arriba para abrir."</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Desbloqueo con rostro. Presiona confirmar para continuar."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Desbloqueo con rostro. Presiona el ícono para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Desbloqueo con rostro. Presiona para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Rostro reconocido. Presiona para abrir."</string>
@@ -996,7 +990,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Usar la pantalla dividida con la app a la derecha"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Usar la pantalla dividida con la app a la izquierda"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Usar la pantalla completa"</string>
-    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Usar renderización en ventanas para computadoras de escritorio"</string>
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Usar modo de ventanas de escritorio"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Ubicar la app a la derecha o abajo cuando usas la pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Ubicar la app a la izquierda o arriba cuando usas la pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Durante pantalla dividida: Reemplaza una app con otra"</string>
@@ -1005,7 +999,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Mover la ventana hacia la derecha"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximizar ventana"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimizar ventana"</string>
-    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Cambiar entre computadoras"</string>
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Cambiar de escritorio"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Entrada"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Cambiar al próximo idioma"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"Cambiar al idioma anterior"</string>
@@ -1027,7 +1021,7 @@
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"Activar o desactivar las teclas lentas"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"Activar o desactivar el Acceso por voz"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Activar o desactivar TalkBack"</string>
-    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Activar o desactivar la ampliación"</string>
+    <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"Activar o desactivar la Ampliación"</string>
     <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"Activar Seleccionar para pronunciar"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"No interrumpir"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"Combinación de teclas de botones de volumen"</string>
@@ -1177,6 +1171,12 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"Apps que se ejecutan en segundo plano"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"Presiona para obtener información sobre el uso de datos y de la batería"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"¿Deseas desactivar los datos móviles?"</string>
+    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
+    <skip />
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"No tendrás acceso a datos móviles ni a Internet a través de <xliff:g id="CARRIER">%s</xliff:g>. Solo podrás conectarte a Internet mediante Wi‑Fi."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"tu proveedor"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"¿Volver a cambiar a <xliff:g id="CARRIER">%s</xliff:g>?"</string>

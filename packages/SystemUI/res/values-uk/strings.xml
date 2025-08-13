@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Повторити"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Змінити"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Видалити"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Зробити знімок усього екрана"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Зробити знімок вибраної області екрана"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Знімок екрана"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Записати"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Поділитися"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
@@ -201,10 +198,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"Сканер QR-коду"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Розблоковано"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Пристрій заблоковано"</string>
-    <!-- no translation found for accessibility_confirm_biometric_auth_to_unlock (1600162805010332470) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (3018310877303150273) -->
-    <skip />
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Підтвердити й розблокувати"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Знову спробувати фейс-контроль"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Сканування обличчя"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Надіслати"</string>
     <string name="cancel" msgid="1089011503403416730">"Скасувати"</string>
@@ -406,6 +401,8 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Пристрій без назви"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Немає пристроїв"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Немає з’єднання з Wi-Fi або Ethernet"</string>
+    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Яскравість"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Інверсія кольорів"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Корекція кольору"</string>
@@ -415,6 +412,8 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Закрити"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Під’єднано"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"З’єднання…"</string>
+    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
+    <skip />
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Точка доступу"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Увімкнення…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Заощадження трафіку ввімкнено"</string>
@@ -545,8 +544,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"Проведіть пальцем угору, щоб відкрити"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Щоб відкрити, натисніть значок розблокування."</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Розблоковано (фейс-контроль). Відкрити: проведіть угору."</string>
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (3862344771780817393) -->
-    <skip />
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Розблоковано через фейс-контроль. Щоб продовжити, натисніть \"Підтвердити\"."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Розблоковано (фейс-контроль). Натисніть значок розблокування."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Розблоковано (фейс-контроль). Натисніть, щоб відкрити."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Обличчя розпізнано. Натисніть, щоб відкрити."</string>
@@ -1179,6 +1177,12 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"Додатки, які працюють у фоновому режимі"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"Торкніться, щоб перевірити використання акумулятора й трафік"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"Вимкнути мобільний Інтернет?"</string>
+    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
+    <skip />
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"Ви не матимете доступу до даних чи Інтернету через оператора <xliff:g id="CARRIER">%s</xliff:g>. Інтернет буде доступний лише через Wi-Fi."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"ваш оператор"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"Перейти на <xliff:g id="CARRIER">%s</xliff:g>?"</string>
