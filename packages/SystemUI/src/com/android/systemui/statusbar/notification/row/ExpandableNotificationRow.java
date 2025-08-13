@@ -411,21 +411,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void toggleExpansionState(View v, boolean shouldLogExpandClickMetric) {
-        if (isBundle()
-                || (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot())) {
+        if (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot()) {
             mGroupExpansionChanging = true;
             if (NotificationBundleUi.isEnabled()) {
                 final boolean wasExpanded =  mGroupExpansionManager.isGroupExpanded(mEntryAdapter);
                 boolean nowExpanded = mGroupExpansionManager.toggleGroupExpansion(mEntryAdapter);
                 mOnExpandClickListener.onExpandClicked(this, mEntryAdapter, nowExpanded);
+                if (shouldLogExpandClickMetric) {
+                    mMetricsLogger.action(
+                            MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
+                }
                 if (isBundle()) {
                     mBundleInteractionLogger.logBundleExpansionChanged(
-                            mEntryAdapter.getBundleType(), !wasExpanded);
-                } else {
-                    if (shouldLogExpandClickMetric) {
-                        mMetricsLogger.action(
-                                MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
-                    }
+                            mEntryAdapter.getBundleType(), nowExpanded);
                 }
                 onExpansionChanged(true /* userAction */, wasExpanded);
             } else {
@@ -1826,9 +1824,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (!isBundle()) {
             setLongPressListener(null);
             setDragController(null);
-        }
-        if (isBundle()) {
-            mIsSystemExpanded = false;
         }
         mGroupParentWhenDismissed = mNotificationParent;
         mChildAfterViewWhenDismissed = null;
@@ -3258,12 +3253,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public void setSystemExpanded(boolean expand) {
         if (expand != mIsSystemExpanded) {
-            boolean wasExpanded = isExpanded();
+            final boolean wasExpanded = isExpanded();
             mIsSystemExpanded = expand;
-            if (isBundle()) {
-                wasExpanded = mGroupExpansionManager.isGroupExpanded(mEntryAdapter);
-                mGroupExpansionManager.setGroupExpanded(mEntryAdapter, expand);
-            }
             notifyHeightChanged(/* needsAnimation= */ false);
             onExpansionChanged(false /* userAction */, wasExpanded);
             if (mIsSummaryWithChildren) {
@@ -4283,11 +4274,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     // will not be when a notification is collapsed by the system (such as when
     // the shade is closed).
     private void onExpansionChanged(boolean userAction, boolean wasExpanded) {
-        boolean nowExpanded;
+        boolean nowExpanded = isExpanded();
         if (mIsSummaryWithChildren && (!mIsMinimized || wasExpanded)) {
             nowExpanded = isGroupExpanded();
-        } else {
-            nowExpanded = isExpanded();
         }
         // Note: nowExpanded is going to be true here on the first expansion of minimized groups,
         // even though the group itself is not expanded. Use mGroupExpansionManager to get the real

@@ -769,6 +769,14 @@ public final class NotificationEntry extends ListEntry {
         if (row != null) row.setUserLocked(userLocked);
     }
 
+    public void setUserExpanded(boolean userExpanded, boolean allowChildExpansion) {
+        if (row != null) row.setUserExpanded(userExpanded, allowChildExpansion);
+    }
+
+    public void setGroupExpansionChanging(boolean changing) {
+        if (row != null) row.setGroupExpansionChanging(changing);
+    }
+
     public void notifyHeightChanged(boolean needsAnimation) {
         if (row != null) row.notifyHeightChanged(needsAnimation);
     }

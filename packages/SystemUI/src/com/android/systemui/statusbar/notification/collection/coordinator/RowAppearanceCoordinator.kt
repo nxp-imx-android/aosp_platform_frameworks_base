@@ -20,7 +20,6 @@ import android.content.Context
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
-import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -37,7 +36,7 @@ import javax.inject.Inject
 @CoordinatorScope
 class RowAppearanceCoordinator
 @Inject
-constructor(
+internal constructor(
     @ShadeDisplayAware context: Context,
     private var mAssistantFeedbackController: AssistantFeedbackController,
     private var mSectionStyleProvider: SectionStyleProvider,
@@ -45,7 +44,6 @@ constructor(
 ) : Coordinator {
 
     private var entryToExpand: NotificationEntry? = null
-    private var numActiveBundles: Int = 0
 
     /**
      * `true` if notifications not part of a group should by default be rendered in their expanded
@@ -64,9 +62,7 @@ constructor(
 
     override fun attach(pipeline: NotifPipeline) {
         pipeline.addOnBeforeRenderListListener(::onBeforeRenderList)
-        pipeline.addOnAfterRenderListListener(::onAfterRenderList)
         pipeline.addOnAfterRenderEntryListener(::onAfterRenderEntry)
-        pipeline.addOnAfterRenderBundleEntryListener(::onAfterRenderBundleEntry)
     }
 
     private fun onBeforeRenderList(list: List<PipelineEntry>) {
@@ -79,30 +75,17 @@ constructor(
         }
     }
 
-    private fun onAfterRenderList(entries: List<PipelineEntry>) {
-        numActiveBundles = entries.filterIsInstance<BundleEntry>().size
-    }
-
     private fun onAfterRenderEntry(entry: NotificationEntry, controller: NotifRowController) {
-        val isBundledSingleton =
-            numActiveBundles > 1 &&
-                entry.isBundled &&
-                (!entry.sbn.isGroup || notifCollection.isOnlyChildInGroup(entry))
-
+        val isBundledSingleton = entry.isBundled
+                && (!entry.sbn.isGroup || notifCollection.isOnlyChildInGroup(entry))
         // If mAlwaysExpandNonGroupedNotification is false, then only expand the
         // very first notification if it's not a child of grouped notifications and when
         // mAutoExpandFirstNotification is true.
-        controller.setSystemExpanded(
-            isBundledSingleton ||
-                (!entry.isBundled &&
-                    (mAlwaysExpandNonGroupedNotification ||
-                        (mAutoExpandFirstNotification && entry == entryToExpand)))
+        controller.setSystemExpanded(isBundledSingleton
+                || (!entry.isBundled && (mAlwaysExpandNonGroupedNotification ||
+                    (mAutoExpandFirstNotification && entry == entryToExpand)))
         )
         // Show/hide the feedback icon
         controller.setFeedbackIcon(mAssistantFeedbackController.getFeedbackIcon(entry.ranking))
-    }
-
-    private fun onAfterRenderBundleEntry(entry: BundleEntry, controller: NotifRowController) {
-        controller.setSystemExpanded(numActiveBundles == 1 && entry.children.size == 1)
     }
 }
