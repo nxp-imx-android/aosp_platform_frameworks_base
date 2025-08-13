@@ -397,7 +397,7 @@ private fun SplitLayout(viewModel: BouncerOverlayContentViewModel, modifier: Mod
             }
         }
 
-        // Right side (in right-to-left locales).
+        // Right side (in left-to-right locales).
         Box(modifier = Modifier.fillMaxHeight().weight(1f)) {
             when (authMethod) {
                 is PinBouncerViewModel,
