@@ -31,6 +31,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -104,7 +106,8 @@ public final class HsumBootUserInitializerTest {
     }
 
     @Test
-    public void testObserveDeviceProvisioning_provisioned() {
+    @DisableFlags(android.multiuser.Flags.FLAG_HSU_DEVICE_PROVISIONER)
+    public void testObserveDeviceProvisioning_flagDisabled_provisioned() {
         mockIsDeviceProvisioned(true);
 
         mFixture.observeDeviceProvisioning();
@@ -114,7 +117,8 @@ public final class HsumBootUserInitializerTest {
     }
 
     @Test
-    public void testObserveDeviceProvisioning_notProvisioned() {
+    @DisableFlags(android.multiuser.Flags.FLAG_HSU_DEVICE_PROVISIONER)
+    public void testObserveDeviceProvisioning_flagDisabled_notProvisioned() {
         mockIsDeviceProvisioned(false);
 
         // First trigger setting an observer...
@@ -129,6 +133,18 @@ public final class HsumBootUserInitializerTest {
         contentObserver.onChange(true);
         verifyUserSetupCompleteCalled();
         verifyContentObserverUnregistered(contentObserver);
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_DEVICE_PROVISIONER)
+    public void testObserveDeviceProvisioning_flagEnabled_provisioned() {
+        testObserveDeviceProvisioning_flagDisabled_provisioned();
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_DEVICE_PROVISIONER)
+    public void testObserveDeviceProvisioning_flagEnabled_notprovisioned() {
+        testObserveDeviceProvisioning_flagDisabled_notProvisioned();
     }
 
     private void mockIsHsum(boolean value) {

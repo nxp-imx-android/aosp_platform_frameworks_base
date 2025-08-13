@@ -18,7 +18,6 @@ package com.android.server.pm;
 import android.content.ContentResolver;
 import android.database.ContentObserver;
 import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -31,6 +30,7 @@ import com.android.server.utils.Slogf;
 final class HsuDeviceProvisioner extends ContentObserver {
 
     private static final String TAG = HsuDeviceProvisioner.class.getSimpleName();
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private final ContentResolver mContentResolver;
 
@@ -55,6 +55,9 @@ final class HsuDeviceProvisioner extends ContentObserver {
 
     @Override
     public void onChange(boolean selfChange) {
+        if (DEBUG) {
+            Slogf.d(TAG, "onChange(%b): isDeviceProvisioned=%b", selfChange, isDeviceProvisioned());
+        }
         // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
         // has been set up at least once.
         if (isDeviceProvisioned()) {
