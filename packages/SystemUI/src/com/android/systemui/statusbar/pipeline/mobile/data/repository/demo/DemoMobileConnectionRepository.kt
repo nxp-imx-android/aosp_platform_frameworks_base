@@ -206,6 +206,10 @@ class DemoMobileConnectionRepository(
 
     override val dataEnabled = MutableStateFlow(true)
 
+    override fun setDataEnabled(enabled: Boolean) {
+        // Unused.
+    }
+
     override val cdmaRoaming = MutableStateFlow(false)
 
     override val networkName = MutableStateFlow(NetworkNameModel.IntentDerived(DEMO_CARRIER_NAME))

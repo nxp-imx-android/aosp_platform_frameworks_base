@@ -979,6 +979,7 @@
     <string name="quick_settings_connected">Connected</string>
     <!-- QuickSettings: Control panel: Label for connecting device. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_connecting">Connecting...</string>
+    <string name="quick_settings_scanning_for_wifi">Scanning for Wi\u2011Fi...</string>
     <!-- QuickSettings: Tethering. [CHAR LIMIT=NONE] -->
     <!-- QuickSettings: Hotspot. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_hotspot_label">Hotspot</string>
@@ -3066,6 +3067,9 @@
 
     <!-- Title of the dialog to turn off data usage [CHAR LIMIT=NONE] -->
     <string name="mobile_data_disable_title">Turn off mobile data?</string>
+    <string name="mobile_data_enable_title">Turn on mobile data?</string>
+    <string name="mobile_data_enable_message">Using mobile data may incur charges based on your mobile service plan.</string>
+    <string name="mobile_data_enable_turn_on">Turn on</string>
 
     <!-- Message body of the dialog to turn off data usage [CHAR LIMIT=NONE] -->
     <string name="mobile_data_disable_message">You won\’t have access to data or the internet through <xliff:g id="carrier" example="T-Mobile">%s</xliff:g>. Internet will only be available via Wi-Fi.</string>

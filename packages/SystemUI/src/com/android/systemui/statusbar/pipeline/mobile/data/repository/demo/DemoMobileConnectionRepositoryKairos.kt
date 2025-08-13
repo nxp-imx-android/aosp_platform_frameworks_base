@@ -418,6 +418,10 @@ class DemoMobileConnectionRepositoryKairos(
 
     override val dataEnabled: State<Boolean> = stateOf(true)
 
+    override fun setDataEnabled(enabled: Boolean) {
+        // Unused.
+    }
+
     override val cdmaRoaming: State<Boolean> = lastEvent.map { it.firstOrNull()?.roaming ?: false }
 
     override val networkName: State<NetworkNameModel.IntentDerived> =

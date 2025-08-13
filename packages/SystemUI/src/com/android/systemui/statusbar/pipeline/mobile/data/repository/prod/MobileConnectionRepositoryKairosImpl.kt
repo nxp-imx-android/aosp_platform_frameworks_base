@@ -453,6 +453,10 @@ constructor(
             )
     }
 
+    override fun setDataEnabled(enabled: Boolean) {
+        telephonyManager.setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, enabled)
+    }
+
     override val isInEcmMode: State<Boolean> = buildState {
         callbackEvents
             .mapNotNull {

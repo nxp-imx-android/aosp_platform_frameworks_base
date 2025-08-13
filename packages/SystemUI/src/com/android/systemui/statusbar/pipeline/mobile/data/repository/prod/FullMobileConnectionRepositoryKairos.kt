@@ -331,6 +331,10 @@ constructor(
                 }
             }
 
+    override fun setDataEnabled(enabled: Boolean) {
+        mobileRepo.setDataEnabled(enabled)
+    }
+
     override val inflateSignalStrength: State<Boolean> =
         activeRepo
             .flatMap { it.inflateSignalStrength }

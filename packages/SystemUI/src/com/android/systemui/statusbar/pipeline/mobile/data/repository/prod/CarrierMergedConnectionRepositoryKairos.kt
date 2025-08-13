@@ -208,6 +208,10 @@ class CarrierMergedConnectionRepositoryKairos(
     override val dataEnabled: State<Boolean>
         get() = isWifiEnabled
 
+    override fun setDataEnabled(enabled: Boolean) {
+        telephonyManager.setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, enabled)
+    }
+
     companion object {
         // Carrier merged is never roaming
         private const val ROAMING = false
