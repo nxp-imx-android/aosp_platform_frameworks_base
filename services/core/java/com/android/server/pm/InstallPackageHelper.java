@@ -4337,241 +4337,267 @@ final class InstallPackageHelper {
             @ParsingPackageUtils.ParseFlags int parseFlags,
             @PackageManagerService.ScanFlags int scanFlags,
             @Nullable UserHandle user) throws PackageManagerException {
-        final boolean scanSystemPartition =
+        final InitAppScanMetrics metrics = new InitAppScanMetrics();
+        boolean shouldLogInitAppScanMetric = false;
+        try {
+            final boolean scanSystemPartition =
                 (parseFlags & ParsingPackageUtils.PARSE_IS_SYSTEM_DIR) != 0;
-        final ScanRequest initialScanRequest = prepareInitialScanRequest(parsedPackage, parseFlags,
-                scanFlags, user, null);
-        final PackageSetting installedPkgSetting = initialScanRequest.mPkgSetting;
-        final PackageSetting originalPkgSetting = initialScanRequest.mOriginalPkgSetting;
-        final PackageSetting pkgSetting =
-                originalPkgSetting == null ? installedPkgSetting : originalPkgSetting;
-        final boolean pkgAlreadyExists = pkgSetting != null;
-        final String disabledPkgName = pkgAlreadyExists
-                ? pkgSetting.getPackageName() : parsedPackage.getPackageName();
-        final boolean isSystemPkgUpdated;
-        final PackageSetting disabledPkgSetting;
-        final boolean isUpgrade;
-        synchronized (mPm.mLock) {
-            isUpgrade = mPm.isDeviceUpgrading();
-            if (scanSystemPartition && !pkgAlreadyExists
-                    && mPm.mSettings.getDisabledSystemPkgLPr(disabledPkgName) != null) {
-                // The updated-package data for /system apk remains inconsistently
-                // after the package data for /data apk is lost accidentally.
-                // To recover it, enable /system apk and install it as non-updated system app.
-                Slog.w(TAG, "Inconsistent package setting of updated system app for "
-                        + disabledPkgName + ". To recover it, enable the system app "
-                        + "and install it as non-updated system app.");
-                mPm.mSettings.removeDisabledSystemPackageLPw(disabledPkgName);
-            }
-            disabledPkgSetting = mPm.mSettings.getDisabledSystemPkgLPr(disabledPkgName);
-            isSystemPkgUpdated = disabledPkgSetting != null;
-
-            if (DEBUG_INSTALL && isSystemPkgUpdated) {
-                Slog.d(TAG, "updatedPkg = " + disabledPkgSetting);
-            }
-
-            if (scanSystemPartition && isSystemPkgUpdated) {
-                // we're updating the disabled package, so, scan it as the package setting
-                final ScanRequest request = new ScanRequest(parsedPackage,
-                        mPm.mSettings.getSharedUserSettingLPr(disabledPkgSetting),
-                        null, disabledPkgSetting /* pkgSetting */,
-                        initialScanRequest.mSharedUserSetting,
-                        null /* disabledPkgSetting */, null /* originalPkgSetting */,
-                        null, parseFlags, scanFlags,
-                        initialScanRequest.mIsPlatformPackage, user, null);
-                ScanPackageUtils.applyPolicy(parsedPackage, scanFlags,
-                        mPm.getPlatformPackage(), true);
-                final ScanResult scanResult =
-                        ScanPackageUtils.scanPackageOnly(request, mPm.mInjector,
-                                mPm.mFactoryTest, -1L);
-                if (scanResult.mExistingSettingCopied
-                        && scanResult.mRequest.mPkgSetting != null) {
-                    scanResult.mRequest.mPkgSetting.updateFrom(scanResult.mPkgSetting);
-                }
-            }
-        } // End of mLock
-
-        final boolean newPkgChangedPaths = pkgAlreadyExists
-                && !pkgSetting.getPathString().equals(parsedPackage.getPath());
-        final boolean newPkgVersionGreater = pkgAlreadyExists
-                && parsedPackage.getLongVersionCode() > pkgSetting.getVersionCode();
-        final boolean newSharedUserSetting = pkgAlreadyExists
-                && (initialScanRequest.mOldSharedUserSetting
-                != initialScanRequest.mSharedUserSetting);
-        final boolean isSystemPkgBetter = scanSystemPartition && isSystemPkgUpdated
-                && newPkgChangedPaths && (newPkgVersionGreater || newSharedUserSetting);
-        if (isSystemPkgBetter) {
-            // The version of the application on /system is greater than the version on
-            // /data. Switch back to the application on /system.
-            // It's safe to assume the application on /system will correctly scan. If not,
-            // there won't be a working copy of the application.
-            // Also, if the sharedUserSetting of the application on /system is different
-            // from the sharedUserSetting on /data, switch back to the application on /system.
-            // We should trust the sharedUserSetting on /system, even if the application
-            // version on /system is smaller than the version on /data.
+            final ScanRequest initialScanRequest = prepareInitialScanRequest(parsedPackage,
+                    parseFlags, scanFlags, user, null);
+            final PackageSetting installedPkgSetting = initialScanRequest.mPkgSetting;
+            final PackageSetting originalPkgSetting = initialScanRequest.mOriginalPkgSetting;
+            final PackageSetting pkgSetting =
+                    originalPkgSetting == null ? installedPkgSetting : originalPkgSetting;
+            final boolean pkgAlreadyExists = pkgSetting != null;
+            final String disabledPkgName = pkgAlreadyExists
+                    ? pkgSetting.getPackageName() : parsedPackage.getPackageName();
+            final boolean isSystemPkgUpdated;
+            final PackageSetting disabledPkgSetting;
+            final boolean isUpgrade;
             synchronized (mPm.mLock) {
-                // just remove the loaded entries from package lists
-                mPm.mPackages.remove(pkgSetting.getPackageName());
-            }
-
-            logCriticalInfo(Log.WARN,
-                    "System package updated;"
-                            + " name: " + pkgSetting.getPackageName()
-                            + "; " + pkgSetting.getVersionCode() + " --> "
-                            + parsedPackage.getLongVersionCode()
-                            + "; " + pkgSetting.getPathString()
-                            + " --> " + parsedPackage.getPath());
-
-            mRemovePackageHelper.cleanUpResources(
-                    pkgSetting.getPackageName(), new File(pkgSetting.getPathString()));
-            synchronized (mPm.mLock) {
-                mPm.mSettings.enableSystemPackageLPw(pkgSetting.getPackageName());
-            }
-        }
-
-        // The version of the application on the /system partition is less than or
-        // equal to the version on the /data partition. Throw an exception and use
-        // the application already installed on the /data partition.
-        if (scanSystemPartition && isSystemPkgUpdated && !isSystemPkgBetter) {
-            // For some updated system packages, during addForInit we want to ensure the
-            // PackageSetting has the correct SigningDetails compares to the original version on
-            // the system partition. For the check to happen later during the /data scan, update
-            // the disabled package setting per the original APK on a system partition so that it
-            // can be trusted during reconcile.
-            if (needSignatureMatchToSystem(parsedPackage.getPackageName())) {
-                final ParseTypeImpl input = ParseTypeImpl.forDefaultParsing();
-                final ParseResult<SigningDetails> result =
-                        ParsingPackageUtils.getSigningDetails(input, parsedPackage,
-                                false /*skipVerify*/);
-                if (result.isError()) {
-                    throw new PrepareFailure("Failed collect during scanPackageForInitLI",
-                            result.getException());
+                isUpgrade = mPm.isDeviceUpgrading();
+                if (scanSystemPartition && !pkgAlreadyExists
+                        && mPm.mSettings.getDisabledSystemPkgLPr(disabledPkgName) != null) {
+                    // The updated-package data for /system apk remains inconsistently
+                    // after the package data for /data apk is lost accidentally.
+                    // To recover it, enable /system apk and install it as non-updated system app.
+                    Slog.w(TAG, "Inconsistent package setting of updated system app for "
+                            + disabledPkgName + ". To recover it, enable the system app "
+                            + "and install it as non-updated system app.");
+                    mPm.mSettings.removeDisabledSystemPackageLPw(disabledPkgName);
                 }
-                disabledPkgSetting.setSigningDetails(result.getResult());
-            }
+                disabledPkgSetting = mPm.mSettings.getDisabledSystemPkgLPr(disabledPkgName);
+                isSystemPkgUpdated = disabledPkgSetting != null;
 
-            // In the case of a skipped package, commitReconciledScanResultLocked is not called to
-            // add the object to the "live" data structures, so this is the final mutation step
-            // for the package. Which means it needs to be finalized here to cache derived fields.
-            // This is relevant for cases where the disabled system package is used for flags or
-            // other metadata.
-            parsedPackage.hideAsFinal();
-            throw PackageManagerException.ofInternalError(
-                    "Package " + parsedPackage.getPackageName()
-                    + " at " + parsedPackage.getPath() + " ignored: updated version "
-                    + (pkgAlreadyExists ? String.valueOf(pkgSetting.getVersionCode()) : "unknown")
-                    + " better than this " + parsedPackage.getLongVersionCode(),
-                    PackageManagerException.INTERNAL_ERROR_UPDATED_VERSION_BETTER_THAN_SYSTEM);
-        }
-
-        // Verify certificates against what was last scanned. Force re-collecting certificate in two
-        // special cases:
-        // 1) when scanning system, force re-collect only if system is upgrading.
-        // 2) when scanning /data, force re-collect only if the package name is allowlisted.
-        final boolean forceCollect = scanSystemPartition ? isUpgrade
-                : pkgAlreadyExists && needSignatureMatchToSystem(pkgSetting.getPackageName());
-        if (DEBUG_VERIFY && forceCollect) {
-            Slog.d(TAG, "Force collect certificate of " + parsedPackage.getPackageName());
-        }
-
-        // APK verification can be skipped during certificate collection, only if the file is in a
-        // verified partition.
-        final boolean skipVerify = scanSystemPartition;
-        ScanPackageUtils.collectCertificatesLI(pkgSetting, parsedPackage,
-                mPm.getSettingsVersionForPackage(parsedPackage), forceCollect, skipVerify,
-                mPm.isPreNMR1Upgrade());
-
-        // Reset profile if the application version is changed
-        maybeClearProfilesForUpgradesLI(pkgSetting, parsedPackage);
-
-        /*
-         * A new system app appeared, but we already had a non-system one of the
-         * same name installed earlier.
-         */
-        boolean shouldHideSystemApp = false;
-        // A new application appeared on /system, but, we already have a copy of
-        // the application installed on /data.
-        if (scanSystemPartition && !isSystemPkgUpdated && pkgAlreadyExists
-                && !pkgSetting.isSystem()) {
-
-            if (!parsedPackage.getSigningDetails()
-                    .checkCapability(pkgSetting.getSigningDetails(),
-                            SigningDetails.CertCapabilities.INSTALLED_DATA)
-                    && !pkgSetting.getSigningDetails().checkCapability(
-                    parsedPackage.getSigningDetails(),
-                    SigningDetails.CertCapabilities.ROLLBACK)) {
-                logCriticalInfo(Log.WARN,
-                        "System package signature mismatch;"
-                                + " name: " + pkgSetting.getPackageName());
-                try (@SuppressWarnings("unused") PackageFreezer freezer = mPm.freezePackage(
-                        parsedPackage.getPackageName(), UserHandle.USER_ALL,
-                        "scanPackageInternalLI", ApplicationExitInfo.REASON_OTHER,
-                        null /* request */)) {
-                    mDeletePackageHelper.deletePackageLIF(
-                            parsedPackage.getPackageName(), null, true,
-                            mPm.mUserManager.getUserIds(), 0, new PackageRemovedInfo(), false);
+                if (DEBUG_INSTALL && isSystemPkgUpdated) {
+                    Slog.d(TAG, "updatedPkg = " + disabledPkgSetting);
                 }
-            } else if (newPkgVersionGreater || newSharedUserSetting) {
-                // The application on /system is newer than the application on /data.
-                // Simply remove the application on /data [keeping application data]
-                // and replace it with the version on /system.
+
+                if (scanSystemPartition && isSystemPkgUpdated) {
+                    // we're updating the disabled package, so, scan it as the package setting
+                    final ScanRequest request = new ScanRequest(parsedPackage,
+                            mPm.mSettings.getSharedUserSettingLPr(disabledPkgSetting),
+                            null, disabledPkgSetting /* pkgSetting */,
+                            initialScanRequest.mSharedUserSetting,
+                            null /* disabledPkgSetting */, null /* originalPkgSetting */,
+                            null, parseFlags, scanFlags,
+                            initialScanRequest.mIsPlatformPackage, user, null);
+                    ScanPackageUtils.applyPolicy(parsedPackage, scanFlags,
+                            mPm.getPlatformPackage(), true);
+                    final ScanResult scanResult =
+                            ScanPackageUtils.scanPackageOnly(request, mPm.mInjector,
+                                    mPm.mFactoryTest, -1L);
+                    if (scanResult.mExistingSettingCopied
+                            && scanResult.mRequest.mPkgSetting != null) {
+                        scanResult.mRequest.mPkgSetting.updateFrom(scanResult.mPkgSetting);
+                    }
+                }
+            } // End of mLock
+
+            shouldLogInitAppScanMetric = !scanSystemPartition && isSystemPkgUpdated;
+            final boolean newPkgChangedPaths = pkgAlreadyExists
+                    && !pkgSetting.getPathString().equals(parsedPackage.getPath());
+            final boolean newPkgVersionGreater = pkgAlreadyExists
+                    && parsedPackage.getLongVersionCode() > pkgSetting.getVersionCode();
+            final boolean newSharedUserSetting = pkgAlreadyExists
+                    && (initialScanRequest.mOldSharedUserSetting
+                    != initialScanRequest.mSharedUserSetting);
+            final boolean isSystemPkgBetter = scanSystemPartition && isSystemPkgUpdated
+                    && newPkgChangedPaths && (newPkgVersionGreater || newSharedUserSetting);
+            if (isSystemPkgBetter) {
+                // The version of the application on /system is greater than the version on
+                // /data. Switch back to the application on /system.
+                // It's safe to assume the application on /system will correctly scan. If not,
+                // there won't be a working copy of the application.
                 // Also, if the sharedUserSetting of the application on /system is different
-                // from the sharedUserSetting on data, we should trust the sharedUserSetting
-                // on /system, even if the application version on /system is smaller than
-                // the version on /data.
+                // from the sharedUserSetting on /data, switch back to the application on /system.
+                // We should trust the sharedUserSetting on /system, even if the application
+                // version on /system is smaller than the version on /data.
+                synchronized (mPm.mLock) {
+                    // just remove the loaded entries from package lists
+                    mPm.mPackages.remove(pkgSetting.getPackageName());
+                }
+
                 logCriticalInfo(Log.WARN,
-                        "System package enabled;"
+                        "System package updated;"
                                 + " name: " + pkgSetting.getPackageName()
                                 + "; " + pkgSetting.getVersionCode() + " --> "
                                 + parsedPackage.getLongVersionCode()
-                                + "; " + pkgSetting.getPathString() + " --> "
-                                + parsedPackage.getPath());
+                                + "; " + pkgSetting.getPathString()
+                                + " --> " + parsedPackage.getPath());
+
                 mRemovePackageHelper.cleanUpResources(
                         pkgSetting.getPackageName(), new File(pkgSetting.getPathString()));
-            } else {
-                // The application on /system is older than the application on /data. Hide
-                // the application on /system and the version on /data will be scanned later
-                // and re-added like an update.
-                shouldHideSystemApp = true;
-                logCriticalInfo(Log.INFO,
-                        "System package disabled;"
-                                + " name: " + pkgSetting.getPackageName()
-                                + "; old: " + pkgSetting.getPathString() + " @ "
-                                + pkgSetting.getVersionCode()
-                                + "; new: " + parsedPackage.getPath() + " @ "
-                                + parsedPackage.getLongVersionCode());
+                synchronized (mPm.mLock) {
+                    mPm.mSettings.enableSystemPackageLPw(pkgSetting.getPackageName());
+                }
+            }
+
+            // The version of the application on the /system partition is less than or
+            // equal to the version on the /data partition. Throw an exception and use
+            // the application already installed on the /data partition.
+            if (scanSystemPartition && isSystemPkgUpdated && !isSystemPkgBetter) {
+                // For some updated system packages, during addForInit we want to ensure the
+                // PackageSetting has the correct SigningDetails compares to the original version on
+                // the system partition. For the check to happen later during the /data scan, update
+                // the disabled package setting per the original APK on a system partition so that
+                // it can be trusted during reconcile.
+                if (needSignatureMatchToSystem(parsedPackage.getPackageName())) {
+                    final ParseTypeImpl input = ParseTypeImpl.forDefaultParsing();
+                    final ParseResult<SigningDetails> result =
+                            ParsingPackageUtils.getSigningDetails(input, parsedPackage,
+                                    false /*skipVerify*/);
+                    if (result.isError()) {
+                        throw new PrepareFailure("Failed collect during scanPackageForInitLI",
+                                result.getException());
+                    }
+                    disabledPkgSetting.setSigningDetails(result.getResult());
+                }
+
+                // In the case of a skipped package, commitReconciledScanResultLocked is not called
+                // to add the object to the "live" data structures, so this is the final mutation
+                // step for the package. Which means it needs to be finalized here to cache derived
+                // fields. This is relevant for cases where the disabled system package is used for
+                // flags or other metadata.
+                parsedPackage.hideAsFinal();
+                throw PackageManagerException.ofInternalError(
+                        "Package " + parsedPackage.getPackageName()
+                                + " at " + parsedPackage.getPath() + " ignored: updated version "
+                                + (pkgAlreadyExists
+                                        ? String.valueOf(pkgSetting.getVersionCode()) : "unknown")
+                                + " better than this " + parsedPackage.getLongVersionCode(),
+                        PackageManagerException.INTERNAL_ERROR_UPDATED_VERSION_BETTER_THAN_SYSTEM);
+            }
+
+            // Verify certificates against what was last scanned. Force re-collecting certificate in
+            // two special cases:
+            // 1) when scanning system, force re-collect only if system is upgrading.
+            // 2) when scanning /data, force re-collect only if the package name is allowlisted.
+            final boolean forceCollect = scanSystemPartition ? isUpgrade
+                    : pkgAlreadyExists && needSignatureMatchToSystem(pkgSetting.getPackageName());
+            if (DEBUG_VERIFY && forceCollect) {
+                Slog.d(TAG, "Force collect certificate of " + parsedPackage.getPackageName());
+            }
+
+            // APK verification can be skipped during certificate collection, only if the file is in
+            // a verified partition.
+            final boolean skipVerify = scanSystemPartition;
+            ScanPackageUtils.collectCertificatesLI(pkgSetting, parsedPackage,
+                    mPm.getSettingsVersionForPackage(parsedPackage), forceCollect, skipVerify,
+                    mPm.isPreNMR1Upgrade());
+
+            // Populate the InitAppScanMetrics object since all the variables are defined now.
+            metrics.setIsFsiEnabled(forceCollect)
+                    .setNumApkSplits(parsedPackage.getSplitCodePaths() == null
+                            ? 0
+                            : parsedPackage.getSplitCodePaths().length)
+                    .setSignatureSchemeVersion(
+                            parsedPackage.getSigningDetails().getSignatureSchemeVersion());
+
+            // Reset profile if the application version is changed
+            maybeClearProfilesForUpgradesLI(pkgSetting, parsedPackage);
+
+            /*
+             * A new system app appeared, but we already had a non-system one of the
+             * same name installed earlier.
+             */
+            boolean shouldHideSystemApp = false;
+            // A new application appeared on /system, but, we already have a copy of
+            // the application installed on /data.
+            if (scanSystemPartition && !isSystemPkgUpdated && pkgAlreadyExists
+                    && !pkgSetting.isSystem()) {
+
+                if (!parsedPackage.getSigningDetails()
+                        .checkCapability(pkgSetting.getSigningDetails(),
+                                SigningDetails.CertCapabilities.INSTALLED_DATA)
+                        && !pkgSetting.getSigningDetails().checkCapability(
+                        parsedPackage.getSigningDetails(),
+                        SigningDetails.CertCapabilities.ROLLBACK)) {
+                    logCriticalInfo(Log.WARN,
+                            "System package signature mismatch;"
+                                    + " name: " + pkgSetting.getPackageName());
+                    try (@SuppressWarnings("unused") PackageFreezer freezer = mPm.freezePackage(
+                            parsedPackage.getPackageName(), UserHandle.USER_ALL,
+                            "scanPackageInternalLI", ApplicationExitInfo.REASON_OTHER,
+                            null /* request */)) {
+                        mDeletePackageHelper.deletePackageLIF(
+                                parsedPackage.getPackageName(), null, true,
+                                mPm.mUserManager.getUserIds(), 0, new PackageRemovedInfo(), false);
+                    }
+                } else if (newPkgVersionGreater || newSharedUserSetting) {
+                    // The application on /system is newer than the application on /data.
+                    // Simply remove the application on /data [keeping application data]
+                    // and replace it with the version on /system.
+                    // Also, if the sharedUserSetting of the application on /system is different
+                    // from the sharedUserSetting on data, we should trust the sharedUserSetting
+                    // on /system, even if the application version on /system is smaller than
+                    // the version on /data.
+                    logCriticalInfo(Log.WARN,
+                            "System package enabled;"
+                                    + " name: " + pkgSetting.getPackageName()
+                                    + "; " + pkgSetting.getVersionCode() + " --> "
+                                    + parsedPackage.getLongVersionCode()
+                                    + "; " + pkgSetting.getPathString() + " --> "
+                                    + parsedPackage.getPath());
+                    mRemovePackageHelper.cleanUpResources(
+                            pkgSetting.getPackageName(), new File(pkgSetting.getPathString()));
+                } else {
+                    // The application on /system is older than the application on /data. Hide
+                    // the application on /system and the version on /data will be scanned later
+                    // and re-added like an update.
+                    shouldHideSystemApp = true;
+                    logCriticalInfo(Log.INFO,
+                            "System package disabled;"
+                                    + " name: " + pkgSetting.getPackageName()
+                                    + "; old: " + pkgSetting.getPathString() + " @ "
+                                    + pkgSetting.getVersionCode()
+                                    + "; new: " + parsedPackage.getPath() + " @ "
+                                    + parsedPackage.getLongVersionCode());
+                }
+            }
+
+            // A new application appeared on /system, and we are seeing it for the first time.
+            // Its also not updated as we don't have a copy of it on /data. So, scan it in a
+            // STOPPED state.
+            // We'll skip this step under the following conditions:
+            //   - It's "android"
+            //   - It's an APEX or overlay package since stopped state does not affect them.
+            //   - It is enumerated with a <initial-package-state> tag having the stopped attribute
+            //     set to false
+            //   - It doesn't have an enabled and exported launcher activity, which means the user
+            //     wouldn't have a way to un-stop it
+            final boolean isApexPkg = (scanFlags & SCAN_AS_APEX) != 0;
+            if (mPm.mShouldStopSystemPackagesByDefault
+                    && scanSystemPartition
+                    && !pkgAlreadyExists
+                    && !isApexPkg
+                    && !parsedPackage.isOverlayIsStatic()
+            ) {
+                String packageName = parsedPackage.getPackageName();
+                if (!"android".contentEquals(packageName)
+                        && !mPm.mInitialNonStoppedSystemPackages.contains(packageName)
+                        && hasLauncherEntry(parsedPackage)) {
+                    scanFlags |= SCAN_AS_STOPPED_SYSTEM_APP;
+                }
+            }
+
+            final long firstInstallTime = System.currentTimeMillis();
+            final ScanResult scanResult = scanPackageNew(parsedPackage, parseFlags,
+                    scanFlags | SCAN_UPDATE_SIGNATURE, firstInstallTime, user, null);
+            // Set scan outcome as successful for InitAppScanMetrics.
+            metrics.setInitAppScanOutcome(PackageManager.INSTALL_SUCCEEDED);
+            return new Pair<>(scanResult, shouldHideSystemApp);
+        } catch (PackageManagerException e) {
+            // Set scan outcome failure type for InitAppScanMetrics.
+            metrics.setInitAppScanOutcome(e.error);
+            throw e;
+        } finally {
+            // Finalizes the total scan duration and logs the InitAppScanMetrics metric. The metric
+            // is only logged for updated system apps.
+            if (shouldLogInitAppScanMetric) {
+                metrics.log();
             }
         }
-
-        // A new application appeared on /system, and we are seeing it for the first time.
-        // Its also not updated as we don't have a copy of it on /data. So, scan it in a
-        // STOPPED state.
-        // We'll skip this step under the following conditions:
-        //   - It's "android"
-        //   - It's an APEX or overlay package since stopped state does not affect them.
-        //   - It is enumerated with a <initial-package-state> tag having the stopped attribute
-        //     set to false
-        //   - It doesn't have an enabled and exported launcher activity, which means the user
-        //     wouldn't have a way to un-stop it
-        final boolean isApexPkg = (scanFlags & SCAN_AS_APEX) != 0;
-        if (mPm.mShouldStopSystemPackagesByDefault
-                && scanSystemPartition
-                && !pkgAlreadyExists
-                && !isApexPkg
-                && !parsedPackage.isOverlayIsStatic()
-        ) {
-            String packageName = parsedPackage.getPackageName();
-            if (!"android".contentEquals(packageName)
-                    && !mPm.mInitialNonStoppedSystemPackages.contains(packageName)
-                    && hasLauncherEntry(parsedPackage)) {
-                scanFlags |= SCAN_AS_STOPPED_SYSTEM_APP;
-            }
-        }
-
-        final long firstInstallTime = System.currentTimeMillis();
-        final ScanResult scanResult = scanPackageNew(parsedPackage, parseFlags,
-                scanFlags | SCAN_UPDATE_SIGNATURE, firstInstallTime, user, null);
-        return new Pair<>(scanResult, shouldHideSystemApp);
     }
 
     private static boolean hasLauncherEntry(ParsedPackage parsedPackage) {
