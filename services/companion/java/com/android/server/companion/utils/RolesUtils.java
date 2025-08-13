@@ -87,17 +87,13 @@ public final class RolesUtils {
                     PERMISSION_SCHEDULE_EXACT_ALARM, PERMISSION_BYPASS_DND
             ),
 
-            DEVICE_PROFILE_APP_STREAMING,
-            android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()
-                    ? List.of(PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_MIRROR_DISPLAY,
-                            PERMISSION_ADD_TRUSTED_DISPLAY, PERMISSION_POST_NOTIFICATIONS)
-                    : Collections.emptyList(),
+            DEVICE_PROFILE_APP_STREAMING, List.of(
+                    PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_MIRROR_DISPLAY,
+                    PERMISSION_ADD_TRUSTED_DISPLAY, PERMISSION_POST_NOTIFICATIONS),
 
-            DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
-            android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()
-                    ? List.of(PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_TRUSTED_DISPLAY,
-                    PERMISSION_POST_NOTIFICATIONS)
-                    : Collections.emptyList(),
+            DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, List.of(
+                    PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_TRUSTED_DISPLAY,
+                    PERMISSION_POST_NOTIFICATIONS),
 
             DEVICE_PROFILE_VIRTUAL_DEVICE, List.of(PERMISSION_CREATE_VIRTUAL_DEVICE,
                             PERMISSION_NEARBY_DEVICES, PERMISSION_POST_NOTIFICATIONS)
