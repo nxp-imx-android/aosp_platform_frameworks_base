@@ -12,7 +12,7 @@ android_library {
         "SettingsLibGraph",
     ],
     sdk_version: "system_current",
-    min_sdk_version: "21",
+    min_sdk_version: "23",
     kotlincflags: ["-Xjvm-default=all"],
     flags_packages: [
         "aconfig_settingslib_flags",
