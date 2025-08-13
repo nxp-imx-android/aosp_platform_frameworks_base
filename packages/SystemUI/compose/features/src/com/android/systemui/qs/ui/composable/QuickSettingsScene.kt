@@ -78,6 +78,7 @@ import com.android.systemui.notifications.ui.composable.NotificationScrollingSta
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.EditMode
+import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.qs.ui.composable.QuickSettingsScene.Companion.InternalScenes.Edit
 import com.android.systemui.qs.ui.composable.QuickSettingsScene.Companion.InternalScenes.QS
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsSceneContentViewModel
