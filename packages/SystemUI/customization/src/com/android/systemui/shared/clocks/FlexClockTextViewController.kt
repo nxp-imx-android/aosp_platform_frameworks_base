@@ -22,12 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import com.android.systemui.customization.clocks.ClockContext
+import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.view.DigitalAlignment
-import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -57,7 +57,7 @@ open class FlexClockTextViewController(
     isLargeClock: Boolean,
 ) : FlexClockViewController {
     override val view = FlexClockTextView(clockCtx, isLargeClock)
-    private val logger = Logger(clockCtx.messageBuffer, TAG)
+    private val logger = ClockLogger(null, clockCtx.messageBuffer, TAG)
     private val timespec = DigitalTimespecHandler(layerCfg.timespec, layerCfg.timeFormatter!!)
     override var onViewBoundsChanged by view::onViewBoundsChanged
     override var onViewMaxSizeChanged by view::onViewMaxSizeChanged

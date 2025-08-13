@@ -33,6 +33,7 @@ import com.android.systemui.shared.clocks.ClockRegistry
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.DisposableHandle
 
 /** Creates a keyguard presentation for a [Display]. */
 fun interface ConnectedDisplayKeyguardPresentationFactory {
@@ -57,6 +58,7 @@ constructor(
 
     private lateinit var constraintLayoutRootView: ConstraintLayout
     private lateinit var faceController: ClockFaceController
+    private var bindHandle: DisposableHandle? = null
 
     private val clockChangedListener =
         object : ClockRegistry.ClockChangeListener {
@@ -104,13 +106,15 @@ constructor(
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         clockRegistry.registerClockChangeListener(clockChangedListener)
-        clockEventController.registerListeners(constraintLayoutRootView)
+        clockEventController.registerListeners()
+        bindHandle = clockEventController.bind(constraintLayoutRootView)
         faceController.animations.enter()
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         clockEventController.unregisterListeners()
+        bindHandle?.dispose()
         clockRegistry.unregisterClockChangeListener(clockChangedListener)
     }
 

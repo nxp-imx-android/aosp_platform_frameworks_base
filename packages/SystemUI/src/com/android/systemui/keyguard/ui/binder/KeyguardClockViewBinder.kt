@@ -66,9 +66,11 @@ object KeyguardClockViewBinder {
         disposables +=
             keyguardRootView.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    keyguardClockInteractor.clockEventController.registerListeners(keyguardRootView)
+                    keyguardClockInteractor.clockEventController.registerListeners()
                 }
             }
+
+        disposables += keyguardClockInteractor.clockEventController.bind(keyguardRootView)
 
         disposables +=
             keyguardRootView.repeatWhenAttached {

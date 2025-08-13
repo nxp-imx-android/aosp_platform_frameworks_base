@@ -68,6 +68,10 @@ class LockscreenContent(
             rememberViewModel("LockscreenContent-scrimViewModel") {
                 notificationScrimViewModelFactory.create()
             }
+
+        // Ensure clock events are connected. This is a no-op if they are already registered.
+        clockInteractor.clockEventController.registerListeners()
+
         if (!viewModel.isContentVisible) {
             // If the content isn't supposed to be visible, show a large empty box as it's needed
             // for scene transition animations (can't just skip rendering everything or shared
@@ -78,9 +82,8 @@ class LockscreenContent(
         }
 
         DisposableEffect(view) {
-            clockInteractor.clockEventController.registerListeners(view)
-
-            onDispose { clockInteractor.clockEventController.unregisterListeners() }
+            val handle = clockInteractor.clockEventController.bind(view)
+            onDispose { handle.dispose() }
         }
 
         val blueprint = blueprintByBlueprintId[viewModel.blueprintId] ?: return
