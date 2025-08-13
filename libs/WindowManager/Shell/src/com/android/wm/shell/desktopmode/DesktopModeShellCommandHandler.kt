@@ -182,7 +182,7 @@ class DesktopModeShellCommandHandler(
             pw.println("Not supported.")
             return false
         }
-        pw.println("Not implemented.")
+        controller.removeAllDesks(exitReason = ExitReason.ADB_COMMAND_EXIT)
         return false
     }
 

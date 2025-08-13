@@ -5190,6 +5190,7 @@ class DesktopTasksController(
 
     /** Removes all the available desks on all displays. */
     fun removeAllDesks(userId: Int = shellController.currentUserId, exitReason: ExitReason) {
+        logV("removeAllDesks userId=%d reason=%s", userId, exitReason)
         val repository = userRepositories.getProfile(userId)
         repository.getAllDeskIds().forEach { deskId ->
             removeDesk(deskId = deskId, userId = userId, exitReason = exitReason)
