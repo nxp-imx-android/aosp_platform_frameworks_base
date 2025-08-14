@@ -25,8 +25,6 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Handler
 import android.os.UserManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.view.IWindowManager
 import android.view.MotionEvent
@@ -40,7 +38,6 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
-import com.android.wm.shell.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubble
@@ -334,61 +331,8 @@ class BubbleBarLayerViewTest {
         assertThat(uiEventLoggerFake.logs[0]).hasBubbleInfo(bubble)
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN, Flags.FLAG_ENABLE_BUBBLE_ANYTHING)
     @Test
     fun testEventLogging_dragExpandedViewLeft() {
-        val bubble = createBubble("first")
-        bubblePositioner.bubbleBarLocation = BubbleBarLocation.RIGHT
-
-        getInstrumentation().runOnMainSync {
-            bubbleBarLayerView.showExpandedView(bubble)
-            bubble.bubbleBarExpandedView!!.onContentVisibilityChanged(true /* visible */)
-        }
-        waitForExpandedViewAnimation()
-
-        val handleView = bubbleBarLayerView.findViewById<View>(R.id.bubble_bar_handle_view)
-        assertThat(handleView).isNotNull()
-
-        // Drag from right to left
-        handleView.dispatchTouchEvent(0L, MotionEvent.ACTION_DOWN, rightEdge())
-        handleView.dispatchTouchEvent(10L, MotionEvent.ACTION_MOVE, leftEdge())
-        handleView.dispatchTouchEvent(20L, MotionEvent.ACTION_UP, leftEdge())
-
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
-        assertThat(uiEventLoggerFake.logs[0].eventId)
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_MOVED_LEFT_DRAG_EXP_VIEW.id)
-        assertThat(uiEventLoggerFake.logs[0]).hasBubbleInfo(bubble)
-    }
-
-    @DisableFlags(Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN, Flags.FLAG_ENABLE_BUBBLE_ANYTHING)
-    @Test
-    fun testEventLogging_dragExpandedViewRight() {
-        val bubble = createBubble("first")
-        bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
-
-        getInstrumentation().runOnMainSync {
-            bubbleBarLayerView.showExpandedView(bubble)
-            bubble.bubbleBarExpandedView!!.onContentVisibilityChanged(true /* visible */)
-        }
-        waitForExpandedViewAnimation()
-
-        val handleView = bubbleBarLayerView.findViewById<View>(R.id.bubble_bar_handle_view)
-        assertThat(handleView).isNotNull()
-
-        // Drag from left to right
-        handleView.dispatchTouchEvent(0L, MotionEvent.ACTION_DOWN, leftEdge())
-        handleView.dispatchTouchEvent(10L, MotionEvent.ACTION_MOVE, rightEdge())
-        handleView.dispatchTouchEvent(20L, MotionEvent.ACTION_UP, rightEdge())
-
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
-        assertThat(uiEventLoggerFake.logs[0].eventId)
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_MOVED_RIGHT_DRAG_EXP_VIEW.id)
-        assertThat(uiEventLoggerFake.logs[0]).hasBubbleInfo(bubble)
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN, Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    @Test
-    fun testEventLogging_dragExpandedViewLeft_bubbleAnything() {
         val bubble = createBubble("first")
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.RIGHT
 
@@ -421,9 +365,8 @@ class BubbleBarLayerViewTest {
         assertThat(uiEventLoggerFake.logs[0]).hasBubbleInfo(bubble)
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN, Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
-    fun testEventLogging_dragExpandedViewRight_bubbleAnything() {
+    fun testEventLogging_dragExpandedViewRight() {
         val bubble = createBubble("first")
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
 
