@@ -525,6 +525,24 @@ private:
     int mCount = 0;
 };
 
+template <int N>
+class Histogram {
+public:
+    // Expects values between 0f and 1f
+    void add(float sample) {
+        if (sample >= 0.f && sample <= 1.f) {
+            buckets[std::min(N - 1, static_cast<int>(sample * N))]++;
+        }
+    }
+
+    int size() { return N; }
+
+    int operator[](int i) const { return buckets[i]; }
+
+private:
+    std::array<int, N> buckets;
+};
+
 BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, size_t rowBytes) {
     ATRACE_CALL();
 
@@ -536,6 +554,7 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
 
     MinMaxAverage hue, saturation, value;
     int sampledCount = 0;
+    Histogram<10> valueHistogram;
 
     // Sample a grid of 100 pixels to get an overall estimation of the colors in play
     const int x_step = std::max(1, pixmap.width() / 10);
@@ -552,7 +571,9 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
             SkColorToHSV(color, hsv);
             hue.add(hsv[0]);
             saturation.add(hsv[1]);
-            value.add(hsv[2]);
+            float val = hsv[2];
+            value.add(val);
+            valueHistogram.add(val);
         }
     }
 
@@ -570,6 +591,21 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
           saturation.average(), info.width(), info.height());
 
     if (CC_UNLIKELY(view_accessibility_flags::force_invert_color())) {
+        // The following palettes only apply when the app is applying Force Invert and are not
+        // used by classic Force Dark.
+        // TODO: b/411725862 - Improve the barcode heuristic by incorporating actual barcode specs
+        if (sampledCount > 80) {
+            // The image should be majority pure black and white, but not entirely one color.
+            int expectedBlackAndWhiteSamples = sampledCount * 0.9;
+            int expectedBlackOrWhiteSamples = sampledCount * 0.25;
+            int blackSamples = valueHistogram[0];
+            int whiteSamples = valueHistogram[valueHistogram.size() - 1];
+            if (blackSamples + whiteSamples >= expectedBlackAndWhiteSamples &&
+                blackSamples >= expectedBlackOrWhiteSamples &&
+                whiteSamples >= expectedBlackOrWhiteSamples) {
+                return BitmapPalette::Barcode;
+            }
+        }
         if (saturation.delta() > 0.1f ||
             (hue.delta() > 20 && saturation.average() > 0.2f && value.average() < 0.9f)) {
             return BitmapPalette::Colorful;
