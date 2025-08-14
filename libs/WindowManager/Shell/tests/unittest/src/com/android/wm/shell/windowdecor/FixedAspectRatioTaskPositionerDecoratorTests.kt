@@ -29,6 +29,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CtrlType
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -70,7 +71,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             )
         doReturn(PORTRAIT_BOUNDS)
             .`when`(mockTaskPositioner)
-            .onDragPositioningStart(any(), any(), any(), any())
+            .onDragPositioningStart(any(), any(), any(), any(), any())
         doReturn(Rect()).`when`(mockTaskPositioner).onDragPositioningMove(any(), any(), any())
         doReturn(Rect()).`when`(mockTaskPositioner).onDragPositioningEnd(any(), any(), any())
         decoratedTaskPositioner =
@@ -98,6 +99,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             originalX,
             originalY,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         val capturedValues = getLatestOnStartArguments()
@@ -118,6 +120,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             originalX,
             originalY,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         val capturedValues = getLatestOnStartArguments()
@@ -140,6 +143,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         val adjustedCtrlType = testCase.ctrlType + testCase.additionalEdgeCtrlType
@@ -160,6 +164,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             originalX,
             originalX,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
         whenever(mockDesktopWindowDecoration.taskInfo)
             .thenReturn(
@@ -190,6 +195,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         val updatedBounds =
@@ -216,6 +222,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         decoratedTaskPositioner.onDragPositioningMove(
@@ -249,6 +256,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         decoratedTaskPositioner.onDragPositioningMove(
@@ -283,6 +291,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             originalX,
             originalX,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
         whenever(mockDesktopWindowDecoration.taskInfo)
             .thenReturn(
@@ -313,6 +322,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         decoratedTaskPositioner.onDragPositioningEnd(
@@ -339,6 +349,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         decoratedTaskPositioner.onDragPositioningEnd(
@@ -372,6 +383,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
             DISPLAY_ID,
             startingPoint.x,
             startingPoint.y,
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         decoratedTaskPositioner.onDragPositioningEnd(
@@ -408,6 +420,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
                 any(),
                 captorCoordinates.capture(),
                 captorCoordinates.capture(),
+                any(),
             )
 
         return CtrlCoordinateCapture(
@@ -448,7 +461,7 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase() {
         val mockBounds = if (orientation.isPortrait) PORTRAIT_BOUNDS else LANDSCAPE_BOUNDS
         doReturn(mockBounds)
             .`when`(mockTaskPositioner)
-            .onDragPositioningStart(any(), any(), any(), any())
+            .onDragPositioningStart(any(), any(), any(), any(), any())
         doReturn(mockBounds).`when`(decoratedTaskPositioner).getBounds(any())
         return mockBounds
     }

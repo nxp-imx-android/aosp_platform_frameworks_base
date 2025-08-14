@@ -1052,7 +1052,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         mockTaskPositioner.stub {
-            on { onDragPositioningStart(any(), any(), any(), any()) } doReturn INITIAL_BOUNDS
+            on { onDragPositioningStart(any(), any(), any(), any(), any()) } doReturn INITIAL_BOUNDS
             on { onDragPositioningMove(any(), any(), any()) } doReturn INITIAL_BOUNDS
             on { onDragPositioningEnd(any(), any(), any()) } doReturn INITIAL_BOUNDS
         }
@@ -1495,7 +1495,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             val mockViewRootImpl = mock<ViewRootImpl> { on { inputToken } doReturn mockInputToken }
             val view = mock<View> { on { getViewRootImpl() } doReturn mockViewRootImpl }
             mockTaskPositioner.stub {
-                on { onDragPositioningStart(any(), any(), any(), any()) } doReturn INITIAL_BOUNDS
+                on { onDragPositioningStart(any(), any(), any(), any(), any()) } doReturn
+                    INITIAL_BOUNDS
                 on { onDragPositioningMove(any(), any(), any()) } doReturn BOUNDS_AFTER_FIRST_MOVE
                 on { onDragPositioningEnd(any(), any(), any()) } doReturn
                     BOUNDS_ON_DRAG_END_DESKTOP_ACCEPTED
@@ -1625,7 +1626,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             val mockViewRootImpl = mock<ViewRootImpl> { on { inputToken } doReturn mockInputToken }
             val view = mock<View> { on { getViewRootImpl() } doReturn mockViewRootImpl }
             mockTaskPositioner.stub {
-                on { onDragPositioningStart(any(), any(), any(), any()) } doReturn INITIAL_BOUNDS
+                on { onDragPositioningStart(any(), any(), any(), any(), any()) } doReturn
+                    INITIAL_BOUNDS
                 on { onDragPositioningMove(any(), any(), any()) } doReturn BOUNDS_AFTER_FIRST_MOVE
                 on { onDragPositioningEnd(any(), any(), any()) } doReturn
                     BOUNDS_IGNORED_ON_NON_DESKTOP
