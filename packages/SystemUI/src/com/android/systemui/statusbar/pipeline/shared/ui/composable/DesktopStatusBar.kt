@@ -34,11 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.android.settingslib.Utils
 import com.android.systemui.clock.ui.composable.ClockLegacy
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
@@ -213,15 +213,6 @@ private fun QuickSettingsChip(
             }
         } else {
             val localContext = LocalContext.current
-            val themedContext = ContextThemeWrapper(localContext, R.style.Theme_SystemUI)
-            val foregroundColor =
-                Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimary)
-            val backgroundColor =
-                Utils.getColorAttrDefaultColor(
-                    themedContext,
-                    android.R.attr.textColorPrimaryInverse,
-                )
-
             val iconContainer =
                 remember(localContext, iconManagerFactory) {
                     StatusIconContainer(
@@ -234,19 +225,24 @@ private fun QuickSettingsChip(
                     iconManagerFactory.create(iconContainer, StatusBarLocation.HOME)
                 }
 
-            SystemStatusIconsLegacy(
-                statusBarIconController = statusBarIconController,
-                iconContainer = iconContainer,
-                iconManager = iconManager,
-                useExpandedFormat = true,
-                foregroundColor = foregroundColor,
-                backgroundColor = backgroundColor,
-                isSingleCarrier = true,
-                isMicCameraIndicationEnabled = true,
-                isPrivacyChipEnabled = true,
-                isTransitioning = false,
-                isLocationIndicationEnabled = true,
-            )
+            WithAdaptiveTint(
+                isHighlighted = viewModel.isQuickSettingsChipHighlighted,
+                isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+            ) { tint ->
+                SystemStatusIconsLegacy(
+                    statusBarIconController = statusBarIconController,
+                    iconContainer = iconContainer,
+                    iconManager = iconManager,
+                    useExpandedFormat = true,
+                    foregroundColor = tint.toArgb(),
+                    backgroundColor = ChipHighlightModel.Strong.backgroundColor.toArgb(),
+                    isSingleCarrier = true,
+                    isMicCameraIndicationEnabled = true,
+                    isPrivacyChipEnabled = true,
+                    isTransitioning = false,
+                    isLocationIndicationEnabled = true,
+                )
+            }
         }
 
         val batteryHeight =
