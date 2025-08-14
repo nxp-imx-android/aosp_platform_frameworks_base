@@ -18,7 +18,7 @@ package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import android.view.View
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +60,7 @@ constructor(
                 factory: LockscreenElementFactory,
                 context: LockscreenElementContext,
             ) {
-                IndicationArea(modifier = Modifier.fillMaxWidth())
+                IndicationArea()
             }
         }
 
@@ -83,7 +83,7 @@ constructor(
                 view
             },
             onRelease = { disposable?.dispose() },
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxSize(),
         )
     }
 }

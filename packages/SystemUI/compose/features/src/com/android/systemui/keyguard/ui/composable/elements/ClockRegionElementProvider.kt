@@ -41,6 +41,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.collections.List
@@ -80,7 +81,13 @@ constructor(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = paddingModifier,
                     ) {
-                        factory.lockscreenElement(Clock.Small, context)
+                        factory.lockscreenElement(
+                            Clock.Small,
+                            context,
+                            Modifier.padding(
+                                top = dimensionResource(R.dimen.keyguard_clock_top_margin)
+                            ),
+                        )
 
                         if (!shouldDateWeatherBeBelowSmallClock) {
                             Column(

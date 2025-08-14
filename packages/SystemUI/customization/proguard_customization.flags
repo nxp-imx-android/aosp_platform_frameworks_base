@@ -1,9 +1,6 @@
 -include ../proguard_kotlin.flags
 
-# These are nessecary to keep keyguard clocks from crashing at runtime
-#TODO(b/432451019): We need a less manual method of doing this
-#TODO(b/432451019): Failing to keep this up to date can't cause systemui/wpp to crash loop in -userdebug
-
+# These are nessecary to keep keyguard clock plugins from crashing at runtime
 -keep class androidx.compose.runtime.ProvidableCompositionLocal { *; }
 
 -keep class androidx.compose.runtime.Updater {
@@ -11,6 +8,7 @@
 }
 
 -keep class androidx.compose.runtime.Composer {
+    *** shouldExecute(...);
     *** startRestartGroup(...);
     *** endRestartGroup(...);
     *** startReplaceGroup(...);

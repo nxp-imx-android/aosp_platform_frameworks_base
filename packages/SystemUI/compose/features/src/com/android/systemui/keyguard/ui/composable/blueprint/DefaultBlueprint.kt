@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
-import com.android.systemui.keyguard.ui.composable.elements.AmbientIndicationElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.AodNotificationIconsElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.AodPromotedNotificationAreaElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.ClockRegionElementProvider
@@ -35,6 +34,7 @@ import com.android.systemui.keyguard.ui.composable.elements.LockscreenLowerRegio
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.MediaElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.NotificationStackElementProvider
+import com.android.systemui.keyguard.ui.composable.elements.OEMElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.SettingsMenuElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.ShortcutElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.SmartspaceElementProvider
@@ -46,7 +46,6 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
-import java.util.Optional
 import javax.inject.Inject
 
 /** Renders the lockscreen scene when showing a standard phone or tablet layout */
@@ -62,8 +61,7 @@ constructor(
     private val aodPromotedNotificationElementProvider: AodPromotedNotificationAreaElementProvider,
     private val lowerRegionElementProvider: LockscreenLowerRegionElementProvider,
     private val lockIconElementProvider: LockIconElementProvider,
-    private val ambientIndicationElementProviderOptional:
-        Optional<AmbientIndicationElementProvider>,
+    private val oemElementProviders: Set<@JvmSuppressWildcards OEMElementProvider>,
     private val shortcutElementProvider: ShortcutElementProvider,
     private val indicationAreaElementProvider: IndicationAreaElementProvider,
     private val settingsMenuElementProvider: SettingsMenuElementProvider,
@@ -95,7 +93,7 @@ constructor(
                 aodPromotedNotificationElementProvider,
                 currentClock?.smallClock?.layout,
                 currentClock?.largeClock?.layout,
-                ambientIndicationElementProviderOptional.get(),
+                *oemElementProviders.toTypedArray(),
             )
 
         val burnIn = rememberBurnIn(keyguardClockViewModel)

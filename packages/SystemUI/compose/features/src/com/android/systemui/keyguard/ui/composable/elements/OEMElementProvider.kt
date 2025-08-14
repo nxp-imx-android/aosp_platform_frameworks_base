@@ -18,5 +18,5 @@ package com.android.systemui.keyguard.ui.composable.elements
 
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 
-/** Defines interface for classes that can render the ambient indication area. */
-interface AmbientIndicationElementProvider : LockscreenElementProvider
+/** Defines interface for providing OEM specific lockscreen elements (like Ambient Indication). */
+interface OEMElementProvider : LockscreenElementProvider

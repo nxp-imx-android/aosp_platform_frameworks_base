@@ -16,15 +16,14 @@
 
 package com.android.systemui.keyguard.ui.composable.elements
 
-import dagger.BindsOptionalOf
 import dagger.Module
+import dagger.multibindings.Multibinds
 
 /**
- * Dagger module for providing placeholders for optional lockscreen scene elements that don't exist
- * in AOSP but may be provided by OEMs.
+ * Dagger module for providing empty placeholder for OEMElements. This gives dagger something to
+ * return when the OEM has no custom elements.
  */
 @Module
-interface OptionalElementModule {
-    // TODO(b/432451019): This would be better as a list of OEM element providers
-    @BindsOptionalOf fun ambientIndicationElementProvider(): AmbientIndicationElementProvider
+interface OEMElementProviderModule {
+    @Multibinds fun oemElementProviders(): Set<OEMElementProvider>
 }

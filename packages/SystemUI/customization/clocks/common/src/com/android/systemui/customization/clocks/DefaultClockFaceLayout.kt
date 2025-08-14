@@ -21,13 +21,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.constraintlayout.widget.ConstraintSet.BOTTOM
@@ -71,20 +69,10 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
                 factory: LockscreenElementFactory,
                 context: LockscreenElementContext,
             ) {
-                // TODO(b/432451019): Collect correctly. Possibly route in using the ViewModel
-                // val topMargin = if(isShadeLayoutWide) {
-                //    dimensionResource(SysuiR.dimen.keyguard_split_shade_top_margin) +
-                //        systemBarUtils.getStatusBarHeaderHeightKeyguard()
-                // } else {
-                //    dimensionResource(SysuiR.dimen.keyguard_clock_top_margin)
-                // }
-                val topMargin = 0.dp
-
                 clockView(
                     view = view,
                     modifier =
                         Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
-                            .padding(top = topMargin)
                             .then(context.burnInModifier),
                 )
             }
@@ -108,7 +96,6 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     companion object {
         @Composable
         fun clockView(view: View?, modifier: Modifier = Modifier) {
-            // TODO(b/432451019): This may be more performant wrapped in a Box. See b/430690566.
             AndroidView(
                 factory = {
                     FrameLayout(it).apply {

@@ -104,7 +104,6 @@ constructor(
     }
 
     @Composable
-    // TODO(b/432451019): Can this be removed?
     private fun ContentScope.HeadsUpNotifications() {
         SnoozeableHeadsUpNotificationSpace(
             stackScrollView = stackScrollView.get(),
