@@ -18,6 +18,9 @@ java_library_static {
     name: "services.serial",
     defaults: ["platform_service_defaults"],
     srcs: [":services.serial-sources"],
+    static_libs: [
+        "android.hardware.serialservice-java",
+    ],
     libs: [
         "services.core",
     ],

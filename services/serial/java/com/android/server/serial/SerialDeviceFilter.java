@@ -16,14 +16,21 @@
 
 package com.android.server.serial;
 
-class SerialConstants {
+import android.hardware.serialservice.SerialPortInfo;
 
-    /** Directory with device pseudo-files, including serial devices. */
-    static final String DEV_DIR = "/dev";
+import java.util.function.Predicate;
 
-    /** Sysfs directory containing information about serial devices. */
-    static final String SYSFS_DIR = "/sys/class/tty";
+/** Filters serial devices that are exposed to the user. */
+class SerialDeviceFilter implements Predicate<SerialPortInfo> {
 
-    private SerialConstants() {
+    private static final String SERIAL_DRIVER_TYPE = "serial";
+
+    private static final String BUILT_IN_SERIAL_SUBSYSTEM = "serial-base";
+
+    public boolean test(SerialPortInfo info) {
+        // Expose only devices having "serial" driver type.
+        return info.driverType.equals(SERIAL_DRIVER_TYPE)
+                // Keep built-in UARTs hidden (for security reasons).
+                && !info.subsystem.equals(BUILT_IN_SERIAL_SUBSYSTEM);
     }
 }

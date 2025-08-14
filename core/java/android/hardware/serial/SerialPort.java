@@ -16,8 +16,6 @@
 
 package android.hardware.serial;
 
-import static android.system.OsConstants.ENOENT;
-
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.annotation.FlaggedApi;
@@ -27,7 +25,6 @@ import android.content.Context;
 import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.system.ErrnoException;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -131,14 +128,14 @@ public final class SerialPort {
      *
      * <p>Exceptions passed to {@code receiver} may be
      * <ul>
-     * <li> {@link ErrnoException} with ENOENT if the port is detached or any syscall to open the
-     * port fails that come with an errno</li>
-     * <li> {@link IOException} if other required operations fail that don't come with errno</li>
-     * <li> {@link SecurityException} if the user rejects the open request</li>
+     * <li> {@link IllegalStateException} if the port is not found.</li>
+     * <li> {@link IOException} if the port cannot be opened.</li>
+     * <li> {@link SecurityException} if the user rejects the open request.</li>
      * </ul>
      *
      * @param flags     open flags that define read/write mode and other options.
-     * @param exclusive whether the app needs exclusive access with TIOCEXCL(2const)
+     * @param exclusive whether to request exclusive access to the port, preventing other processes
+     *                  from opening it.
      * @param executor  the executor used to run receiver
      * @param receiver  the outcome receiver
      * @throws IllegalArgumentException if the set of flags is not correct.
@@ -174,18 +171,18 @@ public final class SerialPort {
         }
 
         @Override
-        public void onError(@ErrorCode int errorCode, int errno, String message) {
-            mExecutor.execute(() -> mReceiver.onError(getException(errorCode, errno, message)));
+        public void onError(@ErrorCode int errorCode, String message) {
+            mExecutor.execute(() -> mReceiver.onError(getException(errorCode, message)));
         }
 
         @NonNull
-        private static Exception getException(int errorCode, int errno, String message) {
+        private static Exception getException(int errorCode, String message) {
             return switch (errorCode) {
-                case ErrorCode.ERROR_READING_DRIVERS -> new IOException(message);
-                case ErrorCode.ERROR_PORT_NOT_FOUND -> new ErrnoException(message, ENOENT);
+                case ErrorCode.ERROR_PORT_NOT_FOUND -> new IllegalStateException(message);
                 case ErrorCode.ERROR_ACCESS_DENIED -> new SecurityException(message);
-                case ErrorCode.ERROR_OPENING_PORT -> new ErrnoException(message, errno);
-                default -> new IllegalStateException("Unexpected errorCode " + errorCode);
+                case ErrorCode.ERROR_OPENING_PORT -> new IOException(message);
+                default -> new IllegalStateException(
+                        "errorCode=" + errorCode + ", message=" + message);
             };
         }
     }
