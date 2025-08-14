@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -42,25 +43,27 @@ fun PreShareToolbar(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val tabIcon by
+        loadIcon(
+            viewModel = viewModel,
+            resId = R.drawable.ic_screen_capture_tab,
+            contentDescription = null,
+        )
+    val windowIcon by
+        loadIcon(
+            viewModel = viewModel,
+            resId = R.drawable.ic_screen_capture_window,
+            contentDescription = null,
+        )
     val shareTargetButtonItems =
         listOf(
             RadioButtonGroupItem(
-                icon =
-                    loadIcon(
-                        viewModel = viewModel,
-                        resId = R.drawable.ic_screen_capture_tab,
-                        contentDescription = null,
-                    ),
+                icon = tabIcon,
                 isSelected = viewModel.selectedScreenShareTarget == ScreenShareTarget.TAB,
                 onClick = { viewModel.onTargetSelected(ScreenShareTarget.TAB) },
             ),
             RadioButtonGroupItem(
-                icon =
-                    loadIcon(
-                        viewModel = viewModel,
-                        resId = R.drawable.ic_screen_capture_window,
-                        contentDescription = null,
-                    ),
+                icon = windowIcon,
                 isSelected = viewModel.selectedScreenShareTarget == ScreenShareTarget.APP_WINDOW,
                 onClick = { viewModel.onTargetSelected(ScreenShareTarget.APP_WINDOW) },
             ),
@@ -72,13 +75,14 @@ fun PreShareToolbar(
 
             Spacer(Modifier.size(16.dp))
 
+            val shareIcon by
+                loadIcon(
+                    viewModel = viewModel,
+                    resId = R.drawable.ic_present_to_all,
+                    ContentDescription.Resource(R.string.screen_share_toolbar_share_button),
+                )
             PrimaryButton(
-                icon =
-                    loadIcon(
-                        viewModel = viewModel,
-                        resId = R.drawable.ic_present_to_all,
-                        ContentDescription.Resource(R.string.screen_share_toolbar_share_button),
-                    ),
+                icon = shareIcon,
                 text = stringResource(R.string.screen_share_toolbar_share_button),
                 onClick = {},
             )

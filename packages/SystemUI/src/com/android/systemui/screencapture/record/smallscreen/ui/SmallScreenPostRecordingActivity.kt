@@ -149,14 +149,15 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
                     }
                 }
                 if (!shouldUseFlatBottomBar) {
+                    val shareIcon by
+                        loadIcon(
+                            viewModel,
+                            R.drawable.ic_screenshot_share,
+                            contentDescription = null,
+                        )
                     PrimaryButton(
                         text = stringResource(R.string.screenrecord_share_label),
-                        icon =
-                            loadIcon(
-                                viewModel,
-                                R.drawable.ic_screenshot_share,
-                                contentDescription = null,
-                            ),
+                        icon = shareIcon,
                         onClick = { viewModel.share() },
                         modifier =
                             Modifier.fillMaxWidth()
@@ -170,7 +171,7 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
                 modifier = Modifier.padding(horizontal = 12.dp).size(48.dp).align(Alignment.TopEnd),
             ) {
                 LoadingIcon(
-                    icon = loadIcon(viewModel, R.drawable.ic_close, null),
+                    icon = loadIcon(viewModel, R.drawable.ic_close, null).value,
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp),
                 )
@@ -214,7 +215,7 @@ private fun PostRecordSnackbar(
                     .size(24.dp),
         ) {
             LoadingIcon(
-                icon = loadIcon(viewModel, visuals.iconRes, null),
+                icon = loadIcon(viewModel, visuals.iconRes, null).value,
                 tint = MaterialTheme.colorScheme.inverseSurface,
                 modifier = modifier.size(16.dp),
             )
@@ -252,7 +253,7 @@ private fun PostRecordButton(
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
     ) {
         LoadingIcon(
-            icon = loadIcon(drawableLoaderViewModel, iconRes, contentDescription = null),
+            icon = loadIcon(drawableLoaderViewModel, iconRes, contentDescription = null).value,
             modifier = Modifier.size(20.dp),
         )
         Spacer(modifier = Modifier.width(8.dp))
