@@ -27,11 +27,11 @@ import android.tools.flicker.assertions.FlickerChecker
 import android.tools.traces.component.ComponentNameMatcher.Companion.DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.appWindowBecomesVisible
-import com.android.wm.shell.flicker.utils.appWindowHasDesktopModeInitialBoundsAtTheEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import com.android.wm.shell.flicker.utils.layerIsVisibleAtEnd
 import com.android.wm.shell.scenarios.EnterDesktopFromKeyboardShortcut
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -65,8 +65,7 @@ class EnterDesktopFromKeyboardShortcutFlickerTest(flicker: FlickerTest) :
         }
 
     @Test
-    fun appWindowHasDesktopModeInitialBoundsAtTheEnd() =
-        flicker.appWindowHasDesktopModeInitialBoundsAtTheEnd(testApp)
+    fun appWindowInsideDisplayBoundsAtEnd() = flicker.appWindowInsideDisplayBoundsAtEnd(testApp)
 
     @Test
     fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(testApp)
