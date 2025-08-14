@@ -20,6 +20,14 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 
-val Kosmos.preShareViewModel by Fixture {
-    PreShareViewModel(drawableLoaderViewModelImpl = drawableLoaderViewModelImpl)
+val Kosmos.preShareToolbarViewModelFactory by Fixture {
+    object : PreShareToolbarViewModel.Factory {
+        override fun create(): PreShareToolbarViewModel {
+            return PreShareToolbarViewModel(
+                drawableLoaderViewModelImpl = drawableLoaderViewModelImpl
+            )
+        }
+    }
 }
+
+val Kosmos.preShareToolbarViewModel by Fixture { preShareToolbarViewModelFactory.create() }

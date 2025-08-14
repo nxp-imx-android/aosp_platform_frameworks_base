@@ -31,11 +31,11 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class PreShareViewModelTest : SysuiTestCase() {
+class PreShareToolbarViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
 
-    private val viewModel: PreShareViewModel by lazy { kosmos.preShareViewModel }
+    private val viewModel: PreShareToolbarViewModel by lazy { kosmos.preShareToolbarViewModel }
 
     @Before
     fun setUp() {

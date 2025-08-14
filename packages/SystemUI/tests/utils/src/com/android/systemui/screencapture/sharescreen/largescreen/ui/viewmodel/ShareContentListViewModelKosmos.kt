@@ -20,7 +20,14 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.screencapture.common.ui.viewmodel.fakeRecentTasksViewModel
 
-/** A Kosmos fixture for a fake [ShareContentListViewModel] that can be used in tests. */
+val Kosmos.fakeShareContentListViewModelFactory by Fixture {
+    object : ShareContentListViewModel.Factory {
+        override fun create(): ShareContentListViewModel {
+            return ShareContentListViewModel(recentTasksViewModel = fakeRecentTasksViewModel)
+        }
+    }
+}
+
 val Kosmos.fakeShareContentListViewModel by Fixture {
-    ShareContentListViewModel(recentTasksViewModel = fakeRecentTasksViewModel)
+    fakeShareContentListViewModelFactory.create()
 }

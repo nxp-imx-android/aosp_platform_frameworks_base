@@ -16,13 +16,37 @@
 
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareViewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 
 /** Main component for the screen share UI. */
 @Composable
-fun PreShareUI(viewModel: PreShareViewModel) {
-    PreShareToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
-
-    // TODO: Add PreShareSelector here.
+fun PreShareUI(
+    preShareToolbarViewModel: PreShareToolbarViewModel,
+    shareContentListViewModel: ShareContentListViewModel,
+    recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.size(800.dp, 600.dp),
+    ) {
+        PreShareToolbar(
+            preShareToolbarViewModel = preShareToolbarViewModel,
+            expanded = true,
+            onCloseClick = {},
+        )
+        ShareContentSelector(
+            shareContentListViewModel = shareContentListViewModel,
+            recentTaskViewModelFactory = recentTaskViewModelFactory,
+        )
+    }
 }

@@ -16,9 +16,10 @@
 
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
-import android.graphics.Color
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -37,10 +38,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
@@ -116,12 +115,16 @@ private fun SelectorItem(
             modifier = Modifier.padding(12.dp).clickable(onClick = onItemSelected),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                // TODO: Address the hardcoded placeholder color.
-                bitmap = icon?.asImageBitmap() ?: createDefaultColorImageBitmap(20, 20, Color.BLUE),
-                contentDescription = label?.toString(),
-                modifier = Modifier.size(16.dp).clip(CircleShape),
-            )
+            Box(
+                modifier =
+                    Modifier.size(16.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                if (icon != null) {
+                    Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
+                }
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = label?.toString() ?: "Title",
@@ -130,18 +133,4 @@ private fun SelectorItem(
             )
         }
     }
-}
-
-/**
- * Creates an [ImageBitmap] of a given size, filled with a solid color. Used as a placeholder for
- * when an app icon is not available.
- *
- * @param width The width of the bitmap.
- * @param height The height of the bitmap.
- * @param color The color to fill the bitmap with.
- */
-private fun createDefaultColorImageBitmap(width: Int, height: Int, color: Int): ImageBitmap {
-    val bitmap = createBitmap(width, height)
-    bitmap.eraseColor(color)
-    return bitmap.asImageBitmap()
 }

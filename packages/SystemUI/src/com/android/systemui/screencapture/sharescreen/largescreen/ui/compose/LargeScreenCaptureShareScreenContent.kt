@@ -19,18 +19,34 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 import androidx.compose.runtime.Composable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 import javax.inject.Inject
 
 class LargeScreenCaptureShareScreenContent
 @Inject
-constructor(private val viewModelFactory: PreShareViewModel.Factory) : ScreenCaptureContent {
+constructor(
+    private val preShareToolbarViewModelFactory: PreShareToolbarViewModel.Factory,
+    private val shareContentListViewModelFactory: ShareContentListViewModel.Factory,
+    private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+) : ScreenCaptureContent {
 
     @Composable
     override fun Content() {
-        val viewModel: PreShareViewModel =
-            rememberViewModel("PreShareViewModel") { viewModelFactory.create() }
+        val preShareToolbarViewModel: PreShareToolbarViewModel =
+            rememberViewModel("PreShareToolbarViewModel") {
+                preShareToolbarViewModelFactory.create()
+            }
+        val shareContentListViewModel: ShareContentListViewModel =
+            rememberViewModel("ShareContentListViewModel") {
+                shareContentListViewModelFactory.create()
+            }
 
-        PreShareUI(viewModel = viewModel)
+        PreShareUI(
+            preShareToolbarViewModel = preShareToolbarViewModel,
+            shareContentListViewModel = shareContentListViewModel,
+            recentTaskViewModelFactory = recentTaskViewModelFactory,
+        )
     }
 }

@@ -31,7 +31,7 @@ enum class ScreenShareTarget {
 }
 
 /** Models UI state for the Screen Share feature. */
-class PreShareViewModel
+class PreShareToolbarViewModel
 @AssistedInject
 constructor(private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl) :
     HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
@@ -48,6 +48,6 @@ constructor(private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl
 
     @AssistedFactory
     interface Factory {
-        fun create(): PreShareViewModel
+        fun create(): PreShareToolbarViewModel
     }
 }
