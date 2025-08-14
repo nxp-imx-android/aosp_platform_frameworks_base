@@ -395,6 +395,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Unnamed device"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"No devices available"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"No Wi‑Fi or Ethernet connection"</string>
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Disconnect"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Brightness"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Color inversion"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Color correction"</string>
@@ -404,6 +405,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Close"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Connected"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Connecting..."</string>
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Scanning for Wi‑Fi..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Hotspot"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Turning on…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Data Saver is on"</string>
@@ -1167,6 +1169,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"Apps running in background"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"Tap for details on battery and data usage"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"Turn off mobile data?"</string>
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"Turn on mobile data?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"Using mobile data may incur charges based on your mobile service plan."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"Turn on"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"You wont have access to data or the internet through <xliff:g id="CARRIER">%s</xliff:g>. Internet will only be available via Wi-Fi."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"your carrier"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"Switch back to <xliff:g id="CARRIER">%s</xliff:g>?"</string>

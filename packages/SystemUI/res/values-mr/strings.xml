@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"पुन्हा घ्या"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"संपादित करा"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"हटवा"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"संपूर्ण स्क्रीनचा स्क्रीनशॉट घ्या"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"स्क्रीनशॉट"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकॉर्ड करा"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"शेअर करा"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
@@ -223,16 +220,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ऑथेंटिकेशन केलेले"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ऑथेंटिकेशन रद्द करा"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"अधिक पर्याय"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"दुसऱ्या प्रकारे पडताळणी करा"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"दुसऱ्या प्रकारे पडताळणी करा"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ओळख तपासणी व्यवस्थापित करा"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"ओळख तपासणीबद्दल अधिक जाणून घ्या"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"ओळखीची पडताळणी सुरू आहे आणि फक्त तुमच्या फिंगरप्रिंटने किंवा चेहऱ्याने तुमची पडताळणी करू शकता. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"जोखमीचे मूल्यांकन करत आहे…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"उपलब्ध नाही"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"पिन वापरा"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"पॅटर्न वापरा"</string>
@@ -402,6 +395,8 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"निनावी डिव्हाइस"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"कोणतेही डिव्हाइसेस उपलब्ध नाहीत"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"वाय-फाय किंवा इथरनेट कनेक्शन नाही"</string>
+    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"चमक"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"कलर इन्व्हर्जन"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"रंग सुधारणा"</string>
@@ -411,6 +406,8 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"बंद करा"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"कनेक्ट केलेले"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"कनेक्ट करत आहे..."</string>
+    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
+    <skip />
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"हॉटस्पॉट"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"सुरू करत आहे…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"डेटा सेव्हर सुरू आहे"</string>
@@ -810,7 +807,7 @@
     <string name="volume_panel_hint_muted" msgid="1124844870181285320">"म्यूट केले आहे"</string>
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"व्हायब्रेट करा"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> वर प्ले करत आहे"</string>
-    <string name="media_output_title_without_playing" msgid="3825663683169305013">"यावर ऑडिओ प्ले होईल"</string>
+    <string name="media_output_title_without_playing" msgid="3825663683169305013">"ऑडिओ यावर प्ले होईल"</string>
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"यावर कॉल करत आहे"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"सिस्टीम UI ट्युनर"</string>
     <string name="status_bar" msgid="4357390266055077437">"स्टेटस बार"</string>
@@ -1174,6 +1171,12 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"अ‍ॅप्स बॅकग्राउंडमध्‍ये सुरू आहेत"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"बॅटरी आणि डेटा वापराच्‍या तपशीलांसाठी टॅप करा"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"मोबाइल डेटा बंद करायचा?"</string>
+    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
+    <skip />
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"तुम्हाला <xliff:g id="CARRIER">%s</xliff:g> मधून डेटा किंवा इंटरनेटचा अ‍ॅक्सेस नसेल. इंटरनेट फक्त वाय-फाय मार्फत उपलब्ध असेल."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"तुमचा वाहक"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"<xliff:g id="CARRIER">%s</xliff:g> वर परत स्विच करायचे आहे का?"</string>

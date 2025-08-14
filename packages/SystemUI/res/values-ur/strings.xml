@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"دوبارہ لیں"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ترمیم کریں"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف کریں"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"پوری اسکرین کا اسکرین شاٹ لیں"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"منتخب علاقے کا اسکرین شاٹ لیں"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"اسکرین شاٹ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ریکارڈ کریں"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"اشتراک کریں"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="HEIGHT">%2$d</xliff:g> x <xliff:g id="WIDTH">%1$d</xliff:g>"</string>
@@ -223,16 +220,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"تصدیق کردہ"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"تصدیق کو منسوخ کریں"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"مزید اختیارات"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"دوسرے طریقے سے توثیق کریں"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"دوسرے طریقے کی توثیق کریں"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"شناخت کی تصدیق نظم کریں"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"شناخت کی تصدیق کے بارے میں مزید جانیں"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏شناخت کی تصدیق آن ہے اور صرف آپ کے فنگر پرنٹ یا چہرے سے آپ کی توثیق کر سکتی ہے۔ %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"خطرے کا جائزہ لیا جا رہا ہے…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"دستیاب نہیں ہے"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"‏PIN استعمال کریں"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"پیٹرن کا استعمال کریں"</string>
@@ -402,6 +395,8 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"بغیر نام والا آلہ"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"کوئی آلات دستیاب نہیں ہیں"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"‏کوئی Wi‑Fi یا ایتھرنیٹ کنکشن نہیں ہے"</string>
+    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"چمکیلا پن"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"رنگوں کی تقلیب"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"رنگ کی اصلاح"</string>
@@ -411,6 +406,8 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"بند کریں"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"مربوط"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"مربوط ہو رہا ہے…"</string>
+    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
+    <skip />
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"ہاٹ اسپاٹ"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"آن ہو رہا ہے…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"ڈیٹا سیور آن ہے"</string>
@@ -1174,6 +1171,12 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"ایپس پس منظر میں چل رہی ہیں"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"بیٹری اور ڈیٹا استعمال کے بارے میں تفصیلات کے لیے تھپتھپائیں"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"موبائل ڈیٹا آف کریں؟"</string>
+    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
+    <skip />
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"‏آپ کو <xliff:g id="CARRIER">%s</xliff:g> کے ذریعے ڈیٹا یا انٹرنیٹ تک رسائی حاصل نہیں ہوگی۔ انٹرنیٹ صرف Wi-Fi کے ذریعے دستیاب ہوگا۔"</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"آپ کا کریئر"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"‫<xliff:g id="CARRIER">%s</xliff:g> پر واپس سوئچ کریں؟"</string>

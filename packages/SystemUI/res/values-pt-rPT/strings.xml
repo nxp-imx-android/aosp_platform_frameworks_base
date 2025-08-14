@@ -220,16 +220,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autenticado"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancelar autenticação"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Mais opções"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Valide de outra forma"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Validar de outra forma"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Faça a gestão da Verificação de identidade"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Saiba mais sobre a Verificação de identidade"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"A Verificação de identidade está ativada e só é possível validar a sua identidade através da impressão digital ou do rosto. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"A avaliar o risco…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Indisponível"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Usar PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Usar padrão"</string>
@@ -399,6 +395,8 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Dispositivo sem nome"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Sem dispositivos disponíveis"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Sem ligação Wi-Fi ou Ethernet"</string>
+    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Brilho"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversão de cores"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Correção da cor"</string>
@@ -408,6 +406,8 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Fechar"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Ligado"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"A ligar..."</string>
+    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
+    <skip />
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Zona Wi-Fi"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"A ativar..."</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Poup. dados ativada"</string>
@@ -1171,6 +1171,12 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"Apps em execução em segundo plano"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"Toque para obter detalhes acerca da utilização da bateria e dos dados"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"Desativar os dados móveis?"</string>
+    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
+    <skip />
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"Não vai ter acesso aos dados nem à Internet através do operador <xliff:g id="CARRIER">%s</xliff:g>. A Internet vai estar disponível só por Wi-Fi."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"o seu operador"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"Mudar de novo para <xliff:g id="CARRIER">%s</xliff:g>?"</string>
