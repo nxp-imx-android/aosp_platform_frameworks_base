@@ -341,6 +341,10 @@ public class AutoclickScrollPanel {
         });
     }
 
+    public boolean isHovered() {
+        return mContentView.isHovered();
+    }
+
     /**
      * Retrieves the layout params for AutoclickScrollPanel, used when it's added to the Window
      * Manager.
@@ -366,11 +370,6 @@ public class AutoclickScrollPanel {
     @VisibleForTesting
     public boolean isVisible() {
         return mInScrollMode;
-    }
-
-    @VisibleForTesting
-    public boolean isHovered() {
-        return mContentView.isHovered();
     }
 
     @VisibleForTesting
