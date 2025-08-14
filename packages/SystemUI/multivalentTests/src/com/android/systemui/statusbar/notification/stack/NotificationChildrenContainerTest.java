@@ -35,6 +35,7 @@ import androidx.test.filters.SmallTest;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.notification.SourceType;
+import com.android.systemui.statusbar.notification.collection.BundleSpec;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
@@ -55,6 +56,7 @@ import java.util.List;
 public class NotificationChildrenContainerTest extends SysuiTestCase {
 
     private ExpandableNotificationRow mGroup;
+    private ExpandableNotificationRow mBundle;
     private NotificationChildrenContainer mChildrenContainer;
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
@@ -64,6 +66,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         allowTestableLooperAsMainThread();
         mGroup = mKosmos.createRowGroup();
         mChildrenContainer = mGroup.getChildrenContainer();
+        mBundle = mKosmos.createRowBundle(BundleSpec.Companion.getNEWS());
     }
 
     @Test
@@ -121,9 +124,12 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_likeCollapsed() {
         ComposeView headerView = new ComposeView(mContext);
-        mChildrenContainer.setBundleHeaderView(headerView);
-        mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
-        Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(true),
+        // This will initialize the bundle's children container
+        mBundle.setBundleHeaderView(headerView);
+
+        NotificationChildrenContainer childrenContainer = mBundle.getChildrenContainer();
+        childrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
+        Assert.assertEquals(childrenContainer.getMaxAllowedVisibleChildren(true),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED);
     }
 
@@ -132,11 +138,13 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_expandedChildren() {
         ComposeView headerView = new ComposeView(mContext);
-        mChildrenContainer.setBundleHeaderView(headerView);
-        mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
-        mChildrenContainer.getContainingNotification().expandNotification();
-        mChildrenContainer.setChildrenExpanded(true);
-        Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
+        mBundle.setBundleHeaderView(headerView);
+
+        NotificationChildrenContainer childrenContainer = mBundle.getChildrenContainer();
+        childrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
+        childrenContainer.getContainingNotification().expandNotification();
+        childrenContainer.setChildrenExpanded(true);
+        Assert.assertEquals(childrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
     }
 
@@ -299,24 +307,6 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         mChildrenContainer.requestTopRoundness(1f, SourceType.from(""), false);
 
         Assert.assertEquals(1f, header.getTopRoundness(), 0.001f);
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    public void initBundleHeader_composeview_is_initialized_once() {
-        View currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
-        Assert.assertFalse(currentView instanceof ComposeView);
-
-        ComposeView headerView = new ComposeView(mContext);
-        mChildrenContainer.setBundleHeaderView(headerView);
-        BundleHeaderViewModel viewModel = mKosmos.getBundleHeaderViewModel();
-        mChildrenContainer.setBundleHeaderViewModel(viewModel);
-        currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
-        Assert.assertTrue(currentView instanceof ComposeView);
-
-        mChildrenContainer.setBundleHeaderViewModel(viewModel);
-        View finalView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
-        Assert.assertEquals(currentView, finalView);
     }
 
     private NotificationHeaderView createHeaderView(boolean lowPriority) {

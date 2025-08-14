@@ -2300,6 +2300,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (NotificationBundleUi.isEnabled()) {
             mEntryAdapter = entryAdapter;
             mIsBundle = entryAdapter instanceof BundleEntryAdapter;
+            if (isBundle()) {
+                // Initial dimensions for the roundable state are set upon construction, which means
+                // we need to re-calculate at the point when we know whether this row is a bundle.
+                updateMaxRadius();
+            }
         } else {
             mEntry = (NotificationEntry) entry;
         }
@@ -4521,6 +4526,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return getClipPath(true /* ignoreTranslation */);
         }
         return super.getCustomClipPath(child);
+    }
+
+    @Override
+    float calculateMaxRadius() {
+        float radius = super.calculateMaxRadius();
+        if (isBundle()) {
+            // Bundle headers may be small enough that the max radius used for the ENR would
+            // clip more off the corner of the bundle header than the header height would allow.
+            // In this case, limit the radius for rounding to half the bundle header height.
+            return Math.min(radius, getContext().getResources().getDimension(
+                    R.dimen.notification_bundle_header_height) / 2.0f);
+        }
+        return radius;
     }
 
     public boolean isMediaRow() {

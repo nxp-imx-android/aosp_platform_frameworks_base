@@ -79,15 +79,15 @@ class NotificationTargetsHelperImpl @Inject constructor() : NotificationTargetsH
                 .filterIsInstance<ExpandableView>()
                 .filter { it.isVisible }
                 .toList()
+
         if (notificationParent != null && childrenContainer != null) {
             // We are inside a notification group
-
             val visibleGroupChildren = childrenContainer.attachedChildren.filter { it.isVisible }
             val indexOfParentSwipedView = visibleGroupChildren.indexOf(viewSwiped)
 
             viewBefore =
                 visibleGroupChildren.getOrNull(indexOfParentSwipedView - 1)
-                    ?: childrenContainer.notificationHeaderWrapper
+                    ?: childrenContainer.roundableHeaderWrapper
 
             viewAfter =
                 visibleGroupChildren.getOrNull(indexOfParentSwipedView + 1)
@@ -131,7 +131,7 @@ class NotificationTargetsHelperImpl @Inject constructor() : NotificationTargetsH
         val container: List<ExpandableView>
         if (notificationParent != null && childrenContainer != null) {
             // We are inside a notification group
-            notificationHeaderWrapper = childrenContainer.notificationHeaderWrapper
+            notificationHeaderWrapper = childrenContainer.roundableHeaderWrapper
             container = childrenContainer.attachedChildren.filter { it.isVisible }
         } else {
             container = visibleStackChildren

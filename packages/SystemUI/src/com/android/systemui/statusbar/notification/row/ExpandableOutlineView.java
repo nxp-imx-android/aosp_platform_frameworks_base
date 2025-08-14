@@ -227,20 +227,28 @@ public abstract class ExpandableOutlineView extends ExpandableView {
     }
 
     private void initDimens() {
+        mAlwaysRoundBothCorners = getResources().getBoolean(
+                R.bool.config_clipNotificationsToOutline);
+        updateMaxRadius();
+        setClipToOutline(mAlwaysRoundBothCorners);
+    }
+
+    float calculateMaxRadius() {
         Resources res = getResources();
-        mAlwaysRoundBothCorners = res.getBoolean(R.bool.config_clipNotificationsToOutline);
-        float maxRadius;
         if (mAlwaysRoundBothCorners) {
-            maxRadius = res.getDimension(R.dimen.notification_shadow_radius);
+            return res.getDimension(R.dimen.notification_shadow_radius);
         } else {
-            maxRadius = res.getDimensionPixelSize(R.dimen.notification_corner_radius);
+            return res.getDimensionPixelSize(R.dimen.notification_corner_radius);
         }
+    }
+
+    void updateMaxRadius() {
+        float maxRadius = calculateMaxRadius();
         if (mRoundableState == null) {
             mRoundableState = new RoundableState(this, this, maxRadius);
         } else {
             mRoundableState.setMaxRadius(maxRadius);
         }
-        setClipToOutline(mAlwaysRoundBothCorners);
     }
 
     @Override
