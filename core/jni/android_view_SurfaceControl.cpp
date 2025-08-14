@@ -1179,20 +1179,14 @@ static void nativeSetCornerRadius(JNIEnv* env, jclass clazz, jlong transactionOb
 }
 
 static void nativeSetClientDrawnCornerRadius(JNIEnv* env, jclass clazz, jlong transactionObj,
-                                             jlong nativeObject, jfloat clientDrawnCornerRadius) {
-    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-
-    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
-    transaction->setClientDrawnCornerRadius(ctrl, clientDrawnCornerRadius);
-}
-
-static void nativeSetClientDrawnCornerRadius(JNIEnv* env, jclass clazz, jlong transactionObj,
                                              jlong nativeObject, jfloat tl, jfloat tr, jfloat bl,
-                                             jfloat br) {
+                                             jfloat br, jfloat cropTop, jfloat cropLeft,
+                                             jfloat cropRight, jfloat cropBottom) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
     auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
-    transaction->setClientDrawnCornerRadius(ctrl, gui::CornerRadii(tl, tr, bl, br));
+    FloatRect crop(cropLeft, cropTop, cropRight, cropBottom);
+    transaction->setClientDrawnCornerRadius(ctrl, gui::CornerRadii(tl, tr, bl, br), crop);
 }
 
 static void nativeSetBackgroundBlurRadius(JNIEnv* env, jclass clazz, jlong transactionObj,
@@ -2693,11 +2687,9 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
     {"nativeSetCornerRadius", "(JJFFFF)V",
             (void*)(void (*)(JNIEnv*, jclass, jlong, jlong, jfloat, jfloat,
                                         jfloat, jfloat))nativeSetCornerRadius },
-    {"nativeSetClientDrawnCornerRadius", "(JJF)V",
-            (void*)(void (*)(JNIEnv*, jclass, jlong, jlong, jfloat))
-                                        nativeSetClientDrawnCornerRadius },
-    {"nativeSetClientDrawnCornerRadius", "(JJFFFF)V",
-            (void*)(void (*)(JNIEnv*, jclass, jlong, jlong, jfloat, jfloat, jfloat, jfloat))
+    {"nativeSetClientDrawnCornerRadius", "(JJFFFFFFFF)V",
+            (void*)(void (*)(JNIEnv*, jclass, jlong, jlong, jfloat, jfloat, jfloat, jfloat,
+                                        jfloat, jfloat, jfloat, jfloat))
                                         nativeSetClientDrawnCornerRadius },
     {"nativeSetBackgroundBlurRadius", "(JJI)V",
             (void*)nativeSetBackgroundBlurRadius },

@@ -1,4 +1,4 @@
-# This file contains tests that we want to skip in "run-ravenwood-tests.sh"
+# This file contains tests that we want to skip in "run-ravenwood-tests.sh -s"
 
 # These tests are too slow
 SystemUiRavenTests

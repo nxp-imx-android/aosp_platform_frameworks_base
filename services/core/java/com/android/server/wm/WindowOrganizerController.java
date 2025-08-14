@@ -380,7 +380,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                     setAllReadyIfNeeded(nextTransition, wct);
                                 }
                                 mService.mChainTracker.end();
-                            });
+                            }, true /* noopIfDuringDisplayChange */);
                     return nextTransition.getToken();
                 }
                 // The transition already started collecting before sending a request to shell,
@@ -664,9 +664,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         try {
             final ArraySet<WindowContainer<?>> haveConfigChanges = new ArraySet<>();
             if (transition != null) {
-                if (transition.applyDisplayChangeIfNeeded(haveConfigChanges)) {
-                    effects |= TRANSACT_EFFECTS_LIFECYCLE;
-                }
+                transition.applyDisplayChangeIfNeeded(haveConfigChanges);
                 if (!haveConfigChanges.isEmpty()) {
                     effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
                 }
@@ -775,6 +773,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             isInLockTaskMode, caller, t.getErrorCallbackToken(),
                             t.getTaskFragmentOrganizer());
                 }
+            }
+            if (transition != null && transition.applyDisplayRemovalsIfNeeded()) {
+                effects |= TRANSACT_EFFECTS_LIFECYCLE;
             }
             if ((effects & TRANSACT_EFFECTS_LIFECYCLE) != 0) {
                 mService.mTaskSupervisor.setDeferRootVisibilityUpdate(false /* deferUpdate */);

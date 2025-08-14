@@ -48,6 +48,7 @@ import com.android.systemui.doze.dagger.BrightnessSensor;
 import com.android.systemui.doze.dagger.DozeScope;
 import com.android.systemui.doze.dagger.WrappedService;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.util.kotlin.JavaAdapterKt;
@@ -216,6 +217,10 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         stopListeningForWallpaperSupportsAmbientMode();
         setLightSensorEnabled(false);
         mDevicePostureController.removeCallback(mDevicePostureCallback);
+        if (SceneContainerFlag.isEnabled()) {
+            mDozeHost.setAodDimmingScrim(0f);
+            mDozeHost.setAodWallpaperDimmingScrim(0f);
+        }
     }
 
     @Override
@@ -242,15 +247,21 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
             }
 
             int scrimOpacity = -1;
+            int wallpaperScrimOpacity = -1;
             if (!isLightSensorPresent()) {
                 // No light sensor, scrims are always transparent.
                 scrimOpacity = 0;
+                wallpaperScrimOpacity = 0;
             } else if (brightnessReady) {
                 // Only unblank scrim once brightness is ready.
                 scrimOpacity = computeScrimOpacity(sensorValue);
+                wallpaperScrimOpacity = computeWallpaperScrimOpacity(sensorValue);
             }
             if (scrimOpacity >= 0) {
                 mDozeHost.setAodDimmingScrim(scrimOpacity / 255f);
+            }
+            if (wallpaperScrimOpacity >= 0) {
+                mDozeHost.setAodWallpaperDimmingScrim(wallpaperScrimOpacity / 255f);
             }
         }
     }
@@ -281,10 +292,23 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
             return -1;
         }
         int wallpaperScrimOpacity = -1;
-        if (mWallpaperSupportsAmbientMode && sensorValue < mSensorToWallpaperScrimOpacity.length) {
-            wallpaperScrimOpacity = mSensorToWallpaperScrimOpacity[sensorValue];
+        if (!SceneContainerFlag.isEnabled()) {
+            if (mWallpaperSupportsAmbientMode && sensorValue
+                    < mSensorToWallpaperScrimOpacity.length) {
+                wallpaperScrimOpacity = mSensorToWallpaperScrimOpacity[sensorValue];
+            }
         }
         return max(wallpaperScrimOpacity, mSensorToScrimOpacity[sensorValue]);
+    }
+
+    private int computeWallpaperScrimOpacity(int sensorValue) {
+        if (!SceneContainerFlag.isEnabled()
+                || !mWallpaperSupportsAmbientMode
+                || sensorValue < 0
+                || sensorValue >= mSensorToWallpaperScrimOpacity.length) {
+            return -1;
+        }
+        return mSensorToWallpaperScrimOpacity[sensorValue];
     }
 
     private float computeBrightness(int sensorValue) {
@@ -302,6 +326,7 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         mDozeService.setDozeScreenBrightness(clampToDimBrightnessForScreenOff(
                 clampToUserSettingOrAutoBrightness(mDefaultDozeBrightness)));
         mDozeHost.setAodDimmingScrim(0f);
+        mDozeHost.setAodWallpaperDimmingScrim(0f);
     }
 
     private float clampToUserSetting(float brightness) {

@@ -248,7 +248,7 @@ class AccessCheckingService(context: Context) : SystemService(context) {
         }
     }
 
-    internal fun onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {
+    internal fun onAgentAllowlistChanged(agentAllowlist: Set<SignedPackage>?) {
         mutateState { with(policy) { onAgentAllowlistChanged(agentAllowlist) } }
     }
 

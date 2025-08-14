@@ -105,7 +105,10 @@ import com.android.server.ServiceThread;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
+import com.android.server.am.psc.ContentProviderRecordInternal;
+import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -241,8 +244,9 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * A container node in the {@link LinkedProcessRecordList},
      * holding the references to {@link ProcessRecord}.
+     * TODO(b/425766486): Change to package-private after moving the class to the psc package.
      */
-    static class ProcessRecordNode {
+    public static class ProcessRecordNode {
         static final int NODE_TYPE_PROC_STATE = 0;
         static final int NODE_TYPE_ADJ = 1;
 
@@ -253,7 +257,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         @Retention(RetentionPolicy.SOURCE)
         @interface NodeType {}
 
-        static final int NUM_NODE_TYPE = NODE_TYPE_ADJ + 1;
+        public static final int NUM_NODE_TYPE = NODE_TYPE_ADJ + 1;
 
         @Nullable ProcessRecordNode mPrev;
         @Nullable ProcessRecordNode mNext;
@@ -302,13 +306,13 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         private final LinkedProcessRecordList[] mProcessRecordNodes;
 
-        private final ToIntFunction<ProcessRecord> mSlotFunction;
+        private final ToIntFunction<ProcessRecordInternal> mSlotFunction;
         // Cache of the most important slot with a node in it.
         private int mFirstPopulatedSlot = 0;
 
         ProcessRecordNodes(@ProcessRecordNode.NodeType int type, int size) {
             mType = type;
-            final ToIntFunction<ProcessRecord> valueFunction;
+            final ToIntFunction<ProcessRecordInternal> valueFunction;
             switch (mType) {
                 case ProcessRecordNode.NODE_TYPE_PROC_STATE:
                     valueFunction = (proc) -> proc.getCurProcState();
@@ -353,7 +357,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             return node.mApp;
         }
 
-        void offer(ProcessRecord proc) {
+        void offer(ProcessRecordInternal proc) {
             ProcessRecordNode node = proc.mLinkedNodes[mType];
             // Find which slot to add the node to.
             final int newSlot = mSlotFunction.applyAsInt(proc);
@@ -365,16 +369,16 @@ public class OomAdjusterImpl extends OomAdjuster {
             mProcessRecordNodes[newSlot].offer(node);
         }
 
-        void unlink(@NonNull ProcessRecord app) {
+        void unlink(@NonNull ProcessRecordInternal app) {
             final ProcessRecordNode node = app.mLinkedNodes[mType];
             node.unlink();
         }
 
-        void append(@NonNull ProcessRecord app) {
+        void append(@NonNull ProcessRecordInternal app) {
             append(app, getCurrentSlot(app));
         }
 
-        void append(@NonNull ProcessRecord app, int targetSlot) {
+        void append(@NonNull ProcessRecordInternal app, int targetSlot) {
             append(app.mLinkedNodes[mType], targetSlot);
         }
 
@@ -383,7 +387,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             mProcessRecordNodes[targetSlot].append(node);
         }
 
-        private int getCurrentSlot(@NonNull ProcessRecord app) {
+        private int getCurrentSlot(@NonNull ProcessRecordInternal app) {
             switch (mType) {
                 case ProcessRecordNode.NODE_TYPE_PROC_STATE:
                     return processStateToSlot(app.getCurProcState());
@@ -401,9 +405,9 @@ public class OomAdjusterImpl extends OomAdjuster {
             // Sentinel head/tail, to make bookkeeping work easier.
             final ProcessRecordNode HEAD = new ProcessRecordNode(null);
             final ProcessRecordNode TAIL = new ProcessRecordNode(null);
-            final ToIntFunction<ProcessRecord> mValueFunction;
+            final ToIntFunction<ProcessRecordInternal> mValueFunction;
 
-            LinkedProcessRecordList(ToIntFunction<ProcessRecord> valueFunction) {
+            LinkedProcessRecordList(ToIntFunction<ProcessRecordInternal> valueFunction) {
                 HEAD.mNext = TAIL;
                 TAIL.mPrev = HEAD;
                 mValueFunction = valueFunction;
@@ -562,7 +566,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Connections for clients marked reachable will be ignored.
      */
     private class ComputeConnectionIgnoringReachableClientsConsumer implements
-            BiConsumer<Connection, ProcessRecord> {
+            BiConsumer<Connection, ProcessRecordInternal> {
         private OomAdjusterArgs mArgs = null;
         public boolean hasReachableClient = false;
 
@@ -572,9 +576,9 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         @Override
-        public void accept(Connection conn, ProcessRecord client) {
-            final ProcessRecord host = mArgs.mApp;
-            final ProcessRecord topApp = mArgs.mTopApp;
+        public void accept(Connection conn, ProcessRecordInternal client) {
+            final ProcessRecordInternal host = mArgs.mApp;
+            final ProcessRecordInternal topApp = mArgs.mTopApp;
             final long now = mArgs.mNow;
             final @OomAdjReason int oomAdjReason = mArgs.mOomAdjReason;
 
@@ -604,7 +608,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         @Override
         public void accept(Connection conn, ProcessRecord host) {
-            final ProcessRecord client = args.mApp;
+            final ProcessRecordInternal client = args.mApp;
             final int cachedAdj = args.mCachedAdj;
             final ProcessRecord topApp = args.mTopApp;
             final long now = args.mNow;
@@ -664,12 +668,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             ProcessRecordNode.NODE_TYPE_ADJ, ADJ_SLOT_VALUES.length);
     private final OomAdjusterArgs mTmpOomAdjusterArgs = new OomAdjusterArgs();
 
-    void linkProcessRecordToList(@NonNull ProcessRecord app) {
+    void linkProcessRecordToList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.append(app);
         mProcessRecordAdjNodes.append(app);
     }
 
-    void unlinkProcessRecordFromList(@NonNull ProcessRecord app) {
+    void unlinkProcessRecordFromList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.unlink(app);
         mProcessRecordAdjNodes.unlink(app);
     }
@@ -683,7 +687,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy("mService")
     @Override
-    void onProcessEndLocked(@NonNull ProcessRecord app) {
+    void onProcessEndLocked(@NonNull ProcessRecordInternal app) {
         if (app.mLinkedNodes[ProcessRecordNode.NODE_TYPE_PROC_STATE] != null
                 && app.mLinkedNodes[ProcessRecordNode.NODE_TYPE_PROC_STATE].isLinked()) {
             unlinkProcessRecordFromList(app);
@@ -692,32 +696,32 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy("mService")
     @Override
-    void onProcessStateChanged(@NonNull ProcessRecord app, int prevProcState) {
+    void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState) {
         updateProcStateSlotIfNecessary(app, prevProcState);
     }
 
     @GuardedBy("mService")
-    void onProcessOomAdjChanged(@NonNull ProcessRecord app, int prevAdj) {
+    void onProcessOomAdjChanged(@NonNull ProcessRecordInternal app, int prevAdj) {
         updateAdjSlotIfNecessary(app, prevAdj);
     }
 
-    private void updateAdjSlotIfNecessary(ProcessRecord app, int prevRawAdj) {
+    private void updateAdjSlotIfNecessary(ProcessRecordInternal app, int prevRawAdj) {
         if (app.getCurRawAdj() != prevRawAdj) {
             mProcessRecordAdjNodes.offer(app);
         }
     }
 
-    private void updateAdjSlot(ProcessRecord app) {
+    private void updateAdjSlot(ProcessRecordInternal app) {
         mProcessRecordAdjNodes.offer(app);
     }
 
-    private void updateProcStateSlotIfNecessary(ProcessRecord app, int prevProcState) {
+    private void updateProcStateSlotIfNecessary(ProcessRecordInternal app, int prevProcState) {
         if (app.getCurProcState() != prevProcState) {
             mProcessRecordProcStateNodes.offer(app);
         }
     }
 
-    private void updateProcStateSlot(ProcessRecord app) {
+    private void updateProcStateSlot(ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.offer(app);
     }
 
@@ -820,7 +824,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             proc = mProcessRecordProcStateNodes.poll();
         }
 
-        // 2st pass, iterate all nodes in order of procState importance.
+        // 2nd pass, iterate all nodes in order of adj importance.
         proc = mProcessRecordAdjNodes.poll();
         while (proc != null) {
             mTmpOomAdjusterArgs.mApp = proc;
@@ -966,9 +970,6 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         for (int size = reachables.size(); i < size; i++) {
             final ProcessRecord reachable = reachables.get(i);
-            final int prevProcState = reachable.getCurProcState();
-            final int prevAdj = reachable.getCurRawAdj();
-
             args.mApp = reachable;
             computeOomAdjIgnoringReachablesLSP(args);
 
@@ -990,7 +991,6 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ProcessRecord app = args.mApp;
         final ProcessRecord topApp = args.mTopApp;
         final long now = args.mNow;
-        final @OomAdjReason int oomAdjReason = args.mOomAdjReason;
 
         computeOomAdjLSP(app, topApp, false, now);
 
@@ -1010,7 +1010,8 @@ public class OomAdjusterImpl extends OomAdjuster {
         for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
             ConnectionRecord cr = psr.getConnectionAt(i);
             ProcessRecord service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
-                    ? cr.binding.service.isolationHostProc : cr.binding.service.app;
+                    ? cr.binding.service.getIsolationHostProcess()
+                    : cr.binding.service.getHostProcess();
             if (service == null || service == app || isSandboxAttributedConnection(cr, service)) {
                 continue;
             }
@@ -1024,7 +1025,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         for (int i = psr.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = psr.getSdkSandboxConnectionAt(i);
-            final ProcessRecord service = cr.binding.service.app;
+            final ProcessRecord service = cr.binding.service.getHostProcess();
             if (service == null || service == app) {
                 continue;
             }
@@ -1034,10 +1035,10 @@ public class OomAdjusterImpl extends OomAdjuster {
             connectionConsumer.accept(cr, service);
         }
 
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecord ppr = app.getProviders();
         for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
             ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
-            ProcessRecord provider = cpc.provider.proc;
+            ProcessRecord provider = cpc.provider.getHostProcess();
             if (provider == null || provider == app || isHighPriorityProcess(provider)) {
                 continue;
             }
@@ -1052,7 +1053,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * {@link ProcessRecordInternal#mScheduleLikeTopApp}.
      */
     private static boolean allowSkipForBindScheduleLikeTopApp(ConnectionRecord cr,
-            ProcessRecord host) {
+            ProcessRecordInternal host) {
         // If feature flag for optionally blocking skipping is disabled. Always allow skipping.
         if (!Flags.notSkipConnectionRecomputeForBindScheduleLikeTopApp()) {
             return true;
@@ -1063,7 +1064,8 @@ public class OomAdjusterImpl extends OomAdjuster {
         return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP) && !host.getScheduleLikeTopApp());
     }
 
-    private static boolean isSandboxAttributedConnection(ConnectionRecord cr, ProcessRecord host) {
+    private static boolean isSandboxAttributedConnection(ConnectionRecord cr,
+            ProcessRecordInternal host) {
         return host.isSdkSandbox && cr.binding.attributedClient != null;
     }
 
@@ -1083,9 +1085,9 @@ public class OomAdjusterImpl extends OomAdjuster {
      * connectionConsumer}.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private static void forEachClientConnectionLSP(ProcessRecord app,
-            BiConsumer<Connection, ProcessRecord> connectionConsumer) {
-        final ProcessServiceRecord psr = app.mServices;
+    private static void forEachClientConnectionLSP(ProcessRecordInternal app,
+            BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
+        final ProcessServiceRecordInternal psr = app.getServices();
 
         for (int i = psr.numberOfRunningServices() - 1; i >= 0; i--) {
             final ServiceRecordInternal s = psr.getRunningServiceAt(i);
@@ -1093,13 +1095,12 @@ public class OomAdjusterImpl extends OomAdjuster {
                 final ArrayList<? extends ConnectionRecordInternal> clist =
                         s.getConnectionAt(j);
                 for (int k = clist.size() - 1; k >= 0; k--) {
-                    // TODO(b/425766486): Switch to use ConnectionRecordInternal.
-                    final ConnectionRecord cr = (ConnectionRecord) clist.get(k);
-                    final ProcessRecord client;
-                    if (app.isSdkSandbox && cr.binding.attributedClient != null) {
-                        client = cr.binding.attributedClient;
+                    final ConnectionRecordInternal cr = clist.get(k);
+                    final ProcessRecordInternal client;
+                    if (app.isSdkSandbox && cr.getAttributedClient() != null) {
+                        client = cr.getAttributedClient();
                     } else {
-                        client = cr.binding.client;
+                        client = cr.getClient();
                     }
                     if (client == null || client == app) continue;
                     connectionConsumer.accept(cr, client);
@@ -1107,12 +1108,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int i = ppr.numberOfProviders() - 1; i >= 0; i--) {
-            final ContentProviderRecord cpr = ppr.getProviderAt(i);
-            for (int j = cpr.connections.size() - 1; j >= 0; j--) {
-                final ContentProviderConnection conn = cpr.connections.get(j);
-                connectionConsumer.accept(conn, conn.client);
+            final ContentProviderRecordInternal cpr = ppr.getProviderAt(i);
+            for (int j = cpr.numberOfConnections() - 1; j >= 0; j--) {
+                final ContentProviderConnectionInternal conn = cpr.getConnectionsAt(j);
+                connectionConsumer.accept(conn, conn.getClient());
             }
         }
     }
@@ -1121,7 +1122,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Returns true if at least one the provided values is more important than those in {@code app}.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private static boolean selfImportanceLoweredLSP(ProcessRecord app, int prevProcState,
+    private static boolean selfImportanceLoweredLSP(ProcessRecordInternal app, int prevProcState,
             int prevAdj, int prevCapability, boolean prevShouldNotFreeze) {
         if (app.getCurProcState() > prevProcState) {
             return true;
@@ -1132,7 +1133,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         if ((app.getCurCapability() & prevCapability) != prevCapability)  {
             return true;
         }
-        if (!app.mOptRecord.shouldNotFreeze() && prevShouldNotFreeze) {
+        if (!app.shouldNotFreeze() && prevShouldNotFreeze) {
             // No long marked as should not freeze.
             return true;
         }
@@ -1146,7 +1147,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     private static boolean unimportantConnectionLSP(Connection conn,
-            ProcessRecord host, ProcessRecord client) {
+            ProcessRecordInternal host, ProcessRecordInternal client) {
         if (!Flags.skipUnimportantConnections()) {
             // Feature not enabled, just return false so the connection is evaluated.
             return false;
@@ -1172,7 +1173,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        if (!host.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
+        if (!host.shouldNotFreeze() && client.shouldNotFreeze()) {
             // If the client is marked as should not freeze, so should the host.
             return false;
         }
@@ -1320,7 +1321,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // broadcast as reflected by which queue it's active in.
             adj = FOREGROUND_APP_ADJ;
             if (Flags.pushBroadcastStateToOomadjuster()) {
-                schedGroup = app.mReceivers.getBroadcastReceiverSchedGroup();
+                schedGroup = app.getReceivers().getBroadcastReceiverSchedGroup();
             } else {
                 /// Priority was stored in mTmpSchedGroup by {@link #isReceivingBroadcast)
                 schedGroup = mTmpSchedGroup[0];
@@ -1330,12 +1331,11 @@ public class OomAdjusterImpl extends OomAdjuster {
             if (reportDebugMsgs) {
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, "Making broadcast: " + app);
             }
-        } else if (psr.numberOfExecutingServices() > 0) {
+        } else if (psr.hasExecutingServices()) {
             // An app that is currently executing a service callback also
             // counts as being in the foreground.
             adj = FOREGROUND_APP_ADJ;
-            schedGroup = psr.shouldExecServicesFg()
-                    ? SCHED_GROUP_DEFAULT : SCHED_GROUP_BACKGROUND;
+            schedGroup = psr.isExecServicesFg() ? SCHED_GROUP_DEFAULT : SCHED_GROUP_BACKGROUND;
             state.setAdjType("exec-service");
             procState = PROCESS_STATE_SERVICE;
             if (reportDebugMsgs) {
@@ -1696,13 +1696,13 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int provi = ppr.numberOfProviders() - 1;
                 provi >= 0 && (adj > FOREGROUND_APP_ADJ
                         || schedGroup == SCHED_GROUP_BACKGROUND
                         || procState > PROCESS_STATE_TOP);
                 provi--) {
-            ContentProviderRecord cpr = ppr.getProviderAt(provi);
+            ContentProviderRecordInternal cpr = ppr.getProviderAt(provi);
             // If the provider has external (non-framework) process
             // dependencies, ensure that its adjustment is at least
             // FOREGROUND_APP_ADJ.
@@ -1758,7 +1758,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 // This is a cached process, but with client activities.  Mark it so.
                 procState = PROCESS_STATE_CACHED_ACTIVITY_CLIENT;
                 state.setAdjType("cch-client-act");
-            } else if (psr.isTreatedLikeActivity()) {
+            } else if (psr.isTreatLikeActivity()) {
                 // This is a cached process, but somebody wants us to treat it like it has
                 // an activity, okay!
                 procState = PROCESS_STATE_CACHED_ACTIVITY;
@@ -2214,7 +2214,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
         if (cr.hasFlag(Context.BIND_TREAT_LIKE_ACTIVITY)) {
             if (!dryRun) {
-                app.setTreatLikeActivity(true);
+                app.getServices().setTreatLikeActivity(true);
             }
             if (clientProcState <= PROCESS_STATE_CACHED_ACTIVITY
                     && procState > PROCESS_STATE_CACHED_ACTIVITY) {
@@ -2409,7 +2409,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_PROVIDER_IN_USE);
             app.setAdjSource(client);
             app.setAdjSourceProcState(clientProcState);
-            app.setAdjTarget(conn.getProviderName());
+            app.setAdjTarget(conn.getProvider().name);
             if (reportDebugMsgs) {
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise to " + adjType
                         + ": " + app + ", due to " + client

@@ -245,11 +245,11 @@ public class MediaQualityService extends SystemService {
         synchronized (mPictureProfileLock) {
         // TODO handle other users
             UserState userState = getOrCreateUserState(UserHandle.USER_SYSTEM);
-            int n = userState.mActiveProcessingPictureCallbackList.beginBroadcast();
+            int n = userState.mActiveProcessingPictureCallbacks.beginBroadcast();
             for (int i = 0; i < n; ++i) {
                 try {
                     IActiveProcessingPictureListener l = userState
-                            .mActiveProcessingPictureCallbackList
+                            .mActiveProcessingPictureCallbacks
                             .getBroadcastItem(i);
                     ActiveProcessingPictureListenerInfo info =
                             userState.mActiveProcessingPictureListenerMap.get(l);
@@ -282,7 +282,7 @@ public class MediaQualityService extends SystemService {
                     Slog.e(TAG, "failed to report added AD service to callback", e);
                 }
             }
-            userState.mActiveProcessingPictureCallbackList.finishBroadcast();
+            userState.mActiveProcessingPictureCallbacks.finishBroadcast();
         }
     }
 
@@ -1310,6 +1310,7 @@ public class MediaQualityService extends SystemService {
             String packageName = getPackageOfUid(callingUid);
             userState.mActiveProcessingPictureListenerMap.put(l,
                     new ActiveProcessingPictureListenerInfo(callingUid, callingPid, packageName));
+            userState.mActiveProcessingPictureCallbacks.register(l);
         }
 
         @Override
@@ -1850,7 +1851,7 @@ public class MediaQualityService extends SystemService {
         private final MediaQualityManagerSoundProfileCallbackList mSoundProfileCallbacks =
                 new MediaQualityManagerSoundProfileCallbackList();
 
-        private final ActiveProcessingPictureCallbackList mActiveProcessingPictureCallbackList =
+        private final ActiveProcessingPictureCallbackList mActiveProcessingPictureCallbacks =
                 new ActiveProcessingPictureCallbackList();
 
         private final Map<IPictureProfileCallback, Pair<Integer, Integer>>

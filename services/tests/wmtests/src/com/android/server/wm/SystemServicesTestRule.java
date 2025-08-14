@@ -412,8 +412,9 @@ public class SystemServicesTestRule implements TestRule {
         mTransaction = spy(StubTransaction.class);
 
         mWmService = WindowManagerServiceTestSupport.setUpService(mContext, mImService,
-                new TestWindowManagerPolicy(), mAtmService, new TestDisplayWindowSettingsProvider(),
-                mTransaction, new MockSurfaceControlBuilder(), mAppCompat);
+                new TestWindowManagerPolicy(), mAtmService,
+                new TestDisplayWindowSettingsProvider(mContext), mTransaction,
+                new MockSurfaceControlBuilder(), mAppCompat);
 
         spyOn(mWmService);
         // Do nothing to show EmulatorDisplayOverlay

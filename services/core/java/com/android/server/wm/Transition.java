@@ -3613,8 +3613,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      * check whether to deliver the new configuration to clients and whether the changes will
      * potentially affect lifecycles.
      */
-    boolean applyDisplayChangeIfNeeded(@NonNull ArraySet<WindowContainer<?>> activitiesMayChange) {
-        boolean affectsLifecycle = false;
+    void applyDisplayChangeIfNeeded(@NonNull ArraySet<WindowContainer<?>> activitiesMayChange) {
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final WindowContainer<?> wc = mParticipants.valueAt(i);
             final DisplayContent dc = wc.asDisplayContent();
@@ -3622,9 +3621,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             final ChangeInfo displayChange = mChanges.get(dc);
             if (ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()
                     && displayChange.mExistenceChanged) {
-                dc.remove();
-                affectsLifecycle = true;
-                mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(dc.mDisplayId);
+                // If this change is a display disconnection, we can skip it for now.
+                // It will be handled via applyDisplayRemovalIfNeeded below.
                 continue;
             }
             if (!displayChange.hasChanged()) continue;
@@ -3647,7 +3645,29 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 });
             }
         }
-        return affectsLifecycle;
+    }
+
+    /**
+     * If this transition involves display removal(s), remove the DisplayContent here. Separated
+     * from the above method since this method needs to occur after task changes to ensure
+     * tasks do not have their hierarchy ops invalidated by being orphaned.
+     * @return whether or not a DisplayContent was removed.
+     */
+    boolean applyDisplayRemovalsIfNeeded() {
+        if (!ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) return false;
+        boolean displayRemoved = false;
+        for (int i = mParticipants.size() - 1; i >= 0; --i) {
+            final WindowContainer<?> wc = mParticipants.valueAt(i);
+            final DisplayContent dc = wc.asDisplayContent();
+            if (dc == null) continue;
+            final ChangeInfo displayChange = mChanges.get(dc);
+            if (displayChange.mExistenceChanged) {
+                dc.remove();
+                mWmService.mPossibleDisplayInfoMapper.removePossibleDisplayInfos(dc.mDisplayId);
+                displayRemoved = true;
+            }
+        }
+        return displayRemoved;
     }
 
     boolean getLegacyIsReady() {

@@ -37,10 +37,12 @@ interface SecureLockDeviceModule {
         fun providesSecureLockDeviceRepository(
             @Background backgroundExecutor: Executor,
             authenticationPolicyManager: AuthenticationPolicyManager?,
+            biometricSettingsRepository: BiometricSettingsRepository,
         ): SecureLockDeviceRepository {
             return SecureLockDeviceRepositoryImpl(
                 backgroundExecutor = backgroundExecutor,
                 authenticationPolicyManager = authenticationPolicyManager,
+                biometricSettingsRepository = biometricSettingsRepository,
             )
         }
 

@@ -95,6 +95,20 @@ constructor(@MediaCarouselControllerLog private val buffer: LogBuffer) {
             { "media frame($str1), width: $int1 height: $int2, location:$long1" },
         )
     }
+
+    fun logMediaCarouselDimensions(reason: String, rect: Rect, location: Int) {
+        buffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            {
+                str1 = reason
+                int1 = rect.width()
+                int2 = rect.height()
+                long1 = location.toLong()
+            },
+            { "media carousel($str1), width: $int1 height: $int2, location:$long1" },
+        )
+    }
 }
 
 private const val TAG = "MediaCarouselCtlrLog"

@@ -201,14 +201,16 @@ class AutoclickClickTypeTests {
         changeClickType(uiDevice, desktopMouseTestRule, SCROLL_BUTTON_LAYOUT_ID)
         moveMouseToView(testClickButton)
 
+        // Scroll to each button in this order to prevent the exit button from being inadvertently
+        // hovered.
+        moveMouseToScrollButton(SCROLL_RIGHT_BUTTON_LAYOUT_ID)
+        waitAndAssert {
+            testClickButton.text == SCROLL_RIGHT_TEXT
+        }
+
         moveMouseToScrollButton(SCROLL_UP_BUTTON_LAYOUT_ID)
         waitAndAssert {
             testClickButton.text == SCROLL_UP_TEXT
-        }
-
-        moveMouseToScrollButton(SCROLL_DOWN_BUTTON_LAYOUT_ID)
-        waitAndAssert {
-            testClickButton.text == SCROLL_DOWN_TEXT
         }
 
         moveMouseToScrollButton(SCROLL_LEFT_BUTTON_LAYOUT_ID)
@@ -216,9 +218,9 @@ class AutoclickClickTypeTests {
             testClickButton.text == SCROLL_LEFT_TEXT
         }
 
-        moveMouseToScrollButton(SCROLL_RIGHT_BUTTON_LAYOUT_ID)
+        moveMouseToScrollButton(SCROLL_DOWN_BUTTON_LAYOUT_ID)
         waitAndAssert {
-            testClickButton.text == SCROLL_RIGHT_TEXT
+            testClickButton.text == SCROLL_DOWN_TEXT
         }
 
         // Close the scroll panel.

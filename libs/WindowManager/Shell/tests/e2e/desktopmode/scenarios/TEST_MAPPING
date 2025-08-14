@@ -136,6 +136,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchFocusBetweenAppsTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToDesktopFromOverviewTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
     },
     {
@@ -176,6 +179,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitDesktopFromKeyboardShortcutTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitImmersiveToDesktopWithKeyboardShortcutTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-OpenAppFromAllAppsUsingKeyboardTest"

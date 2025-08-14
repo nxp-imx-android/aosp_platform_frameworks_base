@@ -525,11 +525,15 @@ public class AutoclickController extends BaseEventStreamTransformation implement
      */
     private boolean isPaused() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused()
-                && !isPanelHovered();
+                && !isClickTypePanelHovered();
     }
 
-    private boolean isPanelHovered() {
+    private boolean isClickTypePanelHovered() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isHovered();
+    }
+
+    private boolean isScrollPanelHovered() {
+        return Flags.enableAutoclickIndicator() && mAutoclickScrollPanel.isHovered();
     }
 
     private void cancelPendingClick() {
@@ -1005,6 +1009,12 @@ public class AutoclickController extends BaseEventStreamTransformation implement
          */
         private static final double DEFAULT_MOVEMENT_SLOP = 20f;
 
+        /**
+         * A reduced minimal distance to make the closely spaced buttons easier to click. Used when
+         * the pointer is hovering either the click type panel or the scroll panel.
+         */
+        private static final double PANEL_HOVERED_SLOP = 5f;
+
         private double mMovementSlop = DEFAULT_MOVEMENT_SLOP;
 
         /** Whether the minor cursor movement should be ignored. */
@@ -1258,7 +1268,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             }
             mLastMotionEvent = MotionEvent.obtain(event);
             mEventPolicyFlags = policyFlags;
-            mHoveredState = isPanelHovered();
+            mHoveredState = isClickTypePanelHovered();
 
             if (useAsAnchor) {
                 final int pointerIndex = mLastMotionEvent.getActionIndex();
@@ -1300,12 +1310,17 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             float deltaY = mAnchorCoords.y - event.getY(pointerIndex);
             double delta = Math.hypot(deltaX, deltaY);
 
-            // If the panel is hovered, always use the default slop so it's easier to click the
-            // closely spaced buttons.
-            double slop =
-                    ((Flags.enableAutoclickIndicator() && !isPanelHovered())
-                            ? mMovementSlop
-                            : DEFAULT_MOVEMENT_SLOP);
+            // If a panel is hovered, use the special slop to make clicking the panel buttons
+            // easier.
+            double slop;
+            if (!Flags.enableAutoclickIndicator()) {
+                slop = DEFAULT_MOVEMENT_SLOP;
+            } else if (isClickTypePanelHovered() || isScrollPanelHovered()) {
+                slop = PANEL_HOVERED_SLOP;
+            } else {
+                slop = mMovementSlop;
+            }
+
             return delta > slop;
         }
 

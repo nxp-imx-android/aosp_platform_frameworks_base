@@ -76,6 +76,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_APP_TO_WEB_EDUCATION_ANIMATION),
     ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE(Flags::enableAutoRestartOnDisplayMove, false,
             Flags.FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE),
+    ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS(
+            Flags::enableBackupAndRestoreDisplayWindowSettings, false,
+            Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS),
     ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX(
             Flags::enableBlockNonDesktopDisplayWindowDragBugfix, false,
             Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX),
@@ -191,7 +194,7 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, true,
             Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS),
-    ENABLE_MIRROR_DISPLAY_NO_ACTIVITY(Flags::enableMirrorDisplayNoActivity, false,
+    ENABLE_MIRROR_DISPLAY_NO_ACTIVITY(Flags::enableMirrorDisplayNoActivity, true,
             Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY),
     ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE(
             Flags::enableModalsFullscreenWithPlatformSignature, true,

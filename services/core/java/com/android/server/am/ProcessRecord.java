@@ -23,7 +23,6 @@ import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.ActivityManagerService.MY_PID;
-import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
 
 import static java.util.Objects.requireNonNull;
 
@@ -436,8 +435,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
      */
     volatile boolean mSkipProcessGroupCreation;
 
-    final ProcessRecordNode[] mLinkedNodes = new ProcessRecordNode[NUM_NODE_TYPE];
-
     /** Whether the app was launched from a stopped state and is being unstopped. */
     @GuardedBy("mService")
     volatile boolean mWasForceStopped;
@@ -611,7 +608,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mProfile = new ProcessProfileRecord(this);
         mServices = new ProcessServiceRecord(this);
         mProviders = new ProcessProviderRecord(this);
-        mReceivers = new ProcessReceiverRecord(this);
+        mReceivers = new ProcessReceiverRecord(mService);
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
@@ -1170,13 +1167,18 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
-    public boolean hasAboveClient() {
-        return mServices.hasAboveClient();
+    public ProcessServiceRecord getServices() {
+        return mServices;
     }
 
     @Override
-    public void setTreatLikeActivity(boolean treatLikeActivity) {
-        mServices.setTreatLikeActivity(treatLikeActivity);
+    public ProcessProviderRecord getProviders() {
+        return mProviders;
+    }
+
+    @Override
+    public ProcessReceiverRecord getReceivers() {
+        return mReceivers;
     }
 
     @Override
@@ -1329,7 +1331,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 EventLog.writeEvent(EventLogTags.AM_KILL,
                         userId, mPid, processName, getSetAdj(), reason, getRss(mPid));
                 Process.killProcessQuiet(mPid);
-                killProcessGroupIfNecessaryLocked(asyncKPG);
+                killProcessGroupIfNecessaryLocked(asyncKPG, reason);
             } else {
                 mPendingStart = false;
             }
@@ -1345,7 +1347,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @GuardedBy("mService")
-    void killProcessGroupIfNecessaryLocked(boolean async) {
+    void killProcessGroupIfNecessaryLocked(boolean async, String reason) {
         final boolean killProcessGroup;
         if (mHostingRecord != null
                 && (mHostingRecord.usesWebviewZygote() || mHostingRecord.usesAppZygote())) {
@@ -1363,7 +1365,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             if (!async) {
                 Process.sendSignalToProcessGroup(uid, mPid, OsConstants.SIGKILL);
             }
-            ProcessList.killProcessGroup(uid, mPid);
+            ProcessList.killProcessGroup(uid, mPid, reason);
         }
     }
 

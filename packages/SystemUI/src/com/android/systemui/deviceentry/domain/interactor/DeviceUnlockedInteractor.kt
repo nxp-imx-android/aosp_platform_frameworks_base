@@ -17,6 +17,7 @@
 package com.android.systemui.deviceentry.domain.interactor
 
 import android.provider.Settings
+import android.security.Flags.secureLockDevice
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
@@ -39,7 +40,9 @@ import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
+import com.android.systemui.util.kotlin.Utils.Companion.sampleFilter
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -76,31 +79,13 @@ constructor(
     fingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val powerInteractor: PowerInteractor,
     private val biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
+    secureLockDeviceInteractor: SecureLockDeviceInteractor,
     private val systemPropertiesHelper: SystemPropertiesHelper,
     private val secureSettingsRepository: SecureSettingsRepository,
     private val keyguardInteractor: KeyguardInteractor,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
 ) : ExclusiveActivatable() {
-
-    private val deviceUnlockSource =
-        merge(
-            fingerprintAuthInteractor.fingerprintSuccess.map { DeviceUnlockSource.Fingerprint },
-            faceAuthInteractor.isAuthenticated
-                .filter { it }
-                .map {
-                    if (deviceEntryBypassInteractor.isBypassEnabled.value) {
-                        DeviceUnlockSource.FaceWithBypass
-                    } else {
-                        DeviceUnlockSource.FaceWithoutBypass
-                    }
-                },
-            trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
-            authenticationInteractor.onAuthenticationResult
-                .filter { it }
-                .map { DeviceUnlockSource.BouncerInput },
-        )
-
     private val faceEnrolledAndEnabled = biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled
     private val fingerprintEnrolledAndEnabled =
         biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled
@@ -125,6 +110,10 @@ constructor(
                     trustInteractor.isTrustAgentCurrentlyAllowed,
                 ) { authFlags, isFaceLockedOut, isFingerprintLockedOut, trustManaged ->
                     when {
+                        authFlags.isPrimaryAuthRequiredForSecureLockDevice ->
+                            DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth
+                        authFlags.isStrongBiometricAuthRequiredForSecureLockDevice ->
+                            DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth
                         authFlags.isPrimaryAuthRequiredAfterReboot &&
                             wasRebootedForMainlineUpdate() ->
                             DeviceEntryRestrictionReason.DeviceNotUnlockedSinceMainlineUpdate
@@ -167,6 +156,50 @@ constructor(
 
     /** Whether the device is in lockdown mode, where bouncer input is required to unlock. */
     val isInLockdown: Flow<Boolean> = deviceEntryRestrictionReason.map { it.isInLockdown() }
+
+    /**
+     * Whether secure lock device mode is enabled, meaning device entry requires two-factor
+     * authentication: primary auth on the bouncer, followed by strong biometric-only auth on the
+     * bouncer.
+     *
+     * Returns false when FLAG_SECURE_LOCK_DEVICE is disabled
+     */
+    val isSecureLockDeviceEnabled: Flow<Boolean> =
+        if (secureLockDevice()) {
+            secureLockDeviceInteractor.isSecureLockDeviceEnabled
+        } else {
+            flowOf(false)
+        }
+
+    /** Indicates when a device has been unlocked from successful authentication on the bouncer. */
+    private val onUnlockFromBouncer =
+        authenticationInteractor.onAuthenticationResult
+            .filter { it }
+            .sampleFilter(isSecureLockDeviceEnabled) {
+                /**
+                 * When secure lock device is active, the device is not considered unlocked after
+                 * successful bouncer auth. Secure Lock Device requires two-factor authentication:
+                 * primary auth on the bouncer, followed by strong biometric authentication on the
+                 * bouncer, in order to unlock and enter the device.
+                 */
+                !it
+            }
+
+    private val deviceUnlockSource =
+        merge(
+            fingerprintAuthInteractor.fingerprintSuccess.map { DeviceUnlockSource.Fingerprint },
+            faceAuthInteractor.isAuthenticated
+                .filter { it }
+                .map {
+                    if (deviceEntryBypassInteractor.isBypassEnabled.value) {
+                        DeviceUnlockSource.FaceWithBypass
+                    } else {
+                        DeviceUnlockSource.FaceWithoutBypass
+                    }
+                },
+            trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
+            onUnlockFromBouncer.map { DeviceUnlockSource.BouncerInput },
+        )
 
     /**
      * Whether the device is unlocked or not, along with the information about the authentication
@@ -262,8 +295,7 @@ constructor(
                         // as normal.
                         Log.d(
                             TAG,
-                            "Not in trusted environment, power-related lock events treated as" +
-                                " normal",
+                            "Not in trusted environment, power-related lock events treated as normal",
                         )
                         merge(
                             // Device wakefulness events.
@@ -394,6 +426,9 @@ constructor(
         return when (this) {
             DeviceEntryRestrictionReason.UserLockdown -> true
             DeviceEntryRestrictionReason.PolicyLockdown -> true
+            // Device locking is handled via the lockNow request from SecureLockDeviceService
+            DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth -> false
+            DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth -> false
 
             // Add individual enum value instead of using "else" so new reasons are guaranteed
             // to be added here at compile-time.

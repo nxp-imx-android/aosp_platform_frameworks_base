@@ -680,6 +680,15 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
+    /** Exits immersive mode to maximized in desktop window via META+= keyboard shortcut. */
+    fun exitImmersiveToDesktopWithKeyboard(
+        wmHelper: WindowManagerStateHelper
+    ) {
+        val keyEventHelper = KeyEventHelper(getInstrumentation())
+        keyEventHelper.press(KEYCODE_EQUALS, META_META_ON)
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
     fun enterSplitScreenFromAppHandleMenu(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice

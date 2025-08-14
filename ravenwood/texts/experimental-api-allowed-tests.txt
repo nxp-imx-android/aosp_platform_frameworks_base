@@ -2,3 +2,4 @@
 # when running by run-ravenwood-tests.sh.
 
 RavenwoodUiTest_exp
+CtsViewTestCasesRavenwood

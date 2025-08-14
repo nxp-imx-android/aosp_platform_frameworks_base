@@ -144,6 +144,7 @@ public class Watchdog implements Dumpable {
         "/apex/com.android.art/bin/artd",  // ART daemon
         "/apex/com.android.compos/bin/composd",  // CompOS daemon (lazy service)
         "/apex/com.android.os.statsd/bin/statsd",  // Stats daemon
+        "/apex/com.android.virt/bin/virtualizationservice",  // Core process in AVF
     };
 
     public static final List<String> HAL_INTERFACES_OF_INTEREST = Arrays.asList(

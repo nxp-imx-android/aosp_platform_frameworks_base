@@ -1449,8 +1449,7 @@ public final class ActivityThread extends ClientTransactionHandler
             data.startRequestedElapsedTime = startRequestedElapsedTime;
             data.startRequestedUptime = startRequestedUptime;
             updateCompatOverrideScale(compatInfo);
-            updateCompatOverrideDisplayRotation(compatInfo);
-            updateCompatOverrideCameraRotation(compatInfo);
+            updateCameraCompatInfo(compatInfo);
             CompatibilityInfo.applyOverrideIfNeeded(config);
             sendMessage(H.BIND_APPLICATION, data);
         }
@@ -1465,24 +1464,11 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
-        private void updateCompatOverrideDisplayRotation(@NonNull CompatibilityInfo info) {
-            if (info.isOverrideDisplayRotationRequired()) {
-                CompatibilityInfo.setOverrideDisplayRotation(info.applicationDisplayRotation);
+        private void updateCameraCompatInfo(@NonNull CompatibilityInfo info) {
+            if (info.isOverrideCameraCompatibilityInfoRequired()) {
+                CompatibilityInfo.setCameraCompatibilityInfo(info.cameraCompatibilityInfo);
             } else {
-                CompatibilityInfo.setOverrideDisplayRotation(
-                        WindowConfiguration.ROTATION_UNDEFINED);
-            }
-        }
-
-        private void updateCompatOverrideCameraRotation(@NonNull CompatibilityInfo info) {
-            if (com.android.window.flags.Flags
-                    .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-                if (info.isOverrideCameraRotationRequired()) {
-                    CompatibilityInfo.setOverrideCameraRotation(info.applicationCameraRotation);
-                } else {
-                    CompatibilityInfo.setOverrideCameraRotation(
-                            WindowConfiguration.ROTATION_UNDEFINED);
-                }
+                CompatibilityInfo.resetCameraCompatibilityInfo();
             }
         }
 
@@ -2188,8 +2174,7 @@ public final class ActivityThread extends ClientTransactionHandler
             ucd.pkg = pkg;
             ucd.info = info;
             updateCompatOverrideScale(info);
-            updateCompatOverrideDisplayRotation(info);
-            updateCompatOverrideCameraRotation(info);
+            updateCameraCompatInfo(info);
             sendMessage(H.UPDATE_PACKAGE_COMPATIBILITY_INFO, ucd);
         }
 

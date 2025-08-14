@@ -18,6 +18,7 @@ package com.android.systemui.securelockdevice.data.repository
 
 import android.security.authenticationpolicy.authenticationPolicyManager
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.kosmos.Kosmos
 
 var Kosmos.secureLockDeviceRepository: SecureLockDeviceRepository by
@@ -28,6 +29,7 @@ val Kosmos.realSecureLockDeviceRepository by
         SecureLockDeviceRepositoryImpl(
             backgroundExecutor = fakeExecutor,
             authenticationPolicyManager = authenticationPolicyManager,
+            biometricSettingsRepository = biometricSettingsRepository,
         )
     }
 

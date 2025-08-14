@@ -30,7 +30,6 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -620,7 +619,6 @@ public class InstallationFragment extends DialogFragment {
                         installStage.getExistingUpdateOwnerLabel());
                 mCustomMessageTextView.setText(
                         Html.fromHtml(updateOwnerString, Html.FROM_HTML_MODE_LEGACY));
-                mCustomMessageTextView.setMovementMethod(new ScrollingMovementMethod());
             } else {
                 title = getString(R.string.title_update);
                 positiveBtnTextRes = R.string.button_update;

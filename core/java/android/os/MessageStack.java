@@ -122,7 +122,7 @@ public final class MessageStack {
     /**
      * Check that the message hasn't already been removed or processed elsewhere.
      */
-    private boolean messageMatches(Message m, MessageQueue.MessageCompare compare, Handler h,
+    private boolean messageMatches(Message m, Message.MessageCompare compare, Handler h,
             int what, Object object, Runnable r, long when) {
         return !isQuittingMessage(m)
                 && !m.isRemoved()
@@ -133,7 +133,7 @@ public final class MessageStack {
      * Iterates through messages and creates a reverse-ordered chain of messages to remove.
      * @return true if any messages were removed, false otherwise
      */
-    public boolean moveMatchingToFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
+    public boolean moveMatchingToFreelist(Message.MessageCompare compare, Handler h, int what,
             Object object, Runnable r, long when) {
         Message current = (Message) sTop.getAcquire(this);
         Message prev = null;
@@ -171,7 +171,7 @@ public final class MessageStack {
      * Search our stack for a given set of messages.
      * @return true if matching messages are found, false otherwise.
      */
-    public boolean hasMessages(MessageQueue.MessageCompare compare, Handler h, int what,
+    public boolean hasMessages(Message.MessageCompare compare, Handler h, int what,
             Object object, Runnable r, long when) {
         Message current = (Message) sTop.getAcquire(this);
 

@@ -100,4 +100,10 @@ public abstract class ServiceRecordInternal extends Binder {
 
     /** Returns the list of connections for a given index. */
     public abstract ArrayList<? extends ConnectionRecordInternal> getConnectionAt(int index);
+
+    /** Returns the host process that hosts this service. */
+    public abstract ProcessRecordInternal getHostProcess();
+
+    /** Returns the isolation host process (e.g., for isolated or SDK sandbox processes). */
+    public abstract ProcessRecordInternal getIsolationHostProcess();
 }

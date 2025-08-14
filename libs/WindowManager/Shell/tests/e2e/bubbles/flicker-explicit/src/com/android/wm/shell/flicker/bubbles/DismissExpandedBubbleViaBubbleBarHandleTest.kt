@@ -26,7 +26,6 @@ import com.android.wm.shell.flicker.bubbles.testcase.DismissSingleExpandedBubble
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleBarHandle
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -63,7 +62,8 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 class DismissExpandedBubbleViaBubbleBarHandleTest(navBar: NavBar) : BubbleFlickerTestBase(),
     DismissSingleExpandedBubbleTestCases {
-    companion object : FlickerPropertyInitializer() {
+
+    companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
             transition = { dismissBubbleAppViaBubbleBarHandle(testApp, wmHelper) },
@@ -78,7 +78,7 @@ class DismissExpandedBubbleViaBubbleBarHandleTest(navBar: NavBar) : BubbleFlicke
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader

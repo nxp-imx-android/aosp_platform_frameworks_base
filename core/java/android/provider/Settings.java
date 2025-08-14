@@ -8907,17 +8907,13 @@ public final class Settings {
                 "suggested_theme_feature_enabled";
 
         /**
-         * Setting to indicate whether the AppFunction agent allowlist should be enabled.
-         *
-         * <ul>
-         *   <li>0 = Off
-         *   <li>1 = Enabled (Default)
-         * </ul>
-         *
+         * String property which is a comma separated list of package names. These package names
+         * will be added to the existing agent allowlist. Since this contains package names, it must
+         * NOT be marked @Readable.
          * @hide
          */
-        public static final String APP_FUNCTION_AGENT_ALLOWLIST_ENABLED =
-                "app_function_agent_allowlist_enabled";
+        public static final String APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST =
+                "app_function_additional_agent_allowlist";
 
         /**
          * Set by the system to track if the user needs to see the call to action for
@@ -13799,12 +13795,20 @@ public final class Settings {
 
         /**
          * Tracks if the user has seen the promo card for Identity Check.
-         * The promo card should only appear once per device via Safety Center.
+         * The promo card should only appear once per user via Safety Center.
          *
          * @hide
          */
         public static final String IDENTITY_CHECK_PROMO_CARD_SHOWN =
                 "identity_check_promo_card_shown";
+
+        /**
+         * Tracks if the user has interacted with the Identity Check promo notification.
+         * The notification should only appear once per user via Safety Center.
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_NOTIFICATION_VIEW_DETAILS_CLICKED =
+                "identity_check_notification_view_details_clicked";
     }
 
     /**

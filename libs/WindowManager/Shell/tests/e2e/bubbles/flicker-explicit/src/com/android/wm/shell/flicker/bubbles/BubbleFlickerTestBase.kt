@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.bubbles
 
+import android.app.Instrumentation
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.Tag
@@ -28,15 +29,18 @@ import android.tools.flicker.subject.wm.WindowManagerStateSubject
 import android.tools.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.io.Reader
 import android.tools.traces.component.ComponentNameMatcher
+import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.surfaceflinger.LayerTraceEntry
 import android.tools.traces.wm.WindowManagerState
 import androidx.annotation.CallSuper
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
 import com.android.server.wm.flicker.assertNavBarPosition
 import com.android.server.wm.flicker.assertStatusBarLayerPosition
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -100,12 +104,11 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
     override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
 
     /**
-     * The test app to verify.
+     * The app used in flicker tests to verify with.
      *
-     * Note that it's necessary to override this `testApp` if the test use [SimpleAppHelper].
+     * Note that it's necessary to override this [testApp] if the test use [SimpleAppHelper].
      */
-    override val testApp: StandardAppHelper
-        get() = BubbleFlickerTestBase.testApp
+    override val testApp: StandardAppHelper = FlickerProperties.testApp
 
     /**
      * Initialize subjects inherited from [FlickerSubject].
@@ -235,5 +238,31 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
 
 // endregion
 
-    companion object : FlickerPropertyInitializer()
+    /**
+     * Essential properties to launch flicker tests.
+     */
+    companion object FlickerProperties {
+        val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+        val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
+
+        /**
+         * Helper class to wait on [WindowManagerState] or [LayerTraceEntry] conditions.
+         *
+         * This is also used to wait for transition completes.
+         */
+        val wmHelper = WindowManagerStateHelper(
+            instrumentation,
+            clearCacheAfterParsing = false,
+        )
+
+        /**
+         * Used for building the scenario.
+         */
+        val tapl: LauncherInstrumentation = LauncherInstrumentation()
+
+        /**
+         * The default app used in flicker tests to verify with.
+         */
+        val testApp: StandardAppHelper = SimpleAppHelper(instrumentation)
+    }
 }

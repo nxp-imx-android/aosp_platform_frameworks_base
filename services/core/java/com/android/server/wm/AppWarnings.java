@@ -256,9 +256,9 @@ class AppWarnings {
 
     public void showPageSizeMismatchDialogIfNeeded(ActivityRecord r) {
         // Don't show dialog if the app compat is enabled using property
-        final boolean appCompatEnabled = SystemProperties.getBoolean(
-                "bionic.linker.16kb.app_compat.enabled", false);
-        if (appCompatEnabled) {
+        final String appCompatEnabled = SystemProperties.get(
+                "bionic.linker.16kb.app_compat.enabled", "false");
+        if (appCompatEnabled.equals("true")) {
             return;
         }
 

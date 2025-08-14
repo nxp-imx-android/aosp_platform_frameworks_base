@@ -108,7 +108,7 @@ sealed class ExternalState(
     permissionAllowlist: PermissionAllowlist,
     implicitToSourcePermissions: IndexedMap<String, IndexedListSet<String>>,
     isSystemReady: Boolean,
-    agentAllowlist: List<SignedPackage>,
+    agentAllowlist: Set<SignedPackage>?,
 ) : Immutable<MutableExternalState> {
     val userIds: IntSet
         get() = userIdsReference.get()
@@ -145,7 +145,7 @@ sealed class ExternalState(
     var isSystemReady: Boolean = isSystemReady
         protected set
 
-    var agentAllowlist: List<SignedPackage> = agentAllowlist
+    var agentAllowlist: Set<SignedPackage>? = agentAllowlist
         protected set
 
     override fun toMutable(): MutableExternalState = MutableExternalState(this)
@@ -164,7 +164,7 @@ private constructor(
     permissionAllowlist: PermissionAllowlist,
     implicitToSourcePermissions: IndexedMap<String, IndexedListSet<String>>,
     isSystemReady: Boolean,
-    agentAllowlist: List<SignedPackage>,
+    agentAllowlist: Set<SignedPackage>?,
 ) :
     ExternalState(
         userIdsReference,
@@ -193,7 +193,7 @@ private constructor(
             PermissionAllowlist(),
             MutableIndexedMap(),
             false,
-            emptyList(),
+            null,
         )
 
     internal constructor(
@@ -267,7 +267,7 @@ private constructor(
     }
 
     @JvmName("setAgentAllowlistPublic")
-    fun setAgentAllowlist(agentAllowlist: List<SignedPackage>) {
+    fun setAgentAllowlist(agentAllowlist: Set<SignedPackage>?) {
         this.agentAllowlist = agentAllowlist
     }
 }

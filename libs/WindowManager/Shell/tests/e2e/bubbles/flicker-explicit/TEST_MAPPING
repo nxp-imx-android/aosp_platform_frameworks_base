@@ -13,6 +13,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleIconMoveTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppFromOverviewTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaBackTest"
     },
     {
@@ -22,19 +25,19 @@
       "name": "WMShellExplicitFlickerTestsBubbles-DismissAllCollapsedBubbleAppsTest"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarHandleTest"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarHandleTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleBarTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleViewTest"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromHomeScreenTest"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromHomeScreenTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTest"
@@ -62,6 +65,9 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTest"
     }
   ]
 }

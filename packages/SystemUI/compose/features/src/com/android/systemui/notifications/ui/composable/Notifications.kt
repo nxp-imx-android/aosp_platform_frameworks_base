@@ -62,16 +62,17 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -85,6 +86,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastMaxOf
+import androidx.compose.ui.util.fastMinOf
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -267,7 +270,7 @@ fun ContentScope.ConstrainedNotificationStack(
                 .onSizeChanged { viewModel.onConstrainedAvailableSpaceChanged(it.height) }
                 .onGloballyPositioned {
                     if (shouldUseLockscreenStackBounds(layoutState.transitionState)) {
-                        stackScrollView.updateDrawBounds(it.boundsInWindow().toAndroidRectF())
+                        stackScrollView.updateDrawBounds(it.rawBoundsInWindow())
                     }
                 }
     ) {
@@ -659,7 +662,7 @@ fun ContentScope.NotificationScrollingStack(
                     )
                     .onGloballyPositioned {
                         if (!shouldUseLockscreenStackBounds(layoutState.transitionState)) {
-                            stackScrollView.updateDrawBounds(it.boundsInWindow().toAndroidRectF())
+                            stackScrollView.updateDrawBounds(it.rawBoundsInWindow())
                         }
                     }
                     .debugBackground(viewModel, DEBUG_BOX_COLOR)
@@ -937,3 +940,37 @@ private val DEBUG_HUN_COLOR = Color(0f, 0f, 1f, 0.2f)
 private val DEBUG_BOX_COLOR = Color(0f, 1f, 0f, 0.2f)
 private const val HUN_SNOOZE_POSITIONAL_THRESHOLD_FRACTION = 0.25f
 private const val HUN_SNOOZE_VELOCITY_THRESHOLD = -70f
+
+/**
+ * The boundaries of this layout relative to the window's origin, without being clipped to the
+ * window bounds.
+ *
+ * This is different from [boundsInWindow], which clips the bounds to the window. Unclipped bounds
+ * are needed when a layout is positioned off-screen, for example during a scene transition.
+ */
+private fun LayoutCoordinates.rawBoundsInWindow(): android.graphics.RectF {
+    val root = findRootCoordinates()
+
+    val bounds = root.localBoundingBoxOf(this)
+    val boundsLeft = bounds.left
+    val boundsTop = bounds.top
+    val boundsRight = bounds.right
+    val boundsBottom = bounds.bottom
+
+    if (boundsLeft == boundsRight || boundsTop == boundsBottom) {
+        return android.graphics.RectF()
+    }
+
+    val topLeft = root.localToWindow(Offset(boundsLeft, boundsTop))
+    val topRight = root.localToWindow(Offset(boundsRight, boundsTop))
+    val bottomRight = root.localToWindow(Offset(boundsRight, boundsBottom))
+    val bottomLeft = root.localToWindow(Offset(boundsLeft, boundsBottom))
+
+    val left = fastMinOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x)
+    val right = fastMaxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x)
+
+    val top = fastMinOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y)
+    val bottom = fastMaxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y)
+
+    return android.graphics.RectF(left, top, right, bottom)
+}

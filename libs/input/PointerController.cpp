@@ -171,7 +171,6 @@ vec2 PointerController::getPosition() const {
 }
 
 vec2 PointerController::getPositionInLogicalDisplay() const {
-    const ui::LogicalDisplayId displayId = mCursorController.getDisplayId();
     return mCursorController.getPosition();
 }
 

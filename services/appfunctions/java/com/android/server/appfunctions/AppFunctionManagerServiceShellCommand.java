@@ -44,6 +44,7 @@ import android.os.Process;
 import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -51,6 +52,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -172,6 +174,15 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     "    --user <USER_ID> (optional): The user ID to list valid targets for. "
                             + "Defaults to the current user.");
             pw.println();
+            pw.println();
+            pw.println(
+                    "  set-additional-allowlisted-agents <PACKAGE_NAME_1> <PACKAGE_NAME_2> ...");
+            pw.println("    Sets the agents that are allowlisted, in addition to the device"
+                    + " allowlist. Value is a space-separated list of package names. Will override"
+                    + " any agents set by previous calls to this command.");
+            pw.println(
+                    "  clear-additional-allowlisted-agents");
+            pw.println("    Clears any agents set by set-additional-allowlisted-agents");
         }
     }
 
@@ -209,6 +220,16 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return listValidTargets();
+                case "set-additional-allowlisted-agents":
+                    if (!accessCheckFlagsEnabled()) {
+                        return -1;
+                    }
+                    return setAdditionalAgents();
+                case "clear-additional-allowlisted-agents":
+                    if (!accessCheckFlagsEnabled()) {
+                        return -1;
+                    }
+                    return clearAdditionalAgents();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -239,7 +260,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         }
 
         Context context = mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0);
-        long token = Binder.clearCallingIdentity();
+        final long token = Binder.clearCallingIdentity();
         try {
             Map<String, List<SearchResult>> perPackageSearchResult =
                     AppFunctionDumpHelper.queryAppFunctionsStateForUser(
@@ -485,6 +506,33 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         return resultCode.get();
     }
 
+    private int setAdditionalAgents() {
+        List<String> packages = new ArrayList<>();
+        packages.add(getNextArgRequired());
+        String packageName;
+        while ((packageName = getNextArg()) != null) {
+            packages.add(packageName);
+        }
+        return setAdditionalAgents(packages);
+    }
+
+    private int clearAdditionalAgents() {
+        return setAdditionalAgents(new ArrayList<>());
+    }
+
+    private int setAdditionalAgents(List<String> agents) {
+        final long token = Binder.clearCallingIdentity();
+        try {
+            Settings.Secure.putString(
+                    mContext.getContentResolver(),
+                    Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST,
+                    SignedPackageParser.serializePackagesOnly(agents)
+            );
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        return 0;
+    }
     private int runGrantAppFunctionAccess() throws Exception {
         final PrintWriter pw = getOutPrintWriter();
         String agentPackage = null;
@@ -617,7 +665,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
     }
 
     private static String getCallingPackage() {
-        return switch (Binder.getCallingUid()) {
+        return switch (UserHandle.getAppId(Binder.getCallingUid())) {
             case Process.ROOT_UID -> "root";
             case Process.SHELL_UID -> "com.android.shell";
             default -> throw new IllegalAccessError("Only allow shell or root");

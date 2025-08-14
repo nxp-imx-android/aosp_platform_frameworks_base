@@ -18,7 +18,6 @@ package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.IComponentNameMatcher
-import com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest.Companion.testApp
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 

@@ -29,12 +29,12 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags.doubleTapToSleep
-import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
@@ -82,7 +82,7 @@ constructor(
     private val secureSettingsRepository: SecureSettingsRepository,
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
-    private val bouncerInteractor: BouncerInteractor,
+    private val pointerDeviceRepository: PointerDeviceRepository,
 ) {
     private val _udfpsAccessibilityOverlayBounds: MutableStateFlow<Rect?> = MutableStateFlow(null)
 
@@ -135,6 +135,15 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
+
+    /* Cache value of `isAnyPointerDeviceConnected` so it can
+     * be easily checked. */
+    private val _isAnyPointerDeviceConnected =
+        pointerDeviceRepository.isAnyPointerDeviceConnected.stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = false,
+        )
 
     private val _isMenuVisible = MutableStateFlow(false)
     /** Model for whether the menu should be shown. */
@@ -223,7 +232,7 @@ constructor(
         pulsingGestureListener.onSingleTapUp(x, y)
         if (faceAuthInteractor.canFaceAuthRun()) {
             faceAuthInteractor.onNotificationPanelClicked()
-        } else if (bouncerInteractor.isImproveLargeScreenInteractionEnabled) {
+        } else if (_isAnyPointerDeviceConnected.value) {
             attemptDeviceEntry(loggingReason = "Lockscreen clicked")
         }
     }

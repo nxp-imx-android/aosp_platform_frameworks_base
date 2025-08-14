@@ -39,6 +39,8 @@ import com.android.systemui.biometrics.faceSensorPropertiesInternal
 import com.android.systemui.biometrics.fingerprintSensorPropertiesInternal
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.biometrics.shared.model.toFaceSensorInfo
+import com.android.systemui.biometrics.shared.model.toFingerprintSensorInfo
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.display.data.repository.FakeDisplayRepository
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
@@ -139,8 +141,9 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
 
     private val modalities =
         BiometricModalities(
-            fingerprintProperties = fingerprintSensorPropertiesInternal().first(),
-            faceProperties = faceSensorPropertiesInternal().first(),
+            fingerprintSensorInfo =
+                fingerprintSensorPropertiesInternal().first().toFingerprintSensorInfo(),
+            faceSensorInfo = faceSensorPropertiesInternal().first().toFaceSensorInfo(),
         )
 
     @Test

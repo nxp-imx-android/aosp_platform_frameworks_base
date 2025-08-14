@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -75,8 +76,8 @@ import platform.test.motion.compose.values.motionTestValues
  *
  * The user can press, hold, and drag their pointer to select dots along a grid of dots.
  *
- * If [centerDotsVertically] is `true`, the dots should be centered along the axis of interest; if
- * `false`, the dots will be pushed towards the end/bottom of the axis.
+ * If [centerDotsVertically] is `true`, the dots should be centered vertically; if `false`, the dots
+ * will be pushed towards the bottom.
  */
 @Composable
 @VisibleForTesting
@@ -92,7 +93,7 @@ fun PatternBouncer(
     val colCount = viewModel.columnCount
     val rowCount = viewModel.rowCount
 
-    val dotColor = MaterialTheme.colorScheme.secondary
+    val dotColor = MaterialTheme.colorScheme.onSurface
     val dotRadius = with(density) { (DOT_DIAMETER_DP / 2).dp.toPx() }
     val lineColor = MaterialTheme.colorScheme.primary
     val lineStrokeWidth = with(density) { LINE_STROKE_WIDTH_DP.dp.toPx() }
@@ -144,8 +145,7 @@ fun PatternBouncer(
             return@LaunchedEffect
         }
 
-        // Make sure that the current dot is scaled up while the other dots are scaled back
-        // down.
+        // Make sure that the current dot is scaled up while the other dots are scaled back down.
         dotScalingAnimatables.entries.forEach { (dot, animatable) ->
             val isSelected = dot == currentDot
             // Launch using the longer-lived scope because we want these animations to proceed to
@@ -218,7 +218,7 @@ fun PatternBouncer(
     var gridCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
     // Calculated in context of Canvas inside the Box.
     var offset: Offset by remember { mutableStateOf(Offset.Zero) }
-    var scale: Float by remember { mutableStateOf(1f) }
+    var scale: Float by remember { mutableFloatStateOf(1f) }
     // This is the size of the drawing area, in dips.
     val dotDrawingArea =
         remember(colCount, rowCount) {
@@ -229,10 +229,9 @@ fun PatternBouncer(
                 // width.
                 width = (262 * colCount / 2).dp,
                 // Because the height also includes spacing above and below the topmost and
-                // bottommost
-                // dots in the grid and because UX mocks specify the height without that spacing,
-                // the
-                // actual height needs to be defined slightly bigger than the UX mock height.
+                // bottommost dots in the grid and because UX mocks specify the height without that
+                // spacing, the actual height needs to be defined slightly bigger than the UX mock
+                // height.
                 height = (262 * rowCount / 2).dp,
             )
         }

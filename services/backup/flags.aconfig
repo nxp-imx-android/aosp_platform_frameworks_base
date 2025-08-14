@@ -85,6 +85,7 @@ flag {
     description: "Enables cross platform transfers for backup agents"
     bug: "403956528"
     is_fixed_read_only: true
+    is_exported: true
 }
 
 flag {

@@ -43,7 +43,9 @@ import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.flags.DisableSceneContainer;
+import com.android.systemui.flags.EnableSceneContainer;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.keyguard.domain.interactor.AodDimInteractor;
 import com.android.systemui.keyguard.domain.interactor.DozeInteractor;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.shade.NotificationShadeWindowViewController;
@@ -99,6 +101,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
     @Mock private DozeHost.Callback mCallback;
     @Mock private DozeInteractor mDozeInteractor;
     @Mock private AmbientDisplayConfiguration mAmbientDisplayConfiguration;
+    @Mock private AodDimInteractor mAodDimInteractor;
 
     private KosmosJavaAdapter mKosmos;
 
@@ -114,7 +117,8 @@ public class DozeServiceHostTest extends SysuiTestCase {
                 mNotificationWakeUpCoordinator, mAuthController,
                 mShadeLockscreenInteractor, mDozeInteractor,
                 mKosmos.getDeviceEntryFingerprintAuthInteractor(),
-                mKosmos.getTestScope(), mContext, mAmbientDisplayConfiguration);
+                mKosmos.getTestScope(), mContext, mAmbientDisplayConfiguration,
+                mAodDimInteractor);
 
         mDozeServiceHost.initialize(
                 mCentralSurfaces,
@@ -243,6 +247,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
         mDozeServiceHost.onSlpiTap(100, -2);
         verify(mDozeInteractor, never()).setLastTapToWakePosition(any());
     }
+
     @Test
     public void dozeTimeTickSentToDozeInteractor() {
         // WHEN dozeTimeTick
@@ -250,5 +255,15 @@ public class DozeServiceHostTest extends SysuiTestCase {
 
         // THEN dozeInteractor's dozeTimeTick is updated
         verify(mDozeInteractor).dozeTimeTick();
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void setAodDimmingScrim() {
+        // WHEN set aodDimmingScrim
+        mDozeServiceHost.setAodDimmingScrim(.54f);
+
+        // THEN interactor's dim amount is updated
+        verify(mAodDimInteractor).setDimAmount(eq(.54f));
     }
 }

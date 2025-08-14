@@ -110,6 +110,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
+        "com.android.wm.shell.functional.fundamentals.SwitchToDesktopFromOverviewTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToOverviewFromDesktopTest",
         "com.android.wm.shell.functional.fundamentals.TaskbarInDesktopModeTest",
@@ -124,6 +125,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
@@ -442,6 +444,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-SwitchToDesktopFromOverviewTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.SwitchToDesktopFromOverviewTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -537,6 +546,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-ExitImmersiveToDesktopWithKeyboardShortcutTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutTest"],
 }
 
 test_module_config {

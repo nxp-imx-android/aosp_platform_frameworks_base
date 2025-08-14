@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.view.WindowInsets.Type.navigationBars;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -30,7 +31,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.TaskInfo;
@@ -146,6 +146,7 @@ public class CompatUIControllerTest extends ShellTestCase {
         MockitoAnnotations.initMocks(this);
 
         mDesktopState = new FakeDesktopState();
+        mDesktopState.getOverrideDesktopModeSupportPerDisplay().put(DISPLAY_ID, true);
         doReturn(mMockDisplayLayout).when(mMockDisplayController).getDisplayLayout(anyInt());
         doReturn(DISPLAY_ID).when(mMockCompatLayout).getDisplayId();
         doReturn(TASK_ID).when(mMockCompatLayout).getTaskId();
@@ -712,16 +713,16 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
+    @EnableFlags({Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE,
+            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
     public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagEnabled() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
-        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
         verify(mController, never()).removeLayouts(taskInfo.taskId);
 
-        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
@@ -730,14 +731,13 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
+    @EnableFlags({Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE,
+            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
     public void testUpdateActiveTaskInfo_alwaysRemoveLetterboxEdu() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
         // When not in Desktop Mode the LetterboxEdu is removed only if the taskId is the one used
         // when created.
-        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
-
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
         mController.removeLetterboxEdu(TASK_ID_2);
         verify(mMockLetterboxEduLayout, never()).release();
@@ -747,7 +747,7 @@ public class CompatUIControllerTest extends ShellTestCase {
         verify(mMockLetterboxEduLayout).release();
 
         // When in Desktop Mode the LetterboxEdu is always removed
-        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
         mController.removeLetterboxEdu(TASK_ID);
@@ -761,15 +761,15 @@ public class CompatUIControllerTest extends ShellTestCase {
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
     @DisableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
+    @EnableFlags(Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX)
     public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagDisabled() {
-        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
         verify(mController, never()).removeLayouts(taskInfo.taskId);
 
-        when(mDesktopUserRepositories.getCurrent().isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
 
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 

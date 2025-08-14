@@ -29,6 +29,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
 /**
  * The state info of all services in the process.
  */
-final class ProcessServiceRecord {
+final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     /**
      * Are there any client services with activities?
      */
@@ -65,15 +66,6 @@ final class ProcessServiceRecord {
      */
     private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
-    /**
-     * Last group set by a connection.
-     */
-    private int mConnectionGroup;
-
-    /**
-     * Last importance set by a connection.
-     */
-    private int mConnectionImportance;
 
     /**
      * The OR'ed foreground service types that are running on this process.
@@ -88,21 +80,6 @@ final class ProcessServiceRecord {
      * @see #mFgServiceTypes
      */
     private boolean mHasTypeNoneFgs;
-
-    /**
-     * Bound using BIND_ABOVE_CLIENT, so want to be lower.
-     */
-    private boolean mHasAboveClient;
-
-    /**
-     * Bound using BIND_TREAT_LIKE_ACTIVITY.
-     */
-    private boolean mTreatLikeActivity;
-
-    /**
-     * Do we need to be executing services in the foreground?
-     */
-    private boolean mExecServicesFg;
 
     /**
      * App is allowed to manage allowlists such as temporary Power Save mode allowlist.
@@ -311,58 +288,18 @@ final class ProcessServiceRecord {
                 < mService.mConstants.mServiceBindAlmostPerceptibleTimeoutMs);
     }
 
-    int getConnectionGroup() {
-        return mConnectionGroup;
-    }
-
-    void setConnectionGroup(int connectionGroup) {
-        mConnectionGroup = connectionGroup;
-    }
-
-    int getConnectionImportance() {
-        return mConnectionImportance;
-    }
-
-    void setConnectionImportance(int connectionImportance) {
-        mConnectionImportance = connectionImportance;
-    }
-
     void updateHasAboveClientLocked() {
-        mHasAboveClient = false;
+        setHasAboveClient(false);
         for (int i = mConnections.size() - 1; i >= 0; i--) {
             ConnectionRecord cr = mConnections.valueAt(i);
 
             final boolean isSameProcess = cr.binding.service.app != null
                     && cr.binding.service.app.mServices == this;
             if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
-                mHasAboveClient = true;
+                setHasAboveClient(true);
                 break;
             }
         }
-    }
-
-    void setHasAboveClient(boolean hasAboveClient) {
-        mHasAboveClient = hasAboveClient;
-    }
-
-    boolean hasAboveClient() {
-        return mHasAboveClient;
-    }
-
-    boolean isTreatedLikeActivity() {
-        return mTreatLikeActivity;
-    }
-
-    void setTreatLikeActivity(boolean treatLikeActivity) {
-        mTreatLikeActivity = treatLikeActivity;
-    }
-
-    boolean shouldExecServicesFg() {
-        return mExecServicesFg;
-    }
-
-    void setExecServicesFg(boolean execServicesFg) {
-        mExecServicesFg = execServicesFg;
     }
 
     /**
@@ -423,7 +360,8 @@ final class ProcessServiceRecord {
      * @see #startService(ServiceRecord)
      * @see #stopService(ServiceRecord)
      */
-    int numberOfRunningServices() {
+    @Override
+    public int numberOfRunningServices() {
         return mServices.size();
     }
 
@@ -432,7 +370,8 @@ final class ProcessServiceRecord {
      *
      * @see #numberOfRunningServices()
      */
-    ServiceRecord getRunningServiceAt(int index) {
+    @Override
+    public ServiceRecord getRunningServiceAt(int index) {
         return mServices.valueAt(index);
     }
 
@@ -456,6 +395,11 @@ final class ProcessServiceRecord {
         return mExecutingServices.size();
     }
 
+    @Override
+    public boolean hasExecutingServices() {
+        return !mExecutingServices.isEmpty();
+    }
+
     void addConnection(ConnectionRecord connection) {
         mConnections.add(connection);
         addSdkSandboxConnectionIfNecessary(connection);
@@ -473,11 +417,13 @@ final class ProcessServiceRecord {
         mConnections.clear();
     }
 
-    ConnectionRecord getConnectionAt(int index) {
+    @Override
+    public ConnectionRecord getConnectionAt(int index) {
         return mConnections.valueAt(index);
     }
 
-    int numberOfConnections() {
+    @Override
+    public int numberOfConnections() {
         return mConnections.size();
     }
 
@@ -506,11 +452,13 @@ final class ProcessServiceRecord {
         }
     }
 
-    ConnectionRecord getSdkSandboxConnectionAt(int index) {
+    @Override
+    public ConnectionRecord getSdkSandboxConnectionAt(int index) {
         return mSdkSandboxConnections != null ? mSdkSandboxConnections.valueAt(index) : null;
     }
 
-    int numberOfSdkSandboxConnections() {
+    @Override
+    public int numberOfSdkSandboxConnections() {
         return mSdkSandboxConnections != null ? mSdkSandboxConnections.size() : 0;
     }
 
@@ -612,8 +560,8 @@ final class ProcessServiceRecord {
 
     @GuardedBy("mService")
     void onCleanupApplicationRecordLocked() {
-        mTreatLikeActivity = false;
-        mHasAboveClient = false;
+        setTreatLikeActivity(false);
+        setHasAboveClient(false);
         setHasClientActivities(false);
     }
 
@@ -663,14 +611,14 @@ final class ProcessServiceRecord {
             pw.print(" mLastTopStartedAlmostPerceptibleBindRequestUptimeMs=");
             pw.println(mLastTopStartedAlmostPerceptibleBindRequestUptimeMs);
         }
-        if (mHasClientActivities || mHasAboveClient || mTreatLikeActivity) {
+        if (mHasClientActivities || isHasAboveClient() || isTreatLikeActivity()) {
             pw.print(prefix); pw.print("hasClientActivities="); pw.print(mHasClientActivities);
-            pw.print(" hasAboveClient="); pw.print(mHasAboveClient);
-            pw.print(" treatLikeActivity="); pw.println(mTreatLikeActivity);
+            pw.print(" hasAboveClient="); pw.print(isHasAboveClient());
+            pw.print(" treatLikeActivity="); pw.println(isTreatLikeActivity());
         }
-        if (mConnectionGroup != 0) {
-            pw.print(prefix); pw.print("connectionGroup="); pw.print(mConnectionGroup);
-            pw.print(" Importance="); pw.print(mConnectionImportance);
+        if (getConnectionGroup() != 0) {
+            pw.print(prefix); pw.print("connectionGroup="); pw.print(getConnectionGroup());
+            pw.print(" Importance="); pw.print(getConnectionImportance());
         }
         if (mAllowlistManager) {
             pw.print(prefix); pw.print("allowlistManager="); pw.println(mAllowlistManager);
@@ -683,7 +631,7 @@ final class ProcessServiceRecord {
         }
         if (mExecutingServices.size() > 0) {
             pw.print(prefix); pw.print("Executing Services (fg=");
-            pw.print(mExecServicesFg); pw.println(")");
+            pw.print(isExecServicesFg()); pw.println(")");
             for (int i = 0, size = mExecutingServices.size(); i < size; i++) {
                 pw.print(prefix); pw.print("  - "); pw.println(mExecutingServices.valueAt(i));
             }

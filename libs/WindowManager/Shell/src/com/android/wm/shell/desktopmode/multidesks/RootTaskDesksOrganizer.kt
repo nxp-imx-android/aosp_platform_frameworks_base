@@ -16,9 +16,11 @@
 package com.android.wm.shell.desktopmode.multidesks
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager.INVALID_TASK_ID
+import android.app.TaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
@@ -40,6 +42,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.LaunchAdjacentController
+import com.android.wm.shell.desktopmode.createActivityOptionsForStartTask
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
 import com.android.wm.shell.freeform.TaskChangeListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -294,11 +297,14 @@ class RootTaskDesksOrganizer(
     override fun moveTaskToDesk(
         wct: WindowContainerTransaction,
         deskId: Int,
-        task: RunningTaskInfo,
+        task: TaskInfo,
         minimized: Boolean,
     ) {
         logV("moveTaskToDesk task=${task.taskId} desk=$deskId minimized=$minimized")
         val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
+        if (task is RecentTaskInfo) {
+            wct.startTask(task.taskId, createActivityOptionsForStartTask(deskId, this).toBundle())
+        }
         wct.setWindowingMode(task.token, WINDOWING_MODE_UNDEFINED)
         if (!minimized) {
             wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
@@ -344,7 +350,7 @@ class RootTaskDesksOrganizer(
     private fun minimizeTaskInner(
         wct: WindowContainerTransaction,
         deskId: Int,
-        task: RunningTaskInfo,
+        task: TaskInfo,
         enforceTaskInDesk: Boolean = true,
     ) {
         logV(

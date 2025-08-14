@@ -18,6 +18,7 @@ package com.android.systemui.qs.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
@@ -234,6 +236,7 @@ private fun ContentScope.QuickSettingsScene(
                         notificationStackScrollView,
                         shadeSession,
                         jankMonitor,
+                        this@QuickSettingsScene.verticalOverscrollEffect,
                     )
                 }
             }
@@ -262,6 +265,7 @@ private fun ContentScope.QuickSettingsContent(
     notificationStackScrollView: NotificationScrollView,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
+    verticalOverscrollEffect: OverscrollEffect,
 ) {
     val cutoutLocation = LocalDisplayCutout.current().location
 
@@ -393,6 +397,9 @@ private fun ContentScope.QuickSettingsContent(
             supportNestedScrolling = true,
             modifier =
                 Modifier.fillMaxWidth()
+                    // Match the screen height with the scrim, so it covers the whole screen,
+                    // when the stack "passes by" during the QS -> Gone transition.
+                    .height(LocalWindowInfo.current.containerSize.height.dp)
                     .offset { IntOffset(x = 0, y = minNotificationStackTop) }
                     .padding(horizontal = shadeHorizontalPadding),
         )

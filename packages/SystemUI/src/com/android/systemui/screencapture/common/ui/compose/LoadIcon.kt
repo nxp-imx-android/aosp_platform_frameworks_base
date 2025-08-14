@@ -18,6 +18,9 @@ package com.android.systemui.screencapture.common.ui.compose
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
@@ -28,8 +31,14 @@ fun loadIcon(
     viewModel: DrawableLoaderViewModel,
     @DrawableRes resId: Int,
     contentDescription: ContentDescription?,
-): Icon.Loaded? {
-    return loadDrawable(viewModel, resId)?.let { drawable ->
-        Icon.Loaded(drawable = drawable, res = resId, contentDescription = contentDescription)
+): State<Icon.Loaded?> {
+    val context = LocalContext.current
+    return produceState<Icon.Loaded?>(
+        initialValue = null,
+        keys = arrayOf(viewModel, context, resId),
+    ) {
+        val drawable = viewModel.loadDrawable(context = context, resId = resId)
+        value =
+            Icon.Loaded(drawable = drawable, res = resId, contentDescription = contentDescription)
     }
 }

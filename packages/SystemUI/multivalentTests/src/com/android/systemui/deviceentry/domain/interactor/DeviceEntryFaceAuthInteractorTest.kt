@@ -29,8 +29,8 @@ import com.android.keyguard.keyguardUpdateMonitor
 import com.android.keyguard.trustManager
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.CameraInfo
-import com.android.systemui.biometrics.data.repository.FaceSensorInfo
 import com.android.systemui.biometrics.data.repository.facePropertyRepository
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo
 import com.android.systemui.biometrics.shared.model.LockoutMode
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository

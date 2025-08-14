@@ -190,11 +190,19 @@ public final class CameraCompatibilityInfo implements Parcelable {
     }
 
     /** Whether any camera compat mode changes are requested via this object. */
-    public static boolean isCameraCompatModeActive(CameraCompatibilityInfo cameraCompatMode) {
+    public static boolean isCameraCompatModeActive(@NonNull CameraCompatibilityInfo
+            cameraCompatMode) {
         return cameraCompatMode.mRotateAndCropRotation != ROTATION_UNDEFINED
                 || cameraCompatMode.mShouldOverrideSensorOrientation
                 || cameraCompatMode.mShouldLetterboxForCameraCompat
                 || cameraCompatMode.mDisplayRotationSandbox != ROTATION_UNDEFINED;
+    }
+
+    /** Changes the WindowConfiguration display rotation for the given configuration. */
+    public void applyToConfigurationIfNeeded(@NonNull Configuration inoutConfig) {
+        if (mDisplayRotationSandbox != ROTATION_UNDEFINED) {
+            inoutConfig.windowConfiguration.setDisplayRotation(mDisplayRotationSandbox);
+        }
     }
 
     @Override

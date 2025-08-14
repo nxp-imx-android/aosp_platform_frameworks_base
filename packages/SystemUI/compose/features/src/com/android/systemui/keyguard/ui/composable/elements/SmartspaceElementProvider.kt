@@ -138,9 +138,7 @@ constructor(
                         }
                     },
                     modifier =
-                        Modifier
-                            // TODO(b/432451019): Constrain in wide layout to half width
-                            .fillMaxWidth()
+                        Modifier.fillMaxWidth()
                             .padding(
                                 // Note: smartspace adds 16dp of start padding internally
                                 start = 12.dp,

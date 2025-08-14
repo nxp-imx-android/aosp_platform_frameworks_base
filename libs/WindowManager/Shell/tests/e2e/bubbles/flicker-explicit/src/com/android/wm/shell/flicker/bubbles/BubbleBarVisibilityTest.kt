@@ -28,15 +28,12 @@ import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCase
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import org.junit.runners.Parameterized
 
 /**
  * Test that when the taskbar is shown, the bubble bar is also shown.
@@ -66,12 +63,12 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-@RunWith(Parameterized::class)
-class BubbleBarVisibilityTest(navBar: NavBar) : BubbleFlickerTestBase(),
+class BubbleBarVisibilityTest : BubbleFlickerTestBase(),
     BubbleAlwaysVisibleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private val fullscreenApp = NonResizeableAppHelper(instrumentation)
+
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
@@ -106,15 +103,12 @@ class BubbleBarVisibilityTest(navBar: NavBar) : BubbleFlickerTestBase(),
         )
 
         // Don't verify 3-button because the task bar is persistent.
-        @Parameterized.Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL)
+        private val navBar = NavBar.MODE_GESTURAL
     }
 
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
     )
 
     override val traceDataReader

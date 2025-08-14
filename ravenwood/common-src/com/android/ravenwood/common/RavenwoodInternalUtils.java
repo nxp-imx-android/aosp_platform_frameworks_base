@@ -45,8 +45,9 @@ public class RavenwoodInternalUtils {
      *
      * (See also InitLogging() in http://ac/system/libbase/logging.cpp)
      */
-    public static final boolean RAVENWOOD_VERBOSE_LOGGING = "1".equals(System.getenv(
-            "RAVENWOOD_VERBOSE"));
+    public static final boolean RAVENWOOD_VERBOSE_LOGGING =
+            "1".equals(System.getenv("RAVENWOOD_VERBOSE"))
+            || "1".equals(System.getProperty("ravenwood.verbose"));
 
     private static boolean sEnableExtraRuntimeCheck =
             "1".equals(System.getenv("RAVENWOOD_ENABLE_EXTRA_RUNTIME_CHECK"));

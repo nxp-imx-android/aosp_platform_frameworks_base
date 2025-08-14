@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupPositionProvider
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.icons.Edit
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.SpacingBetweenTooltipAndAnchor
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.TooltipMaxWidth
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.EditModeButtonViewModel
@@ -154,10 +155,11 @@ fun EditModeButton(
                 onClick = viewModel::onButtonClick,
                 shape = RoundedCornerShape(CornerSize(28.dp)),
                 modifier =
-                    Modifier.borderOnFocus(
-                        color = MaterialTheme.colorScheme.secondary,
-                        cornerSize = CornerSize(24.dp),
-                    ),
+                    Modifier.sysuiResTag("qs_edit_mode_button")
+                        .borderOnFocus(
+                            color = MaterialTheme.colorScheme.secondary,
+                            cornerSize = CornerSize(24.dp),
+                        ),
             ) {
                 Icon(
                     imageVector = if (Flags.iconRefresh2025()) Edit else Icons.Default.Edit,

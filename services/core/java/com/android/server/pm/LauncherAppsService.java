@@ -444,6 +444,7 @@ public class LauncherAppsService extends SystemService {
          */
         private void startWatchingPackageBroadcasts() {
             if (!mIsWatchingPackageBroadcasts) {
+                Slog.d(TAG, "Started watching for package broadcasts");
                 final IntentFilter filter = new IntentFilter();
                 filter.addAction(Intent.ACTION_PACKAGE_REMOVED_INTERNAL);
                 filter.addDataScheme("package");
@@ -463,9 +464,7 @@ public class LauncherAppsService extends SystemService {
          * Unregister package broadcast receiver
          */
         private void stopWatchingPackageBroadcasts() {
-            if (DEBUG) {
-                Log.d(TAG, "Stopped watching for packages");
-            }
+            Slog.d(TAG, "Stopped watching for package broadcasts");
             if (mIsWatchingPackageBroadcasts) {
                 mContext.unregisterReceiver(mPackageRemovedListener);
                 mPackageMonitor.unregister();
@@ -2588,6 +2587,7 @@ public class LauncherAppsService extends SystemService {
             @Override
             public void onPackageAdded(String packageName, int uid) {
                 UserHandle user = new UserHandle(getChangingUserId());
+                Slog.d(TAG, "onPackageAdded: user=" + user + ", packageName=" + packageName);
                 final int n = mListeners.beginBroadcast();
                 try {
                     for (int i = 0; i < n; i++) {

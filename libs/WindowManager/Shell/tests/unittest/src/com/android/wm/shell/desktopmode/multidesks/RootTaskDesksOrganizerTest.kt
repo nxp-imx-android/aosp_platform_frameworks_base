@@ -29,8 +29,10 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change
 import android.window.WindowContainerTransaction.HierarchyOp
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_LAUNCH_TASK
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT
+import android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID
 import androidx.core.util.valueIterator
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -42,6 +44,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createRecentTaskInfo
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskMinimizationRoot
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskRoot
 import com.android.wm.shell.freeform.TaskChangeListener
@@ -534,7 +537,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testMoveTaskToDesk() = runTest {
+    fun testMoveTaskToDesk_runningTask() = runTest {
         val desk = createDeskSuspending()
 
         val desktopTask = createFreeformTask().apply { parentTaskId = -1 }
@@ -595,6 +598,39 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 }
             )
             .isTrue()
+    }
+
+    @Test
+    fun testMoveTaskToDesk_recentTask_launchesTask() = runTest {
+        val desk = createDeskSuspending()
+        val recentTask =
+            createRecentTaskInfo(taskId = TEST_CHILD_TASK_ID).apply { parentTaskId = -1 }
+        val wct = WindowContainerTransaction()
+
+        organizer.moveTaskToDesk(wct, desk.deskRoot.deskId, recentTask)
+
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.isReparent &&
+                        hop.toTop &&
+                        hop.container == recentTask.token.asBinder() &&
+                        hop.newParent == desk.deskRoot.taskInfo.token.asBinder()
+                }
+            )
+            .isTrue()
+        assertThat(
+                wct.changes.any { change ->
+                    change.key == recentTask.token.asBinder() &&
+                        change.value.windowingMode == WINDOWING_MODE_UNDEFINED
+                }
+            )
+            .isTrue()
+        assertThat(
+            wct.hierarchyOps.any { hop ->
+                hop.type == HIERARCHY_OP_TYPE_LAUNCH_TASK &&
+                    hop.launchOptions?.getInt(LAUNCH_KEY_TASK_ID) == TEST_CHILD_TASK_ID
+            }
+        )
     }
 
     @Test

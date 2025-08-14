@@ -108,7 +108,6 @@ constructor(
             context: LockscreenElementContext,
             modifier: Modifier = Modifier,
         ) {
-            // TODO(b/432451019): Ensure large clock is centered correctly
             factory.lockscreenElement(Region.Clock.Large, context, modifier)
         }
 
@@ -119,8 +118,6 @@ constructor(
             context: LockscreenElementContext,
             modifier: Modifier = Modifier,
         ) {
-            // TODO(b/432451019): Check the small clock + date/weather aren't rendering in shade
-            // TODO(b/432451019): Ensure larger display/font sizes are working as expected
             Column(modifier = modifier) {
                 factory.lockscreenElement(Region.Clock.Small, context)
                 factory.lockscreenElement(MediaCarousel, context)

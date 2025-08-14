@@ -5165,6 +5165,25 @@ public class UserManager {
     }
 
     /**
+     * Returns information for all users on this device, based on the filtering parameters.
+     *
+     * @deprecated Pre-created users are deprecated and no longer supported.
+     *             Use {@link #getUsers()}, or {@link #getAliveUsers()} instead.
+     * @hide
+     */
+    @Deprecated
+    @TestApi
+    @UnsupportedAppUsage
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.CREATE_USERS
+    })
+    public @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
+            boolean excludePreCreated) {
+        return getUsers(excludeDying);
+    }
+
+    /**
      * Returns the user handles for all users on this device, based on the filtering parameters.
      *
      * @param excludeDying specify if the list should exclude users being removed.

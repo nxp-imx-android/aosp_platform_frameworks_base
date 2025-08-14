@@ -930,16 +930,11 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
         final MagnificationGestureHandler handler = mMagnificationGestureHandler.get(displayId);
         if (handler != null) {
-            if (Flags.onlyResetMagnificationIfNeededWhenDestroyHandler()) {
-                // With the given enabledFeatures parameter if the magnification feature is still
-                // enabled, which means after the disabling there is a recreating coming, so the
-                // magnification reset is not needed.
-                handler.onDestroy(
-                        /* resetMagnification= */ !isAnyMagnificationEnabled(featuresToBeEnabled));
-            } else {
-                // The old behavior is always resetting the magnification when destroying handler
-                handler.onDestroy(/* resetMagnification= */ true);
-            }
+            // With the given enabledFeatures parameter if the magnification feature is still
+            // enabled, which means after the disabling there is a recreating coming, so the
+            // magnification reset is not needed.
+            handler.onDestroy(
+                    /* resetMagnification= */ !isAnyMagnificationEnabled(featuresToBeEnabled));
             mMagnificationGestureHandler.remove(displayId);
         }
 

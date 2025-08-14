@@ -44,6 +44,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -106,15 +107,16 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                         iconResource = R.drawable.ic_close,
                     )
                     Spacer(Modifier.width(12.dp))
+                    val recordIcon by
+                        loadIcon(
+                            viewModel = viewModel,
+                            resId = R.drawable.ic_screenrecord,
+                            contentDescription = null,
+                        )
                     PrimaryButton(
                         onClick = { viewModel.startRecording() },
                         text = stringResource(R.string.screen_capture_toolbar_record_button),
-                        icon =
-                            loadIcon(
-                                viewModel = viewModel,
-                                resId = R.drawable.ic_screenrecord,
-                                contentDescription = null,
-                            ),
+                        icon = recordIcon,
                         contentPadding = PaddingValues(horizontal = 14.dp),
                         iconPadding = 4.dp,
                         modifier = Modifier.height(40.dp),

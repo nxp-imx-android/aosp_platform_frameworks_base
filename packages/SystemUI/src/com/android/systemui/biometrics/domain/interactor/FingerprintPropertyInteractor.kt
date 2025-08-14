@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.Rect
 import android.hardware.biometrics.SensorLocationInternal
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -89,6 +90,12 @@ constructor(
                 displayId,
                 locations.getOrDefault(EMPTY_DISPLAY_ID, SensorLocationInternal.DEFAULT),
             )
+        }
+
+    /** The security strength of sensor (convenience, weak, strong). */
+    val sensorInfo: Flow<FingerprintSensorInfo> =
+        combine(repository.sensorType, repository.strength) { sensorType, sensorStrength ->
+            FingerprintSensorInfo(sensorType, sensorStrength)
         }
 
     /**

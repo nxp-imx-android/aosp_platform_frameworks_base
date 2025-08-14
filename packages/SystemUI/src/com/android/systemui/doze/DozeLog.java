@@ -429,6 +429,14 @@ public class DozeLog implements Dumpable {
     }
 
     /**
+     * Appends new AOD wallpaper dimming scrim opacity to logs
+     * @param scrimOpacity
+     */
+    public void traceSetAodWallpaperDimmingScrim(float scrimOpacity) {
+        mLogger.logSetAodWallpaperDimmingScrim(scrimOpacity);
+    }
+
+    /**
      * Appends sensor attempted to register and whether it was a successful registration.
      */
     public void traceSensorRegisterAttempt(String sensorName, boolean successfulRegistration) {

@@ -47,6 +47,7 @@ import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_APP_COLOR_BACKGROUND;
@@ -97,6 +98,7 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.provider.Settings;
 import android.util.ArraySet;
+import android.util.AtomicFile;
 import android.util.MergedConfiguration;
 import android.view.ContentRecordingSession;
 import android.view.Display;
@@ -136,9 +138,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockitoSession;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -162,6 +171,9 @@ public class WindowManagerServiceTests extends WindowTestsBase {
 
     @Rule
     public Expect mExpect = Expect.create();
+
+    @Rule
+    public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
     @Before
     public void setUp() {
@@ -1067,6 +1079,115 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         wmInternal.clearBlockedApps();
 
         verify(mWm, never()).refreshScreenCaptureDisabled();
+    }
+
+    @Test
+    public void backupDisplayWindowSettings_fileNotFound_returnsNull()
+            throws FileNotFoundException {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(DisplayWindowSettingsProvider.class)
+                .initMocks(this)
+                .startMocking();
+        try {
+            final int userId = UserHandle.USER_SYSTEM;
+            AtomicFile atomicFile = mock(AtomicFile.class);
+
+            doReturn(atomicFile).when(() ->
+                    DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(userId));
+            when(atomicFile.openRead()).thenThrow(new FileNotFoundException());
+            WindowManagerInternal wmInternal =
+                    LocalServices.getService(WindowManagerInternal.class);
+            byte[] payload = wmInternal.backupDisplayWindowSettings(userId);
+
+            assertThat(payload).isNull();
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void backupDisplayWindowSettings_validFile_returnsPayload()
+            throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(DisplayWindowSettingsXmlHelper.class)
+                .mockStatic(DisplayWindowSettingsProvider.class)
+                .initMocks(this)
+                .startMocking();
+        try {
+            final int userId = UserHandle.USER_SYSTEM;
+            final byte[] payload = "test_payload".getBytes(StandardCharsets.UTF_8);
+            File tempFile = mTemporaryFolder.newFile();
+            Files.writeString(tempFile.toPath(), "file_content");
+            AtomicFile atomicFile = new AtomicFile(tempFile);
+
+            doReturn(atomicFile).when(() ->
+                    DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(userId));
+            doReturn(payload).when(() ->
+                    DisplayWindowSettingsXmlHelper.readAndFilterSettings(any(InputStream.class)));
+            WindowManagerInternal wmInternal =
+                    LocalServices.getService(WindowManagerInternal.class);
+            byte[] backupPayload = wmInternal.backupDisplayWindowSettings(userId);
+
+            assertThat(backupPayload).isEqualTo(payload);
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void restoreDisplayWindowSettings_fileNotFound_doesNotRestore()
+            throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(DisplayWindowSettingsProvider.class)
+                .initMocks(this)
+                .startMocking();
+        try {
+            final int userId = UserHandle.USER_SYSTEM;
+            final byte[] payload = "test_payload".getBytes(StandardCharsets.UTF_8);
+            File settingsFile = new File(mTemporaryFolder.getRoot(), "display_settings.xml");
+            AtomicFile atomicFile = new AtomicFile(settingsFile);
+
+            doReturn(atomicFile).when(
+                    () -> DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(userId));
+            spyOn(mWm.mDisplayWindowSettingsProvider);
+            WindowManagerInternal wmInternal =
+                    LocalServices.getService(WindowManagerInternal.class);
+            wmInternal.restoreDisplayWindowSettings(userId, payload);
+
+            byte[] writtenContent = Files.readAllBytes(settingsFile.toPath());
+            assertThat(writtenContent).isEqualTo(payload);
+            verify(mWm.mDisplayWindowSettingsProvider).setOverrideSettingsForUser(userId);
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void restoreDisplayWindowSettings_writesPayloadAndReloadsSettings()
+            throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(DisplayWindowSettingsProvider.class)
+                .initMocks(this)
+                .startMocking();
+        try {
+            final int userId = UserHandle.USER_SYSTEM;
+            final byte[] payload = "test_payload".getBytes(StandardCharsets.UTF_8);
+            File settingsFile = new File(mTemporaryFolder.getRoot(), "display_settings.xml");
+            AtomicFile atomicFile = new AtomicFile(settingsFile);
+
+            doReturn(atomicFile).when(
+                    () -> DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(userId));
+            spyOn(mWm.mDisplayWindowSettingsProvider);
+            WindowManagerInternal wmInternal =
+                    LocalServices.getService(WindowManagerInternal.class);
+            wmInternal.restoreDisplayWindowSettings(userId, payload);
+
+            byte[] writtenContent = Files.readAllBytes(settingsFile.toPath());
+            assertThat(writtenContent).isEqualTo(payload);
+            verify(mWm.mDisplayWindowSettingsProvider).setOverrideSettingsForUser(userId);
+        } finally {
+            mockitoSession.finishMocking();
+        }
     }
 
     @Test

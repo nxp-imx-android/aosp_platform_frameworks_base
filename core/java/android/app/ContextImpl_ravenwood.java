@@ -15,8 +15,12 @@
  */
 package android.app;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.onExperimentalApiCalled;
+
 import android.content.pm.PackageManager;
 import android.os.FileUtils;
+import android.os.IBinder;
 import android.platform.test.ravenwood.RavenwoodPackageManager;
 
 import java.io.File;
@@ -25,7 +29,7 @@ public class ContextImpl_ravenwood {
     private static final String TAG = "ContextImpl_ravenwood";
 
     static PackageManager getPackageManagerInner(ContextImpl contextImpl) {
-        return new RavenwoodPackageManager(contextImpl);
+        return RavenwoodPackageManager.create(contextImpl);
     }
 
     static File ensurePrivateDirExists(File file, int mode, int gid, String xattr) {
@@ -39,5 +43,18 @@ public class ContextImpl_ravenwood {
             FileUtils.setPermissions(path, mode, -1, -1);
         }
         return file;
+    }
+
+    /** Experimental implementation */
+    static int checkPermission(ContextImpl self, String permission, int pid, int uid) {
+        onExperimentalApiCalled(2);
+        return PERMISSION_GRANTED;
+    }
+
+    /** Experimental implementation */
+    static int checkPermission(ContextImpl self, String permission, int pid, int uid,
+            IBinder callerToken) {
+        onExperimentalApiCalled(2);
+        return PERMISSION_GRANTED;
     }
 }

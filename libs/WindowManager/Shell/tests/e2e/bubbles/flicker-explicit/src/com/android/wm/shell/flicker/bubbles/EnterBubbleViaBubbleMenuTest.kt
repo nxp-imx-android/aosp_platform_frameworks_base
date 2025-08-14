@@ -25,7 +25,6 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -52,10 +51,10 @@ import org.junit.runners.Parameterized
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
+class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
     EnterBubbleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
@@ -67,9 +66,9 @@ open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(
     }
 
     @get:Rule
-    open val setUpRule = ApplyPerParameterRule(
+    val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader

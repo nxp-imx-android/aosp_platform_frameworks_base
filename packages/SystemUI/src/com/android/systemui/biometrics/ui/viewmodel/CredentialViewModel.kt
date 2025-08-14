@@ -196,6 +196,10 @@ constructor(
         promptSelectorInteractor.onSwitchToAuth()
     }
 
+    suspend fun resetAttestation() {
+        _validatedAttestation.emit(null)
+    }
+
     /** Check a PIN or password and update [validatedAttestation] or [remainingAttempts]. */
     suspend fun checkCredential(text: CharSequence, header: CredentialHeaderViewModel) =
         checkCredential(promptCredentialInteractor.checkCredential(header.asRequest(), text = text))

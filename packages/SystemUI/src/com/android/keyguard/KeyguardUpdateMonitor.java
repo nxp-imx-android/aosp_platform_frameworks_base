@@ -36,6 +36,7 @@ import static android.hardware.biometrics.BiometricSourceType.FACE;
 import static android.hardware.biometrics.BiometricSourceType.FINGERPRINT;
 import static android.os.BatteryManager.BATTERY_STATUS_UNKNOWN;
 import static android.os.BatteryManager.CHARGING_POLICY_DEFAULT;
+import static android.security.Flags.secureLockDevice;
 import static android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING;
 import static android.telephony.SubscriptionManager.SUBSCRIPTION_TYPE_REMOTE_SIM;
 
@@ -156,6 +157,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Overlays;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shared.system.TaskStackChangeListener;
@@ -292,6 +294,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private final Provider<JavaAdapter> mJavaAdapter;
     private final Provider<SceneInteractor> mSceneInteractor;
     private final Provider<AlternateBouncerInteractor> mAlternateBouncerInteractor;
+    private final Provider<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
     private final Provider<CommunalSceneInteractor> mCommunalSceneInteractor;
     private final Provider<KeyguardServiceShowLockscreenInteractor>
             mKeyguardServiceShowLockscreenInteractor;
@@ -328,6 +331,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private boolean mKeyguardOccluded;
     private boolean mCredentialAttempted;
     private boolean mKeyguardGoingAway;
+
     /**
      * Whether the keyguard is forced into a dismissible state.
      */
@@ -342,6 +346,9 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private boolean mOccludingAppRequestingFp;
     private boolean mSecureCameraLaunched;
     private boolean mBiometricPromptShowing;
+    private boolean mIsSecureLockDeviceEnabled;
+    private boolean mSecureLockDeviceListeningForBiometrics;
+
     @VisibleForTesting
     protected boolean mTelephonyCapable;
     private boolean mAllowFingerprintOnCurrentOccludingActivity;
@@ -2218,6 +2225,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
             TaskStackChangeListeners taskStackChangeListeners,
             SelectedUserInteractor selectedUserInteractor,
             IActivityTaskManager activityTaskManagerService,
+            Provider<SecureLockDeviceInteractor> secureLockDeviceInteractor,
             Provider<AlternateBouncerInteractor> alternateBouncerInteractor,
             Provider<JavaAdapter> javaAdapter,
             Provider<SceneInteractor> sceneInteractor,
@@ -2272,6 +2280,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         mFingerprintInteractiveToAuthProvider = interactiveToAuthProvider.orElse(null);
         mIsSystemUser = mUserManager.isSystemUser();
         mAlternateBouncerInteractor = alternateBouncerInteractor;
+        mSecureLockDeviceInteractor = secureLockDeviceInteractor;
         mJavaAdapter = javaAdapter;
         mSceneInteractor = sceneInteractor;
         mCommunalSceneInteractor = communalSceneInteractor;
@@ -2568,6 +2577,15 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
                     mSceneInteractor.get().getTransitionState(),
                     this::onTransitionStateChanged
             );
+        }
+
+        if (secureLockDevice()) {
+            mJavaAdapter.get().alwaysCollectFlow(
+                    mSecureLockDeviceInteractor.get().getShouldListenForBiometricAuth(),
+                    this::onBiometricAuthListeningStateForSecureLockDeviceUpdated);
+            mJavaAdapter.get().alwaysCollectFlow(
+                    mSecureLockDeviceInteractor.get().isSecureLockDeviceEnabled(),
+                    this::onSecureLockDeviceEnabledUpdated);
         }
 
         if (KeyguardWmStateRefactor.isEnabled()) {
@@ -2905,6 +2923,24 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     }
 
     /**
+     * Called on updates to whether secure lock device is requesting biometric auth.
+     */
+    @VisibleForTesting
+    void onBiometricAuthListeningStateForSecureLockDeviceUpdated(boolean listenForBiometrics) {
+        mSecureLockDeviceListeningForBiometrics = listenForBiometrics;
+        updateFingerprintListeningState(BIOMETRIC_ACTION_UPDATE);
+    }
+
+    /**
+     * Called on updates to whether secure lock device is enabled.
+     */
+    @VisibleForTesting
+    void onSecureLockDeviceEnabledUpdated(boolean isSecureLockDeviceEnabled) {
+        mIsSecureLockDeviceEnabled = isSecureLockDeviceEnabled;
+        updateFingerprintListeningState(BIOMETRIC_ACTION_UPDATE);
+    }
+
+    /**
      * Whether the alternate bouncer is showing.
      */
     public void setAlternateBouncerShowing(boolean showing) {
@@ -3075,9 +3111,12 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
                 && userDoesNotHaveTrust
                 && (!glanceableHubV2() || isUdfpsAuthRequiredOnCommunal));
 
+        final boolean shouldListenSecureLockDeviceState = !secureLockDevice()
+                || !mIsSecureLockDeviceEnabled || mSecureLockDeviceListeningForBiometrics;
 
         boolean shouldListen = shouldListenKeyguardState && shouldListenUserState
-                && shouldListenBouncerState && shouldListenUdfpsState && !mBiometricPromptShowing;
+                && shouldListenBouncerState && shouldListenUdfpsState && !mBiometricPromptShowing
+                && shouldListenSecureLockDeviceState;
         logListenerModelData(
                 new KeyguardFingerprintListenModel(
                     System.currentTimeMillis(),

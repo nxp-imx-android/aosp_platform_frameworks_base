@@ -25,8 +25,7 @@ import org.junit.Test
  * - [LauncherAlwaysVisibleTestCases]
  */
 interface CollapseBubbleAppTestCases : BubbleAlwaysVisibleTestCases,
-    BubbleAppBecomesNotExpandedTestCases, LauncherAlwaysVisibleTestCases
-{
+    BubbleAppBecomesNotExpandedTestCases, LauncherAlwaysVisibleTestCases {
 
     /**
      * Verifies bubble app window is invisible at the end of the transition.

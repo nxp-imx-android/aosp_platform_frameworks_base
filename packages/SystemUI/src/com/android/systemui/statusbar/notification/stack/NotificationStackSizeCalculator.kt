@@ -491,7 +491,8 @@ constructor(
                     view is ExpandableNotificationRow &&
                         (canPeek ||
                             view.isPromotedOngoing ||
-                            (SceneContainerFlag.isEnabled && view.isUserLocked))
+                                (view.isBundle && view.isGroupExpanded) ||
+                                    (SceneContainerFlag.isEnabled && view.isUserLocked))
                 ) {
                     height
                 } else {

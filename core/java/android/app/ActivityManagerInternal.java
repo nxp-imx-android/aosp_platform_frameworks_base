@@ -374,6 +374,7 @@ public abstract class ActivityManagerInternal {
      */
     public abstract boolean hasRunningActivity(int uid, @Nullable String packageName);
 
+    // TODO: b/425766486 - Define the OOM_ADJ_* value by AppProtoEnums.
     /**
      * Oom Adj Reason: none - internal use only, do not use it.
      * @hide

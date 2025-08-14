@@ -171,7 +171,7 @@ constructor(
             }
 
             when (kind) {
-                is PromptKind.Biometric ->
+                is PromptKind.Biometric -> {
                     BiometricPromptRequest.Biometric(
                         info = promptInfo,
                         userInfo =
@@ -189,6 +189,7 @@ constructor(
                             },
                         opPackageName = opPackageName,
                     )
+                }
                 else -> null
             }
         }
@@ -296,7 +297,6 @@ constructor(
 
     override fun onSwitchToCredential() {
         _currentView.value = BiometricPromptView.CREDENTIAL
-
         val modalities: BiometricModalities =
             if (promptRepository.promptKind.value.isBiometric())
                 (promptRepository.promptKind.value as PromptKind.Biometric).activeModalities
@@ -366,9 +366,6 @@ constructor(
                 _currentView.value = BiometricPromptView.CREDENTIAL
             }
         } else if (Utils.isBiometricAllowed(promptInfo) || showBpWithoutIconForCredential) {
-            if (updateView) {
-                _currentView.value = BiometricPromptView.BIOMETRIC
-            }
             // TODO(b/330908557): Subscribe to
             // displayStateInteractor.currentRotation.value.isDefaultOrientation() for checking
             // `isLandscape` after removing AuthContainerView.
@@ -386,11 +383,14 @@ constructor(
                 } else {
                     PromptKind.Biometric(modalities)
                 }
+            if (updateView) {
+                _currentView.value = BiometricPromptView.BIOMETRIC
+            }
         } else if (isDeviceCredentialAllowed(promptInfo)) {
+            kind = getCredentialType(lockPatternUtils, effectiveUserId)
             if (updateView) {
                 _currentView.value = BiometricPromptView.CREDENTIAL
             }
-            kind = getCredentialType(lockPatternUtils, effectiveUserId)
         }
 
         promptRepository.setPrompt(

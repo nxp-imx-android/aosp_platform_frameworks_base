@@ -342,10 +342,8 @@ public class CollapsingToolbarDelegate {
             return;
         }
 
-        if (!SettingsThemeHelper.isExpressiveTheme(inflater.getContext())) {
-            mCollapsingToolbarLayout.removeAllViews();
-            inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
-        }
+        mCollapsingToolbarLayout.removeAllViews();
+        inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
 
         final androidx.appcompat.widget.Toolbar supportToolbar =
                 mCollapsingToolbarLayout.findViewById(R.id.support_action_bar);

@@ -150,8 +150,8 @@ com.android.hoststubgen.test.tinyframework
   1
   Keep
   annotation
-  1
-  1
+  0
+  2
 com.android.hoststubgen.test.tinyframework
   TinyFrameworkAnnotations
   0
@@ -359,8 +359,8 @@ com.android.hoststubgen.test.tinyframework
   1
   Keep
   annotation
-  1
-  1
+  0
+  2
 com.android.hoststubgen.test.tinyframework
   TinyFrameworkExperimental
   0

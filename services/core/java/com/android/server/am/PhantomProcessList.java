@@ -488,7 +488,7 @@ public final class PhantomProcessList {
                     if (r == proc) {
                         r.killLocked(msg, true);
                     } else {
-                        r.killLocked("Caused by siling process: " + msg, false);
+                        r.killLocked("Caused by sibling process: " + msg, false);
                     }
                 }
             }

@@ -424,15 +424,6 @@ public class SettingsHelper {
             return;
         }
 
-        // If the ringtone/notification has vibration, we backup original value in onBackupValue.
-        // So use the value directly for restoring.
-        if ((ringtoneType == RingtoneManager.TYPE_RINGTONE
-                || ringtoneType == RingtoneManager.TYPE_NOTIFICATION)
-                && hasVibrationSettings(value, ringtoneType)) {
-            RingtoneManager.setActualDefaultRingtoneUri(mContext, ringtoneType, Uri.parse(value));
-            return;
-        }
-
         Uri ringtoneUri = null;
         try {
             ringtoneUri =
@@ -442,6 +433,23 @@ public class SettingsHelper {
             Log.w(TAG, "Failed to resolve " + value + ": " + e);
             // Unrecognized or invalid Uri, don't restore
             return;
+        }
+
+        // If the restored ringtoneUri for ringtone/notification has vibration, we backup the
+        // original value in onBackupValue. So use the value directly for restoring.
+        if ((ringtoneType == RingtoneManager.TYPE_RINGTONE
+                || ringtoneType == RingtoneManager.TYPE_NOTIFICATION)
+                && hasVibrationSettings(value, ringtoneType)) {
+            final Uri vibrationUri = Utils.getVibrationUri(Uri.parse(value));
+            if (ringtoneUri != null && vibrationUri != null) {
+                ringtoneUri = ringtoneUri.buildUpon()
+                        .appendQueryParameter(Utils.VIBRATION_URI_PARAM, vibrationUri.toString())
+                        .build();
+                Log.v(TAG, "setActualDefaultRingtoneUri type: " + ringtoneType + ", uri: "
+                        + ringtoneUri + ", vibration: " + vibrationUri);
+                RingtoneManager.setActualDefaultRingtoneUri(mContext, ringtoneType, ringtoneUri);
+                return;
+            }
         }
 
         Log.v(TAG, "setActualDefaultRingtoneUri type: " + ringtoneType + ", uri: " + ringtoneUri);

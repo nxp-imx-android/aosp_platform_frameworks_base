@@ -21,11 +21,12 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.inputdevice.data.repository.fake
+import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -58,9 +59,8 @@ class KeyguardTouchHandlingInteractorOnClickTest(private val testScenario: TestS
 
     @Before
     fun setUp() {
-        overrideResource(
-            R.bool.config_improveLargeScreenInteractionOnLockscreen,
-            testScenario.improvedLargeScreenInteraction,
+        kosmos.pointerDeviceRepository.fake.setIsAnyPointerConnected(
+            testScenario.isAnyPointingDeviceConnected
         )
         underTest = kosmos.keyguardTouchHandlingInteractor
     }
@@ -128,9 +128,9 @@ class KeyguardTouchHandlingInteractorOnClickTest(private val testScenario: TestS
     data class TestScenario(
         val flags: FlagsParameterization,
         val faceAuth: Boolean,
-        val improvedLargeScreenInteraction: Boolean,
+        val isAnyPointingDeviceConnected: Boolean,
     ) {
-        val isBouncerNavigationExpected: Boolean = !faceAuth && improvedLargeScreenInteraction
+        val isBouncerNavigationExpected: Boolean = !faceAuth && isAnyPointingDeviceConnected
     }
 
     companion object {
@@ -142,22 +142,22 @@ class KeyguardTouchHandlingInteractorOnClickTest(private val testScenario: TestS
                     TestScenario(
                         flags = flags,
                         faceAuth = false,
-                        improvedLargeScreenInteraction = false,
+                        isAnyPointingDeviceConnected = false,
                     ),
                     TestScenario(
                         flags = flags,
                         faceAuth = false,
-                        improvedLargeScreenInteraction = true,
+                        isAnyPointingDeviceConnected = true,
                     ),
                     TestScenario(
                         flags = flags,
                         faceAuth = true,
-                        improvedLargeScreenInteraction = false,
+                        isAnyPointingDeviceConnected = false,
                     ),
                     TestScenario(
                         flags = flags,
                         faceAuth = true,
-                        improvedLargeScreenInteraction = true,
+                        isAnyPointingDeviceConnected = true,
                     ),
                 )
             }

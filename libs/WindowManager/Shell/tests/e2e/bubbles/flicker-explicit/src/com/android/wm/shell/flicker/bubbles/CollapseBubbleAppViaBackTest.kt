@@ -26,7 +26,6 @@ import com.android.wm.shell.flicker.bubbles.testcase.CollapseBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -59,9 +58,9 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class CollapseBubbleAppViaBackTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    CollapseBubbleAppTestCases
-{
-    companion object : FlickerPropertyInitializer() {
+    CollapseBubbleAppTestCases {
+
+    companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
             transition = { collapseBubbleAppViaBackKey(testApp, tapl, wmHelper) },
@@ -76,7 +75,7 @@ class CollapseBubbleAppViaBackTest(navBar: NavBar) : BubbleFlickerTestBase(),
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader

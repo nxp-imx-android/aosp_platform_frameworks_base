@@ -46,6 +46,7 @@ import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.doze.DozeReceiver;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.keyguard.domain.interactor.AodDimInteractor;
 import com.android.systemui.keyguard.domain.interactor.DozeInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.NotificationShadeWindowViewController;
@@ -125,6 +126,7 @@ public final class DozeServiceHost implements DozeHost {
     private Job mUdfpsScreenOffFingerprintPulseEventCollectingJob = null;
     private final Context mContext;
     private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
+    private final AodDimInteractor mAodDimInteractor;
 
     @Inject
     public DozeServiceHost(DozeLog dozeLog, PowerManager powerManager,
@@ -145,7 +147,8 @@ public final class DozeServiceHost implements DozeHost {
             DeviceEntryFingerprintAuthInteractor deviceEntryFingerprintAuthInteractor,
             @Application CoroutineScope scope,
             Context context,
-            AmbientDisplayConfiguration ambientDisplayConfiguration) {
+            AmbientDisplayConfiguration ambientDisplayConfiguration,
+            AodDimInteractor aodDimInteractor) {
         super();
         mDozeLog = dozeLog;
         mPowerManager = powerManager;
@@ -170,6 +173,7 @@ public final class DozeServiceHost implements DozeHost {
         mScope = scope;
         mContext = context;
         mAmbientDisplayConfiguration = ambientDisplayConfiguration;
+        mAodDimInteractor = aodDimInteractor;
     }
 
     // TODO: we should try to not pass status bar in here if we can avoid it.
@@ -470,7 +474,20 @@ public final class DozeServiceHost implements DozeHost {
     @Override
     public void setAodDimmingScrim(float scrimOpacity) {
         mDozeLog.traceSetAodDimmingScrim(scrimOpacity);
-        mScrimController.setAodFrontScrimAlpha(scrimOpacity);
+        if (SceneContainerFlag.isEnabled()) {
+            mAodDimInteractor.setDimAmount(scrimOpacity);
+        } else {
+            mScrimController.setAodFrontScrimAlpha(scrimOpacity);
+        }
+    }
+
+    @Override
+    public void setAodWallpaperDimmingScrim(float scrimOpacity) {
+        if (!SceneContainerFlag.isEnabled()) {
+            return;
+        }
+        mDozeLog.traceSetAodWallpaperDimmingScrim(scrimOpacity);
+        mAodDimInteractor.setWallpaperDimAmount(scrimOpacity);
     }
 
     @Override

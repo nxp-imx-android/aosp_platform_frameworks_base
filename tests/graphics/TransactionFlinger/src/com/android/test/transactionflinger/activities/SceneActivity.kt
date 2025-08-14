@@ -24,10 +24,6 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.WindowInsets
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import com.android.test.transactionflinger.Scene
 
@@ -51,17 +47,12 @@ abstract class SceneActivity : ComponentActivity(), SurfaceHolder.Callback, Vsyn
 
         choreographer = Choreographer.getInstance()
         scene = obtainScene()
-        setContent {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    surfaceView = SurfaceView(context).apply {
-                        holder.addCallback(this@SceneActivity)
-                    }
-                    surfaceView
-                }
-            )
+
+        surfaceView = SurfaceView(this).apply {
+            holder.addCallback(this@SceneActivity)
         }
+
+        setContentView(surfaceView)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {}

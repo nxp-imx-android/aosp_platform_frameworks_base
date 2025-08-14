@@ -45,7 +45,6 @@ import android.media.Utils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.LocaleList;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.BaseColumns;
@@ -105,7 +104,7 @@ public class SettingsHelperTest {
     @Mock private AudioManager mAudioManager;
     @Mock private TelephonyManager mTelephonyManager;
 
-    @Mock private MockContentResolver mContentResolver;
+    private MockContentResolver mContentResolver;
     private MockSettingsProvider mSettingsProvider;
 
     private BackupRestoreEventLogger mBackupRestoreEventLogger;
@@ -765,9 +764,25 @@ public class SettingsHelperTest {
                 com.android.internal.R.bool.config_ringtoneVibrationSettingsSupported)).thenReturn(
                 true);
         String testRingtoneVibrationValue = createUriWithVibration(DEFAULT_RINGTONE_VALUE);
-        String testNotificationVibrationValue = createUriWithVibration(DEFAULT_NOTIFICATION_VALUE);
+
+        final String newRingtoneValueUncanonicalized =
+                "content://media/internal/audio/media/10";
+        final String newRingtoneValueCanonicalized = DEFAULT_RINGTONE_VALUE;
+
         ContentProvider mockMediaContentProvider =
                 new MockContentProvider(mContext) {
+                    @Override
+                    public Uri uncanonicalize(Uri url) {
+                        assertThat(url).isEqualTo(Uri.parse(testRingtoneVibrationValue));
+                        return Uri.parse(newRingtoneValueUncanonicalized);
+                    }
+
+                    @Override
+                    public Uri canonicalize(Uri url) {
+                        assertThat(url).isEqualTo(Uri.parse(newRingtoneValueUncanonicalized));
+                        return Uri.parse(newRingtoneValueCanonicalized);
+                    }
+
                     @Override
                     public String getType(Uri url) {
                         return "audio/ogg";
@@ -776,9 +791,136 @@ public class SettingsHelperTest {
         mContentResolver.addProvider(MediaStore.AUTHORITY, mockMediaContentProvider);
         resetRingtoneSettingsToDefault();
 
+        mSettingsHelper.restoreValue(
+                mContext,
+                mContentResolver,
+                new ContentValues(),
+                Uri.EMPTY,
+                Settings.System.RINGTONE,
+                testRingtoneVibrationValue,
+                0);
+
         assertRingtoneSettingsRestoring(Settings.System.RINGTONE, testRingtoneVibrationValue);
+    }
+
+    @Test
+    @EnableFlags({android.media.audio.Flags.FLAG_ENABLE_RINGTONE_HAPTICS_CUSTOMIZATION,
+            com.android.server.notification.Flags.FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI})
+    public void testRestoreValue_notificationVibrationSupport_restoreValue() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_ringtoneVibrationSettingsSupported)).thenReturn(
+                true);
+        String testNotificationVibrationValue = createUriWithVibration(DEFAULT_NOTIFICATION_VALUE);
+        final String newNotificationValueUncanonicalized =
+                "content://media/internal/audio/media/20";
+        final String newNotificationValueCanonicalized = DEFAULT_NOTIFICATION_VALUE;
+
+        ContentProvider mockMediaContentProvider =
+                new MockContentProvider(mContext) {
+                    @Override
+                    public Uri uncanonicalize(Uri url) {
+                        assertThat(url).isEqualTo(Uri.parse(testNotificationVibrationValue));
+                        return Uri.parse(newNotificationValueUncanonicalized);
+                    }
+
+                    @Override
+                    public Uri canonicalize(Uri url) {
+                        assertThat(url).isEqualTo(Uri.parse(newNotificationValueUncanonicalized));
+                        return Uri.parse(newNotificationValueCanonicalized);
+                    }
+
+                    @Override
+                    public String getType(Uri url) {
+                        return "audio/ogg";
+                    }
+                };
+        mContentResolver.addProvider(MediaStore.AUTHORITY, mockMediaContentProvider);
+        resetRingtoneSettingsToDefault();
+
+        mSettingsHelper.restoreValue(
+                mContext,
+                mContentResolver,
+                new ContentValues(),
+                Uri.EMPTY,
+                Settings.System.NOTIFICATION_SOUND,
+                testNotificationVibrationValue,
+                0);
+
         assertRingtoneSettingsRestoring(
                 Settings.System.NOTIFICATION_SOUND, testNotificationVibrationValue);
+    }
+
+    @Test
+    @EnableFlags({android.media.audio.Flags.FLAG_ENABLE_RINGTONE_HAPTICS_CUSTOMIZATION,
+            com.android.server.notification.Flags.FLAG_NOTIFICATION_VIBRATION_IN_SOUND_URI})
+    public void testRestoreValue_customRingtone_notificationSound_Vibration_useCustomLookup() {
+        when(mResources.getBoolean(
+                com.android.internal.R.bool.config_ringtoneVibrationSettingsSupported)).thenReturn(
+                true);
+
+        final String sourceRingtoneValue = createUriWithVibration(
+                "content://0@media/external/audio/media/1?title=Song&canonical=1");
+        final String newRingtoneValueUncanonicalized =
+                "content://0@media/external/audio/media/100";
+        final String newRingtoneValueCanonicalized =
+                "content://0@media/external/audio/media/100?title=Song&canonical=1";
+        final String expectedRingtoneValue =
+                createUriWithVibration(newRingtoneValueCanonicalized);
+
+        MatrixCursor cursor = new MatrixCursor(new String[] {BaseColumns._ID});
+        cursor.addRow(new Object[] {100L});
+
+        ContentProvider mockMediaContentProvider =
+                new MockContentProvider(mContext) {
+                    @Override
+                    public Uri uncanonicalize(Uri url) {
+                        // mock the lookup failure in regular MediaProvider.uncanonicalize.
+                        return null;
+                    }
+
+                    @Override
+                    public Uri canonicalize(Uri url) {
+                        assertThat(url).isEqualTo(Uri.parse(newRingtoneValueUncanonicalized));
+                        return Uri.parse(newRingtoneValueCanonicalized);
+                    }
+
+                    @Override
+                    public String getType(Uri url) {
+                        return "audio/ogg";
+                    }
+
+                    @Override
+                    public Cursor query(
+                            Uri uri,
+                            String[] projection,
+                            String selection,
+                            String[] selectionArgs,
+                            String sortOrder) {
+                        assertThat(uri)
+                                .isEqualTo(Uri.parse("content://0@media/external/audio/media"));
+                        assertThat(projection).isEqualTo(new String[] {"_id"});
+                        assertThat(selection).isEqualTo("is_ringtone=1 AND title=?");
+                        assertThat(selectionArgs).isEqualTo(new String[] {"Song"});
+                        return cursor;
+                    }
+                };
+
+        mContentResolver.addProvider(MediaStore.AUTHORITY, mockMediaContentProvider);
+        mContentResolver.addProvider("0@" + MediaStore.AUTHORITY, mockMediaContentProvider);
+
+        resetRingtoneSettingsToDefault();
+
+        mSettingsHelper.restoreValue(
+                mContext,
+                mContentResolver,
+                new ContentValues(),
+                Uri.EMPTY,
+                Settings.System.RINGTONE,
+                sourceRingtoneValue,
+                0);
+
+        assertThat(Settings.System.getString(mContentResolver, Settings.System.RINGTONE))
+                .isEqualTo(expectedRingtoneValue);
     }
 
     private static class MockSettingsProvider extends MockContentProvider {

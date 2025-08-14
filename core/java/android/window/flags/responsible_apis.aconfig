@@ -48,13 +48,6 @@ flag {
 }
 
 flag {
-    name: "bal_clear_allowlist_duration"
-    namespace: "responsible_apis"
-    description: "Clear the allowlist duration when clearAllowBgActivityStarts is called"
-    bug: "322159724"
-}
-
-flag {
     name: "bal_cover_intent_sender"
     namespace: "responsible_apis"
     description: "Cover IntentSender API in addition to PendingIntent."

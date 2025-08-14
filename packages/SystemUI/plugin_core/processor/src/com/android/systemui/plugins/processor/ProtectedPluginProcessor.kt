@@ -288,9 +288,6 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                                     // Compose methods should rethrow since compose will throw a
                                     // different error at a later point anyway due to the missing
                                     // endgroup calls that are skipped.
-
-                                    // TODO(b/432451019): There may be a way to recover using the
-                                    // HotReload interface to force an additional recompose.
                                     method.isComposable() -> {
                                         if (throwAttr != null) {
                                             procEnv.messager.printMessage(

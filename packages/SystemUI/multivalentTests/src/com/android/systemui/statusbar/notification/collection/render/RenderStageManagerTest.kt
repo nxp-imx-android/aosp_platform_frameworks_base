@@ -198,7 +198,7 @@ class RenderStageManagerTest : SysuiTestCase() {
             notif(4),
             group(notif(5), notif(6), notif(7)),
             notif(8),
-            bundle(group(notif(9)), notif(10))
+            bundle(group(notif(9)), notif(10)),
         )
 
     private class FakeNotifViewRenderer : NotifViewRenderer {
@@ -207,6 +207,8 @@ class RenderStageManagerTest : SysuiTestCase() {
         override fun getGroupController(group: GroupEntry): NotifGroupController = mock()
 
         override fun getRowController(entry: NotificationEntry): NotifRowController = mock()
+
+        override fun getBundleController(entry: BundleEntry): NotifRowController = mock()
 
         override fun onDispatchComplete() {}
     }
@@ -217,7 +219,7 @@ class RenderStageManagerTest : SysuiTestCase() {
         GroupEntryBuilder().setSummary(summary).setChildren(children.toList()).build()
 
     @OptIn(InternalNotificationsApi::class)
-    private fun bundle(group: GroupEntry, vararg children: NotificationEntry) : BundleEntry {
+    private fun bundle(group: GroupEntry, vararg children: NotificationEntry): BundleEntry {
         var bundle = BundleEntry(TEST_BUNDLE_SPEC)
         bundle.addChild(group)
         for (child in children) {

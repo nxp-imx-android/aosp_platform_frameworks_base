@@ -26,6 +26,7 @@ import android.hardware.biometrics.BiometricAuthenticator.TYPE_NONE
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback
 import android.os.UserHandle
+import android.security.Flags.secureLockDevice
 import android.util.Log
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.Dumpable
@@ -115,6 +116,32 @@ interface BiometricSettingsRepository {
      */
     val isCurrentUserInLockdown: Flow<Boolean>
 
+    /**
+     * Primary authentication on the bouncer is required as the first factor of Secure Lock Device
+     * authentication, with both strong auth flags {@link
+     * PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE} and {@link
+     * STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE} set and all biometrics disabled.
+     *
+     * False when FLAG_SECURE_LOCK_DEVICE is disabled.
+     */
+    val requiresPrimaryAuthForSecureLockDevice: Flow<Boolean>
+
+    /**
+     * Strong biometric-only authentication is requested following a successful primary
+     * authentication on the bouncer, in order to complete the two-step authentication process for
+     * device entry when secure lock device is enabled.
+     *
+     * During this step, only the {@link STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE}
+     * strong auth flag is set, and primary authentication and non strong biometric authentication
+     * are disabled.
+     *
+     * Becomes false upon successful device entry or exit from the biometric auth screen without
+     * authentication (screen off, biometric lockout, etc).
+     *
+     * False when FLAG_SECURE_LOCK_DEVICE is disabled.
+     */
+    val requiresStrongBiometricAuthForSecureLockDevice: Flow<Boolean>
+
     /** Authentication flags set for the current user. */
     val authenticationFlags: Flow<AuthenticationFlags>
 }
@@ -149,11 +176,29 @@ constructor(
 
     private val strongAuthTracker = StrongAuthTracker(userRepository, context)
 
-    override val isCurrentUserInLockdown: Flow<Boolean> =
-        strongAuthTracker.currentUserAuthFlags.map { it.isInUserLockdown }
-
     override val authenticationFlags: Flow<AuthenticationFlags> =
         strongAuthTracker.currentUserAuthFlags
+
+    override val isCurrentUserInLockdown: Flow<Boolean> =
+        authenticationFlags.map { it.isInUserLockdown }
+
+    override val requiresPrimaryAuthForSecureLockDevice: Flow<Boolean> =
+        if (secureLockDevice()) {
+            authenticationFlags.map { it.isPrimaryAuthRequiredForSecureLockDevice }
+        } else {
+            flowOf(false)
+        }
+
+    override val requiresStrongBiometricAuthForSecureLockDevice: Flow<Boolean> =
+        if (secureLockDevice()) {
+            authenticationFlags.map {
+                !it.isPrimaryAuthRequiredForSecureLockDevice &&
+                    it.isStrongBiometricAuthRequiredForSecureLockDevice &&
+                    !it.isPrimaryAuthRequiredAfterLockout
+            }
+        } else {
+            flowOf(false)
+        }
 
     init {
         Log.d(TAG, "Registering StrongAuthTracker")

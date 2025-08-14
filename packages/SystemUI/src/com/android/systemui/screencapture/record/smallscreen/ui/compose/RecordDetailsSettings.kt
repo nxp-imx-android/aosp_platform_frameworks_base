@@ -29,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -76,6 +77,7 @@ fun RecordDetailsSettings(
                 onCheckedChange = { viewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
+
             RichSwitch(
                 icon =
                     loadIcon(
@@ -94,7 +96,7 @@ fun RecordDetailsSettings(
 
 @Composable
 private fun RichSwitch(
-    icon: IconModel?,
+    icon: State<IconModel?>,
     label: String,
     checked: Boolean,
     onCheckedChange: (isChecked: Boolean) -> Unit,
@@ -105,7 +107,7 @@ private fun RichSwitch(
         modifier =
             modifier.height(64.dp).padding(horizontal = 20.dp, vertical = 12.dp).fillMaxWidth(),
     ) {
-        LoadingIcon(icon = icon, modifier = Modifier.size(40.dp).padding(8.dp))
+        LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.titleSmall,

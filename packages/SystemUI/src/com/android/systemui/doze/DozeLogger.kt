@@ -333,6 +333,15 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
         )
     }
 
+    fun logSetAodWallpaperDimmingScrim(scrimOpacity: Float) {
+        buffer.log(
+            TAG,
+            INFO,
+            { double1 = scrimOpacity.toDouble() },
+            { "Doze aod wallpaper dimming scrim opacity set, opacity=$double1" },
+        )
+    }
+
     fun logCarModeEnded() {
         buffer.log(TAG, INFO, {}, { "Doze car mode ended" })
     }

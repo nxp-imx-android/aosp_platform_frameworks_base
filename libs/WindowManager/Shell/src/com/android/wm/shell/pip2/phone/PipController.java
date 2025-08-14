@@ -35,6 +35,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
 import android.util.Log;
+import android.view.DisplayCutout;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
@@ -505,6 +506,26 @@ public class PipController implements ConfigurationChangeListener,
                     mPipBoundsState.getMinSize().x, mPipBoundsState.getMinSize().y);
         }
 
+        // We do not allow stash on an edge with display cutouts to avoid the visual artifact.
+        // If the stashed PiP is moving to an edge with cutout upon display change, unstash it.
+        if (mPipBoundsState.isStashed()) {
+            final DisplayCutout displayCutout =
+                    mPipBoundsState.getDisplayLayout().getDisplayCutout();
+            boolean requireUnstash = false;
+            if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_LEFT
+                    && !displayCutout.getBoundingRectLeft().isEmpty()) {
+                requireUnstash = true;
+            } else if (mPipBoundsState.getStashedState() == PipBoundsState.STASH_TYPE_RIGHT
+                    && !displayCutout.getBoundingRectRight().isEmpty()) {
+                requireUnstash = true;
+            }
+            if (requireUnstash) {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "Stashing on an edge with display cutout is not supported");
+                mPipBoundsState.setStashed(PipBoundsState.STASH_TYPE_NONE);
+            }
+        }
+
         // The policy is to keep PiP snap fraction invariant.
         mPipBoundsAlgorithm.getSnapAlgorithm().applySnapFraction(toBounds,
                 mPipBoundsAlgorithm.getMovementBounds(toBounds), savedSnapFraction,
@@ -778,6 +799,8 @@ public class PipController implements ConfigurationChangeListener,
         @Override
         public void addPipExclusionBoundsChangeListener(Consumer<Rect> listener) {
             mMainExecutor.execute(() -> {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "addPipExclusionBoundsChangeListener: %s", listener);
                 mPipBoundsState.addPipExclusionBoundsChangeCallback(listener);
             });
         }
@@ -785,6 +808,8 @@ public class PipController implements ConfigurationChangeListener,
         @Override
         public void removePipExclusionBoundsChangeListener(Consumer<Rect> listener) {
             mMainExecutor.execute(() -> {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "removePipExclusionBoundsChangeListener: %s", listener);
                 mPipBoundsState.removePipExclusionBoundsChangeCallback(listener);
             });
         }

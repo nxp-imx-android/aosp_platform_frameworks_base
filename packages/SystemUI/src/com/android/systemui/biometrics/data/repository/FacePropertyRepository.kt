@@ -26,10 +26,10 @@ import android.hardware.face.IFaceAuthenticatorsRegisteredCallback
 import android.util.Log
 import android.util.RotationUtils
 import android.util.Size
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo
 import com.android.systemui.biometrics.shared.model.LockoutMode
-import com.android.systemui.biometrics.shared.model.SensorStrength
+import com.android.systemui.biometrics.shared.model.toFaceSensorInfo
 import com.android.systemui.biometrics.shared.model.toLockoutMode
-import com.android.systemui.biometrics.shared.model.toSensorStrength
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
@@ -74,9 +74,6 @@ interface FacePropertyRepository {
     val supportedPostures: List<DevicePosture>
 }
 
-/** Describes a biometric sensor */
-data class FaceSensorInfo(val id: Int, val strength: SensorStrength)
-
 /** Data class for camera info */
 data class CameraInfo(
     /** The logical id of the camera */
@@ -112,10 +109,7 @@ constructor(
                         ) {
                             if (sensors.isEmpty()) return
                             trySendWithFailureLogging(
-                                FaceSensorInfo(
-                                    sensors.first().sensorId,
-                                    sensors.first().sensorStrength.toSensorStrength(),
-                                ),
+                                sensors.first().toFaceSensorInfo(),
                                 TAG,
                                 "onAllAuthenticatorsRegistered",
                             )

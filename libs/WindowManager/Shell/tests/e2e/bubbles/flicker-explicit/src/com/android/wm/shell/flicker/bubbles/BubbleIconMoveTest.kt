@@ -27,7 +27,6 @@ import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCase
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.google.common.truth.Truth
 import org.junit.Assume
@@ -68,7 +67,7 @@ class BubbleIconMoveTest(navBar: NavBar) :
     BubbleFlickerTestBase(),
     BubbleAlwaysVisibleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private var bubblePositionChanged = false
 
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -98,7 +97,7 @@ class BubbleIconMoveTest(navBar: NavBar) :
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader

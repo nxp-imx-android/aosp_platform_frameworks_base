@@ -23,8 +23,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
+import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureRegion
@@ -56,16 +57,22 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
 
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
-                val scrimColor = MaterialTheme.colorScheme.surface.copy(alpha = .54f)
-                Box(modifier = Modifier.zIndex(0f).fillMaxSize().background(color = scrimColor)) {
+                // Dim the entire screen with a scrim before taking a fullscreen screenshot.
+                Box(
+                    modifier =
+                        Modifier.zIndex(0f)
+                            .fillMaxSize()
+                            .background(color = ScreenCaptureColors.scrimColor)
+                ) {
                     PrimaryButton(
                         modifier = Modifier.align(Alignment.Center),
                         icon =
                             loadIcon(
-                                viewModel = viewModel,
-                                resId = R.drawable.ic_screen_capture_camera,
-                                contentDescription = null,
-                            ),
+                                    viewModel = viewModel,
+                                    resId = R.drawable.ic_screen_capture_camera,
+                                    contentDescription = null,
+                                )
+                                .value,
                         text = stringResource(R.string.screen_capture_fullscreen_screenshot_button),
                         onClick = { viewModel.takeFullscreenScreenshot() },
                     )
@@ -75,15 +82,16 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             ScreenCaptureRegion.PARTIAL -> {
                 // TODO(b/427541309) Set the initial width and height of the RegionBox based on the
                 // viewmodel state.
+                val icon by
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_screen_capture_camera,
+                        contentDescription = null,
+                    )
                 RegionBox(
                     buttonText =
                         stringResource(id = R.string.screen_capture_region_selection_button),
-                    buttonIcon =
-                        loadIcon(
-                            viewModel = viewModel,
-                            resId = R.drawable.ic_screen_capture_camera,
-                            contentDescription = null,
-                        ),
+                    buttonIcon = icon,
                     onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
                     onCaptureClick = { viewModel.takePartialScreenshot() },
                 )

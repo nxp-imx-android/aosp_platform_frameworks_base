@@ -100,6 +100,35 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun start_onValidRequestReceived_dialogShowing_ignoreAdditionalRequests() =
+        testScope.runTest {
+            underTest.start()
+            runCurrent()
+
+            // Trigger to send a broadcast event at the first-time for Magnification
+            sendIntentBroadcast(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_M,
+                "targetNameForMagnification",
+            )
+            runCurrent()
+            // Trigger to send a broadcast event at the second-time for TalkBack
+            sendIntentBroadcast(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+                KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_T,
+                "targetNameForScreenReader",
+            )
+            runCurrent()
+
+            // Only show the Magnification dialog.
+            assertThat(underTest.currentDialog?.isShowing).isTrue()
+            assertThat(underTest.dialogType)
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION)
+        }
+
+    @Test
     fun start_onInvalidRequestReceived_noDialog() =
         testScope.runTest {
             underTest.start()

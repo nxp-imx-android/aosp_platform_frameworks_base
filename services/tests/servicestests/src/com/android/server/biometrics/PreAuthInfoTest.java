@@ -24,9 +24,11 @@ import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRIN
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NOT_ENABLED_FOR_APPS;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE;
+import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
 
 import static com.android.server.biometrics.PreAuthInfo.BIOMETRIC_NOT_ENABLED_FOR_APPS;
 import static com.android.server.biometrics.sensors.LockoutTracker.LOCKOUT_NONE;
+import static com.android.server.biometrics.sensors.LockoutTracker.LOCKOUT_PERMANENT;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -541,6 +543,23 @@ public class PreAuthInfoTest {
         assertThat(preAuthInfo.ineligibleSensors.get(0).first.modality).isEqualTo(TYPE_FINGERPRINT);
         assertThat(preAuthInfo.ineligibleSensors.get(0).second)
                 .isEqualTo(BIOMETRIC_NOT_ENABLED_FOR_APPS);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    public void testBiometricPrompt_calledOnDeviceLockout() throws Exception {
+        when(mFingerprintAuthenticator.getLockoutModeForUser(anyInt())).thenReturn(
+                LOCKOUT_PERMANENT);
+
+        final BiometricSensor sensor = getFingerprintSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
+                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
+                mUserManager);
+
+        assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(BIOMETRIC_SUCCESS);
     }
 
     private void setContextDisplayWithType(int type) {

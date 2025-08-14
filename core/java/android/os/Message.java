@@ -779,4 +779,179 @@ public final class Message implements Parcelable {
         sendingUid = source.readInt();
         workSourceUid = source.readInt();
     }
+
+    /*
+     * This class is used to find matches for MessageQueue.hasMessages() and
+     * MessageQueue.removeMessages()
+     */
+    abstract static class MessageCompare {
+        public abstract boolean compareMessage(Message m, Handler h, int what, Object object,
+                Runnable r, long when);
+    }
+
+    /**
+     * Matches handler, what, and object if non-null.
+     *
+     * @hide
+     */
+    public static final class MatchHandlerWhatAndObject extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target == h && m.what == what && (object == null || m.obj == object)) {
+                return true;
+            }
+            return false;
+        }
+    }
+    /** @hide */
+    public static final MatchHandlerWhatAndObject sMatchHandlerWhatAndObject =
+            new MatchHandlerWhatAndObject();
+
+    /**
+     * Matches handler, what, and object.equals() if non-null.
+     */
+    static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target == h && m.what == what && (object == null || object.equals(m.obj))) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    static final MatchHandlerWhatAndObjectEquals sMatchHandlerWhatAndObjectEquals =
+            new MatchHandlerWhatAndObjectEquals();
+
+    /**
+     * Matches handler, runnable, and object if non-null.
+     */
+    static final class MatchHandlerRunnableAndObject extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target == h && m.callback == r && (object == null || m.obj == object)) {
+                return true;
+            }
+            return false;
+        }
+    }
+    static final MatchHandlerRunnableAndObject sMatchHandlerRunnableAndObject =
+            new MatchHandlerRunnableAndObject();
+
+    /**
+     * Matches handler.
+     */
+    static final class MatchHandler extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            return m.target == h;
+        }
+    }
+    static final MatchHandler sMatchHandler = new MatchHandler();
+
+    /**
+     * Matches handler, runnable, and object.equals() if non-null.
+     */
+    static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target == h && m.callback == r && (object == null || object.equals(m.obj))) {
+                return true;
+            }
+            return false;
+        }
+    }
+    static final MatchHandlerRunnableAndObjectEquals sMatchHandlerRunnableAndObjectEquals =
+            new MatchHandlerRunnableAndObjectEquals();
+
+    /**
+     * Matches handler, and object if non-null.
+     */
+    static final class MatchHandlerAndObject extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target == h && (object == null || m.obj == object)) {
+                return true;
+            }
+            return false;
+        }
+    }
+    static final MatchHandlerAndObject sMatchHandlerAndObject = new MatchHandlerAndObject();
+
+    /**
+     * Matches handler, and object.equals() if non-null.
+     */
+    static final class MatchHandlerAndObjectEquals extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            if (m.target == h && (object == null || object.equals(m.obj))) {
+                return true;
+            }
+            return false;
+        }
+    }
+    static final MatchHandlerAndObjectEquals sMatchHandlerAndObjectEquals =
+            new MatchHandlerAndObjectEquals();
+
+    /**
+     * Matches all messages.
+     */
+    static final class MatchAllMessages extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            return true;
+        }
+    }
+    static final MatchAllMessages sMatchAllMessages = new MatchAllMessages();
+
+    /**
+     * Matches all messages whose when is greater than the when parameter passed in.
+     */
+    static final class MatchAllFutureMessages extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            return m.when > when;
+        }
+    }
+    static final MatchAllFutureMessages sMatchAllFutureMessages =
+            new MatchAllFutureMessages();
+
+    /**
+     * For use with removeSyncBarrier. Matches the barrier with passed token.
+     */
+    static final class MatchBarrierToken extends MessageCompare {
+        final int mBarrierToken;
+
+        MatchBarrierToken(int token) {
+            mBarrierToken = token;
+        }
+
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            return m.target == null && m.arg1 == mBarrierToken;
+        }
+    }
+
+    /**
+     * Matches any messages that come at or before when.
+     */
+    static final class MatchDeliverableMessages extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            return m.when <= when;
+        }
+    }
+    static final MatchDeliverableMessages sMatchDeliverableMessages =
+            new MatchDeliverableMessages();
 }

@@ -204,6 +204,10 @@ class TouchLatencyView extends View implements View.OnTouchListener {
         Trace.endSection();
     }
 
+    public void setRequestedFrameRate(float requestedFrameRate) {
+        super.setRequestedFrameRate(requestedFrameRate);
+    }
+
     private final Paint mBluePaint, mGreenPaint, mYellowPaint, mRedPaint, mTextPaint;
     private int mMode;
     public static final String ACTION_MODES[] = {"Touch", "Ball"};

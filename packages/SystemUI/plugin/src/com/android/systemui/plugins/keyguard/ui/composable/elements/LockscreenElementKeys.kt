@@ -25,6 +25,7 @@ import com.android.compose.animation.scene.ElementKey
 object LockscreenElementKeys {
     /** Root element of the entire lockcsreen */
     val Root = ElementKey("LockscreenRoot")
+    val BehindScrim = ElementKey("LockscreenBehindScrim")
 
     object Region {
         /** The upper region includes everything above the lock icon */

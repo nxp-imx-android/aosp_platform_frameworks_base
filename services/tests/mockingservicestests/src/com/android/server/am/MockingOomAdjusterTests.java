@@ -2377,7 +2377,6 @@ public class MockingOomAdjusterTests {
 
         unbindProvider(client, cpr, conn);
         mProcessStateController.removePublishedProvider(app, providerName);
-        final long lastProviderTime = SystemClock.uptimeMillis();
         mProcessStateController.setLastProviderTime(app, SystemClock.uptimeMillis());
         updateOomAdj(client, app);
 
@@ -3750,7 +3749,7 @@ public class MockingOomAdjusterTests {
         // verify that its OOM adjustment level is unaffected.
         bindService(service, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
         mProcessStateController.updateHasAboveClientLocked(app.mServices);
-        assertTrue(app.mServices.hasAboveClient());
+        assertTrue(app.mServices.isHasAboveClient());
 
         updateOomAdj(app);
         assertEquals(VISIBLE_APP_ADJ, app.getSetAdj());
@@ -3772,7 +3771,7 @@ public class MockingOomAdjusterTests {
         // verify that its OOM adjustment level is unaffected.
         bindService(app, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
         mProcessStateController.updateHasAboveClientLocked(app.mServices);
-        assertFalse(app.mServices.hasAboveClient());
+        assertFalse(app.mServices.isHasAboveClient());
 
         updateOomAdj(app);
         assertEquals(FOREGROUND_APP_ADJ, app.getSetAdj());
@@ -3828,7 +3827,7 @@ public class MockingOomAdjusterTests {
         // client so we expect the BIND_ABOVE_CLIENT adjustment to take effect.
         mProcessStateController.updateHasAboveClientLocked(app.mServices);
         updateOomAdj(app);
-        assertTrue(app.mServices.hasAboveClient());
+        assertTrue(app.mServices.isHasAboveClient());
         assertNotEquals(FOREGROUND_APP_ADJ, app.getSetAdj());
     }
 
@@ -4553,6 +4552,8 @@ public class MockingOomAdjusterTests {
         doCallRealMethod().when(record).setLastActivity(any(long.class));
         doCallRealMethod().when(record).getForegroundServiceType();
         doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
+        doCallRealMethod().when(record).getHostProcess();
+        doCallRealMethod().when(record).getIsolationHostProcess();
 
         setFieldValue(ServiceRecord.class, record, "connections",
                 new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
@@ -4770,6 +4771,9 @@ public class MockingOomAdjusterTests {
         record.proc = publisher;
         setFieldValue(ContentProviderRecord.class, record, "connections",
                 new ArrayList<ContentProviderConnection>());
+        doCallRealMethod().when(record).getHostProcess();
+        doCallRealMethod().when(record).numberOfConnections();
+        doCallRealMethod().when(record).getConnectionsAt(any(int.class));
         doReturn(hasExternalProviders).when(record).hasExternalProcessHandles();
         return record;
     }
@@ -4887,7 +4891,6 @@ public class MockingOomAdjusterTests {
         Object mForcingToImportant;
         long mLastProviderTime = Long.MIN_VALUE;
         long mLastTopTime = Long.MIN_VALUE;
-        boolean mCached = true;
         int mNumOfExecutingServices = 0;
         String mIsolatedEntryPoint = null;
         boolean mExecServicesFg = false;
@@ -4930,7 +4933,6 @@ public class MockingOomAdjusterTests {
             app.setPid(mPid);
             final ProcessRecordInternal state = app;
             final ProcessServiceRecord services = app.mServices;
-            final ProcessReceiverRecord receivers = app.mReceivers;
             final ProcessProfileRecord profile = app.mProfile;
             final ProcessProviderRecord providers = app.mProviders;
             app.makeActive(mock(ApplicationThreadDeferred.class), mService.mProcessStats);

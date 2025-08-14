@@ -16,6 +16,7 @@
 package com.android.systemui.statusbar.notification.collection
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderBundleEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderGroupListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderListListener
@@ -251,6 +252,13 @@ constructor(
      */
     fun addOnAfterRenderEntryListener(listener: OnAfterRenderEntryListener) {
         mRenderStageManager.addOnAfterRenderEntryListener(listener)
+    }
+
+    /**
+     * Called at the end of the pipeline after a bundle entry has been handed off to the view layer.
+     */
+    fun addOnAfterRenderBundleEntryListener(listener: OnAfterRenderBundleEntryListener) {
+        mRenderStageManager.addOnAfterRenderBundleEntryListener(listener)
     }
 
     /**

@@ -19,10 +19,12 @@ package com.android.systemui.shade.carrier;
 import android.annotation.StyleRes;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 
 /**
@@ -31,6 +33,14 @@ import com.android.systemui.res.R;
 public class ShadeCarrierGroup extends LinearLayout {
     public ShadeCarrierGroup(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        if (Flags.fixShadeHeaderWrongIconSize()) {
+            getNoSimTextView().setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+        }
     }
 
     TextView getNoSimTextView() {

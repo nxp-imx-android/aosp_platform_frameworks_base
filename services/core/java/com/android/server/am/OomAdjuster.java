@@ -121,7 +121,6 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ActivityThread;
-import android.app.AppProtoEnums;
 import android.app.ApplicationExitInfo;
 import android.app.usage.UsageEvents;
 import android.content.BroadcastReceiver;
@@ -152,6 +151,7 @@ import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.WindowProcessController;
@@ -230,67 +230,6 @@ public abstract class OomAdjuster {
     public @interface ImplicitCpuTimeReasons {
     }
 
-    public static final int oomAdjReasonToProto(@OomAdjReason int oomReason) {
-        switch (oomReason) {
-            case OOM_ADJ_REASON_NONE:
-                return AppProtoEnums.OOM_ADJ_REASON_NONE;
-            case OOM_ADJ_REASON_ACTIVITY:
-                return AppProtoEnums.OOM_ADJ_REASON_ACTIVITY;
-            case OOM_ADJ_REASON_FINISH_RECEIVER:
-                return AppProtoEnums.OOM_ADJ_REASON_FINISH_RECEIVER;
-            case OOM_ADJ_REASON_START_RECEIVER:
-                return AppProtoEnums.OOM_ADJ_REASON_START_RECEIVER;
-            case OOM_ADJ_REASON_BIND_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_BIND_SERVICE;
-            case OOM_ADJ_REASON_UNBIND_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_UNBIND_SERVICE;
-            case OOM_ADJ_REASON_START_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_START_SERVICE;
-            case OOM_ADJ_REASON_GET_PROVIDER:
-                return AppProtoEnums.OOM_ADJ_REASON_GET_PROVIDER;
-            case OOM_ADJ_REASON_REMOVE_PROVIDER:
-                return AppProtoEnums.OOM_ADJ_REASON_REMOVE_PROVIDER;
-            case OOM_ADJ_REASON_UI_VISIBILITY:
-                return AppProtoEnums.OOM_ADJ_REASON_UI_VISIBILITY;
-            case OOM_ADJ_REASON_ALLOWLIST:
-                return AppProtoEnums.OOM_ADJ_REASON_ALLOWLIST;
-            case OOM_ADJ_REASON_PROCESS_BEGIN:
-                return AppProtoEnums.OOM_ADJ_REASON_PROCESS_BEGIN;
-            case OOM_ADJ_REASON_PROCESS_END:
-                return AppProtoEnums.OOM_ADJ_REASON_PROCESS_END;
-            case OOM_ADJ_REASON_SHORT_FGS_TIMEOUT:
-                return AppProtoEnums.OOM_ADJ_REASON_SHORT_FGS_TIMEOUT;
-            case OOM_ADJ_REASON_SYSTEM_INIT:
-                return AppProtoEnums.OOM_ADJ_REASON_SYSTEM_INIT;
-            case OOM_ADJ_REASON_BACKUP:
-                return AppProtoEnums.OOM_ADJ_REASON_BACKUP;
-            case OOM_ADJ_REASON_SHELL:
-                return AppProtoEnums.OOM_ADJ_REASON_SHELL;
-            case OOM_ADJ_REASON_REMOVE_TASK:
-                return AppProtoEnums.OOM_ADJ_REASON_REMOVE_TASK;
-            case OOM_ADJ_REASON_UID_IDLE:
-                return AppProtoEnums.OOM_ADJ_REASON_UID_IDLE;
-            case OOM_ADJ_REASON_STOP_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_STOP_SERVICE;
-            case OOM_ADJ_REASON_EXECUTING_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_EXECUTING_SERVICE;
-            case OOM_ADJ_REASON_RESTRICTION_CHANGE:
-                return AppProtoEnums.OOM_ADJ_REASON_RESTRICTION_CHANGE;
-            case OOM_ADJ_REASON_COMPONENT_DISABLED:
-                return AppProtoEnums.OOM_ADJ_REASON_COMPONENT_DISABLED;
-            case OOM_ADJ_REASON_FOLLOW_UP:
-                return AppProtoEnums.OOM_ADJ_REASON_FOLLOW_UP;
-            case OOM_ADJ_REASON_RECONFIGURATION:
-                return AppProtoEnums.OOM_ADJ_REASON_RECONFIGURATION;
-            case OOM_ADJ_REASON_SERVICE_BINDER_CALL:
-                return AppProtoEnums.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
-            case OOM_ADJ_REASON_BATCH_UPDATE_REQUEST:
-                return AppProtoEnums.OOM_ADJ_REASON_BATCH_UPDATE_REQUEST;
-            default:
-                return AppProtoEnums.OOM_ADJ_REASON_UNKNOWN_TO_PROTO;
-        }
-    }
-
     public static final String oomAdjReasonToString(@OomAdjReason int oomReason) {
         final String OOM_ADJ_REASON_METHOD = "updateOomAdj";
         switch (oomReason) {
@@ -366,8 +305,6 @@ public abstract class OomAdjuster {
 
     ActivityManagerConstants mConstants;
 
-    final long[] mTmpLong = new long[3];
-
     /**
      * Current sequence id for oom_adj computation traversal.
      */
@@ -413,14 +350,12 @@ public abstract class OomAdjuster {
 
     private final int mNumSlots;
     protected final ArrayList<ProcessRecord> mTmpProcessList = new ArrayList<ProcessRecord>();
-    protected final ArrayList<ProcessRecord> mTmpProcessList2 = new ArrayList<ProcessRecord>();
     protected final ArrayList<UidRecordInternal> mTmpBecameIdle =
             new ArrayList<UidRecordInternal>();
     protected final ActiveUids mTmpUidRecords;
     protected final ArrayDeque<ProcessRecord> mTmpQueue;
     protected final ArraySet<ProcessRecord> mTmpProcessSet = new ArraySet<>();
     protected final ArraySet<ProcessRecord> mPendingProcessSet = new ArraySet<>();
-    protected final ArraySet<ProcessRecord> mProcessesInCycle = new ArraySet<>();
 
     /**
      * List of processes that we want to batch for LMKD to adjust their respective
@@ -652,7 +587,7 @@ public abstract class OomAdjuster {
         if (!includeWarmPkg) {
             return;
         }
-        final ProcessServiceRecord psr = app.mServices;
+        final ProcessServiceRecordInternal psr = app.mServices;
         for (int j = psr.numberOfRunningServices() - 1; j >= 0; j--) {
             psr.getRunningServiceAt(j).updateKeepWarmLocked();
         }
@@ -782,7 +717,8 @@ public abstract class OomAdjuster {
             for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
                 ConnectionRecord cr = psr.getConnectionAt(i);
                 ProcessRecord service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
-                        ? cr.binding.service.isolationHostProc : cr.binding.service.app;
+                        ? cr.binding.service.getIsolationHostProcess()
+                        : cr.binding.service.getHostProcess();
                 if (service == null || service == pr
                         || ((service.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
                                 && (service.getMaxAdj() < FOREGROUND_APP_ADJ))) {
@@ -800,10 +736,10 @@ public abstract class OomAdjuster {
                 queue.offer(service);
                 service.setReachable(true);
             }
-            final ProcessProviderRecord ppr = pr.mProviders;
+            final ProcessProviderRecord ppr = pr.getProviders();
             for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
                 ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
-                ProcessRecord provider = cpc.provider.proc;
+                ProcessRecord provider = cpc.provider.getHostProcess();
                 if (provider == null || provider == pr
                         || ((provider.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
                                 && (provider.getMaxAdj() < FOREGROUND_APP_ADJ))) {
@@ -988,8 +924,7 @@ public abstract class OomAdjuster {
         mNumNonCachedProcs = 0;
         mNumCachedHiddenProcs = 0;
 
-        updateAndTrimProcessLSP(now, nowElapsed, oldTime, activeUids,
-                oomAdjReason, doingAll);
+        updateAndTrimProcessLSP(now, nowElapsed, oldTime, oomAdjReason, doingAll);
         mNumServiceProcs = mNewNumServiceProcs;
 
         if (mService.mAlwaysFinishActivities) {
@@ -1064,7 +999,7 @@ public abstract class OomAdjuster {
                         targetAdj += 10 + mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
                     }
                     state.setCurRawAdj(targetAdj);
-                    state.setCurAdj(applyBindAboveClientToAdj(psr.hasAboveClient(), targetAdj));
+                    state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(), targetAdj));
                 }
             }
         } else {
@@ -1121,7 +1056,7 @@ public abstract class OomAdjuster {
                 } else if (!app.isKilledByAm() && app.getThread() != null
                                && curAdj >= UNKNOWN_ADJ) {
                     // If we haven't yet assigned the final cached adj to the process, do that now.
-                    final ProcessServiceRecord psr = app.mServices;
+                    final ProcessServiceRecordInternal psr = app.mServices;
                     switch (state.getCurProcState()) {
                         case PROCESS_STATE_LAST_ACTIVITY:
                         case PROCESS_STATE_CACHED_ACTIVITY:
@@ -1168,7 +1103,7 @@ public abstract class OomAdjuster {
                             final int rawAdj = curCachedAdj + curCachedImpAdj;
                             state.setCurRawAdj(rawAdj);
                             state.setCurAdj(
-                                    applyBindAboveClientToAdj(psr.hasAboveClient(), rawAdj));
+                                    applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
                             if (DEBUG_LRU) {
                                 Slog.d(TAG_LRU, "Assigning activity LRU #" + i
                                         + " adj: " + state.getCurAdj()
@@ -1195,8 +1130,8 @@ public abstract class OomAdjuster {
                             // cached level will be treated as empty (since their process
                             // state is still as a service), which is what we want.
                             state.setCurRawAdj(curEmptyAdj);
-                            state.setCurAdj(
-                                    applyBindAboveClientToAdj(psr.hasAboveClient(), curEmptyAdj));
+                            state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
+                                    curEmptyAdj));
                             if (DEBUG_LRU) {
                                 Slog.d(TAG_LRU, "Assigning empty LRU #" + i
                                         + " adj: " + state.getCurAdj()
@@ -1219,7 +1154,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     private void updateAndTrimProcessLSP(final long now, final long nowElapsed,
-            final long oldTime, final ActiveUids activeUids, @OomAdjReason int oomAdjReason,
+            final long oldTime, @OomAdjReason int oomAdjReason,
             boolean doingAll) {
         ArrayList<ProcessRecord> lruList = mProcessList.getLruProcessesLOSP();
         final int numLru = lruList.size();
@@ -1853,9 +1788,9 @@ public abstract class OomAdjuster {
         }
     }
 
-    protected boolean isReceivingBroadcast(ProcessRecord app) {
+    protected boolean isReceivingBroadcast(ProcessRecordInternal app) {
         if (Flags.pushBroadcastStateToOomadjuster()) {
-            return app.mReceivers.isReceivingBroadcast();
+            return app.getReceivers().isReceivingBroadcast();
         } else {
             return app.getCachedIsReceivingBroadcast(mTmpSchedGroup);
         }
@@ -1932,7 +1867,7 @@ public abstract class OomAdjuster {
     protected int setIntermediateAdjLSP(ProcessRecordInternal app, int adj, int schedGroup) {
         app.setCurRawAdj(adj);
 
-        adj = applyBindAboveClientToAdj(app.hasAboveClient(), adj);
+        adj = applyBindAboveClientToAdj(app.getServices().isHasAboveClient(), adj);
         if (adj > app.getMaxAdj()) {
             adj = app.getMaxAdj();
             if (adj <= PERCEPTIBLE_LOW_APP_ADJ) {
@@ -2056,14 +1991,14 @@ public abstract class OomAdjuster {
             // Process has user perceptible activities.
             return CPU_TIME_REASON_OTHER;
         }
-        if (app.mServices.numberOfExecutingServices() > 0) {
+        if (app.mServices.hasExecutingServices()) {
             // Ensure that services get cpu time during start-up and tear-down.
             return CPU_TIME_REASON_OTHER;
         }
         if (app.mServices.hasForegroundServices()) {
             return CPU_TIME_REASON_OTHER;
         }
-        if (app.mReceivers.isReceivingBroadcast()) {
+        if (app.getReceivers().isReceivingBroadcast()) {
             return CPU_TIME_REASON_OTHER;
         }
         if (app.hasActiveInstrumentation()) {
@@ -2196,12 +2131,6 @@ public abstract class OomAdjuster {
         mCachedAppOptimizer.onWakefulnessChanged(wakefulness);
     }
 
-    @GuardedBy({"mService", "mProcLock"})
-    protected boolean applyOomAdjLSP(ProcessRecord app, boolean doingAll, long now,
-            long nowElapsed, @OomAdjReason int oomAdjReason) {
-        return applyOomAdjLSP(app, doingAll, now, nowElapsed, oomAdjReason, false);
-    }
-
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
     @GuardedBy({"mService", "mProcLock"})
     protected boolean applyOomAdjLSP(ProcessRecord app, boolean doingAll, long now,
@@ -2244,7 +2173,7 @@ public abstract class OomAdjuster {
         }
 
         final int curSchedGroup = state.getCurrentSchedulingGroup();
-        if (app.getWaitingToKill() != null && !app.mReceivers.isReceivingBroadcast()
+        if (app.getWaitingToKill() != null && !app.getReceivers().isReceivingBroadcast()
                 && ActivityManager.isProcStateBackground(state.getCurProcState())
                 && !state.getHasStartedServices()) {
             app.killLocked(app.getWaitingToKill(), ApplicationExitInfo.REASON_USER_REQUESTED,
@@ -2873,19 +2802,19 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    abstract void onProcessEndLocked(@NonNull ProcessRecord app);
+    abstract void onProcessEndLocked(@NonNull ProcessRecordInternal app);
 
     /**
      * Called when the process state is changed outside of the OomAdjuster.
      */
     @GuardedBy("mService")
-    abstract void onProcessStateChanged(@NonNull ProcessRecord app, int prevProcState);
+    abstract void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState);
 
     /**
      * Called when the oom adj is changed outside of the OomAdjuster.
      */
     @GuardedBy("mService")
-    abstract void onProcessOomAdjChanged(@NonNull ProcessRecord app, int prevAdj);
+    abstract void onProcessOomAdjChanged(@NonNull ProcessRecordInternal app, int prevAdj);
 
     @VisibleForTesting
     abstract void resetInternal();

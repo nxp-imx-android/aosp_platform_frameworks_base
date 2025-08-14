@@ -16,9 +16,11 @@
 
 package com.android.server.firewall;
 
+import static android.security.Flags.enableIntentFirewallComponentClassFilter;
 import static android.security.Flags.enableIntentFirewallExtraKeyValueFilter;
 
 import android.annotation.NonNull;
+import android.annotation.TestApi;
 import android.app.AppGlobals;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -33,11 +35,14 @@ import android.os.FileObserver;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PatternMatcher;
 import android.os.RemoteException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.util.Xml;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.XmlUtils;
 import com.android.server.EventLogTags;
@@ -148,9 +153,13 @@ public class IntentFirewall {
     }
 
     public IntentFirewall(AMSInterface ams, Handler handler) {
+        this(ams, handler, getRulesDir());
+    }
+
+    @TestApi
+    public IntentFirewall(AMSInterface ams, Handler handler, File rulesDir) {
         mAms = ams;
         mHandler = new FirewallHandler(handler.getLooper());
-        File rulesDir = getRulesDir();
         rulesDir.mkdirs();
 
         readRulesDir(rulesDir);
@@ -200,14 +209,24 @@ public class IntentFirewall {
         candidateRules = resolver.queryIntent(getPackageManager().snapshot(), intent, resolvedType,
                 false /*defaultOnly*/, 0);
         if (candidateRules == null) {
-            candidateRules = new ArrayList<Rule>();
+            candidateRules = new ArrayList<>();
         }
         resolver.queryByComponent(resolvedComponent, candidateRules);
+        if (enableIntentFirewallComponentClassFilter() && resolvedComponent != null) {
+            resolver.queryByComponentClass(resolvedComponent.getClassName(), candidateRules);
+        }
+
+        if (candidateRules.isEmpty()) {
+            return true;
+        }
+
+        // remove duplicates
+        ArraySet<Rule> ruleSet = new ArraySet<>(candidateRules);
 
         // For the second pass, try to match the potentially more specific conditions in each
         // rule against the intent
-        for (int i=0; i<candidateRules.size(); i++) {
-            Rule rule = candidateRules.get(i);
+        for (int i = 0; i < ruleSet.size(); i++) {
+            Rule rule = ruleSet.valueAt(i);
             if (rule.matches(this, resolvedComponent, intent, callerUid, callerPid, resolvedType,
                     receivingUid)) {
                 block |= rule.getBlock();
@@ -381,6 +400,7 @@ public class IntentFirewall {
 
                 if (ruleType != -1) {
                     Rule rule = new Rule();
+                    rule.setRuleType(ruleType);
 
                     List<Rule> rules = rulesByType.get(ruleType);
 
@@ -388,7 +408,7 @@ public class IntentFirewall {
                     // that rule and continue on with the next rule
                     try {
                         rule.readFromXml(parser);
-                    } catch (XmlPullParserException ex) {
+                    } catch (XmlPullParserException | IllegalArgumentException ex) {
                         Slog.e(TAG, "Error reading an intent firewall rule from " + rulesFile, ex);
                         continue;
                     }
@@ -424,6 +444,15 @@ public class IntentFirewall {
                 for (int i=0; i<rule.getComponentFilterCount(); i++) {
                     resolver.addComponentFilter(rule.getComponentFilter(i), rule);
                 }
+                if (enableIntentFirewallComponentClassFilter()) {
+                    for (int i = 0; i < rule.getComponentClassExactFilterCount(); i++) {
+                        resolver.addComponentClassExactFilter(
+                                rule.getComponentClassExactFilter(i), rule);
+                    }
+                    if (rule.getComponentClassPatternFilterCount() > 0) {
+                        resolver.addComponentClassPatternFilter(rule);
+                    }
+                }
             }
         }
     }
@@ -457,17 +486,26 @@ public class IntentFirewall {
      * If the rule matches, then we block or log the intent, as specified by the rule. If multiple
      * rules match, we combine the block/log flags from any matching rule.
      */
-    private static class Rule extends AndFilter {
+    @VisibleForTesting
+    static class Rule extends AndFilter {
         private static final String TAG_INTENT_FILTER = "intent-filter";
         private static final String TAG_COMPONENT_FILTER = "component-filter";
+        private static final String TAG_COMPONENT_CLASS_FILTER = "component-class-filter";
         private static final String ATTR_NAME = "name";
-
+        private static final String ATTR_EQUALS = "equals";
+        private static final String ATTR_STARTS_WITH = "startsWith";
+        private static final String ATTR_ENDS_WITH = "endsWith";
+        private static final String ATTR_PATTERN = "pattern";
+        private static final String ATTR_ADVANCED_PATTERN = "advancedPattern";
         private static final String ATTR_BLOCK = "block";
         private static final String ATTR_LOG = "log";
 
         private final ArrayList<FirewallIntentFilter> mIntentFilters =
                 new ArrayList<FirewallIntentFilter>(1);
         private final ArrayList<ComponentName> mComponentFilters = new ArrayList<ComponentName>(0);
+        private final ArrayList<String> mComponentClassExactFilters = new ArrayList<String>(0);
+        private final ArrayList<PatternMatcher> mComponentClassPatternMatchers = new ArrayList<>(0);
+        private int mRuleType;
         private boolean block;
         private boolean log;
 
@@ -501,6 +539,32 @@ public class IntentFirewall {
                 }
 
                 mComponentFilters.add(componentName);
+            } else if (enableIntentFirewallComponentClassFilter() && mRuleType == TYPE_ACTIVITY
+                    && currentTag.equals(TAG_COMPONENT_CLASS_FILTER)) {
+                if (parser.getAttributeCount() != 1) {
+                    throw new XmlPullParserException(
+                            "component-class-filter must have one and only one attributes.");
+                }
+                String newAttrName = parser.getAttributeName(0);
+                String attrValue = parser.getAttributeValue(0);
+                if (attrValue.isEmpty()) {
+                    throw new XmlPullParserException(
+                            "Attribute value cannot be empty in component-class-filter");
+                }
+                switch (newAttrName) {
+                    case ATTR_EQUALS -> mComponentClassExactFilters.add(attrValue);
+                    case ATTR_STARTS_WITH -> mComponentClassPatternMatchers.add(
+                            new PatternMatcher(attrValue, PatternMatcher.PATTERN_PREFIX));
+                    case ATTR_ENDS_WITH -> mComponentClassPatternMatchers.add(
+                            new PatternMatcher(attrValue, PatternMatcher.PATTERN_SUFFIX));
+                    case ATTR_PATTERN -> mComponentClassPatternMatchers.add(
+                            new PatternMatcher(attrValue, PatternMatcher.PATTERN_SIMPLE_GLOB));
+                    case ATTR_ADVANCED_PATTERN -> mComponentClassPatternMatchers.add(
+                            new PatternMatcher(attrValue, PatternMatcher.PATTERN_ADVANCED_GLOB));
+                    default -> throw new XmlPullParserException(
+                            "component-class-filter only supports 'equals', 'startsWith' and "
+                                    + "'endsWith' attribute.");
+                }
             } else {
                 super.readChild(parser);
             }
@@ -521,12 +585,33 @@ public class IntentFirewall {
         public ComponentName getComponentFilter(int index) {
             return mComponentFilters.get(index);
         }
+
+        public int getComponentClassExactFilterCount() {
+            return mComponentClassExactFilters.size();
+        }
+
+        public String getComponentClassExactFilter(int index) {
+            return mComponentClassExactFilters.get(index);
+        }
+
+        public int getComponentClassPatternFilterCount() {
+            return mComponentClassPatternMatchers.size();
+        }
+
+        public PatternMatcher getComponentClassPatternMatcher(int index) {
+            return mComponentClassPatternMatchers.get(index);
+        }
+
         public boolean getBlock() {
             return block;
         }
 
         public boolean getLog() {
             return log;
+        }
+
+        public void setRuleType(int ruleType) {
+            mRuleType = ruleType;
         }
     }
 
@@ -579,14 +664,44 @@ public class IntentFirewall {
             }
         }
 
+        private void queryByComponentClass(String className, List<Rule> candidateRules) {
+            Rule[] rules = mRulesByComponentClassExact.get(className);
+            if (rules != null) {
+                candidateRules.addAll(Arrays.asList(rules));
+            }
+
+            for (int i = 0; i < mRulesWithComponentClassPattern.size(); i++) {
+                Rule rule = mRulesWithComponentClassPattern.get(i);
+                for (int j = 0; j < rule.getComponentClassPatternFilterCount(); j++) {
+                    if (rule.getComponentClassPatternMatcher(j).match(className)) {
+                        candidateRules.add(rule);
+                    }
+                }
+            }
+        }
+
         public void addComponentFilter(ComponentName componentName, Rule rule) {
             Rule[] rules = mRulesByComponent.get(componentName);
             rules = ArrayUtils.appendElement(Rule.class, rules, rule);
             mRulesByComponent.put(componentName, rules);
         }
 
+        private void addComponentClassExactFilter(String className, Rule rule) {
+            Rule[] rules = mRulesByComponentClassExact.get(className);
+            rules = ArrayUtils.appendElement(Rule.class, rules, rule);
+            mRulesByComponentClassExact.put(className, rules);
+        }
+
+        private void addComponentClassPatternFilter(Rule rule) {
+            mRulesWithComponentClassPattern.add(rule);
+        }
+
         private final ArrayMap<ComponentName, Rule[]> mRulesByComponent =
                 new ArrayMap<ComponentName, Rule[]>(0);
+        private final ArrayMap<String, Rule[]> mRulesByComponentClassExact =
+                new ArrayMap<>();
+        private final List<Rule> mRulesWithComponentClassPattern = new ArrayList<>();
+
     }
 
     final FirewallHandler mHandler;

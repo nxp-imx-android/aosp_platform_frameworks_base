@@ -44,6 +44,7 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditAction
@@ -461,8 +462,8 @@ class EditModeTest : SysuiTestCase() {
     ) = assertGridContainsExactly(AVAILABLE_TILES_GRID_TEST_TAG, specs)
 
     companion object {
-        private const val CURRENT_TILES_GRID_TEST_TAG = "CurrentTilesGrid"
-        private const val AVAILABLE_TILES_GRID_TEST_TAG = "AvailableTilesGrid"
+        private val CURRENT_TILES_GRID_TEST_TAG = resIdToTestTag("CurrentTilesGrid")
+        private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
 
         private fun createEditTile(
             tileSpec: String,

@@ -22,6 +22,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 
 import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.ProcessList.INVALID_ADJ;
 import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
@@ -41,6 +42,7 @@ import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
 import com.android.server.am.OomAdjuster;
+import com.android.server.am.OomAdjusterImpl;
 import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
@@ -188,19 +190,6 @@ public abstract class ProcessRecordInternal {
      */
     public abstract boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId);
 
-    /**
-     * Returns whether this process has bound to a service with
-     * {@link android.content.Context#BIND_ABOVE_CLIENT}.
-     * TODO(b/425766486): Remove it once ProcessRecordInternal could access ProcessServiceRecord.
-     */
-    public abstract boolean hasAboveClient();
-
-    /**
-     * Sets whether this process should be treated as if it has an activity.
-     * TODO(b/425766486): Remove it once ProcessRecordInternal could access ProcessServiceRecord.
-     */
-    public abstract void setTreatLikeActivity(boolean treatLikeActivity);
-
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
 
@@ -225,6 +214,15 @@ public abstract class ProcessRecordInternal {
 
     /** Returns the {@link UidRecordInternal} associated with this process. */
     public abstract UidRecordInternal getUidRecord();
+
+    /** Returns the internal service-related record for this process. */
+    public abstract ProcessServiceRecordInternal getServices();
+
+    /** Returns the internal content provider related record for this process. */
+    public abstract ProcessProviderRecordInternal getProviders();
+
+    /** Returns the internal broadcast receiver related record for this process. */
+    public abstract ProcessReceiverRecordInternal getReceivers();
 
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
@@ -671,6 +669,11 @@ public abstract class ProcessRecordInternal {
 
     @GuardedBy("mServiceLock")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
+
+    // TODO(b/425766486): Change to package-private after the OomAdjusterImpl class is moved to
+    //                    the psc package.
+    public final OomAdjusterImpl.ProcessRecordNode[] mLinkedNodes =
+            new OomAdjusterImpl.ProcessRecordNode[NUM_NODE_TYPE];
 
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         mProcessName = processName;

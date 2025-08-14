@@ -492,15 +492,16 @@ class InsetsSourceProvider {
         if (target == mControlTarget && !force) {
             return;
         }
-        if (mHasPendingPosition) {
-            // Don't create a new leash while having a pending position. Otherwise, the position
-            // will be changed earlier than expected, which can cause flicker.
-            return;
-        }
         if (target == null) {
+            mHasPendingPosition = false;
             // Cancelling the animation will invoke onAnimationCancelled, resetting all the fields.
             mWin.cancelAnimation();
             setClientVisible((WindowInsets.Type.defaultVisible() & mSource.getType()) != 0);
+            return;
+        }
+        if (mHasPendingPosition) {
+            // Don't create a new leash while having a pending position. Otherwise, the position
+            // will be changed earlier than expected, which can cause flicker.
             return;
         }
         boolean initiallyVisible = mClientVisible;

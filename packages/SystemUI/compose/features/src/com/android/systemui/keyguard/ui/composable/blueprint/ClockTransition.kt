@@ -27,7 +27,7 @@ import com.android.systemui.keyguard.ui.view.layout.sections.transitions.ClockSi
 import com.android.systemui.keyguard.ui.view.layout.sections.transitions.ClockSizeTransition.SmartspaceMoveTransition.Companion.STATUS_AREA_MOVE_UP_MILLIS
 
 object ClockTransition {
-    // TODO(b/432451019): Rebuild to be dependent on new lockscreen clock element list.
+    // TODO(b/438513876): Rebuild to be dependent on new lockscreen clock element list.
     // Possibly this makes sense to delegate fully to the clock plugins.
     val clockTransitions = transitions {}
 

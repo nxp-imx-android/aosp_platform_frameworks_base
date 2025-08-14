@@ -37,6 +37,8 @@ import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundExce
 import android.app.appsearch.AppSearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.SignedPackage;
+import android.content.pm.SignedPackageParcel;
 import android.os.CancellationSignal;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -51,6 +53,7 @@ import com.android.internal.R;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -839,6 +842,59 @@ public final class AppFunctionManager {
                 mContext.getResources()
                         .getStringArray(R.array.config_appFunctionDeviceSettingsPackages);
         return new ArraySet<>(deviceSettingPackages);
+    }
+
+    /**
+     * Gets the current agent allowlist
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public @NonNull List<SignedPackage> getAgentAllowlist() {
+        try {
+            List<SignedPackageParcel> packageParcels = mService.getAgentAllowlist();
+            int packageParcelsSize = packageParcels.size();
+            List<SignedPackage> packages = new ArrayList<>(packageParcelsSize);
+            for (int i = 0; i < packageParcelsSize; i++) {
+                packages.add(new SignedPackage(packageParcels.get(i)));
+            }
+            return packages;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets whether or not the agent allowlist is enabled
+     * TODO b/413093397: Remove once list is ready for permanent enable
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public boolean isAgentAllowlistEnabled() {
+        try {
+            return mService.isAgentAllowlistEnabled();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets whether or not the agent allowlist is enabled
+     * TODO b/413093397: Remove once list is ready for permanent enable
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public void setAgentAllowlistEnabled(boolean enabled) {
+        try {
+            mService.setAgentAllowlistEnabled(enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     private static class CallbackWrapper extends IAppFunctionEnabledCallback.Stub {

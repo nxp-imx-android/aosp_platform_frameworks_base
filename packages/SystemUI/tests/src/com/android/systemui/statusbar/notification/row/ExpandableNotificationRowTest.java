@@ -115,6 +115,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         allowTestableLooperAsMainThread();
         mFeatureFlags.set(Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE, false);
         mKosmos = new KosmosJavaAdapter(this);
+
+        mKosmos.getGroupExpansionManager().registerGroupExpansionChangeListener(
+                (changedRow, expanded) -> {
+                    if (changedRow.isGroupRoot()) {
+                        changedRow.setChildrenExpanded(expanded);
+                    }
+                });
     }
 
     @Test
@@ -1262,6 +1269,68 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
 
         row.setHasStatusBarChipDuringHeadsUpAnimation(false);
         assertThat(row.hasStatusBarChipDuringHeadsUpAnimation()).isFalse();
+    }
+
+    @Test
+    public void testToggleNotificationExpansion() {
+        final ExpandableNotificationRow row = mKosmos.createRow();
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isTrue();
+        assertThat(row.isUserExpanded()).isTrue();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isFalse();
+        assertThat(row.isUserExpanded()).isFalse();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+    }
+
+    @Test
+    public void testToggleGroupNotificationExpansion() {
+        final ExpandableNotificationRow row = mKosmos.createRowGroup();
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isTrue();
+        assertThat(row.isUserExpanded()).isTrue();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+        assertThat(row.areChildrenExpanded()).isTrue();
+        assertThat(row.getAttachedChildren().get(0).isExpanded()).isFalse();
+
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isFalse();
+        assertThat(row.isUserExpanded()).isFalse();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+        assertThat(row.areChildrenExpanded()).isFalse();
+        assertThat(row.getAttachedChildren().get(0).isExpanded()).isFalse();
+    }
+
+    @Test
+    public void testToggleGroupNotificationExpansion_minimized() {
+        final ExpandableNotificationRow row = mKosmos.createRowGroup();
+        row.setIsMinimized(true);
+
+        // expand into the same state as collapsed non-minimized groups
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isTrue();
+        assertThat(row.isUserExpanded()).isTrue();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+        assertThat(row.areChildrenExpanded()).isFalse();
+        assertThat(row.getAttachedChildren().get(0).isExpanded()).isFalse();
+
+        // fully expand
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isTrue();
+        assertThat(row.isUserExpanded()).isTrue();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+        assertThat(row.areChildrenExpanded()).isTrue();
+        assertThat(row.getAttachedChildren().get(0).isExpanded()).isFalse();
+
+        // back to  fully minimized state
+        row.toggleExpansionState();
+        assertThat(row.isExpanded()).isFalse();
+        assertThat(row.isUserExpanded()).isFalse();
+        assertThat(row.hasUserChangedExpansion()).isTrue();
+        assertThat(row.areChildrenExpanded()).isFalse();
+        assertThat(row.getAttachedChildren().get(0).isExpanded()).isFalse();
     }
 
     private void setDrawableIconsInImageView(CachingIconView icon, Drawable iconDrawable,

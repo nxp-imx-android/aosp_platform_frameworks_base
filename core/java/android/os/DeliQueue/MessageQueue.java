@@ -16,6 +16,8 @@
 
 package android.os;
 
+import static android.os.Message.*;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -608,16 +610,6 @@ public final class MessageQueue {
         }
     }
 
-    static final class MatchDeliverableMessages extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            return m.when <= when;
-        }
-    }
-    private static final MatchDeliverableMessages sMatchDeliverableMessages =
-            new MatchDeliverableMessages();
-
     /**
      * Returns true if the looper has no pending messages which are due to be processed
      * and is not blocked on a sync barrier.
@@ -730,20 +722,6 @@ public final class MessageQueue {
         return token;
     }
 
-    static final class MatchBarrierToken extends MessageCompare {
-        final int mBarrierToken;
-
-        MatchBarrierToken(int token) {
-            mBarrierToken = token;
-        }
-
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            return m.target == null && m.arg1 == mBarrierToken;
-        }
-    }
-
     /**
      * Removes a synchronization barrier.
      *
@@ -828,53 +806,12 @@ public final class MessageQueue {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    /*
-     * This class is used to find matches for hasMessages() and removeMessages()
-     *
-     * TODO: Move these to be inner package-private classes of Message, and then share the code
-     * with CombinedMessageQueue
-     */
-    abstract static class MessageCompare {
-        public abstract boolean compareMessage(Message m, Handler h, int what, Object object,
-                Runnable r, long when);
-    }
-
-    /**
-     * Matches handler, what, and object if non-null.
-     * @hide
-     */
-    public static final class MatchHandlerWhatAndObject extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            if (m.target == h && m.what == what && (object == null || m.obj == object)) {
-                return true;
-            }
-            return false;
-        }
-    }
-    private static final MatchHandlerWhatAndObject sMatchHandlerWhatAndObject =
-            new MatchHandlerWhatAndObject();
-
     boolean hasMessages(Handler h, int what, Object object) {
         if (h == null) {
             return false;
         }
         return mStack.hasMessages(sMatchHandlerWhatAndObject, h, what, object, null, 0);
     }
-
-    static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            if (m.target == h && m.what == what && (object == null || object.equals(m.obj))) {
-                return true;
-            }
-            return false;
-        }
-    }
-    private static final MatchHandlerWhatAndObjectEquals sMatchHandlerWhatAndObjectEquals =
-            new MatchHandlerWhatAndObjectEquals();
 
     boolean hasEqualMessages(Handler h, int what, Object object) {
         if (h == null) {
@@ -883,19 +820,6 @@ public final class MessageQueue {
         return mStack.hasMessages(sMatchHandlerWhatAndObjectEquals, h, what, object, null, 0);
     }
 
-    static final class MatchHandlerRunnableAndObject extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            if (m.target == h && m.callback == r && (object == null || m.obj == object)) {
-                return true;
-            }
-            return false;
-        }
-    }
-    private static final MatchHandlerRunnableAndObject sMatchHandlerRunnableAndObject =
-            new MatchHandlerRunnableAndObject();
-
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     boolean hasMessages(Handler h, Runnable r, Object object) {
         if (h == null) {
@@ -903,15 +827,6 @@ public final class MessageQueue {
         }
         return mStack.hasMessages(sMatchHandlerRunnableAndObject, h, -1, object, r, 0);
     }
-
-    static final class MatchHandler extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            return m.target == h;
-        }
-    }
-    private static final MatchHandler sMatchHandler = new MatchHandler();
 
     boolean hasMessages(Handler h) {
         if (h == null) {
@@ -941,37 +856,12 @@ public final class MessageQueue {
         mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObject, h, -1, object, r, 0);
     }
 
-    static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            if (m.target == h && m.callback == r && (object == null || object.equals(m.obj))) {
-                return true;
-            }
-            return false;
-        }
-    }
-    private static final MatchHandlerRunnableAndObjectEquals sMatchHandlerRunnableAndObjectEquals =
-            new MatchHandlerRunnableAndObjectEquals();
-
     void removeEqualMessages(Handler h, Runnable r, Object object) {
         if (h == null || r == null) {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObjectEquals, h, -1, object, r, 0);
     }
-
-    static final class MatchHandlerAndObject extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            if (m.target == h && (object == null || m.obj == object)) {
-                return true;
-            }
-            return false;
-        }
-    }
-    private static final MatchHandlerAndObject sMatchHandlerAndObject = new MatchHandlerAndObject();
 
     void removeCallbacksAndMessages(Handler h, Object object) {
         if (h == null) {
@@ -980,19 +870,6 @@ public final class MessageQueue {
         mStack.moveMatchingToFreelist(sMatchHandlerAndObject, h, -1, object, null, 0);
     }
 
-    static final class MatchHandlerAndObjectEquals extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            if (m.target == h && (object == null || object.equals(m.obj))) {
-                return true;
-            }
-            return false;
-        }
-    }
-    private static final MatchHandlerAndObjectEquals sMatchHandlerAndObjectEquals =
-            new MatchHandlerAndObjectEquals();
-
     void removeCallbacksAndEqualMessages(Handler h, Object object) {
         if (h == null) {
             return;
@@ -1000,31 +877,12 @@ public final class MessageQueue {
         mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, h, -1, object, null, 0);
     }
 
-    static final class MatchAllMessages extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            return true;
-        }
-    }
-    private static final MatchAllMessages sMatchAllMessages = new MatchAllMessages();
-
     private void removeAllMessages() {
-        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null, 0);
+        mStack.moveMatchingToFreelist(sMatchAllMessages, null, -1, null, null, 0);
     }
-
-    static final class MatchAllFutureMessages extends MessageCompare {
-        @Override
-        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
-                long when) {
-            return m.when > when;
-        }
-    }
-    private static final MatchAllFutureMessages sMatchAllFutureMessages =
-            new MatchAllFutureMessages();
 
     private void removeAllFutureMessages(long when) {
-        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, null, -1, null, null, when);
+        mStack.moveMatchingToFreelist(sMatchAllFutureMessages, null, -1, null, null, when);
     }
 
     /**

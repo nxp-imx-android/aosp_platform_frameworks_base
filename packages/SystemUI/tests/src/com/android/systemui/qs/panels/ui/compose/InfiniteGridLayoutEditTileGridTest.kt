@@ -42,6 +42,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
@@ -381,7 +382,7 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
         @JvmStatic
         fun data() = FlagsParameterization.progressionOf(QsEditModeTabs.FLAG_NAME)
 
-        private const val AVAILABLE_TILES_GRID_TEST_TAG = "AvailableTilesGrid"
+        private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
         private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"
         private val TestEditTiles =
             listOf(

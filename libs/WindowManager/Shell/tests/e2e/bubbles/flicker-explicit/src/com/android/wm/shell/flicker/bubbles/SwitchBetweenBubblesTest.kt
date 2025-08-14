@@ -24,12 +24,12 @@ import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest.Companion.previousApp
 import com.android.wm.shell.flicker.bubbles.testcase.MultipleBubbleExpandBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.switchBubble
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -67,8 +67,9 @@ import org.junit.runners.Parameterized
 class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
     MultipleBubbleExpandBubbleAppTestCases
 {
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private val previousApp = MessagingAppHelper()
+
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
@@ -92,14 +93,13 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    override val previousApp
-        get() = SwitchBetweenBubblesTest.previousApp
+    override val previousApp = Companion.previousApp
 
     @Test
     override fun focusChanges() {

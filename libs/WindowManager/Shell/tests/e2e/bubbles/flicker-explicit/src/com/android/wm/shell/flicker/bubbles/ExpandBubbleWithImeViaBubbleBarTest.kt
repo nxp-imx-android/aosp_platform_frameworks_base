@@ -26,13 +26,13 @@ import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest.Companion.testApp
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -70,7 +70,9 @@ import org.junit.runners.Parameterized
 class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
     ExpandBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
+        private val testApp = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
+
         /**
          * The screenshot took at the end of the transition.
          */
@@ -103,9 +105,6 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
 
-        override val testApp
-            get() = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
-
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
@@ -114,18 +113,17 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    // This is necessary or the test will use the testApp from BubbleFlickerTestBase.
-    override val testApp
-        get() = ExpandBubbleWithImeViaBubbleBarTest.testApp
+    // This is necessary or the test will use the default testApp from BubbleFlickerTestBase.
+    override val testApp = Companion.testApp
 
     override val bitmapAtEnd
-        get() = ExpandBubbleWithImeViaBubbleBarTest.bitmapAtEnd
+        get() = Companion.bitmapAtEnd
 
     override val expectedImeInset
         get() = imeInset

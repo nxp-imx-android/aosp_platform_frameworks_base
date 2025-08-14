@@ -178,4 +178,8 @@
     <!-- below also works as break between user chip and hover state of status icons -->
     <dimen name="status_bar_user_chip_end_margin">12dp</dimen>
     <dimen name="status_bar_user_chip_text_size">18sp</dimen>
+
+    <!-- Shade status bar -->
+    <dimen name="status_bar_shade_header_text_size_sp">21sp</dimen>
+
 </resources>

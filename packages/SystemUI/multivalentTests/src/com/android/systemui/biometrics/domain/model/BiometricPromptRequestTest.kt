@@ -14,6 +14,7 @@ import com.android.systemui.biometrics.fingerprintSensorPropertiesInternal
 import com.android.systemui.biometrics.promptInfo
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
+import com.android.systemui.biometrics.shared.model.toFingerprintSensorInfo
 import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
@@ -59,7 +60,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                 ),
                 BiometricUserInfo(USER_ID),
                 BiometricOperationInfo(OPERATION_ID),
-                BiometricModalities(fingerprintProperties = fpPros),
+                BiometricModalities(fingerprintSensorInfo = fpPros.toFingerprintSensorInfo()),
                 OP_PACKAGE_NAME,
             )
 
@@ -73,7 +74,9 @@ class BiometricPromptRequestTest : SysuiTestCase() {
         assertThat(request.userInfo).isEqualTo(BiometricUserInfo(USER_ID))
         assertThat(request.operationInfo).isEqualTo(BiometricOperationInfo(OPERATION_ID))
         assertThat(request.modalities)
-            .isEqualTo(BiometricModalities(fingerprintProperties = fpPros))
+            .isEqualTo(
+                BiometricModalities(fingerprintSensorInfo = fpPros.toFingerprintSensorInfo())
+            )
         assertThat(request.fallbackOptions).containsExactlyElementsIn(fallbackOptions)
     }
 
@@ -94,7 +97,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                 promptInfo(title = title, description = description, contentView = contentView),
                 BiometricUserInfo(USER_ID),
                 BiometricOperationInfo(OPERATION_ID),
-                BiometricModalities(fingerprintProperties = fpPros),
+                BiometricModalities(fingerprintSensorInfo = fpPros.toFingerprintSensorInfo()),
                 OP_PACKAGE_NAME,
             )
         assertThat(request.contentView).isSameInstanceAs(contentView)
@@ -109,7 +112,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                 promptInfo(logoBitmap = logoBitmap),
                 BiometricUserInfo(USER_ID),
                 BiometricOperationInfo(OPERATION_ID),
-                BiometricModalities(fingerprintProperties = fpPros),
+                BiometricModalities(fingerprintSensorInfo = fpPros.toFingerprintSensorInfo()),
                 OP_PACKAGE_NAME,
             )
         assertThat(request.logoBitmap).isEqualTo(logoBitmap)

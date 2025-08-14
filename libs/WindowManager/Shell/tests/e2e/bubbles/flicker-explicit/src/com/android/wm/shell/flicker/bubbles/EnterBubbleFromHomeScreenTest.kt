@@ -26,13 +26,10 @@ import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_HOME_SCREEN
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import org.junit.runners.Parameterized
 
 /**
  * Test entering bubble via clicking bubble menu from the home screen.
@@ -52,11 +49,10 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-@RunWith(Parameterized::class)
-open class EnterBubbleFromHomeScreenTest(navBar: NavBar) : BubbleFlickerTestBase(),
+open class EnterBubbleFromHomeScreenTest : BubbleFlickerTestBase(),
     EnterBubbleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, FROM_HOME_SCREEN) },
             tearDownAfterTransition = {
@@ -68,15 +64,12 @@ open class EnterBubbleFromHomeScreenTest(navBar: NavBar) : BubbleFlickerTestBase
             }
         )
 
-        @Parameterized.Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL)
+        private val navBar = NavBar.MODE_GESTURAL
     }
 
     @get:Rule
     open val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
     )
 
     override val traceDataReader

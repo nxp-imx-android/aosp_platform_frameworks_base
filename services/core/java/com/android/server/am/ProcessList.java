@@ -22,6 +22,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_PROCESS_END;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_RESTRICTION_CHANGE;
 import static android.app.ActivityThread.PROC_START_SEQ_IDENT;
+import static android.app.ApplicationExitInfo.subreasonToString;
 import static android.content.pm.Flags.appCompatOption16kb;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AUTO;
 import static android.net.NetworkPolicyManager.isProcStateAllowedWhileIdleOrPowerSaveMode;
@@ -302,7 +303,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     static final int PAGE_SIZE = (int) Os.sysconf(OsConstants._SC_PAGESIZE);
 
     // Activity manager's version of an undefined schedule group
-    static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;
+    public static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;
     // Activity manager's version of Process.THREAD_GROUP_BACKGROUND
     public static final int SCHED_GROUP_BACKGROUND = 0;
       // Activity manager's version of Process.THREAD_GROUP_RESTRICTED
@@ -853,8 +854,14 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case KILL_PROCESS_GROUP_MSG:
-                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "killProcessGroup");
-                    Process.killProcessGroup(msg.arg1 /* uid */, msg.arg2 /* pid */);
+                    final int uid = msg.arg1;
+                    final int pid = msg.arg2;
+                    final String reason = (String) msg.obj;
+                    if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+                        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                                "killProcessGroup/" + uid + "/" + pid + "/" + reason);
+                    }
+                    Process.killProcessGroup(uid, pid);
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                     break;
                 case LMKD_RECONNECT_MSG:
@@ -1723,11 +1730,12 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         return sLmkdConnection.exchange(buf, repl);
     }
 
-    static void killProcessGroup(int uid, int pid) {
+    static void killProcessGroup(int uid, int pid, String reason) {
         /* static; one-time init here */
         if (sKillHandler != null) {
             sKillHandler.sendMessage(
-                    sKillHandler.obtainMessage(KillHandler.KILL_PROCESS_GROUP_MSG, uid, pid));
+                    sKillHandler.obtainMessage(KillHandler.KILL_PROCESS_GROUP_MSG, uid, pid,
+                            reason));
         } else {
             Slog.w(TAG, "Asked to kill process group before system bringup!");
             Process.killProcessGroup(uid, pid);
@@ -2737,7 +2745,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
             // clean it up now.
             if (DEBUG_PROCESSES) Slog.v(TAG_PROCESSES, "App died: " + app);
             checkSlow(startTime, "startProcess: bad proc running, killing");
-            ProcessList.killProcessGroup(app.uid, app.getPid());
+            ProcessList.killProcessGroup(app.uid, app.getPid(), "old process attached");
             checkSlow(startTime, "startProcess: done killing old proc");
 
             if (!app.isKilled()) {
@@ -2969,7 +2977,8 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                         Slog.wtfStack(TAG, "Removing process that hasn't been killed: " + app);
                         if (app.getPid() > 0) {
                             killProcessQuiet(app.getPid());
-                            ProcessList.killProcessGroup(app.uid, app.getPid());
+                            ProcessList.killProcessGroup(app.uid, app.getPid(),
+                                    subreasonToString(ApplicationExitInfo.SUBREASON_REMOVE_LRU));
                             noteAppKill(app, ApplicationExitInfo.REASON_OTHER,
                                     ApplicationExitInfo.SUBREASON_REMOVE_LRU, "hasn't been killed");
                         } else {
@@ -3755,7 +3764,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     private void updateClientActivitiesOrderingLSP(final ProcessRecord topApp, final int topI,
             final int bottomI, int endIndex) {
         final ProcessServiceRecord topPsr = topApp.mServices;
-        if (topApp.hasActivitiesOrRecentTasks() || topPsr.isTreatedLikeActivity()
+        if (topApp.hasActivitiesOrRecentTasks() || topPsr.isTreatLikeActivity()
                 || !topPsr.hasClientActivities()) {
             // If this is not a special process that has client activities, then there is
             // nothing to do.
@@ -3860,7 +3869,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                         if (DEBUG_LRU) Slog.d(TAG_LRU,
                                 "Looking at next app at " + i + ": " + subProc);
                         if (subProc.hasActivitiesOrRecentTasks()
-                                || subPsr.isTreatedLikeActivity()) {
+                                || subPsr.isTreatLikeActivity()) {
                             if (DEBUG_LRU) Slog.d(TAG_LRU,
                                     "This is hosting an activity!");
                             if (hasActivity) {
@@ -3945,7 +3954,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
             ProcessRecord client) {
         final ProcessServiceRecord psr = app.mServices;
         final boolean hasActivity = app.hasActivitiesOrRecentTasks() || psr.hasClientActivities()
-                || psr.isTreatedLikeActivity();
+                || psr.isTreatLikeActivity();
         final boolean hasService = false; // not impl yet. app.services.size() > 0;
         if (!activityChange && hasActivity) {
             // The process has activities, so we are only allowing activity-based adjustments
@@ -4065,7 +4074,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         if (hasActivity) {
             final int N = mLruProcesses.size();
             nextIndex = mLruProcessServiceStart;
-            if (!app.hasActivitiesOrRecentTasks() && !psr.isTreatedLikeActivity()
+            if (!app.hasActivitiesOrRecentTasks() && !psr.isTreatLikeActivity()
                     && mLruProcessActivityStart < (N - 1)) {
                 // Process doesn't have activities, but has clients with
                 // activities...  move it up, but below the app that is binding to it.
@@ -4164,7 +4173,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                 }
             }
         }
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecord ppr = app.getProviders();
         for (int j = ppr.numberOfProviderConnections() - 1; j >= 0; j--) {
             ContentProviderRecord cpr = ppr.getProviderConnectionAt(j).provider;
             if (cpr.proc != null && cpr.proc.getLruSeq() != mLruSeq
@@ -4428,7 +4437,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         pw.print(proc.toShortString());
         final ProcessServiceRecord psr = proc.mServices;
         if (proc.hasActivitiesOrRecentTasks() || psr.hasClientActivities()
-                || psr.isTreatedLikeActivity()) {
+                || psr.isTreatLikeActivity()) {
             pw.print(" act:");
             boolean printed = false;
             if (proc.hasActivities()) {
@@ -4449,7 +4458,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                 pw.print("client");
                 printed = true;
             }
-            if (psr.isTreatedLikeActivity()) {
+            if (psr.isTreatLikeActivity()) {
                 if (printed) {
                     pw.print("|");
                 }
@@ -4786,7 +4795,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                         r.mProfile.getLastCachedPss() * 1024, new StringBuilder()));
                 proto.write(ProcessOomProto.Detail.CACHED, state.isCached());
                 proto.write(ProcessOomProto.Detail.EMPTY, state.isEmpty());
-                proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.hasAboveClient());
+                proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.isHasAboveClient());
 
                 if (state.getSetProcState() >= ActivityManager.PROCESS_STATE_SERVICE) {
                     long lastCpuTime = r.mProfile.mLastCpuTime.get();
@@ -4934,7 +4943,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                 pw.print("    ");
                 pw.print("cached="); pw.print(state.isCached());
                 pw.print(" empty="); pw.print(state.isEmpty());
-                pw.print(" hasAboveClient="); pw.println(psr.hasAboveClient());
+                pw.print(" hasAboveClient="); pw.println(psr.isHasAboveClient());
 
                 if (state.getSetProcState() >= ActivityManager.PROCESS_STATE_SERVICE) {
                     long lastCpuTime = r.mProfile.mLastCpuTime.get();
@@ -5703,7 +5712,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         if (DEBUG_PROCESSES) {
             Slog.i(TAG, "note: " + app + " is being killed, reason: "
                     + ApplicationExitInfo.reasonCodeToString(reason) + ", sub-reason: "
-                    + ApplicationExitInfo.subreasonToString(subReason) + ", message: " + msg);
+                    + subreasonToString(subReason) + ", message: " + msg);
         }
         if (app.getPid() > 0 && !app.isolated && app.getDeathRecipient() != null) {
             // We are killing it, put it into the dying process list.
