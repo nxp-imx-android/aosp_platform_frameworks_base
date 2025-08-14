@@ -128,6 +128,7 @@ import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
 import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.IME_FOCUS_CONTROLLER;
 import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INSETS_CONTROLLER;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
+import static android.window.DesktopExperienceFlags.DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW;
 
 import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
@@ -7426,9 +7427,16 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
 
-            // find the best view to give focus to in this brave new non-touch-mode
-            // world
-            return mView.restoreDefaultFocus();
+            if (DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW.isTrue()) {
+                // If the window has focus, then we should restore the default view focus.
+                if (mAttachInfo.mHasWindowFocus) {
+                    return mView.restoreDefaultFocus();
+                }
+            } else {
+                // find the best view to give focus to in this brave new non-touch-mode
+                // world
+                return mView.restoreDefaultFocus();
+            }
         }
         return false;
     }
@@ -7536,6 +7544,11 @@ public final class ViewRootImpl implements ViewParent,
         protected void onWindowFocusChanged(boolean hasWindowFocus) {
             if (mNext != null) {
                 mNext.onWindowFocusChanged(hasWindowFocus);
+            }
+            if (DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW.isTrue()) {
+                if (hasWindowFocus && !isInTouchMode() && mView != null && !mView.hasFocus()) {
+                    mView.restoreDefaultFocus();
+                }
             }
         }
 
