@@ -104,3 +104,11 @@ flag {
   description: "Removes all enforced policies to the user when supervision is disabled."
   bug: "414575617"
 }
+
+flag {
+    name: "enable_app_store_filters_screen"
+    is_exported: false
+    namespace: "supervision"
+    description: "Flag that enables app store filters screen with Supervision settings entry point"
+    bug: "438298503"
+}
