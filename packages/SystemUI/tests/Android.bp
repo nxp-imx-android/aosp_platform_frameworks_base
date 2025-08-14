@@ -19,8 +19,9 @@ package {
     default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
 }
 
-android_test {
-    name: "SystemUITests",
+// Common configuration for all SystemUI test modules.
+java_defaults {
+    name: "SystemUITests_defaults",
     use_resource_processor: true,
     defaults: ["systemui-non-platform-apis-defaults"],
     dxflags: ["--multi-dex"],
@@ -49,6 +50,21 @@ android_test {
 
     additional_manifests: ["AndroidManifest.xml"],
     manifest: "AndroidManifest-base.xml",
+}
+
+android_test {
+    name: "SystemUITests",
+    defaults: ["SystemUITests_defaults"],
+}
+
+// SystemUI tests that run on desktop with a desktop overlay.
+android_test {
+    name: "SystemUITests_desktop",
+    defaults: ["SystemUITests_defaults"],
+    test_config: "AndroidTest-desktop.xml",
+    data: [
+        "//vendor/google/desktop/overlay_packages/tests/DesktopSysUITestOverlay:DesktopSysUITestOverlay",
+    ],
 }
 
 test_module_config {
