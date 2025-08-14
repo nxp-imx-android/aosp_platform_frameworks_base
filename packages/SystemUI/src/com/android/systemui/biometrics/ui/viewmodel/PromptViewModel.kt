@@ -63,7 +63,9 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.DisplayRotation
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.AcquiredFingerprintAuthenticationStatus
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.util.kotlin.combine
@@ -101,6 +103,7 @@ constructor(
     promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
     shadeInteractor: ShadeInteractor,
     biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
 ) {
     /** Viewmodel for the fallback view */
     val promptFallbackViewModel = promptFallbackViewModelFactory.create()
@@ -124,8 +127,27 @@ constructor(
                 .distinctUntilChanged()
         }
 
-    /** Whether the shade is being interacted with */
-    val isShadeInteracted = shadeInteractor.isUserInteracting
+    /**
+     * A dismissal signal for the prompt.
+     *
+     * This flow will emit `true` if the prompt should be dismissed due to outside interactions like
+     * the shade being pulled down or the keyguard becoming visible.
+     */
+    val shouldDismiss: Flow<Boolean> =
+        combine(
+                shadeInteractor.isUserInteracting,
+                keyguardTransitionInteractor.finishedKeyguardState,
+            ) { isShadeInteracted, keyguardState ->
+                // Dismiss if the keyguard is showing and not occluded. This is to prevent
+                // the biometric prompt from showing on top of the keyguard, where it's not
+                // expected.
+                val isKeyguardShowingAndNotOccluded =
+                    keyguardState != KeyguardState.GONE &&
+                        keyguardState != KeyguardState.UNDEFINED &&
+                        keyguardState != KeyguardState.OCCLUDED
+                isShadeInteracted || isKeyguardShowingAndNotOccluded
+            }
+            .distinctUntilChanged()
 
     val udfpsAccessibilityOverlayViewModel =
         BiometricPromptUdfpsAccessibilityOverlayViewModel(

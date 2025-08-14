@@ -147,8 +147,8 @@ object CredentialViewBinder {
                 }
 
                 launch {
-                    viewModel.isShadeInteracted.collect { isShadeInteracted ->
-                        if (isShadeInteracted) {
+                    viewModel.shouldDismiss.collect { shouldDismiss ->
+                        if (shouldDismiss) {
                             host.onCredentialAborted()
                         }
                     }
