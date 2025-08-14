@@ -22,6 +22,7 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_TIMEOUT
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE
@@ -94,7 +95,13 @@ constructor(
                     keyguardUpdateMonitor.strongAuthTracker.getStrongAuthForUser(userId)
 
                 val newEncryptedOrLockdown = keyguardUpdateMonitor.isEncryptedOrLockdown(userId)
-                if (newEncryptedOrLockdown && !encryptedOrLockdown) {
+                val isSecureLockDevicePrimaryAuth =
+                    containsFlag(strongAuthFlags, PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE)
+
+                if (
+                    (newEncryptedOrLockdown || isSecureLockDevicePrimaryAuth) &&
+                        !encryptedOrLockdown
+                ) {
                     log(PrimaryAuthRequiredEvent.PRIMARY_AUTH_REQUIRED_ENCRYPTED_OR_LOCKDOWN)
                 }
                 encryptedOrLockdown = newEncryptedOrLockdown
