@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.systemui.scene.ui.composable.transitions
 
+import androidx.compose.animation.core.tween
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.lockscreenToQuickSettingsTransition(durationScale: Double = 1.0) {
-    toQuickSettingsTransition(durationScale = durationScale)
+fun TransitionBuilder.lockscreenToOverlayTransition(durationScale: Double = 1.0) {
+    spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
+    fractionRange(end = 0.05f) { fade(LockscreenElementKeys.StatusBar) }
     fractionRange(end = 0.2f) { fade(LockscreenElementKeys.Root) }
 }
+
+private val DefaultDuration = 500.milliseconds
