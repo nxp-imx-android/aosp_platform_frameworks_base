@@ -18,6 +18,7 @@ package com.android.systemui.qs.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -235,6 +236,7 @@ private fun ContentScope.QuickSettingsScene(
                         notificationStackScrollView,
                         shadeSession,
                         jankMonitor,
+                        this@QuickSettingsScene.verticalOverscrollEffect,
                     )
                 }
             }
@@ -263,6 +265,7 @@ private fun ContentScope.QuickSettingsContent(
     notificationStackScrollView: NotificationScrollView,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
+    verticalOverscrollEffect: OverscrollEffect,
 ) {
     val cutoutLocation = LocalDisplayCutout.current().location
 
