@@ -37,9 +37,9 @@ import com.android.systemui.keyguard.TAG
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardSurfaceBehindModel
 import com.android.wm.shell.shared.animation.Interpolators
-import kotlin.math.max
 import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlin.math.max
 
 /** Damping ratio to use for animations resulting from touch gesture fling animation. */
 private const val TOUCH_FLING_DAMPING_RATIO = 0.992f
@@ -206,7 +206,7 @@ constructor(
     }
 
     private fun applyToSurfaceBehind() {
-        surfaceBehind?.leash?.let { sc ->
+        surfaceBehind?.let { target ->
             executor.execute {
                 if (surfaceBehind == null) {
                     Log.d(
@@ -218,9 +218,13 @@ constructor(
                     return@execute
                 }
 
+                val translationX = target.screenSpaceBounds.left.toFloat()
                 val translationY =
-                    if (translateYSpring.isRunning) animatedTranslationY.value
-                    else viewParams.translationY
+                    if (translateYSpring.isRunning) {
+                        target.screenSpaceBounds.top.toFloat() + animatedTranslationY.value
+                    } else {
+                        target.screenSpaceBounds.top.toFloat() + viewParams.translationY
+                    }
 
                 val alpha =
                     if (alphaAnimator.isRunning) {
@@ -231,13 +235,13 @@ constructor(
 
                 if (
                     keyguardViewController.viewRootImpl.view?.visibility != View.VISIBLE &&
-                        sc.isValid
+                        target.leash.isValid
                 ) {
                     with(SurfaceControl.Transaction()) {
                         setMatrix(
-                            sc,
+                            target.leash,
                             matrix.apply {
-                                setTranslate(/* dx= */ 0f, translationY)
+                                setTranslate(translationX, translationY)
                                 var percentTranslated =
                                     1f - (animatedTranslationY.value / animatingFromTranslationY)
                                 if (!percentTranslated.isFinite()) percentTranslated = 1f
@@ -250,15 +254,15 @@ constructor(
                             },
                             tmpFloat,
                         )
-                        setAlpha(sc, alpha)
-                        setCornerRadius(sc, roundedCornerRadius)
+                        setAlpha(target.leash, alpha)
+                        setCornerRadius(target.leash, roundedCornerRadius)
                         apply()
                     }
                 } else {
                     var percentTranslated = 1f - (translationY / animatingFromTranslationY)
                     if (!percentTranslated.isFinite()) percentTranslated = 1f
                     surfaceTransactionApplier.scheduleApply(
-                        SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(sc)
+                        SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(target.leash)
                             .withMatrix(
                                 matrix.apply {
                                     setScale(
@@ -267,7 +271,7 @@ constructor(
                                         surfaceBehind!!.screenSpaceBounds.width() / 2f,
                                         surfaceBehind!!.screenSpaceBounds.height() * .66f,
                                     )
-                                    postTranslate(/* dx= */ 0f, translationY)
+                                    postTranslate(translationX, translationY)
                                 }
                             )
                             .withAlpha(alpha)
