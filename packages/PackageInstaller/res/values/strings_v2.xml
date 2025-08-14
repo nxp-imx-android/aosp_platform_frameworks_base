@@ -49,14 +49,14 @@
     <string name="title_uninstall_updates_system_app">Uninstall app updates?</string>
     <string name="title_uninstall_updates_system_app_all_users">Uninstall app updates for all users?</string>
     <string name="title_uninstall_all_users">Uninstall this app for all users?</string>
-    <string name="title_uninstall_other_user">Uninstall this app for user \'<xliff:g id="user_name">%1$s</xliff:g>\'?</string>
+    <string name="title_uninstall_other_user">Uninstall this app for user \"<xliff:g id="user_name">%1$s</xliff:g>\"?</string>
     <string name="title_uninstall_app_not_found">App not found</string>
     <string name="title_uninstall_user_not_allowed">Can\'t uninstall this app</string>
     <string name="title_uninstall_failed">App not uninstalled</string>
 
     <string name="title_archive">Archive this app?</string>
     <string name="title_archive_all_users">Archive this app for all users?</string>
-    <string name="title_archive_other_user">Archive this app for user \'<xliff:g id="user_name">%1$s</xliff:g>\'?</string>
+    <string name="title_archive_other_user">Archive this app for user \"<xliff:g id="user_name">%1$s</xliff:g>\"?</string>
     <string name="title_restore">Restore this app?</string>
     <string name="title_restore_error_user_action_needed">Action required</string>
     <string name="title_restore_error_less_storage">Not enough storage</string>
