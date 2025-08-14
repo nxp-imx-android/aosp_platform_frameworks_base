@@ -73,6 +73,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
         "com.android.wm.shell.flicker.bubbles.ExpandedBubbleAppMoveTest",
+        "com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTest",
     ],
 }
 
@@ -200,4 +201,11 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTest"],
 }

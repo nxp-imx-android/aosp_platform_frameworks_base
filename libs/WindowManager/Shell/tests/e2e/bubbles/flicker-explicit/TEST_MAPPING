@@ -62,6 +62,9 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTest"
     }
   ]
 }
