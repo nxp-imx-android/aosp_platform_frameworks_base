@@ -32,7 +32,6 @@ import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleBarItem
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -77,8 +76,9 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
     BubbleAlwaysVisibleTestCases,
     BubbleAppBecomesNotExpandedTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private val previousApp = MessagingAppHelper(instrumentation)
+
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 launchBubbleViaBubbleMenu(previousApp, tapl, wmHelper)
@@ -100,14 +100,13 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    override val previousApp: IComponentNameMatcher
-        get() = DismissExpandedBubbleViaBubbleBarTest.previousApp
+    override val previousApp: IComponentNameMatcher = Companion.previousApp
 
     @Before
     override fun setUp() {

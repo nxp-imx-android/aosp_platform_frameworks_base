@@ -26,7 +26,6 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Assume.assumeTrue
@@ -34,9 +33,7 @@ import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import org.junit.runners.Parameterized
 
 /**
  * Test dragging an expanded bubble view to the other side of the screen.
@@ -63,12 +60,10 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-@RunWith(Parameterized::class)
-class ExpandedBubbleAppMoveTest(navBar: NavBar) :
-    BubbleFlickerTestBase(),
+class ExpandedBubbleAppMoveTest : BubbleFlickerTestBase(),
     BubbleAlwaysVisibleTestCases {
 
-    companion object : FlickerPropertyInitializer() {
+    companion object {
         private var bubblePositionChanged = false
 
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -91,15 +86,12 @@ class ExpandedBubbleAppMoveTest(navBar: NavBar) :
             }
         )
 
-        @Parameterized.Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL)
+        private val navBar = NavBar.MODE_GESTURAL
     }
 
     @get:Rule
     val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
     )
 
     override val traceDataReader

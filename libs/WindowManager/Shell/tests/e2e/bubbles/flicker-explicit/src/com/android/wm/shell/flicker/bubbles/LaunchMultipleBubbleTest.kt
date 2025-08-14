@@ -30,7 +30,6 @@ import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissMultipleBubbles
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchMultipleBubbleAppsViaBubbleMenuAndCollapse
-import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.FixMethodOrder
@@ -68,8 +67,7 @@ import org.junit.runners.Parameterized
 class LaunchMultipleBubbleTest(navBar: NavBar) : BubbleFlickerTestBase(),
     MultipleBubbleExpandBubbleAppTestCases {
 
-    companion object : FlickerPropertyInitializer() {
-
+    companion object {
         private lateinit var bubbleIconsBeforeTransition: List<Bubble>
 
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -102,7 +100,7 @@ class LaunchMultipleBubbleTest(navBar: NavBar) : BubbleFlickerTestBase(),
     @get:Rule
     val setUpRule: TestRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar)
+        params = arrayOf(navBar),
     )
 
     override val traceDataReader
