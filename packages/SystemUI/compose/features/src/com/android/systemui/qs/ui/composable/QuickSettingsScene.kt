@@ -153,6 +153,8 @@ constructor(
             }
         }
 
+        LaunchedEffectWithLifecycle(key1 = Unit) { viewModel.detectShadeModeChanges() }
+
         QuickSettingsScene(
             notificationStackScrollView = notificationStackScrollView.get(),
             viewModel = viewModel,

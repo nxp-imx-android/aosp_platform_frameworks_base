@@ -59,6 +59,7 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.brightness.ui.compose.ContainerColors
@@ -147,6 +148,8 @@ constructor(
 
         // Set the bounds to null when the QuickSettings overlay disappears.
         DisposableEffect(Unit) { onDispose { contentViewModel.onPanelShapeInWindowChanged(null) } }
+
+        LaunchedEffectWithLifecycle(key1 = Unit) { contentViewModel.detectShadeModeChanges() }
 
         Box(modifier = modifier.graphicsLayer { alpha = contentAlphaFromBrightnessMirror }) {
             OverlayShade(

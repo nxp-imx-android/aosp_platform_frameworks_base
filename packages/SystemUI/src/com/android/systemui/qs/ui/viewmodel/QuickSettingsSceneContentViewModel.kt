@@ -40,6 +40,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
 
 /**
  * Models UI state needed for rendering the content of the quick settings scene.
@@ -94,28 +95,34 @@ constructor(
 
             launch { qsContainerViewModel.activate() }
 
-            launch(context = mainDispatcher) {
-                shadeModeInteractor.shadeMode.collect { shadeMode ->
-                    when (shadeMode) {
-                        is ShadeMode.Split ->
-                            sceneInteractor.snapToScene(
-                                Scenes.Shade,
-                                loggingReason = "Unfold while on Quick Settings",
-                            )
-                        is ShadeMode.Dual -> {
-                            val loggingReason = "Unfold or rotate while on Quick Settings"
-                            sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
-                            sceneInteractor.instantlyShowOverlay(
-                                Overlays.QuickSettingsShade,
-                                loggingReason,
-                            )
-                        }
-                        else -> Unit
+            awaitCancellation()
+        }
+    }
+
+    /**
+     * Monitors changes to the shade mode that would make this scene stale, and snaps to the
+     * appropriate scene/overlay instead.
+     *
+     * This function must only run while the scene is shown. Therefore, it shouldn't be part of
+     * [onActivated()] while this scene uses `alwaysCompose`.
+     */
+    suspend fun detectShadeModeChanges(): Nothing {
+        shadeModeInteractor.shadeMode.collect { shadeMode ->
+            withContext(mainDispatcher) {
+                val loggingReason = "Unfold while on Quick Settings"
+                when (shadeMode) {
+                    is ShadeMode.Split -> sceneInteractor.snapToScene(Scenes.Shade, loggingReason)
+                    is ShadeMode.Dual -> {
+                        sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
+                        sceneInteractor.instantlyShowOverlay(
+                            Overlays.QuickSettingsShade,
+                            loggingReason,
+                        )
                     }
+
+                    else -> Unit
                 }
             }
-
-            awaitCancellation()
         }
     }
 
