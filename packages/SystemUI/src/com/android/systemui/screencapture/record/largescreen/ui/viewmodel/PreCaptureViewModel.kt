@@ -90,12 +90,19 @@ constructor(
             )
 
     val captureRegionButtonViewModels: List<RadioButtonGroupItemViewModel> by
-        combine(captureRegionSource, iconProvider.icons) { selectedRegion, icons ->
-                generateCaptureRegionButtonViewModels(selectedRegion, icons)
+        combine(captureRegionSource, captureTypeSource, iconProvider.icons) {
+                selectedRegion,
+                selectedCaptureType,
+                icons ->
+                generateCaptureRegionButtonViewModels(selectedRegion, selectedCaptureType, icons)
             }
             .hydratedStateOf(
                 initialValue =
-                    generateCaptureRegionButtonViewModels(captureRegionSource.value, null)
+                    generateCaptureRegionButtonViewModels(
+                        captureRegionSource.value,
+                        captureTypeSource.value,
+                        null,
+                    )
             )
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
@@ -179,6 +186,7 @@ constructor(
 
     private fun generateCaptureRegionButtonViewModels(
         selectedRegion: ScreenCaptureRegion,
+        selectedCaptureType: ScreenCaptureType,
         icons: ScreenCaptureIcons?,
     ): List<RadioButtonGroupItemViewModel> {
         return buildList {
@@ -188,6 +196,17 @@ constructor(
                         icon = icons?.appWindow,
                         isSelected = (selectedRegion == ScreenCaptureRegion.APP_WINDOW),
                         onClick = { updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
+                        contentDescription =
+                            applicationContext.getString(
+                                when (selectedCaptureType) {
+                                    ScreenCaptureType.SCREENSHOT ->
+                                        R.string
+                                            .screen_capture_toolbar_app_window_button_screenshot_a11y
+                                    ScreenCaptureType.SCREEN_RECORD ->
+                                        R.string
+                                            .screen_capture_toolbar_app_window_button_record_a11y
+                                }
+                            ),
                     )
                 )
             }
@@ -197,6 +216,15 @@ constructor(
                     icon = icons?.region,
                     isSelected = (selectedRegion == ScreenCaptureRegion.PARTIAL),
                     onClick = { updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
+                    contentDescription =
+                        applicationContext.getString(
+                            when (selectedCaptureType) {
+                                ScreenCaptureType.SCREENSHOT ->
+                                    R.string.screen_capture_toolbar_region_button_screenshot_a11y
+                                ScreenCaptureType.SCREEN_RECORD ->
+                                    R.string.screen_capture_toolbar_region_button_record_a11y
+                            }
+                        ),
                 )
             )
 
@@ -205,6 +233,16 @@ constructor(
                     icon = icons?.fullscreen,
                     isSelected = (selectedRegion == ScreenCaptureRegion.FULLSCREEN),
                     onClick = { updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
+                    contentDescription =
+                        applicationContext.getString(
+                            when (selectedCaptureType) {
+                                ScreenCaptureType.SCREENSHOT ->
+                                    R.string
+                                        .screen_capture_toolbar_fullscreen_button_screenshot_a11y
+                                ScreenCaptureType.SCREEN_RECORD ->
+                                    R.string.screen_capture_toolbar_fullscreen_button_record_a11y
+                            }
+                        ),
                 )
             )
         }

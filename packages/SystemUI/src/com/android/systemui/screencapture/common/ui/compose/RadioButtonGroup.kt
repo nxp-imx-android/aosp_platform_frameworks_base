@@ -31,6 +31,8 @@ import androidx.compose.material3.ToggleButtonColors
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.android.systemui.common.shared.model.Icon as IconModel
@@ -47,6 +49,7 @@ data class RadioButtonGroupItem(
     val onClick: () -> Unit,
     val icon: IconModel? = null,
     val label: String? = null,
+    val contentDescription: String? = null,
 )
 
 /** A group of N icon buttons where any single icon button is selected at a time. */
@@ -73,6 +76,10 @@ fun RadioButtonGroup(
                     },
                 checked = item.isSelected,
                 onCheckedChange = { item.onClick() },
+                modifier =
+                    Modifier.semantics {
+                        this.contentDescription = item.contentDescription ?: item.label ?: ""
+                    },
             ) {
                 if (item.icon != null && item.label != null) {
                     Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))

@@ -375,6 +375,20 @@
     <string name="screen_capture_toolbar_record_button">Record</string>
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
     <string name="screen_share_toolbar_share_button">Share</string>
+    <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
+    <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_app_window_button_record_a11y">Record window</string>
+    <!-- Content description for the region button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y">Take screenshot of selected area</string>
+    <!-- Content description for the region button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_region_button_record_a11y">Record selected area</string>
+    <!-- Content description for the fullscreen button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y">Take screenshot of entire screen</string>
+    <!-- Content description for the fullscreen button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y">Record entire screen</string>
+    <!-- Content description for the settings button in the toolbar. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_settings_button_a11y">Screen capture settings</string>
 
     <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
