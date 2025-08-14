@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,12 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.AppGlobals;
-import android.app.ondeviceintelligence.DmaBufEntry;
 import android.app.ondeviceintelligence.DownloadCallback;
 import android.app.ondeviceintelligence.Feature;
 import android.app.ondeviceintelligence.FeatureDetails;
-import android.app.ondeviceintelligence.IDmaBufInfoCallback;
-import android.app.ondeviceintelligence.IDmaBufTotalCallback;
 import android.app.ondeviceintelligence.IDownloadCallback;
 import android.app.ondeviceintelligence.IFeatureCallback;
 import android.app.ondeviceintelligence.IFeatureDetailsCallback;
-import android.app.ondeviceintelligence.ILifecycleListener;
 import android.app.ondeviceintelligence.IListFeaturesCallback;
 import android.app.ondeviceintelligence.IOnDeviceIntelligenceManager;
 import android.app.ondeviceintelligence.IProcessingSignal;
@@ -97,6 +93,7 @@ import com.android.server.SystemService;
 import com.android.server.ondeviceintelligence.callbacks.ListenableDownloadCallback;
 import com.android.server.ondeviceintelligence.executors.InferenceServiceExecutor;
 import com.android.server.ondeviceintelligence.executors.IntelligenceServiceExecutor;
+
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.List;
@@ -164,8 +161,6 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private String mBroadcastPackageName = SYSTEM_PACKAGE;
     @GuardedBy("mLock")
     private String mTemporaryConfigNamespace;
-    @GuardedBy("mLock")
-    private boolean mLibraryLoaded = false;
 
     private final DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener =
             this::sendUpdatedConfig;
@@ -213,22 +208,6 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         mInferenceInfoStore = new InferenceInfoStore(MAX_AGE_MS);
     }
 
-    private boolean loadLibrary() {
-        try {
-            synchronized (mLock) {
-                if (mLibraryLoaded) {
-                    return true;
-                }
-                System.loadLibrary("ondeviceintelligence_jni");
-                mLibraryLoaded = true;
-            }
-            return true;
-        } catch (Throwable t) {
-            Log.e("DmaBuf", "failed to load library", t);
-        }
-        return false;
-    }
-
     @Override
     public void onStart() {
         publishBinderService(
@@ -261,78 +240,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 KEY_SERVICE_ENABLED, DEFAULT_SERVICE_ENABLED);
     }
 
-    native DmaBufEntry[] nativeGetDmaBufInfo();
-
-    native DmaBufEntry[] nativeGetDmaBufInfoForPid(int pid);
-
-    native long nativeGetTotalDmaBufExportedKb();
-
     private IBinder getOnDeviceIntelligenceManagerService() {
         return new IOnDeviceIntelligenceManager.Stub() {
-
-            @Override
-            public void getDmaBufInfo(@NonNull IDmaBufInfoCallback callback) {
-                mContext.enforceCallingPermission(
-                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
-                callbackExecutor.execute(() -> {
-                    try {
-                        if (!loadLibrary()) {
-                            callback.onFailure(
-                                    OnDeviceIntelligenceException
-                                            .ON_DEVICE_INTELLIGENCE_SERVICE_UNAVAILABLE,
-                                    "JNI Library for DMABuf stats failed to load",
-                                    PersistableBundle.EMPTY);
-                            return;
-                        }
-                        callback.onSuccess(nativeGetDmaBufInfo());
-                    } catch (RemoteException re) {
-                        Log.e(TAG, "Failed to call callback", re);
-                    }
-                });
-            }
-
-            @Override
-            public void getDmaBufInfoForPid(int pid, @NonNull IDmaBufInfoCallback callback) {
-                mContext.enforceCallingPermission(
-                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
-                callbackExecutor.execute(() -> {
-                    try {
-                        if (!loadLibrary()) {
-                            callback.onFailure(
-                                    OnDeviceIntelligenceException
-                                            .ON_DEVICE_INTELLIGENCE_SERVICE_UNAVAILABLE,
-                                    "JNI Library for DMABuf stats failed to load",
-                                    PersistableBundle.EMPTY);
-                            return;
-                        }
-                        callback.onSuccess(nativeGetDmaBufInfoForPid(pid));
-                    } catch (RemoteException re) {
-                        Log.e(TAG, "Failed to call callback", re);
-                    }
-                });
-            }
-
-            @Override
-            public void getTotalDmaBufExportedKb(@NonNull IDmaBufTotalCallback callback) {
-                mContext.enforceCallingPermission(
-                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
-                callbackExecutor.execute(() -> {
-                    try {
-                        if (!loadLibrary()) {
-                            callback.onFailure(
-                                    OnDeviceIntelligenceException
-                                            .ON_DEVICE_INTELLIGENCE_SERVICE_UNAVAILABLE,
-                                    "JNI Library for DMABuf stats failed to load",
-                                    PersistableBundle.EMPTY);
-                            return;
-                        }
-                        callback.onSuccess(nativeGetTotalDmaBufExportedKb());
-                    } catch (RemoteException re) {
-                        Log.e(TAG, "Failed to call callback", re);
-                    }
-                });
-            }
-
             @Override
             public String getRemoteServicePackageName() {
                 return OnDeviceIntelligenceManagerService.this.getRemoteConfiguredPackageName();
