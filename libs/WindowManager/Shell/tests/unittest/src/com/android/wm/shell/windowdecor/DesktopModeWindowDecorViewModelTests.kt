@@ -320,6 +320,36 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    fun testCloseTask_notInSplitScreen_closesTask() {
+        desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
+            mockFreeformTaskTransitionStarter
+        )
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
+        val taskInfo = decor.taskInfo
+        whenever(mockSplitScreenController.isTaskInSplitScreen(eq(taskInfo.taskId)))
+            .thenReturn(false)
+        whenever(mockDesktopTasksController.getNextFocusedTask(eq(taskInfo))).thenReturn(-1)
+        whenever(mockDesktopTasksController.onDesktopWindowClose(any(), any(), any())).thenReturn {
+            binder: IBinder ->
+        }
+
+        desktopModeWindowDecorViewModel.closeTask(decor.taskInfo)
+
+        verify(mockFreeformTaskTransitionStarter).startRemoveTransition(any())
+    }
+
+    @Test
+    fun testCloseTask_noDecoration_doesNothing() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
+        // No decoration is created for this task.
+
+        desktopModeWindowDecorViewModel.closeTask(task)
+
+        verify(mockSplitScreenController, never()).isTaskInSplitScreen(any())
+        verify(mockFreeformTaskTransitionStarter, never()).startRemoveTransition(any())
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MINIMIZE_BUTTON)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testMinimizeButtonInFreeform_minimizeWindow() {

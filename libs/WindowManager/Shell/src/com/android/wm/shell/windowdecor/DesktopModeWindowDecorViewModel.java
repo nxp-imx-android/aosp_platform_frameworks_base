@@ -1133,6 +1133,58 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mCaptionTouchStatusListener = l;
     }
 
+    /**
+     * Closes a task.
+     * This method closes a task as if the close button on the window decor is clicked.
+     * It does nothing if the task does not have a window decor, thus cannot be closed through the
+     * UI.
+     * Must call the method on the shell main executor.
+     * @param task Task to be closed.
+     */
+    public void closeTask(RunningTaskInfo task) {
+        final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(task.taskId);
+        if (decoration == null) {
+            ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                    "%s: handled close key gesture but decoration is null, ignoring", TAG);
+            return;
+        }
+        if (mTaskOperations == null) {
+            ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                    "%s: handled close key gesture but mTaskOperations is null, ignoring", TAG);
+            return;
+        }
+        ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                "%s: close task %d vis key gesture", TAG, task.taskId);
+        onCloseTask(task.taskId, decoration, task.token);
+    }
+
+    private void onCloseTask(int taskId, @NotNull WindowDecorationWrapper decoration,
+            @NotNull WindowContainerToken token) {
+        if (isTaskInSplitScreen(taskId)) {
+            mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(taskId).taskId,
+                    SplitScreenController.EXIT_REASON_DESKTOP_MODE);
+        } else {
+            if (DesktopExperienceFlags
+                    .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
+                final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(
+                        decoration.getTaskInfo());
+                final WindowDecorationWrapper nextFocusedWindow =
+                        mWindowDecorationFinder.apply(nextFocusedTaskId);
+                if (nextFocusedWindow != null) {
+                    nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+                }
+            }
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            final Function1<IBinder, Unit> runOnTransitionStart =
+                    mDesktopTasksController.onDesktopWindowClose(wct,
+                            decoration.getTaskInfo().displayId, decoration.getTaskInfo());
+            final IBinder transition = mTaskOperations.closeTask(token, wct);
+            if (transition != null) {
+                runOnTransitionStart.invoke(transition);
+            }
+        }
+    }
+
     /** Listener for caption touch events. */
     public interface CaptionTouchStatusListener {
         /** Called when the caption is pressed. */
@@ -1171,7 +1223,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private final WindowContainerToken mTaskToken;
         private final @NonNull DragPositioningCallback mDragPositioningCallback;
         private final @NonNull Function<Integer, WindowDecorationWrapper> mWindowDecorationFinder;
-        private final @Nullable SplitScreenController mSplitScreenController;
         private final @NonNull DesktopTasksController mDesktopTasksController;
         private final @NonNull TaskOperations mTaskOperations;
         private final @NonNull DesktopModeUiEventLogger mDesktopModeUiEventLogger;
@@ -1215,7 +1266,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 @NonNull RunningTaskInfo taskInfo,
                 @NonNull DragPositioningCallback dragPositioningCallback,
                 @NonNull Function<Integer, WindowDecorationWrapper> windowDecorationFinder,
-                @Nullable SplitScreenController splitScreenController,
                 @NonNull DesktopTasksController desktopTasksController,
                 @NonNull TaskOperations taskOperations,
                 @NonNull DesktopModeUiEventLogger desktopModeUiEventLogger,
@@ -1233,7 +1283,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             mContext = context;
             mDragPositioningCallback = dragPositioningCallback;
             mWindowDecorationFinder = windowDecorationFinder;
-            mSplitScreenController = splitScreenController;
             mDesktopTasksController = desktopTasksController;
             mTaskOperations = taskOperations;
             mDesktopModeUiEventLogger = desktopModeUiEventLogger;
@@ -1291,29 +1340,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             }
             final int id = v.getId();
             if (id == R.id.close_window) {
-                if (isTaskInSplitScreen(mTaskId)) {
-                    mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(mTaskId).taskId,
-                            SplitScreenController.EXIT_REASON_DESKTOP_MODE);
-                } else {
-                    if (DesktopExperienceFlags
-                            .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
-                        final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(
-                                decoration.getTaskInfo());
-                        WindowDecorationWrapper nextFocusedWindow =
-                                mWindowDecorationFinder.apply(nextFocusedTaskId);
-                        if (nextFocusedWindow != null) {
-                            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-                        }
-                    }
-                    WindowContainerTransaction wct = new WindowContainerTransaction();
-                    final Function1<IBinder, Unit> runOnTransitionStart =
-                            mDesktopTasksController.onDesktopWindowClose(wct,
-                                    decoration.getTaskInfo().displayId, decoration.getTaskInfo());
-                    final IBinder transition = mTaskOperations.closeTask(mTaskToken, wct);
-                    if (transition != null) {
-                        runOnTransitionStart.invoke(transition);
-                    }
-                }
+                mWindowDecorationActions.onClose(mTaskId, decoration, mTaskToken);
             } else if (id == R.id.back_button) {
                 mTaskOperations.injectBackKey(decoration.getTaskInfo().displayId);
             } else if (id == R.id.caption_handle || id == R.id.open_menu_button) {
@@ -1352,7 +1379,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
                     final int nextFocusedTaskId = mDesktopTasksController
                             .getNextFocusedTask(decoration.getTaskInfo());
-                    WindowDecorationWrapper nextFocusedWindow =
+                    final WindowDecorationWrapper nextFocusedWindow =
                             mWindowDecorationFinder.apply(nextFocusedTaskId);
                     if (nextFocusedWindow != null) {
                         nextFocusedWindow.a11yAnnounceNewFocusedWindow();
@@ -1887,19 +1914,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             return true;
         }
 
-        private boolean isTaskInSplitScreen(int taskId) {
-            return mSplitScreenController != null
-                    && mSplitScreenController.isTaskInSplitScreen(taskId);
-        }
-
-        @Nullable
-        private RunningTaskInfo getOtherSplitTask(int taskId) {
-            @SplitPosition int remainingTaskPosition = mSplitScreenController
-                    .getSplitPosition(taskId) == SPLIT_POSITION_BOTTOM_OR_RIGHT
-                    ? SPLIT_POSITION_TOP_OR_LEFT : SPLIT_POSITION_BOTTOM_OR_RIGHT;
-            return mSplitScreenController.getTaskInfo(remainingTaskPosition);
-        }
-
         private InputMethod getInputMethod(MotionEvent ev) {
             return DesktopModeEventLogger.getInputMethodFromMotionEvent(ev);
         }
@@ -2390,8 +2404,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         final DesktopModeTouchEventListener touchEventListener =
                 new DesktopModeTouchEventListener(mContext, taskInfo, taskPositioner,
-                        mWindowDecorationFinder, mSplitScreenController, mDesktopTasksController,
-                        mTaskOperations, mDesktopModeUiEventLogger, mWindowDecorationActions,
+                        mWindowDecorationFinder, mDesktopTasksController, mTaskOperations,
+                        mDesktopModeUiEventLogger, mWindowDecorationActions,
                         mDesktopUserRepositories, mGestureExclusionTracker, mInputManager,
                         mFocusTransitionObserver, mShellDesktopState,
                         mMultiDisplayDragMoveIndicatorController, mTransactionFactory,
@@ -2643,6 +2657,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 }
             }
             mDesktopTasksController.minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON);
+        }
+
+        @Override
+        public void onClose(int taskId, @NotNull WindowDecorationWrapper decoration,
+                @NotNull WindowContainerToken token) {
+            mViewModel.onCloseTask(taskId, decoration, token);
         }
 
         @Override
