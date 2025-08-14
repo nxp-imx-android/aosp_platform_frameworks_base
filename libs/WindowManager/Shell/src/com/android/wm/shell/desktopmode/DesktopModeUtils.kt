@@ -20,7 +20,9 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ActivityOptions
 import android.app.TaskInfo
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
@@ -37,11 +39,14 @@ import android.graphics.Rect
 import android.os.SystemProperties
 import android.util.Size
 import android.window.DesktopModeFlags
+import android.window.SplashScreen.SPLASH_SCREEN_STYLE_ICON
 import com.android.internal.policy.DesktopModeCompatUtils
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository.Companion.INVALID_DESK_ID
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.recents.RecentTasksController
 import kotlin.math.ceil
 import kotlin.math.max
@@ -457,6 +462,22 @@ private fun isLaunchingNewSingleTask(launchMode: Int) =
 private fun isClosingExitingInstance(intentFlags: Int) =
     (intentFlags and FLAG_ACTIVITY_CLEAR_TASK) != 0 ||
         (intentFlags and FLAG_ACTIVITY_MULTIPLE_TASK) == 0
+
+/** Creates basic activity options to be used for starting a task in desktop mode. */
+fun createActivityOptionsForStartTask(
+    deskId: Int = INVALID_DESK_ID,
+    desksOrganizer: DesksOrganizer,
+): ActivityOptions {
+    val activityOptions =
+        ActivityOptions.makeBasic().apply {
+            launchWindowingMode = WINDOWING_MODE_FREEFORM
+            splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
+        }
+    if (deskId != INVALID_DESK_ID) {
+        desksOrganizer.addLaunchDeskToActivityOptions(activityOptions, deskId)
+    }
+    return activityOptions
+}
 
 /**
  * Calculates the desired initial bounds for applications in desktop windowing. This is done as a

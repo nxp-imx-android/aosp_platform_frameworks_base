@@ -1057,9 +1057,12 @@ class DesktopTasksController(
             "addRestoreTaskToDeskChanges: taskId=$taskId; deskId=$deskId; userId=$userId; " +
                 "taskBounds=$taskBounds; uniqueDisplayId=$uniqueDisplayId"
         )
+
         val repository = userRepositories.getProfile(userId)
         val minimized = repository.isPreservedTaskMinimized(uniqueDisplayId, taskId)
-        val task = shellTaskOrganizer.getRunningTaskInfo(taskId)
+        val task =
+            shellTaskOrganizer.getRunningTaskInfo(taskId)
+                ?: recentTasksController?.findTaskInBackground(taskId)
         if (task == null) {
             logE("restoreDisplay: Could not find running task info for taskId=$taskId.")
             return null
@@ -2979,7 +2982,10 @@ class DesktopTasksController(
                 } else if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                     // Task is not running, start it
                     val startDesk = repository.getDefaultDeskId(displayId) ?: INVALID_DESK_ID
-                    wct.startTask(taskId, createActivityOptionsForStartTask(startDesk).toBundle())
+                    wct.startTask(
+                        taskId,
+                        createActivityOptionsForStartTask(startDesk, desksOrganizer).toBundle(),
+                    )
                 }
             }
 
@@ -4815,7 +4821,10 @@ class DesktopTasksController(
                 .forEach { taskId ->
                     val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
                     if (runningTaskInfo == null) {
-                        wct.startTask(taskId, createActivityOptionsForStartTask(deskId).toBundle())
+                        wct.startTask(
+                            taskId,
+                            createActivityOptionsForStartTask(deskId, desksOrganizer).toBundle(),
+                        )
                     } else {
                         desksOrganizer.reorderTaskToFront(wct, deskId, runningTaskInfo)
                     }
@@ -5020,7 +5029,7 @@ class DesktopTasksController(
                     // Task is not running, start it.
                     wct.startTask(
                         taskIdToReorderToFront,
-                        createActivityOptionsForStartTask(deskId).toBundle(),
+                        createActivityOptionsForStartTask(deskId, desksOrganizer).toBundle(),
                     )
                 }
                 else -> {
@@ -5876,18 +5885,6 @@ class DesktopTasksController(
                 DesktopImmersiveController.ExitReason.APP_NOT_IMMERSIVE,
             )
         }
-    }
-
-    private fun createActivityOptionsForStartTask(deskId: Int = INVALID_DESK_ID): ActivityOptions {
-        val activityOptions =
-            ActivityOptions.makeBasic().apply {
-                launchWindowingMode = WINDOWING_MODE_FREEFORM
-                splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
-            }
-        if (deskId != INVALID_DESK_ID) {
-            desksOrganizer.addLaunchDeskToActivityOptions(activityOptions, deskId)
-        }
-        return activityOptions
     }
 
     private fun dump(pw: PrintWriter, prefix: String) {
