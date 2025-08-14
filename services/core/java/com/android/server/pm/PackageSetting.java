@@ -1645,6 +1645,16 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         return this;
     }
 
+
+    /**
+     * Clear the page size app compat flags.
+     */
+    public PackageSetting clearPageSizeAppCompatFlags() {
+        this.mPageSizeAppCompatFlags = ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED;
+        onChanged();
+        return this;
+    }
+
     /**
      * @see Set page size app compat mode.
      */

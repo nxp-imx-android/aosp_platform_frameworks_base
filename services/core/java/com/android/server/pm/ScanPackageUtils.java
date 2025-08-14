@@ -437,6 +437,12 @@ final class ScanPackageUtils {
                 pkgSetting.getInstallSource().mInitiatingPackageName);
         }
 
+        // If package is upgrading, mPageSizeCompatFlags in PackageSetting should be populated
+        // according to the upgraded package.
+        if (!createNewPackage) {
+            pkgSetting.clearPageSizeAppCompatFlags();
+        }
+
         if (Flags.appCompatOption16kb() && (is16KbDevice || enable4kbChecks)) {
             // Alignment checks are used decide whether this app should run in compat mode when
             // nothing was specified in manifest. Manifest should always take precedence over
