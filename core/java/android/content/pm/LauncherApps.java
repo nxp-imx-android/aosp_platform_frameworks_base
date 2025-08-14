@@ -2142,9 +2142,7 @@ public class LauncherApps {
 
         @Override
         public void onPackageAdded(UserHandle user, String packageName) throws RemoteException {
-            if (DEBUG) {
-                Log.d(TAG, "onPackageAdded " + user.getIdentifier() + "," + packageName);
-            }
+            Log.d(TAG, "onPackageAdded " + user.getIdentifier() + "," + packageName);
             synchronized (LauncherApps.this) {
                 for (CallbackMessageHandler callback : mCallbacks) {
                     callback.postOnPackageAdded(packageName, user);
