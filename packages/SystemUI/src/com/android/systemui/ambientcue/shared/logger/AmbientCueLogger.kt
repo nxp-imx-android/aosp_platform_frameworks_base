@@ -16,6 +16,9 @@
 
 package com.android.systemui.ambientcue.shared.logger
 
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
+import android.util.Log
 import com.android.internal.util.FrameworkStatsLog
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -36,6 +39,7 @@ data class AmbientCueEventReported(
     var fulfilledWithMrIntent: Boolean = false,
     var clickedCloseButton: Boolean = false,
     var reachedTimeout: Boolean = false,
+    var packageName: String = "",
 )
 
 /**
@@ -50,6 +54,13 @@ interface AmbientCueLogger {
      * @param mrCount Number of mr actions suggestions generated and displayed.
      */
     fun setAmbientCueDisplayStatus(maCount: Int, mrCount: Int)
+
+    /**
+     * Sets AmbientCue package name.
+     *
+     * @param packageName The package name of the target app.
+     */
+    fun setPackageName(packageName: String)
 
     /**
      * Sets AmbientCue lose focus time.
@@ -78,7 +89,9 @@ interface AmbientCueLogger {
 }
 
 /** Implementation for logging UI events related to controls. */
-class AmbientCueLoggerImpl @Inject constructor(private val systemClock: SystemClock) :
+class AmbientCueLoggerImpl
+@Inject
+constructor(private val systemClock: SystemClock, private val packageManager: PackageManager) :
     AmbientCueLogger {
     private var report = AmbientCueEventReported()
     private var displayTimeMillis: Long = 0L
@@ -88,6 +101,11 @@ class AmbientCueLoggerImpl @Inject constructor(private val systemClock: SystemCl
         this.displayTimeMillis = systemClock.currentTimeMillis()
         report.maCount = maCount
         report.mrCount = mrCount
+    }
+
+    /** {@see AmbientCueLogger#setPackageName} */
+    override fun setPackageName(packageName: String) {
+        report.packageName = packageName
     }
 
     /** {@see AmbientCueLogger#setLoseFocusMillis} */
@@ -117,6 +135,12 @@ class AmbientCueLoggerImpl @Inject constructor(private val systemClock: SystemCl
 
     /** {@see AmbientCueLogger#flushAmbientCueEventReported} */
     override fun flushAmbientCueEventReported() {
+        var uid = 0
+        try {
+            uid = packageManager.getPackageUid(report.packageName, 0)
+        } catch (e: NameNotFoundException) {
+            Log.w(TAG, "Package name not found: ${report.packageName}")
+        }
         report.displayDurationMillis = systemClock.currentTimeMillis() - displayTimeMillis
         FrameworkStatsLog.write(
             FrameworkStatsLog.AMBIENT_CUE_EVENT_REPORTED,
@@ -130,6 +154,7 @@ class AmbientCueLoggerImpl @Inject constructor(private val systemClock: SystemCl
             report.fulfilledWithMrIntent,
             report.clickedCloseButton,
             report.reachedTimeout,
+            uid,
         )
     }
 
@@ -137,5 +162,9 @@ class AmbientCueLoggerImpl @Inject constructor(private val systemClock: SystemCl
     override fun clear() {
         report = AmbientCueEventReported()
         displayTimeMillis = 0L
+    }
+
+    companion object {
+        private const val TAG = "AmbientCueLogger"
     }
 }

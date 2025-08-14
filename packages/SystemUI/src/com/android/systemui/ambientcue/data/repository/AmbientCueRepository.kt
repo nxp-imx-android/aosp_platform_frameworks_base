@@ -310,12 +310,19 @@ constructor(
 
     override val isDeactivated: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    /**
+     * The [RunningTaskInfo] for the task that is currently in the foreground. Updated whenever a
+     * new task moves to the front. Used to derive the package name for logging.
+     */
+    private var frontRunningTask: RunningTaskInfo? = null
+
     @OptIn(FlowPreview::class)
     override val globallyFocusedTaskId: StateFlow<Int> =
         conflatedCallbackFlow {
                 val taskListener =
                     object : TaskStackChangeListener {
                         override fun onTaskMovedToFront(runningTaskInfo: RunningTaskInfo) {
+                            frontRunningTask = runningTaskInfo
                             trySend(runningTaskInfo.taskId)
                         }
                     }
@@ -364,6 +371,7 @@ constructor(
                     isSessionStarted = true
                     var maCount = 0
                     var mrCount = 0
+                    val packageName = frontRunningTask?.baseIntent?.component?.packageName ?: ""
                     actions.value.forEach { action ->
                         when (action.actionType) {
                             MA_ACTION_TYPE_NAME -> maCount++
@@ -371,6 +379,7 @@ constructor(
                             else -> {}
                         }
                     }
+                    ambientCueLogger.setPackageName(packageName)
                     ambientCueLogger.setAmbientCueDisplayStatus(maCount, mrCount)
                 }
                 if (!isAttached && isSessionStarted) {
