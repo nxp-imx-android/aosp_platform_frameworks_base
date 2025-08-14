@@ -45,9 +45,6 @@ constructor(
     /** Whether the smartspace section is available in the build. */
     val isSmartspaceEnabled: Boolean = smartspaceController.isEnabled
 
-    /** Whether the date area is available and enabled. */
-    val isDateEnabled: Boolean = true
-
     /** Whether the weather area is available and enabled. */
     val isWeatherEnabled: Flow<Boolean> = smartspaceInteractor.isWeatherEnabled
 

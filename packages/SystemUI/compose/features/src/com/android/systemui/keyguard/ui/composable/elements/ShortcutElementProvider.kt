@@ -28,10 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementKey
 import com.android.compose.modifiers.padding
 import com.android.systemui.animation.view.LaunchableImageView
 import com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder
@@ -40,12 +40,13 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombin
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.KeyguardIndicationController
 import javax.inject.Inject
+import kotlin.collections.List
 import kotlinx.coroutines.flow.Flow
 
 class ShortcutElementProvider
@@ -56,35 +57,27 @@ constructor(
     private val keyguardQuickAffordanceViewBinder: KeyguardQuickAffordanceViewBinder,
     private val indicationController: KeyguardIndicationController,
 ) : LockscreenElementProvider {
-    override val elements by lazy { listOf(startButtonElement, endButtonElement) }
+    override val elements: List<LockscreenElement> by lazy {
+        listOf(
+            ShortcutElement(Shortcuts.Start, isStart = true),
+            ShortcutElement(Shortcuts.End, isStart = false),
+        )
+    }
 
-    private val startButtonElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Shortcuts.Start
-            override val context = this@ShortcutElementProvider.context
+    private inner class ShortcutElement(
+        override val key: ElementKey,
+        private val isStart: Boolean,
+    ) : LockscreenElement {
+        override val context = this@ShortcutElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                Shortcut(isStart = true, applyPadding = false)
-            }
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            Shortcut(isStart, applyPadding = false)
         }
-
-    private val endButtonElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Shortcuts.End
-            override val context = this@ShortcutElementProvider.context
-
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                Shortcut(isStart = false, applyPadding = false)
-            }
-        }
+    }
 
     /**
      * Renders a single lockscreen shortcut.
@@ -94,7 +87,7 @@ constructor(
      *   shortcut is placed along the edges of the display.
      */
     @Composable
-    fun ContentScope.Shortcut(
+    private fun ContentScope.Shortcut(
         isStart: Boolean,
         applyPadding: Boolean,
         onTopChanged: ((Float) -> Unit)? = null,
@@ -107,14 +100,6 @@ constructor(
             indicationController = indicationController,
             binder = keyguardQuickAffordanceViewBinder,
             modifier = if (applyPadding) modifier.shortcutPadding() else modifier,
-        )
-    }
-
-    @Composable
-    fun shortcutSizeDp(): DpSize {
-        return DpSize(
-            width = dimensionResource(R.dimen.keyguard_affordance_fixed_width),
-            height = dimensionResource(R.dimen.keyguard_affordance_fixed_height),
         )
     }
 
@@ -165,7 +150,10 @@ constructor(
             },
             onRelease = { binding?.destroy() },
             modifier =
-                modifier.size(width = shortcutSizeDp().width, height = shortcutSizeDp().height),
+                modifier.size(
+                    width = dimensionResource(R.dimen.keyguard_affordance_fixed_width),
+                    height = dimensionResource(R.dimen.keyguard_affordance_fixed_height),
+                ),
         )
     }
 
