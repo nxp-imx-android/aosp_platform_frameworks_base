@@ -114,10 +114,11 @@ class DesktopDisplayEventHandler(
             }
             if (displayId != DEFAULT_DISPLAY) {
                 desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
-                // The default display's windowing mode depends on the availability of the external
-                // display. So updating the default display's windowing mode here.
-                desktopDisplayModeController.updateDefaultDisplayWindowingMode()
             }
+            // The default display's windowing mode depends on the availability of the external
+            // display. So updating the default display's windowing mode regardless of the type of
+            // `displayId`.
+            desktopDisplayModeController.updateDefaultDisplayWindowingMode()
             if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
                 // TODO - b/365873835: Restore a display if a uniqueId match is found in
                 //  the desktop repository.
