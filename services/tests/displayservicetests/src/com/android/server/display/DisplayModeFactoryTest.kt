@@ -60,7 +60,7 @@ class DisplayModeFactoryTest {
             supportedHdrTypes = displayMode.supportedHdrTypes)
 
         val result = DisplayModeFactory.createMode(displayMode, alternativeRefreshRates,
-            testCase.hasArrSupport, testCase.syntheticModesV2Enabled)
+            testCase.hasArrSupport, testCase.syntheticModesV2Enabled, testCase.sizeOverrideEnabled)
 
         assertModesEqual(result, expectedMode)
     }
@@ -69,12 +69,14 @@ class DisplayModeFactoryTest {
         val inputRefreshRate: Float,
         val hasArrSupport: Boolean,
         val syntheticModesV2Enabled: Boolean,
+        val sizeOverrideEnabled: Boolean,
         val expectedFlags: Int
     ) {
-        ARR_60HZ_MODE(60f, true, true, Display.Mode.FLAG_ARR_RENDER_RATE),
-        ARR_HIGH_REFRESH_RATE_MODE(120f, true, true, NO_FLAGS),
-        ARR_60HZ_MODE_SYNTHETICV2_DISABLED(60f, true, false, NO_FLAGS),
-        NON_ARR_60HZ_MODE(60f, false, true, NO_FLAGS),
+        ARR_60HZ_MODE(60f, true, true, false, Display.Mode.FLAG_ARR_RENDER_RATE),
+        ARR_HIGH_REFRESH_RATE_MODE(120f, true, true, false, NO_FLAGS),
+        ARR_60HZ_MODE_SYNTHETICV2_DISABLED(60f, true, false, false, NO_FLAGS),
+        NON_ARR_60HZ_MODE(60f, false, true, false, NO_FLAGS),
+        SIZE_OVERRIDE_ENABLED_MODE(60f, false, false, true, Display.Mode.FLAG_SIZE_OVERRIDE),
     }
 
     @Test

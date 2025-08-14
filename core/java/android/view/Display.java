@@ -2433,10 +2433,18 @@ public final class Display {
          * @hide
          */
         public static final int FLAG_ARR_RENDER_RATE = 1 << 0;
+        /**
+         * @hide
+         *
+         * A synthetic display mode flag that indicates the mode is used to override the display's
+         * logical width and height without changing the mode reported to SurfaceFlinger.
+         */
+        public static final int FLAG_SIZE_OVERRIDE = 1 << 1;
 
         /** @hide */
         @IntDef(flag = true, prefix = {"FLAG_"}, value = {
                 FLAG_ARR_RENDER_RATE,
+                FLAG_SIZE_OVERRIDE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ModeFlags {}
@@ -2760,6 +2768,9 @@ public final class Display {
             StringBuilder msg = new StringBuilder();
             if ((flags & FLAG_ARR_RENDER_RATE) != 0) {
                 msg.append(", FLAG_ARR_RENDER_RATE");
+            }
+            if ((flags & FLAG_SIZE_OVERRIDE) != 0) {
+                msg.append(", FLAG_SIZE_OVERRIDE");
             }
             return msg.toString();
         }

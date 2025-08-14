@@ -3616,6 +3616,62 @@ public class DisplayModeDirectorTest {
         assertNull(vote);
     }
 
+    @Test
+    public void testUpdateUserPreferredMode_withFlagSizeOverride_returnsNull() {
+        DisplayModeDirector director =
+                createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
+        director.start(createMockSensorManager());
+
+        ArgumentCaptor<DisplayListener> displayListenerCaptor =
+                ArgumentCaptor.forClass(DisplayListener.class);
+        verify(mInjector, atLeastOnce()).registerDisplayListener(displayListenerCaptor.capture(),
+                any(Handler.class));
+
+        DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
+        mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
+                new Display.Mode(1, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
+                        1000, 1000, 60f, 60f, new float[]{},
+                        new int[]{}),
+                new Display.Mode(2, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
+                        2000, 2000, 60f, 60f, new float[]{},
+                        new int[]{}),
+        };
+        mInjector.mDisplayInfo.userPreferredModeId = 1;
+
+        displayListener.onDisplayChanged(DISPLAY_ID);
+
+        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
+        assertThat(vote).isNull();
+    }
+
+    @Test
+    public void testUpdateUserPreferredMode_withoutFlagSizeOverride_returnsMode() {
+        DisplayModeDirector director =
+                createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
+        director.start(createMockSensorManager());
+
+        ArgumentCaptor<DisplayListener> displayListenerCaptor =
+                ArgumentCaptor.forClass(DisplayListener.class);
+        verify(mInjector, atLeastOnce()).registerDisplayListener(displayListenerCaptor.capture(),
+                any(Handler.class));
+
+        DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
+        mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
+                new Display.Mode(1, -1, 0,
+                        1000, 1000, 60f, 60f, new float[]{},
+                        new int[]{}),
+                new Display.Mode(2, -1, 0,
+                        2000, 2000, 60f, 60f, new float[]{},
+                        new int[]{}),
+        };
+        mInjector.mDisplayInfo.userPreferredModeId = 1;
+
+        displayListener.onDisplayChanged(DISPLAY_ID);
+
+        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
+        assertThat(vote).isNotNull();
+    }
+
     private Temperature getSkinTemp(@Temperature.ThrottlingStatus int status) {
         return new Temperature(30.0f, Temperature.TYPE_SKIN, "test_skin_temp", status);
     }

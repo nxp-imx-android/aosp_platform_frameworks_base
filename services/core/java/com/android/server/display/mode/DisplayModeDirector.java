@@ -19,6 +19,7 @@ package com.android.server.display.mode;
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
 import static android.hardware.display.DisplayManagerInternal.REFRESH_RATE_LIMIT_HIGH_BRIGHTNESS_MODE;
 import static android.os.PowerManager.BRIGHTNESS_INVALID_FLOAT;
+import static android.view.Display.Mode.FLAG_SIZE_OVERRIDE;
 import static android.view.Display.Mode.INVALID_MODE_ID;
 
 import static com.android.server.display.DisplayDeviceConfig.DEFAULT_LOW_REFRESH_RATE;
@@ -1617,7 +1618,11 @@ public class DisplayModeDirector {
             }
             for (var mode : info.supportedModes) {
                 if (mode.getModeId() == info.userPreferredModeId) {
-                    return mode;
+                    if ((mode.getFlags() & FLAG_SIZE_OVERRIDE) != 0) {
+                        return null;
+                    } else {
+                        return mode;
+                    }
                 }
             }
             return null;
