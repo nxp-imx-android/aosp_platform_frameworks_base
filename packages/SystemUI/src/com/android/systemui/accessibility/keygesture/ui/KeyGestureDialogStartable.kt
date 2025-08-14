@@ -83,6 +83,26 @@ constructor(
         }
         dismissDialog()
 
+        val negativeButtonTextId =
+            if (
+                keyGestureConfirmInfo.keyGestureType ==
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
+            ) {
+                R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
+            } else {
+                android.R.string.cancel
+            }
+
+        val positiveButtonTextId =
+            if (
+                keyGestureConfirmInfo.keyGestureType ==
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
+            ) {
+                R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
+            } else {
+                R.string.accessibility_key_gesture_dialog_positive_button_text
+            }
+
         currentDialog =
             dialogFactory.create { dialog ->
                 PlatformTheme {
@@ -96,7 +116,7 @@ constructor(
                         },
                         negativeButton = {
                             PlatformOutlinedButton(onClick = { dialog.dismiss() }) {
-                                Text(stringResource(id = android.R.string.cancel))
+                                Text(stringResource(id = negativeButtonTextId))
                             }
                         },
                         positiveButton = {
@@ -108,13 +128,7 @@ constructor(
                                     dialog.dismiss()
                                 }
                             ) {
-                                Text(
-                                    stringResource(
-                                        id =
-                                            R.string
-                                                .accessibility_key_gesture_dialog_positive_button_text
-                                    )
-                                )
+                                Text(stringResource(id = positiveButtonTextId))
                             }
                         },
                     )

@@ -108,7 +108,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 )
 
             assertThat(titleToContent).isNotNull()
-            assertThat(titleToContent?.first).isEqualTo("Turn on Magnification?")
+            assertThat(titleToContent?.first).isEqualTo("Magnification keyboard shortcut turned on")
             val contentText = titleToContent?.second
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
             // `contentText` here is an instance of SpannableStringBuilder, so we only need to
@@ -116,7 +116,8 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(contentText?.toString())
                 .isEqualTo(
                     "Action icon + Alt + M is the keyboard shortcut to use Magnification." +
-                        " This allows you to quickly zoom in on the screen to make content larger."
+                        " This allows you to quickly zoom in on the screen to make content larger." +
+                        " Press Action icon + Alt and \"+\" or \"-\" to adjust zoom."
                 )
         }
     }
