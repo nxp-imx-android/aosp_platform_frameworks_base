@@ -43,6 +43,19 @@ fun FlickerTest.cascadingEffectAppliedAtEnd(component: IComponentMatcher) {
     }
 }
 
+fun FlickerTest.appLayerPositionedBottomRightAtEnd(component: IComponentMatcher) {
+    assertWmEnd {
+        val displayAppBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
+        val windowBounds = visibleRegion(component).region.bounds
+
+        val onRightSide = windowBounds.right == displayAppBounds.right
+        val onBottomSide = windowBounds.bottom == displayAppBounds.bottom
+
+        check { "window corner must meet display corner" }.that(onRightSide && onBottomSide)
+            .isEqual(true)
+    }
+}
+
 fun FlickerTest.appLayerHasMaxDisplayHeightAtEnd(component: IComponentMatcher) {
     assertLayersEnd {
         val displayBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
@@ -201,7 +214,7 @@ fun FlickerTest.appWindowOnDefaultDisplayAtEnd(component: IComponentMatcher) {
     }
 }
 
-fun FlickerTest.appWindowReturnsToStartBoundsAndPosition(component: IComponentMatcher){
+fun FlickerTest.appWindowReturnsToStartBoundsAndPosition(component: IComponentMatcher) {
     assertLayers {
         val startRegion = first().visibleRegion(component)
         val endRegion = last().visibleRegion(component)
