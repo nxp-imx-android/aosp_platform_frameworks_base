@@ -1776,6 +1776,16 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         deliveredStarts.clear();
     }
 
+    @Override
+    public ProcessRecord getHostProcess() {
+        return app;
+    }
+
+    @Override
+    public ProcessRecord getIsolationHostProcess() {
+        return isolationHostProc;
+    }
+
     public String toString() {
         if (stringName != null) {
             return stringName;

@@ -807,8 +807,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void noteBroadcastDeliveryStarted(@NonNull ProcessRecord proc, int schedGroup) {
-        proc.mReceivers.setIsReceivingBroadcast(true);
-        proc.mReceivers.setBroadcastReceiverSchedGroup(schedGroup);
+        proc.getReceivers().setIsReceivingBroadcast(true);
+        proc.getReceivers().setBroadcastReceiverSchedGroup(schedGroup);
 
         if (Flags.pushBroadcastStateToOomadjuster()) {
             proc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
@@ -820,8 +820,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void noteBroadcastDeliveryEnded(@NonNull ProcessRecord proc) {
-        proc.mReceivers.setIsReceivingBroadcast(false);
-        proc.mReceivers.setBroadcastReceiverSchedGroup(ProcessList.SCHED_GROUP_UNDEFINED);
+        proc.getReceivers().setIsReceivingBroadcast(false);
+        proc.getReceivers().setBroadcastReceiverSchedGroup(ProcessList.SCHED_GROUP_UNDEFINED);
 
         if (Flags.pushBroadcastStateToOomadjuster()) {
             proc.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);

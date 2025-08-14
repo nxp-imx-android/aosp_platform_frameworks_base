@@ -16,8 +16,6 @@
 
 package com.android.server.am.psc;
 
-import android.content.ComponentName;
-
 import com.android.server.am.OomAdjuster;
 import com.android.server.am.OomAdjusterImpl;
 
@@ -29,8 +27,8 @@ public interface ContentProviderConnectionInternal extends OomAdjusterImpl.Conne
     /** Track the given proc state change. */
     void trackProcState(int procState, int seq);
 
-    /** Returns the {@link ComponentName} of the content provider in this connection. */
-    ComponentName getProviderName();
+    /** Returns the content provider in this connection. */
+    ContentProviderRecordInternal getProvider();
 
     @Override
     default void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
