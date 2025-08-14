@@ -200,7 +200,7 @@ custom_platform_bootclasspath {
             fragments: [
                 // only used if telephony is enabled.
                 {
-                    apex: "com.android.telephony2",
+                    apex: "com.android.telephonycore",
                     module: "com.android.telephony-bootclasspath-fragment",
                 },
             ],
