@@ -40,7 +40,7 @@ class TraceProtoBuilder(object):
             self.packet.timestamp = ts
         return self.packet
 
-    def __add_ftrace_event(self, ts: int, tid: int):
+    def add_ftrace_event(self, ts: int, tid: int):
         ftrace = self.packet.ftrace_events.event.add()
         ftrace.timestamp = ts
         ftrace.pid = tid
@@ -82,6 +82,23 @@ class TraceProtoBuilder(object):
             process.uid = uid
         self.proc_map[pid] = cmdline
 
+    def add_thread(self, tid: int, tgid: int, cmdline: str, name: Optional[str] = None):
+        """
+        Adds a thread to the process tree in the current packet.
+
+        Args:
+            tid: Thread ID.
+            ppid: Parent thread ID.
+            cmdline: The command line or name of the thread.
+            name: Optional name of the thread.
+        """
+        thread = self.packet.process_tree.threads.add()
+        thread.tid = tid
+        thread.tgid = tgid
+        if name is not None:
+          thread.name = name
+        self.proc_map[tid] = cmdline
+
     def add_print(self, ts: int, tid: int, buf: str):
         """Adds an ftrace print event to the current ftrace packet.
 
@@ -90,7 +107,7 @@ class TraceProtoBuilder(object):
             tid: Thread ID of the event.
             buf: The content of the print buffer.
         """
-        ftrace = self.__add_ftrace_event(ts, tid)
+        ftrace = self.add_ftrace_event(ts, tid)
         print_event = getattr(ftrace, 'print')
         print_event.buf = buf
 
@@ -519,3 +536,50 @@ class TraceProtoBuilder(object):
         packet.timestamp = ts
         event = packet.frame_timeline_event.frame_end
         event.cookie = cookie
+
+    def add_binder_transaction(self, transaction_id: int, ts_start: int, ts_end: int, tid: int,
+                                 pid: int, reply_id: int, reply_ts_start: int, reply_ts_end: int,
+                                 reply_tid: int, reply_pid: int):
+        """Adds binder transaction events to the trace.
+
+        This method simulates a complete binder transaction, including the
+        start of the transaction, the reply, and the end of both the
+        transaction and the reply.
+
+        Args:
+            transaction_id: A unique identifier for the binder transaction.
+            ts_start: Timestamp (in nanoseconds) when the transaction started.
+            ts_end: Timestamp (in nanoseconds) when the transaction finished.
+            tid: Thread ID of the caller.
+            pid: Process ID of the caller.
+            reply_id: A unique identifier for the binder reply.
+            reply_ts_start: Timestamp (in nanoseconds) when the reply started.
+            reply_ts_end: Timestamp (in nanoseconds) when the reply finished.
+            reply_tid: Thread ID of the target process receiving the reply.
+            reply_pid: Process ID of the target process receiving the reply.
+        """
+        # Binder transaction start.
+        ftrace = self.add_ftrace_event(ts_start, tid)
+        binder_transaction = ftrace.binder_transaction
+        binder_transaction.debug_id = transaction_id
+        binder_transaction.to_proc = reply_pid
+        binder_transaction.to_thread = reply_tid
+        binder_transaction.reply = False
+
+        # Binder reply start
+        ftrace = self.add_ftrace_event(reply_ts_start, reply_tid)
+        binder_transaction_received = ftrace.binder_transaction_received
+        binder_transaction_received.debug_id = transaction_id
+
+        # Binder reply finish
+        ftrace = self.add_ftrace_event(reply_ts_end, reply_tid)
+        reply_binder_transaction = ftrace.binder_transaction
+        reply_binder_transaction.debug_id = reply_id
+        reply_binder_transaction.to_proc = pid
+        reply_binder_transaction.to_thread = tid
+        reply_binder_transaction.reply = True
+
+        # Binder transaction finish
+        ftrace = self.add_ftrace_event(ts_end, tid)
+        reply_binder_transaction_received = ftrace.binder_transaction_received
+        reply_binder_transaction_received.debug_id = reply_id

@@ -23,6 +23,7 @@ filegroup {
     srcs: [
         "android_bitmap_metric.textproto",
         "android_sf_critical_work_main_thread.textproto",
+        "android_dmabuf_per_process_metric.textproto",
     ],
 }
 
@@ -34,6 +35,11 @@ prebuilt_etc {
 prebuilt_etc {
     name: "android_sf_critical_work_main_thread.textproto",
     src: "android_sf_critical_work_main_thread.textproto",
+}
+
+prebuilt_etc {
+    name: "android_dmabuf_per_process_metric.textproto",
+    src: "android_dmabuf_per_process_metric.textproto",
 }
 
 python_library_host {
