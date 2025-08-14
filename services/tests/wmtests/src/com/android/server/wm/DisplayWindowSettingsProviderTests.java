@@ -29,9 +29,11 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertFalse;
 
 import android.annotation.Nullable;
+import android.app.backup.BackupManager;
 import android.platform.test.annotations.Presubmit;
 import android.util.Xml;
 import android.view.Display;
@@ -461,7 +463,8 @@ public class DisplayWindowSettingsProviderTests extends WindowTestsBase {
 
     private DisplayWindowSettingsProvider readDisplayWindowSettingsFromStorage() {
         return new DisplayWindowSettingsProvider(
-                mDefaultVendorSettingsStorage, mOverrideSettingsStorage);
+                mDefaultVendorSettingsStorage, mOverrideSettingsStorage, mock(
+                BackupManager.class));
     }
 
     @Nullable

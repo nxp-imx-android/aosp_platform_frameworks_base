@@ -89,6 +89,18 @@ public class DisplayWindowSettingsXmlHelperTests {
         assertThat(roundtripData).isNotEqualTo(data);
     }
 
+    @Test
+    public void readAndFilterSettings_createsByteArrayFromFilteredData() {
+        String xml = createFullXmlString();
+
+        byte[] payload = DisplayWindowSettingsXmlHelper.readAndFilterSettings(
+                createInputStream(xml));
+        FileData data = DisplayWindowSettingsXmlHelper.FileData.readSettings(
+                new ByteArrayInputStream(payload));
+
+        assertThat(data).isEqualTo(createFilteredFileData());
+    }
+
     /**
      * Creates a fully populated FileData object.
      */
@@ -103,6 +115,33 @@ public class DisplayWindowSettingsXmlHelperTests {
         entry.mForcedWidth = 1080;
         entry.mForcedHeight = 1920;
         entry.mForcedDensity = 480;
+        entry.mForcedDensityRatio = 1.2f;
+        entry.mForcedScalingMode = 0;
+        entry.mRemoveContentMode = 0;
+        entry.mShouldShowWithInsecureKeyguard = true;
+        entry.mShouldShowSystemDecors = false;
+        entry.mImePolicy = 2;
+        entry.mFixedToUserRotation = 2;
+        entry.mIgnoreOrientationRequest = true;
+        entry.mIgnoreDisplayCutout = false;
+        entry.mDontMoveToTop = true;
+        entry.mIsHomeSupported = false;
+
+        data.mSettings.put(DISPLAY_NAME, entry);
+        return data;
+    }
+
+    /**
+     * Creates a filtered version of the FileData object.
+     */
+    private FileData createFilteredFileData() {
+        FileData data = new FileData();
+        data.mIdentifierType = 1;
+
+        SettingsEntry entry = new SettingsEntry();
+        entry.mWindowingMode = 0;
+        entry.mUserRotationMode = 0;
+        entry.mUserRotation = 0;
         entry.mForcedDensityRatio = 1.2f;
         entry.mForcedScalingMode = 0;
         entry.mRemoveContentMode = 0;
