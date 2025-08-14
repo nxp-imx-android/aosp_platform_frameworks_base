@@ -60,13 +60,6 @@ flag {
 }
 
 flag {
-   name: "notification_row_content_binder_refactor"
-   namespace: "systemui"
-   description: "Convert the NotificationContentInflater to Kotlin and restructure it to support modern views"
-   bug: "343942780"
-}
-
-flag {
    name: "notification_row_is_removed_fix"
    namespace: "systemui"
    description: "Fix incorrect isRemoved value in ExpandableNotificationRow"

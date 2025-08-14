@@ -77,7 +77,6 @@ import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarMo
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction
 import com.android.systemui.statusbar.notification.row.shared.NewRemoteViews
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel
-import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -108,11 +107,6 @@ constructor(
     private val promotedNotificationContentExtractor: PromotedNotificationContentExtractor,
     private val logger: NotificationRowContentBinderLogger,
 ) : NotificationRowContentBinder {
-
-    init {
-        /* check if */ NotificationRowContentBinderRefactor.isUnexpectedlyInLegacyMode()
-    }
-
     private var inflateSynchronously = false
 
     override fun bindContent(
