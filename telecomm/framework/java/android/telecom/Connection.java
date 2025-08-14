@@ -3118,32 +3118,33 @@ public abstract class Connection extends Conferenceable {
      */
     public final void setExtras(@Nullable Bundle extras) {
         checkImmutable();
+        synchronized (mExtrasLock) {
+            // Add/replace any new or changed extras values.
+            putExtras(extras);
 
-        // Add/replace any new or changed extras values.
-        putExtras(extras);
-
-        // If we have used "setExtras" in the past, compare the key set from the last invocation to
-        // the current one and remove any keys that went away.
-        if (mPreviousExtraKeys != null) {
-            List<String> toRemove = new ArrayList<String>();
-            for (String oldKey : mPreviousExtraKeys) {
-                if (extras == null || !extras.containsKey(oldKey)) {
-                    toRemove.add(oldKey);
+            // If we have used "setExtras" in the past, compare the key set from the last invocation
+            // to the current one and remove any keys that went away.
+            if (mPreviousExtraKeys != null) {
+                List<String> toRemove = new ArrayList<String>();
+                for (String oldKey : mPreviousExtraKeys) {
+                    if (extras == null || !extras.containsKey(oldKey)) {
+                        toRemove.add(oldKey);
+                    }
+                }
+                if (!toRemove.isEmpty()) {
+                    removeExtras(toRemove);
                 }
             }
-            if (!toRemove.isEmpty()) {
-                removeExtras(toRemove);
-            }
-        }
 
-        // Track the keys the last time set called setExtras.  This way, the next time setExtras is
-        // called we can see if the caller has removed any extras values.
-        if (mPreviousExtraKeys == null) {
-            mPreviousExtraKeys = new ArraySet<String>();
-        }
-        mPreviousExtraKeys.clear();
-        if (extras != null) {
-            mPreviousExtraKeys.addAll(extras.keySet());
+            // Track the keys the last time set called setExtras.  This way, the next time setExtras
+            // is called we can see if the caller has removed any extras values.
+            if (mPreviousExtraKeys == null) {
+                mPreviousExtraKeys = new ArraySet<String>();
+            }
+            mPreviousExtraKeys.clear();
+            if (extras != null) {
+                mPreviousExtraKeys.addAll(extras.keySet());
+            }
         }
     }
 
