@@ -28,14 +28,17 @@ import android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRINT
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback
 import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_TIMEOUT
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN
+import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.AuthController
 import com.android.systemui.biometrics.data.repository.FakeFacePropertyRepository
@@ -123,7 +126,10 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
         fingerprintPropertyRepository = FakeFingerprintPropertyRepository()
     }
 
-    private suspend fun createBiometricSettingsRepository() {
+    private suspend fun createBiometricSettingsRepository(
+        isFingerprintEnrolled: Boolean = true,
+        isFaceEnrolled: Boolean = false,
+    ) {
         userRepository.setUserInfos(listOf(PRIMARY_USER, ANOTHER_USER))
         userRepository.setSelectedUserInfo(PRIMARY_USER)
         underTest =
@@ -144,12 +150,15 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
                 mobileConnectionsRepository = mobileConnectionsRepository,
             )
         testScope.runCurrent()
-        fingerprintPropertyRepository.setProperties(
-            1,
-            SensorStrength.STRONG,
-            FingerprintSensorType.UDFPS_OPTICAL,
-            emptyMap(),
-        )
+        if (isFingerprintEnrolled) {
+            fingerprintPropertyRepository.supportsUdfps()
+        }
+        if (isFaceEnrolled) {
+            facePropertyRepository.setSensorInfo(
+                FaceSensorInfo(id = 0, strength = SensorStrength.STRONG)
+            )
+        }
+
         verify(lockPatternUtils).registerStrongAuthTracker(strongAuthTracker.capture())
         verify(authController, times(2)).addCallback(authControllerCallback.capture())
     }
@@ -736,6 +745,101 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
             onStrongAuthChanged(inLockdown, PRIMARY_USER_ID)
 
             assertThat(isUserInLockdown()).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    fun isFaceAuthCurrentlyAllowed_updatesForSecureLockDeviceFlags() =
+        testScope.runTest {
+            createBiometricSettingsRepository(isFaceEnrolled = true, isFingerprintEnrolled = false)
+            biometricsAreEnabledBySettings(PRIMARY_USER_ID, TYPE_FACE)
+            whenever(authController.isFaceAuthEnrolled(anyInt())).thenReturn(true)
+            enrollmentChange(FACE, PRIMARY_USER_ID, true)
+            runCurrent()
+
+            val isFaceAuthCurrentlyAllowed = collectLastValue(underTest.isFaceAuthCurrentlyAllowed)
+
+            // Secure lock device enabled: both flags set
+            onStrongAuthChanged(
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE or
+                    STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                PRIMARY_USER_ID,
+            )
+            assertThat(isFaceAuthCurrentlyAllowed()).isFalse()
+
+            // Secure lock device primary bouncer auth complete:
+            // PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE unset
+            onStrongAuthChanged(
+                STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                PRIMARY_USER_ID,
+            )
+
+            assertThat(isFaceAuthCurrentlyAllowed()).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    fun isFingerprintAuthCurrentlyAllowed_updatesForSecureLockDeviceFlags() =
+        testScope.runTest {
+            createBiometricSettingsRepository(isFaceEnrolled = false, isFingerprintEnrolled = true)
+            biometricsAreEnabledBySettings(PRIMARY_USER_ID, TYPE_FINGERPRINT)
+            whenever(authController.isFingerprintEnrolled(anyInt())).thenReturn(true)
+            enrollmentChange(UNDER_DISPLAY_FINGERPRINT, PRIMARY_USER_ID, true)
+            runCurrent()
+
+            val isFingerprintAuthCurrentlyAllowed =
+                collectLastValue(underTest.isFingerprintAuthCurrentlyAllowed)
+
+            // Secure lock device enabled: both flags set
+            onStrongAuthChanged(
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE or
+                    STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                PRIMARY_USER_ID,
+            )
+            assertThat(isFingerprintAuthCurrentlyAllowed()).isFalse()
+
+            // Secure lock device primary bouncer auth complete:
+            // PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE unset
+            onStrongAuthChanged(
+                STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                PRIMARY_USER_ID,
+            )
+
+            assertThat(isFingerprintAuthCurrentlyAllowed()).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    fun secureLockDeviceStateUpdates_acrossTwoFactorAuthentication() =
+        testScope.runTest {
+            createBiometricSettingsRepository()
+
+            val requiresPrimaryAuthForSecureLockDevice =
+                collectLastValue(underTest.requiresPrimaryAuthForSecureLockDevice)
+            val requiresStrongBiometricAuthForSecureLockDevice =
+                collectLastValue(underTest.requiresStrongBiometricAuthForSecureLockDevice)
+
+            // has default value.
+            assertThat(requiresPrimaryAuthForSecureLockDevice()).isFalse()
+
+            // enable both secure lock device strong auth flags
+            val inSecureLockDevice =
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE or
+                    STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+            onStrongAuthChanged(inSecureLockDevice, PRIMARY_USER_ID)
+
+            assertThat(requiresPrimaryAuthForSecureLockDevice()).isTrue()
+            assertThat(requiresStrongBiometricAuthForSecureLockDevice()).isFalse()
+
+            // mock secure lock device bouncer auth complete,
+            // PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE unset
+            onStrongAuthChanged(
+                STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                PRIMARY_USER_ID,
+            )
+
+            assertThat(requiresPrimaryAuthForSecureLockDevice()).isFalse()
+            assertThat(requiresStrongBiometricAuthForSecureLockDevice()).isTrue()
         }
 
     @Test

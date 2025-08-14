@@ -21,6 +21,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -40,4 +41,29 @@ constructor(
             SharingStarted.Eagerly,
             false,
         )
+
+    /** @see SecureLockDeviceRepository.requiresPrimaryAuthForSecureLockDevice */
+    val requiresPrimaryAuthForSecureLockDevice: StateFlow<Boolean> =
+        secureLockDeviceRepository.requiresPrimaryAuthForSecureLockDevice.stateIn(
+            applicationScope,
+            SharingStarted.Eagerly,
+            false,
+        )
+
+    /** @see SecureLockDeviceRepository.requiresStrongBiometricAuthForSecureLockDevice */
+    val requiresStrongBiometricAuthForSecureLockDevice: StateFlow<Boolean> =
+        secureLockDeviceRepository.requiresStrongBiometricAuthForSecureLockDevice.stateIn(
+            applicationScope,
+            SharingStarted.Eagerly,
+            false,
+        )
+
+    /**
+     * Whether the device should listen for biometric auth while secure lock device is enabled. The
+     * device should stop listening when pending authentication, when authenticated, or when the
+     * biometric auth screen is exited without authenticating.
+     */
+    val shouldListenForBiometricAuth: Flow<Boolean> =
+        // TODO (b/405120698, b/405120700): update to consider confirm / try again buttons
+        requiresStrongBiometricAuthForSecureLockDevice
 }
