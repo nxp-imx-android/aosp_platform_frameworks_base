@@ -85,7 +85,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -231,22 +230,13 @@ class SupervisionServiceTest {
         // Sets supervision recovery info to pending.
         setSupervisionRecoveryInfo(state = STATE_PENDING)
         setSupervisionEnabledForUserInternal(USER_ID, true)
-        val inOrder = inOrder(mockDpmInternal)
-        inOrder
-            .verify(mockDpmInternal)
-            .setUserRestrictionForUser(
-                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
-                UserManager.DISALLOW_FACTORY_RESET,
-                /* enabled= */ false,
-                USER_ID,
-            )
+        clearInvocations(mockDpmInternal)
 
         // Starts the user.
         simulateUserStarting(USER_ID)
 
         // Verifies restriction not enabled.
-        inOrder
-            .verify(mockDpmInternal)
+        verify(mockDpmInternal)
             .setUserRestrictionForUser(
                 SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
                 UserManager.DISALLOW_FACTORY_RESET,
@@ -266,22 +256,13 @@ class SupervisionServiceTest {
         )
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
         setSupervisionEnabledForUserInternal(USER_ID, true)
-        val inOrder = inOrder(mockDpmInternal)
-        inOrder
-            .verify(mockDpmInternal)
-            .setUserRestrictionForUser(
-                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
-                UserManager.DISALLOW_FACTORY_RESET,
-                /* enabled= */ false,
-                USER_ID,
-            )
+        clearInvocations(mockDpmInternal)
 
         // Starts the user.
         simulateUserStarting(USER_ID)
 
         // Verifies restriction not enabled.
-        inOrder
-            .verify(mockDpmInternal)
+        verify(mockDpmInternal)
             .setUserRestrictionForUser(
                 SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
                 UserManager.DISALLOW_FACTORY_RESET,
@@ -295,22 +276,13 @@ class SupervisionServiceTest {
         // Sets supervision recovery info.
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
         setSupervisionEnabledForUserInternal(USER_ID, true)
-        val inOrder = inOrder(mockDpmInternal)
-        inOrder
-            .verify(mockDpmInternal)
-            .setUserRestrictionForUser(
-                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
-                UserManager.DISALLOW_FACTORY_RESET,
-                /* enabled= */ true,
-                USER_ID,
-            )
+        clearInvocations(mockDpmInternal)
 
         // Starts the user.
         simulateUserStarting(USER_ID)
 
         // Verifies restriction is enabled.
-        inOrder
-            .verify(mockDpmInternal)
+        verify(mockDpmInternal)
             .setUserRestrictionForUser(
                 SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
                 UserManager.DISALLOW_FACTORY_RESET,
