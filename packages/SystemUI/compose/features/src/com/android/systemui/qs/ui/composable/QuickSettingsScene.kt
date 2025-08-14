@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
@@ -393,6 +394,9 @@ private fun ContentScope.QuickSettingsContent(
             supportNestedScrolling = true,
             modifier =
                 Modifier.fillMaxWidth()
+                    // Match the screen height with the scrim, so it covers the whole screen,
+                    // when the stack "passes by" during the QS -> Gone transition.
+                    .height(LocalWindowInfo.current.containerSize.height.dp)
                     .offset { IntOffset(x = 0, y = minNotificationStackTop) }
                     .padding(horizontal = shadeHorizontalPadding),
         )
