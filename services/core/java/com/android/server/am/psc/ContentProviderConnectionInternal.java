@@ -30,6 +30,9 @@ public interface ContentProviderConnectionInternal extends OomAdjusterImpl.Conne
     /** Returns the content provider in this connection. */
     ContentProviderRecordInternal getProvider();
 
+    /** Returns the client process that initiated this content provider connection. */
+    ProcessRecordInternal getClient();
+
     @Override
     default void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
             ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,

@@ -2377,7 +2377,6 @@ public class MockingOomAdjusterTests {
 
         unbindProvider(client, cpr, conn);
         mProcessStateController.removePublishedProvider(app, providerName);
-        final long lastProviderTime = SystemClock.uptimeMillis();
         mProcessStateController.setLastProviderTime(app, SystemClock.uptimeMillis());
         updateOomAdj(client, app);
 
@@ -4892,7 +4891,6 @@ public class MockingOomAdjusterTests {
         Object mForcingToImportant;
         long mLastProviderTime = Long.MIN_VALUE;
         long mLastTopTime = Long.MIN_VALUE;
-        boolean mCached = true;
         int mNumOfExecutingServices = 0;
         String mIsolatedEntryPoint = null;
         boolean mExecServicesFg = false;

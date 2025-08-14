@@ -121,7 +121,6 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ActivityThread;
-import android.app.AppProtoEnums;
 import android.app.ApplicationExitInfo;
 import android.app.usage.UsageEvents;
 import android.content.BroadcastReceiver;
@@ -231,67 +230,6 @@ public abstract class OomAdjuster {
     public @interface ImplicitCpuTimeReasons {
     }
 
-    public static final int oomAdjReasonToProto(@OomAdjReason int oomReason) {
-        switch (oomReason) {
-            case OOM_ADJ_REASON_NONE:
-                return AppProtoEnums.OOM_ADJ_REASON_NONE;
-            case OOM_ADJ_REASON_ACTIVITY:
-                return AppProtoEnums.OOM_ADJ_REASON_ACTIVITY;
-            case OOM_ADJ_REASON_FINISH_RECEIVER:
-                return AppProtoEnums.OOM_ADJ_REASON_FINISH_RECEIVER;
-            case OOM_ADJ_REASON_START_RECEIVER:
-                return AppProtoEnums.OOM_ADJ_REASON_START_RECEIVER;
-            case OOM_ADJ_REASON_BIND_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_BIND_SERVICE;
-            case OOM_ADJ_REASON_UNBIND_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_UNBIND_SERVICE;
-            case OOM_ADJ_REASON_START_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_START_SERVICE;
-            case OOM_ADJ_REASON_GET_PROVIDER:
-                return AppProtoEnums.OOM_ADJ_REASON_GET_PROVIDER;
-            case OOM_ADJ_REASON_REMOVE_PROVIDER:
-                return AppProtoEnums.OOM_ADJ_REASON_REMOVE_PROVIDER;
-            case OOM_ADJ_REASON_UI_VISIBILITY:
-                return AppProtoEnums.OOM_ADJ_REASON_UI_VISIBILITY;
-            case OOM_ADJ_REASON_ALLOWLIST:
-                return AppProtoEnums.OOM_ADJ_REASON_ALLOWLIST;
-            case OOM_ADJ_REASON_PROCESS_BEGIN:
-                return AppProtoEnums.OOM_ADJ_REASON_PROCESS_BEGIN;
-            case OOM_ADJ_REASON_PROCESS_END:
-                return AppProtoEnums.OOM_ADJ_REASON_PROCESS_END;
-            case OOM_ADJ_REASON_SHORT_FGS_TIMEOUT:
-                return AppProtoEnums.OOM_ADJ_REASON_SHORT_FGS_TIMEOUT;
-            case OOM_ADJ_REASON_SYSTEM_INIT:
-                return AppProtoEnums.OOM_ADJ_REASON_SYSTEM_INIT;
-            case OOM_ADJ_REASON_BACKUP:
-                return AppProtoEnums.OOM_ADJ_REASON_BACKUP;
-            case OOM_ADJ_REASON_SHELL:
-                return AppProtoEnums.OOM_ADJ_REASON_SHELL;
-            case OOM_ADJ_REASON_REMOVE_TASK:
-                return AppProtoEnums.OOM_ADJ_REASON_REMOVE_TASK;
-            case OOM_ADJ_REASON_UID_IDLE:
-                return AppProtoEnums.OOM_ADJ_REASON_UID_IDLE;
-            case OOM_ADJ_REASON_STOP_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_STOP_SERVICE;
-            case OOM_ADJ_REASON_EXECUTING_SERVICE:
-                return AppProtoEnums.OOM_ADJ_REASON_EXECUTING_SERVICE;
-            case OOM_ADJ_REASON_RESTRICTION_CHANGE:
-                return AppProtoEnums.OOM_ADJ_REASON_RESTRICTION_CHANGE;
-            case OOM_ADJ_REASON_COMPONENT_DISABLED:
-                return AppProtoEnums.OOM_ADJ_REASON_COMPONENT_DISABLED;
-            case OOM_ADJ_REASON_FOLLOW_UP:
-                return AppProtoEnums.OOM_ADJ_REASON_FOLLOW_UP;
-            case OOM_ADJ_REASON_RECONFIGURATION:
-                return AppProtoEnums.OOM_ADJ_REASON_RECONFIGURATION;
-            case OOM_ADJ_REASON_SERVICE_BINDER_CALL:
-                return AppProtoEnums.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
-            case OOM_ADJ_REASON_BATCH_UPDATE_REQUEST:
-                return AppProtoEnums.OOM_ADJ_REASON_BATCH_UPDATE_REQUEST;
-            default:
-                return AppProtoEnums.OOM_ADJ_REASON_UNKNOWN_TO_PROTO;
-        }
-    }
-
     public static final String oomAdjReasonToString(@OomAdjReason int oomReason) {
         final String OOM_ADJ_REASON_METHOD = "updateOomAdj";
         switch (oomReason) {
@@ -367,8 +305,6 @@ public abstract class OomAdjuster {
 
     ActivityManagerConstants mConstants;
 
-    final long[] mTmpLong = new long[3];
-
     /**
      * Current sequence id for oom_adj computation traversal.
      */
@@ -414,14 +350,12 @@ public abstract class OomAdjuster {
 
     private final int mNumSlots;
     protected final ArrayList<ProcessRecord> mTmpProcessList = new ArrayList<ProcessRecord>();
-    protected final ArrayList<ProcessRecord> mTmpProcessList2 = new ArrayList<ProcessRecord>();
     protected final ArrayList<UidRecordInternal> mTmpBecameIdle =
             new ArrayList<UidRecordInternal>();
     protected final ActiveUids mTmpUidRecords;
     protected final ArrayDeque<ProcessRecord> mTmpQueue;
     protected final ArraySet<ProcessRecord> mTmpProcessSet = new ArraySet<>();
     protected final ArraySet<ProcessRecord> mPendingProcessSet = new ArraySet<>();
-    protected final ArraySet<ProcessRecord> mProcessesInCycle = new ArraySet<>();
 
     /**
      * List of processes that we want to batch for LMKD to adjust their respective
@@ -990,8 +924,7 @@ public abstract class OomAdjuster {
         mNumNonCachedProcs = 0;
         mNumCachedHiddenProcs = 0;
 
-        updateAndTrimProcessLSP(now, nowElapsed, oldTime, activeUids,
-                oomAdjReason, doingAll);
+        updateAndTrimProcessLSP(now, nowElapsed, oldTime, oomAdjReason, doingAll);
         mNumServiceProcs = mNewNumServiceProcs;
 
         if (mService.mAlwaysFinishActivities) {
@@ -1221,7 +1154,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     private void updateAndTrimProcessLSP(final long now, final long nowElapsed,
-            final long oldTime, final ActiveUids activeUids, @OomAdjReason int oomAdjReason,
+            final long oldTime, @OomAdjReason int oomAdjReason,
             boolean doingAll) {
         ArrayList<ProcessRecord> lruList = mProcessList.getLruProcessesLOSP();
         final int numLru = lruList.size();
@@ -2196,12 +2129,6 @@ public abstract class OomAdjuster {
 
     void onWakefulnessChanged(int wakefulness) {
         mCachedAppOptimizer.onWakefulnessChanged(wakefulness);
-    }
-
-    @GuardedBy({"mService", "mProcLock"})
-    protected boolean applyOomAdjLSP(ProcessRecord app, boolean doingAll, long now,
-            long nowElapsed, @OomAdjReason int oomAdjReason) {
-        return applyOomAdjLSP(app, doingAll, now, nowElapsed, oomAdjReason, false);
     }
 
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */

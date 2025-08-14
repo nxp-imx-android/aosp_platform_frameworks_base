@@ -150,6 +150,16 @@ final class ConnectionRecord extends ConnectionRecordInternal {
         return binding.service;
     }
 
+    @Override
+    public ProcessRecord getClient() {
+        return binding.client;
+    }
+
+    @Override
+    public ProcessRecord getAttributedClient() {
+        return binding.attributedClient;
+    }
+
     public String getClientProcessName() {
         return clientProcessName;
     }
