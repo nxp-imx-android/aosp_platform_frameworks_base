@@ -552,7 +552,9 @@ abstract class CaptionController<T>(
         // The caption height with caption padding included
         val captionHeight: Int,
         val captionWidth: Int,
+        // The caption x position relative to its parent task
         val captionX: Int,
+        // The caption y position relative to its parent task
         val captionY: Int,
         val captionTopPadding: Int,
         val customizableCaptionRegion: Region,

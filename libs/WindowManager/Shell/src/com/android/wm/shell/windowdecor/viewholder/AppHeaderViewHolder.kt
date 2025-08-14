@@ -28,7 +28,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
@@ -720,14 +719,7 @@ class AppHeaderViewHolder(
 
     fun runOnAppChipGlobalLayout(runnable: () -> Unit) {
         // Wait for app chip to be inflated before notifying repository.
-        openMenuButton.viewTreeObserver.addOnGlobalLayoutListener(
-            object : OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    runnable()
-                    openMenuButton.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                }
-            }
-        )
+        openMenuButton.post { runnable() }
     }
 
     fun getAppChipLocationInWindow(): Rect {

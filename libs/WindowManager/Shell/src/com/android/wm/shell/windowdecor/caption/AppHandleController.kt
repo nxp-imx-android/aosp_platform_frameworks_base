@@ -202,12 +202,12 @@ class AppHandleController(
 
     private fun notifyNoCaption() {
         if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
-        windowDecorHandleRepository.notifyCaptionChanged(CaptionState.NoCaption())
+        windowDecorHandleRepository.notifyCaptionChanged(CaptionState.NoCaption(taskInfo.taskId))
     }
 
     private fun notifyCaptionStateChanged(captionLayoutResult: CaptionRelayoutResult) {
         if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
-        if (!isCaptionVisible || !hasGlobalFocus) {
+        if (!isCaptionVisible) {
             notifyNoCaption()
             return
         }
@@ -248,13 +248,32 @@ class AppHandleController(
         }
 
     /** Returns the current bounds relative to the parent task. */
-    private fun getCurrentAppHandleBounds(captionLayoutResult: CaptionRelayoutResult): Rect =
-        Rect(
-            captionLayoutResult.captionX,
-            captionLayoutResult.captionY,
-            captionLayoutResult.captionX + captionLayoutResult.captionWidth,
-            captionLayoutResult.captionHeight,
-        )
+    private fun getCurrentAppHandleBounds(captionLayoutResult: CaptionRelayoutResult): Rect {
+        val bounds =
+            Rect(
+                captionLayoutResult.captionX,
+                captionLayoutResult.captionY,
+                captionLayoutResult.captionX + captionLayoutResult.captionWidth,
+                captionLayoutResult.captionY + captionLayoutResult.captionHeight,
+            )
+
+        if (
+            splitScreenController.getSplitPosition(taskInfo.taskId) ==
+                SPLIT_POSITION_BOTTOM_OR_RIGHT
+        ) {
+            if (splitScreenController.isLeftRightSplit) {
+                // If this is the right split task, add left stage's width.
+                val rightStageBounds =
+                    Rect().also { splitScreenController.getStageBounds(Rect(), it) }
+                bounds.offset(rightStageBounds.left, /* dy= */ 0)
+            } else {
+                val bottomStageBounds =
+                    Rect().also { splitScreenController.getRefStageBounds(Rect(), it) }
+                bounds.offset(/* dx= */ 0, bottomStageBounds.top)
+            }
+        }
+        return bounds
+    }
 
     /**
      * Dispose of the view used to forward inputs in status bar region. Intended to be used any time

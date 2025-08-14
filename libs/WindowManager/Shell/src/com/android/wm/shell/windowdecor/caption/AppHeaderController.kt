@@ -29,6 +29,7 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.WindowInsets
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
@@ -180,9 +181,10 @@ class AppHeaderController(
         get() = displayController.getDisplay(taskInfo.displayId)
 
     private val closeMaximizeWindowRunnable = Runnable { closeMaximizeMenu() }
-    private val isEducationEnabled =
+    private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
-            Flags.enableDesktopWindowingAppToWebEducationIntegration()
+            Flags.enableDesktopWindowingAppToWebEducationIntegration() ||
+            DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
 
     private var isMaximizeMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false
@@ -260,7 +262,7 @@ class AppHeaderController(
     }
 
     private fun notifyCaptionStateChanged() {
-        if (!desktopState.canEnterDesktopMode || !isEducationEnabled) {
+        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) {
             return
         }
         if (!isCaptionVisible || !hasGlobalFocus) {
@@ -271,8 +273,8 @@ class AppHeaderController(
     }
 
     private fun notifyNoCaption() {
-        if (!desktopState.canEnterDesktopMode || !isEducationEnabled) return
-        windowDecorCaptionRepository.notifyCaptionChanged(CaptionState.NoCaption())
+        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
+        windowDecorCaptionRepository.notifyCaptionChanged(CaptionState.NoCaption(taskInfo.taskId))
     }
 
     private fun notifyAppHeaderStateChanged() {
@@ -553,7 +555,7 @@ class AppHeaderController(
         viewHolder.onHandleMenuClosed()
         handleMenu?.close()
         handleMenu = null
-        if (desktopState.canEnterDesktopMode && isEducationEnabled) {
+        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
             notifyCaptionStateChanged()
         }
     }
@@ -637,7 +639,7 @@ class AppHeaderController(
                 val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
                 viewHolder.setAppName(name)
                 viewHolder.setAppIcon(icon)
-                if (desktopState.canEnterDesktopMode && isEducationEnabled) {
+                if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
                     notifyCaptionStateChanged()
                 }
             }
@@ -741,7 +743,7 @@ class AppHeaderController(
         closeManageWindowsMenu()
         closeMaximizeMenu()
         viewHolder.close()
-        if (desktopState.canEnterDesktopMode && isEducationEnabled) {
+        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
             notifyNoCaption()
         }
     }
