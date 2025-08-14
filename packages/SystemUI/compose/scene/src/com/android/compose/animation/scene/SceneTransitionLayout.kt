@@ -379,6 +379,25 @@ interface ContentScope : BaseContentScope {
         modifier: Modifier,
         builder: SceneTransitionLayoutScope<ContentScope>.() -> Unit,
     )
+
+    /**
+     * Whether this content can be considered "visible", i.e. it is either:
+     * - the [current scene][SceneTransitionLayoutState.currentScene]
+     * - one of the [current overlays][SceneTransitionLayoutState.currentOverlays]
+     * - in a transition to become the current scene or one of the current overlays
+     *
+     * Note that this does not actually do any visibility check, a content will be considered
+     * visible even if its alpha is 0, or if it is translated outside the device bounds, or if it is
+     * fully obscured by another content, etc.
+     *
+     * This function takes the ancestor contents from ancestor STLs into account, so that this
+     * returns false if this content OR any ancestor content is not "visible".
+     *
+     * This is meant to be used only by contents that leverage the `alwaysCompose` flag to remain
+     * composed even when not "visible". When `alwaysCompose` is false, you should rely on
+     * composition only as a signal for "visibility".
+     */
+    fun isAlwaysComposedContentVisible(): Boolean
 }
 
 internal interface InternalContentScope : ContentScope {

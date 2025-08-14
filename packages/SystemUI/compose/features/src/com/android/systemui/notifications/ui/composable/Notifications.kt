@@ -86,10 +86,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.compose.currentStateAsState
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -320,8 +317,7 @@ fun ContentScope.NotificationScrollingStack(
     supportNestedScrolling: Boolean,
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
-    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
-    if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)) {
+    if (!isAlwaysComposedContentVisible()) {
         // Some scenes or overlays that use this Composable may be using alwaysCompose=true which
         // will cause them to compose everything but not be visible. Because this Composable has
         // many side effects that push UI state upstream to its view-model, interactors, and
@@ -673,7 +669,8 @@ fun ContentScope.NotificationScrollingStack(
                         }
                         .verticalScroll(scrollState, overscrollEffect = overScrollEffect)
                         .fillMaxWidth()
-                        // Added extra bottom padding for keeping footerView inside parent Viewbounds during overscroll, refer to b/437347340#comment3
+                        // Added extra bottom padding for keeping footerView inside parent
+                        // Viewbounds during overscroll, refer to b/437347340#comment3
                         .padding(bottom = 4.dp)
                         .onGloballyPositioned { coordinates ->
                             stackBoundsOnScreen.value = coordinates.boundsInWindow()
