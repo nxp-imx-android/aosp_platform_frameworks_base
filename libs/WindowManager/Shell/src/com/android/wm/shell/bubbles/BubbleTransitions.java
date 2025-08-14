@@ -73,6 +73,7 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
@@ -687,13 +688,14 @@ public class BubbleTransitions {
             mPlayConvertTaskAnimation = false;
             for (int i = info.getChanges().size() - 1; i >= 0; i--) {
                 final TransitionInfo.Change chg = info.getChanges().get(i);
-                final boolean isLaunchedTask = (chg.getTaskInfo() != null)
+                final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
+                final boolean isLaunchedTask = (taskInfo != null)
                         && (chg.getMode() == TRANSIT_CHANGE || isOpeningMode(chg.getMode()));
                 if (isLaunchedTask) {
                     mStartBounds.set(chg.getStartAbsBounds());
                     // Converting a task into taskview, so treat as "new"
                     mFinishWct = new WindowContainerTransaction();
-                    mTaskInfo = chg.getTaskInfo();
+                    mTaskInfo = taskInfo;
                     mFinishT = finishTransaction;
                     mTaskLeash = chg.getLeash();
                     mSnapshot = chg.getSnapshot();
@@ -701,6 +703,16 @@ public class BubbleTransitions {
                     //  is no snapshot, so fallback to the open transition for now
                     mPlayConvertTaskAnimation = false;
                     found = true;
+                } else if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && taskInfo != null
+                        && mBubbleController.shouldBeAppBubble(taskInfo)) {
+                    // Starting a new bubble from an existing expanded bubble may immediately hide
+                    // the currently expanded bubble in the same transition. Ensure the surfaces
+                    // stays in the TaskView vs. under the transition root.
+                    final Bubble b = mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
+                    if (b != null) {
+                        startTransaction.reparent(chg.getLeash(),
+                                b.getTaskView().getSurfaceControl());
+                    }
                 } else {
                     // In core-initiated launches, the transition is of an OPEN type, and we need to
                     // manually show the surfaces behind the newly bubbled task
