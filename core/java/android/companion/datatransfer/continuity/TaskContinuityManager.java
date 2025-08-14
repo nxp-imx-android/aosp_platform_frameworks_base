@@ -22,6 +22,7 @@ import android.companion.datatransfer.continuity.RemoteTask;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.NonNull;
@@ -154,7 +155,10 @@ public class TaskContinuityManager {
      *
      * @param executor The executor to be used to invoke the listener.
      * @param listener The listener to be registered.
+     * @throws SecurityException if the caller does not hold the
+     *      {@link android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
     public void registerRemoteTaskListener(
         @NonNull Executor executor,
         @NonNull RemoteTaskListener listener) {
@@ -176,7 +180,10 @@ public class TaskContinuityManager {
      * {@link #registerRemoteTaskListener}.
      *
      * @param listener The listener to be unregistered.
+     * @throws SecurityException if the caller does not hold the
+     *      {@link android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
     public void unregisterRemoteTaskListener(@NonNull RemoteTaskListener listener) {
         Objects.requireNonNull(listener);
 
@@ -195,7 +202,10 @@ public class TaskContinuityManager {
      * @param remoteTaskId The remote task to hand off.
      * @param executor The executor to be used to invoke the callback.
      * @param callback The callback to be invoked when the handoff request is finished.
+     * @throws SecurityException if the caller does not hold the
+     *      {@link android.Manifest.permission#REQUEST_TASK_HANDOFF} permission.
      */
+    @RequiresPermission(android.Manifest.permission.REQUEST_TASK_HANDOFF)
     public void requestHandoff(
         int associationId,
         int remoteTaskId,

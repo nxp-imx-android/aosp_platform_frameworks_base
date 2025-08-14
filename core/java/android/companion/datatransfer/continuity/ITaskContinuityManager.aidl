@@ -26,8 +26,13 @@ import android.companion.datatransfer.continuity.RemoteTask;
  */
 oneway interface ITaskContinuityManager {
 
+    @EnforcePermission("READ_REMOTE_TASKS")
     void registerRemoteTaskListener(IRemoteTaskListener listener);
+
+    @EnforcePermission("READ_REMOTE_TASKS")
     void unregisterRemoteTaskListener(IRemoteTaskListener listener);
+
+    @EnforcePermission("REQUEST_TASK_HANDOFF")
     void requestHandoff(
         in int associationId,
         in int remoteTaskId,

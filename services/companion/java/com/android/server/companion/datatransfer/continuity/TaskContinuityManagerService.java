@@ -16,6 +16,10 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
+import static android.Manifest.permission.READ_REMOTE_TASKS;
+import static android.Manifest.permission.REQUEST_TASK_HANDOFF;
+
+import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
@@ -84,22 +88,28 @@ public final class TaskContinuityManagerService
 
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
         @Override
+        @EnforcePermission(READ_REMOTE_TASKS)
         public void registerRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+            registerRemoteTaskListener_enforcePermission();
             Objects.requireNonNull(listener);
             mRemoteTaskStore.addListener(listener);
         }
 
         @Override
+        @EnforcePermission(READ_REMOTE_TASKS)
         public void unregisterRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+            unregisterRemoteTaskListener_enforcePermission();
             Objects.requireNonNull(listener);
             mRemoteTaskStore.removeListener(listener);
         }
 
         @Override
+        @EnforcePermission(REQUEST_TASK_HANDOFF)
         public void requestHandoff(
             int associationId,
             int remoteTaskId,
             @NonNull IHandoffRequestCallback callback) {
+            requestHandoff_enforcePermission();
 
             Objects.requireNonNull(callback);
 

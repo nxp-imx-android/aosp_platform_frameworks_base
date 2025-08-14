@@ -9319,6 +9319,28 @@
         android:protectionLevel="internal|installer"
         android:featureFlag="android.content.pm.verification_service" />
 
+    <!-- Allows an application to read tasks on a remote device.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+         @SystemApi
+         @hide
+    -->
+    <permission
+        android:name="android.permission.READ_REMOTE_TASKS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.companion.enable_task_continuity" />
+
+    <!-- Allows an application to request a task be handed off to the current device.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+         @SystemApi
+         @hide
+    -->
+    <permission
+        android:name="android.permission.REQUEST_TASK_HANDOFF"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.companion.enable_task_continuity" />
+
     <!-- Permission required to access TV Watchdog Metrics
      <p>Not for use by third-party applications.</p>
      @hide -->
