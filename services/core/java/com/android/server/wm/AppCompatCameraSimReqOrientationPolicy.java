@@ -39,6 +39,7 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.CameraCompatTaskInfo;
+import android.content.res.CameraCompatibilityInfo;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.os.RemoteException;
@@ -252,11 +253,16 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 ? ROTATION_UNDEFINED
                 : CameraCompatTaskInfo.getDisplayRotationFromCameraCompatMode(
                         getCameraCompatMode(activityRecord));
-        compatibilityInfo.applicationDisplayRotation = displayRotation;
-        if (Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-            compatibilityInfo.applicationCameraRotation =
-                    getCameraRotationFromSandboxedDisplayRotation(displayRotation);
-        }
+        compatibilityInfo.cameraCompatibilityInfo = new CameraCompatibilityInfo.Builder()
+                .setDisplayRotationSandbox(displayRotation)
+                // TODO(b/395063101): support rotation sandboxing on external displays for
+                //  responsive apps.
+                .setShouldLetterboxForCameraCompat(displayRotation != ROTATION_UNDEFINED)
+                .setRotateAndCropRotation(getCameraRotationFromSandboxedDisplayRotation(
+                        displayRotation))
+                // TODO(b/365725400): support landscape cameras.
+                .setShouldOverrideSensorOrientation(false)
+                .build();
         try {
             // TODO(b/380840084): Consider using a ClientTransaction for this update.
             app.getThread().updatePackageCompatibilityInfo(app.mInfo.packageName,

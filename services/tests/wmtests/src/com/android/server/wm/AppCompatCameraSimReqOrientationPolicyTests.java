@@ -638,7 +638,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
             FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX})
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
-    public void testOnCameraOpened_portraitActivity90_sendsCameraRotation270InCompatibilityInfo() {
+    public void testOnCameraOpened_portraitActivity90_sendsRotateAndCrop270InCompatibilityInfo() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
             robot.activity().rotateDisplayForTopActivity(ROTATION_90);
@@ -647,7 +647,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             // This is a difference between the sandboxed display rotation (0) and the real display
             // rotation (90).
-            robot.assertCompatibilityInfoSentWithCameraRotation(ROTATION_270);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_270);
         });
     }
 
@@ -655,7 +655,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
             FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX})
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
-    public void testOnCameraOpened_portraitActivity270_sendsCameraRotation90InCompatibilityInfo() {
+    public void testOnCameraOpened_portraitActivity270_sendsRotateAndCrop90InCompatibilityInfo() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
             robot.activity().rotateDisplayForTopActivity(ROTATION_270);
@@ -664,7 +664,40 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             // This is a difference between the sandboxed display rotation (0) and the real display
             // rotation (270).
-            robot.assertCompatibilityInfoSentWithCameraRotation(ROTATION_90);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_90);
+        });
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_portraitActivity270_sendsShouldLetterboxInCompatibilityInfo() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            // Display is in landscape orientation.
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Portrait app in landscape orientation should be letterboxed for camera compat.
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+        });
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_portraitActivity270_sendsNoSensorChangeInCompatibilityInfo() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            // Display is in landscape orientation.
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // No sensor orientation change (sandboxing) is needed for portrait cameras, no matter
+            // the device orientation.
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
         });
     }
 
@@ -939,23 +972,35 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
         void assertCompatibilityInfoSentWithDisplayRotation(@Surface.Rotation int
                 expectedRotation) {
-            final ArgumentCaptor<CompatibilityInfo> compatibilityInfoArgumentCaptor =
-                    ArgumentCaptor.forClass(CompatibilityInfo.class);
-            try {
-                verify(activity().top().app.getThread()).updatePackageCompatibilityInfo(
-                        eq(activity().top().packageName),
-                        compatibilityInfoArgumentCaptor.capture());
-            } catch (RemoteException e) {
-                fail(e.getMessage());
-            }
-
-            final CompatibilityInfo compatInfo = compatibilityInfoArgumentCaptor.getValue();
-            assertTrue(compatInfo.isOverrideDisplayRotationRequired());
-            assertEquals(expectedRotation, compatInfo.applicationDisplayRotation);
+            final CompatibilityInfo compatInfo = gerCompatibilityInfo();
+            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(expectedRotation, compatInfo.cameraCompatibilityInfo
+                    .getDisplayRotationSandbox());
         }
 
-        void assertCompatibilityInfoSentWithCameraRotation(@Surface.Rotation int
+        void assertCompatibilityInfoSentWithRotateAndCrop(@Surface.Rotation int
                 expectedRotation) {
+            final CompatibilityInfo compatInfo = gerCompatibilityInfo();
+            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(expectedRotation, compatInfo.cameraCompatibilityInfo
+                    .getRotateAndCropRotation());
+        }
+
+        void assertCompatibilityInfoSentWithLetterbox(boolean shouldLetterbox) {
+            final CompatibilityInfo compatInfo = gerCompatibilityInfo();
+            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(shouldLetterbox,
+                    compatInfo.cameraCompatibilityInfo.shouldLetterboxForCameraCompat());
+        }
+
+        void assertCompatibilityInfoSentWithSensorOverride(boolean overrideSensorOrientation) {
+            final CompatibilityInfo compatInfo = gerCompatibilityInfo();
+            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(overrideSensorOrientation,
+                    compatInfo.cameraCompatibilityInfo.shouldOverrideSensorOrientation());
+        }
+
+        private CompatibilityInfo gerCompatibilityInfo() {
             final ArgumentCaptor<CompatibilityInfo> compatibilityInfoArgumentCaptor =
                     ArgumentCaptor.forClass(CompatibilityInfo.class);
             try {
@@ -966,9 +1011,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
                 fail(e.getMessage());
             }
 
-            final CompatibilityInfo compatInfo = compatibilityInfoArgumentCaptor.getValue();
-            assertTrue(compatInfo.isOverrideCameraRotationRequired());
-            assertEquals(expectedRotation, compatInfo.applicationCameraRotation);
+            return compatibilityInfoArgumentCaptor.getValue();
         }
 
         AppCompatCameraSimReqOrientationPolicy cameraCompatFreeformPolicy() {
