@@ -367,7 +367,7 @@
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Mipangilio hii imekusudiwa kwa matumizi ya usanidi tu. Inaweza kusababisha kifaa chako na programu zilizoko kuvunjika au kutofanya kazi vizuri."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Thibitisha programu kupitia USB"</string>
     <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Kagua iwapo programu zilizosakinishwa kupitia ADB/ADT zina tabia ya kudhuru."</string>
-    <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Itaonyesha vifaa vya Bluetooth bila majina (anwani za MAC pekee)"</string>
+    <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Itaonyesha vifaa vya Bluetooth visivyo na majina (anwani za MAC pekee)"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Huzima kipengele cha Bluetooth cha sauti kamili kunapotokea matatizo ya sauti katika vifaa vya mbali kama vile sauti ya juu mno au inaposhindikana kuidhibiti."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Huwasha rafu ya kipengele ya Bluetooth Gabeldorsche."</string>
     <string name="enhanced_connectivity_summary" msgid="1576414159820676330">"Huwasha kipengele cha Muunganisho Ulioboreshwa."</string>
@@ -376,7 +376,7 @@
     <string name="enable_linux_terminal_title" msgid="5076044866895670637">"Mazingira ya usanidi wa Linux"</string>
     <string name="enable_linux_terminal_summary" msgid="2029479880888108902">"(Majaribio) Tumia temino ya Linux kwenye Android"</string>
     <string name="disable_linux_terminal_disclaimer" msgid="3054320531778388231">"Ukizima, data ya kituo cha Linux itafutwa"</string>
-    <string name="hdcp_checking_title" msgid="3155692785074095986">"Inakagua HDCP"</string>
+    <string name="hdcp_checking_title" msgid="3155692785074095986">"Kukagua HDCP"</string>
     <string name="hdcp_checking_dialog_title" msgid="7691060297616217781">"Weka HDCP ya kukagua tabia"</string>
     <string name="debug_debugging_category" msgid="535341063709248842">"Utatuzi"</string>
     <string name="debug_app" msgid="8903350241392391766">"Chagua programu ya utatuaji"</string>
