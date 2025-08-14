@@ -5524,15 +5524,27 @@ class DesktopTasksController(
                         displayAreaInfo != null
 
                 if (isCrossDisplayDrag) {
+                    val prevCaptionInsets =
+                        taskInfo.configuration.windowConfiguration.appBounds?.let {
+                            it.top - taskInfo.configuration.windowConfiguration.bounds.top
+                        } ?: 0
+                    val captionInsetsDp =
+                        displayController
+                            .getDisplayLayout(taskInfo.getDisplayId())
+                            ?.pxToDp(prevCaptionInsets)
+                            ?.toInt() ?: 0
+                    val destDisplayLayout = displayController.getDisplayLayout(newDisplayId)
+                    val captionInsets = destDisplayLayout?.dpToPx(captionInsetsDp)?.toInt() ?: 0
                     val constrainedBounds =
                         if (
                             DesktopExperienceFlags.ENABLE_SHRINK_WINDOW_BOUNDS_AFTER_DRAG.isTrue()
                         ) {
                             MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
                                 destinationBounds,
-                                displayController.getDisplayLayout(newDisplayId),
+                                destDisplayLayout,
                                 taskInfo.isResizeable,
                                 inputCoordinate.x,
+                                captionInsets,
                             )
                         } else {
                             Rect(destinationBounds)
