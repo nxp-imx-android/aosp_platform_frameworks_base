@@ -2572,11 +2572,13 @@ public class MediaSessionService extends SystemService implements Monitor {
                     isValidLocalStreamType(suggestedStream)
                             && AudioSystem.isStreamActive(suggestedStream, 0);
 
-            if (session != null && session.getUid() != uid
-                    && mAudioPlayerStateMonitor.hasUidPlayedAudioLast(uid)) {
-                // The app in the foreground has been the last app to play media locally.
-                // Therefore, we ignore the chosen session so that volume events affect the local
-                // music stream instead. See b/275185436 for details.
+            if (session != null
+                    && session.getUid() != uid
+                    && (com.android.media.mediasession.flags.Flags.sessionlessVolKeyZeroCooldown()
+                            ? mAudioPlayerStateMonitor.isPlaybackActive(uid)
+                            : mAudioPlayerStateMonitor.hasUidPlayedAudioLast(uid))) {
+                // We ignore the chosen session so that volume events affect the local music stream
+                // instead. See b/275185436 and b/432003816 for details.
                 Log.d(TAG, "Ignoring session=" + session + " and adjusting suggestedStream="
                         + suggestedStream + " instead");
                 session = null;

@@ -35,3 +35,12 @@ flag {
   description: "Filter audio playback uids used for session tracking by audio usage type (to e.g. ignore notification audio)."
   bug: "432003816"
 }
+
+flag {
+  name: "sessionless_vol_key_zero_cooldown"
+  namespace: "media_solutions"
+  description: "Decrease the 'cooldown' (time since last audio playback) for routing volume "
+               "keys to a foreground session-less app (instead of an active remote session) "
+               "from infinity to zero."
+  bug: "432003816"
+}
