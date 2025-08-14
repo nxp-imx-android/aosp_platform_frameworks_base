@@ -17,9 +17,11 @@
 package android.app.appfunctions;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.pm.SignedPackage;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @hide
@@ -46,7 +48,7 @@ public interface AppFunctionAccessServiceInterface {
     void revokeSelfAccess(@NonNull String targetPackageName);
 
     /** Set the agent allowlist */
-    void setAgentAllowlist(@NonNull List<SignedPackage> agentAllowlist);
+    void setAgentAllowlist(@Nullable Set<SignedPackage> agentAllowlist);
 
     /** @see AppFunctionManager#getValidAgents() */
     @NonNull

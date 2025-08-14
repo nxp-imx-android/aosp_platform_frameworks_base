@@ -273,7 +273,7 @@ private constructor(
         forEachSchemePolicy { with(it) { onPackageUninstalled(packageName, appId, userId) } }
     }
 
-    fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {
+    fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: Set<SignedPackage>?) {
         newState.mutateExternalState().apply { setAgentAllowlist(agentAllowlist) }
         forEachSchemePolicy { with(it) { onAgentAllowlistChanged(agentAllowlist) } }
     }
@@ -481,7 +481,7 @@ abstract class SchemePolicy {
 
     open fun MutateStateScope.onPackageUninstalled(packageName: String, appId: Int, userId: Int) {}
 
-    open fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {}
+    open fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: Set<SignedPackage>?) {}
 
     open fun MutateStateScope.onSystemReady() {}
 

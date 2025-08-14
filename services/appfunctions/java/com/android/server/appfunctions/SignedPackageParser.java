@@ -81,4 +81,16 @@ public class SignedPackageParser {
         }
         return signedPackages;
     }
+
+    @NonNull
+    public static String serializePackagesOnly(@NonNull List<String> packages) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < packages.size(); i++) {
+            result.append(packages.get(i));
+            if (i < (packages.size() - 1)) {
+                result.append(SIGNED_PACKAGE_SEPARATOR);
+            }
+        }
+        return result.toString();
+    }
 }
