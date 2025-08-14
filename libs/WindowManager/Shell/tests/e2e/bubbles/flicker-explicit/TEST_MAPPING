@@ -13,6 +13,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleIconMoveTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppFromOverviewTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaBackTest"
     },
     {
