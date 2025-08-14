@@ -21,6 +21,7 @@ import android.graphics.Rect
 import android.util.RotationUtils
 import android.view.Display
 import android.view.DisplayCutout
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.naturalBounds
 import javax.inject.Inject
@@ -40,8 +41,8 @@ interface SysUICutoutProvider {
 class SysUICutoutProviderImpl
 @Inject
 constructor(
-    private val context: Context,
-    private val cameraProtectionLoader: CameraProtectionLoader,
+    @DisplayAware private val context: Context,
+    @DisplayAware private val cameraProtectionLoader: CameraProtectionLoader,
 ) : SysUICutoutProvider {
 
     private val cameraProtectionList by lazy {
