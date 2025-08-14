@@ -220,7 +220,7 @@ def print_dot_nodes(nodes):
     if colour:
       attrs.append(make_attr("fillcolor", colour))
       attrs.append(make_attr("style", "filled"))
-    print(f"  {n["id"]} [" + " ".join(attrs) + "]")
+    print(f"  {n["pid"]} [" + " ".join(attrs) + "]")
 
 def print_dot_edges(edges, bindflags, highlight):
   """Print all the edges based on service connections."""
