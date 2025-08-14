@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015, The Android Open Source Project
+ * Copyright (c) 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 package android.security;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.security.net.config.ApplicationConfig;
@@ -40,6 +41,7 @@ public class NetworkSecurityPolicy {
      * <p>It's fine to cache this reference. Any changes to the policy will be immediately visible
      * through the reference.
      */
+    @NonNull
     public static NetworkSecurityPolicy getInstance() {
         return INSTANCE;
     }
@@ -73,7 +75,7 @@ public class NetworkSecurityPolicy {
      *
      * @see #isCleartextTrafficPermitted()
      */
-    public boolean isCleartextTrafficPermitted(String hostname) {
+    public boolean isCleartextTrafficPermitted(@Nullable String hostname) {
         return libcore.net.NetworkSecurityPolicy.getInstance()
                 .isCleartextTrafficPermitted(hostname);
     }
