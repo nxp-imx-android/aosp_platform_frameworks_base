@@ -16,12 +16,8 @@
 package com.android.systemui.scene.ui.composable.transitions
 
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 
-fun TransitionBuilder.lockscreenToShadeTransition(durationScale: Double = 1.0) {
-    toShadeTransition(durationScale = durationScale)
-
-    fractionRange(end = 0.05f) { fade(LockscreenElementKeys.StatusBar) }
-
-    fractionRange(end = 0.2f) { fade(LockscreenElementKeys.Root) }
+fun TransitionBuilder.lockscreenToShadeSceneTransition(durationScale: Double = 1.0) {
+    lockscreenToOverlayTransition(durationScale = durationScale)
+    toShadeSceneTransition(durationScale = durationScale)
 }

@@ -4,7 +4,8 @@ import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.bouncer.ui.composable.Bouncer
 
-fun TransitionBuilder.lockscreenToBouncerTransition() {
+fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0) {
+    lockscreenToOverlayTransition(durationScale = durationScale)
     toBouncerTransition()
 }
 

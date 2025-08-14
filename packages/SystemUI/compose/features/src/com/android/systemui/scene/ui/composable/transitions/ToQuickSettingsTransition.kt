@@ -25,7 +25,7 @@ import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.toQuickSettingsTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.toQuickSettingsSceneTransition(durationScale: Double = 1.0) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
     val translationY = ShadeHeader.Dimensions.CollapsedHeightForTransitions

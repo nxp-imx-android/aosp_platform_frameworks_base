@@ -19,6 +19,8 @@ package com.android.systemui.keyguard.ui.composable.layout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.VerticalAlignmentLine
@@ -26,6 +28,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
+import com.android.compose.animation.scene.ContentScope
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
@@ -109,7 +113,7 @@ object LockIconAlignmentLines {
  *   as it may be drawn on top of the UDFPS (under display fingerprint sensor)
  */
 @Composable
-fun LockscreenSceneLayout(
+fun ContentScope.LockscreenSceneLayout(
     elementFactory: LockscreenElementFactory,
     elementContext: LockscreenElementContext,
     modifier: Modifier = Modifier,
@@ -126,7 +130,8 @@ fun LockscreenSceneLayout(
             elementFactory.lockscreenElement(LockscreenElementKeys.LockIcon, elementContext)
             elementFactory.lockscreenElement(LockscreenElementKeys.SettingsMenu, elementContext)
         },
-        modifier = modifier,
+        // Hide the lock screen elements when an overlay is shown above.
+        modifier = modifier.thenIf(isIdleWithOverlay()) { Modifier.graphicsLayer { alpha = 0f } },
     ) { measurables, constraints ->
         check(measurables.size == 5)
         val statusBarMeasurable = measurables[0]
@@ -154,7 +159,7 @@ fun LockscreenSceneLayout(
         val lockIconConstrainedMaxHeight =
             lockIconBounds.top - spacingAboveLockIconPx - statusBarPlaceable.measuredHeight
 
-        val contentPlaceableOrNull =
+        val contentPlaceable =
             contentMeasurable.measure(
                 Constraints(
                     minWidth = 0,
@@ -171,7 +176,7 @@ fun LockscreenSceneLayout(
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             statusBarPlaceable.place(0, 0)
-            contentPlaceableOrNull?.placeRelative(0, statusBarPlaceable.measuredHeight)
+            contentPlaceable.placeRelative(0, statusBarPlaceable.measuredHeight)
             bottomAreaPlaceable.place(0, constraints.maxHeight - bottomAreaPlaceable.measuredHeight)
             lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
             settingsMenuPleaceable.placeRelative(
@@ -180,4 +185,8 @@ fun LockscreenSceneLayout(
             )
         }
     }
+}
+
+private fun ContentScope.isIdleWithOverlay(): Boolean {
+    return !layoutState.isTransitioning() && layoutState.currentOverlays.isNotEmpty()
 }
