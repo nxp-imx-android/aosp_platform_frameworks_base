@@ -1223,5 +1223,8 @@ public class BubbleExpandedView extends LinearLayout {
         }
         pw.print(prefix); pw.print("  v-alpha: "); pw.println(getAlpha());
         pw.print(prefix); pw.print("  v-viewVis: "); pw.println(getVisibility());
+        pw.print(prefix); pw.print("  isClipping: "); pw.println(mIsClipping);
+        pw.print(prefix); pw.print("  clipRect: "); pw.println(
+                new Rect(mLeftClip, mTopClip, mRightClip, mBottomClip));
     }
 }
