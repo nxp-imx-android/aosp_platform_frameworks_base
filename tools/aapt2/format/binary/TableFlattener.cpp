@@ -648,7 +648,7 @@ bool TableFlattener::Consume(IAaptContext* context, ResourceTable* table) {
   if (!flag_map.empty()) {
     android::BigBuffer flag_buffer(1024);
     ChunkWriter flag_writer(&flag_buffer);
-    ResTable_flag_list* flag_list = flag_writer.StartChunk<ResTable_flag_list>(RES_TABLE_FLAG_LIST);
+    flag_writer.StartChunk<ResTable_flag_list>(RES_TABLE_FLAG_LIST);
     uint32_t* indices = flag_writer.NextBlock<uint32_t>(flag_map.size());
     for (const auto& [_, ref] : flag_map) {
       *indices++ = android::util::HostToDevice32(ref.index());
