@@ -203,7 +203,7 @@ private fun ContentScope.BundleHeaderContent(
 
         ExpansionControl(
             collapsed = collapsed,
-            numberToShow = viewModel.numberOfChildren,
+            numberToShow = if (collapsed) viewModel.numberOfChildren else null,
             modifier =
                 Modifier.padding(start = 8.dp, end = 16.dp).semantics(mergeDescendants = false) {
                     contentDescription = viewModel.numberOfChildrenContentDescription
