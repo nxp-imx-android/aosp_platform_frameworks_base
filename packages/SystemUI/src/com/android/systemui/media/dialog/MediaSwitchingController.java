@@ -839,12 +839,18 @@ public class MediaSwitchingController
 
     boolean addDeviceToPlayMedia(MediaDevice device) {
         mMetricLogger.logInteractionExpansion(device);
-        return mLocalMediaManager.addDeviceToPlayMedia(device);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER, device.isSuggestedDevice());
+        return mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo);
     }
 
     boolean removeDeviceFromPlayMedia(MediaDevice device) {
         mMetricLogger.logInteractionContraction(device);
-        return mLocalMediaManager.removeDeviceFromPlayMedia(device);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER, device.isSuggestedDevice());
+        return mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo);
     }
 
     void adjustSessionVolume(int volume) {

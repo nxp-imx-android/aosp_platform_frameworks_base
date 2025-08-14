@@ -84,6 +84,11 @@ public class MediaRouterMetricLoggerTest {
 
     private MediaRouterMetricLogger mLogger;
 
+    private final RoutingChangeInfo mRoutingChangeInfo =
+            new RoutingChangeInfo(
+                    RoutingChangeInfo.ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED,
+                    /* isSuggested= */ true);
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -95,7 +100,7 @@ public class MediaRouterMetricLoggerTest {
         long requestId = 123;
         int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
 
-        mLogger.addRequestInfo(requestId, eventType);
+        mLogger.addRequestInfo(requestId, eventType, mRoutingChangeInfo);
 
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(1);
     }
@@ -104,7 +109,7 @@ public class MediaRouterMetricLoggerTest {
     public void removeRequestInfo_removesRequestInfoFromCache() {
         long requestId = 123;
         int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
-        mLogger.addRequestInfo(requestId, eventType);
+        mLogger.addRequestInfo(requestId, eventType, mRoutingChangeInfo);
 
         mLogger.removeRequestInfo(requestId);
 
@@ -115,11 +120,15 @@ public class MediaRouterMetricLoggerTest {
     public void logOperationFailure_logsOperationFailure() {
         int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
         int result = MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_REJECTED;
-        mLogger.logOperationFailure(eventType, result);
+        mLogger.logOperationFailure(eventType, result, mRoutingChangeInfo);
         verify(
                 () ->
                         MediaRouterStatsLog.write( // Use ExtendedMockito.verify and lambda
-                                MEDIA_ROUTER_EVENT_REPORTED, eventType, result));
+                                MEDIA_ROUTER_EVENT_REPORTED,
+                                eventType,
+                                result,
+                                mRoutingChangeInfo.getEntryPoint(),
+                                mRoutingChangeInfo.isSuggested()));
     }
 
     @Test
@@ -127,7 +136,7 @@ public class MediaRouterMetricLoggerTest {
         long requestId = 123;
         int eventType = MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
         int result = MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_SUCCESS;
-        mLogger.addRequestInfo(requestId, eventType);
+        mLogger.addRequestInfo(requestId, eventType, mRoutingChangeInfo);
 
         mLogger.logRequestResult(requestId, result);
 
@@ -135,7 +144,11 @@ public class MediaRouterMetricLoggerTest {
         verify(
                 () ->
                         MediaRouterStatsLog.write( // Use ExtendedMockito.verify and lambda
-                                MEDIA_ROUTER_EVENT_REPORTED, eventType, result));
+                                MEDIA_ROUTER_EVENT_REPORTED,
+                                eventType,
+                                result,
+                                mRoutingChangeInfo.getEntryPoint(),
+                                mRoutingChangeInfo.isSuggested()));
     }
 
     @Test
@@ -165,7 +178,9 @@ public class MediaRouterMetricLoggerTest {
     public void getRequestCacheSize_returnsCorrectSize() {
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(0);
         mLogger.addRequestInfo(
-                123, MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+                123,
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                mRoutingChangeInfo);
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(1);
     }
 
@@ -178,13 +193,15 @@ public class MediaRouterMetricLoggerTest {
         for (int i = 0; i < cacheCapacity; i++) {
             mLogger.addRequestInfo(
                     /* uniqueRequestId= */ i,
-                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                    mRoutingChangeInfo);
         }
 
         // Add one more request to trigger eviction.
         mLogger.addRequestInfo(
                 /* uniqueRequestId= */ cacheCapacity,
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                mRoutingChangeInfo);
 
         // Verify cache size is correct and generic result gets logged.
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(cacheCapacity);
@@ -193,7 +210,9 @@ public class MediaRouterMetricLoggerTest {
                         MediaRouterStatsLog.write(
                                 MEDIA_ROUTER_EVENT_REPORTED,
                                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED));
+                                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                                mRoutingChangeInfo.getEntryPoint(),
+                                mRoutingChangeInfo.isSuggested()));
     }
 
     // Routing change tests.

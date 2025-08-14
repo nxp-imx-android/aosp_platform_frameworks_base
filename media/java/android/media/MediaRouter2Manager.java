@@ -824,8 +824,12 @@ public final class MediaRouter2Manager {
 
         try {
             int requestId = mNextRequestId.getAndIncrement();
+            RoutingChangeInfo routingChangeInfo =
+                    new RoutingChangeInfo(
+                            ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false);
+
             mMediaRouterService.selectRouteWithManager(
-                    mClient, requestId, sessionInfo.getId(), route);
+                    mClient, requestId, sessionInfo.getId(), route, routingChangeInfo);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }
@@ -863,8 +867,11 @@ public final class MediaRouter2Manager {
 
         try {
             int requestId = mNextRequestId.getAndIncrement();
+            RoutingChangeInfo routingChangeInfo =
+                    new RoutingChangeInfo(
+                            ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false);
             mMediaRouterService.deselectRouteWithManager(
-                    mClient, requestId, sessionInfo.getId(), route);
+                    mClient, requestId, sessionInfo.getId(), route, routingChangeInfo);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }

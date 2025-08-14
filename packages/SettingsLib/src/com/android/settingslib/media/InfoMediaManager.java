@@ -231,10 +231,14 @@ public abstract class InfoMediaManager {
             @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void selectRoute(
-            @NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info);
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void deselectRoute(
-            @NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info);
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void releaseSession(@NonNull RoutingSessionInfo sessionInfo);
 
@@ -440,9 +444,10 @@ public abstract class InfoMediaManager {
      * Add a MediaDevice to let it play current media.
      *
      * @param device MediaDevice
+     * @param routingChangeInfo the invocation details of the media routing change.
      * @return If add device successful return {@code true}, otherwise return {@code false}
      */
-    boolean addDeviceToPlayMedia(MediaDevice device) {
+    boolean addDeviceToPlayMedia(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         Log.i(TAG, "addDeviceToPlayMedia(), device = " + device.getName() + "/" + device.getId());
         final RoutingSessionInfo info = getActiveRoutingSession();
         if (!info.getSelectableRoutes().contains(device.mRouteInfo.getId())) {
@@ -451,7 +456,7 @@ public abstract class InfoMediaManager {
             return false;
         }
 
-        selectRoute(device.mRouteInfo, info);
+        selectRoute(device.mRouteInfo, info, routingChangeInfo);
         return true;
     }
 
@@ -521,9 +526,10 @@ public abstract class InfoMediaManager {
      * Remove a {@code device} from current media.
      *
      * @param device MediaDevice
+     * @param routingChangeInfo the invocation details of the media routing change.
      * @return If device stop successful return {@code true}, otherwise return {@code false}
      */
-    boolean removeDeviceFromPlayMedia(MediaDevice device) {
+    boolean removeDeviceFromPlayMedia(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         Log.i(TAG,
                 "removeDeviceFromPlayMedia(), device = " + device.getName() + "/" + device.getId());
         final RoutingSessionInfo info = getActiveRoutingSession();
@@ -533,7 +539,7 @@ public abstract class InfoMediaManager {
             return false;
         }
 
-        deselectRoute(device.mRouteInfo, info);
+        deselectRoute(device.mRouteInfo, info, routingChangeInfo);
         return true;
     }
 

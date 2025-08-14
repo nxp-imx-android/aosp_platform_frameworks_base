@@ -515,16 +515,22 @@ public final class MediaRouterService extends IMediaRouterService.Stub
 
     // Binder call
     @Override
-    public void selectRouteWithRouter2(IMediaRouter2 router, String sessionId,
-            MediaRoute2Info route) {
-        mService2.selectRouteWithRouter2(router, sessionId, route);
+    public void selectRouteWithRouter2(
+            IMediaRouter2 router,
+            String sessionId,
+            MediaRoute2Info route,
+            RoutingChangeInfo routingChangeInfo) {
+        mService2.selectRouteWithRouter2(router, sessionId, route, routingChangeInfo);
     }
 
     // Binder call
     @Override
-    public void deselectRouteWithRouter2(IMediaRouter2 router, String sessionId,
-            MediaRoute2Info route) {
-        mService2.deselectRouteWithRouter2(router, sessionId, route);
+    public void deselectRouteWithRouter2(
+            IMediaRouter2 router,
+            String sessionId,
+            MediaRoute2Info route,
+            RoutingChangeInfo routingChangeInfo) {
+        mService2.deselectRouteWithRouter2(router, sessionId, route, routingChangeInfo);
     }
 
     // Binder call
@@ -657,16 +663,24 @@ public final class MediaRouterService extends IMediaRouterService.Stub
 
     // Binder call
     @Override
-    public void selectRouteWithManager(IMediaRouter2Manager manager, int requestId,
-            String sessionId, MediaRoute2Info route) {
-        mService2.selectRouteWithManager(manager, requestId, sessionId, route);
+    public void selectRouteWithManager(
+            IMediaRouter2Manager manager,
+            int requestId,
+            String sessionId,
+            MediaRoute2Info route,
+            RoutingChangeInfo routingChangeInfo) {
+        mService2.selectRouteWithManager(manager, requestId, sessionId, route, routingChangeInfo);
     }
 
     // Binder call
     @Override
-    public void deselectRouteWithManager(IMediaRouter2Manager manager, int requestId,
-            String sessionId, MediaRoute2Info route) {
-        mService2.deselectRouteWithManager(manager, requestId, sessionId, route);
+    public void deselectRouteWithManager(
+            IMediaRouter2Manager manager,
+            int requestId,
+            String sessionId,
+            MediaRoute2Info route,
+            RoutingChangeInfo routingChangeInfo) {
+        mService2.deselectRouteWithManager(manager, requestId, sessionId, route, routingChangeInfo);
     }
 
     // Binder call
