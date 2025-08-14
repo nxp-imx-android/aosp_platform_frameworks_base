@@ -1331,7 +1331,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 EventLog.writeEvent(EventLogTags.AM_KILL,
                         userId, mPid, processName, getSetAdj(), reason, getRss(mPid));
                 Process.killProcessQuiet(mPid);
-                killProcessGroupIfNecessaryLocked(asyncKPG);
+                killProcessGroupIfNecessaryLocked(asyncKPG, reason);
             } else {
                 mPendingStart = false;
             }
@@ -1347,7 +1347,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @GuardedBy("mService")
-    void killProcessGroupIfNecessaryLocked(boolean async) {
+    void killProcessGroupIfNecessaryLocked(boolean async, String reason) {
         final boolean killProcessGroup;
         if (mHostingRecord != null
                 && (mHostingRecord.usesWebviewZygote() || mHostingRecord.usesAppZygote())) {
@@ -1365,7 +1365,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             if (!async) {
                 Process.sendSignalToProcessGroup(uid, mPid, OsConstants.SIGKILL);
             }
-            ProcessList.killProcessGroup(uid, mPid);
+            ProcessList.killProcessGroup(uid, mPid, reason);
         }
     }
 
