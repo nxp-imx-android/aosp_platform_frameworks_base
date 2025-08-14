@@ -36,8 +36,11 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ClipRectAnimation;
 import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 import android.window.TransitionInfo;
@@ -180,7 +183,8 @@ class ScreenRotationAnimation {
                 }
                 hardwareBuffer.close();
             }
-            if ((flags & FLAG_HAS_WALLPAPER) != 0) {
+            if ((flags & FLAG_HAS_WALLPAPER) != 0
+                    && !com.android.window.flags.Flags.noAlphaRotationEnterAnimation()) {
                 mBackEffectSurface = new SurfaceControl.Builder()
                         .setCallsite("ShellRotationAnimation").setParent(rootLeash)
                         .setEffectLayer().setOpaque(true).setName("BackEffect").build();
@@ -319,6 +323,10 @@ class ScreenRotationAnimation {
                             R.anim.screen_rotate_minus_90_enter);
                     break;
             }
+            if (com.android.window.flags.Flags.noAlphaRotationEnterAnimation()) {
+                postProcessRotationAnimation((AnimationSet) mRotateEnterAnimation,
+                        (AnimationSet) mRotateExitAnimation, delta);
+            }
         }
 
         mRotateExitAnimation.initialize(mEndWidth, mEndHeight, mStartWidth, mStartHeight);
@@ -357,16 +365,21 @@ class ScreenRotationAnimation {
 
     private void startScreenshotRotationAnimation(@NonNull ArrayList<Animator> animations,
             @NonNull Runnable finishCallback, @NonNull ShellExecutor mainExecutor) {
+        final Rect clipRect = com.android.window.flags.Flags.noAlphaRotationEnterAnimation()
+                ? new Rect(0, 0, mEndWidth, mEndHeight) : null;
         buildSurfaceAnimation(animations, mRotateExitAnimation, mAnimLeash, finishCallback,
                 mTransactionPool, mainExecutor, null /* position */, 0 /* cornerRadius */,
-                null /* clipRect */, null);
+                clipRect, null);
     }
 
     private void buildScreenshotAlphaAnimation(@NonNull ArrayList<Animator> animations,
             @NonNull Runnable finishCallback, @NonNull ShellExecutor mainExecutor) {
+        final Rect clipRect = com.android.window.flags.Flags.noAlphaRotationEnterAnimation()
+                // Inverse size because the screenshot layer has rotated transformation.
+                ? new Rect(0, 0, mStartHeight, mStartWidth) : null;
         buildSurfaceAnimation(animations, mRotateAlphaAnimation, mAnimLeash, finishCallback,
                 mTransactionPool, mainExecutor, null /* position */, 0 /* cornerRadius */,
-                null /* clipRect */, null);
+                clipRect, null);
     }
 
     private void buildLumaAnimation(@NonNull ArrayList<Animator> animations,
@@ -403,6 +416,84 @@ class ScreenRotationAnimation {
         }
         t.apply();
         mTransactionPool.release(t);
+    }
+
+    private void postProcessRotationAnimation(@NonNull AnimationSet enterAnim,
+            @NonNull AnimationSet exitAnim, int rotationDelta) {
+        int alphaAnimIndex = -1;
+        long enterClipDuration = 0;
+        long enterClipStartOffset = 0;
+        final var enterAnimations = enterAnim.getAnimations();
+        for (int i = enterAnimations.size() - 1; i >= 0; i--) {
+            final Animation anim = enterAnimations.get(i);
+            if (anim instanceof AlphaAnimation) {
+                // Use half duration to avoid showing blank area too long.
+                enterClipDuration = anim.getDuration() / 2;
+                enterClipStartOffset = anim.getStartOffset() / 2;
+                alphaAnimIndex = i;
+                break;
+            }
+        }
+        // TODO(b/438615184): Remove alpha animation from screen_rotate_*_enter.xml.
+        if (alphaAnimIndex >= 0) {
+            enterAnimations.remove(alphaAnimIndex);
+        }
+        if (rotationDelta % 2 == 0) {
+            // 180 degree delta doesn't have size change, so no additional effects are needed.
+            return;
+        }
+        long exitClipDuration = 0;
+        for (int i = exitAnim.getAnimations().size() - 1; i >= 0; i--) {
+            final Animation anim = exitAnim.getAnimations().get(i);
+            if (anim instanceof AlphaAnimation) {
+                exitClipDuration = anim.getDuration();
+                break;
+            }
+        }
+        final ClipRectAnimation enterClip = createClipRectAnimation(
+                mEndWidth, mEndHeight, true /* enter */);
+        enterClip.setDuration(enterClipDuration);
+        enterClip.setStartOffset(enterClipStartOffset);
+        enterAnim.addAnimation(enterClip);
+        final ClipRectAnimation exitClip = createClipRectAnimation(
+                // Inverse size because the screenshot layer has rotated transformation.
+                mStartHeight, mStartWidth, false /* enter */);
+        exitClip.setDuration(exitClipDuration);
+        exitAnim.addAnimation(exitClip);
+    }
+
+    /**
+     * The animation that expands/shrinks between the full size and half of the difference between
+     * the long and short sides. For example, the "middle" is < and v, and "longSide - middle" is
+     * > and ^. Then the paired enter/exit animations will appear as a rectangle deformation of the
+     * four anchor points.
+     * <pre>
+     *   (exit portrait): T to v, B to ^
+     *  ________T________
+     * |     |     |     |
+     * |     |  v  |     |
+     * |_____|_____|_____|
+     * |     |     |     |
+     * L  <  |     |  >  R (enter landscape): < to L, > to R
+     * |_____|_____|_____|
+     * |     |     |     |
+     * |     |  ^  |     |
+     * |_____|__B__|_____|
+     * </pre>
+     */
+    private static ClipRectAnimation createClipRectAnimation(int w, int h, boolean enter) {
+        final int longSide = Math.max(w, h);
+        final int shortSide = Math.min(w, h);
+        final int middle = (longSide - shortSide) / 2;
+        if (enter) {
+            return w > h
+                    ? new ClipRectAnimation(middle, 0, longSide - middle, h, 0, 0, w, h)
+                    : new ClipRectAnimation(0, middle, w, longSide - middle, 0, 0, w, h);
+        } else {
+            return w > h
+                    ? new ClipRectAnimation(0, 0, w, h, middle, 0, longSide - middle, h)
+                    : new ClipRectAnimation(0, 0, w, h, 0, middle, w, longSide - middle);
+        }
     }
 
     /** A no-op wrapper to provide animation duration. */
