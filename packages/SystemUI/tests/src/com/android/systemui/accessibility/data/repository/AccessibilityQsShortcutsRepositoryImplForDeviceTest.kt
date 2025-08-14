@@ -30,6 +30,10 @@ import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.AccessibilityShortcutController
 import com.android.server.accessibility.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.core.FakeLogBuffer
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.tiles.ColorCorrectionTile
@@ -38,16 +42,10 @@ import com.android.systemui.qs.tiles.FontScalingTile
 import com.android.systemui.qs.tiles.HearingDevicesTile
 import com.android.systemui.qs.tiles.OneHandedModeTile
 import com.android.systemui.qs.tiles.ReduceBrightColorsTile
-import com.android.systemui.util.settings.FakeSettings
+import com.android.systemui.testKosmosNew
+import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.utils.FieldSetter
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -65,19 +63,17 @@ import org.mockito.kotlin.whenever
  * can't mock the AccessibilityShortcutInfo for test. MultiValentTest doesn't compile when using
  * newly introduced methods and constants.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
-    @Rule @JvmField val mockitoRule: MockitoRule = MockitoJUnit.rule()
+    @get:Rule val mockitoRule: MockitoRule = MockitoJUnit.rule()
     @get:Rule val setFlagsRule: SetFlagsRule = SetFlagsRule()
 
     // mocks
     @Mock private lateinit var a11yManager: AccessibilityManager
     private var userInitializationCallback: IUserInitializationCompleteCallback? = null
-    private val testDispatcher = StandardTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
-    private val secureSettings = FakeSettings(testDispatcher)
+    private val kosmos = testKosmosNew()
+    private val secureSettings = kosmos.fakeSettings
 
     private val userA11yQsShortcutsRepositoryFactory =
         object : UserA11yQsShortcutsRepository.Factory {
@@ -85,8 +81,8 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
                 return UserA11yQsShortcutsRepository(
                     userId,
                     secureSettings,
-                    testScope.backgroundScope,
-                    testDispatcher,
+                    kosmos.backgroundScope,
+                    kosmos.testDispatcher,
                 )
             }
         }
@@ -107,17 +103,12 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
             AccessibilityQsShortcutsRepositoryImpl(
                 a11yManager,
                 userA11yQsShortcutsRepositoryFactory,
-                testDispatcher,
-                testScope.backgroundScope,
+                kosmos.testDispatcher,
+                kosmos.backgroundScope,
                 FakeLogBuffer.Factory.create(),
             )
 
         userInitializationCallback?.onUserInitializationComplete(context.userId)
-    }
-
-    @After
-    fun cleanUp() {
-        testScope.cancel()
     }
 
     @Test
@@ -146,7 +137,7 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_NOTIFY_QS_TILE_CHANGED_AFTER_USER_INITIALIZATION)
     @Test
     fun initRepository_doesNotRegisterUserInitializationCallback() =
-        testScope.runTest {
+        kosmos.runTest {
             runCurrent()
 
             assertThat(userInitializationCallback).isNull()
@@ -155,7 +146,7 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_NOTIFY_QS_TILE_CHANGED_AFTER_USER_INITIALIZATION)
     @Test
     fun initRepository_registeredUserInitializationCallback() =
-        testScope.runTest {
+        kosmos.runTest {
             runCurrent()
 
             assertThat(userInitializationCallback).isNotNull()
@@ -164,7 +155,7 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_NOTIFY_QS_TILE_CHANGED_AFTER_USER_INITIALIZATION)
     @Test
     fun notifyAccessibilityManagerTilesChanged_notifyOnlyWhenUserInitializationComplete() =
-        testScope.runTest {
+        kosmos.runTest {
             // Change completedUser
             userInitializationCallback?.onUserInitializationComplete(context.userId + 1)
             runCurrent()
@@ -192,7 +183,7 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
 
     @Test
     fun notifyAccessibilityManagerTilesChanged_customTiles_onlyNotifyA11yTileServices() =
-        testScope.runTest {
+        kosmos.runTest {
             val a11yServiceTileService = ComponentName("a11yPackageName", "TileServiceClassName")
             setupInstalledAccessibilityServices(a11yServiceTileService)
             // TileService should match accessibility_shortcut_test_activity.xml,
@@ -225,7 +216,7 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
 
     @Test
     fun notifyAccessibilityManagerTilesChanged_noMatchingA11yFrameworkTiles() =
-        testScope.runTest {
+        kosmos.runTest {
             val changedTiles = listOf(TileSpec.create("a"))
 
             underTest.notifyAccessibilityManagerTilesChanged(context, changedTiles)
@@ -237,7 +228,7 @@ class AccessibilityQsShortcutsRepositoryImplForDeviceTest : SysuiTestCase() {
 
     @Test
     fun notifyAccessibilityManagerTilesChanged_convertA11yTilesSpecToComponentName() =
-        testScope.runTest {
+        kosmos.runTest {
             val changedTiles =
                 listOf(
                     TileSpec.create(ColorCorrectionTile.TILE_SPEC),
