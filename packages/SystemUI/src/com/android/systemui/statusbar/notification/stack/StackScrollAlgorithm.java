@@ -964,6 +964,13 @@ public class StackScrollAlgorithm {
                                     : row.getEntryLegacy().isStickyAndNotDemoted())) {
                         // the height of this child before clamping it to the top
                         float unmodifiedChildHeight = childState.height;
+
+                        // When HUN first shows above QS overlay in dual shade, we need to snap the
+                        // HUN to the correct Y position from the placeholder.
+                        boolean isHunToShadeTransition = ambientState.getTrackedHeadsUpRow() == row;
+                        if (ambientState.shouldApplyHunTranslation() && !isHunToShadeTransition) {
+                            childState.setYTranslation(headsUpTranslation);
+                        }
                         clampHunToTop(
                                 /* headsUpTop = */ headsUpTranslation,
                                 /* collapsedHeight = */ row.getCollapsedHeight(),

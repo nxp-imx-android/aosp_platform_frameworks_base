@@ -101,6 +101,21 @@ public class AmbientState implements Dumpable {
     private boolean mPulsing;
     private float mHideAmount;
     private float mPulseHeight = MAX_PULSE_HEIGHT;
+    private boolean mApplyHunTranslation;
+
+    /**
+     * Sets whether HUN translation should be applied to viewState.yTranslation
+     */
+    public void setApplyHunTranslation(boolean apply) {
+        mApplyHunTranslation = apply;
+    }
+
+    /**
+     * @return {@code true} if HUN translation should be applied to viewState.yTranslation
+     */
+    public boolean shouldApplyHunTranslation() {
+        return mApplyHunTranslation;
+    }
 
     /**
      * The ExpandableNotificationRow that is pulsing, or the one that was pulsing

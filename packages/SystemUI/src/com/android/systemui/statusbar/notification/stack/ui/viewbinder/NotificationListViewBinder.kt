@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.stack.ui.viewbinder
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.TraceUtils.traceAsync
-import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.nano.MetricsProto
 import com.android.systemui.common.ui.ConfigurationState
@@ -66,8 +65,6 @@ import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
-import javax.inject.Inject
-import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
@@ -77,6 +74,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
+import javax.inject.Provider
+import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** Binds a [NotificationStackScrollLayout] to its [view model][NotificationListViewModel]. */
 class NotificationListViewBinder
@@ -120,6 +120,14 @@ constructor(
                 }
                 launch { bindShelf(shelf) }
                 bindHideList(viewController, viewModel, hiderTracker)
+
+                // Observe whether the QS overlay is visible in dual shade and notify the
+                // controller to update the value in AmbientState.
+                launch {
+                    viewModel.isQsOverlayVisible.collect { isQsOverlayVisible ->
+                        viewController.setApplyHunTranslation(isQsOverlayVisible)
+                    }
+                }
 
                 val hasNonClearableSilentNotifications: StateFlow<Boolean> =
                     viewModel.hasNonClearableSilentNotifications.stateIn(this)
