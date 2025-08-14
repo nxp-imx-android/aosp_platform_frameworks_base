@@ -54,9 +54,7 @@ import com.android.server.vibrator.VintfUtils.VintfGetter;
 import com.android.server.vibrator.VintfUtils.VintfSupplier;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /** Implementations for {@link HalVibrator} backed by VINTF objects. */
 class VintfHalVibrator {
@@ -154,8 +152,8 @@ class VintfHalVibrator {
             Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.init");
             try {
                 mCallbacks = callbacks;
-                int capabilities = getValue(IVibrator::getCapabilities,
-                        "Error loading capabilities during init").orElse(0);
+                int capabilities = getValueOrDefault(IVibrator::getCapabilities, 0,
+                        "Error loading capabilities during init");
 
                 // Reset the hardware to a default state.
                 // In case this is a runtime restart instead of a fresh boot.
@@ -590,11 +588,16 @@ class VintfHalVibrator {
 
         private int vibrateNoThrow(VintfUtils.VintfRunnable<IVibrator> fn, int successResult,
                 Consumer<Throwable> errorHandler) {
-            return vibrateNoThrow(
-                    hal -> {
-                        fn.run(hal);
-                        return successResult;
-                    }, errorHandler);
+            try {
+                VintfUtils.run(mHalSupplier, fn);
+                return successResult;
+            } catch (RuntimeException e) {
+                errorHandler.accept(e);
+                if (e instanceof UnsupportedOperationException) {
+                    return 0;
+                }
+                return -1;
+            }
         }
 
         private int vibrateNoThrow(VintfUtils.VintfGetter<IVibrator, Integer> fn,
@@ -616,14 +619,13 @@ class VintfHalVibrator {
 
         private VibratorInfo loadVibratorInfo(int vibratorId) {
             VibratorInfo.Builder builder = new VibratorInfo.Builder(vibratorId);
-            int capabilities = getValue(IVibrator::getCapabilities, "Error loading capabilities")
-                    .orElse(0);
+            int capabilities = getValueOrDefault(IVibrator::getCapabilities, 0,
+                    "Error loading capabilities");
             builder.setCapabilities(capabilities);
-            getValue(IVibrator::getSupportedEffects, "Error loading supported effects")
-                    .ifPresent(builder::setSupportedEffects);
+            getValue(IVibrator::getSupportedEffects, builder::setSupportedEffects,
+                    "Error loading supported effects");
             if ((capabilities & IVibrator.CAP_GET_Q_FACTOR) != 0) {
-                getValue(IVibrator::getQFactor, "Error loading q-factor")
-                        .ifPresent(builder::setQFactor);
+                getValue(IVibrator::getQFactor, builder::setQFactor, "Error loading q-factor");
             }
 
             loadInfoForPrimitives(builder, capabilities);
@@ -632,8 +634,8 @@ class VintfHalVibrator {
 
             float resonantFrequency;
             if ((capabilities & IVibrator.CAP_GET_RESONANT_FREQUENCY) != 0) {
-                resonantFrequency = getValue(IVibrator::getResonantFrequency,
-                        "Error loading resonant frequency").orElse(Float.NaN);
+                resonantFrequency = getValueOrDefault(IVibrator::getResonantFrequency, Float.NaN,
+                        "Error loading resonant frequency");
             } else {
                 resonantFrequency = Float.NaN;
             }
@@ -650,21 +652,19 @@ class VintfHalVibrator {
             if ((capabilities & IVibrator.CAP_COMPOSE_EFFECTS) == 0) {
                 return;
             }
-            getValue(IVibrator::getCompositionSizeMax, "Error loading composition size max")
-                    .ifPresent(builder::setCompositionSizeMax);
-            getValue(IVibrator::getCompositionDelayMax, "Error loading composition delay max")
-                    .ifPresent(builder::setPrimitiveDelayMax);
-            int[] supportedPrimitives = getValue(IVibrator::getSupportedPrimitives,
-                    "Error loading supported primitives").orElse(null);
+            getValue(IVibrator::getCompositionSizeMax, builder::setCompositionSizeMax,
+                    "Error loading composition size max");
+            getValue(IVibrator::getCompositionDelayMax, builder::setPrimitiveDelayMax,
+                    "Error loading composition delay max");
+            int[] supportedPrimitives = getValueOrDefault(IVibrator::getSupportedPrimitives, null,
+                    "Error loading supported primitives");
 
             if (supportedPrimitives != null) {
                 for (int primitive : supportedPrimitives) {
-                    Optional<Integer> primitiveDuration = getValue(
-                            hal -> hal.getPrimitiveDuration(primitive),
+                    getValue(hal -> hal.getPrimitiveDuration(primitive),
+                            duration -> builder.setSupportedPrimitive(primitive, duration),
                             // Only concatenate the strings if logging error.
-                            () -> "Error loading duration for primitive " + primitive);
-                    primitiveDuration.ifPresent(
-                            duration -> builder.setSupportedPrimitive(primitive, duration));
+                            e -> logError("Error loading duration for primitive " + primitive, e));
                 }
             }
         }
@@ -674,26 +674,26 @@ class VintfHalVibrator {
             if ((capabilities & IVibrator.CAP_COMPOSE_PWLE_EFFECTS) == 0) {
                 return;
             }
-            getValue(IVibrator::getPwleCompositionSizeMax, "Error loading PWLE V1 size max")
-                    .ifPresent(builder::setPwleSizeMax);
-            getValue(IVibrator::getPwlePrimitiveDurationMax, "Error loading PWLE V1 duration max")
-                    .ifPresent(builder::setPwlePrimitiveDurationMax);
-            getValue(IVibrator::getSupportedBraking, "Error loading PWLE V1 supported braking")
-                    .ifPresent(builder::setSupportedBraking);
+            getValue(IVibrator::getPwleCompositionSizeMax, builder::setPwleSizeMax,
+                    "Error loading PWLE V1 size max");
+            getValue(IVibrator::getPwlePrimitiveDurationMax, builder::setPwlePrimitiveDurationMax,
+                    "Error loading PWLE V1 duration max");
+            getValue(IVibrator::getSupportedBraking, builder::setSupportedBraking,
+                    "Error loading PWLE V1 supported braking");
         }
 
         private void loadInfoForPwleV2(VibratorInfo.Builder builder, int capabilities) {
             if ((capabilities & IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2) == 0) {
                 return;
             }
-            getValue(IVibrator::getPwleV2CompositionSizeMax, "Error loading PWLE V2 size max")
-                    .ifPresent(builder::setMaxEnvelopeEffectSize);
+            getValue(IVibrator::getPwleV2CompositionSizeMax, builder::setMaxEnvelopeEffectSize,
+                    "Error loading PWLE V2 size max");
             getValue(IVibrator::getPwleV2PrimitiveDurationMinMillis,
-                    "Error loading PWLE V2 duration min")
-                    .ifPresent(builder::setMinEnvelopeEffectControlPointDurationMillis);
+                    builder::setMinEnvelopeEffectControlPointDurationMillis,
+                    "Error loading PWLE V2 duration min");
             getValue(IVibrator::getPwleV2PrimitiveDurationMaxMillis,
-                    "Error loading PWLE V2 duration max")
-                    .ifPresent(builder::setMaxEnvelopeEffectControlPointDurationMillis);
+                    builder::setMaxEnvelopeEffectControlPointDurationMillis,
+                    "Error loading PWLE V2 duration max");
         }
 
         @SuppressWarnings("deprecation") // Loading deprecated values for compatibility
@@ -703,12 +703,12 @@ class VintfHalVibrator {
                 return new VibratorInfo.FrequencyProfileLegacy(
                         resonantFrequency, Float.NaN, Float.NaN, null);
             }
-            float minFrequency = getValue(IVibrator::getFrequencyMinimum,
-                    "Error loading frequency min").orElse(Float.NaN);
-            float frequencyResolution = getValue(IVibrator::getFrequencyResolution,
-                    "Error loading frequency resolution").orElse(Float.NaN);
-            float[] bandwidthMap = getValue(IVibrator::getBandwidthAmplitudeMap,
-                    "Error loading bandwidth map").orElse(null);
+            float minFrequency = getValueOrDefault(IVibrator::getFrequencyMinimum, Float.NaN,
+                    "Error loading frequency min");
+            float frequencyResolution = getValueOrDefault(IVibrator::getFrequencyResolution,
+                    Float.NaN, "Error loading frequency resolution");
+            float[] bandwidthMap = getValueOrDefault(IVibrator::getBandwidthAmplitudeMap, null,
+                    "Error loading bandwidth map");
             return new VibratorInfo.FrequencyProfileLegacy(resonantFrequency, minFrequency,
                     frequencyResolution, bandwidthMap);
         }
@@ -721,8 +721,8 @@ class VintfHalVibrator {
             float[] frequencies = null;
             float[] outputs = null;
             List<FrequencyAccelerationMapEntry> map =
-                    getValue(IVibrator::getFrequencyToOutputAccelerationMap,
-                            "Error loading frequency acceleration map").orElse(null);
+                    getValueOrDefault(IVibrator::getFrequencyToOutputAccelerationMap, null,
+                            "Error loading frequency acceleration map");
             if (map != null) {
                 int entryCount = map.size();
                 frequencies = new float[entryCount];
@@ -736,14 +736,20 @@ class VintfHalVibrator {
             return new VibratorInfo.FrequencyProfile(resonantFrequency, frequencies, outputs);
         }
 
-        private <T> Optional<T> getValue(VintfGetter<IVibrator, T> getter, String errorMessage) {
-            return VintfUtils.getNoThrow(mHalSupplier, getter, e -> logError(errorMessage, e));
+        private <T> void getValue(VintfGetter<IVibrator, T> getter, Consumer<T> resultHandler,
+                String errorMessage) {
+            getValue(getter, resultHandler, e -> logError(errorMessage, e));
         }
 
-        private <T> Optional<T> getValue(VintfGetter<IVibrator, T> getter,
-                Supplier<String> errorMessage) {
-            return VintfUtils.getNoThrow(mHalSupplier, getter,
-                    e -> logError(errorMessage.get(), e));
+        private <T> void getValue(VintfGetter<IVibrator, T> getter, Consumer<T> resultHandler,
+                Consumer<Throwable> errorHandler) {
+            VintfUtils.getNoThrow(mHalSupplier, getter, resultHandler, errorHandler);
+        }
+
+        private <T> T getValueOrDefault(VintfGetter<IVibrator, T> getter, T defaultValue,
+                String errorMessage) {
+            return VintfUtils.getOrDefault(mHalSupplier, getter, defaultValue,
+                    e -> logError(errorMessage, e));
         }
 
         private void logError(String message, Throwable error) {
