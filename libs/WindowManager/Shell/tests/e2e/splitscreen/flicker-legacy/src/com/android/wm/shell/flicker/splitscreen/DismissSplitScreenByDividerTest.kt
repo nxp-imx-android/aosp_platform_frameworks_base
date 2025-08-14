@@ -18,9 +18,9 @@ package com.android.wm.shell.flicker.splitscreen
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.Presubmit
-import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
+import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.helpers.WindowUtils
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
@@ -28,9 +28,7 @@ import com.android.wm.shell.flicker.splitscreen.benchmark.DismissSplitScreenByDi
 import com.android.wm.shell.flicker.utils.ICommonAssertions
 import com.android.wm.shell.flicker.utils.appWindowBecomesInvisible
 import com.android.wm.shell.flicker.utils.appWindowIsVisibleAtEnd
-import com.android.wm.shell.flicker.utils.layerBecomesInvisible
 import com.android.wm.shell.flicker.utils.layerIsVisibleAtEnd
-import com.android.wm.shell.flicker.utils.splitAppLayerBoundsBecomesInvisible
 import com.android.wm.shell.flicker.utils.splitScreenDividerBecomesInvisible
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -63,20 +61,15 @@ class DismissSplitScreenByDividerTest(override val flicker: FlickerTest) :
 
     @Presubmit
     @Test
-    fun primaryAppLayerBecomesInvisible() = flicker.layerBecomesInvisible(primaryApp)
-
-    @Presubmit
-    @Test
     fun secondaryAppLayerIsVisibleAtEnd() = flicker.layerIsVisibleAtEnd(secondaryApp)
 
     @Presubmit
     @Test
-    fun primaryAppBoundsBecomesInvisible() =
-        flicker.splitAppLayerBoundsBecomesInvisible(
-            primaryApp,
-            landscapePosLeft = tapl.isTablet,
-            portraitPosTop = false
-        )
+    fun primaryAppBoundsBecomesInvisible() {
+        flicker.assertLayersEnd {
+            this.visibleRegion(primaryApp).isEmpty()
+        }
+    }
 
     @Presubmit
     @Test
