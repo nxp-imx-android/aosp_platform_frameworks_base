@@ -136,6 +136,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchFocusBetweenAppsTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToDesktopFromOverviewTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
     },
     {
