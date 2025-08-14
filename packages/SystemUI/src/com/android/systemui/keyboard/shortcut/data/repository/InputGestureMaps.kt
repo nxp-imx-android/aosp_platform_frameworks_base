@@ -33,7 +33,7 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER
-import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_LEFT_FREEFORM_WINDOW
@@ -74,7 +74,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to System,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to System,
             KEY_GESTURE_TYPE_ALL_APPS to System,
-            KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK to System,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to MultiTasking,
@@ -89,6 +88,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW to MultiTasking,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to MultiTasking,
             KEY_GESTURE_TYPE_DESKTOP_MODE to MultiTasking,
+            KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK to MultiTasking,
 
             // App Category
             KEY_GESTURE_TYPE_LAUNCH_APPLICATION to AppCategories,
@@ -119,7 +119,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_LOCK_SCREEN to R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_ALL_APPS to R.string.shortcut_helper_category_system_controls,
-            KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK to R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS to
                 R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.shortcut_helper_category_system_apps,
@@ -147,6 +146,8 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.shortcutHelper_category_split_screen,
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to R.string.shortcutHelper_category_split_screen,
             KEY_GESTURE_TYPE_DESKTOP_MODE to R.string.shortcutHelper_category_split_screen,
+            KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK to
+                R.string.shortcutHelper_category_split_screen,
 
             // App Category
             KEY_GESTURE_TYPE_LAUNCH_APPLICATION to R.string.keyboard_shortcut_group_applications,
@@ -186,7 +187,6 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.group_system_access_google_assistant,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to
                 R.string.group_system_access_google_assistant,
-            KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK to R.string.group_system_close_window,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to R.string.group_system_cycle_forward,
@@ -204,6 +204,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY to
                 R.string.system_multitasking_move_to_next_display,
             KEY_GESTURE_TYPE_DESKTOP_MODE to R.string.system_multitasking_desktop_view,
+            KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK to R.string.system_desktop_mode_close_window,
 
             // Accessibility Category
             KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS to R.string.group_accessibility_toggle_bounce_keys,

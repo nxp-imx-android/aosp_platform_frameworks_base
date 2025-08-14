@@ -25,6 +25,7 @@ import android.view.KeyEvent.KEYCODE_LEFT_BRACKET
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.KEYCODE_RIGHT_BRACKET
 import android.view.KeyEvent.KEYCODE_TAB
+import android.view.KeyEvent.KEYCODE_W
 import android.view.KeyEvent.META_ALT_ON
 import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
@@ -96,6 +97,11 @@ class MultitaskingShortcutsSourceTest : SysuiTestCase() {
                 KEYCODE_MINUS,
             ),
             Triple(
+                context.getString(R.string.system_desktop_mode_close_window),
+                META_META_ON or META_CTRL_ON,
+                KEYCODE_W,
+            ),
+            Triple(
                 context.getString(R.string.system_multiple_desktop_mode_switch_between_desks),
                 META_META_ON or META_CTRL_ON,
                 KEYCODE_LEFT_BRACKET,
@@ -159,6 +165,7 @@ class MultitaskingShortcutsSourceTest : SysuiTestCase() {
         Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
         Flags.FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS,
         Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
+        Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT,
     )
     fun shortcutGroups_desktopDisabled_doesNotContainDesktopShortcuts() {
         testScope.runTest {
