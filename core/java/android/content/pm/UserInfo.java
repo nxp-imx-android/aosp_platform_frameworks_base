@@ -451,6 +451,7 @@ public class UserInfo implements Parcelable {
         return UserManager.isUserTypeDemo(userType) || (flags & FLAG_DEMO) != 0;
     }
 
+    /** Returns whether the user is a "non-profile human user", as defined by {@link #FLAG_FULL}. */
     public boolean isFull() {
         return (flags & FLAG_FULL) == FLAG_FULL;
     }
