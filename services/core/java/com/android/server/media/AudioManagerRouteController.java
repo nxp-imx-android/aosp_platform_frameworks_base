@@ -594,7 +594,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
         for (AudioDeviceInfo audioDeviceInfo : audioDeviceInfos) {
             if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                if (currentOutputIsBLEBroadcast) {
+                if (audioDeviceInfo.getType() == AudioDeviceInfo.TYPE_BLE_BROADCAST) {
                     // Handled previously
                     continue;
                 }
