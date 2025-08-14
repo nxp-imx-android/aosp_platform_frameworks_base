@@ -96,22 +96,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ដើម្បីស្ដារកម្មវិធីនេះ អ្នកនឹងត្រូវដំឡើង <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"មានបញ្ហាក្នុងការព្យាយាមស្ដារកម្មវិធីនេះ"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> គឺជាផ្នែកមួយនៃកម្មវិធីខាងក្រោម៖ <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;កម្មវិធីនេះត្រូវបានទប់ស្កាត់។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីនេះ។ កម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព ដូច្នេះកម្មវិធីមិនត្រូវបានដំឡើងទេ។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីនេះ។ កំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព ដូច្នេះកម្មវិធីមិនត្រូវបានដំឡើងកំណែទេ។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;កម្មវិធីនេះត្រូវបានទប់ស្កាត់ ដោយសារមានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ ដោយសារមានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ប្រសិនបើអ្នកដំឡើងដោយមិនផ្ទៀងផ្ទាត់ សូមចងចាំថាកម្មវិធីពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចធ្វើឱ្យឧបករណ៍ និងទិន្នន័យរបស់អ្នកប្រឈមនឹងហានិភ័យ។"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ប្រសិនបើអ្នកដំឡើងកំណែដោយមិនផ្ទៀងផ្ទាត់ សូមចងចាំថាកំណែថ្មីៗពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចធ្វើឱ្យឧបករណ៍ និងទិន្នន័យរបស់អ្នកប្រឈមនឹងហានិភ័យ។"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"មិនបានផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីទេ"</string>
@@ -135,7 +129,7 @@
     <string name="button_restore" msgid="4388317532933866637">"ស្ដារ"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"លុប​កំណែថ្មី"</string>
     <string name="button_settings" msgid="3837571366246132287">"ការកំណត់"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"ក្លូន <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

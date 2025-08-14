@@ -96,22 +96,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Da biste vratili ovu aplikaciju, treba da instalirate <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Došlo je do problema pri vraćanju ove aplikacije"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je deo sledeće aplikacije: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Ova aplikacija je blokirana. Da bi uređaj i podaci bili bezbedni, mogu da se instaliraju samo aplikacije verifikovanih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o verifikaciji programera&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Ova aplikacija nije ažurirana. Da bi uređaj i podaci bili bezbedni, mogu da se instaliraju samo ažuriranja verifikovanih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o verifikaciji programera&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Došlo je do problema pri verifikaciji programera ove aplikacije. Aplikacije neverifikovanih programera mogu da budu nebezbedne, pa aplikacija nije instalirana.&lt;/p&gt; &lt;a href=&gt;Saznajte više o verifikaciji programera&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Došlo je do problema pri verifikaciji programera ove aplikacije. Ažuriranja neverifikovanih programera mogu da budu nebezbedna, pa aplikacija nije ažurirana.&lt;/p&gt; &lt;a href=&gt;Saznajte više o verifikaciji programera&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Ova aplikacija je blokirana jer je došlo do problema pri verifikaciji programera. Da bi uređaj i podaci bili bezbedni, mogu da se instaliraju samo aplikacije verifikovanih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o verifikaciji programera&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Ova aplikacija nije ažurirana jer je došlo do problema pri verifikaciji programera. Da bi uređaj i podaci bili bezbedni, mogu da se instaliraju samo ažuriranja verifikovanih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o verifikaciji programera&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ako instalirate bez verifikacije, imajte na umu da aplikacije neverifikovanih programera mogu da ugroze uređaj i podatke."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ako ažurirate bez verifikacije, imajte na umu da ažuriranja neverifikovanih programera mogu da ugroze uređaj i podatke."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programer aplikacije nije verifikovan"</string>
@@ -135,7 +129,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Vrati"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Deinstaliraj ažuriranja"</string>
     <string name="button_settings" msgid="3837571366246132287">"Podešavanja"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Klon aplikacije <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

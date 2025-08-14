@@ -96,22 +96,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ఈ యాప్‌ను రీస్టోర్ చేయడానికి, మీరు <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>‌ను ఇన్‌స్టాల్ చేయాలి"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ఈ యాప్‌ను రీస్టోర్ చేయడానికి ట్రై చేస్తున్నపుడు సమస్య ఎదురైంది"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ఈ కింది యాప్‌లో భాగం: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;ఈ యాప్‌ను బ్లాక్ చేశారు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన యాప్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;ఈ యాప్‌ను అప్‌డేట్ చేయలేదు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన అప్‌డేట్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (3282697661874336467) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (4652374962587535425) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;ఈ యాప్ డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైంది. వెరిఫై చేయని డెవలపర్‌లకు చెందిన యాప్‌లు సురక్షితం కాకపోవచ్చు, కాబట్టి యాప్‌ను ఇన్‌స్టాల్ చేయలేదు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;ఈ యాప్ డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైంది. వెరిఫై చేయని డెవలపర్‌లకు చెందిన అప్‌డేట్‌లు సురక్షితం కాకపోవచ్చు, కాబట్టి యాప్‌ను అప్‌డేట్ చేయలేదు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైన కారణంగా ఈ యాప్‌ను బ్లాక్ చేశారు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన యాప్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైంది, కాబట్టి ఈ యాప్‌ను అప్‌డేట్ చేయలేదు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన అప్‌డేట్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"మీరు వెరిఫై చేయకుండా ఇన్‌స్టాల్ చేస్తే, వెరిఫై చేయని డెవలపర్‌ల యాప్‌లు మీ డివైజ్‌ను, డేటాను ప్రమాదంలో పడేయవచ్చని గుర్తుంచుకోండి."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"మీరు వెరిఫై చేయకుండా అప్‌డేట్ చేస్తే, వెరిఫై చేయని డెవలపర్‌ల అప్‌డేట్‌లు మీ డివైజ్‌ను డేటాను ప్రమాదంలో పడేయవచ్చని గుర్తుంచుకోండి."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"యాప్ డెవలపర్ వెరిఫై చేయలేదు"</string>
@@ -135,7 +129,7 @@
     <string name="button_restore" msgid="4388317532933866637">"రీస్టోర్ చేయండి"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"అప్‌డేట్‌లను అన్‌ఇన్‌స్టాల్ చేయండి"</string>
     <string name="button_settings" msgid="3837571366246132287">"సెట్టింగ్‌లు"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> క్లోన్"</string>
 </resources>

@@ -98,8 +98,10 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> — <xliff:g id="APP_NAME">%2$s</xliff:g> ilovasiga taalluqli"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Bu ilova bloklangan. Qurilma va maʼlumotlar xavfsizligini taʼminlash uchun faqat tasdiqlangan dastur ishlab chiquvchilariga mansub ilovalarni oʻrnatish mumkin.&lt;/p&gt; &lt;a href=&gt;Dastur ishlab chiquvchilarni tekshirish haqida batafsil&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Bu ilova yangilanmadi. Qurilma va maʼlumotlar xavfsizligini taʼminlash uchun faqat tasdiqlangan dastur ishlab chiquvchilariga mansub ilovalarni oʻrnatish mumkin.&lt;/p&gt; &lt;a href=&gt;Dastur ishlab chiquvchilarni tekshirish haqida batafsil&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="3282697661874336467">"&lt;p&gt;Bu ilova oʻrnatilmagan. Tekshirilmagan dastur ishlab chiquvchilarga mansub ilovalar xavfsiz boʻlmasligi mumkin.&lt;/p&gt; &lt;p&gt;Ilova dasturchisini tekshirish uchun internetga ulanish talab qilinadi. Qurilmangiz internetga ulanganini tekshirib, keyin ilovani qayta oʻrnatishga urining. &lt;/p&gt; &lt;a href=&gt;Dastur ishlab chiquvchilarni tekshirish haqida batafsil&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="4652374962587535425">"&lt;p&gt;Bu ilova yangilanmadi. Tasdiqlanmagan dasturchilarga mansub apdeytlar xavfsiz boʻlmasligi mumkin.&lt;/p&gt; &lt;p&gt;Ilova dasturchisini tekshirish uchun internetga ulanish talab qilinadi. Qurilmangiz internetga ulanganini tekshirib, keyin ilovani qayta yangilashga urining. &lt;/p&gt; &lt;a href=&gt;Dastur ishlab chiquvchilarni tekshirish haqida batafsil&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
+    <skip />
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Bu ilova dasturchisini tasdiqlashda muammo yuz berdi. Tekshirilmagan dastur ishlab chiquvchilarga mansub ilovalar xavfsiz boʻlmasligi mumkin, shuning uchun ilova oʻrnatilmadi.&lt;/p&gt; &lt;a href=&gt;Dastur ishlab chiquvchilarni tekshirish haqida batafsil&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Bu ilova dasturchisini tasdiqlashda muammo yuz berdi. Tasdiqlanmagan dasturchilarga mansub apdeytlar xavfsiz boʻlmasligi mumkin, shuning uchun ilova yangilanmadi.&lt;/p&gt; &lt;a href=&gt;Dasturchilarni tasdiqlash haqida batafsil&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Dasturchini tasdiqlashda muammo yuz bergani uchun bu ilova bloklandi. Qurilma va maʼlumotlar xavfsizligini taʼminlash uchun faqat tasdiqlangan dastur ishlab chiquvchilariga mansub ilovalarni oʻrnatish mumkin.&lt;/p&gt; &lt;a href=&gt;Dastur ishlab chiquvchilarni tekshirish haqida batafsil&lt;/a&gt;"</string>
@@ -127,7 +129,7 @@
     <string name="button_restore" msgid="4388317532933866637">"Tiklash"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Yangilanishlarni oʻchirish"</string>
     <string name="button_settings" msgid="3837571366246132287">"Sozlamalar"</string>
-    <!-- no translation found for button_retry (81109241832968353) -->
+    <!-- no translation found for button_retry (6736082260813816198) -->
     <skip />
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> nusxasi"</string>
 </resources>
