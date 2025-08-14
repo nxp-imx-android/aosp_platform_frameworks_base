@@ -60,6 +60,7 @@ import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -116,6 +117,7 @@ import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
 
 /** Factory to simplify the dependency management for [StatusBarRoot] */
+@PerDisplaySingleton
 class StatusBarRootFactory
 @Inject
 constructor(

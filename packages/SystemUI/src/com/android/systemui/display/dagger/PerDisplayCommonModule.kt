@@ -71,6 +71,7 @@ interface PerDisplayCommonModule {
     fun bindsDisplayStateInteractor(impl: DisplayStateInteractorImpl): DisplayStateInteractor
 
     @Binds
+    @PerDisplaySingleton
     @DisplayAware
     fun statusBarRootFactory(statusBarRootFactory: StatusBarRootFactory): StatusBarRootFactory
 
