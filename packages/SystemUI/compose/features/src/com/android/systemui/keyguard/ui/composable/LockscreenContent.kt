@@ -32,6 +32,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscreenSceneBlueprint
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.NotificationLockscreenScrim
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
@@ -46,6 +47,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 class LockscreenContent(
     private val viewModelFactory: LockscreenContentViewModel.Factory,
     private val notificationScrimViewModelFactory: NotificationLockscreenScrimViewModel.Factory,
+    private val lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
     private val blueprints: Set<@JvmSuppressWildcards ComposableLockscreenSceneBlueprint>,
     private val clockInteractor: KeyguardClockInteractor,
     private val interactionJankMonitor: InteractionJankMonitor,
@@ -65,13 +67,16 @@ class LockscreenContent(
                 )
             }
         val notificationLockscreenScrimViewModel =
-            rememberViewModel("LockscreenContent-scrimViewModel") {
+            rememberViewModel("LockscreenContent-notificationScrimViewModel") {
                 notificationScrimViewModelFactory.create()
+            }
+        val lockscreenFrontScrimViewModel =
+            rememberViewModel("LockscreenContent-frontScrimViewModel") {
+                lockscreenFrontScrimViewModelFactory.create()
             }
 
         // Ensure clock events are connected. This is a no-op if they are already registered.
         clockInteractor.clockEventController.registerListeners()
-
         if (!viewModel.isContentVisible) {
             // If the content isn't supposed to be visible, show a large empty box as it's needed
             // for scene transition animations (can't just skip rendering everything or shared
@@ -93,6 +98,7 @@ class LockscreenContent(
                 modifier.sysuiResTag("keyguard_root_view").element(LockscreenElementKeys.Root),
             )
             NotificationLockscreenScrim(notificationLockscreenScrimViewModel)
+            LockscreenFrontScrim(lockscreenFrontScrimViewModel)
         }
     }
 }
