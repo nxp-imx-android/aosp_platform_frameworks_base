@@ -125,16 +125,6 @@ flag {
 }
 
 flag {
-    name: "only_reset_magnification_if_needed_when_destroy_handler"
-    namespace: "accessibility"
-    description: "Don't reset the activated magnification if the magnification feature is still enabled when AccessibilityInputFilter recreates gesture handler."
-    bug: "417633371"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "pointer_up_motion_event_in_touch_exploration"
     namespace: "accessibility"
     description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
