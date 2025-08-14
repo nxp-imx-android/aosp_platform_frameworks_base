@@ -152,16 +152,17 @@ fun DesktopStatusBar(
 
 @Composable
 private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modifier = Modifier) {
+    val chipHighlightModel =
+        if (viewModel.isNotificationsChipHighlighted) {
+            ChipHighlightModel.Strong
+        } else {
+            ChipHighlightModel.Transparent
+        }
     ShadeHighlightChip(
         modifier = modifier,
         onClick = { viewModel.onNotificationIconChipClicked() },
-        backgroundColor =
-            if (viewModel.isNotificationsChipHighlighted) {
-                ChipHighlightModel.Strong.backgroundColor
-            } else {
-                Color.Transparent
-            },
-        onHoveredBackgroundColor = ChipHighlightModel.Transparent.onHoveredBackgroundColor,
+        backgroundColor = chipHighlightModel.backgroundColor,
+        onHoveredBackgroundColor = chipHighlightModel.onHoveredBackgroundColor,
         horizontalArrangement =
             Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
@@ -187,16 +188,17 @@ private fun QuickSettingsChip(
     iconManagerFactory: TintedIconManager.Factory,
     modifier: Modifier = Modifier,
 ) {
+    val chipHighlightModel =
+        if (viewModel.isQuickSettingsChipHighlighted) {
+            ChipHighlightModel.Strong
+        } else {
+            ChipHighlightModel.Transparent
+        }
     ShadeHighlightChip(
         modifier = modifier,
         onClick = { viewModel.onQuickSettingsChipClicked() },
-        backgroundColor =
-            if (viewModel.isQuickSettingsChipHighlighted) {
-                ChipHighlightModel.Strong.backgroundColor
-            } else {
-                Color.Transparent
-            },
-        onHoveredBackgroundColor = ChipHighlightModel.Transparent.onHoveredBackgroundColor,
+        backgroundColor = chipHighlightModel.backgroundColor,
+        onHoveredBackgroundColor = chipHighlightModel.onHoveredBackgroundColor,
         horizontalArrangement =
             Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
