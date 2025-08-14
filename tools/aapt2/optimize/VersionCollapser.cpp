@@ -98,7 +98,8 @@ static void CollapseVersions(IAaptContext* context, int min_sdk, ResourceEntry* 
         // Only return Configs that differ in SDK version.
         config_without_sdk.version = val->config.version;
         return config_without_sdk == val->config &&
-               val->config.sdkVersion <= min_sdk;
+               (val->config.sdkVersion < min_sdk ||
+                (val->config.sdkVersion == min_sdk && val->config.minorVersion == 0));
       };
 
       // Remove the rest that match; all of them will be overridden by this one.
