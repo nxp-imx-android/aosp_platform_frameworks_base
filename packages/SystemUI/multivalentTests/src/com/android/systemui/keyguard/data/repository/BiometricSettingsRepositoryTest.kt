@@ -38,9 +38,9 @@ import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUT
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.AuthController
-import com.android.systemui.biometrics.data.repository.FaceSensorInfo
 import com.android.systemui.biometrics.data.repository.FakeFacePropertyRepository
 import com.android.systemui.biometrics.data.repository.FakeFingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.coroutines.collectLastValue
@@ -207,9 +207,7 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
             runCurrent()
 
             // start state
-            authController.stub {
-                on { isFingerprintEnrolled(anyInt()) } doReturn true
-            }
+            authController.stub { on { isFingerprintEnrolled(anyInt()) } doReturn true }
             enrollmentChange(UNDER_DISPLAY_FINGERPRINT, PRIMARY_USER_ID, true)
             assertThat(fingerprintAllowed()).isTrue()
             assertThat(faceAllowed()).isFalse()
@@ -226,9 +224,7 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
             runCurrent()
 
             // start state
-            authController.stub {
-                on { isFaceAuthEnrolled(anyInt()) } doReturn true
-            }
+            authController.stub { on { isFaceAuthEnrolled(anyInt()) } doReturn true }
             enrollmentChange(FACE, PRIMARY_USER_ID, true)
             assertThat(fingerprintAllowed()).isFalse()
             assertThat(faceAllowed()).isTrue()
@@ -479,14 +475,14 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
             // Simulate call to register callback when in multiple users setup
             biometricManager.stub {
                 on { registerEnabledOnKeyguardCallback(any()) } doAnswer
-                        { invocation ->
-                            val callback =
-                                invocation.arguments[0] as IBiometricEnabledOnKeyguardCallback
-                            callback.onChanged(true, PRIMARY_USER_ID, TYPE_FACE)
-                            callback.onChanged(true, PRIMARY_USER_ID, TYPE_FINGERPRINT)
-                            callback.onChanged(true, ANOTHER_USER_ID, TYPE_FACE)
-                            callback.onChanged(true, ANOTHER_USER_ID, TYPE_FINGERPRINT)
-                        }
+                    { invocation ->
+                        val callback =
+                            invocation.arguments[0] as IBiometricEnabledOnKeyguardCallback
+                        callback.onChanged(true, PRIMARY_USER_ID, TYPE_FACE)
+                        callback.onChanged(true, PRIMARY_USER_ID, TYPE_FINGERPRINT)
+                        callback.onChanged(true, ANOTHER_USER_ID, TYPE_FACE)
+                        callback.onChanged(true, ANOTHER_USER_ID, TYPE_FINGERPRINT)
+                    }
             }
             authController.stub {
                 on { isFingerprintEnrolled(anyInt()) } doReturn true
