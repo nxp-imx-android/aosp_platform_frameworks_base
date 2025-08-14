@@ -47,6 +47,7 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.Flags.enableSuggestedDeviceUi
+import com.android.systemui.Flags.mediaFrameDimensionsFix
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -1261,11 +1262,38 @@ constructor(
             // Let's remeasure the carousel
             val widthSpec = desiredHostState?.measurementInput?.widthMeasureSpec ?: 0
             val heightSpec = desiredHostState?.measurementInput?.heightMeasureSpec ?: 0
-            mediaCarousel.measure(widthSpec, heightSpec)
-            mediaCarousel.layout(0, 0, width, mediaCarousel.measuredHeight)
+            mediaCarousel.measureAndLayout(
+                widthSpec,
+                heightSpec,
+                width,
+                mediaCarousel.measuredHeight,
+            )
+            if (mediaFrameDimensionsFix()) {
+                debugLogger.logMediaCarouselDimensions(
+                    reason = "update carousel size",
+                    mediaCarousel.boundsOnScreen,
+                    desiredLocation,
+                )
+                mediaFrame.measureAndLayout(
+                    widthSpec,
+                    heightSpec,
+                    width,
+                    mediaCarousel.measuredHeight,
+                )
+            }
             // Update the padding after layout; view widths are used in RTL to calculate scrollX
             mediaCarouselScrollHandler.playerWidthPlusPadding = playerWidthPlusPadding
         }
+    }
+
+    private fun ViewGroup.measureAndLayout(
+        widthSpec: Int,
+        heightSpec: Int,
+        width: Int,
+        height: Int,
+    ) {
+        measure(widthSpec, heightSpec)
+        layout(0, 0, width, height)
     }
 
     fun onCarouselVisibleToUser() {
