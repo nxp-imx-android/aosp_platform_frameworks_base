@@ -48,6 +48,7 @@ import androidx.annotation.NonNull;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
+import com.android.systemui.Flags;
 import com.android.systemui.LauncherProxyService;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -378,6 +379,16 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                 mFullscreenMagnificationControllerSupplier.get(displayId);
         if (fullscreenMagnificationController != null) {
             fullscreenMagnificationController.onFullscreenMagnificationActivationChanged(activated);
+        }
+    }
+
+    @Override
+    @MainThread
+    public void onDisplayRemoved(int displayId) {
+        if (Flags.cleanupInstancesWhenDisplayRemoved()) {
+            // Cleanup the cached instances for specific display
+            mMagnificationSettingsSupplier.remove(displayId);
+            mModeSwitchesController.onDisplayRemoved(displayId);
         }
     }
 
