@@ -34,11 +34,16 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.setSceneTransition
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.phone.ScrimState
 import com.android.systemui.testKosmos
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -77,6 +82,8 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
     fun lockscreenFadeOut() =
         kosmos.runTest {
             val values by collectValues(underTest.lockscreenAlpha)
+
+            startLockscreenToDreamSceneTransition()
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 steps =
                     listOf(
@@ -101,6 +108,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
         kosmos.runTest {
             val values by collectValues(underTest.lockscreenAlpha)
             shadeExpanded(true)
+            startShadeToDreamSceneTransition()
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 steps =
@@ -123,6 +131,8 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
     fun shortcutsFadeOut() =
         kosmos.runTest {
             val values by collectValues(underTest.shortcutsAlpha)
+
+            startLockscreenToDreamSceneTransition()
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 steps =
                     listOf(
@@ -147,6 +157,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
         kosmos.runTest {
             val values by collectValues(underTest.shortcutsAlpha)
             shadeExpanded(true)
+            startShadeToDreamSceneTransition()
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 steps =
@@ -171,6 +182,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
             val pixels = 100
             val values by collectValues(underTest.lockscreenTranslationY(pixels))
 
+            startLockscreenToDreamSceneTransition()
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 steps =
                     listOf(
@@ -195,6 +207,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
         kosmos.runTest {
             val values by collectValues(underTest.deviceEntryParentViewAlpha)
             shadeExpanded(true)
+            startShadeToDreamSceneTransition()
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 steps =
@@ -218,6 +231,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
         kosmos.runTest {
             val actual by collectLastValue(underTest.deviceEntryParentViewAlpha)
             shadeExpanded(false)
+            startLockscreenToDreamSceneTransition()
 
             // fade out
             fakeKeyguardTransitionRepository.sendTransitionStep(step(0f, TransitionState.STARTED))
@@ -231,6 +245,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
             assertThat(actual).isEqualTo(0f)
 
             fakeKeyguardTransitionRepository.sendTransitionStep(step(1f, TransitionState.FINISHED))
+
             assertThat(actual).isEqualTo(0f)
         }
 
@@ -239,6 +254,7 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
         kosmos.runTest {
             val value by collectLastValue(underTest.scrimAlpha)
 
+            startLockscreenToDreamSceneTransition()
             for (step in listOf(0f, 0.2f, 0.5f, 0.8f, 1.0f)) {
                 fakeKeyguardTransitionRepository.sendTransitionStep(step(step))
                 assertThat(value?.behindAlpha)
@@ -246,13 +262,34 @@ class LockscreenToDreamingTransitionViewModelTest(flags: FlagsParameterization) 
             }
         }
 
+    private fun Kosmos.startShadeToDreamSceneTransition() {
+        if (SceneContainerFlag.isEnabled) {
+            setSceneTransition(
+                Transition(from = Scenes.Shade, to = Scenes.Dream, progress = flowOf(0f))
+            )
+        }
+    }
+
+    private fun Kosmos.startLockscreenToDreamSceneTransition() {
+        if (SceneContainerFlag.isEnabled) {
+            setSceneTransition(
+                Transition(from = Scenes.Lockscreen, to = Scenes.Dream, progress = flowOf(0f))
+            )
+        }
+    }
+
     private fun step(
         value: Float,
         state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return TransitionStep(
             from = KeyguardState.LOCKSCREEN,
-            to = KeyguardState.DREAMING,
+            to =
+                if (SceneContainerFlag.isEnabled) {
+                    KeyguardState.UNDEFINED
+                } else {
+                    KeyguardState.DREAMING
+                },
             value = value,
             transitionState = state,
             ownerName = "LockscreenToDreamingTransitionViewModelTest",
