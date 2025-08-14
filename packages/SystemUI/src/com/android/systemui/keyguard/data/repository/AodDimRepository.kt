@@ -24,5 +24,9 @@ import javax.inject.Inject
 
 @SysUISingleton
 class AodDimRepository @Inject constructor() {
+    /** Dim to apply on top of AOD UI. */
     var dimAmount by mutableFloatStateOf(0f)
+
+    /** Dim to apply on top of AOD wallpaper. */
+    var wallpaperDimAmount by mutableFloatStateOf(0f)
 }

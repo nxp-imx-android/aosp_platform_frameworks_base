@@ -66,10 +66,16 @@ public interface DozeHost {
     void onSlpiTap(float x, float y);
 
     /**
-     * Artificially dim down the the display by changing scrim opacities.
+     * Artificially dim down the display by changing scrim opacities.
      * @param scrimOpacity opacity from 0 to 1.
      */
     default void setAodDimmingScrim(float scrimOpacity) {}
+
+    /**
+     * Artificially dim down the wallpaper by changing scrim opacities.
+     * @param scrimOpacity opacity from 0 to 1.
+     */
+    default void setAodWallpaperDimmingScrim(float scrimOpacity) {}
 
     /**
      * Sets the actual display brightness.
