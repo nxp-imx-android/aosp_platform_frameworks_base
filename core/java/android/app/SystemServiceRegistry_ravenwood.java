@@ -15,16 +15,31 @@
  */
 package android.app;
 
+import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.isExperimentalApiEnabled;
+
 import android.annotation.NonNull;
 import android.app.SystemServiceRegistry.CachedServiceFetcher;
 import android.app.SystemServiceRegistry.ServiceFetcher;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.hardware.input.InputManager;
+import android.os.IBinder;
+import android.os.IUserManager;
 import android.os.PermissionEnforcer;
+import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
+import android.os.UserManager;
 import android.platform.test.ravenwood.RavenwoodPermissionEnforcer;
 import android.ravenwood.example.BlueManager;
 import android.ravenwood.example.RedManager;
+import android.view.LayoutInflater;
+import android.view.WindowManager;
+import android.view.WindowManagerImpl;
+import android.view.autofill.AutofillManager;
+import android.view.autofill.IAutoFillManager;
+import android.view.inputmethod.InputMethodManager;
+
+import com.android.internal.policy.PhoneLayoutInflater;
 
 public class SystemServiceRegistry_ravenwood {
     private SystemServiceRegistry_ravenwood() {
@@ -67,6 +82,8 @@ public class SystemServiceRegistry_ravenwood {
                         return new RavenwoodPermissionEnforcer();
                     }});
 
+        maybeRegisterExperimentalServices();
+
         registerRavenwoodSpecificServices();
     }
 
@@ -86,5 +103,63 @@ public class SystemServiceRegistry_ravenwood {
                         return new RedManager();
                     }
                 });
+    }
+
+    /**
+     * Register "experimental" system services, which are _not_ supported. They're used only for
+     * Ravenwood internal development.
+     */
+    private static void maybeRegisterExperimentalServices() {
+
+        if (!isExperimentalApiEnabled()) {
+            return;
+        }
+
+        registerService(Context.INPUT_SERVICE, InputManager.class,
+                new CachedServiceFetcher<InputManager>() {
+            @Override
+            public InputManager createService(ContextImpl ctx) {
+                return new InputManager(ctx.getOuterContext());
+            }});
+
+        registerService(Context.INPUT_METHOD_SERVICE, InputMethodManager.class,
+                new ServiceFetcher<InputMethodManager>() {
+            @Override
+            public InputMethodManager getService(ContextImpl ctx) {
+                return InputMethodManager.forContext(ctx.getOuterContext());
+            }});
+
+        registerService(Context.WINDOW_SERVICE, WindowManager.class,
+                new CachedServiceFetcher<WindowManager>() {
+            @Override
+            public WindowManager createService(ContextImpl ctx) {
+                return new WindowManagerImpl(ctx);
+            }});
+
+        registerService(Context.LAYOUT_INFLATER_SERVICE, LayoutInflater.class,
+                new CachedServiceFetcher<LayoutInflater>() {
+            @Override
+            public LayoutInflater createService(ContextImpl ctx) {
+                return new PhoneLayoutInflater(ctx.getOuterContext());
+            }});
+
+        registerService(Context.USER_SERVICE, UserManager.class,
+                new CachedServiceFetcher<UserManager>() {
+            @Override
+            public UserManager createService(ContextImpl ctx) throws ServiceNotFoundException {
+                IBinder b = ServiceManager.getServiceOrThrow(Context.USER_SERVICE);
+                IUserManager service = IUserManager.Stub.asInterface(b);
+                return new UserManager(ctx, service);
+            }});
+
+        registerService(Context.AUTOFILL_MANAGER_SERVICE, AutofillManager.class,
+                new CachedServiceFetcher<AutofillManager>() {
+            @Override
+            public AutofillManager createService(ContextImpl ctx) throws ServiceNotFoundException {
+                // Get the services without throwing as this is an optional feature
+                IBinder b = ServiceManager.getService(Context.AUTOFILL_MANAGER_SERVICE);
+                IAutoFillManager service = IAutoFillManager.Stub.asInterface(b);
+                return new AutofillManager(ctx.getOuterContext(), service);
+            }});
     }
 }

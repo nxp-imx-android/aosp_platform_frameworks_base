@@ -15,7 +15,15 @@
  */
 package android.app;
 
+import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.onExperimentalApiCalled;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.UiThread;
+import android.content.Intent;
+import android.os.Bundle;
 import android.platform.test.ravenwood.RavenwoodUtils;
+import android.util.Log;
 
 public class Instrumentation_ravenwood {
     private static final String TAG = "Instrumentation_ravenwood";
@@ -25,5 +33,28 @@ public class Instrumentation_ravenwood {
 
     static void checkPendingExceptionOnRavenwood() {
         RavenwoodUtils.getMainHandler().post(() -> {});
+    }
+
+    static Activity startActivitySync(@NonNull Instrumentation inst,
+            @NonNull Intent intent,
+            @Nullable Bundle options) {
+        onExperimentalApiCalled(2);
+        return RavenwoodUtils.runOnMainThreadSync(
+                () -> startActivitySyncOnMain(inst, intent, options));
+    }
+
+    @UiThread
+    private static Activity startActivitySyncOnMain(
+            @NonNull Instrumentation inst,
+            @NonNull Intent intent,
+            @Nullable Bundle options) {
+        Log.logStackTrace(Log.LOG_ID_MAIN, Log.INFO, TAG,
+                "startActivity: intent=" + intent + " options=" + options, 2);
+
+        try {
+            return RavenwoodActivityDriver.getInstance().createResumedActivity(intent, options);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to start activity. Intent=" + intent, e);
+        }
     }
 }

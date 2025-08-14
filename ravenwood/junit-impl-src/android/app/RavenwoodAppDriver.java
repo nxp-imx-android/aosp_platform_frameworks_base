@@ -75,6 +75,8 @@ public final class RavenwoodAppDriver {
 
     private final Instrumentation mInstrumentation;
 
+    private final RavenwoodActivityDriver mActivityDriver = RavenwoodActivityDriver.getInstance();
+
     /**
      * Constructor. It essentially simulates the start of an app lifecycle.
      *
@@ -173,6 +175,8 @@ public final class RavenwoodAppDriver {
 
         ai.sourceDir = env.getResourcesApkFile(packageName).getAbsolutePath();
         ai.publicSourceDir = ai.sourceDir;
+
+        ai.processName = packageName;
 
         // TODO: Set CE/DE data dirs too.
 

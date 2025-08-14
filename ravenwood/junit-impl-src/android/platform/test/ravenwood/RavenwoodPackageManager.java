@@ -19,20 +19,58 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
+import android.util.Log;
 
 @RavenwoodProvidingImplementation(target = PackageManager.class)
 public class RavenwoodPackageManager extends RavenwoodBasePackageManager {
+    private static final String TAG = "RavenwoodPackageManager";
 
-    private final Context mContext;
+    final Context mContext;
 
     public RavenwoodPackageManager(Context context) {
         mContext = context;
+    }
+
+    /**
+     * Create a new instance, which may support experimental APIs if they're enabled.
+     */
+    public static RavenwoodPackageManager create(Context context) {
+        if (!RavenwoodExperimentalApiChecker.isExperimentalApiEnabled()) {
+            return new RavenwoodPackageManager(context);
+        } else {
+            return new WithExperimentalApi(context);
+        }
     }
 
     @Override
     public InstrumentationInfo getInstrumentationInfo(ComponentName className, int flags)
             throws NameNotFoundException {
         return new InstrumentationInfo();
+    }
+
+    /**
+     * PackageManager implementation with experimental APIs.
+     *
+     * We extracted it into a subclass, so that RavenwoodSupportedAnnotationTest ignores
+     * experimental APIs.
+     */
+    private static class WithExperimentalApi extends RavenwoodPackageManager {
+        WithExperimentalApi(Context context) {
+            super(context);
+        }
+
+        // TODO: Support features with RavenwoodRule.
+        @Override
+        public boolean hasSystemFeature(String featureName) {
+            Log.w(TAG, "hasSystemFeature: " + featureName);
+            return true;
+        }
+
+        @Override
+        public Drawable getDefaultActivityIcon() {
+            return mContext.getDrawable(com.android.internal.R.drawable.sym_def_app_icon);
+        }
     }
 }
