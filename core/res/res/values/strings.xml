@@ -1087,9 +1087,9 @@
     <string name="permgroupdesc_xr_tracking">track eyes, face, body, and scan area</string>
 
     <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
-    <string name="permgrouplab_xr_tracking_sensitive">Precise head movement and area data</string>
+    <string name="permgrouplab_xr_tracking_sensitive">Precise movement and area data</string>
     <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
-    <string name="permgroupdesc_xr_tracking_sensitive">precisely track head and scan area</string>
+    <string name="permgroupdesc_xr_tracking_sensitive">precisely scan area and track head</string>
 
     <!-- Title for the capability of an accessibility service to retrieve window content. -->
     <string name="capability_title_canRetrieveWindowContent">Retrieve window content</string>
@@ -2000,7 +2000,7 @@
     <string name="permdesc_scene_understanding_fine">Allows the app to precisely scan your surroundings.</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
-    <string name="permlab_xr_tracking_in_background">track XR data in the background</string>
+    <string name="permlab_xr_tracking_in_background">access XR tracking in the background</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_xr_tracking_in_background">Allows the app to access XR data in the background.</string>
 
