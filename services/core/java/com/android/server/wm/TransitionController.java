@@ -1571,13 +1571,14 @@ class TransitionController {
         proto.end(token);
     }
 
-    /** Returns {@code true} if it started collecting, {@code false} if it was queued. */
-    private void queueTransition(Transition transit, OnStartCollect onStartCollect) {
+    private void queueTransition(Transition transit, OnStartCollect onStartCollect,
+            boolean noopIfDuringDisplayChange) {
         final QueuedTransition queuedTransition = new QueuedTransition(transit, onStartCollect);
 
-        // If we queue a non-display transition while a collecting transition is still not
-        // formally started, then check if collecting transition is changing a display
-        if ((transit.getFlags() & TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) == 0
+        // If we queue a non-display transition while a collecting transition
+        // is still not formally started, then check if collecting transition is changing a display.
+        if (noopIfDuringDisplayChange
+                && (transit.getFlags() & TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) == 0
                 && mCollectingTransition != null && !mCollectingTransition.hasStarted()) {
             for (int i = 0; i < mCollectingTransition.mParticipants.size(); i++) {
                 if (mCollectingTransition.mParticipants.valueAt(i).asDisplayContent() != null) {
@@ -1592,11 +1593,22 @@ class TransitionController {
                 "Queueing transition: %s", transit);
     }
 
-    /** Returns {@code true} if it started collecting, {@code false} if it was queued. */
+    /** @see #startCollectOrQueue(Transition, OnStartCollect, boolean) */
     boolean startCollectOrQueue(Transition transit, OnStartCollect onStartCollect) {
+        return startCollectOrQueue(transit, onStartCollect, false /* isDirectFromShell */);
+    }
+
+    /**
+     * Returns {@code true} if it started collecting, {@code false} if it was queued.
+     *
+     * @param noopIfDuringDisplayChange true we should no-op this transition when a display
+     *                                  changing transition is collecting but not formally started.
+     */
+    boolean startCollectOrQueue(Transition transit, OnStartCollect onStartCollect,
+            boolean noopIfDuringDisplayChange) {
         if (!mQueuedTransitions.isEmpty()) {
             // Just add to queue since we already have a queue.
-            queueTransition(transit, onStartCollect);
+            queueTransition(transit, onStartCollect, noopIfDuringDisplayChange);
             return false;
         }
         if (mSyncEngine.hasActiveSync()) {
@@ -1615,7 +1627,7 @@ class TransitionController {
             } else {
                 Slog.w(TAG, "Ongoing Sync outside of transition.");
             }
-            queueTransition(transit, onStartCollect);
+            queueTransition(transit, onStartCollect, noopIfDuringDisplayChange);
             return false;
         }
         moveToCollecting(transit);
