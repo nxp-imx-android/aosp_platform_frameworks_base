@@ -4561,6 +4561,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_SHOW_HOME_BEHIND_DESKTOP)
+    fun onDesktopWindowClose_singleActiveTask_showHomeBehindDesktop_doesNotLaunchHome() {
+        desktopState.shouldShowHomeBehindDesktop = true
+        val task = setUpFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
+
+        wct.assertWithoutPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
+    }
+
+    @Test
     fun tilingBroken_onTaskMinimised() {
         val task = setUpFreeformTask()
         val transition = Binder()
