@@ -18,7 +18,6 @@ package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.WorkerThread;
 import android.app.appfunctions.AppFunctionAttribution;
 import android.app.appfunctions.AppFunctionManager.AccessHistory;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -35,7 +34,8 @@ import android.util.Slog;
 import java.util.Objects;
 
 /** The database helper for managing AppFunction access histories. */
-public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
+public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
+        implements AppFunctionAccessHistory {
 
     private static final class AccessHistoryTable {
         static final String DB_TABLE = "appfunction_access";
@@ -85,7 +85,7 @@ public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "AppFunctionDatabase";
 
-    AppFunctionAccessDatabaseHelper(@NonNull Context context) {
+    AppFunctionSQLiteAccessHistory(@NonNull Context context) {
         super(context, DB_NAME, /* factory= */ null, DB_VERSION);
     }
 
@@ -102,7 +102,7 @@ public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
 
-    /** Queries the AppFunction access histories. */
+    @Override
     @Nullable
     public Cursor queryAppFunctionAccessHistory(
             @Nullable String[] projection,
@@ -134,12 +134,7 @@ public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * Inserts an AppFunction access history to the given database.
-     *
-     * @return The row id or -1 if fail to insert.
-     */
-    @WorkerThread
+    @Override
     public long insertAppFunctionAccessHistory(
             @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long duration) {
         Objects.requireNonNull(aidlRequest);
@@ -193,13 +188,7 @@ public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
         return values;
     }
 
-    /**
-     * Deletes expired AppFunction access histories from the database.
-     *
-     * @param retentionMillis The maximum age of records to keep, in milliseconds. Records older
-     *     than this will be deleted.
-     */
-    @WorkerThread
+    @Override
     public void deleteExpiredAppFunctionAccessHistories(long retentionMillis) {
         try {
             final SQLiteDatabase db = getWritableDatabase();
@@ -212,8 +201,7 @@ public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Deletes AppFunction access histories that are associated with the given packageName. */
-    @WorkerThread
+    @Override
     public void deleteAppFunctionAccessHistories(@NonNull String packageName) {
         Objects.requireNonNull(packageName);
 
@@ -233,8 +221,7 @@ public final class AppFunctionAccessDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Deletes all AppFunction access histories. */
-    @WorkerThread
+    @Override
     public void deleteAll() {
         try {
             final SQLiteDatabase db = getWritableDatabase();

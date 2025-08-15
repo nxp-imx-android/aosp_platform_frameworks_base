@@ -22,12 +22,12 @@ import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
 import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.app.appfunctions.ExecuteAppFunctionResponse
-import android.app.appfunctions.IAppFunctionService
 import android.app.appfunctions.IExecuteAppFunctionCallback
 import android.app.appsearch.GenericDocument
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
+import android.os.IBinder
 import android.os.UserHandle
 import android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED
 import android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED
@@ -42,6 +42,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.util.concurrent.MoreExecutors
+import java.util.concurrent.Executors
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -54,8 +55,7 @@ import org.mockito.kotlin.whenever
 /** Tests that AppFunctionsStatsLog logs AppFunctionsRequestReported with the expected values. */
 @RunWith(AndroidJUnit4::class)
 class AppFunctionsLoggingTest {
-    @get:Rule
-    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule
     val mExtendedMockitoRule: ExtendedMockitoRule =
@@ -77,17 +77,20 @@ class AppFunctionsLoggingTest {
     private val mServiceImpl =
         AppFunctionManagerServiceImpl(
             mContext,
-            mock<RemoteServiceCaller<IAppFunctionService>>(),
-            mock<CallerValidator>(),
-            mock<ServiceHelper>(),
-            ServiceConfigImpl(),
-            mAppFunctionsLoggerWrapper,
             mock<PackageManagerInternal>(),
             mock<AppFunctionAccessServiceInterface>(),
             mock<IUriGrantsManager>(),
-            mock<UriGrantsManagerInternal>(),
-            mock<DeviceSettingHelper>(),
+            mock<UriGrantsManagerInternal>().apply {
+                whenever(this.newUriPermissionOwner(any())).thenReturn(mock<IBinder>())
+            },
+            mAppFunctionsLoggerWrapper,
             mock<AppFunctionAgentAllowlistStorage>(),
+            MultiUserAppFunctionAccessHistory(
+                ServiceConfigImpl(),
+                Executors.newSingleThreadScheduledExecutor(),
+            ) { _ ->
+                mock()
+            },
             MoreExecutors.directExecutor(),
         )
 
