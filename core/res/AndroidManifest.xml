@@ -2334,12 +2334,7 @@
 
     <!-- @SystemApi @hide Allows applications to register network factory or agent -->
     <permission android:name="android.permission.NETWORK_FACTORY"
-                android:protectionLevel="signature|role"
-                android:featureFlag="!android.net.platform.flags.update_network_factory_protection_level"/>
-    <!-- @SystemApi @hide Allows applications to register network factory or agent -->
-    <permission android:name="android.permission.NETWORK_FACTORY"
-                android:protectionLevel="signature|privileged|role"
-                android:featureFlag="android.net.platform.flags.update_network_factory_protection_level" />
+                android:protectionLevel="signature|role" />
 
     <!-- @SystemApi @hide Allows applications to register a NetworkAgent for its own use.
          <p>Such networks are not available to other applications on the device unless they have
