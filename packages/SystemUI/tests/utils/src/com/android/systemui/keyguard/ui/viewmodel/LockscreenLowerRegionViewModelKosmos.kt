@@ -16,7 +16,6 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import com.android.systemui.biometrics.authController
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
@@ -25,8 +24,7 @@ val Kosmos.lockscreenLowerRegionViewModelFactory by Fixture {
     object : LockscreenLowerRegionViewModel.Factory {
         override fun create(): LockscreenLowerRegionViewModel {
             return LockscreenLowerRegionViewModel(
-                authController = authController,
-                unfoldTransitionInteractor = unfoldTransitionInteractor,
+                unfoldTransitionInteractor = unfoldTransitionInteractor
             )
         }
     }

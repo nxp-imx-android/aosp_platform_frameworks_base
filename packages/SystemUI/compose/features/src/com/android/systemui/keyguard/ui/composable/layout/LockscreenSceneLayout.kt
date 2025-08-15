@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.ui.composable.layout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.layout.Layout
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
@@ -114,31 +114,36 @@ object LockIconAlignmentLines {
  */
 @Composable
 fun ContentScope.LockscreenSceneLayout(
+    viewModel: LockscreenContentViewModel,
     elementFactory: LockscreenElementFactory,
     elementContext: LockscreenElementContext,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     val spacingAboveLockIconPx = with(density) { 64.dp.roundToPx() }
-    val spacingBetweenColumnsPx = with(density) { 32.dp.roundToPx() }
 
     Layout(
         content = {
             elementFactory.lockscreenElement(LockscreenElementKeys.StatusBar, elementContext)
             elementFactory.lockscreenElement(LockscreenElementKeys.Region.Upper, elementContext)
-            elementFactory.lockscreenElement(LockscreenElementKeys.Region.Lower, elementContext)
             elementFactory.lockscreenElement(LockscreenElementKeys.LockIcon, elementContext)
+            elementFactory.lockscreenElement(
+                LockscreenElementKeys.AmbientIndicationArea,
+                elementContext,
+            )
+            elementFactory.lockscreenElement(LockscreenElementKeys.Region.Lower, elementContext)
             elementFactory.lockscreenElement(LockscreenElementKeys.SettingsMenu, elementContext)
         },
         // Hide the lock screen elements when an overlay is shown above.
         modifier = modifier.thenIf(isIdleWithOverlay()) { Modifier.graphicsLayer { alpha = 0f } },
     ) { measurables, constraints ->
-        check(measurables.size == 5)
+        check(measurables.size == 6)
         val statusBarMeasurable = measurables[0]
-        val contentMeasurable = measurables[1]
-        val bottomAreaMeasurable = measurables[2]
-        val lockIconMeasurable = measurables[3]
-        val settingsMenuMeasurable = measurables[4]
+        val upperRegionMeasurable = measurables[1]
+        val lockIconMeasurable = measurables[2]
+        val ambientIndicationMeasurable = measurables[3]
+        val lowerRegionMeasurable = measurables[4]
+        val settingsMenuMeasurable = measurables[5]
 
         val statusBarPlaceable =
             statusBarMeasurable.measure(constraints = Constraints.fixedWidth(constraints.maxWidth))
@@ -156,11 +161,20 @@ fun ContentScope.LockscreenSceneLayout(
                 bottom = lockIconPlaceable[LockIconAlignmentLines.Bottom],
             )
 
-        val lockIconConstrainedMaxHeight =
+        val ambientIndicationPlaceable =
+            ambientIndicationMeasurable.measure(
+                constraints = Constraints.fixedWidth(constraints.maxWidth)
+            )
+
+        var lockIconConstrainedMaxHeight =
             lockIconBounds.top - spacingAboveLockIconPx - statusBarPlaceable.measuredHeight
 
-        val contentPlaceable =
-            contentMeasurable.measure(
+        if (!viewModel.isUdfpsSupported) {
+            lockIconConstrainedMaxHeight -= ambientIndicationPlaceable.measuredHeight
+        }
+
+        val upperRegionPlaceable =
+            upperRegionMeasurable.measure(
                 Constraints(
                     minWidth = 0,
                     maxWidth = constraints.maxWidth.coerceAtLeast(0),
@@ -169,16 +183,31 @@ fun ContentScope.LockscreenSceneLayout(
                 )
             )
 
-        val bottomAreaPlaceable =
-            bottomAreaMeasurable.measure(constraints = Constraints.fixedWidth(constraints.maxWidth))
+        val lowerRegionPlaceable =
+            lowerRegionMeasurable.measure(
+                constraints = Constraints.fixedWidth(constraints.maxWidth)
+            )
 
         val settingsMenuPleaceable = settingsMenuMeasurable.measure(constraints)
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             statusBarPlaceable.place(0, 0)
-            contentPlaceable.placeRelative(0, statusBarPlaceable.measuredHeight)
-            bottomAreaPlaceable.place(0, constraints.maxHeight - bottomAreaPlaceable.measuredHeight)
+            upperRegionPlaceable.placeRelative(0, statusBarPlaceable.measuredHeight)
             lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
+            if (viewModel.isUdfpsSupported) {
+                ambientIndicationPlaceable.place(x = 0, y = lockIconBounds.bottom)
+            } else {
+                ambientIndicationPlaceable.place(
+                    x = 0,
+                    y = lockIconBounds.top - ambientIndicationPlaceable.measuredHeight,
+                )
+            }
+
+            lowerRegionPlaceable.place(
+                0,
+                constraints.maxHeight - lowerRegionPlaceable.measuredHeight,
+            )
+
             settingsMenuPleaceable.placeRelative(
                 x = (constraints.maxWidth - settingsMenuPleaceable.measuredWidth) / 2,
                 y = constraints.maxHeight - settingsMenuPleaceable.measuredHeight,

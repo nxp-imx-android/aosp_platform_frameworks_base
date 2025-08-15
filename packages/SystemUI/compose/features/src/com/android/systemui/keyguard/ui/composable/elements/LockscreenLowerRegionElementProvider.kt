@@ -17,9 +17,7 @@
 package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -28,9 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.modifiers.padding
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenLowerRegionViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.log.LogBuffer
@@ -41,10 +38,10 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.AmbientIndicationArea
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.IndicationArea
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.collections.List
@@ -72,43 +69,29 @@ constructor(
             ) {
                 val viewModel =
                     rememberViewModel("LockscreenLowerRegion") { viewModelFactory.create() }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier =
-                        Modifier.navigationBarsPadding().fillMaxWidth().padding(horizontal = 16.dp),
+                        Modifier.navigationBarsPadding()
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal =
+                                    dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
+                            ),
                 ) {
-                    if (viewModel.isAmbientIndicationVisible) {
-                        factory.lockscreenElement(
-                            AmbientIndicationArea,
-                            context,
-                            Modifier.fillMaxWidth(),
-                        )
+                    Box(
+                        Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.start }
+                    ) {
+                        factory.lockscreenElement(Shortcuts.Start, context)
                     }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth(),
+                    Box(Modifier.weight(1f)) { factory.lockscreenElement(IndicationArea, context) }
+
+                    Box(
+                        Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }
                     ) {
-                        Box(
-                            Modifier.graphicsLayer {
-                                translationX = viewModel.unfoldTranslations.start
-                            }
-                        ) {
-                            factory.lockscreenElement(Shortcuts.Start, context)
-                        }
-
-                        Box(Modifier.weight(1f)) {
-                            factory.lockscreenElement(IndicationArea, context)
-                        }
-
-                        Box(
-                            Modifier.graphicsLayer {
-                                translationX = viewModel.unfoldTranslations.end
-                            }
-                        ) {
-                            factory.lockscreenElement(Shortcuts.End, context)
-                        }
+                        factory.lockscreenElement(Shortcuts.End, context)
                     }
                 }
             }
