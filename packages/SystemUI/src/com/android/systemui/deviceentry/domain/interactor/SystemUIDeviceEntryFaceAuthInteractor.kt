@@ -170,7 +170,12 @@ constructor(
             add(keyguardTransitionInteractor.transition(Edge.create(DOZING, LOCKSCREEN)))
 
             if (dreamsV2()) {
-                add(keyguardTransitionInteractor.transition(Edge.create(DREAMING, LOCKSCREEN)))
+                add(
+                    keyguardTransitionInteractor.transition(
+                        edge = Edge.create(Scenes.Dream, LOCKSCREEN),
+                        edgeWithoutSceneContainer = Edge.create(DREAMING, LOCKSCREEN),
+                    )
+                )
             }
         }
 
