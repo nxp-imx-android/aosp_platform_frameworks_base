@@ -97,16 +97,6 @@ public final class DisplayManagerGlobal {
     // 'adb shell setprop persist.log.tag.DisplayManager DEBUG && adb reboot'
     private static final boolean DEBUG = DisplayManager.DEBUG || sExtraDisplayListenerLogging;
 
-    // True if display info and display ids should be cached.
-    //
-    // FIXME: The cache is currently disabled because it's unclear whether we have the
-    // necessary guarantees that the caches will always be flushed before clients
-    // attempt to observe their new state.  For example, depending on the order
-    // in which the binder transactions take place, we might have a problem where
-    // an application could start processing a configuration change due to a display
-    // orientation change before the display info cache has actually been invalidated.
-    private static final boolean USE_CACHE = false;
-
     @IntDef(prefix = {"EVENT_DISPLAY_"}, flag = true, value = {
             EVENT_DISPLAY_ADDED,
             EVENT_DISPLAY_BASIC_CHANGED,
@@ -184,7 +174,6 @@ public final class DisplayManagerGlobal {
     private final SparseArray<DisplayInfo> mDisplayInfoCache = new SparseArray<>();
     private final ColorSpace mWideColorSpace;
     private final OverlayProperties mOverlayProperties;
-    private int[] mDisplayIdCache;
 
     private int mWifiDisplayScanNestCount;
 
@@ -307,16 +296,7 @@ public final class DisplayManagerGlobal {
     public int[] getDisplayIds(boolean includeDisabled) {
         try {
             synchronized (mLock) {
-                if (USE_CACHE) {
-                    if (mDisplayIdCache != null) {
-                        return mDisplayIdCache;
-                    }
-                }
-
                 int[] displayIds = mDm.getDisplayIds(includeDisabled);
-                if (USE_CACHE) {
-                    mDisplayIdCache = displayIds;
-                }
                 registerCallbackIfNeededLocked();
                 return displayIds;
             }
@@ -623,14 +603,6 @@ public final class DisplayManagerGlobal {
     private void handleDisplayEvent(int displayId, @DisplayEvent int event, boolean forceUpdate) {
         final DisplayInfo info;
         synchronized (mLock) {
-            if (USE_CACHE) {
-                mDisplayInfoCache.remove(displayId);
-
-                if (event == EVENT_DISPLAY_ADDED || event == EVENT_DISPLAY_REMOVED) {
-                    mDisplayIdCache = null;
-                }
-            }
-
             info = getDisplayInfoLocked(displayId);
             if ((event == EVENT_DISPLAY_BASIC_CHANGED
                     || event == EVENT_DISPLAY_REFRESH_RATE_CHANGED) && mDispatchNativeCallbacks) {
