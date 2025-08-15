@@ -133,7 +133,8 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     protected void handleClick(@Nullable Expandable expandable) {
         if (ScreenCaptureRecordFeaturesInteractor.INSTANCE.getShouldShowNewToolbar()) {
             UserHandle userHandle = UserHandle.of(getCurrentTileUser());
-            mActivityStarter.postQSRunnableDismissingKeyguard(
+
+            mUiHandler.post(() -> mActivityStarter.executeRunnableDismissingKeyguard(
                     () -> mScreenCaptureUiInteractor.show(
                             new ScreenCaptureUiParameters(
                                     /* screenCaptureType= */ ScreenCaptureType.RECORD,
@@ -143,7 +144,12 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
                                     /* hostAppUserHandle= */ userHandle,
                                     /* hostAppUid= */ 0
                             )
-                    ));
+                    ),
+                    /* cancelAction= */ null,
+                    /* dismissShade= */ true,
+                    /* afterKeyguardGone= */ true,
+                    /* deferred= */ false
+            ));
         } else {
             // TODO(b/409330121): call mController.onScreenRecordQsTileClick() instead.
             handleClick(() -> showDialog(expandable));

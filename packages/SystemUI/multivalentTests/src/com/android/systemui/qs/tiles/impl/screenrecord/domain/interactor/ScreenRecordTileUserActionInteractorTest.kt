@@ -29,7 +29,9 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
 import com.android.systemui.plugins.activityStarter
@@ -56,7 +58,7 @@ import org.mockito.kotlin.mock
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
     private val keyguardInteractor = kosmos.keyguardInteractor
     private val dialogTransitionAnimator = mock<DialogTransitionAnimator>()
@@ -75,6 +77,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     private val underTest by lazy {
         ScreenRecordTileUserActionInteractor(
             testScope.testScheduler,
+            kosmos.testDispatcher,
             testScope.testScheduler,
             screenRecordRepository,
             screenRecordUxController,
@@ -89,6 +92,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClick_whenStarting_cancelCountdown() = runTest {
         val startingModel = ScreenRecordModel.Starting(0)
 
@@ -97,10 +101,10 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         verify(screenRecordUxController).cancelCountdown()
     }
 
-    // Test that clicking the tile is NOP if opened from large screen.
     @Test
-    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
-    fun handleClick_fromLargeScreen_flagEnabled_isNOP() = runTest {
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    fun handleClick_withLargeScreenCaptureFlagEnabled_doesNotOpenDialog() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
         overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
 
@@ -108,11 +112,20 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
         verify(screenRecordUxController, never()).createScreenRecordDialog(any())
     }
 
-    // Test that clicking the tile not in large screen opens the recording dialog when the flag is
-    // disabled.
     @Test
+    @EnableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
-    fun handleClick_largeScreenFlagDisabled_opensRecordingDialog() = runTest {
+    fun handleClick_withNewScreenRecordFlagEnabled_doesNotOpenDialog() = runTest {
+        val recordingModel = ScreenRecordModel.DoingNothing
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+
+        underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
+        verify(screenRecordUxController, never()).createScreenRecordDialog(any())
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    fun handleClick_newScreenRecordingFlagsDisabled_opensRecordingDialog() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
@@ -120,15 +133,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
-    fun handleClick_newToolbarFlagDisabled_opensRecordingDialog() = runTest {
-        val recordingModel = ScreenRecordModel.DoingNothing
-
-        underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
-        verify(screenRecordUxController).createScreenRecordDialog(any())
-    }
-
-    @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClick_whenRecording_stopRecording() = runTest {
         val recordingModel = ScreenRecordModel.Recording
 
@@ -138,6 +143,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClick_whenDoingNothing_createDialogDismissPanelShowDialog() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
 
@@ -162,6 +168,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
      * When the input view is not null and keyguard is not showing, dialog should animate and show
      */
     @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClickFromView_whenDoingNothing_whenKeyguardNotShowing_showDialogFromView() = runTest {
         val controller = mock<DialogTransitionAnimator.Controller>()
         val expandable =
