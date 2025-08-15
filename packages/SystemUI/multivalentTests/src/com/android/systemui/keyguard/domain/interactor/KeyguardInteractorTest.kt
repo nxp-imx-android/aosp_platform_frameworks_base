@@ -25,6 +25,8 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
+import com.android.systemui.bouncer.domain.interactor.bouncerIsNotShowing
+import com.android.systemui.bouncer.domain.interactor.bouncerIsShowing
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
@@ -163,6 +165,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
             assertThat(secureCameraActive()).isTrue()
 
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             assertThat(secureCameraActive()).isFalse()
         }
 
@@ -254,10 +257,12 @@ class KeyguardInteractorTest : SysuiTestCase() {
 
             // Show bouncer
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             assertThat(secureCameraActive()).isFalse()
 
             // WHEN device is unlocked (and therefore the bouncer is no longer showing)
             bouncerRepository.setPrimaryShow(false)
+            kosmos.bouncerIsNotShowing()
 
             // THEN we still show secure camera as *not* active
             assertThat(secureCameraActive()).isFalse()
@@ -675,6 +680,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             runCurrent()
             assertThat(primaryBouncerShowing).isTrue()
         }
@@ -684,6 +690,7 @@ class KeyguardInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
             bouncerRepository.setPrimaryShowingSoon(true)
+            kosmos.bouncerIsShowing()
             runCurrent()
             assertThat(primaryBouncerShowing).isTrue()
         }
