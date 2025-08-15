@@ -203,7 +203,7 @@ public class DisplayManagerGlobalTest {
                 mDisplayManagerGlobal.getDisplayListeners();
         for (DisplayManagerGlobal.DisplayListenerDelegate delegate: delegates) {
             assertEquals(ALL_DISPLAY_EVENTS | INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE,
-                    delegate.getInternalEventFlagsMask());
+                    delegate.internalEventFlagsMask);
         }
 
         // Subscription to RR when events are supplied doesn't happen
@@ -221,11 +221,11 @@ public class DisplayManagerGlobalTest {
         int nonSubscribedListenersCount = 0;
         for (DisplayManagerGlobal.DisplayListenerDelegate delegate: delegates) {
             if (delegate.isEventFilterExplicit()) {
-                assertEquals(ALL_DISPLAY_EVENTS, delegate.getInternalEventFlagsMask());
+                assertEquals(ALL_DISPLAY_EVENTS, delegate.internalEventFlagsMask);
                 nonSubscribedListenersCount++;
             } else {
                 assertEquals(ALL_DISPLAY_EVENTS | INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE,
-                        delegate.getInternalEventFlagsMask());
+                        delegate.internalEventFlagsMask);
                 subscribedListenersCount++;
             }
         }
