@@ -261,6 +261,7 @@ public final class MessageQueue {
         }
     }
 
+    @SuppressWarnings("Finalize")
     @Override
     protected void finalize() throws Throwable {
         try {
