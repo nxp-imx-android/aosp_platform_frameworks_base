@@ -723,6 +723,8 @@ private fun ContentScope.StatusIcons(
     val statusIconContext = LocalStatusIconContext.current
     val iconContainer = statusIconContext.iconContainer(contentKey)
     val iconManager = statusIconContext.iconManager(contentKey)
+    val movableContent =
+        remember(statusIconContext, iconManager) { statusIconContext.movableContent(iconManager) }
 
     // TODO(408001821): Add support for background color like [TintedIconManager.setTint].
     if (SystemStatusIconsInCompose.isEnabled) {
@@ -746,6 +748,7 @@ private fun ContentScope.StatusIcons(
             isPrivacyChipEnabled = viewModel.isPrivacyChipVisible,
             isLocationIndicationEnabled = viewModel.isLocationIndicationEnabled,
             modifier = modifier,
+            content = movableContent,
         )
     }
 }

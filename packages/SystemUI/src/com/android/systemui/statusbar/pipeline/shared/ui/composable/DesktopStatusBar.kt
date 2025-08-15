@@ -66,6 +66,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
+import com.android.systemui.statusbar.systemstatusicons.ui.compose.movableSystemStatusIconsLegacyAndroidView
 
 object DesktopStatusBar {
     object Dimensions {
@@ -227,6 +228,9 @@ private fun QuickSettingsChip(
                     iconManagerFactory.create(iconContainer, StatusBarLocation.HOME)
                 }
 
+            val movableContent =
+                remember(iconManager) { movableSystemStatusIconsLegacyAndroidView(iconManager) }
+
             WithAdaptiveTint(
                 isHighlighted = viewModel.isQuickSettingsChipHighlighted,
                 isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
@@ -243,6 +247,7 @@ private fun QuickSettingsChip(
                     isPrivacyChipEnabled = true,
                     isTransitioning = false,
                     isLocationIndicationEnabled = true,
+                    content = movableContent,
                 )
             }
         }
