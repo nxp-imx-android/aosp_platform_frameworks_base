@@ -38,8 +38,10 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.FakeActivatable
 import com.android.systemui.log.logcatLogBuffer
+import com.android.systemui.lowlight.data.repository.ambientLightModeMonitorRepository
 import com.android.systemui.lowlight.data.repository.lowLightRepository
 import com.android.systemui.lowlight.data.repository.lowLightSettingsRepository
+import com.android.systemui.lowlight.domain.interactor.ambientLightModeInteractor
 import com.android.systemui.lowlight.domain.interactor.lowLightInteractor
 import com.android.systemui.lowlight.domain.interactor.lowLightSettingInteractor
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
@@ -63,7 +65,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -86,7 +90,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
                 userLockedInteractor = userLockedInteractor,
                 keyguardInteractor = keyguardInteractor,
                 powerInteractor = powerInteractor,
-                ambientLightModeMonitor = ambientLightModeMonitor,
+                ambientLightModeMonitorInteractor = ambientLightModeInteractor,
                 uiEventLogger = mock(),
                 lowLightBehaviorShellCommand = lowLightBehaviorShellCommand,
                 lowLightShellCommand = lowLightShellCommand,
@@ -237,6 +241,21 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
             // Verify removing subscription when screen turns off.
             setDisplayOn(false)
             assertThat(ambientLightModeMonitor.fake.started).isFalse()
+        }
+
+    @Test
+    fun testStopMonitorLowLightConditionsWhenMonitorSwapped() =
+        kosmos.runTest {
+            underTest.start()
+
+            setDisplayOn(true)
+            assertThat(ambientLightModeMonitor.fake.started).isTrue()
+
+            val secondMonitor: AmbientLightModeMonitor = mock()
+            ambientLightModeMonitorRepository.setMonitor(secondMonitor)
+
+            assertThat(ambientLightModeMonitor.fake.started).isFalse()
+            verify(secondMonitor).start(any())
         }
 
     @Test

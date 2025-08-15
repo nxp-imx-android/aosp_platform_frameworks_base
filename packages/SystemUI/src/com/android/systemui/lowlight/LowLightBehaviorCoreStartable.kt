@@ -25,7 +25,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
-import com.android.systemui.lowlight.dagger.LowLightModule.Companion.LOW_LIGHT_MONITOR
+import com.android.systemui.lowlight.domain.interactor.AmbientLowLightMonitorInteractor
 import com.android.systemui.lowlight.domain.interactor.LowLightInteractor
 import com.android.systemui.lowlight.domain.interactor.LowLightSettingsInteractor
 import com.android.systemui.lowlight.shared.model.LowLightActionEntry
@@ -46,7 +46,6 @@ import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -75,7 +74,7 @@ constructor(
     private val userLockedInteractor: UserLockedInteractor,
     keyguardInteractor: KeyguardInteractor,
     powerInteractor: PowerInteractor,
-    @Named(LOW_LIGHT_MONITOR) private val ambientLightModeMonitor: AmbientLightModeMonitor?,
+    ambientLightModeMonitorInteractor: AmbientLowLightMonitorInteractor,
     private val uiEventLogger: UiEventLogger,
     private val lowLightBehaviorShellCommand: LowLightBehaviorShellCommand,
     private val lowLightShellCommand: LowLightShellCommand,
@@ -98,28 +97,30 @@ constructor(
     /** Whether the device is currently in a low-light environment. */
     private val isLowLightFromSensor =
         if (Flags.lowLightDreamBehavior()) {
-            ambientLightModeMonitor?.let { monitor ->
-                conflatedCallbackFlow {
-                        monitor.start { lowLightMode: Int -> trySend(lowLightMode) }
-                        awaitClose { monitor.stop() }
-                    }
-                    .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
-                    .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
-                    .distinctUntilChanged()
-                    .onEach { isLowLight ->
-                        uiEventLogger.log(
-                            if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
-                            else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+            ambientLightModeMonitorInteractor.currentMonitor.flatMapLatestConflated { monitor ->
+                monitor?.let {
+                    conflatedCallbackFlow {
+                            it.start { lowLightMode: Int -> trySend(lowLightMode) }
+                            awaitClose { it.stop() }
+                        }
+                        .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
+                        .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
+                        .distinctUntilChanged()
+                        .onEach { isLowLight ->
+                            uiEventLogger.log(
+                                if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
+                                else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+                            )
+                        }
+                        // AmbientLightModeMonitor only supports a single callback, so ensure this
+                        // is re-used if there are multiple subscribers.
+                        .stateIn(
+                            scope,
+                            started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
+                            initialValue = false,
                         )
-                    }
-                    // AmbientLightModeMonitor only supports a single callback, so ensure this is
-                    // re-used if there are multiple subscribers.
-                    .stateIn(
-                        scope,
-                        started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
-                        initialValue = false,
-                    )
-            } ?: MutableStateFlow(false)
+                } ?: MutableStateFlow(false)
+            }
         } else {
             MutableStateFlow(false)
         }

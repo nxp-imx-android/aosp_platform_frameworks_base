@@ -40,6 +40,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.lowlight.AmbientLightModeMonitor
 import com.android.systemui.lowlight.ambientLightModeMonitor
+import com.android.systemui.lowlight.domain.interactor.ambientLightModeInteractor
 import com.android.systemui.lowlight.fake
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -101,7 +102,7 @@ class LowLightMonitorTest : SysuiTestCase() {
                 userLockedInteractor = userLockedInteractor,
                 keyguardInteractor = keyguardInteractor,
                 powerInteractor = powerInteractor,
-                ambientLightModeMonitor = ambientLightModeMonitor,
+                ambientLightModeMonitorInteractor = ambientLightModeInteractor,
                 uiEventLogger = mock(),
             )
         }
