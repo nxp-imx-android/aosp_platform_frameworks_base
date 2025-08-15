@@ -126,9 +126,6 @@ import android.health.connect.HealthConnectManager;
 import android.media.AudioManager;
 import android.media.MediaDrm;
 import android.media.UnsupportedSchemeException;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkRequest;
 import android.net.NetworkStats;
 import android.net.NetworkTemplate;
 import android.net.wifi.WifiManager;
@@ -966,12 +963,6 @@ public class StatsPullAtomService extends SystemService {
     }
 
     void registerEventListeners() {
-        final ConnectivityManager connectivityManager =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        // Default NetworkRequest should cover all transport types.
-        final NetworkRequest request = new NetworkRequest.Builder().build();
-        connectivityManager.registerNetworkCallback(request, new ConnectivityStatsCallback());
-
         // Enable push notifications of throttling from vendor thermal
         // management subsystem via thermalservice.
         IThermalService thermalService = getIThermalService();
@@ -5462,22 +5453,6 @@ public class StatsPullAtomService extends SystemService {
         }
     }
 
-    private static final class ConnectivityStatsCallback extends
-            ConnectivityManager.NetworkCallback {
-        @Override
-        public void onAvailable(Network network) {
-            FrameworkStatsLog.write(FrameworkStatsLog.CONNECTIVITY_STATE_CHANGED,
-                    network.getNetId(),
-                    FrameworkStatsLog.CONNECTIVITY_STATE_CHANGED__STATE__CONNECTED);
-        }
-
-        @Override
-        public void onLost(Network network) {
-            FrameworkStatsLog.write(FrameworkStatsLog.CONNECTIVITY_STATE_CHANGED,
-                    network.getNetId(),
-                    FrameworkStatsLog.CONNECTIVITY_STATE_CHANGED__STATE__DISCONNECTED);
-        }
-    }
 
     private final class StatsSubscriptionsListener
             extends SubscriptionManager.OnSubscriptionsChangedListener {
