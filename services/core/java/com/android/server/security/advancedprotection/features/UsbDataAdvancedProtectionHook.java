@@ -17,8 +17,6 @@
 package com.android.server.security.advancedprotection.features;
 
 import static android.app.Notification.EXTRA_SUBSTITUTE_APP_NAME;
-import static android.content.Intent.ACTION_SCREEN_OFF;
-import static android.content.Intent.ACTION_USER_PRESENT;
 import static android.content.Intent.ACTION_LOCKED_BOOT_COMPLETED;
 import static android.hardware.usb.UsbManager.ACTION_USB_PORT_CHANGED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
@@ -317,15 +315,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         try {
-                            if (ACTION_USER_PRESENT.equals(intent.getAction())
-                                    && !mKeyguardManager.isKeyguardLocked()) {
-                                mDelayedDisableHandler.removeCallbacksAndMessages(null);
-                                cleanUpNotificationHandlerTasks();
-                                if (!currentUserIsGuest()) {
-                                    mIsAfterFirstUnlock = true;
-                                    setUsbDataSignalIfPossible(true);
-                                }
-                            } else if (ACTION_USB_PORT_CHANGED.equals(intent.getAction())) {
+                            if (ACTION_USB_PORT_CHANGED.equals(intent.getAction())) {
                                 UsbPortStatus portStatus =
                                         intent.getParcelableExtra(
                                                 UsbManager.EXTRA_PORT_STATUS, UsbPortStatus.class);
@@ -394,12 +384,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         }
                     }
 
-                    private boolean currentUserIsGuest() {
-                        UserInfo currentUserInfo =
-                                mUserManager.getUserInfo(ActivityManager.getCurrentUser());
-                        return currentUserInfo != null && currentUserInfo.isGuest();
-                    }
-
                     private void updateDelayedNotificationTask(long delayTimeMillis) {
                         if (!mDelayedNotificationHandler.hasMessagesOrCallbacks()
                                 && delayTimeMillis > 0) {
@@ -462,10 +446,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         }
                     }
 
-                    private void cleanUpNotificationHandlerTasks() {
-                        mDelayedNotificationHandler.removeCallbacksAndMessages(null);
-                    }
-
                     // TODO:(b/401540215) Remove this as part of pre-release cleanup
                     private void dumpUsbDevices(UsbPortStatus portStatus) {
                         Map<String, UsbDevice> portStatusMap = mUsbManager.getDeviceList();
@@ -491,6 +471,10 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel(mNotificationChannel);
         }
+    }
+
+    private void cleanUpNotificationHandlerTasks() {
+        mDelayedNotificationHandler.removeCallbacksAndMessages(null);
     }
 
     private void createAndSendNotificationIfDeviceIsLocked(
@@ -699,7 +683,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private void registerReceiver() {
         final IntentFilter filter = new IntentFilter();
         filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-        filter.addAction(ACTION_USER_PRESENT);
         filter.addAction(ACTION_LOCKED_BOOT_COMPLETED);
         filter.addAction(UsbManager.ACTION_USB_PORT_CHANGED);
 
@@ -723,7 +706,16 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     @Override
                     public void onKeyguardLockedStateChanged(boolean isKeyguardLocked) {
                         Slog.d(TAG, "onKeyguardLockedStateChanged: " + isKeyguardLocked);
-                        setUsbDataSignalIfPossible(!isKeyguardLocked);
+                        if (!isKeyguardLocked) {
+                            mDelayedDisableHandler.removeCallbacksAndMessages(null);
+                            cleanUpNotificationHandlerTasks();
+                            if (!currentUserIsGuest()) {
+                                setUsbDataSignalIfPossible(true);
+                                mIsAfterFirstUnlock = true;
+                            }
+                        } else {
+                            setUsbDataSignalIfPossible(false);
+                        }
                     }
                 };
         mKeyguardManager.addKeyguardLockedStateListener(
@@ -768,6 +760,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         }
 
         return null;
+    }
+
+    private boolean currentUserIsGuest() {
+        UserInfo currentUserInfo = mUserManager.getUserInfo(ActivityManager.getCurrentUser());
+        return currentUserInfo != null && currentUserInfo.isGuest();
     }
 
     private boolean canSetUsbDataSignal() {
