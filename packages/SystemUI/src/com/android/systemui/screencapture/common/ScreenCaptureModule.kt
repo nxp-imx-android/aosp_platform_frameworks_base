@@ -17,6 +17,8 @@
 package com.android.systemui.screencapture.common
 
 import android.app.Activity
+import com.android.systemui.CoreStartable
+import com.android.systemui.screencapture.ScreenCaptureUiStartable
 import com.android.systemui.screencapture.cast.ScreenCaptureCastComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.ScreenCaptureRecordComponent
@@ -69,6 +71,11 @@ interface ScreenCaptureModule {
     @IntoMap
     @ClassKey(ScreenCaptureActivity::class)
     fun provideScreenCaptureActivity(activity: ScreenCaptureActivity): Activity
+
+    @Binds
+    @IntoMap
+    @ClassKey(ScreenCaptureUiStartable::class)
+    fun bindScreenCaptureUiStartable(impl: ScreenCaptureUiStartable): CoreStartable
 
     @Binds
     @IntoMap

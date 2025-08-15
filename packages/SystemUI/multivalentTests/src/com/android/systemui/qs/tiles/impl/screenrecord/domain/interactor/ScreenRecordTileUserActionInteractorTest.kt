@@ -36,6 +36,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
@@ -73,7 +74,6 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
 
     private val underTest by lazy {
         ScreenRecordTileUserActionInteractor(
-            context,
             testScope.testScheduler,
             testScope.testScheduler,
             screenRecordRepository,
@@ -83,6 +83,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             keyguardDismissUtil,
             dialogTransitionAnimator,
             panelInteractor,
+            kosmos.screenCaptureUiInteractor,
             mock<MediaProjectionMetricsLogger>(),
         )
     }
@@ -101,9 +102,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClick_fromLargeScreen_flagEnabled_isNOP() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
-
-        // Override the resource to enable large screen features.
-        underTest.apply { overrideResource(R.bool.config_enableLargeScreenScreencapture, true) }
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
         verify(screenRecordUxController, never()).createScreenRecordDialog(any())

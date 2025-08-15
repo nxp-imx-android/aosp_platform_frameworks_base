@@ -27,11 +27,13 @@ import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.ui.mockScreenCaptureActivity
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -72,14 +74,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(viewModel.isShowingUI).isTrue()
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
-        }
-
-    @Test
-    fun displayId_isDerivedFromActivity() =
-        testScope.runTest {
-            val displayId = 9001
-            whenever(kosmos.mockScreenCaptureActivity.displayId).thenReturn(displayId)
-            assertThat(viewModel.displayId).isEqualTo(displayId)
         }
 
     @Test
@@ -170,9 +164,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     fun takeFullscreenScreenshot_callsScreenshotInteractor_withCorrectRequest() =
         testScope.runTest {
-            val displayId = 3
-            whenever(kosmos.mockScreenCaptureActivity.displayId).thenReturn(displayId)
-
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
 
@@ -186,7 +177,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
             assertThat(capturedRequest.source)
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
-            assertThat(capturedRequest.displayId).isEqualTo(displayId)
+            assertThat(capturedRequest.displayId).isEqualTo(123)
         }
 
     @Test
@@ -214,9 +205,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     fun takePartialScreenshot_callsScreenshotInteractor_withCorrectRequest() =
         testScope.runTest {
-            val displayId = 3
-            whenever(kosmos.mockScreenCaptureActivity.displayId).thenReturn(displayId)
-
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
 
@@ -238,7 +226,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(regionBox)
-            assertThat(capturedRequest.displayId).isEqualTo(displayId)
+            assertThat(capturedRequest.displayId).isEqualTo(123)
         }
 
     @Test
@@ -348,8 +336,16 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     fun closeUI_finishesActivity() =
         testScope.runTest {
+            val uiState by
+                collectLastValue(
+                    kosmos.screenCaptureUiRepository.uiState(
+                        com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+                            .RECORD
+                    )
+                )
+
             viewModel.closeUI()
 
-            verify(kosmos.mockScreenCaptureActivity, times(1)).finish()
+            assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
         }
 }

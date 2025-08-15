@@ -21,12 +21,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
-import com.android.systemui.screencapture.ui.ScreenCaptureActivity
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import dagger.assisted.AssistedFactory
@@ -36,11 +36,11 @@ import kotlinx.coroutines.coroutineScope
 class SmallScreenCaptureRecordViewModel
 @AssistedInject
 constructor(
-    @ScreenCapture private val activity: ScreenCaptureActivity,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
     screenCaptureRecordParametersViewModel: ScreenCaptureRecordParametersViewModel.Factory,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
@@ -77,7 +77,7 @@ constructor(
     }
 
     fun dismiss() {
-        activity.finish()
+        screenCaptureUiInteractor.hide(ScreenCaptureType.RECORD)
     }
 
     fun startRecording() {
