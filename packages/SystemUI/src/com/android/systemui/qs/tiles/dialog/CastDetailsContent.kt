@@ -167,12 +167,6 @@ fun CastControllerDisconnectButton(contentManager: MediaRouteControllerContentMa
 
 private fun customizeView(listView: ListView) {
     val context = listView.context
-    val entryBackgroundStart =
-        context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_start)
-    val entryBackgroundEnd = context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_end)
-    val entryBackgroundMiddle =
-        context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_middle)
-    val entryBackgroundSingle = context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off)
 
     // This code will run after the ListView has had a chance to complete its layout.
     listView.post {
@@ -191,11 +185,16 @@ private fun customizeView(listView: ListView) {
                 val entry = child.getChildAt(0) as LinearLayout
                 entry.background =
                     when {
-                        totalItemCount == 1 -> entryBackgroundSingle
-                        adapterPosition == 0 -> entryBackgroundStart
-                        adapterPosition == totalItemCount - 1 -> entryBackgroundEnd
-                        else -> entryBackgroundMiddle
+                        totalItemCount == 1 ->
+                            context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off)
+                        adapterPosition == 0 ->
+                            context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_start)
+                        adapterPosition == totalItemCount - 1 ->
+                            context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_end)
+                        else ->
+                            context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_middle)
                     }
+
                 setPadding(context, child)
 
                 val titleTextView = entry.requireViewById<TextView>(R.id.text1)
