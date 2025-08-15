@@ -58,13 +58,19 @@ object SupervisionIntentProvider {
      */
     @JvmStatic
     fun getSettingsIntent(context: Context): Intent? {
+        val supervisionManager =
+            context.getSystemService(SupervisionManager::class.java) ?: return null
         val (intentAction, intentPackage) =
             if (Flags.enableSupervisionSettingsScreen()) {
-                val settingsAppPackage = getSettingsAppPackage(context)
+                val settingsAppPackage =
+                    if (supervisionManager.isSupervisionEnabled()) {
+                        getSettingsAppPackage(context)
+                    } else {
+                        null
+                    }
                 ACTION_SUPERVISION_SETTINGS to settingsAppPackage
             } else {
-                val supervisionManager = context.getSystemService(SupervisionManager::class.java)
-                val supervisionAppPackage = supervisionManager?.activeSupervisionAppPackage
+                val supervisionAppPackage = supervisionManager.activeSupervisionAppPackage
                 ACTION_SHOW_PARENTAL_CONTROLS to supervisionAppPackage
             }
 
