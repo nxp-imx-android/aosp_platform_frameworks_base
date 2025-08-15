@@ -654,6 +654,53 @@ package android.telephony {
 
 }
 
+package android.timezone {
+
+  @FlaggedApi("android.timezone.flags.expose_time_zone_system_api") public final class CountryTimeZones {
+    method @NonNull public String getCountryIso();
+    method @Nullable public android.icu.util.TimeZone getDefaultTimeZone();
+    method @Nullable public String getDefaultTimeZoneId();
+    method @NonNull public java.util.List<android.timezone.CountryTimeZones.TimeZoneMapping> getEffectiveTimeZoneMappingsAt(long);
+    method public boolean hasUtcZone(long);
+    method public boolean isDefaultTimeZoneBoosted();
+    method @Nullable public android.timezone.CountryTimeZones.OffsetResult lookupByOffsetWithBias(long, @NonNull android.icu.util.TimeZone, int, boolean);
+    method @Nullable public android.timezone.CountryTimeZones.OffsetResult lookupByOffsetWithBias(long, @NonNull android.icu.util.TimeZone, int);
+  }
+
+  @FlaggedApi("android.timezone.flags.expose_time_zone_system_api") public static final class CountryTimeZones.OffsetResult {
+    ctor public CountryTimeZones.OffsetResult(@NonNull android.icu.util.TimeZone, @Nullable String, boolean);
+    method @Nullable public String getCountryIsoCode();
+    method @NonNull public android.icu.util.TimeZone getTimeZone();
+    method public boolean isOnlyMatch();
+  }
+
+  @FlaggedApi("android.timezone.flags.expose_time_zone_system_api") public static final class CountryTimeZones.TimeZoneMapping {
+    method @Nullable public android.icu.util.TimeZone getTimeZone();
+    method @NonNull public String getTimeZoneId();
+  }
+
+  @FlaggedApi("android.timezone.flags.expose_time_zone_system_api") public final class MobileCountries {
+    method @NonNull public static android.timezone.MobileCountries createTestCell(@NonNull String);
+    method @NonNull public java.util.Set<java.lang.String> getCountryIsoCodes();
+    method @NonNull public String getDefaultCountryIsoCode();
+    method @NonNull public String getMcc();
+    method @Nullable public String getMnc();
+  }
+
+  @FlaggedApi("android.timezone.flags.expose_time_zone_system_api") public final class TelephonyNetworkFinder {
+    method @Nullable public android.timezone.MobileCountries findCountriesByMcc(@NonNull String);
+    method @Nullable public android.timezone.MobileCountries findCountriesByMccMnc(@NonNull String, @NonNull String);
+    method @Nullable public static android.timezone.TelephonyNetworkFinder getInstance();
+  }
+
+  @FlaggedApi("android.timezone.flags.expose_time_zone_system_api") public final class TimeZoneFinder {
+    method @Nullable public String getIanaVersion();
+    method @NonNull public static android.timezone.TimeZoneFinder getInstance();
+    method @Nullable public android.timezone.CountryTimeZones lookupCountryTimeZones(@NonNull String);
+  }
+
+}
+
 package android.util {
 
   public class AtomicFile {
