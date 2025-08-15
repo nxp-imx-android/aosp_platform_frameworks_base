@@ -198,7 +198,18 @@ interface BaseContentScope : ElementStateScope {
     /** The key of this content. */
     val contentKey: ContentKey
 
-    /** The state of the [SceneTransitionLayout] in which this content is contained. */
+    /**
+     * The state of the [SceneTransitionLayout] in which this content is contained.
+     *
+     * Important: Inside a [ContentScope.NestedSceneTransitionLayout], this will *not* be the state
+     * passed to [ContentScope.NestedSceneTransitionLayout] but a new one that delegates to it
+     * instead, so that checks on the current state also consider the ancestor STL states.
+     *
+     * @see SceneTransitionLayoutState.isIdle
+     * @see SceneTransitionLayoutState.isTransitioning
+     * @see SceneTransitionLayoutState.isTransitioningBetween
+     * @see SceneTransitionLayoutState.isTransitioningFromOrTo
+     */
     val layoutState: SceneTransitionLayoutState
 
     /** The [LookaheadScope] used by the [SceneTransitionLayout]. */

@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -65,6 +66,7 @@ import com.android.compose.animation.scene.InternalContentScope
 import com.android.compose.animation.scene.MovableElement
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
+import com.android.compose.animation.scene.NestedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutScope
@@ -295,7 +297,15 @@ internal class ContentScopeImpl(
     override val contentKey: ContentKey
         get() = content.key
 
-    override val layoutState: SceneTransitionLayoutState = layoutImpl.state
+    override val layoutState: SceneTransitionLayoutState =
+        if (layoutImpl.ancestors.isEmpty()) {
+            layoutImpl.state
+        } else {
+            NestedSceneTransitionLayoutState(
+                ancestors = layoutImpl.ancestors.fastMap { it.layoutImpl.state },
+                delegate = layoutImpl.state,
+            )
+        }
 
     override val lookaheadScope: LookaheadScope
         get() = layoutImpl.lookaheadScope

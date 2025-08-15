@@ -327,4 +327,57 @@ class ContentTest {
         assertThat(outerSceneBVisible).isTrue()
         assertThat(outerOverlayAVisible).isTrue()
     }
+
+    @Test
+    fun nestedStateInstances() {
+        @Composable
+        fun ContentScope.OnLayoutState(onLayoutState: (SceneTransitionLayoutState) -> Unit) {
+            SideEffect { onLayoutState(layoutState) }
+        }
+
+        val outerState = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneA) }
+        val middleState = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneB) }
+        val innerState = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneC) }
+
+        lateinit var outerStateFromScope: SceneTransitionLayoutState
+        lateinit var middleStateFromScope: SceneTransitionLayoutState
+        lateinit var innerStateFromScope: SceneTransitionLayoutState
+
+        rule.setContent {
+            SceneTransitionLayout(outerState) {
+                scene(SceneA) {
+                    OnLayoutState { outerStateFromScope = it }
+                    NestedSceneTransitionLayout(middleState, Modifier) {
+                        scene(SceneB) {
+                            OnLayoutState { middleStateFromScope = it }
+                            NestedSceneTransitionLayout(innerState, Modifier) {
+                                scene(SceneC) {
+                                    OnLayoutState { innerStateFromScope = it }
+                                    Box(Modifier.fillMaxSize())
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // This simple test on instances ensures that the layout state checks don't grow
+        // quadratically with the number of ancestors.
+        assertThat(outerStateFromScope).isSameInstanceAs(outerState)
+        assertThat(middleStateFromScope).isNotSameInstanceAs(middleState)
+        assertThat(innerStateFromScope).isNotSameInstanceAs(innerState)
+        assertThat(middleStateFromScope).isInstanceOf(NestedSceneTransitionLayoutState::class.java)
+        assertThat(innerStateFromScope).isInstanceOf(NestedSceneTransitionLayoutState::class.java)
+
+        val nestedMiddle = middleStateFromScope as NestedSceneTransitionLayoutState
+        val nestedInner = innerStateFromScope as NestedSceneTransitionLayoutState
+        assertThat(nestedMiddle.delegate).isSameInstanceAs(middleState)
+        assertThat(nestedInner.delegate).isSameInstanceAs(innerState)
+
+        // Make sure that ancestors point to the base STL states and not the
+        // NestedSceneTransitionLayoutState ones.
+        assertThat(nestedMiddle.ancestors).containsExactly(outerState)
+        assertThat(nestedInner.ancestors).containsExactly(outerState, middleState).inOrder()
+    }
 }
