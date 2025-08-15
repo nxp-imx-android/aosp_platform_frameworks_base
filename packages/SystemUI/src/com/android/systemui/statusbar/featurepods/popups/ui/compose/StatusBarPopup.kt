@@ -56,6 +56,7 @@ fun StatusBarPopup(
     mediaHost: MediaHost,
 ) {
     val density = Density(LocalContext.current)
+
     Popup(
         alignment = Alignment.TopCenter,
         properties =
@@ -99,6 +100,11 @@ fun StatusBarPopup(
                 is PopupChipId.ShareScreenPrivacyIndicator -> {
                     ShareScreenPrivacyIndicatorPopup()
                 }
+                /**
+                 * Some chip ids (e.g. AssistantIcon) have custom [PopupChipModel.Shown.showPopup]
+                 * and don't rely on this Composable.
+                 */
+                is PopupChipId.AssistantIcon -> {}
             }
             // Future popup types will be handled here.
         }

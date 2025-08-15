@@ -140,6 +140,7 @@ import com.android.systemui.statusbar.domain.interactor.StatusBarRegionSamplingI
 import com.android.systemui.statusbar.events.StatusBarEventsModule;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
 import com.android.systemui.statusbar.featurepods.av.AvControlsChipModule;
+import com.android.systemui.statusbar.featurepods.dagger.StatusBarFeaturePodsModule;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.inflation.NotificationRowBinder;
@@ -291,6 +292,7 @@ import javax.inject.Named;
         SmartRepliesInflationModule.class,
         SmartspaceModule.class,
         StatusBarEventsModule.class,
+        StatusBarFeaturePodsModule.class,
         StatusBarModule.class,
         StatusBarChipsModule.class,
         StatusBarPipelineModule.class,

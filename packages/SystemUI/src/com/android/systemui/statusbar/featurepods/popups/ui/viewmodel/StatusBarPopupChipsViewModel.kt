@@ -21,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.statusbar.featurepods.assistant.StatusBarAssistantIcon
+import com.android.systemui.statusbar.featurepods.assistant.ui.viewmodel.AssistantIconViewModel
 import com.android.systemui.statusbar.featurepods.av.ui.viewmodel.AvControlsChipViewModel
 import com.android.systemui.statusbar.featurepods.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
@@ -43,11 +45,13 @@ constructor(
     mediaControlChipFactory: MediaControlChipViewModel.Factory,
     avControlsChipFactory: AvControlsChipViewModel.Factory,
     shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
+    assistantIconFactory: AssistantIconViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val mediaControlChip by lazy { mediaControlChipFactory.create() }
     private val avControlsChip by lazy { avControlsChipFactory.create() }
     private val shareScreenPrivacyIndicator by lazy { shareScreenPrivacyIndicatorFactory.create() }
+    private val assistantIcon by lazy { assistantIconFactory.create() }
 
     /** The ID of the current chip that is showing its popup, or `null` if no chip is shown. */
     private var currentShownPopupChipId by mutableStateOf<PopupChipId?>(null)
@@ -57,6 +61,7 @@ constructor(
             media = mediaControlChip.chip,
             privacy = avControlsChip.chip,
             shareScreen = shareScreenPrivacyIndicator.chip,
+            assistant = assistantIcon.chip,
         )
     }
 
@@ -72,7 +77,7 @@ constructor(
                         showPopup = { currentShownPopupChipId = chip.chipId },
                         hidePopup = { currentShownPopupChipId = null },
                     )
-                }
+                } + listOfNotNull(bundle.assistant).filterIsInstance<PopupChipModel.Shown>()
         } else {
             emptyList()
         }
@@ -83,6 +88,9 @@ constructor(
             launch { avControlsChip.activate() }
             launch { mediaControlChip.activate() }
             launch { shareScreenPrivacyIndicator.activate() }
+            if (StatusBarAssistantIcon.isEnabled) {
+                launch { assistantIcon.activate() }
+            }
         }
         awaitCancellation()
     }
@@ -93,6 +101,7 @@ constructor(
             PopupChipModel.Hidden(chipId = PopupChipId.AvControlsIndicator),
         val shareScreen: PopupChipModel =
             PopupChipModel.Hidden(chipId = PopupChipId.ShareScreenPrivacyIndicator),
+        val assistant: PopupChipModel = PopupChipModel.Hidden(chipId = PopupChipId.AssistantIcon),
     )
 
     @AssistedFactory
