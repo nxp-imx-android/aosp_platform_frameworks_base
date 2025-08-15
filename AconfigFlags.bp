@@ -838,6 +838,18 @@ cc_aconfig_library {
     host_supported: true,
 }
 
+cc_aconfig_library {
+    name: "android.content.res.flags-aconfig-cc-host-ro",
+    aconfig_declarations: "android.content.res.flags-aconfig",
+    mode: "force-read-only",
+    host_supported: true,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
 // Media BetterTogether
 aconfig_declarations {
     name: "com.android.media.flags.bettertogether-aconfig",
