@@ -1032,6 +1032,10 @@ class BroadcastController {
                     brOptions.setDebugLogEnabled(false);
                 }
             }
+
+            if (!UserHandle.isCore(callingUid)) {
+                brOptions.setDebugReason(null);
+            }
         }
 
         // Verify that protected broadcasts are only being sent by system code,
