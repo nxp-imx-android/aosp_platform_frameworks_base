@@ -541,7 +541,14 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Remove listener=%s", listener);
 
-            // Remove all occurrences of the pending listener
+            // Remove all occurrences of the pending listener by launch cookie
+            for (int i = mLaunchCookieToListener.size() - 1; i >= 0; --i) {
+                if (mLaunchCookieToListener.valueAt(i) == listener) {
+                    mLaunchCookieToListener.removeAt(i);
+                }
+            }
+
+            // Remove all occurrences of the pending listener by task id
             for (int i = mPendingTaskToListener.size() - 1; i >= 0; --i) {
                 if (mPendingTaskToListener.valueAt(i) == listener) {
                     mPendingTaskToListener.removeAt(i);
