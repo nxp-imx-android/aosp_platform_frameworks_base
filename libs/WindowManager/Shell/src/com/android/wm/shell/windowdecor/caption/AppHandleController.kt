@@ -402,6 +402,7 @@ class AppHandleController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionView = viewHolder.captionHandle,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,

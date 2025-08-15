@@ -19,16 +19,20 @@ package com.android.wm.shell.windowdecor
 import android.animation.ValueAnimator
 import android.annotation.DimenRes
 import android.content.Context
-import android.content.res.Resources
+import android.content.res.ColorStateList
 import android.util.AttributeSet
+import android.view.View
 import android.widget.ImageButton
 import com.android.wm.shell.R
+import com.android.wm.shell.windowdecor.common.ColoredAppHandle
+import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 
 /**
  * [ImageButton] for the handle at the top of fullscreen apps. Has custom hover and press handling
  * to grow the handle on hover enter and shrink the handle on hover exit and press.
  */
-class HandleImageButton(context: Context?, attrs: AttributeSet?) : ImageButton(context, attrs) {
+class HandleImageButton(context: Context?, attrs: AttributeSet?) :
+    ImageButton(context, attrs), ColoredAppHandle {
     private val handleAnimator = ValueAnimator()
 
     /** Final horizontal padding for hover enter. */
@@ -72,6 +76,7 @@ class HandleImageButton(context: Context?, attrs: AttributeSet?) : ImageButton(c
     private fun animateHandle(duration: Long, endPadding: Int) {
         if (handleAnimator.isRunning) {
             handleAnimator.cancel()
+            handleAnimator.removeAllListeners()
         }
         handleAnimator.duration = duration
         handleAnimator.setIntValues(paddingLeft, endPadding)
@@ -83,10 +88,19 @@ class HandleImageButton(context: Context?, attrs: AttributeSet?) : ImageButton(c
     }
 
     private fun loadDimensionPixelSize(@DimenRes resourceId: Int): Int {
-        if (resourceId == Resources.ID_NULL) {
-            return 0
-        }
-        return context.resources.getDimensionPixelSize(resourceId)
+        return context.resources.getDimensionPixelSize(resourceId, 0)
+    }
+
+    override fun tint(color: Int) {
+        imageTintList = ColorStateList.valueOf(color)
+    }
+
+    override fun asView(): View {
+        return this
+    }
+
+    override fun getColor(): Int? {
+        return imageTintList?.defaultColor
     }
 
     companion object {

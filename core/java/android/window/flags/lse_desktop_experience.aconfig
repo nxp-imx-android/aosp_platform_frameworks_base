@@ -915,6 +915,16 @@ flag {
 }
 
 flag {
+    name: "enable_drawing_app_handle"
+    namespace: "lse_desktop_experience"
+    description: "Enables app handle being drawn programmatically instead of using Drawables."
+    bug: "314288540"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_dream_activity_windowing_exclusion"
     namespace: "lse_desktop_experience"
     description: "When enabled activities with type dream will be exempt from desktop windowing"

@@ -115,6 +115,7 @@ private constructor(
     private val isBrowserApp: Boolean,
     private val openInAppOrBrowserIntent: Intent?,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val captionView: View?,
     private val captionWidth: Int,
     private val captionHeight: Int,
     captionX: Int,
@@ -210,6 +211,7 @@ private constructor(
                     windowDecorationActions = windowDecorationActions,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
                     menuWidth = menuWidth,
+                    captionView = captionView,
                     captionHeight = captionHeight,
                     shouldShowWindowingPill = shouldShowWindowingPill,
                     shouldShowBrowserPill = shouldShowBrowserPill,
@@ -519,6 +521,7 @@ private constructor(
         private val windowDecorationActions: WindowDecorationActions,
         private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
         menuWidth: Int,
+        private val captionView: View?,
         captionHeight: Int,
         private val shouldShowWindowingPill: Boolean,
         private val shouldShowBrowserPill: Boolean,
@@ -646,7 +649,8 @@ private constructor(
             )
 
         private val decorThemeUtil = DecorThemeUtil(context)
-        private val animator = HandleMenuAnimator(rootView, menuWidth, captionHeight.toFloat())
+        private val animator =
+            HandleMenuAnimator(context, rootView, menuWidth, captionHeight.toFloat())
 
         private lateinit var style: MenuStyle
 
@@ -819,7 +823,7 @@ private constructor(
         /** Animates the menu opening. */
         fun animateOpenMenu() {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
-                animator.animateCaptionHandleExpandToOpen()
+                animator.animateCaptionHandleExpandToOpen(requireNotNull(captionView))
             } else {
                 animator.animateOpen()
             }
@@ -828,7 +832,7 @@ private constructor(
         /** Animates the menu closing. */
         fun animateCloseMenu(onAnimFinish: () -> Unit) {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
-                animator.animateCollapseIntoHandleClose(onAnimFinish)
+                animator.animateCollapseIntoHandleClose(requireNotNull(captionView), onAnimFinish)
             } else {
                 animator.animateClose(onAnimFinish)
             }
@@ -1105,6 +1109,7 @@ private constructor(
             isBrowserApp: Boolean,
             openInAppOrBrowserIntent: Intent?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            captionView: View?,
             captionWidth: Int,
             captionHeight: Int,
             captionX: Int,
@@ -1140,6 +1145,7 @@ private constructor(
                 isBrowserApp,
                 openInAppOrBrowserIntent,
                 desktopModeUiEventLogger,
+                captionView,
                 captionWidth,
                 captionHeight,
                 captionX,
@@ -1169,6 +1175,7 @@ private constructor(
             isBrowserApp: Boolean,
             openInAppOrBrowserIntent: Intent?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            captionView: View?,
             captionWidth: Int,
             captionHeight: Int,
             captionX: Int,
@@ -1204,6 +1211,7 @@ private constructor(
                 isBrowserApp,
                 openInAppOrBrowserIntent,
                 desktopModeUiEventLogger,
+                captionView,
                 captionWidth,
                 captionHeight,
                 captionX,
