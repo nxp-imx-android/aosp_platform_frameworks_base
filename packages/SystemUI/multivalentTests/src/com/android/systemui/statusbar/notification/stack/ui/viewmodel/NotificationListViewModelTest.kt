@@ -418,6 +418,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
+    @DisableSceneContainer
     fun shouldIncludeFooterView_animatesWhenShade() =
         kosmos.runTest {
             enableSingleShade()
@@ -437,7 +438,26 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     @EnableSceneContainer
-    fun shouldShowFooterView_dualShadeWithNotifs_animatesWhenShade() =
+    fun shouldIncludeFooterView_visibleInShade() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+            val shouldShow by collectFooterViewVisibility()
+
+            // WHEN has notifs
+            activeNotificationListRepository.setActiveNotifs(count = 2)
+            // AND shade is open and fully expanded
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            shadeTestUtil.setShadeExpansion(1f)
+            runCurrent()
+
+            // THEN footer is visible
+            assertThat(shouldShow?.value).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldShowFooterView_dualShadeWithNotifs_visibleInShade() =
         kosmos.runTest {
             enableDualShade()
             runCurrent()
@@ -450,14 +470,13 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             shadeTestUtil.setShadeExpansion(1f)
             runCurrent()
 
-            // THEN footer visibility animates in
-            assertThat(shouldShow?.isAnimating).isTrue()
+            // THEN footer is visible
             assertThat(shouldShow?.value).isTrue()
         }
 
     @Test
     @EnableSceneContainer
-    fun shouldShowFooterView_dualShadeWithoutNotifs_animatesWhenShade() =
+    fun shouldShowFooterView_dualShadeWithoutNotifs_visibleInShade() =
         kosmos.runTest {
             enableDualShade()
             runCurrent()
@@ -470,8 +489,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             shadeTestUtil.setShadeExpansion(1f)
             runCurrent()
 
-            // THEN footer visibility animates in
-            assertThat(shouldShow?.isAnimating).isTrue()
+            // THEN footer is visible
             assertThat(shouldShow?.value).isTrue()
         }
 
