@@ -3988,6 +3988,11 @@ public class UserBackupManagerService {
                             /* caller */ "BMS.getBackupDestinationFromTransport");
             if ((transport.getTransportFlags() & BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER) != 0) {
                 return BackupDestination.DEVICE_TRANSFER;
+            } else if (Flags.enableCrossPlatformTransfer()
+                    && (transport.getTransportFlags()
+                                    & BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS)
+                            != 0) {
+                return BackupDestination.CROSS_PLATFORM_TRANSFER;
             } else {
                 return BackupDestination.CLOUD;
             }
