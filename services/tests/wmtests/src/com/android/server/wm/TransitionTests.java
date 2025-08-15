@@ -3109,7 +3109,7 @@ public class TransitionTests extends WindowTestsBase {
 
         final OnStartCollect openAppCollectStartedCallback = mock(OnStartCollect.class);
         final Transition queuedTransition = createTestTransition(TRANSIT_OPEN, controller);
-        controller.startCollectOrQueue(queuedTransition, openAppCollectStartedCallback);
+        controller.startCollectOrQueue(queuedTransition, openAppCollectStartedCallback, true);
 
         // Finish display transition
         controller.requestStartTransition(displayTransition, /* startTask= */ null,
@@ -3141,7 +3141,7 @@ public class TransitionTests extends WindowTestsBase {
 
         final OnStartCollect openAppCollectStartedCallback = mock(OnStartCollect.class);
         final Transition queuedTransition = createTestTransition(TRANSIT_OPEN, controller);
-        controller.startCollectOrQueue(queuedTransition, openAppCollectStartedCallback);
+        controller.startCollectOrQueue(queuedTransition, openAppCollectStartedCallback, true);
 
         // Finish the display transition
         player.finish();
@@ -3215,7 +3215,7 @@ public class TransitionTests extends WindowTestsBase {
 
         final OnStartCollect queuedTransitionStartedCallback = mock(OnStartCollect.class);
         final Transition queuedTransition = createTestTransition(TRANSIT_OPEN, controller);
-        controller.startCollectOrQueue(queuedTransition, queuedTransitionStartedCallback);
+        controller.startCollectOrQueue(queuedTransition, queuedTransitionStartedCallback, true);
 
         // Finish the first transition
         controller.requestStartTransition(nonDisplayTransition, /* startTask= */ null,
