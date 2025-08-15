@@ -305,7 +305,7 @@ public class UsbDataAdvancedProtectionHookTest {
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
     public void
-            onAdvancedProtectionChanged_whenEnabledInUnlockedState_registersReceiverAndDisablesUsb()
+            onAdvancedProtectionChanged_whenEnabledInUnlockedState_registersReceiverAndNotDisableUsb()
                     throws RemoteException {
         clearAllUsbConnections();
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(false);
@@ -339,8 +339,7 @@ public class UsbDataAdvancedProtectionHookTest {
         IntentFilter mainFilter = mIntentFilterCaptor.getAllValues().get(0);
         assertEquals(UserHandle.ALL, mUserHandleCaptor.getAllValues().get(0));
 
-        assertEquals(3, mainFilter.countActions());
-        assertTrue(mainFilter.hasAction(Intent.ACTION_USER_PRESENT));
+        assertEquals(2, mainFilter.countActions());
         assertTrue(mainFilter.hasAction(Intent.ACTION_LOCKED_BOOT_COMPLETED));
         assertTrue(mainFilter.hasAction(UsbManager.ACTION_USB_PORT_CHANGED));
 
@@ -371,10 +370,8 @@ public class UsbDataAdvancedProtectionHookTest {
         UserInfo mockUserInfo = mock(UserInfo.class);
         when(mockUserInfo.isGuest()).thenReturn(false);
         when(mUserManager.getUserInfo(anyInt())).thenReturn(mockUserInfo);
-        when(mKeyguardManager.isKeyguardLocked()).thenReturn(false);
-        BroadcastReceiver receiver = getAndCaptureReceiver();
 
-        receiver.onReceive(mContext, new Intent(Intent.ACTION_USER_PRESENT));
+        getKeyguardLockedStateListener().onKeyguardLockedStateChanged(false);
 
         verify(mDelayDisableHandler).removeCallbacksAndMessages(isNull());
         verify(mDelayedNotificationHandler).removeCallbacksAndMessages(isNull());
@@ -402,10 +399,8 @@ public class UsbDataAdvancedProtectionHookTest {
         UserInfo mockUserInfo = mock(UserInfo.class);
         when(mockUserInfo.isGuest()).thenReturn(true);
         when(mUserManager.getUserInfo(anyInt())).thenReturn(mockUserInfo);
-        when(mKeyguardManager.isKeyguardLocked()).thenReturn(false);
-        BroadcastReceiver receiver = getAndCaptureReceiver();
 
-        receiver.onReceive(mContext, new Intent(Intent.ACTION_USER_PRESENT));
+        getKeyguardLockedStateListener().onKeyguardLockedStateChanged(false);
 
         verify(mDelayDisableHandler).removeCallbacksAndMessages(isNull());
         verify(mDelayedNotificationHandler).removeCallbacksAndMessages(isNull());
