@@ -3282,8 +3282,20 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
                     @Override
                     protected void onPostExecute(String error) {
-                        mContext.unbindService(DocumentTransformer.this);
-                        mCallback.accept(error);
+                        try {
+                            mContext.unbindService(DocumentTransformer.this);
+                            mCallback.accept(error);
+                        } catch (IllegalArgumentException e) {
+                            // Unbinding can fail if the PrintActivity has already been torn down
+                            // before the document transform completes.  Since this is about to
+                            // exit, there's no need to attempt additional error recovery.
+                            Log.w(
+                                    LOG_TAG,
+                                    "Unable to unbind PdfManipulationService: "
+                                            + e
+                                            + ". Original error: "
+                                            + error);
+                        }
                     }
                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
