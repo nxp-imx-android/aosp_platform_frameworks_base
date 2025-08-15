@@ -52,3 +52,9 @@ flag {
     bug: "430421182"
 }
 
+flag {
+    name: "reduce_binder_transaction_enabled"
+    namespace: "ailabs"
+    description: "Feature flag to reduce binder transaction for content capture, by batching metrics logging and reducing the number of flush events"
+    bug: "433614684"
+}

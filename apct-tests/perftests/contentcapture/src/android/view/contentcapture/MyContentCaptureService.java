@@ -49,6 +49,7 @@ public class MyContentCaptureService extends ContentCaptureService {
     private final Condition eventsChanged = lock.newCondition();
     private final List<ContentCaptureEvent> mCapturedEvents = new ArrayList<>();
     private int appearedCount = 0;
+    private int flushCount = 0;
     @NonNull
     public static ServiceWatcher setServiceWatcher() {
         if (sServiceWatcher != null) {
@@ -137,6 +138,8 @@ public class MyContentCaptureService extends ContentCaptureService {
             mCapturedEvents.add(event);
             if (event.getType() == ContentCaptureEvent.TYPE_VIEW_APPEARED) {
                 appearedCount++;
+            } else if (event.getType() == ContentCaptureEvent.TYPE_SESSION_FLUSH) {
+                flushCount++;
             }
             eventsChanged.signalAll();
         } finally {
@@ -153,6 +156,7 @@ public class MyContentCaptureService extends ContentCaptureService {
         try {
             mCapturedEvents.clear();
             appearedCount = 0;
+            flushCount = 0;
         } finally {
             lock.unlock();
         }
@@ -177,19 +181,50 @@ public class MyContentCaptureService extends ContentCaptureService {
         }
     }
 
+    public int getFlushCount() {
+        lock.lock();
+        try {
+            return flushCount;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public boolean waitForAppearedEvents(
             int expectedCount, long timeoutMillis) throws InterruptedException {
+        return waitForEvents(expectedCount, timeoutMillis, ContentCaptureEvent.TYPE_VIEW_APPEARED);
+    }
+
+    public boolean waitForFlushEvents(
+            int expectedCount, long timeoutMillis) throws InterruptedException {
+        return waitForEvents(expectedCount, timeoutMillis, ContentCaptureEvent.TYPE_SESSION_FLUSH);
+    }
+
+    private boolean waitForEvents(int expectedCount, long timeoutMillis, int type)
+            throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
         lock.lock();
         try {
-            while (appearedCount < expectedCount) {
+            while (true) {
+                final int actualCount;
+                if (type == ContentCaptureEvent.TYPE_VIEW_APPEARED) {
+                    actualCount = appearedCount;
+                } else if (type == ContentCaptureEvent.TYPE_SESSION_FLUSH) {
+                    actualCount = flushCount;
+                } else {
+                    return false;
+                }
+
+                if (actualCount >= expectedCount) {
+                    return true;
+                }
+
                 long remainingNanos = deadline - System.nanoTime();
                 if (remainingNanos <= 0) {
                     return false;
                 }
                 eventsChanged.await(remainingNanos, TimeUnit.NANOSECONDS);
             }
-            return true;
         } finally {
             lock.unlock();
         }
