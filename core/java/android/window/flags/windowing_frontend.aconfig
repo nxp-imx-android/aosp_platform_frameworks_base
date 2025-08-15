@@ -472,6 +472,15 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+flag {
+    name: "transfer_starting_window_to_next_when_invisible"
+    namespace: "windowing_frontend"
+    description: "Transfer the starting window to the next non-finishing activity when the top activity becomes invisible that contains the starting window."
+    bug: "436461530"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
 
 flag {
     name: "predictive_back_callback_cancellation_fix"
