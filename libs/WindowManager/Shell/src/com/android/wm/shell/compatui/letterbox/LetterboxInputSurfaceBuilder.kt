@@ -46,6 +46,5 @@ constructor(private val surfaceBuilderSupplier: SurfaceBuilderSupplier) {
                 tx.setLayer(this, TaskConstants.TASK_CHILD_SHELL_LAYER_LETTERBOX_SPY)
                     .setTrustedOverlay(this, true)
                     .show(this)
-                    .apply()
             }
 }
