@@ -16,23 +16,24 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.RadioButtonGroupItemViewModel
-import org.junit.Before
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.preCaptureViewModel
+import com.android.systemui.testKosmosNew
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -40,43 +41,36 @@ class PreCaptureToolbarTest : SysuiTestCase() {
 
     @get:Rule val composeTestRule = createComposeRule()
 
-    @Mock private lateinit var viewModel: PreCaptureViewModel
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-
-        val fakeRegionItems = listOf(RadioButtonGroupItemViewModel(isSelected = true, onClick = {}))
-        whenever(viewModel.captureRegionButtonViewModels).thenReturn(fakeRegionItems)
-        val fakeTypeItems = listOf(RadioButtonGroupItemViewModel(isSelected = true, onClick = {}))
-        whenever(viewModel.captureTypeButtonViewModels).thenReturn(fakeTypeItems)
-    }
+    private val kosmos = testKosmosNew()
+    private val viewModel: PreCaptureViewModel by lazy { kosmos.preCaptureViewModel }
 
     @Test
-    fun settingsButton_isDisplayed_andHasCorrectContentDescription() {
-        whenever(viewModel.screenRecordingSupported).thenReturn(true)
-        composeTestRule.setContent {
-            PreCaptureToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
-        }
-        val expectedDescription =
-            context.getString(R.string.screen_capture_toolbar_settings_button_a11y)
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_RECORDING)
+    fun settingsButton_whenFlagIsEnabled_isDisplayed_andHasCorrectContentDescription() =
+        kosmos.runTest {
+            composeTestRule.setContent {
+                PreCaptureToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
+            }
+            val expectedDescription =
+                context.getString(R.string.screen_capture_toolbar_settings_button_a11y)
 
-        composeTestRule
-            .onNodeWithContentDescription(expectedDescription)
-            .assertExists()
-            .assertIsDisplayed()
-            .assertContentDescriptionEquals(expectedDescription)
-    }
+            composeTestRule
+                .onNodeWithContentDescription(expectedDescription)
+                .assertExists()
+                .assertIsDisplayed()
+                .assertContentDescriptionEquals(expectedDescription)
+        }
 
     @Test
-    fun settingsButton_isNotDisplayed_whenFlagIsDisabled() {
-        whenever(viewModel.screenRecordingSupported).thenReturn(false)
-        composeTestRule.setContent {
-            PreCaptureToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
-        }
-        val expectedDescription =
-            context.getString(R.string.screen_capture_toolbar_settings_button_a11y)
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_RECORDING)
+    fun settingsButton_whenFlagIsDisabled_isNotDisplayed() =
+        kosmos.runTest {
+            composeTestRule.setContent {
+                PreCaptureToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
+            }
+            val expectedDescription =
+                context.getString(R.string.screen_capture_toolbar_settings_button_a11y)
 
-        composeTestRule.onNodeWithContentDescription(expectedDescription).assertDoesNotExist()
-    }
+            composeTestRule.onNodeWithContentDescription(expectedDescription).assertDoesNotExist()
+        }
 }
