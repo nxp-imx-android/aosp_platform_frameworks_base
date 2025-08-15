@@ -48,6 +48,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
     private lateinit var underTest: LockscreenContentViewModel
     private val activationJob = Job()
+    private val viewState: ViewStateAccessor = ViewStateAccessor({ 0f })
 
     companion object {
         @JvmStatic
@@ -66,7 +67,10 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         with(kosmos) {
             shadeRepository.setShadeLayoutWide(false)
             underTest =
-                lockscreenContentViewModelFactory.create(fakeKeyguardTransitionAnimationCallback)
+                lockscreenContentViewModelFactory.create(
+                    fakeKeyguardTransitionAnimationCallback,
+                    viewState,
+                )
             underTest.activateIn(testScope, activationJob)
         }
     }

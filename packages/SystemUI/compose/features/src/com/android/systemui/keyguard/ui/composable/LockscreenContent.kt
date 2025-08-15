@@ -19,7 +19,13 @@ package com.android.systemui.keyguard.ui.composable
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import com.android.compose.animation.scene.ContentScope
 import com.android.internal.jank.Cuj
@@ -33,6 +39,7 @@ import com.android.systemui.keyguard.ui.composable.blueprint.ComposableLockscree
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
+import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.NotificationLockscreenScrim
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
@@ -60,13 +67,17 @@ class LockscreenContent(
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
         val view = LocalView.current
+        var lockscreenAlpha by remember { mutableFloatStateOf(0f) }
         val viewModel =
             rememberViewModel("LockscreenContent-viewModel") {
                 viewModelFactory.create(
                     keyguardTransitionAnimationCallback =
-                        KeyguardTransitionAnimationCallbackImpl(view, interactionJankMonitor)
+                        KeyguardTransitionAnimationCallbackImpl(view, interactionJankMonitor),
+                    viewState = ViewStateAccessor(alpha = { lockscreenAlpha }),
                 )
             }
+
+        LaunchedEffect(viewModel.alpha) { lockscreenAlpha = viewModel.alpha }
         val notificationLockscreenScrimViewModel =
             rememberViewModel("LockscreenContent-notificationScrimViewModel") {
                 notificationScrimViewModelFactory.create()
@@ -96,7 +107,10 @@ class LockscreenContent(
             )
             Content(
                 viewModel,
-                modifier.sysuiResTag("keyguard_root_view").element(LockscreenElementKeys.Root),
+                modifier
+                    .sysuiResTag("keyguard_root_view")
+                    .element(LockscreenElementKeys.Root)
+                    .graphicsLayer { alpha = viewModel.alpha },
             )
             NotificationLockscreenScrim(notificationLockscreenScrimViewModel)
             LockscreenFrontScrim(lockscreenFrontScrimViewModel)

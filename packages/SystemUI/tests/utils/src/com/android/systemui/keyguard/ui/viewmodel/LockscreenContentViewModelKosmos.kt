@@ -29,7 +29,8 @@ import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInter
 val Kosmos.lockscreenContentViewModelFactory by Fixture {
     object : LockscreenContentViewModel.Factory {
         override fun create(
-            keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback
+            keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
+            viewState: ViewStateAccessor,
         ): LockscreenContentViewModel {
             return LockscreenContentViewModel(
                 interactor = keyguardBlueprintInteractor,
@@ -41,6 +42,8 @@ val Kosmos.lockscreenContentViewModelFactory by Fixture {
                     keyguardTransitionAnimationCallbackDelegator,
                 keyguardTransitionAnimationCallback = keyguardTransitionAnimationCallback,
                 wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+                lockscreenAlphaViewModelFactory = lockscreenAlphaViewModelFactory,
+                viewStateAccessor = viewState,
             )
         }
     }
