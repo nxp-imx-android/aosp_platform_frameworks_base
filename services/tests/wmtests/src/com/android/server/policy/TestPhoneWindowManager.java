@@ -390,6 +390,8 @@ class TestPhoneWindowManager {
         doReturn(mImeTargetWindowToken)
                 .when(mWindowManagerInternal).getTargetWindowTokenFromInputToken(mInputToken);
 
+        doReturn(null).when(mContext).registerReceiver(any(), any());
+
         mPhoneWindowManager.init(new TestInjector(mContext, mWindowManagerFuncsImpl));
         mPhoneWindowManager.systemReady();
         mPhoneWindowManager.systemBooted();
