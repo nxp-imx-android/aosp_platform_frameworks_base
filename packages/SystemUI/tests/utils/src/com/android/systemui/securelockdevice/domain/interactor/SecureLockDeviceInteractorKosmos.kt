@@ -16,6 +16,7 @@
 
 package com.android.systemui.securelockdevice.domain.interactor
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.securelockdevice.data.repository.secureLockDeviceRepository
@@ -25,5 +26,6 @@ val Kosmos.secureLockDeviceInteractor by
         SecureLockDeviceInteractor(
             applicationScope = applicationCoroutineScope,
             secureLockDeviceRepository = secureLockDeviceRepository,
+            deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
         )
     }

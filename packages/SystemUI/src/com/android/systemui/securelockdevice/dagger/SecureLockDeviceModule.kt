@@ -19,6 +19,7 @@ import android.security.authenticationpolicy.AuthenticationPolicyManager
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepositoryImpl
@@ -51,10 +52,12 @@ interface SecureLockDeviceModule {
         fun providesSecureLockDeviceInteractor(
             @Application applicationScope: CoroutineScope,
             secureLockDeviceRepository: SecureLockDeviceRepository,
+            deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
         ): SecureLockDeviceInteractor {
             return SecureLockDeviceInteractor(
                 applicationScope = applicationScope,
                 secureLockDeviceRepository = secureLockDeviceRepository,
+                deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
             )
         }
     }

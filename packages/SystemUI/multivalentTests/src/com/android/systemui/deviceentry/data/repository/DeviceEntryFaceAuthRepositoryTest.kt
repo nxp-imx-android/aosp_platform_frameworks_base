@@ -32,6 +32,8 @@ import android.hardware.face.FaceManager
 import android.hardware.face.FaceSensorProperties
 import android.hardware.face.FaceSensorPropertiesInternal
 import android.os.CancellationSignal
+import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -529,6 +531,15 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
     fun authenticateDoesNotRunIfUserIsInLockdown() =
         testScope.runTest {
             testGatingCheckForFaceAuth { biometricSettingsRepository.setIsUserInLockdown(true) }
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun authenticateDoesNotRunIfRequiringPrimaryAuthForSecureLockDevice() =
+        testScope.runTest {
+            testGatingCheckForFaceAuth {
+                biometricSettingsRepository.setIsSecureLockDeviceEnabled(true)
+            }
         }
 
     @Test
@@ -1123,6 +1134,15 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             testGatingCheckForDetect { biometricSettingsRepository.setIsUserInLockdown(true) }
         }
 
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun detectDoesNotRunWhenInSecureLockDevicePrimaryAuth() =
+        testScope.runTest {
+            testGatingCheckForDetect {
+                biometricSettingsRepository.setIsSecureLockDeviceEnabled(true)
+            }
+        }
+
     @Test
     fun detectDoesNotRunWhenBypassIsNotEnabled() =
         testScope.runTest {
@@ -1427,6 +1447,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         biometricSettingsRepository.setIsFaceAuthSupportedInCurrentPosture(true)
         biometricSettingsRepository.setIsFaceAuthCurrentlyAllowed(true)
         biometricSettingsRepository.setIsUserInLockdown(false)
+        biometricSettingsRepository.setIsSecureLockDeviceEnabled(false)
         fakeUserRepository.setSelectedUserInfo(primaryUser, SelectionStatus.SELECTION_COMPLETE)
         faceLockoutResetCallback.value.onLockoutReset(0)
         bouncerRepository.setAlternateVisible(true)
