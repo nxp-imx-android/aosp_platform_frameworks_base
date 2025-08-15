@@ -1535,7 +1535,8 @@ public class StatsPullAtomService extends SystemService {
                             entry.getRxPackets(), entry.getTxBytes(), entry.getTxPackets()));
                 }
                 case FrameworkStatsLog.MOBILE_BYTES_TRANSFER_BY_FG_BG,
-                        FrameworkStatsLog.WIFI_BYTES_TRANSFER_BY_FG_BG -> {
+                        FrameworkStatsLog.WIFI_BYTES_TRANSFER_BY_FG_BG,
+                        FrameworkStatsLog.PROXY_BYTES_TRANSFER_BY_FG_BG  -> {
                     pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, entry.getUid(),
                                 (entry.getSet() > 0), entry.getRxBytes(), entry.getRxPackets(),
                                 entry.getTxBytes(), entry.getTxPackets()));
