@@ -213,13 +213,14 @@ public:
         return APerformanceHint_getManager();
     }
 
-    void prepareSessionMock() {
+    void prepareSessionMock(hal::SessionTag returnedTag = hal::SessionTag::APP) {
         mMockSession = ndk::SharedRefBase::make<NiceMock<MockIHintSession>>();
         const int64_t sessionId = 123;
 
         mSessionCreationReturn = IHintManager::SessionCreationReturn{
                 .session = mMockSession,
                 .pipelineThreadLimitExceeded = false,
+                .tag = returnedTag,
         };
 
         ON_CALL(*mMockIHintManager, createHintSessionWithConfig(_, _, _, _, _))
@@ -244,10 +245,10 @@ public:
         });
     }
 
-    std::shared_ptr<APerformanceHintSession> createSession(APerformanceHintManager* manager,
-                                                           int64_t targetDuration = 56789L,
-                                                           bool isHwui = false) {
-        prepareSessionMock();
+    std::shared_ptr<APerformanceHintSession> createSession(
+            APerformanceHintManager* manager, int64_t targetDuration = 56789L, bool isHwui = false,
+            hal::SessionTag returnedTag = hal::SessionTag::APP) {
+        prepareSessionMock(returnedTag);
         if (isHwui) {
             return wrapSession(APerformanceHint_createSessionInternal(manager, mTids.data(),
                                                                       mTids.size(), targetDuration,
@@ -588,6 +589,21 @@ TEST_F(PerformanceHintTest, TestReportActualUsingFMQ) {
     APerformanceHint_reportActualWorkDuration2(session.get(),
                                                reinterpret_cast<AWorkDuration*>(&duration));
     expectToReadFromFmq<HalChannelMessageContents::Tag::workDuration>(durationExpected);
+}
+
+TEST_F(PerformanceHintTest, TestReportActualWhenAppIsGame) {
+    APerformanceHintManager* manager = createManager();
+    auto&& session = createSession(manager, 56789L, false, hal::SessionTag::OTHER);
+    hal::WorkDuration duration{.timeStampNanos = 3,
+                               .durationNanos = 999999,
+                               .workPeriodStartTimestampNanos = 1,
+                               .cpuDurationNanos = 999999,
+                               .gpuDurationNanos = 999999};
+
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
+
+    EXPECT_CALL(*mMockSession, reportActualWorkDuration(_, _)).Times(0);
 }
 
 TEST_F(PerformanceHintTest, TestASessionCreationConfig) {

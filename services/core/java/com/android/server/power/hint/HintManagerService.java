@@ -1504,6 +1504,7 @@ public final class HintManagerService extends SystemService {
                 IHintManager.SessionCreationReturn out = new IHintManager.SessionCreationReturn();
                 // TODO(b/441120571): Check if the thread limit should be re-implemented or removed
                 out.pipelineThreadLimitExceeded = false;
+                out.tag = tag;
                 out.session = hs;
                 return out;
             } finally {
