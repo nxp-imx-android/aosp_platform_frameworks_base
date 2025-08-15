@@ -41,11 +41,13 @@ import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -76,6 +78,10 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
     /** Recorder for metrics data from entries. */
     private final MetricsRecorder mMetricsRecorder;
+
+    /** Collection of listeners waiting until there are no more pending requests. */
+    @GuardedBy("mLock")
+    private final ArrayList<AndroidFuture<Void>> mPendingRequestsListeners = new ArrayList<>();
 
     /** Interface for recording metrics data from entries. */
     @FunctionalInterface
@@ -334,27 +340,32 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)
     @Override
-    public boolean hasPendingImeVisibilityRequests() {
-        super.hasPendingImeVisibilityRequests_enforcePermission();
+    public void waitUntilNoPendingRequests(@NonNull AndroidFuture<Void> future, long timeoutMs) {
+        super.waitUntilNoPendingRequests_enforcePermission();
         synchronized (mLock) {
-            return !mHistory.activeEntries().isEmpty();
+            if (mHistory.activeEntries().isEmpty()) {
+                future.complete(null);
+            } else {
+                mPendingRequestsListeners.add(future);
+                mHandler.postDelayed(() -> {
+                    future.completeExceptionally(new TimeoutException());
+                    mPendingRequestsListeners.remove(future);
+                }, future, timeoutMs);
+            }
         }
     }
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)
     @Override
-    public void finishTrackingPendingImeVisibilityRequests(
-            @NonNull AndroidFuture completionSignal /* T=Void */) {
-        super.finishTrackingPendingImeVisibilityRequests_enforcePermission();
-        @SuppressWarnings("unchecked") final AndroidFuture<Void> typedCompletionSignal =
-                completionSignal;
+    public void finishTrackingPendingRequests(@NonNull AndroidFuture<Void> future) {
+        super.finishTrackingPendingRequests_enforcePermission();
         try {
             synchronized (mLock) {
                 mHistory.activeEntries().clear();
             }
-            typedCompletionSignal.complete(null);
+            future.complete(null);
         } catch (Throwable e) {
-            typedCompletionSignal.completeExceptionally(e);
+            future.completeExceptionally(e);
         }
     }
 
@@ -371,6 +382,14 @@ public final class ImeTrackerService extends IImeTracker.Stub {
         mHandler.removeCallbacksAndMessages(entry /* token */);
         mHistory.complete(id, entry);
         mMetricsRecorder.record(entry);
+        if (!mPendingRequestsListeners.isEmpty() && mHistory.mActiveEntries.isEmpty()) {
+            for (int i = 0; i < mPendingRequestsListeners.size(); i++) {
+                final var listener = mPendingRequestsListeners.get(i);
+                listener.complete(null);
+                mHandler.removeCallbacksAndMessages(listener);
+            }
+            mPendingRequestsListeners.clear();
+        }
     }
 
     /**

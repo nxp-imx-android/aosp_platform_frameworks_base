@@ -712,32 +712,36 @@ final class IInputMethodManagerGlobalInvoker {
         }
     }
 
-    /** @see com.android.server.inputmethod.ImeTrackerService#hasPendingImeVisibilityRequests */
+    /** @see com.android.server.inputmethod.ImeTrackerService#waitUntilNoPendingRequests */
     @AnyThread
     @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    static boolean hasPendingImeVisibilityRequests() {
-        final var service = getImeTrackerService();
-        if (service == null) {
-            return true;
-        }
-        try {
-            return service.hasPendingImeVisibilityRequests();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    @AnyThread
-    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    static void finishTrackingPendingImeVisibilityRequests() {
+    static void waitUntilNoPendingRequests(long timeoutMs) {
         final var service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            final var completionSignal = new AndroidFuture<Void>();
-            service.finishTrackingPendingImeVisibilityRequests(completionSignal);
-            completionSignal.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            final var future = new AndroidFuture<Void>();
+            service.waitUntilNoPendingRequests(future, timeoutMs);
+            future.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (Exception e) {
+            throw ExceptionUtils.propagate(e);
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
+    static void finishTrackingPendingRequests() {
+        final var service = getImeTrackerService();
+        if (service == null) {
+            return;
+        }
+        try {
+            final var future = new AndroidFuture<Void>();
+            service.finishTrackingPendingRequests(future);
+            future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (Exception e) {
