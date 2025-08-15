@@ -98,6 +98,7 @@ import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,6 +113,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 @SmallTest
+@Ignore("b/368308908 class isn't used; waiting on flag removal")
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class VolumeDialogImplTest extends SysuiTestCase {
