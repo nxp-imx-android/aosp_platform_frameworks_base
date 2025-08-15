@@ -1,4 +1,7 @@
-SystemUiRavenTests:* false
+!module SystemUiRavenTests
+
+# TODO: Convert it to the enablement-policy-CtsViewTestCasesRavenwood.txt style.
+
 com.android.keyguard.BouncerPanelExpansionCalculatorTest true
 com.android.keyguard.EmergencyButtonControllerTest true
 com.android.keyguard.KeyguardBiometricLockoutLoggerTest true
@@ -612,3 +615,6 @@ com.android.systemui.volume.panel.domain.interactor.ComponentsInteractorImplTest
 com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorTest true
 com.android.systemui.volume.panel.ui.composable.ComponentsFactoryTest true
 com.android.systemui.volume.panel.ui.viewmodel.DefaultComponentsLayoutManagerTest true
+
+** disable # Disable all tests by default
+

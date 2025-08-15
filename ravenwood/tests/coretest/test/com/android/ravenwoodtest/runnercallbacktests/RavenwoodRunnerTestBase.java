@@ -24,11 +24,12 @@ import android.os.Looper;
 import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodAwareTestRunner;
 import android.platform.test.ravenwood.RavenwoodConfigPrivate;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunMode;
 import android.util.Log;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -78,6 +79,8 @@ public abstract class RavenwoodRunnerTestBase {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Expected {
         String value();
+        RunMode runMode() default RunMode.Normal;
+        String enablementPolicy() default "";
     }
 
     private static final AtomicReference<Throwable> sError = new AtomicReference<>();
@@ -137,16 +140,20 @@ public abstract class RavenwoodRunnerTestBase {
     @Test
     @Parameters(method = "getTestClasses")
     public void doTest(Class<?> testClazz) {
-        doTest(testClazz, getExpectedResult(testClazz));
+        doTest(testClazz, testClazz.getAnnotation(Expected.class));
     }
 
     /**
      * Run a given test class, and compare the result collected with
      * {@link ResultCollectingListener} to expected results (as a string).
      */
-    private void doTest(Class<?> testClazz, String expectedResult) {
+    private void doTest(Class<?> testClazz, Expected expected) {
         Log.i(TAG, "Running test for " + testClazz);
         var junitCore = new JUnitCore();
+
+        // Oevrride enablement policy
+        RavenwoodEnablementChecker.overrideInstance(
+                expected.runMode(), expected.enablementPolicy());
 
         sError.set(null);
 
@@ -163,6 +170,8 @@ public abstract class RavenwoodRunnerTestBase {
             // Run the test class.
             junitCore.run(testClazz);
         } finally {
+            RavenwoodEnablementChecker.setDefaultInstance();
+
             // Clear the critical error listener.
             RavenwoodConfigPrivate.setCriticalErrorHandler(null);
         }
@@ -177,7 +186,7 @@ public abstract class RavenwoodRunnerTestBase {
         // Check the result.
         assertWithMessage("Failure in test class [" + testClazz.getCanonicalName() + "]")
                 .that(listener.getResult())
-                .isEqualTo(expectedResult);
+                .isEqualTo(stripMultiLines(expected.value()));
 
         // After each test, make sure the main thread is alive.
         // (RavenwoodRunnerExecutionTest throws exceptions on the main thread, so we make sure

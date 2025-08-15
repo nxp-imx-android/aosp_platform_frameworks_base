@@ -17,7 +17,7 @@ Target tests:
   Test2
   Test3
   SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -44,7 +44,7 @@ Target tests:
   Test3
 Excluded tests:
 < SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -69,7 +69,7 @@ Target tests:
   Test2
   Test3
   SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -94,7 +94,7 @@ Target tests:
   Test2
   Test3
   SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -121,7 +121,7 @@ Target tests:
   Test3
 Excluded tests:
 < SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -150,7 +150,7 @@ Excluded tests:
 ---
 > TestX
 > TestY
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -179,7 +179,7 @@ Excluded tests:
 ---
 > TestX
 > TestY
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -204,7 +204,7 @@ Excluded tests:
 < ravenwood-scripts-sh-golden-test
 < RavenwoodCoreTest
 < SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -227,7 +227,7 @@ Target tests:
   RavenwoodCoreTest
   Test1
   SystemUiRavenTests
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
@@ -243,7 +243,7 @@ List test options: -D
 Target tests:
   DeviceTest1
   DeviceTest2
-RAVENWOOD_TEST_ENABLEMENT_POLICY=/tmp/ravenwood-enablement-@@@-@@@.txt
+RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
 Test "CtsViewTestCasesRavenwood" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.

@@ -158,7 +158,7 @@ def _find_tests(
   with open(csv_file) as f:
     reader = csv.DictReader(f)
     for row in reader:
-      if row["ClassOrMethod"] == "c" and select_func(row):
+      if row["Type"] == "c" and select_func(row):
         test.append(row["Class"])
   return test
 
