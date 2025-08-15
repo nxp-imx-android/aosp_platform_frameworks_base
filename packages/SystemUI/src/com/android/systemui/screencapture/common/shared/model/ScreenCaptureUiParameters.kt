@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui
+package com.android.systemui.screencapture.common.shared.model
 
-import com.android.systemui.kosmos.Kosmos
-import org.mockito.kotlin.mock
+import android.os.IBinder
+import android.os.ResultReceiver
+import android.os.UserHandle
 
-/**
- * Provides a mock instance of [ScreenCaptureActivity] for use in tests. The activity is mocked to
- * isolate any usage from the complexities of a real Activity.
- */
-val Kosmos.mockScreenCaptureActivity by Kosmos.Fixture { mock<ScreenCaptureActivity>() }
+data class ScreenCaptureUiParameters(
+    val screenCaptureType: ScreenCaptureType,
+    val isUserConsentRequired: Boolean,
+    val resultReceiver: ResultReceiver?,
+    val mediaProjection: IBinder?,
+    val hostAppUserHandle: UserHandle,
+    val hostAppUid: Int,
+)

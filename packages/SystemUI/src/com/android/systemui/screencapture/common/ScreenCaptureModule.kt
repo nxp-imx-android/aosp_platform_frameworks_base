@@ -24,7 +24,6 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.ScreenCaptureRecordComponent
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screencapture.sharescreen.ScreenCaptureShareScreenComponent
-import com.android.systemui.screencapture.ui.ScreenCaptureActivity
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
@@ -66,11 +65,6 @@ interface ScreenCaptureModule {
     fun bindShareScreenComponentBuilder(
         impl: ScreenCaptureShareScreenComponent.Builder
     ): ScreenCaptureComponent.Builder
-
-    @Binds
-    @IntoMap
-    @ClassKey(ScreenCaptureActivity::class)
-    fun provideScreenCaptureActivity(activity: ScreenCaptureActivity): Activity
 
     @Binds
     @IntoMap

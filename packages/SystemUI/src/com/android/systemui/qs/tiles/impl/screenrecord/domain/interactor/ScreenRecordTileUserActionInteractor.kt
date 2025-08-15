@@ -31,8 +31,8 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.ScreenRecordUxController
@@ -67,7 +67,7 @@ constructor(
                         // TODO(b/412723197): pass actual params here.
                         activityStarter.postQSRunnableDismissingKeyguard {
                             screenCaptureUiInteractor.show(
-                                ScreenCaptureActivityIntentParameters(
+                                ScreenCaptureUiParameters(
                                     ScreenCaptureType.RECORD,
                                     isUserConsentRequired = false,
                                     resultReceiver = null,
