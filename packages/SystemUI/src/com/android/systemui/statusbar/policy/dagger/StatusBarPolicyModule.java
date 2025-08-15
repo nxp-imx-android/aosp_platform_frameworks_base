@@ -91,6 +91,8 @@ import com.android.systemui.statusbar.policy.profile.data.repository.impl.Manage
 import com.android.systemui.statusbar.policy.vpn.data.repository.VpnRepository;
 import com.android.systemui.statusbar.policy.vpn.data.repository.impl.VpnRepositoryImpl;
 import com.android.systemui.supervision.data.repository.SupervisionRepositoryModule;
+import com.android.systemui.util.wrapper.CameraRotationSettingProvider;
+import com.android.systemui.util.wrapper.CameraRotationSettingProviderImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -173,6 +175,12 @@ public interface StatusBarPolicyModule {
     /** */
     @Binds
     RotationLockController provideRotationLockController(RotationLockControllerImpl controllerImpl);
+
+    /** */
+    @Binds
+    @SysUISingleton
+    CameraRotationSettingProvider bindCameraRotationSettingProvider(
+            CameraRotationSettingProviderImpl impl);
 
     /** */
     @Binds

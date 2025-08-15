@@ -29,7 +29,6 @@ public interface RotationPolicyWrapper {
     public fun getRotationLockOrientation(): Int
     public fun isRotationLockToggleVisible(): Boolean
     public fun isRotationLocked(): Boolean
-    public fun isCameraRotationEnabled(): Boolean
     public fun registerRotationPolicyListener(listener: RotationPolicyListener, userHandle: Int)
     public fun unregisterRotationPolicyListener(listener: RotationPolicyListener)
 }
