@@ -13019,6 +13019,14 @@ public final class Settings {
                 "accessibility_magnification_two_finger_triple_tap_enabled";
 
         /**
+         * Whether to always expand notification bundles in the notification shade.
+         * 1 = expand, 0 = collapse.
+         * @hide
+         */
+        public static final String NOTIFICATION_BUNDLES_ALWAYS_EXPAND =
+                "notification_bundles_always_expand";
+
+        /**
          * Whether the magnify navigation bar and keyboard feature is enabled.
          *
          * @hide

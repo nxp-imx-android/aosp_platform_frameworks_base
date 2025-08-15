@@ -21,6 +21,7 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.FeedbackIcon
 import com.android.systemui.statusbar.notification.collection.BundleEntry
@@ -42,6 +43,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -79,6 +81,7 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     @Mock private lateinit var controller2: NotifRowController
     @Mock private lateinit var controller3: NotifRowController
     @Mock private lateinit var controllerBundle: NotifRowController
+    @Mock private lateinit var notificationSettingsInteractor: NotificationSettingsInteractor
 
     @Before
     fun setUp() {
@@ -89,6 +92,7 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
                 assistantFeedbackController,
                 sectionStyleProvider,
                 kosmos.notifCollection,
+                notificationSettingsInteractor,
             )
         coordinator.attach(pipeline)
         beforeRenderListListener = withArgCaptor {
@@ -117,6 +121,8 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
                 setSection(section2)
             }
         bundleEntry = BundleEntry(BundleSpec.RECOMMENDED)
+        whenever(notificationSettingsInteractor.shouldExpandBundles)
+            .thenReturn(MutableStateFlow(false))
     }
 
     @Test
@@ -305,6 +311,20 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
         beforeRenderListListener.onBeforeRenderList(listOf(entry3, entry4, bundleEntry))
         afterRenderBundleEntryListener.onAfterRenderEntry(bundleEntry, controllerBundle)
         verify(controllerBundle).setSystemExpanded(false)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    @OptIn(InternalNotificationsApi::class)
+    fun testSetSystemExpanded_shouldExpandBundles_True() {
+        whenever(notificationSettingsInteractor.shouldExpandBundles)
+            .thenReturn(MutableStateFlow(true))
+        bundleEntry.addChild(entry3)
+        bundleEntry.addChild(entry4)
+
+        beforeRenderListListener.onBeforeRenderList(listOf(entry3, entry4, bundleEntry))
+        afterRenderBundleEntryListener.onAfterRenderEntry(bundleEntry, controllerBundle)
+        verify(controllerBundle).setSystemExpanded(true)
     }
 
     @Test

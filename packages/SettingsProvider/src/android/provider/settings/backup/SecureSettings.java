@@ -324,5 +324,6 @@ public class SecureSettings {
         Settings.Secure.IDENTITY_CHECK_ENABLED_V1,
         Settings.Secure.IDENTITY_CHECK_PROMO_CARD_SHOWN,
         Settings.Secure.IDENTITY_CHECK_NOTIFICATION_VIEW_DETAILS_CLICKED,
+        Settings.Secure.NOTIFICATION_BUNDLES_ALWAYS_EXPAND,
     };
 }
