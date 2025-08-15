@@ -317,6 +317,9 @@ final class EnforcingAdmin {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EnforcingAdmin other = (EnforcingAdmin) o;
+        if (Flags.packageAsAdminId()) {
+            return mAdminKey.equals(other.mAdminKey);
+        }
         return Objects.equals(mAdminKey.getPackageName(), other.mAdminKey.getPackageName())
                 && Objects.equals(mAdminKey.getSystemEntity(), other.mAdminKey.getSystemEntity())
                 && Objects.equals(mComponentName, other.mComponentName)
@@ -334,6 +337,9 @@ final class EnforcingAdmin {
 
     @Override
     public int hashCode() {
+        if (Flags.packageAsAdminId()) {
+            return mAdminKey.hashCode();
+        }
         if (mIsRoleAuthority) {
             return Objects.hash(mAdminKey.getPackageName(), mAdminKey.getUserId());
         } else if (isSystemAuthority()) {
