@@ -16,8 +16,15 @@
 
 package android.timezone;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.annotation.TestApi;
+
+import android.timezone.flags.Flags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import java.util.Objects;
@@ -28,6 +35,8 @@ import java.util.Set;
  *
  * @hide
  */
+@FlaggedApi(Flags.FLAG_EXPOSE_TIME_ZONE_SYSTEM_API)
+@SystemApi(client = MODULE_LIBRARIES)
 public final class MobileCountries {
 
     @NonNull
@@ -37,15 +46,24 @@ public final class MobileCountries {
      * Create a {@link MobileCountries} entity. This can be used for test networks (i.e. integration
      * tests).
      */
-    public static MobileCountries createTestCell(String mcc) {
+    @NonNull
+    public static MobileCountries createTestCell(@NonNull String mcc) {
         return new MobileCountries(
                 com.android.i18n.timezone.MobileCountries.create(mcc, Set.of(""), ""));
     }
 
-    /** Create a {@link MobileCountries} entity for tests (i.e. unit tests). */
+    /**
+     * Create a {@link MobileCountries} entity for tests (i.e. unit tests).
+     *
+     * @hide
+     */
     @VisibleForTesting
+    @NonNull
     public static MobileCountries createForTest(
-            String mcc, String mnc, Set<String> countryIsoCodes, String defaultCountryIsoCode) {
+            @NonNull String mcc,
+            @Nullable String mnc,
+            @NonNull Set<String> countryIsoCodes,
+            @NonNull String defaultCountryIsoCode) {
         return new MobileCountries(
                 com.android.i18n.timezone.MobileCountries.create(
                         mcc, mnc, countryIsoCodes, defaultCountryIsoCode));
