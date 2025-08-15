@@ -47,6 +47,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -85,6 +86,7 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                     windowRootViewBlurInteractor = windowRootViewBlurInteractor,
                 )
             underTest.activateIn(testScope)
+            testScope.backgroundScope.launch { underTest.detectShadeModeChanges() }
             disableDualShade()
         }
     }

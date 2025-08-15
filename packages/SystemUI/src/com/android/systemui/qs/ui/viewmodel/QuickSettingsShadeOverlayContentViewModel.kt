@@ -145,26 +145,32 @@ constructor(
                         }
                     }
             }
-
-            launch {
-                shadeModeInteractor.shadeMode.collect { shadeMode ->
-                    withContext(mainDispatcher) {
-                        val loggingReason = "Fold or rotate while on quick settings shade"
-                        when (shadeMode) {
-                            is ShadeMode.Single ->
-                                sceneInteractor.snapToScene(Scenes.QuickSettings, loggingReason)
-
-                            is ShadeMode.Split ->
-                                sceneInteractor.snapToScene(Scenes.Shade, loggingReason)
-
-                            is ShadeMode.Dual -> Unit // Standard case, nothing to do
-                        }
-                    }
-                }
-            }
         }
 
         awaitCancellation()
+    }
+
+    /**
+     * Monitors changes to the shade mode that would make this overlay stale, and snaps to the
+     * appropriate scene/overlay instead.
+     *
+     * This function must only run while the overlay is shown. Therefore, it shouldn't be part of
+     * [onActivated()] while this overlay uses `alwaysCompose`.
+     */
+    suspend fun detectShadeModeChanges(): Nothing {
+        shadeModeInteractor.shadeMode.collect { shadeMode ->
+            withContext(mainDispatcher) {
+                val loggingReason = "Fold while on quick settings shade"
+                when (shadeMode) {
+                    is ShadeMode.Single ->
+                        sceneInteractor.snapToScene(Scenes.QuickSettings, loggingReason)
+
+                    is ShadeMode.Split -> sceneInteractor.snapToScene(Scenes.Shade, loggingReason)
+
+                    is ShadeMode.Dual -> Unit // Standard case, nothing to do
+                }
+            }
+        }
     }
 
     /** Notifies that the bounds of the QuickSettings panel have changed. */
