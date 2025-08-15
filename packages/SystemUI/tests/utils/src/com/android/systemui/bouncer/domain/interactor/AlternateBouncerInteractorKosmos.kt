@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 
 val Kosmos.alternateBouncerInteractor: AlternateBouncerInteractor by
     Kosmos.Fixture {
@@ -37,6 +38,7 @@ val Kosmos.alternateBouncerInteractor: AlternateBouncerInteractor by
             scope = testScope.backgroundScope,
             sceneInteractor = { sceneInteractor },
             displayStateInteractor = { displayStateInteractor },
+            secureLockDeviceInteractor = { secureLockDeviceInteractor },
         )
     }
 
