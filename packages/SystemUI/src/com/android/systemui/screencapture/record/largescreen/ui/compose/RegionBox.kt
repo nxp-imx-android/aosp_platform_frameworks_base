@@ -374,14 +374,23 @@ fun RegionBox(
                                         Modifier.layout { measurable, _ ->
                                             val pillInnerPlaceable =
                                                 measurable.measure(Constraints())
+                                            val pillVerticalSpacingPx =
+                                                with(density) { pillVerticalSpacingDp.toPx() }
                                             // Center the pill horizontally relative to the region
-                                            // box's width, and position it vertically below the
-                                            // box.
+                                            // box's width.
                                             val pillX =
                                                 (currentRect.width - pillInnerPlaceable.width) / 2
+
+                                            // Calculate the Y position of the pill, and restrict it
+                                            // to stay within the screen bounds.
                                             val pillY =
-                                                currentRect.height +
-                                                    with(density) { pillVerticalSpacingDp.toPx() }
+                                                (currentRect.height + pillVerticalSpacingPx)
+                                                    .coerceAtMost(
+                                                        state.screenHeight -
+                                                            currentRect.top -
+                                                            pillInnerPlaceable.height -
+                                                            pillVerticalSpacingPx
+                                                    )
                                             layout(
                                                 pillInnerPlaceable.width,
                                                 pillInnerPlaceable.height,
