@@ -30,6 +30,7 @@ per-file android_view_WindowManagerGlobal.cpp = file:/services/core/java/com/and
 per-file android_window_* = file:/services/core/java/com/android/server/wm/OWNERS
 
 # Resources
+per-file Android.bp = file:/core/java/android/content/res/OWNERS
 per-file android_content_res_* = file:/core/java/android/content/res/OWNERS
 per-file android_util_AssetManager* = file:/core/java/android/content/res/OWNERS
 per-file android_util_StringBlock* = file:/core/java/android/content/res/OWNERS
