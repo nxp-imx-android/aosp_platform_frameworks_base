@@ -9245,9 +9245,7 @@ public final class ActivityThread extends ClientTransactionHandler
         NfcFrameworkInitializer.setNfcServiceManager(new NfcServiceManager());
         DeviceConfigInitializer.setDeviceConfigServiceManager(new DeviceConfigServiceManager());
         SeFrameworkInitializer.setSeServiceManager(new SeServiceManager());
-        if (android.server.Flags.telemetryApisService()) {
-            ProfilingFrameworkInitializer.setProfilingServiceManager(new ProfilingServiceManager());
-        }
+        ProfilingFrameworkInitializer.setProfilingServiceManager(new ProfilingServiceManager());
     }
 
     private void purgePendingResources() {

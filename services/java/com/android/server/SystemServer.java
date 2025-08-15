@@ -2951,12 +2951,10 @@ public final class SystemServer implements Dumpable {
         }
 
         // Profiling
-        if (android.server.Flags.telemetryApisService()) {
-            t.traceBegin("StartProfilingCompanion");
-            mSystemServiceManager.startServiceFromJar(PROFILING_SERVICE_LIFECYCLE_CLASS,
-                    PROFILING_SERVICE_JAR_PATH);
-            t.traceEnd();
-        }
+        t.traceBegin("StartProfilingCompanion");
+        mSystemServiceManager.startServiceFromJar(PROFILING_SERVICE_LIFECYCLE_CLASS,
+                PROFILING_SERVICE_JAR_PATH);
+        t.traceEnd();
 
         // Anomaly Detector
         if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
