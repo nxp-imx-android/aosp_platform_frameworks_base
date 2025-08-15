@@ -392,7 +392,8 @@ abstract public class ManagedServices {
                     }
                 }
                 final HashSet<Integer> uids = mApprovedUids.get(userId);
-                pw.println("    Approved uids for user " + userId + ": " + uids.toString());
+                pw.println("    Approved uids for user " + userId + ": "
+                        + (uids != null ? uids.toString() : "none"));
             }
             pw.println("    Has user set:");
             Set<Integer> userIds = mUserSetServices.keySet();
