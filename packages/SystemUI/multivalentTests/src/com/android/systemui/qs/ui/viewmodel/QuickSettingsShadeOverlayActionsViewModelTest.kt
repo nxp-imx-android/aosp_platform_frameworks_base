@@ -35,6 +35,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -100,8 +101,10 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun downFromStartHalf_switchesToNotificationsShade() =
+    fun downFromStartHalf_wideScreen_switchesToNotificationsShade() =
         kosmos.runTest {
+            enableDualShade(wideLayout = true)
+
             val action = actions?.get(Swipe.Down(fromSource = SceneContainerArea.StartHalf))
             assertThat((action as ShowOverlay).overlay).isEqualTo(Overlays.NotificationsShade)
             assertThat((action.hideCurrentOverlays as HideCurrentOverlays.Some).overlays)
@@ -109,8 +112,30 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun downFromTopEdgeStartHalf_switchesToNotificationsShade() =
+    fun downFromStartHalf_narrowScreen_doesNothing() =
         kosmos.runTest {
+            enableDualShade(wideLayout = false)
+
+            val action = actions?.get(Swipe.Down(fromSource = SceneContainerArea.StartHalf))
+            assertThat(action).isNull()
+        }
+
+    @Test
+    fun downFromTopEdgeStartHalf_wideScreen_switchesToNotificationsShade() =
+        kosmos.runTest {
+            enableDualShade(wideLayout = true)
+
+            val action = actions?.get(Swipe.Down(fromSource = SceneContainerArea.TopEdgeStartHalf))
+            assertThat((action as ShowOverlay).overlay).isEqualTo(Overlays.NotificationsShade)
+            assertThat((action.hideCurrentOverlays as HideCurrentOverlays.Some).overlays)
+                .containsExactly(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun downFromTopEdgeStartHalf_narrowScreen_switchesToNotificationsShade() =
+        kosmos.runTest {
+            enableDualShade(wideLayout = false)
+
             val action = actions?.get(Swipe.Down(fromSource = SceneContainerArea.TopEdgeStartHalf))
             assertThat((action as ShowOverlay).overlay).isEqualTo(Overlays.NotificationsShade)
             assertThat((action.hideCurrentOverlays as HideCurrentOverlays.Some).overlays)
