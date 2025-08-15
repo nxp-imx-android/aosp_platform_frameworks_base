@@ -111,12 +111,11 @@ fun ActionList(
     val minGradientHeight = 70.dp
     val scrimVerticalPadding = 32.dp
     val scrimHorizontalPadding = 42.dp
-    val edgeAligned = horizontalAlignment == Alignment.Start || horizontalAlignment == Alignment.End
     val smartScrimAlpha by
         animateFloatAsState(
             if (expanded) {
                 0.5f
-            } else if (visible && !edgeAligned) {
+            } else if (visible) {
                 0.3f
             } else {
                 0f
