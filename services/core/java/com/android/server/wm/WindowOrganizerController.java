@@ -569,7 +569,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // TODO(b/232042367) Redesign the organizer update on activity callback so that we
                 // we will know about the transition explicitly.
                 final ActionChain chain = mService.mChainTracker.startTransit("tfTransact");
-                if (chain.getTransition() == null) {
+                final boolean legacySync = chain.getTransition() == null;
+                if (legacySync) {
                     // This should rarely happen, and we should try to avoid using
                     // {@link #applySyncTransaction} with Shell transition.
                     // We still want to apply and merge the transaction to the active sync
@@ -582,7 +583,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     chain.getTransition().mReadyTracker.add(wctApplied);
                 }
                 applyTransaction(wct, -1 /* syncId */, chain, caller);
-                wctApplied.meet();
+                if (!legacySync) {
+                    wctApplied.meet();
+                }
                 mService.mChainTracker.end();
                 return;
             }
