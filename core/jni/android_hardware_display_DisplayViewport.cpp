@@ -44,6 +44,8 @@ static struct {
     jfieldID physicalPort;
     jfieldID type;
     jfieldID densityDpi;
+    jfieldID xDpi;
+    jfieldID yDpi;
 } gDisplayViewportClassInfo;
 
 static struct {
@@ -84,6 +86,8 @@ status_t android_hardware_display_DisplayViewport_toNative(JNIEnv* env, jobject 
                 gDisplayViewportClassInfo.type));
 
     viewport->densityDpi = env->GetIntField(viewportObj, gDisplayViewportClassInfo.densityDpi);
+    viewport->xDpi = env->GetFloatField(viewportObj, gDisplayViewportClassInfo.xDpi);
+    viewport->yDpi = env->GetFloatField(viewportObj, gDisplayViewportClassInfo.yDpi);
 
     jobject logicalFrameObj =
             env->GetObjectField(viewportObj, gDisplayViewportClassInfo.logicalFrame);
@@ -140,6 +144,10 @@ int register_android_hardware_display_DisplayViewport(JNIEnv* env) {
 
     gDisplayViewportClassInfo.densityDpi =
             GetFieldIDOrDie(env, gDisplayViewportClassInfo.clazz, "densityDpi", "I");
+    gDisplayViewportClassInfo.xDpi =
+            GetFieldIDOrDie(env, gDisplayViewportClassInfo.clazz, "xDpi", "F");
+    gDisplayViewportClassInfo.yDpi =
+            GetFieldIDOrDie(env, gDisplayViewportClassInfo.clazz, "yDpi", "F");
 
     clazz = FindClassOrDie(env, "android/graphics/Rect");
     gRectClassInfo.left = GetFieldIDOrDie(env, clazz, "left", "I");
