@@ -37,9 +37,23 @@ import com.android.systemui.keyguard.TAG
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardSurfaceBehindModel
 import com.android.wm.shell.shared.animation.Interpolators
+import java.lang.Math.clamp
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.math.max
+
+/**
+ * Starting scale factor for the app/launcher surface behind the keyguard, when it's animating in
+ * during keyguard exit.
+ */
+private const val START_SCALE_FACTOR = 0.95f
+
+/**
+ * Y coordinate of the pivot point for the scale effect on the surface behind the keyguard. This is
+ * expressed as percentage of the surface's height, so 0.66f means the surface will scale up from
+ * the point at (width / 2, height * 0.66).
+ */
+private const val SCALE_PIVOT_Y = 0.66f
 
 /** Damping ratio to use for animations resulting from touch gesture fling animation. */
 private const val TOUCH_FLING_DAMPING_RATIO = 0.992f
@@ -219,12 +233,19 @@ constructor(
                 }
 
                 val translationX = target.screenSpaceBounds.left.toFloat()
-                val translationY =
+                val baseTranslationY =
                     if (translateYSpring.isRunning) {
-                        target.screenSpaceBounds.top.toFloat() + animatedTranslationY.value
+                        animatedTranslationY.value
                     } else {
-                        target.screenSpaceBounds.top.toFloat() + viewParams.translationY
+                        viewParams.translationY
                     }
+                val translationY = target.screenSpaceBounds.top.toFloat() + baseTranslationY
+
+                var percentTranslated =
+                    clamp(1f - (baseTranslationY / animatingFromTranslationY), 0f, 1f)
+                if (!percentTranslated.isFinite()) percentTranslated = 1f
+                val scaleFactor =
+                    START_SCALE_FACTOR + ((1f - START_SCALE_FACTOR) * percentTranslated)
 
                 val alpha =
                     if (alphaAnimator.isRunning) {
@@ -233,47 +254,28 @@ constructor(
                         viewParams.alpha
                     }
 
+                matrix.setScale(
+                    scaleFactor,
+                    scaleFactor,
+                    target.screenSpaceBounds.width() / 2f,
+                    target.screenSpaceBounds.height() * SCALE_PIVOT_Y,
+                )
+                matrix.postTranslate(translationX, translationY)
+
                 if (
                     keyguardViewController.viewRootImpl.view?.visibility != View.VISIBLE &&
                         target.leash.isValid
                 ) {
                     with(SurfaceControl.Transaction()) {
-                        setMatrix(
-                            target.leash,
-                            matrix.apply {
-                                setTranslate(translationX, translationY)
-                                var percentTranslated =
-                                    1f - (animatedTranslationY.value / animatingFromTranslationY)
-                                if (!percentTranslated.isFinite()) percentTranslated = 1f
-                                setScale(
-                                    95f + (5f * percentTranslated),
-                                    95f + (5f * percentTranslated),
-                                    surfaceBehind!!.screenSpaceBounds.width() / 2f,
-                                    surfaceBehind!!.screenSpaceBounds.height() * .75f,
-                                )
-                            },
-                            tmpFloat,
-                        )
+                        setMatrix(target.leash, matrix, tmpFloat)
                         setAlpha(target.leash, alpha)
                         setCornerRadius(target.leash, roundedCornerRadius)
                         apply()
                     }
                 } else {
-                    var percentTranslated = 1f - (translationY / animatingFromTranslationY)
-                    if (!percentTranslated.isFinite()) percentTranslated = 1f
                     surfaceTransactionApplier.scheduleApply(
                         SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(target.leash)
-                            .withMatrix(
-                                matrix.apply {
-                                    setScale(
-                                        .93f + (.07f * percentTranslated),
-                                        .93f + (.07f * percentTranslated),
-                                        surfaceBehind!!.screenSpaceBounds.width() / 2f,
-                                        surfaceBehind!!.screenSpaceBounds.height() * .66f,
-                                    )
-                                    postTranslate(translationX, translationY)
-                                }
-                            )
+                            .withMatrix(matrix)
                             .withAlpha(alpha)
                             .withCornerRadius(roundedCornerRadius)
                             .build()
