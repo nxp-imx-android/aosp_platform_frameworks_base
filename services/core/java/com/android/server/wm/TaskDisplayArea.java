@@ -650,7 +650,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     void assignRootTaskOrdering(SurfaceControl.Transaction t) {
         if (!mTransitionController.mBuildingTransitionLayers
-                && com.android.window.flags.Flags.updateRootTaskLayerOnlyWithTransition()
                 && mTransitionController.isShellTransitionsEnabled()) {
             // All root tasks can be organized, so handle them centrally by shell transitions.
             return;
