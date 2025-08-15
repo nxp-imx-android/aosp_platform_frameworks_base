@@ -252,10 +252,10 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     @CallSuper
     public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTaskAppeared: taskId=%d taskParent=%d rootTask=%d "
-                        + "stageId=%s taskActivity=%s",
+                        + "stageId=%s taskActivity=%s displayId=%d",
                 taskInfo.taskId, taskInfo.parentTaskId,
                 mRootTaskInfo != null ? mRootTaskInfo.taskId : -1,
-                stageTypeToString(mId), taskInfo.baseActivity);
+                stageTypeToString(mId), taskInfo.baseActivity, taskInfo.displayId);
         if (mRootTaskInfo == null) {
             mRootLeash = leash;
             mRootTaskInfo = taskInfo;
@@ -286,8 +286,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     @CallSuper
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTaskInfoChanged: taskId=%d taskAct=%s "
-                        + "stageId=%s",
-                taskInfo.taskId, taskInfo.baseActivity, stageTypeToString(mId));
+                        + "stageId=%s displayId=%d",
+                taskInfo.taskId, taskInfo.baseActivity, stageTypeToString(mId), taskInfo.displayId);
         mWindowDecorViewModel.ifPresent(viewModel -> viewModel.onTaskInfoChanged(taskInfo));
         if (mRootTaskInfo.taskId == taskInfo.taskId) {
             mRootTaskInfo = taskInfo;
@@ -297,8 +297,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
                     || !ArrayUtils.contains(CONTROLLED_WINDOWING_MODES_WHEN_ACTIVE,
                     taskInfo.getWindowingMode())) {
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
-                        "onTaskInfoChanged: task=%d no longer supports multiwindow",
-                        taskInfo.taskId);
+                        "onTaskInfoChanged: task=%d no longer supports multiwindow on display=%d",
+                        taskInfo.taskId, taskInfo.displayId);
                 // Leave split screen if the task no longer supports multi window or have
                 // uncontrolled task.
                 mCallbacks.onNoLongerSupportMultiWindow(this, taskInfo);
@@ -316,8 +316,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     @Override
     @CallSuper
     public void onTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTaskVanished: task=%d stageId=%s",
-                taskInfo.taskId, stageTypeToString(mId));
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onTaskVanished: task=%d stageId=%s displayId=%d",
+                taskInfo.taskId, stageTypeToString(mId), taskInfo.displayId);
         final int taskId = taskInfo.taskId;
         mWindowDecorViewModel.ifPresent(vm -> vm.onTaskVanished(taskInfo));
         if (mRootTaskInfo.taskId == taskId) {
@@ -478,8 +478,8 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
 
     private void evictChild(@NonNull WindowContainerTransaction wct, @NonNull TaskInfo taskInfo,
             @NonNull String reason) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Evict child: task=%d reason=%s", taskInfo.taskId,
-                reason);
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Evict child: task=%d reason=%s displayId=%d",
+                taskInfo.taskId, reason, taskInfo.displayId);
         // We are reparenting the task, but not removing the task from mChildrenTaskInfo, so to
         // prevent this task from being considered as a top task for the roots, we need to override
         // the visibility of the soon-to-be-hidden task

@@ -735,8 +735,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
     boolean moveToStage(RunningTaskInfo task, @SplitPosition int stagePosition,
             WindowContainerTransaction wct) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "moveToStage: task=%d position=%d", task.taskId,
-                stagePosition);
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "moveToStage: task=%d position=%d displayId=%d",
+                task.taskId, stagePosition, task.displayId);
         // TODO(b/349828130) currently pass in index_undefined until we can revisit these
         //  specific cases in the future. Only focusing on parity with starting intent/task
         prepareEnterSplitScreen(wct, task, stagePosition, false /* resizeAnim */,
@@ -2034,8 +2034,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     void prepareEnterSplitScreen(WindowContainerTransaction wct,
             @Nullable RunningTaskInfo taskInfo, @SplitPosition int startPosition,
             boolean resizeAnim, @SplitIndex int index) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareEnterSplitScreen: position=%d resize=%b",
-                startPosition, resizeAnim);
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareEnterSplitScreen: position=%d resize=%b "
+                        + "displayId=%d",
+                startPosition, resizeAnim, taskInfo != null ? taskInfo.displayId : -1);
         onSplitScreenEnter();
         // Preemptively reset the reparenting behavior if we know that we are entering, as starting
         // split tasks with activity trampolines can inadvertently trigger the task to be
@@ -2054,9 +2055,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private void prepareBringSplit(WindowContainerTransaction wct,
             @Nullable RunningTaskInfo taskInfo, @SplitPosition int startPosition,
             boolean resizeAnim) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareBringSplit: task=%d isSplitVisible=%b",
-                taskInfo != null ? taskInfo.taskId : -1, isSplitScreenVisible());
-        if (taskInfo != null) {
+        boolean taskInfoNotNull = taskInfo != null;
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareBringSplit: task=%d isSplitVisible=%b "
+                        + "displayId=%d",
+                taskInfoNotNull ? taskInfo.taskId : -1, isSplitScreenVisible(),
+                taskInfoNotNull ? taskInfo.displayId : -1);
+        if (taskInfoNotNull) {
             wct.startTask(taskInfo.taskId,
                     resolveStartStage(STAGE_TYPE_UNDEFINED, startPosition, null, wct));
         }
@@ -2084,12 +2088,15 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private void prepareActiveSplit(WindowContainerTransaction wct,
             @Nullable RunningTaskInfo taskInfo, @SplitPosition int startPosition,
             boolean resizeAnim, @SplitIndex int index) {
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareActiveSplit: task=%d isSplitVisible=%b",
-                taskInfo != null ? taskInfo.taskId : -1, isSplitScreenVisible());
+        boolean taskInfoNotNull = taskInfo != null;
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareActiveSplit: task=%d isSplitVisible=%b "
+                        + "displayId=%d",
+                taskInfoNotNull ? taskInfo.taskId : -1, isSplitScreenVisible(),
+                taskInfoNotNull ? taskInfo.displayId : -1);
         // We handle split visibility itself on shell transition, but sometimes we didn't
         // reset it correctly after dismiss by some reason, so just set invisible before active.
         setSplitsVisible(false);
-        if (taskInfo != null) {
+        if (taskInfoNotNull) {
             setSideStagePosition(startPosition, wct);
             mSideStage.addTask(taskInfo, wct);
         }
