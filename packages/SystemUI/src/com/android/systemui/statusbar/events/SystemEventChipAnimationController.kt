@@ -349,7 +349,7 @@ constructor(
     }
 
     override fun announceForAccessibility(contentDescriptions: String) {
-        currentAnimatedView?.view?.announceForAccessibility(contentDescriptions)
+        currentAnimatedView?.view?.stateDescription = contentDescriptions
     }
 
     private fun updateDimens(contentArea: Rect) {

@@ -416,7 +416,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         )
         fastForwardAnimationToState(AnimatingOut)
 
-        verify(mockView).announceForAccessibility(eq(accessibilityDesc))
+        verify(mockView).setStateDescription(eq(accessibilityDesc))
     }
 
     @Test
@@ -435,7 +435,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         )
         fastForwardAnimationToState(AnimatingOut)
 
-        verify(mockView, never()).announceForAccessibility(any())
+        verify(mockView, never()).setStateDescription(any())
     }
 
     @Test
@@ -454,7 +454,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         )
         fastForwardAnimationToState(AnimatingOut)
 
-        verify(mockView, never()).announceForAccessibility(any())
+        verify(mockView, never()).setStateDescription(any())
     }
 
     @Test
