@@ -137,7 +137,13 @@ android_library {
     resource_dirs: [
         "res",
     ],
+    aidl: {
+        include_dirs: [
+            "frameworks/native/libs/gui",
+        ],
+    },
     static_libs: [
+        "android.gui.boxshadow-java",
         "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
         "//frameworks/libs/systemui:com_android_systemui_shared_flags_lib",
         "//frameworks/libs/systemui:iconloader_base",

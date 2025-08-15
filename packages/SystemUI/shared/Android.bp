@@ -51,6 +51,7 @@ android_library {
         ":wm_shell-shared-aidls",
     ],
     static_libs: [
+        "android.gui.boxshadow-java",
         "com.android.systemui.dagger-api",
         "com.android.systemui.log.table-api",
         "BiometricsSharedLib",
@@ -80,6 +81,11 @@ android_library {
     resource_dirs: [
         "res",
     ],
+    aidl: {
+        include_dirs: [
+            "frameworks/native/libs/gui",
+        ],
+    },
     min_sdk_version: "current",
     plugins: ["dagger2-compiler"],
     kotlincflags: ["-Xjvm-default=all"],
