@@ -588,7 +588,15 @@ fun ContentScope.NotificationScrollingStack(
                         // respect the original constraints to support shared element transitions.
                         val constrainedHeight =
                             constraints.constrainHeight(
-                                (constraints.maxHeight + minScrimOffset().roundToInt() - yOffset)
+                                // This change modifies the scrim animation to ensure its height
+                                // expands to fill the entire screen by the end of the transition.
+                                // TODO(b/438706987) Due to this complexity, the animation may need
+                                //  to be revisited later as part of a larger refactor.
+                                lerp(
+                                    constraints.maxHeight,
+                                    constraints.maxHeight + minScrimOffset().roundToInt() - yOffset,
+                                    expansionFraction,
+                                )
                             )
                         val placeable =
                             measurable.measure(
