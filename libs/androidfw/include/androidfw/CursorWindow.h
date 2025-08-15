@@ -152,8 +152,8 @@ public:
 
 private:
     String8 mName;
+    std::optional<android::base::MappedFile> mMappedFile;
     int mAshmemFd = -1;
-    std::unique_ptr<android::base::MappedFile> mMappedFile = nullptr;
     void* mData = nullptr;
     /**
      * Pointer to the first FieldSlot, used to optimize the extremely
