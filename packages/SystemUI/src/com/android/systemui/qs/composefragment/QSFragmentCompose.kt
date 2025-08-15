@@ -154,6 +154,9 @@ import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExclusionInShade
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.policy.ConfigurationController
+import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
 import com.android.systemui.util.LifecycleFragment
 import com.android.systemui.util.animation.MeasurementInput
 import com.android.systemui.util.animation.UniqueObjectHostView
@@ -185,6 +188,7 @@ constructor(
     private val dumpManager: DumpManager,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val mediaLogger: MediaViewLogger,
+    @ShadeDisplayAware private val configurationController: ConfigurationController,
 ) : LifecycleFragment(), QS, Dumpable {
 
     private val scrollListener = MutableStateFlow<QS.ScrollListener?>(null)
@@ -273,11 +277,6 @@ constructor(
             FrameLayout.LayoutParams.MATCH_PARENT,
         )
         return frame
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        view?.dispatchConfigurationChanged(newConfig)
     }
 
     @Composable
@@ -650,6 +649,13 @@ constructor(
         bottomContentPadding = padding
     }
 
+    private val configurationListener =
+        object : ConfigurationListener {
+            override fun onConfigChanged(newConfig: Configuration) {
+                view?.dispatchConfigurationChanged(newConfig)
+            }
+        }
+
     private fun setListenerCollections() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -676,6 +682,14 @@ constructor(
                         viewModel.containerViewModel.editModeViewModel.isEditing,
                     ) {
                         setCustomizerShowing(it, EDIT_MODE_TIME_MILLIS.toLong())
+                    }
+                }
+                launch {
+                    try {
+                        configurationController.addCallback(configurationListener)
+                        awaitCancellation()
+                    } finally {
+                        configurationController.removeCallback(configurationListener)
                     }
                 }
             }
