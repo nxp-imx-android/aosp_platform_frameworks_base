@@ -308,13 +308,11 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         if (navWindow != null) {
             excludeSurfaces.add(navWindow.getSurfaceControl());
         }
-        if (Flags.excludeNonMainWindowFromSnapshot()) {
-            source.forAllWindows(w -> {
-                if (w.mAnimatingExit && !w.mRemoved && w.mAttrs.type != TYPE_BASE_APPLICATION) {
-                    excludeSurfaces.add(w.getSurfaceControl());
-                }
-            }, true /* traverseTopToBottom */);
-        }
+        source.forAllWindows(w -> {
+            if (w.mAnimatingExit && !w.mRemoved && w.mAttrs.type != TYPE_BASE_APPLICATION) {
+                excludeSurfaces.add(w.getSurfaceControl());
+            }
+        }, true /* traverseTopToBottom */);
         final SurfaceControl[] excludeLayers =
                 excludeSurfaces.toArray(new SurfaceControl[excludeSurfaces.size()]);
         builder.setHasImeSurface(!excludeIme && imeWindow != null && imeWindow.isVisible());
