@@ -182,12 +182,19 @@ class AnrController {
             }
             windowState = target.getWindowState();
             pid = target.getPid();
-            // Blame the activity if the input token belongs to the window. If the target is
-            // embedded, then we will blame the pid instead.
-            activity = (windowState.mInputChannelToken == inputToken)
-                    ? windowState.mActivityRecord : null;
+            if (windowState != null) {
+                // Blame the activity if the input token belongs to the window. If the target is
+                // embedded, then we will blame the pid instead.
+                activity = (windowState.mInputChannelToken == inputToken)
+                        ? windowState.mActivityRecord : null;
+                aboveSystem = isWindowAboveSystem(windowState);
+            } else {
+                // Embedded windows without a host window state are assumed to be above 
+                // system layers
+                activity = null;
+                aboveSystem = true;
+            }
             Slog.i(TAG_WM, "ANR in " + target + ". Reason:" + timeoutRecord.mReason);
-            aboveSystem = isWindowAboveSystem(windowState);
         }
         if (activity != null) {
             activity.inputDispatchingTimedOut(timeoutRecord, pid);
