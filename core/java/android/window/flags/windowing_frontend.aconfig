@@ -153,6 +153,16 @@ flag {
 }
 
 flag {
+  name: "no_alpha_rotation_enter_animation"
+  namespace: "windowing_frontend"
+  description: "Remove alpha effect of rotation enter animation"
+  bug: "438615184"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
