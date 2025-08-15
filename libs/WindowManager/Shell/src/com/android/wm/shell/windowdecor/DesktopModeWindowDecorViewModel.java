@@ -1796,8 +1796,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             needDragIndicatorCleanup);
                     if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue()) {
                         if (needDragIndicatorCleanup) {
-                            mMultiDisplayDragMoveIndicatorController.onDragEnd(taskInfo.taskId,
-                                    mTransactionFactory.get());
+                            SurfaceControl.Transaction t = mTransactionFactory.get();
+                            mMultiDisplayDragMoveIndicatorController.onDragEnd(taskInfo.taskId, t);
+                            t.apply();
                         }
                     }
                     if (DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
