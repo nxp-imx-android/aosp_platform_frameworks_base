@@ -84,7 +84,7 @@ final class EnforcingAdmin {
         Objects.requireNonNull(packageName);
 
         return new EnforcingAdmin(
-                AdminKey.ofPackage(userId, packageName),
+                new AdminKey.Package(userId, packageName),
                 null, /* componentName */
                 true, /* isRoleAuthority */
                 null  /* authorities */
@@ -96,7 +96,7 @@ final class EnforcingAdmin {
         Objects.requireNonNull(componentName);
 
         return new EnforcingAdmin(
-                AdminKey.ofPackage(userId, componentName.getPackageName()),
+                new AdminKey.Package(userId, componentName.getPackageName()),
                 componentName,
                 false, /* isRoleAuthority */
                 new HashSet<>(Set.of(DPC_AUTHORITY))
@@ -108,7 +108,7 @@ final class EnforcingAdmin {
         Objects.requireNonNull(componentName);
 
         return new EnforcingAdmin(
-                AdminKey.ofLegacyAdminComponent(userId, componentName),
+                new AdminKey.Legacy(userId, componentName),
                 componentName,
                 false, /* isRoleAuthority */
                 new HashSet<>(Set.of(DEVICE_ADMIN_AUTHORITY))
@@ -119,7 +119,7 @@ final class EnforcingAdmin {
         Objects.requireNonNull(systemEntity);
 
         return new EnforcingAdmin(
-                AdminKey.ofSystemEntity(systemEntity),
+                new AdminKey.System(systemEntity),
                 null, /* componentName */
                 false, /* isRoleAuthority */
                 getSystemAuthority(systemEntity)
@@ -139,7 +139,7 @@ final class EnforcingAdmin {
                 return createRoleEnforcingAdmin(admin.getPackageName(), userId);
             } else {
                 return new EnforcingAdmin(
-                        AdminKey.ofPackage(userId, admin.getPackageName()),
+                        new AdminKey.Package(userId, admin.getPackageName()),
                         admin.getComponentName(),
                         true,
                         new HashSet<>(roleAuthority.getRoles())
@@ -152,7 +152,7 @@ final class EnforcingAdmin {
             throw new IllegalArgumentException("Unknown admin type: " + admin);
         } else {
             return new EnforcingAdmin(
-                    AdminKey.ofPackage(userId, admin.getPackageName()),
+                    new AdminKey.Package(userId, admin.getPackageName()),
                     admin.getComponentName(),
                     false, /* isRoleAuthority */
                     Set.of()  /* authorities */
@@ -248,7 +248,7 @@ final class EnforcingAdmin {
     }
 
     boolean isSystemAuthority() {
-        return mAdminKey.isSystemEntity();
+        return mAdminKey instanceof AdminKey.System;
     }
 
     boolean isSupervisionAdmin() {
@@ -427,7 +427,7 @@ final class EnforcingAdmin {
                 return null;
             } else {
                 return new EnforcingAdmin(
-                        AdminKey.ofPackage(userId, packageName),
+                        new AdminKey.Package(userId, packageName),
                         componentName,
                         false, /* isRoleAuthority */
                         new HashSet<>(Set.of(authorities))
