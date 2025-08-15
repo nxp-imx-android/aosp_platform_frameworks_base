@@ -4547,6 +4547,11 @@ class DesktopTasksController(
             }
         wct.setWindowingMode(taskInfo.token, targetWindowingMode)
         wct.setBounds(taskInfo.token, Rect())
+
+        if (Flags.appCompatRefactoringSetAppboundsToNullWhenEmpty()) {
+            wct.setAppBounds(taskInfo.token, null)
+        }
+
         if (desktopConfig.useDesktopOverrideDensity) {
             wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
         }
