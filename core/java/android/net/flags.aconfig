@@ -77,3 +77,11 @@ flag {
   description: "Flag for change to NETWORK_FACTORY permission to include priviliged"
   bug: "431500580"
 }
+
+flag {
+  name: "create_app_specific_network_permission"
+  namespace: "android_core_networking"
+  is_exported: true
+  description: "Flag for adding CREATE_APP_SPECIFIC_NETWORK permission"
+  bug: "435313135"
+}
