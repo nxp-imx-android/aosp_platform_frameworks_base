@@ -557,7 +557,8 @@ public final class Message implements Parcelable {
      * Throws a null pointer exception if this field has not been set.
      */
     public void sendToTarget() {
-        target.sendMessage(this);
+        // We have no use for the return value, so ignore it.
+        boolean unused = target.sendMessage(this);
     }
 
     /**
