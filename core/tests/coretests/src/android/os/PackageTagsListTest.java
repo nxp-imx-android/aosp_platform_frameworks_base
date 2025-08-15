@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -155,5 +156,31 @@ public class PackageTagsListTest {
         parcel.recycle();
 
         assertEquals(list, newList);
+    }
+
+    @Test
+    public void testGetPackages() {
+        PackageTagsList list = new PackageTagsList.Builder().build();
+        assertTrue(list.getPackages().isEmpty());
+
+        list =
+                new PackageTagsList.Builder()
+                        .add("package1", "attr1")
+                        .add("package1", "attr2")
+                        .build();
+        assertEquals(Collections.singleton("package1"), list.getPackages());
+
+        list = new PackageTagsList.Builder().add("package1").build();
+        assertEquals(Collections.singleton("package1"), list.getPackages());
+
+        list =
+                new PackageTagsList.Builder()
+                        .add("package1", "attr1")
+                        .add("package2", "attr2")
+                        .add("package3")
+                        .build();
+        assertEquals(
+                new ArraySet<>(Arrays.asList("package1", "package2", "package3")),
+                list.getPackages());
     }
 }
