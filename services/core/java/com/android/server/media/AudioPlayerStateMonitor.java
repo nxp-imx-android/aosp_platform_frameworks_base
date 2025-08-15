@@ -29,6 +29,7 @@ import android.util.ArraySet;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.media.mediasession.flags.Flags;
 import com.android.server.SystemService;
 
 import java.io.PrintWriter;
@@ -111,8 +112,20 @@ class AudioPlayerStateMonitor {
     @SuppressWarnings("WeakerAccess") /* synthetic access */
     final List<Integer> mSortedAudioPlaybackClientUids = new ArrayList<>();
 
+    /**
+     * Static factory method.
+     *
+     * <p>If {@link Flags#removeAudioplayerstatemonitorStaticMemoization()} is true then this method
+     * creates a new instance (and registers a new listener on {@link AudioManager}) each time it's
+     * called, so should only be called once per {@link SystemService} lifecycle.
+     *
+     * @param context A context.
+     * @return The constructed instance.
+     */
     static AudioPlayerStateMonitor getInstance(Context context) {
-        // TODO: b/438917725 - Remove this static memoization.
+        if (Flags.removeAudioplayerstatemonitorStaticMemoization()) {
+            return getInstance(context, Set.of());
+        }
         synchronized (AudioPlayerStateMonitor.class) {
             if (sInstance == null) {
                 sInstance = new AudioPlayerStateMonitor(context, Set.of());

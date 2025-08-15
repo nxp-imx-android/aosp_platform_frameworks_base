@@ -44,3 +44,10 @@ flag {
                "from infinity to zero."
   bug: "432003816"
 }
+
+flag {
+  name: "remove_audioplayerstatemonitor_static_memoization"
+  namespace: "media_solutions"
+  description: "Remove the static memoization from AudioPlayerStateMonitor.getInstance(Context)."
+  bug: "438917725"
+}
