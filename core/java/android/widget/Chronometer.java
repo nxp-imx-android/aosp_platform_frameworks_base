@@ -40,6 +40,7 @@ import android.widget.RemoteViews.RemoteView;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.util.ArrayList;
@@ -222,6 +223,22 @@ public class Chronometer extends TextView {
     private long instantToElapsedRealtime(Instant instant) {
         return mElapsedRealtimeClock.getAsLong()
                 + (instant.toEpochMilli() - mSystemClock.millis());
+    }
+
+    /**
+     * Pauses the Chronometer (if it was running) and displays the specified {@link Duration}
+     * (which can be negative). To do this, {@link #getBase()} will be modified according to the
+     * current value of {@link #isCountDown()}.
+     *
+     * @hide
+     */
+    @android.view.RemotableViewMethod
+    public void setPausedDuration(@NonNull Duration duration) {
+        stop();
+        long elapsedRealtime = mElapsedRealtimeClock.getAsLong();
+        mBase = elapsedRealtime + (isCountDown() ? 1 : -1) * duration.toMillis();
+        mBaseInstant = null;
+        updateText(elapsedRealtime);
     }
 
     /**

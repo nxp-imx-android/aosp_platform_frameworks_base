@@ -129,6 +129,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.frameworks.coretests.R
 import com.google.common.truth.Truth.assertThat
 import java.io.ByteArrayOutputStream
+import java.time.Duration
 import java.time.Instant
 import java.util.Locale
 import kotlin.random.Random
@@ -201,6 +202,19 @@ class RemoteViewsSerializersTest {
         val copy = RemoteViewsSerializers.createInstantFromProto(input)
 
         assertThat(copy).isEqualTo(instant)
+    }
+
+    @Test
+    fun testWriteDurationToProto() {
+        // May 30, 2025 14:26:25.000123456 UTC
+        val duration = Duration.ofSeconds(30)
+
+        val out = ProtoOutputStream()
+        RemoteViewsSerializers.writeDurationToProto(out, duration)
+        val input = ProtoInputStream(out.bytes)
+        val copy = RemoteViewsSerializers.createDurationFromProto(input)
+
+        assertThat(copy).isEqualTo(duration)
     }
 
     @Test
