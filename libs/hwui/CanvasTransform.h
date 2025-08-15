@@ -25,13 +25,17 @@
 
 namespace android::uirenderer {
 
+// LINT.IfChange(UsageHint)
 enum class UsageHint {
+    // Note: Constant values should match RenderNode.java UsageHint.
     Unknown = 0,
     Background = 1,
     Foreground = 2,
     // Contains foreground (usually text), like a button or chip
-    Container = 3
+    Container = 3,
+    NavigationBarBackground = 4
 };
+// LINT.ThenChange(/graphics/java/android/graphics/RenderNode.java:UsageHint)
 
 enum class ColorTransform {
     None,

@@ -65,6 +65,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RecordingCanvas;
 import android.graphics.Rect;
+import android.graphics.RenderNode;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
@@ -1189,6 +1190,11 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
                 if (viewRoot != null) {
                     viewRoot.requestInvalidateRootRenderNode();
                 }
+            }
+            if (android.view.accessibility.Flags.forceInvertColor()
+                    && mNavigationColorViewState.view != null) {
+                mNavigationColorViewState.view.setUsageHint(
+                        RenderNode.USAGE_NAVIGATION_BAR_BACKGROUND);
             }
 
             boolean statusBarNeedsRightInset = navBarToRightEdge

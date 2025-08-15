@@ -440,10 +440,23 @@ void RenderNode::gatherColorAreasForSubtree(ColorArea& target, bool isModeFull) 
 
 void RenderNode::handleForceDark(android::uirenderer::TreeInfo* info) {
     if (CC_UNLIKELY(info && isForceInvertDark(*info))) {
-        // TODO(b/391959649): what about apps who have opted in to force dark, but only partially?
-        //  will this mess them up? e.g. if they set disableForceDark but only on a few nodes.
-        // The app is too bright, captain! Reverse the polarity!
-        mDisplayList.applyColorTransform(ColorTransform::Invert);
+        ColorTransform transform;
+        if (usageHint() == UsageHint::NavigationBarBackground) {
+            // The Navigation Bar background should always be dark, and not inverted to light by the
+            // FORCE_INVERT_COLOR_DARK feature, since the Navigation Bar buttons are rendered by a
+            // separate process and are always light.
+            mDisplayList.updateChildren([&](RenderNode* child) {
+                child->setUsageHint(UsageHint::NavigationBarBackground);
+            });
+            transform = ColorTransform::Dark;
+        } else {
+            // TODO(b/391959649): what about apps who have opted in to force dark, but only
+            //  partially? will this mess them up? e.g. if they set disableForceDark but only
+            //  on a few nodes.
+            // The app is too bright, captain! Reverse the polarity!
+            transform = ColorTransform::Invert;
+        }
+        mDisplayList.applyColorTransform(transform);
         return;
     }
 
