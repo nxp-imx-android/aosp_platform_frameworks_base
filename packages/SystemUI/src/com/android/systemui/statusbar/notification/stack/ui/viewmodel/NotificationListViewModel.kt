@@ -258,15 +258,13 @@ constructor(
                     notificationStackInteractor.isShowingOnLockscreen,
                     shadeInteractor.isQsFullscreen,
                     remoteInputInteractor.isRemoteInputActive,
-                    shadeInteractor.shadeExpansion.map { it < 0.5f }.distinctUntilChanged(),
                 ) {
                     shadeMode,
                     hasNotifications,
                     isUserSetUp,
                     isShowingOnLockscreen,
                     qsFullScreen,
-                    isRemoteInputActive,
-                    shadeLessThanHalfwayExpanded ->
+                    isRemoteInputActive ->
                     when {
                         // Hide the footer when there are no notifications, unless it's Dual Shade.
                         shadeMode != ShadeMode.Dual && !hasNotifications ->
@@ -285,8 +283,6 @@ constructor(
                         // Hide the footer if remote input is active (i.e. user is replying to a
                         // notification). See b/75984847.
                         isRemoteInputActive -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
-                        // If the shade is not expanded enough, the footer shouldn't be visible.
-                        shadeLessThanHalfwayExpanded -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                         else -> VisibilityChange.APPEAR_WITH_ANIMATION
                     }
                 }
