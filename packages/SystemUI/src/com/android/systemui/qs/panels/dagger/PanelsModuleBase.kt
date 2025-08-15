@@ -26,6 +26,7 @@ import com.android.systemui.qs.panels.data.repository.AppIconRepository
 import com.android.systemui.qs.panels.data.repository.AppIconRepositoryImpl
 import com.android.systemui.qs.panels.domain.interactor.EditTilesResetInteractor
 import com.android.systemui.qs.panels.domain.interactor.SizedTilesResetInteractor
+import com.android.systemui.qs.panels.domain.startable.QSLargeSpecsCommand
 import com.android.systemui.qs.panels.domain.startable.QSPanelsCoreStartable
 import com.android.systemui.qs.panels.shared.model.GridLayoutType
 import com.android.systemui.qs.panels.shared.model.InfiniteGridLayoutType
@@ -64,6 +65,11 @@ interface PanelsModuleBase {
     @IntoMap
     @ClassKey(QSPanelsCoreStartable::class)
     fun bindQSPanelsCoreStartable(impl: QSPanelsCoreStartable): CoreStartable
+
+    @Binds
+    @IntoMap
+    @ClassKey(QSLargeSpecsCommand::class)
+    fun bindQSLargeSpecsCommand(impl: QSLargeSpecsCommand): CoreStartable
 
     @Binds
     fun bindsAppIconRepositoryFactory(
