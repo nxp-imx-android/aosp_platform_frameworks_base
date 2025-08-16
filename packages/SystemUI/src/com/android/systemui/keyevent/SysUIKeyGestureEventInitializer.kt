@@ -16,16 +16,22 @@
 
 package com.android.systemui.keyevent
 
+import android.content.res.Resources
 import android.hardware.input.InputManager
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.util.Slog
 import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.statusbar.CommandQueue
 import com.android.window.flags.Flags.enableKeyGestureHandlerForSysui
+import java.util.concurrent.Executor
 import javax.inject.Inject
 
 /**
@@ -36,11 +42,18 @@ import javax.inject.Inject
 class SysUIKeyGestureEventInitializer
 @Inject
 constructor(
+    @Main private val mainExecutor: Executor,
+    @Main private val resources: Resources,
     private val inputManager: InputManager,
     private val commandQueue: CommandQueue,
     private val shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy,
 ) : CoreStartable {
     override fun start() {
+        registerKeyGestureEventHandlers()
+        registerKeyGestureEventListeners()
+    }
+
+    private fun registerKeyGestureEventHandlers() {
         val supportedGestures = mutableListOf<Int>()
         if (enableKeyGestureHandlerForSysui()) {
             supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
@@ -61,8 +74,21 @@ constructor(
                     shadeDisplayPolicy.onQSPanelKeyboardShortcut()
                     commandQueue.toggleQuickSettingsPanel()
                 }
+                else ->
+                    Slog.w(TAG, "Unsupported key gesture event handler: ${event.keyGestureType}")
+            }
+        }
+    }
 
-                else -> Slog.w(TAG, "Unsupported key gesture event: ${event.keyGestureType}")
+    private fun registerKeyGestureEventListeners() {
+        val enableHideNotificationsShade =
+            resources.getBoolean(R.bool.config_enableHideNotificationsShadeOnAllAppsKey)
+        if (!SceneContainerFlag.isEnabled || !enableHideNotificationsShade) {
+            return
+        }
+        inputManager.registerKeyGestureEventListener(mainExecutor) { event ->
+            if (event.keyGestureType == KEY_GESTURE_TYPE_ALL_APPS) {
+                commandQueue.animateCollapsePanels()
             }
         }
     }
