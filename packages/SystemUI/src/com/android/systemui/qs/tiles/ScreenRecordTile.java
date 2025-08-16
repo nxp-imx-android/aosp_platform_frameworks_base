@@ -83,7 +83,6 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     private final MediaProjectionMetricsLogger mMediaProjectionMetricsLogger;
     private final UserContextProvider mUserContextProvider;
     private final ScreenCaptureUiInteractor mScreenCaptureUiInteractor;
-    private final ScreenCaptureRecordFeaturesInteractor mScreenCaptureRecordFeaturesInteractor;
 
     private long mMillisUntilFinished = 0;
 
@@ -105,7 +104,6 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
             DialogTransitionAnimator dialogTransitionAnimator,
             PanelInteractor panelInteractor,
             MediaProjectionMetricsLogger mediaProjectionMetricsLogger,
-            ScreenCaptureRecordFeaturesInteractor screenCaptureRecordFeaturesInteractor,
             ScreenCaptureUiInteractor screenCaptureUiInteractor,
             UserContextProvider userContextProvider
     ) {
@@ -119,7 +117,6 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mPanelInteractor = panelInteractor;
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
-        mScreenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor;
         mScreenCaptureUiInteractor = screenCaptureUiInteractor;
         mUserContextProvider = userContextProvider;
     }
@@ -134,7 +131,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
 
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
-        if (ScreenCaptureRecordFeaturesInteractor.Companion.getShouldShowNewToolbar()) {
+        if (ScreenCaptureRecordFeaturesInteractor.INSTANCE.getShouldShowNewToolbar()) {
             UserHandle userHandle = UserHandle.of(getCurrentTileUser());
             mActivityStarter.postQSRunnableDismissingKeyguard(
                     () -> mScreenCaptureUiInteractor.show(

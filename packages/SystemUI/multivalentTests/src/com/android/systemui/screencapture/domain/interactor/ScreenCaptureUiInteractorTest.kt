@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.domain.interactor
+package com.android.systemui.screencapture.domain.interactor
 
 import android.content.testableContext
 import android.platform.test.flag.junit.SetFlagsRule
@@ -33,13 +33,13 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ScreenCaptureRecordFeaturesInteractorTest : SysuiTestCase() {
+class ScreenCaptureUiInteractorTest : SysuiTestCase() {
 
     @get:Rule val setFlagsRule = SetFlagsRule()
 
     private val kosmos = testKosmos()
 
-    private val underTest by lazy { kosmos.screenCaptureRecordFeaturesInteractor }
+    private val underTest by lazy { kosmos.screenCaptureUiInteractor }
 
     @Test
     fun isLargeScreenReturnsConfigValue() =

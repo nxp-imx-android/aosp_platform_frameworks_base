@@ -17,13 +17,13 @@
 package com.android.systemui.screencapture.record.ui.viewmodel
 
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 class ScreenCaptureRecordViewModel
 @AssistedInject
-constructor(interactor: ScreenCaptureRecordFeaturesInteractor) : HydratedActivatable() {
+constructor(interactor: ScreenCaptureUiInteractor) : HydratedActivatable() {
 
     val isLargeScreen: Boolean? by interactor.isLargeScreen.hydratedStateOf(null)
 

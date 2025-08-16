@@ -16,44 +16,18 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
-import android.content.res.Resources
-import com.android.dream.lowlight.dagger.qualifiers.Application
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.res.R
-import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.statusbar.policy.onConfigChanged
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
-class ScreenCaptureRecordFeaturesInteractor
-@Inject
-constructor(
-    @Main private val resources: Resources,
-    @Application private val scope: CoroutineScope,
-    configurationController: ConfigurationController,
-) {
-    val isLargeScreen: Flow<Boolean?> =
-        configurationController.onConfigChanged
-            .onStart { emit(resources.configuration) }
-            .map { resources.getBoolean(R.bool.config_enableLargeScreenScreencapture) }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+object ScreenCaptureRecordFeaturesInteractor {
 
-    companion object {
-        val isNewScreenRecordToolbarEnabled: Boolean
-            get() = Flags.newScreenRecordToolbar()
+    val isNewScreenRecordToolbarEnabled: Boolean
+        get() = Flags.newScreenRecordToolbar()
 
-        val isLargeScreenScreencaptureEnabled: Boolean
-            get() = Flags.largeScreenScreencapture()
+    val isLargeScreenScreencaptureEnabled: Boolean
+        get() = Flags.largeScreenScreencapture()
 
-        val shouldShowNewToolbar: Boolean
-            get() = isNewScreenRecordToolbarEnabled || isLargeScreenScreencaptureEnabled
-    }
+    val shouldShowNewToolbar: Boolean
+        get() = isNewScreenRecordToolbarEnabled || isLargeScreenScreencaptureEnabled
 }

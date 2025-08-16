@@ -64,7 +64,6 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractorKosmosKt;
-import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractorKosmosKt;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
@@ -160,8 +159,6 @@ public class ScreenRecordTileTest extends SysuiTestCase {
                 mDialogTransitionAnimator,
                 mPanelInteractor,
                 mMediaProjectionMetricsLogger,
-                ScreenCaptureRecordFeaturesInteractorKosmosKt
-                        .getScreenCaptureRecordFeaturesInteractor(mKosmos),
                 ScreenCaptureUiInteractorKosmosKt.getScreenCaptureUiInteractor(mKosmos),
                 mUserContextProvider
         );
