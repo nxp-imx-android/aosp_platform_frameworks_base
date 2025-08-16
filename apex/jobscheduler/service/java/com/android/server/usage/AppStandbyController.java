@@ -127,6 +127,7 @@ import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ConcurrentUtils;
+import com.android.internal.util.IntPair;
 import com.android.server.AlarmManagerInternal;
 import com.android.server.AppSchedulingModuleThread;
 import com.android.server.LocalServices;
@@ -1633,6 +1634,19 @@ public class AppStandbyController
 
         synchronized (mAppIdleLock) {
             return mAppIdleHistory.getAppStandbyBucket(packageName, userId, elapsedRealtime);
+        }
+    }
+
+    @Override
+    public long getAppStandbyBucketAndReason(String packageName, int userId,
+            long elapsedRealtime) {
+        if (!mAppIdleEnabled) {
+            return IntPair.of(STANDBY_BUCKET_EXEMPTED, REASON_MAIN_DEFAULT);
+        }
+
+        synchronized (mAppIdleLock) {
+            return mAppIdleHistory.getAppStandbyBucketAndReason(packageName, userId,
+                    elapsedRealtime);
         }
     }
 

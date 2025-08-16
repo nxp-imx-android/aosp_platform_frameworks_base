@@ -62,6 +62,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.IntPair;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
 import com.android.server.job.Flags;
@@ -887,17 +888,11 @@ public final class JobStatus {
         }
         String jobPackage = (sourcePkg != null) ? sourcePkg : job.getService().getPackageName();
 
-        int standbyBucket = JobSchedulerService.standbyBucketForPackage(jobPackage,
-                sourceUserId, elapsedNow);
-        // TODO: b/409606405 - It's possible for where the standby bucket changes between the
-        // time the bucket is queried and the reasoning for the bucket change is queried.
-        // Although the standby bucket change callback will correct this eventually, it'd be
-        // ideal to query the bucket and the reasoning in a single call to prevent potential
-        // temporary inconsistent state.
-        int standbyBucketReason = JobSchedulerService.standbyBucketReasonForPackage(
+        long standbyBucketAndReason = JobSchedulerService.standbyBucketAndReasonForPackage(
                 jobPackage, sourceUserId, elapsedNow);
         return new JobStatus(job, callingUid, sourcePkg, sourceUserId,
-                standbyBucket, standbyBucketReason, namespace, tag, /* numFailures */ 0,
+                IntPair.first(standbyBucketAndReason), IntPair.second(standbyBucketAndReason),
+                namespace, tag, /* numFailures */ 0,
                 /* mNumAbandonedFailures */ 0, /* numSystemStops */ 0,
                 earliestRunTimeElapsedMillis, latestRunTimeElapsedMillis,
                 0 /* lastSuccessfulRunTime */, 0 /* lastFailedRunTime */,
