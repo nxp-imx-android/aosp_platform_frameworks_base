@@ -78,6 +78,8 @@ public class BoundServiceSession implements IBinderSession {
     @GuardedBy("this")
     int mTotal = 0;
 
+    private boolean mKnownBad = false;
+
     BoundServiceSession(BiConsumer<ConnectionRecord, Boolean> processStateUpdater,
             WeakReference<ConnectionRecord> weakCr, String debugName) {
         mProcessStateUpdater = processStateUpdater;
@@ -122,8 +124,13 @@ public class BoundServiceSession implements IBinderSession {
         // the underlying ConnectionRecord. This also ensures that there are no shenanigans that
         // the remote app can perform with the given token to remain unfrozen.
         logTraceInstant(() -> errorMessage);
-        Slog.wtfStack(TAG,
-                errorMessage + ". Current keys: " + mKeyByTag + "; Counts: " + mCountByKey);
+        if (!mKnownBad) {
+            Slog.wtfStack(TAG,
+                    errorMessage + ". Current keys: " + mKeyByTag + "; Counts: " + mCountByKey);
+            mKnownBad = true;
+        } else {
+            Slog.e(TAG, errorMessage + ". Current keys: " + mKeyByTag + "; Counts: " + mCountByKey);
+        }
         mKeyByTag.clear();
         mCountByKey.clear();
         if (mTotal != 0) {

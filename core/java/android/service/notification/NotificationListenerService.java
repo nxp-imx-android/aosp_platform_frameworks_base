@@ -1606,6 +1606,10 @@ public abstract class NotificationListenerService extends Service {
                 applyUpdateLocked(update);
                 mCompletionListener = completionListener;
             }
+            if (isConnected) {
+                Log.e(TAG, "onListenerConnected called on an already connected service!"
+                        + " This can result in duplicate events.");
+            }
             isConnected = true;
             final SomeArgs args = SomeArgs.obtain();
             args.argl1 = dispatchToken;
