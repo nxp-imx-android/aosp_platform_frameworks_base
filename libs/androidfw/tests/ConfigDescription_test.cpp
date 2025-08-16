@@ -235,9 +235,9 @@ TEST(ConfigDescriptionTest, ParseValidVersionQualifier) {
   EXPECT_STREQ("v19876.23450", config.toString());
 
   EXPECT_TRUE(TestParse("v34.1", &config));
-  EXPECT_EQ(SDK_BAKLAVA, config.sdkVersion);
+  EXPECT_EQ(34, config.sdkVersion);
   EXPECT_EQ(1, config.minorVersion);
-  EXPECT_STREQ(StringPrintf("v%d.1", SDK_BAKLAVA).c_str(), config.toString());
+  EXPECT_STREQ("v34.1", config.toString());
 }
 
 }  // namespace android

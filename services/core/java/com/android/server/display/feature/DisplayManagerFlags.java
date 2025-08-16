@@ -259,6 +259,11 @@ public class DisplayManagerFlags {
             Flags::minmodeCapBrightnessEnabled
     );
 
+    private final FlagState mIsSingleAppEventForModeAndFrameRateOverrideEnabled = new FlagState(
+            Flags.FLAG_ENABLE_SINGLE_APP_EVENT_FOR_MODE_AND_FRAME_RATE_OVERRIDE,
+            Flags::enableSingleAppEventForModeAndFrameRateOverride
+    );
+
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
@@ -506,6 +511,10 @@ public class DisplayManagerFlags {
         return mIsMinmodeCapBrightnessEnabled.isEnabled();
     }
 
+    public boolean isSingleAppEventForModeAndFrameRateOverrideEnabled() {
+        return mIsSingleAppEventForModeAndFrameRateOverrideEnabled.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -559,6 +568,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
+        pw.println(" " + mIsSingleAppEventForModeAndFrameRateOverrideEnabled);
     }
 
     private static class FlagState {

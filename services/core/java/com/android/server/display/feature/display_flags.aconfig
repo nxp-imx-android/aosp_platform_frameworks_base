@@ -425,3 +425,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_single_app_event_for_mode_and_frame_rate_override"
+    namespace: "display_manager"
+    description: "Enable single app event for mode and frame rate override changed event."
+    bug: "415850294"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

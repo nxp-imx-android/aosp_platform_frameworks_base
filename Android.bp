@@ -402,6 +402,7 @@ java_defaults {
         "framework-internal-utils",
         "dropboxmanager_aidl-java",
         "dynamic_instrumentation_manager_aidl-java",
+        "process_info_service_aidl-java",
         // If MimeMap ever becomes its own APEX, then this dependency would need to be removed
         // in favor of an API stubs dependency in java_library "framework" below.
         "mimemap",

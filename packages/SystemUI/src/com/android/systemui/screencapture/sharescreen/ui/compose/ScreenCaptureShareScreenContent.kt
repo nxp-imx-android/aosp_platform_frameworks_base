@@ -16,15 +16,42 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.compose
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.compose.LargeScreenCaptureShareScreenContent
+import com.android.systemui.screencapture.sharescreen.smallscreen.ui.compose.SmallScreenCaptureShareScreenContent
+import com.android.systemui.screencapture.sharescreen.ui.viewmodel.ScreenCaptureShareScreenViewModel
+import dagger.Lazy
 import javax.inject.Inject
 
 /** Entry point for Screen Share composable content. */
-class ScreenCaptureShareScreenContent @Inject constructor() : ScreenCaptureContent {
+class ScreenCaptureShareScreenContent
+@Inject
+constructor(
+    private val shareScreenViewModelFactory: ScreenCaptureShareScreenViewModel.Factory,
+    private val largeShareScreenContent: Lazy<LargeScreenCaptureShareScreenContent>,
+    private val smallShareScreenContent: Lazy<SmallScreenCaptureShareScreenContent>,
+) : ScreenCaptureContent {
     @Composable
     override fun Content() {
-        Text("Not yet implemented")
+        val viewModel =
+            rememberViewModel("ScreenCaptureShareScreenContent#ScreenCaptureShareScreenViewModel") {
+                shareScreenViewModelFactory.create()
+            }
+        val content: ScreenCaptureContent? by
+            remember(viewModel.isLargeScreen) {
+                derivedStateOf {
+                    when (viewModel.isLargeScreen) {
+                        true -> largeShareScreenContent.get()
+                        false -> smallShareScreenContent.get()
+                        else -> null
+                    }
+                }
+            }
+        content?.Content()
     }
 }

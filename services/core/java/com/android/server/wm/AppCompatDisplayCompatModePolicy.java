@@ -53,6 +53,9 @@ class AppCompatDisplayCompatModePolicy {
     @NonNull
     private final ActivityRecord mActivityRecord;
 
+    /**
+     * {@code true} if the activity has moved to a different display and has not been restarted yet.
+     */
     private boolean mDisplayChangedWithoutRestart;
 
     AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
@@ -105,6 +108,14 @@ class AppCompatDisplayCompatModePolicy {
             // restarted. This allows the app to be launched in the latest configuration.
             mActivityRecord.restartProcessIfVisible();
         }
+    }
+
+    /**
+     * Returns {@code true} if the activity has moved to a different display and has not been
+     * restarted yet.
+     */
+    boolean getDisplayChangedWithoutRestart() {
+        return mDisplayChangedWithoutRestart;
     }
 
     /**

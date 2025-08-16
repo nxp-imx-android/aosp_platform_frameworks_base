@@ -36,7 +36,8 @@ namespace android {
 class ThemeTest : public ::testing::Test {
  public:
   void SetUp() override {
-    system_assets_ = ApkAssets::Load(GetTestDataPath() + "/system/system.apk", PROPERTY_SYSTEM);
+    system_assets_ = ApkAssets::Load(GetTestDataPath() + "/system/system.apk",
+                                     nullptr, PROPERTY_SYSTEM);
     ASSERT_NE(nullptr, system_assets_);
 
     style_assets_ = ApkAssets::Load(GetTestDataPath() + "/styles/styles.apk");

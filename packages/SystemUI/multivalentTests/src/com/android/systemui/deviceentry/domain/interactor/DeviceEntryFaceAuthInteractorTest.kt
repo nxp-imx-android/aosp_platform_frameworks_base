@@ -152,6 +152,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     @EnableFlags(FLAG_DREAMS_V2)
     fun faceAuthIsRequestedWhenTransitioningFromDreamToLockscreen() =
         kosmos.runTest {

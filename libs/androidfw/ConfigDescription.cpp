@@ -888,7 +888,7 @@ bool ConfigDescription::Parse(StringPiece str, ConfigDescription* out) {
   return false;
 
 success:
-  if (out != NULL) {
+  if (out != nullptr) {
     ApplyVersionForCompatibility(&config);
     *out = config;
   }
@@ -898,21 +898,18 @@ success:
 void ConfigDescription::ApplyVersionForCompatibility(
     ConfigDescription* config) {
   uint16_t min_sdk = 0;
-  if (config->minorVersion != 0) {
-    min_sdk = SDK_BAKLAVA;
-  } else if (config->grammaticalInflection != 0) {
+  if (config->grammaticalInflection != 0) {
     min_sdk = SDK_U;
-  } else if ((config->uiMode & ResTable_config::MASK_UI_MODE_TYPE)
-                == ResTable_config::UI_MODE_TYPE_VR_HEADSET ||
-            config->colorMode & ResTable_config::MASK_WIDE_COLOR_GAMUT ||
-            config->colorMode & ResTable_config::MASK_HDR) {
+  } else if ((config->uiMode & ResTable_config::MASK_UI_MODE_TYPE) ==
+                 ResTable_config::UI_MODE_TYPE_VR_HEADSET ||
+             config->colorMode & ResTable_config::MASK_WIDE_COLOR_GAMUT ||
+             config->colorMode & ResTable_config::MASK_HDR) {
     min_sdk = SDK_O;
   } else if (config->screenLayout2 & ResTable_config::MASK_SCREENROUND) {
     min_sdk = SDK_MARSHMALLOW;
   } else if (config->density == ResTable_config::DENSITY_ANY) {
     min_sdk = SDK_LOLLIPOP;
-  } else if (config->smallestScreenWidthDp !=
-                 ResTable_config::SCREENWIDTH_ANY ||
+  } else if (config->smallestScreenWidthDp != ResTable_config::SCREENWIDTH_ANY ||
              config->screenWidthDp != ResTable_config::SCREENWIDTH_ANY ||
              config->screenHeightDp != ResTable_config::SCREENHEIGHT_ANY) {
     min_sdk = SDK_HONEYCOMB_MR2;
@@ -931,13 +928,13 @@ void ConfigDescription::ApplyVersionForCompatibility(
 
   if (min_sdk > config->sdkVersion) {
     config->sdkVersion = min_sdk;
+    config->minorVersion = 0;
   }
 }
 
 ConfigDescription ConfigDescription::CopyWithoutSdkVersion() const {
   ConfigDescription copy = *this;
-  copy.sdkVersion = 0;
-  copy.minorVersion = 0;
+  copy.version = 0;
   return copy;
 }
 

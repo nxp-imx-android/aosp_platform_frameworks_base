@@ -10086,19 +10086,28 @@ public class AudioService extends IAudioService.Stub
                         mIndexStepFactor = 1.f;
                     } else if ((equalScoLeaVcIndexRange() || equalScoHaVcIndexRange())
                             && isStreamBluetoothComm(mStreamType)) {
+                        final int btCommActiveDevice = mBtCommDeviceActive.get();
+
                         // For non SCO devices the stream state does not change the min index
-                        if (mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_SCO) {
+                        if (btCommActiveDevice == BT_COMM_DEVICE_ACTIVE_SCO) {
                             mIndexMin = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                             indexMinVolCurve = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                             indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
-                        } else if (equalScoHaVcIndexRange()
-                                && mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_HA) {
+                            mIndexStepFactor = 1.f;
+                        } else if ((equalScoHaVcIndexRange()
+                                && btCommActiveDevice == BT_COMM_DEVICE_ACTIVE_HA) || (
+                                equalScoLeaVcIndexRange() && (btCommActiveDevice
+                                        == BT_COMM_DEVICE_ACTIVE_BLE_HEADSET
+                                        || btCommActiveDevice
+                                        == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER))) {
                             mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;
                             indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
+                            mIndexStepFactor = 1.f;
                         } else {
+                            Slog.wtf(TAG, "Index factor not supported for BT comm device "
+                                    + btCommActiveDevice);
                             mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;
                         }
-                        mIndexStepFactor = 1.f;
                     } else {
                         mIndexMin = MIN_STREAM_VOLUME[AudioSystem.STREAM_VOICE_CALL] * 10;
                         mIndexStepFactor = (float) (mIndexMax - mIndexMin) / (float) (
