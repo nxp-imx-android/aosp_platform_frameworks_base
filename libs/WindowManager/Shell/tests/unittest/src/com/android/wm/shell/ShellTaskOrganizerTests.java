@@ -373,6 +373,33 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testRemoveListenerBeforeCookieMigration() {
+        // Add a generic listener for MW tasks
+        TrackingTaskListener mwListener = new TrackingTaskListener();
+        mOrganizer.addListenerForType(mwListener, TASK_LISTENER_TYPE_MULTI_WINDOW);
+
+        // Create a new task with a specific launch cookie
+        IBinder cookie = new Binder();
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        task1.addLaunchCookie(cookie);
+
+        // Add a pending listener based on the same launch cookie
+        TrackingTaskListener cookieListener = new TrackingTaskListener();
+        mOrganizer.setPendingLaunchCookieListener(cookie, cookieListener);
+
+        // Remove the listener before the task appears
+        mOrganizer.removeListener(cookieListener);
+
+        // Report the task appearing
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        // Verify that the cookie listener was actually removed and that the generic MW listener
+        // received the task
+        assertTrue(mwListener.appeared.contains(task1));
+        assertFalse(cookieListener.appeared.contains(task1));
+    }
+
+    @Test
     public void testGetTaskListener() {
         RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
 

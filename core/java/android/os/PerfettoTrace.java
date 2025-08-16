@@ -16,6 +16,9 @@
 
 package android.os;
 
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodReplace;
+
 import com.android.internal.ravenwood.RavenwoodHelperBridge;
 
 import dalvik.annotation.optimization.CriticalNative;
@@ -35,7 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @hide
  */
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@android.ravenwood.annotation.RavenwoodKeepWholeClass(
+        comment = "Most features are no-op on Ravenwood")
 public final class PerfettoTrace {
     private static final String TAG = "PerfettoTrace";
 
@@ -63,23 +67,25 @@ public final class PerfettoTrace {
 
     // The same as a previous MQ_CATEGORY, but to be used with a V3 API.
     public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
-            MQ_CATEGORY_V3 = new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("mq");
+            MQ_CATEGORY_V3 = getMqCategoryV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+            getMqCategoryV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("mq");
+    }
 
     /**
      * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
      */
-    @android.ravenwood.annotation.RavenwoodReplace
+    // Tracing currently completely disabled under Ravenwood, just return false.
+    @RavenwoodIgnore
     public static boolean isMQCategoryEnabled() {
         if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
             return PerfettoTrace.MQ_CATEGORY_V3.isEnabled();
         }
         return PerfettoTrace.MQ_CATEGORY.isEnabled();
-    }
-
-    public static boolean isMQCategoryEnabled$ravenwood() {
-        // Tracing currently completely disabled under Ravenwood
-        return false;
     }
 
     /**
@@ -138,35 +144,28 @@ public final class PerfettoTrace {
         }
 
         @FastNative
-        @android.ravenwood.annotation.RavenwoodReplace
+        @RavenwoodIgnore
         private static native long native_init(String name, String tag, String severity);
+
         @CriticalNative
-        @android.ravenwood.annotation.RavenwoodReplace
+        @RavenwoodIgnore
         private static native long native_delete();
+
         @CriticalNative
+        @RavenwoodIgnore
         private static native void native_register(long ptr);
+
         @CriticalNative
+        @RavenwoodIgnore
         private static native void native_unregister(long ptr);
+
         @CriticalNative
+        @RavenwoodIgnore
         private static native boolean native_is_enabled(long ptr);
+
         @CriticalNative
-        @android.ravenwood.annotation.RavenwoodReplace
+        @RavenwoodIgnore
         private static native long native_get_extra_ptr(long ptr);
-
-        private static long native_init$ravenwood(String name, String tag, String severity) {
-            // Tracing currently completely disabled under Ravenwood
-            return 0;
-        }
-
-        private static long native_delete$ravenwood() {
-            // Tracing currently completely disabled under Ravenwood
-            return 0;
-        }
-
-        private static long native_get_extra_ptr$ravenwood(long ptr) {
-            // Tracing currently completely disabled under Ravenwood
-            return 0;
-        }
 
         /**
          * Register the category.
@@ -242,17 +241,30 @@ public final class PerfettoTrace {
     }
 
     @CriticalNative
+    @RavenwoodIgnore
     private static native long native_get_process_track_uuid();
+
     @CriticalNative
+    @RavenwoodIgnore
     private static native long native_get_thread_track_uuid(long tid);
 
     @FastNative
+    @RavenwoodIgnore
     private static native void native_activate_trigger(String name, int ttlMs);
+
     @FastNative
+    @RavenwoodIgnore
     private static native void native_register(boolean isBackendInProcess);
 
+    @RavenwoodIgnore
     private static native long native_start_session(boolean isBackendInProcess, byte[] config);
+
+    @RavenwoodReplace
     private static native byte[] native_stop_session(long ptr);
+
+    private static byte[] native_stop_session$ravenwood(long ptr) {
+        return new byte[1]; // Just return something to avoid confusing callers.
+    }
 
     /**
      * Writes a trace message to indicate a given section of code was invoked.
@@ -381,7 +393,7 @@ public final class PerfettoTrace {
     }
 
     /** Registers the process with Perfetto. */
-    @android.ravenwood.annotation.RavenwoodReplace
+    @RavenwoodIgnore
     public static void register(boolean isBackendInProcess) {
         if (!isBackendInProcess) {
             sAttemptedSystemRegistration.set(true);
@@ -393,24 +405,14 @@ public final class PerfettoTrace {
         }
     }
 
-    /** Ravenwood replacement for {@link #register(boolean)}. */
-    public static void register$ravenwood(boolean isBackendInProcess) {
-        // Tracing currently completely disabled under Ravenwood
-    }
-
     /** Registers categories with Perfetto. */
-    @android.ravenwood.annotation.RavenwoodReplace
+    @RavenwoodIgnore
     public static void registerCategories() {
         if (IS_USE_SDK_TRACING_API_V3) {
             MQ_CATEGORY_V3.register();
         } else {
             MQ_CATEGORY.register();
         }
-    }
-
-    /** Ravenwood replacement for {@link #registerCategories()}. */
-    public static void registerCategories$ravenwood() {
-        // Tracing currently completely disabled under Ravenwood
     }
 
     /**

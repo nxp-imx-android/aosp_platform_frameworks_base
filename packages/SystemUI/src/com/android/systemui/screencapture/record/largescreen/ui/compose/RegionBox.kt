@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Rect as IntRect
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import kotlin.math.max
 import kotlin.math.min
@@ -55,6 +58,38 @@ private enum class DragMode {
     MOVING,
     RESIZING,
     NONE,
+}
+
+/** The different locations where the capture button can be placed relative to the selection box. */
+private enum class ButtonPlacement {
+    /** The button is placed inside the selection box. */
+    Inside,
+
+    /** The button is placed above the selection box. */
+    Top,
+
+    /** The button is placed below the selection box and the dimensions pill. */
+    Bottom,
+
+    /** The button is placed to the left of the selection box. */
+    Left,
+
+    /** The button is placed to the right of the selection box. */
+    Right,
+}
+
+/**
+ * Returns true if the given [rect] is within the bounds of the screen.
+ *
+ * @param rect The rectangle to check.
+ * @param screenWidth The width of the screen.
+ * @param screenHeight The height of the screen.
+ */
+private fun isRectInScreen(rect: Rect, screenWidth: Float, screenHeight: Float): Boolean {
+    return rect.left >= 0 &&
+        rect.top >= 0 &&
+        rect.right <= screenWidth &&
+        rect.bottom <= screenHeight
 }
 
 /**
@@ -323,48 +358,221 @@ fun RegionBox(
                 val boxWidthDp = with(density) { currentRect.width.toDp() }
                 val boxHeightDp = with(density) { currentRect.height.toDp() }
 
-                // The box that represents the region.
-                Box(
-                    modifier =
-                        Modifier.size(boxWidthDp, boxHeightDp)
-                            .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant)
-                )
+                // Use [SubcomposeLayout] to measure the pill and then use its measured height to
+                // correctly position the button. This avoids a circular dependency where the
+                // capture button's ([PrimaryButton]) position depends on the dimension pill
+                // button [RegionDimensionsPill]'s size, which is only known after measurement.
+                SubcomposeLayout { constraints ->
+                    // First, measure the pill [RegionDimensionsPill] to get its actual height.
+                    val dimensionPillPlaceable =
+                        subcompose("dimensionPill") {
+                                val pillVerticalSpacingDp = 16.dp
+                                RegionDimensionsPill(
+                                    widthPx = currentRect.width.roundToInt(),
+                                    heightPx = currentRect.height.roundToInt(),
+                                    modifier =
+                                        Modifier.layout { measurable, _ ->
+                                            val pillInnerPlaceable =
+                                                measurable.measure(Constraints())
+                                            val pillVerticalSpacingPx =
+                                                with(density) { pillVerticalSpacingDp.toPx() }
+                                            // Center the pill horizontally relative to the region
+                                            // box's width.
+                                            val pillX =
+                                                (currentRect.width - pillInnerPlaceable.width) / 2
 
-                // The button which initiates capturing the specified region of the screen. It is
-                // positioned inside or outside the region box depending on the size of the region
-                // box.
-                RegionBoxButton(
-                    text = buttonText,
-                    icon = buttonIcon,
-                    boxWidthDp,
-                    boxHeightDp,
-                    currentRect,
-                    onClick = onCaptureClick,
-                )
-
-                /** Vertical spacing in DP between the region box and the dimensions pill. */
-                val pillVerticalSpacingDp = 16.dp
-                val pillVerticalSpacingPx = with(density) { pillVerticalSpacingDp.toPx() }
-
-                // A dimension pill that shows the region's dimensions.
-                RegionDimensionsPill(
-                    widthPx = currentRect.width.roundToInt(),
-                    heightPx = currentRect.height.roundToInt(),
-                    modifier =
-                        Modifier.layout { measurable, _ ->
-                            val dimensionsPillPlaceable = measurable.measure(Constraints())
-                            // Center the pill horizontally relative to the region box's width, and
-                            // position it vertically below the box.
-                            val pillX = (currentRect.width - dimensionsPillPlaceable.width) / 2
-                            val pillY = currentRect.height + pillVerticalSpacingPx
-                            layout(dimensionsPillPlaceable.width, dimensionsPillPlaceable.height) {
-                                dimensionsPillPlaceable.placeRelative(
-                                    pillX.roundToInt(),
-                                    pillY.roundToInt(),
+                                            // Calculate the Y position of the pill, and restrict it
+                                            // to stay within the screen bounds.
+                                            val pillY =
+                                                (currentRect.height + pillVerticalSpacingPx)
+                                                    .coerceAtMost(
+                                                        state.screenHeight -
+                                                            currentRect.top -
+                                                            pillInnerPlaceable.height -
+                                                            pillVerticalSpacingPx
+                                                    )
+                                            layout(
+                                                pillInnerPlaceable.width,
+                                                pillInnerPlaceable.height,
+                                            ) {
+                                                pillInnerPlaceable.placeRelative(
+                                                    pillX.roundToInt(),
+                                                    pillY.roundToInt(),
+                                                )
+                                            }
+                                        },
                                 )
                             }
-                        },
-                )
+                            .first()
+                            .measure(constraints)
+
+                    val dimensionPillHeightDp =
+                        with(density) { dimensionPillPlaceable.height.toDp() }
+
+                    // To determine the button's placement, we first need to know its size. We
+                    // subcompose the button once just to measure it.
+                    val pillVerticalSpacingDp = 16.dp
+                    val buttonMeasurable =
+                        subcompose("buttonMeasurer") {
+                            PrimaryButton(
+                                text = buttonText,
+                                icon = buttonIcon,
+                                onClick = onCaptureClick,
+                            )
+                        }
+                    val buttonSize = buttonMeasurable.first().measure(constraints)
+                    val buttonWidthDp = with(density) { buttonSize.width.toDp() }
+                    val buttonHeightDp = with(density) { buttonSize.height.toDp() }
+
+                    // Now that we have the button's size, we can calculate its actual placement.
+                    val captureButtonPlacement =
+                        if (boxWidthDp > buttonWidthDp && boxHeightDp > buttonHeightDp) {
+                            ButtonPlacement.Inside
+                        } else {
+                            val screenWidth = state.screenWidth
+                            val screenHeight = state.screenHeight
+                            val buttonWidth = buttonSize.width.toFloat()
+                            val buttonHeight = buttonSize.height.toFloat()
+                            val spacingPx = with(density) { pillVerticalSpacingDp.toPx() }
+
+                            val topRect =
+                                Rect(
+                                    left =
+                                        currentRect.left + (currentRect.width - buttonWidth) / 2f,
+                                    top = currentRect.top - buttonHeight - spacingPx,
+                                    right =
+                                        currentRect.left + (currentRect.width + buttonWidth) / 2f,
+                                    bottom = currentRect.top - spacingPx,
+                                )
+                            if (isRectInScreen(topRect, screenWidth, screenHeight)) {
+                                ButtonPlacement.Top
+                            } else {
+                                val pillHeightPx = with(density) { dimensionPillHeightDp.toPx() }
+                                val bottomRect =
+                                    Rect(
+                                        left = topRect.left,
+                                        top = currentRect.bottom + pillHeightPx + spacingPx,
+                                        right = topRect.right,
+                                        bottom =
+                                            currentRect.bottom +
+                                                pillHeightPx +
+                                                spacingPx +
+                                                buttonHeight,
+                                    )
+                                if (isRectInScreen(bottomRect, screenWidth, screenHeight)) {
+                                    ButtonPlacement.Bottom
+                                } else {
+                                    val rightRect =
+                                        Rect(
+                                            left = currentRect.right + spacingPx,
+                                            top =
+                                                currentRect.top +
+                                                    (currentRect.height - buttonHeight) / 2f,
+                                            right = currentRect.right + spacingPx + buttonWidth,
+                                            bottom =
+                                                currentRect.top +
+                                                    (currentRect.height + buttonHeight) / 2f,
+                                        )
+                                    if (isRectInScreen(rightRect, screenWidth, screenHeight)) {
+                                        ButtonPlacement.Right
+                                    } else {
+                                        ButtonPlacement.Left
+                                    }
+                                }
+                            }
+                        }
+
+                    // Now that we have the correct placement, subcompose the button again to be
+                    // placed.
+                    val captureButtonPlaceable =
+                        subcompose("captureButton") {
+                                // Animate the translations based on the calculated placement.
+                                // The translation is relative to the top-left corner of the
+                                // selection box.
+                                val targetTranslationX by
+                                    animateFloatAsState(
+                                        targetValue =
+                                            when (captureButtonPlacement) {
+                                                ButtonPlacement.Top,
+                                                ButtonPlacement.Bottom,
+                                                ButtonPlacement.Inside ->
+                                                    (currentRect.width - buttonSize.width) / 2f
+                                                ButtonPlacement.Right ->
+                                                    currentRect.width +
+                                                        with(density) {
+                                                            pillVerticalSpacingDp.toPx()
+                                                        }
+                                                ButtonPlacement.Left ->
+                                                    -buttonSize.width -
+                                                        with(density) {
+                                                            pillVerticalSpacingDp.toPx()
+                                                        }
+                                            }
+                                    )
+                                val targetTranslationY by
+                                    animateFloatAsState(
+                                        targetValue =
+                                            when (captureButtonPlacement) {
+                                                ButtonPlacement.Top ->
+                                                    -buttonSize.height -
+                                                        with(density) {
+                                                            pillVerticalSpacingDp.toPx()
+                                                        }
+                                                ButtonPlacement.Bottom ->
+                                                    with(density) {
+                                                        currentRect.height +
+                                                            dimensionPillHeightDp.toPx() +
+                                                            pillVerticalSpacingDp.toPx()
+                                                    }
+                                                ButtonPlacement.Inside,
+                                                ButtonPlacement.Right,
+                                                ButtonPlacement.Left ->
+                                                    (currentRect.height - buttonSize.height) / 2f
+                                            }
+                                    )
+                                PrimaryButton(
+                                    modifier =
+                                        Modifier.graphicsLayer {
+                                            translationX = targetTranslationX
+                                            translationY = targetTranslationY
+                                        },
+                                    text = buttonText,
+                                    icon = buttonIcon,
+                                    onClick = onCaptureClick,
+                                )
+                            }
+                            .first()
+                            .measure(constraints)
+
+                    // Finally, measure the selection box itself.
+                    val selectionBoxPlaceable =
+                        subcompose("selectionBox") {
+                                Box(
+                                    modifier =
+                                        Modifier.size(boxWidthDp, boxHeightDp)
+                                            .border(
+                                                borderStrokeWidth,
+                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                )
+                            }
+                            .first()
+                            .measure(constraints)
+
+                    layout(constraints.maxWidth, constraints.maxHeight) {
+                        // Place all placeables at (0,0) within the SubcomposeLayout.
+                        // Their final positions are determined by other modifiers:
+                        // - selectionBoxPlaceable: Placed at (0,0) and sized to the selection.
+                        // - dimensionPillPlaceable: Positioned via its own Modifier.layout.
+                        // - captureButtonPlaceable: Positioned via its graphicsLayer translations.
+                        // The parent Box's graphicsLayer then translates this entire
+                        // SubcomposeLayout to the correct on-screen position, ensuring all
+                        // elements move as a single, synchronized unit.
+                        selectionBoxPlaceable.placeRelative(0, 0)
+                        dimensionPillPlaceable.placeRelative(0, 0)
+                        captureButtonPlaceable.placeRelative(0, 0)
+                    }
+                }
             }
         }
     }

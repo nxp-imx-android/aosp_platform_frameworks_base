@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
-import com.android.systemui.biometrics.AuthController
 import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -27,15 +26,9 @@ import dagger.assisted.AssistedInject
 
 class LockscreenLowerRegionViewModel
 @AssistedInject
-constructor(
-    private val authController: AuthController,
-    unfoldTransitionInteractor: UnfoldTransitionInteractor,
-) : ExclusiveActivatable() {
+constructor(unfoldTransitionInteractor: UnfoldTransitionInteractor) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("LockscreenLowerRegionViewModel.hydrator")
-
-    val isAmbientIndicationVisible: Boolean
-        get() = !authController.isUdfpsSupported
 
     val unfoldTranslations: UnfoldTranslations =
         object : UnfoldTranslations {

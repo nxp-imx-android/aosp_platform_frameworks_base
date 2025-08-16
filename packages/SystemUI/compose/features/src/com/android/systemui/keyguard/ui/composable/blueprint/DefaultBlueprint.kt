@@ -136,7 +136,11 @@ constructor(
                     },
                 )
 
-            LockscreenSceneLayout(elementFactory = elementFactory, elementContext = elementContext)
+            LockscreenSceneLayout(
+                viewModel = viewModel,
+                elementFactory = elementFactory,
+                elementContext = elementContext,
+            )
         }
     }
 }

@@ -146,12 +146,9 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"다시 촬영"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"수정"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"삭제"</string>
-    <!-- no translation found for screen_capture_fullscreen_screenshot_button (3173749413928507877) -->
-    <skip />
-    <!-- no translation found for screen_capture_region_selection_button (515608875142444130) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_screenshot_button (5676585348709494125) -->
-    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"선택한 영역의 스크린샷 찍기"</string>
+    <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"스크린샷"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"녹화"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"공유"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
@@ -223,16 +220,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"인증됨"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"인증 취소"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"옵션 더보기"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"다른 방법으로 인증"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"다른 방법으로 인증"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"본인 확인 관리"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"본인 확인에 대해 자세히 알아보기"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"본인 확인이 사용 설정되어 있으며 지문 또는 얼굴로만 본인 인증을 할 수 있습니다. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"위험 평가 중…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"사용할 수 없음"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN 사용"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"패턴 사용"</string>
@@ -402,6 +395,8 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"이름이 없는 기기"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"사용 가능한 기기가 없습니다."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi 또는 이더넷 연결 없음"</string>
+    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"밝기"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"색상 반전"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"색상 보정"</string>
@@ -411,6 +406,8 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"닫기"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"연결됨"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"연결 중..."</string>
+    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
+    <skip />
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"핫스팟"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"켜는 중..."</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"데이터 절약 모드"</string>
@@ -1174,6 +1171,12 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"백그라운드에서 실행 중인 앱"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"탭하여 배터리 및 데이터 사용량 확인"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"모바일 데이터를 사용 중지하시겠습니까?"</string>
+    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
+    <skip />
+    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
+    <skip />
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"<xliff:g id="CARRIER">%s</xliff:g>을(를) 통해 데이터 또는 인터넷에 액세스할 수 없게 됩니다. 인터넷은 Wi-Fi를 통해서만 사용할 수 있습니다."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"이동통신사"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"다시 <xliff:g id="CARRIER">%s</xliff:g>(으)로 전환할까요?"</string>

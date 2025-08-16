@@ -55,6 +55,7 @@ import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.rotation.RotationPolicyWrapper;
+import com.android.systemui.util.wrapper.CameraRotationSettingProvider;
 
 import org.junit.After;
 import org.junit.Before;
@@ -106,6 +107,8 @@ public class RotationLockTileTest extends SysuiTestCase {
     @Mock
     RotationPolicyWrapper mRotationPolicyWrapper;
     @Mock
+    CameraRotationSettingProvider mCameraRotationSettingProvider;
+    @Mock
     QsEventLogger mUiEventLogger;
 
     private RotationLockController mController;
@@ -132,6 +135,7 @@ public class RotationLockTileTest extends SysuiTestCase {
 
         mController = new RotationLockControllerImpl(
                 mRotationPolicyWrapper,
+                mCameraRotationSettingProvider,
                 mDeviceStateRotationLockSettingController,
                 DEFAULT_SETTINGS,
                 mFakeExecutor,
@@ -302,11 +306,11 @@ public class RotationLockTileTest extends SysuiTestCase {
     }
 
     private void enableCameraBasedRotation() {
-        when(mRotationPolicyWrapper.isCameraRotationEnabled()).thenReturn(true);
+        when(mCameraRotationSettingProvider.isCameraRotationEnabled()).thenReturn(true);
     }
 
     private void disableCameraBasedRotation() {
-        when(mRotationPolicyWrapper.isCameraRotationEnabled()).thenReturn(false);
+        when(mCameraRotationSettingProvider.isCameraRotationEnabled()).thenReturn(false);
     }
 
     private QSTile.Icon createExpectedIcon(int resId) {

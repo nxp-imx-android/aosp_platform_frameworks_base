@@ -2047,7 +2047,12 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Жазу"</string>
     <string name="close_button_text" msgid="10603510034455258">"Жабу"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <string name="notification_metric_label_template" msgid="1926079523121055190">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
+    <skip />
+    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Жауап беру"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Бейне"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Қабылдамау"</string>
@@ -2575,19 +2580,25 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Қолданбалар"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Саусағыңыздың іздері бұдан былай танылмайды. Саусақ ізімен ашу функциясын қайта реттеу"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Қауіпсіздік және құпиялық"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Алдымен экран құлпын ашыңыз"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Экран құлпын ашып, қайта қосыңыз"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"USB-мен деректерді тасымалдау үшін күшейтілген қорғанысқа экран құлпын әдеттегідей ашу қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"USB-мен деректерді тасымалдау үшін күшейтілген қорғанысқа экран құлпын әдеттегідей ашу қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"USB-мен тасымалдау немесе жылдам зарядтау үшін күшейтілген қорғанысқа экран құлпын ашу қажет"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"USB-мен тасымалдау немесе жылдам зарядтау үшін күшейтілген қорғанысқа экран құлпын ашу қажет"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"USB-мен жылдам зарядтау үшін күшейтілген қорғанысқа экран құлпын әдеттегідей ашу қажет"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"USB-мен жылдам зарядтау үшін күшейтілген қорғанысқа экран құлпын әдеттегідей ашу қажет"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Дыбысын өшіру"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Хабарландырулар дыбысы өшірілді"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"Құрылғыны өшіріп қосқанша, күшейтілген қорғаныстың USB хабарландыруларының дыбысы өшірілді"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB-ге қатысты күдікті әрекет"</string>
-    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB дерек сигналы өшірілді."</string>
+    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
+    <skip />
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Саусақ ізімен ашу функциясына қатысты мәселе шықты ма?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Экранның құлпын ашу бойынша кеңестерді көру үшін түртіңіз."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Жыпылықтамау"</string>

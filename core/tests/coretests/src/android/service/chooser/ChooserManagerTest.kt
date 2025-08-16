@@ -25,6 +25,7 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION
 import android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
 import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME
@@ -72,6 +73,8 @@ class ChooserManagerTest {
         }
 
         assertThat(intentCaptor.firstValue.flags and flags).isEqualTo(0)
+        assertThat(intentCaptor.firstValue.flags and FLAG_ACTIVITY_NO_ANIMATION)
+            .isEqualTo(FLAG_ACTIVITY_NO_ANIMATION)
         val options = ActivityOptions.fromBundle(optionsCaptor.firstValue)
         assertThat(options.isAllowPassThroughOnTouchOutside).isTrue()
     }

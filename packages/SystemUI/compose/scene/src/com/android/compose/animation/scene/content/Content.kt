@@ -45,6 +45,7 @@ import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.util.fastAny
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -392,6 +393,24 @@ internal class ContentScopeImpl(
             lookaheadScope = layoutImpl.lookaheadScope,
             implicitTestTags = layoutImpl.implicitTestTags,
         )
+    }
+
+    override fun isAlwaysComposedContentVisible(): Boolean {
+        return isAlwaysComposedContentVisible(layoutImpl.state, contentKey) &&
+            layoutImpl.ancestors.all { ancestor ->
+                isAlwaysComposedContentVisible(ancestor.layoutImpl.state, ancestor.inContent)
+            }
+    }
+
+    private fun isAlwaysComposedContentVisible(
+        layoutState: SceneTransitionLayoutState,
+        content: ContentKey,
+    ): Boolean {
+        return layoutState.currentScene == content ||
+            layoutState.currentOverlays.contains(content) ||
+            layoutState.currentTransitions.fastAny {
+                it.fromContent == content || it.toContent == content
+            }
     }
 }
 

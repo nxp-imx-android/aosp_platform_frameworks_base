@@ -16,6 +16,8 @@
 
 package com.android.systemui.bouncer.domain.interactor
 
+import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -31,9 +33,11 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -82,6 +86,18 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
             kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
             assertThat(isDeviceUnlocked).isTrue()
             kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
+
+            assertThat(canShowAlternateBouncer).isFalse()
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun canShowAlternateBouncerForFingerprint_falseDuringSecureLockDevice() =
+        kosmos.testScope.runTest {
+            kosmos.givenAlternateBouncerSupported()
+            val canShowAlternateBouncer by collectLastValue(underTest.canShowAlternateBouncer)
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            runCurrent()
 
             assertThat(canShowAlternateBouncer).isFalse()
         }

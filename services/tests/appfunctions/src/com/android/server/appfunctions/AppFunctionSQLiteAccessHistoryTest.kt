@@ -31,20 +31,20 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class AppFunctionAccessDatabaseHelperTest {
+class AppFunctionSQLiteAccessHistoryTest {
     private lateinit var context: Context
-    private lateinit var dbHelper: AppFunctionAccessDatabaseHelper
+    private lateinit var accessHistory: AppFunctionSQLiteAccessHistory
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext<Context>()
-        dbHelper = AppFunctionAccessDatabaseHelper(context)
+        accessHistory = AppFunctionSQLiteAccessHistory(context)
     }
 
     @After
     fun tearDown() {
-        dbHelper.deleteAll()
-        dbHelper.close()
+        accessHistory.deleteAll()
+        accessHistory.close()
     }
 
     @Test
@@ -53,10 +53,10 @@ class AppFunctionAccessDatabaseHelperTest {
         val duration = 100L
         val request = createTestExecuteAppFunctionAidlRequest(requestTime = requestTime)
 
-        val rowId = dbHelper.insertAppFunctionAccessHistory(request, duration)
+        val rowId = accessHistory.insertAppFunctionAccessHistory(request, duration)
 
         assertThat(rowId).isNotEqualTo(-1)
-        dbHelper.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
 
@@ -140,10 +140,10 @@ class AppFunctionAccessDatabaseHelperTest {
                 requestTime = requestTime,
             )
 
-        val rowId = dbHelper.insertAppFunctionAccessHistory(request, duration)
+        val rowId = accessHistory.insertAppFunctionAccessHistory(request, duration)
 
         assertThat(rowId).isNotEqualTo(-1)
-        dbHelper.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
 
@@ -231,10 +231,10 @@ class AppFunctionAccessDatabaseHelperTest {
                 requestTime = requestTime,
             )
 
-        val rowId = dbHelper.insertAppFunctionAccessHistory(request, duration)
+        val rowId = accessHistory.insertAppFunctionAccessHistory(request, duration)
 
         assertThat(rowId).isNotEqualTo(-1)
-        dbHelper.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
 
@@ -311,13 +311,13 @@ class AppFunctionAccessDatabaseHelperTest {
         val oldRequestTime = System.currentTimeMillis() - retentionPeriodMillis - 500
         val newRequestTime = System.currentTimeMillis()
         val oldRequest = createTestExecuteAppFunctionAidlRequest(requestTime = oldRequestTime)
-        dbHelper.insertAppFunctionAccessHistory(oldRequest, 100L)
+        accessHistory.insertAppFunctionAccessHistory(oldRequest, /* duration= */ 100L)
         val newRequest = createTestExecuteAppFunctionAidlRequest(requestTime = newRequestTime)
-        dbHelper.insertAppFunctionAccessHistory(newRequest, 100L)
+        accessHistory.insertAppFunctionAccessHistory(newRequest, /* duration= */ 100L)
 
-        dbHelper.deleteExpiredAppFunctionAccessHistories(retentionPeriodMillis)
+        accessHistory.deleteExpiredAppFunctionAccessHistories(retentionPeriodMillis)
 
-        dbHelper.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
             assertThat(
@@ -339,23 +339,23 @@ class AppFunctionAccessDatabaseHelperTest {
                 callingPackage = TEST_AGENT_PACKAGE_NAME,
                 targetPackageName = TEST_TARGET_PACKAGE_NAME,
             )
-        dbHelper.insertAppFunctionAccessHistory(agentAsCallerRequest, 100L)
+        accessHistory.insertAppFunctionAccessHistory(agentAsCallerRequest, /* duration= */ 100L)
         val agentAsTargetRequest =
             createTestExecuteAppFunctionAidlRequest(
                 callingPackage = TEST_TARGET_PACKAGE_NAME,
                 targetPackageName = TEST_AGENT_PACKAGE_NAME,
             )
-        dbHelper.insertAppFunctionAccessHistory(agentAsTargetRequest, 100L)
+        accessHistory.insertAppFunctionAccessHistory(agentAsTargetRequest, /* duration= */ 100L)
         val unrelatedRequest =
             createTestExecuteAppFunctionAidlRequest(
                 callingPackage = TEST_TARGET_PACKAGE_NAME,
                 targetPackageName = otherPackageName,
             )
-        dbHelper.insertAppFunctionAccessHistory(unrelatedRequest, 100L)
+        accessHistory.insertAppFunctionAccessHistory(unrelatedRequest, /* duration= */ 100L)
 
-        dbHelper.deleteAppFunctionAccessHistories(TEST_AGENT_PACKAGE_NAME)
+        accessHistory.deleteAppFunctionAccessHistories(TEST_AGENT_PACKAGE_NAME)
 
-        dbHelper.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
             assertThat(

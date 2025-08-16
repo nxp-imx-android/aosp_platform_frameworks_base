@@ -239,13 +239,6 @@ flag {
 }
 
 flag {
-    name: "disallow_cellular_null_ciphers_restriction"
-    namespace: "cellular_security"
-    description: "Guards a new UserManager user restriction that admins can use to require cellular encryption on their managed devices."
-    bug: "276752881"
-}
-
-flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"

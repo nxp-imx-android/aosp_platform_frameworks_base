@@ -52,6 +52,7 @@ import static org.mockito.Mockito.when;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
+import android.app.KeyguardManager.KeyguardLockedStateListener;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -99,6 +100,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Unit tests for {@link UsbDataAdvancedProtectionHook}.
@@ -147,6 +149,7 @@ public class UsbDataAdvancedProtectionHookTest {
     @Captor private ArgumentCaptor<String> mNotificationTagCaptor;
     @Captor private ArgumentCaptor<UserHandle> mUserHandleCaptor;
     @Captor private ArgumentCaptor<IntentFilter> mIntentFilterCaptor;
+    @Captor private ArgumentCaptor<KeyguardLockedStateListener> mKeyguardLockedStateListenerCaptor;
 
     private AtomicBoolean mApmRequestedUsbDataStatusBoolean = new AtomicBoolean(false);
     private UsbDataAdvancedProtectionHook mUsbDataHook;
@@ -292,14 +295,18 @@ public class UsbDataAdvancedProtectionHookTest {
         setupAndEnableFeature(false, false, true);
 
         verifyAdvancedProtectionChanged_registersReceiverRegisterReceiverBehavior();
+        verify(mKeyguardManager)
+                .addKeyguardLockedStateListener(
+                        any(ExecutorService.class), any(KeyguardLockedStateListener.class));
         verify(mUsbManagerInternal).enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
     }
 
     // For enablement of Advanced Protection mode through Settings page.
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    public void onAdvancedProtectionChanged_whenEnabledInUnlockedState_registersReceiverAndDisablesUsb()
-            throws RemoteException {
+    public void
+            onAdvancedProtectionChanged_whenEnabledInUnlockedState_registersReceiverAndDisablesUsb()
+                    throws RemoteException {
         clearAllUsbConnections();
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(false);
         setupAndEnableFeature(false, false, true);
@@ -332,9 +339,8 @@ public class UsbDataAdvancedProtectionHookTest {
         IntentFilter mainFilter = mIntentFilterCaptor.getAllValues().get(0);
         assertEquals(UserHandle.ALL, mUserHandleCaptor.getAllValues().get(0));
 
-        assertEquals(4, mainFilter.countActions());
+        assertEquals(3, mainFilter.countActions());
         assertTrue(mainFilter.hasAction(Intent.ACTION_USER_PRESENT));
-        assertTrue(mainFilter.hasAction(Intent.ACTION_SCREEN_OFF));
         assertTrue(mainFilter.hasAction(Intent.ACTION_LOCKED_BOOT_COMPLETED));
         assertTrue(mainFilter.hasAction(UsbManager.ACTION_USB_PORT_CHANGED));
 
@@ -439,71 +445,19 @@ public class UsbDataAdvancedProtectionHookTest {
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
     public void screenOffAndLocked_withNoConnectedDevice_disablesUsb() throws RemoteException {
         setupAndEnableFeature(false, false, true);
-        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
         clearAllUsbConnections();
-        BroadcastReceiver receiver = getAndCaptureReceiver();
 
-        receiver.onReceive(mContext, new Intent(Intent.ACTION_SCREEN_OFF));
+        getKeyguardLockedStateListener().onKeyguardLockedStateChanged(true);
 
         verify(mUsbManagerInternal, times(1))
                 .enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
     }
 
-    @Test
-    @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    public void
-            screenOffAndLocked_withNoConnectedDevice_butKeyguardIsSlow_retriesDelayedUsbDisable()
-                    throws RemoteException {
-        setupAndEnableFeature(false, false, true);
-        when(mKeyguardManager.isKeyguardLocked()).thenReturn(false).thenReturn(true);
-        clearAllUsbConnections();
-        BroadcastReceiver receiver = getAndCaptureReceiver();
-
-        receiver.onReceive(mContext, new Intent(Intent.ACTION_SCREEN_OFF));
-
-        verify(mDelayDisableHandler).postDelayed(mRunnableCaptor.capture(), anyLong());
-        mRunnableCaptor.getValue().run();
-
-        verify(mUsbManagerInternal, times(1))
-                .enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    public void
-            screenOffAndLocked_withNoConnectedDevice_butScreenTimeoutBeforeLock_retriesDelayedUsbDisable()
-                    throws RemoteException {
-        setupAndEnableFeature(false, false, true);
-        when(mKeyguardManager.isKeyguardLocked())
-                .thenReturn(false)
-                .thenReturn(false)
-                .thenReturn(true);
-        // Reference  of KEYGUARD_LOCK_UPDATE_DELAY_MILLIS
-        long keyguardUpdateDelayMillis = 1000L;
-        long lockScreenTimeoutMillis = 5000L;
-        doReturn(lockScreenTimeoutMillis)
-                .when(
-                        () ->
-                                Settings.Secure.getLongForUser(
-                                        any(ContentResolver.class),
-                                        eq(Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT),
-                                        anyLong(),
-                                        anyInt()));
-        clearAllUsbConnections();
-        BroadcastReceiver receiver = getAndCaptureReceiver();
-
-        receiver.onReceive(mContext, new Intent(Intent.ACTION_SCREEN_OFF));
-
-        verify(mDelayDisableHandler)
-                .postDelayed(mRunnableCaptor.capture(), eq(keyguardUpdateDelayMillis));
-        mRunnableCaptor.getValue().run();
-        verify(mDelayDisableHandler)
-                .postDelayed(mRunnableCaptor.capture(), eq(lockScreenTimeoutMillis));
-        mRunnableCaptor.getValue().run();
-        assertEquals(2, mRunnableCaptor.getAllValues().size());
-
-        verify(mUsbManagerInternal, times(1))
-                .enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
+    private KeyguardLockedStateListener getKeyguardLockedStateListener() {
+        verify(mKeyguardManager)
+                .addKeyguardLockedStateListener(
+                        any(ExecutorService.class), mKeyguardLockedStateListenerCaptor.capture());
+        return mKeyguardLockedStateListenerCaptor.getValue();
     }
 
     @Test
@@ -515,7 +469,7 @@ public class UsbDataAdvancedProtectionHookTest {
         addUsbConnection(
                 UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.POWER_BRICK_STATUS_DISCONNECTED);
 
-        receiver.onReceive(mContext, new Intent(Intent.ACTION_SCREEN_OFF));
+        getKeyguardLockedStateListener().onKeyguardLockedStateChanged(true);
 
         verify(mUsbManagerInternal, never()).enableUsbDataSignal(anyBoolean(), anyInt());
     }

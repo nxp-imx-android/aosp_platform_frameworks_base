@@ -20,6 +20,7 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
@@ -42,6 +43,7 @@ val Kosmos.notificationListViewModel by Fixture {
         bundleOnboarding = bundleOnboardingViewModel,
         summarizationOnboarding = summarizationOnboardingViewModel,
         logger = notificationListLoggerViewModel,
+        sceneInteractor = sceneInteractor,
         activeNotificationsInteractor = activeNotificationsInteractor,
         notificationStackInteractor = notificationStackInteractor,
         headsUpNotificationInteractor = headsUpNotificationInteractor,

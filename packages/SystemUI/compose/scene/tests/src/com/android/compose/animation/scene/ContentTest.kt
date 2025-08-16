@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +43,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
+import com.android.compose.test.setContentAndCreateMainScope
+import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -201,5 +205,126 @@ class ContentTest {
         rule.waitForIdle()
         assertThat(lifecycleC).isNull()
         assertThat(lastLifecycleC?.currentState).isEqualTo(Lifecycle.State.DESTROYED)
+    }
+
+    @Test
+    fun isAlwaysComposedContentVisible() {
+        @Composable
+        fun ContentScope.Visibility(f: (Boolean) -> Unit) {
+            val isVisible = isAlwaysComposedContentVisible()
+            SideEffect { f(isVisible) }
+        }
+
+        var outerSceneAVisible by mutableStateOf(false)
+        var outerSceneBVisible by mutableStateOf(false)
+        var outerOverlayAVisible by mutableStateOf(false)
+        var innerSceneAVisible by mutableStateOf(false)
+        var innerSceneBVisible by mutableStateOf(false)
+        var innerOverlayAVisible by mutableStateOf(false)
+
+        val outerSceneA = SceneKey("OuterSceneA")
+        val outerSceneB = SceneKey("OuterSceneB")
+        val outerOverlayA = OverlayKey("OuterOverlayA")
+        val innerSceneA = SceneKey("InnerSceneA")
+        val innerSceneB = SceneKey("InnerSceneB")
+        val innerOverlayA = OverlayKey("InnerOverlayA")
+
+        val outerState =
+            rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(outerSceneA) }
+        val innerState =
+            rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(innerSceneA) }
+
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayout(outerState) {
+                    scene(outerSceneA, alwaysCompose = true) {
+                        Visibility { outerSceneAVisible = it }
+
+                        NestedSceneTransitionLayout(innerState, Modifier) {
+                            scene(innerSceneA, alwaysCompose = true) {
+                                Visibility { innerSceneAVisible = it }
+                            }
+                            scene(innerSceneB, alwaysCompose = true) {
+                                Visibility { innerSceneBVisible = it }
+                            }
+                            overlay(innerOverlayA, alwaysCompose = true) {
+                                Visibility { innerOverlayAVisible = it }
+                            }
+                        }
+                    }
+                    scene(outerSceneB, alwaysCompose = true) {
+                        Visibility { outerSceneBVisible = it }
+                    }
+                    overlay(outerOverlayA, alwaysCompose = true) {
+                        Visibility { outerOverlayAVisible = it }
+                    }
+                }
+            }
+
+        // Initial state.
+        rule.waitForIdle()
+        assertThat(outerSceneAVisible).isTrue()
+        assertThat(innerSceneAVisible).isTrue()
+        assertThat(outerSceneBVisible).isFalse()
+        assertThat(outerOverlayAVisible).isFalse()
+        assertThat(innerSceneBVisible).isFalse()
+        assertThat(innerOverlayAVisible).isFalse()
+
+        // Transition in inner layout: InnerSceneA -> InnerSceneB.
+        val innerAToB = transition(innerSceneA, innerSceneB)
+        scope.launch { innerState.startTransition(innerAToB) }
+        rule.waitForIdle()
+        assertThat(outerSceneAVisible).isTrue()
+        assertThat(innerSceneAVisible).isTrue()
+        assertThat(innerSceneBVisible).isTrue()
+
+        // Finish transition.
+        innerAToB.finish()
+        rule.waitForIdle()
+        assertThat(innerSceneAVisible).isFalse()
+        assertThat(innerSceneBVisible).isTrue()
+
+        // Transition to show inner overlay.
+        val showInnerOverlay = transition(innerState.currentScene, innerOverlayA)
+        scope.launch { innerState.startTransition(showInnerOverlay) }
+        rule.waitForIdle()
+        assertThat(innerSceneBVisible).isTrue()
+        assertThat(innerOverlayAVisible).isTrue()
+
+        // Finish transition.
+        showInnerOverlay.finish()
+        rule.waitForIdle()
+        assertThat(innerSceneBVisible).isTrue()
+        assertThat(innerOverlayAVisible).isTrue()
+
+        // Transition in outer layout: OuterSceneA -> OuterSceneB.
+        val outerAToB = transition(outerSceneA, outerSceneB)
+        scope.launch { outerState.startTransition(outerAToB) }
+        rule.waitForIdle()
+        assertThat(outerSceneAVisible).isTrue()
+        assertThat(outerSceneBVisible).isTrue()
+        assertThat(innerSceneBVisible).isTrue()
+        assertThat(innerOverlayAVisible).isTrue()
+
+        // Finish transition.
+        outerAToB.finish()
+        rule.waitForIdle()
+        assertThat(outerSceneAVisible).isFalse()
+        assertThat(outerSceneBVisible).isTrue()
+        assertThat(innerSceneBVisible).isFalse()
+        assertThat(innerOverlayAVisible).isFalse()
+
+        // Transition to show outer overlay.
+        val showOuterOverlay = transition(outerState.currentScene, outerOverlayA)
+        scope.launch { outerState.startTransition(showOuterOverlay) }
+        rule.waitForIdle()
+        assertThat(outerSceneBVisible).isTrue()
+        assertThat(outerOverlayAVisible).isTrue()
+
+        // Finish transition.
+        showOuterOverlay.finish()
+        rule.waitForIdle()
+        assertThat(outerSceneBVisible).isTrue()
+        assertThat(outerOverlayAVisible).isTrue()
     }
 }

@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -93,7 +94,8 @@ fun PatternBouncer(
     val colCount = viewModel.columnCount
     val rowCount = viewModel.rowCount
 
-    val dotColor = MaterialTheme.colorScheme.onSurface
+    val idleDotColor = MaterialTheme.colorScheme.onSurface
+    val activeDotColor = MaterialTheme.colorScheme.onPrimary
     val dotRadius = with(density) { (DOT_DIAMETER_DP / 2).dp.toPx() }
     val lineColor = MaterialTheme.colorScheme.primary
     val lineStrokeWidth = with(density) { LINE_STROKE_WIDTH_DP.dp.toPx() }
@@ -382,9 +384,11 @@ fun PatternBouncer(
                                 verticalOffset + appearOffset,
                             ),
                         color =
-                            dotColor.copy(
-                                alpha = checkNotNull(dotAppearFadeInAnimatables[dot]).value
-                            ),
+                            if (isAnimationEnabled && dot == currentDot) {
+                                activeDotColor
+                            } else {
+                                idleDotColor
+                            }.copy(alpha = checkNotNull(dotAppearFadeInAnimatables[dot]).value),
                         radius = dotRadius * checkNotNull(dotScalingAnimatables[dot]).value,
                     )
                 }

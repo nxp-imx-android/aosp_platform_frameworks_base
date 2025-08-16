@@ -45,6 +45,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioSystem;
@@ -142,6 +143,18 @@ public class MediaSessionService extends SystemService implements Monitor {
      */
     private static final String USAGE_STATS_ACTION_STOP = "stop";
     private static final String USAGE_STATS_CATEGORY = "android.media";
+
+    /**
+     * {@code AudioAttributes.USAGE_} types that are ignored by the 'recent audio playback' tracking
+     * in {@link AudioPlayerStateMonitor} if {@link
+     * com.android.media.mediasession.flags.Flags#filterSessionAudioPlaybackByUsage()} is true.
+     */
+    private static final Set<Integer> IGNORED_AUDIO_USAGE_TYPES_FOR_PLAYBACK_TRACKING =
+            Set.of(
+                    AudioAttributes.USAGE_NOTIFICATION,
+                    AudioAttributes.USAGE_NOTIFICATION_RINGTONE,
+                    AudioAttributes.USAGE_ALARM,
+                    AudioAttributes.USAGE_NOTIFICATION_EVENT);
 
     private final Context mContext;
     private final SessionManagerImpl mSessionManagerImpl;
@@ -257,7 +270,11 @@ public class MediaSessionService extends SystemService implements Monitor {
         publishBinderService(Context.MEDIA_SESSION_SERVICE, mSessionManagerImpl);
         Watchdog.getInstance().addMonitor(this);
         mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
-        mAudioPlayerStateMonitor = AudioPlayerStateMonitor.getInstance(mContext);
+        mAudioPlayerStateMonitor =
+                com.android.media.mediasession.flags.Flags.filterSessionAudioPlaybackByUsage()
+                        ? AudioPlayerStateMonitor.getInstance(
+                                mContext, IGNORED_AUDIO_USAGE_TYPES_FOR_PLAYBACK_TRACKING)
+                        : AudioPlayerStateMonitor.getInstance(mContext);
         mAudioPlayerStateMonitor.registerListener(
                 (config, isRemoved) -> {
                     if (DEBUG) {
@@ -2555,11 +2572,13 @@ public class MediaSessionService extends SystemService implements Monitor {
                     isValidLocalStreamType(suggestedStream)
                             && AudioSystem.isStreamActive(suggestedStream, 0);
 
-            if (session != null && session.getUid() != uid
-                    && mAudioPlayerStateMonitor.hasUidPlayedAudioLast(uid)) {
-                // The app in the foreground has been the last app to play media locally.
-                // Therefore, we ignore the chosen session so that volume events affect the local
-                // music stream instead. See b/275185436 for details.
+            if (session != null
+                    && session.getUid() != uid
+                    && (com.android.media.mediasession.flags.Flags.sessionlessVolKeyZeroCooldown()
+                            ? mAudioPlayerStateMonitor.isPlaybackActive(uid)
+                            : mAudioPlayerStateMonitor.hasUidPlayedAudioLast(uid))) {
+                // We ignore the chosen session so that volume events affect the local music stream
+                // instead. See b/275185436 and b/432003816 for details.
                 Log.d(TAG, "Ignoring session=" + session + " and adjusting suggestedStream="
                         + suggestedStream + " instead");
                 session = null;

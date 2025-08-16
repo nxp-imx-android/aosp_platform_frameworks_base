@@ -2341,6 +2341,15 @@
                 android:protectionLevel="signature|privileged|role"
                 android:featureFlag="android.net.platform.flags.update_network_factory_protection_level" />
 
+    <!-- @SystemApi @hide Allows applications to register a NetworkAgent for its own use.
+         <p>Such networks are not available to other applications on the device unless they have
+         the CONNECTIVITY_USE_RESTRICTED_NETWORKS permission.
+         @FlaggedApi(android.net.platform.flags.Flags.FLAG_CREATE_APP_SPECIFIC_NETWORK_PERMISSION)
+    -->
+    <permission android:name="android.permission.CREATE_APP_SPECIFIC_NETWORK"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.net.platform.flags.create_app_specific_network_permission" />
+
     <!-- @SystemApi @hide Allows applications to access network stats provider -->
     <permission android:name="android.permission.NETWORK_STATS_PROVIDER"
                 android:protectionLevel="signature" />

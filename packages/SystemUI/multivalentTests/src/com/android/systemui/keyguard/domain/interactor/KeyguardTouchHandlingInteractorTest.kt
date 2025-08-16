@@ -44,6 +44,7 @@ import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.shade.pulsingGestureListener
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
@@ -443,6 +444,7 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 powerManager = powerManager,
                 systemClock = kosmos.fakeSystemClock,
                 pointerDeviceRepository = kosmos.pointerDeviceRepository,
+                secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
             )
         setUpState()
     }

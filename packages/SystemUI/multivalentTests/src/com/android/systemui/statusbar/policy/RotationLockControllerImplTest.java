@@ -31,6 +31,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.rotation.RotationPolicyWrapper;
+import com.android.systemui.util.wrapper.CameraRotationSettingProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,8 @@ public class RotationLockControllerImplTest extends SysuiTestCase {
 
     @Mock
     RotationPolicyWrapper mRotationPolicyWrapper;
+    @Mock
+    CameraRotationSettingProvider mCameraRotationSettingProvider;
     @Mock
     DeviceStateRotationLockSettingController mDeviceStateRotationLockSettingController;
 
@@ -102,6 +105,7 @@ public class RotationLockControllerImplTest extends SysuiTestCase {
     private void createRotationLockController(String[] deviceStateRotationLockDefaults) {
         new RotationLockControllerImpl(
                 mRotationPolicyWrapper,
+                mCameraRotationSettingProvider,
                 Optional.of(mDeviceStateRotationLockSettingController),
                 deviceStateRotationLockDefaults,
                 mFakeExecutor,

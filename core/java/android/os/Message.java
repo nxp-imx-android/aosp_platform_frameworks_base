@@ -557,7 +557,8 @@ public final class Message implements Parcelable {
      * Throws a null pointer exception if this field has not been set.
      */
     public void sendToTarget() {
-        target.sendMessage(this);
+        // We have no use for the return value, so ignore it.
+        boolean unused = target.sendMessage(this);
     }
 
     /**
@@ -722,7 +723,7 @@ public final class Message implements Parcelable {
         proto.end(messageToken);
     }
 
-    public static final @android.annotation.NonNull Parcelable.Creator<Message> CREATOR
+    public static final @NonNull Parcelable.Creator<Message> CREATOR
             = new Parcelable.Creator<Message>() {
         public Message createFromParcel(Parcel source) {
             Message msg = Message.obtain();

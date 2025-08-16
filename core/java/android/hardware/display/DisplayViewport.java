@@ -84,6 +84,12 @@ public final class DisplayViewport {
     // The logical display density which is the basis for density-independent pixels.
     public int densityDpi;
 
+    // The physical density of the display in DPI in the X direction.
+    public float xDpi;
+
+    // The physical density of the display in DPI in the Y direction.
+    public float yDpi;
+
     public void copyFrom(DisplayViewport viewport) {
         valid = viewport.valid;
         isActive = viewport.isActive;
@@ -97,6 +103,8 @@ public final class DisplayViewport {
         physicalPort = viewport.physicalPort;
         type = viewport.type;
         densityDpi = viewport.densityDpi;
+        xDpi = viewport.xDpi;
+        yDpi = viewport.yDpi;
     }
 
     /**
@@ -130,7 +138,9 @@ public final class DisplayViewport {
               && TextUtils.equals(uniqueId, other.uniqueId)
               && Objects.equals(physicalPort, other.physicalPort)
               && type == other.type
-              && densityDpi == other.densityDpi;
+              && densityDpi == other.densityDpi
+              && xDpi == other.xDpi
+              && yDpi == other.yDpi;
     }
 
     @Override
@@ -151,6 +161,8 @@ public final class DisplayViewport {
         }
         result += prime * result + type;
         result += prime * result + densityDpi;
+        result += prime * result + xDpi;
+        result += prime * result + yDpi;
         return result;
     }
 
@@ -165,6 +177,8 @@ public final class DisplayViewport {
                 + ", physicalPort=" + physicalPort
                 + ", orientation=" + orientation
                 + ", densityDpi=" + densityDpi
+                + ", xDpi=" + xDpi
+                + ", yDpi=" + yDpi
                 + ", logicalFrame=" + logicalFrame
                 + ", physicalFrame=" + physicalFrame
                 + ", deviceWidth=" + deviceWidth

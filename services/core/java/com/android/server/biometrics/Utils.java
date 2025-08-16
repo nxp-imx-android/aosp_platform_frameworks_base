@@ -345,7 +345,9 @@ public class Utils {
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_LOCKOUT:
             case BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT:
-                biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_LOCKOUT;
+                biometricManagerCode = Flags.bpFallbackOptions()
+                        ? BiometricManager.BIOMETRIC_SUCCESS
+                        : BiometricManager.BIOMETRIC_ERROR_LOCKOUT;
                 break;
             case BiometricConstants.BIOMETRIC_ERROR_SENSOR_PRIVACY_ENABLED:
                 biometricManagerCode = BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;

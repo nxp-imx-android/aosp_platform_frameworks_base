@@ -19,6 +19,8 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
@@ -26,6 +28,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.fakeKeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -148,5 +151,24 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             runCurrent()
 
             assertThat(underTest.isContentVisible).isTrue()
+        }
+
+    fun isUdfpsSupported_withoutUdfps_false() =
+        kosmos.runTest {
+            val isUdfpsSupported by collectLastValue(deviceEntryUdfpsInteractor.isUdfpsSupported)
+
+            fingerprintPropertyRepository.supportsRearFps()
+            assertThat(isUdfpsSupported).isFalse()
+            assertThat(underTest.isUdfpsSupported).isFalse()
+        }
+
+    @Test
+    fun isUdfpsSupported_withUdfps_true() =
+        kosmos.runTest {
+            val isUdfpsSupported by collectLastValue(deviceEntryUdfpsInteractor.isUdfpsSupported)
+
+            fingerprintPropertyRepository.supportsUdfps()
+            assertThat(isUdfpsSupported).isTrue()
+            assertThat(underTest.isUdfpsSupported).isTrue()
         }
 }

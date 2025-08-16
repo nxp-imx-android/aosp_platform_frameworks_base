@@ -68,7 +68,7 @@ def make_name(p):
 
 def flag_str(flag):
   """Convert bind flags into a string."""
-  return activitymanagerservice_pb2.ConnectionRecordProto.Flag.Name(flag)
+  return activitymanagerservice_pb2.ConnectionRecordProto.Flag.Name(flag)  + " (" + str(flag) + ")"
 
 def schedGroup_str(schedGroup):
   """ Convert schedule group into a string."""
@@ -82,7 +82,7 @@ def capabilityFlag_str(capabilityFlags) :
   """ Convert caoability flag into a string."""
   capability_flags = []
   for flag in capabilityFlags :
-    capability_flags.append(app_enums_pb2.ProcessCapabilityEnum.Name(flag))
+    capability_flags.append(app_enums_pb2.ProcessCapabilityEnum.Name(flag)  + " (" + str(flag) + ")")
   return capability_flags
 
 def make_nodes(ams, edges):

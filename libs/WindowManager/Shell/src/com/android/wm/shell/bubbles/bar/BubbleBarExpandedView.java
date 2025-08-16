@@ -764,10 +764,14 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         pw.print(prefix); pw.print("  contentVisibility: "); pw.println(mIsContentVisible);
         pw.print(prefix); pw.print("  isAnimating: "); pw.println(mIsAnimating);
         pw.print(prefix); pw.print("  isDragging: "); pw.println(mIsDragging);
+        pw.print(prefix); pw.print("  isClipping: "); pw.println(mIsClipping);
+        pw.print(prefix); pw.print("  bottomClip: "); pw.println(mBottomClip);
+        pw.print(prefix); pw.print("  imeTop: "); pw.println(mImeTop);
         if (mTaskView != null) {
+            pw.print(prefix); pw.print("  tv-alpha: "); pw.println(mTaskView.getAlpha());
+            pw.print(prefix); pw.print("  tv-viewVis: "); pw.println(mTaskView.getVisibility());
             pw.print(prefix);
-            pw.print("  is task view moving windows: ");
-            pw.println(mTaskView.isMovingWindows());
+            pw.print("  is task view moving windows: "); pw.println(mTaskView.isMovingWindows());
         }
     }
 }

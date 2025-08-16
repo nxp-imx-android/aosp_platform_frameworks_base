@@ -1763,6 +1763,28 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     // endregion
 
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_hunOverQsOverlay_yTranslationIsHeadsUpTop() {
+        // GIVEN a HUN is visible on the lockscreen and QS is expanded
+        val headsUpTop = 200f
+        fakeHunInShade(
+            headsUpTop = headsUpTop,
+            stackTop = 100f,
+            collapsedHeight = 100,
+            intrinsicHeight = 300,
+        )
+        ambientState.fakeShowingStackOnLockscreen()
+        ambientState.setApplyHunTranslation(true)
+        ambientState.trackedHeadsUpRow = null
+
+        // WHEN the view states are reset
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // THEN the HUN's yTranslation is exactly headsUpTop
+        assertThat(notificationRow.viewState.yTranslation).isEqualTo(headsUpTop)
+    }
+
     private fun createHunViewMock(
         isShadeOpen: Boolean,
         fullyVisible: Boolean,

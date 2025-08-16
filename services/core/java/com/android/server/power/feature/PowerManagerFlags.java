@@ -60,6 +60,10 @@ public class PowerManagerFlags {
     private final FlagState mMoveWscLoggingToNotifier =
             new FlagState(Flags.FLAG_MOVE_WSC_LOGGING_TO_NOTIFIER, Flags::moveWscLoggingToNotifier);
 
+    private final FlagState mLockOnUnplug =
+            new FlagState(Flags.FLAG_LOCK_ON_UNPLUG,
+                    Flags::lockOnUnplug);
+
     private final FlagState mWakelockAttributionViaWorkchain =
             new FlagState(Flags.FLAG_WAKELOCK_ATTRIBUTION_VIA_WORKCHAIN,
                     Flags::wakelockAttributionViaWorkchain);
@@ -127,6 +131,13 @@ public class PowerManagerFlags {
     }
 
     /**
+     * @return Whether to lock when all remaining adjacent displays are asleep.
+     */
+    public boolean isLockOnUnplugEnabled() {
+        return mLockOnUnplug.isEnabled();
+    }
+
+    /**
      * @return Whether the feature to disable the frozen process wakelocks is enabled
      */
     public boolean isDisableFrozenProcessWakelocksEnabled() {
@@ -165,6 +176,7 @@ public class PowerManagerFlags {
         pw.println(" " + mImproveWakelockLatency);
         pw.println(" " + mPerDisplayWakeByTouch);
         pw.println(" " + mMoveWscLoggingToNotifier);
+        pw.println(" " + mLockOnUnplug);
         pw.println(" " + mWakelockAttributionViaWorkchain);
         pw.println(" " + mDisableFrozenProcessWakelocks);
         pw.println(" " + mForceDisableWakelocks);

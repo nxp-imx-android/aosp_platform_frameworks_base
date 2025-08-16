@@ -16,6 +16,8 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.keyguardUpdateMonitor
@@ -23,12 +25,16 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
@@ -122,6 +128,37 @@ class DeviceEntrySideFpsOverlayInteractorTest : SysuiTestCase() {
                 fpsDetectionRunning = true,
                 isUnlockingWithFpAllowed = true,
             )
+            assertThat(showIndicatorForDeviceEntry).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    fun updatesShowIndicatorForDeviceEntry_onEnteringAndExitingSecureLockDeviceBiometricAuth() =
+        testScope.runTest {
+            val showIndicatorForDeviceEntry by
+                collectLastValue(underTest.showIndicatorForDeviceEntry)
+
+            // Secure lock device credential auth step
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            whenever(keyguardUpdateMonitor.isFingerprintDetectionRunning).thenReturn(false)
+            whenever(keyguardUpdateMonitor.isUnlockingWithFingerprintAllowed).thenReturn(false)
+            runCurrent()
+            assertThat(showIndicatorForDeviceEntry).isFalse()
+
+            // Secure lock device biometric auth step
+            kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
+            whenever(keyguardUpdateMonitor.isFingerprintDetectionRunning).thenReturn(true)
+            whenever(keyguardUpdateMonitor.isUnlockingWithFingerprintAllowed).thenReturn(true)
+            runCurrent()
+            assertThat(showIndicatorForDeviceEntry).isTrue()
+
+            // Mock biometric unlock / secure lock device disabled, should hide SFPS indicator
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceDisabled()
+            kosmos.fakeDeviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(true, DeviceUnlockSource.Fingerprint)
+            whenever(keyguardUpdateMonitor.isFingerprintDetectionRunning).thenReturn(false)
+            whenever(keyguardUpdateMonitor.isUnlockingWithFingerprintAllowed).thenReturn(false)
+            runCurrent()
             assertThat(showIndicatorForDeviceEntry).isFalse()
         }
 
@@ -279,6 +316,7 @@ class DeviceEntrySideFpsOverlayInteractorTest : SysuiTestCase() {
             R.bool.config_show_sidefps_hint_on_bouncer,
             true,
         )
+
         runCurrent()
     }
 }

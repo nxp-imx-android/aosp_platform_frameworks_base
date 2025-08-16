@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.authController
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.Kosmos
@@ -31,7 +30,6 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.fakeUnfoldTransitionProgressProvider
-import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
 import kotlinx.coroutines.Job
@@ -70,20 +68,6 @@ class LockscreenLowerRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
             underTest.activateIn(testScope, activationJob)
         }
     }
-
-    @Test
-    fun isAmbientIndicationVisible_withUdfps_false() =
-        kosmos.runTest {
-            whenever(authController.isUdfpsSupported).thenReturn(true)
-            assertThat(underTest.isAmbientIndicationVisible).isFalse()
-        }
-
-    @Test
-    fun isAmbientIndicationVisible_withoutUdfps_true() =
-        kosmos.runTest {
-            whenever(authController.isUdfpsSupported).thenReturn(false)
-            assertThat(underTest.isAmbientIndicationVisible).isTrue()
-        }
 
     @Test
     fun unfoldTranslations() =

@@ -26,7 +26,7 @@ import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.toShadeTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.toShadeSceneTransition(durationScale: Double = 1.0) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
     fractionRange(start = .58f) {

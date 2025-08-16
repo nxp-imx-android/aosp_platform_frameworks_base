@@ -16,8 +16,16 @@
 
 package android.timezone;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
+
+import android.timezone.flags.Flags;
+
+import com.android.internal.annotations.GuardedBy;
 
 import java.util.Objects;
 
@@ -26,7 +34,31 @@ import java.util.Objects;
  *
  * @hide
  */
+@FlaggedApi(Flags.FLAG_EXPOSE_TIME_ZONE_SYSTEM_API)
+@SystemApi(client = MODULE_LIBRARIES)
 public final class TelephonyNetworkFinder {
+
+    private static final Object sLock = new Object();
+
+    @GuardedBy("sLock")
+    private static TelephonyNetworkFinder sInstance;
+
+    /**
+     * Returns an object capable of querying telephony network information. This method can return
+     * {@code null} in the event of an error while reading the underlying data files.
+     */
+    @Nullable
+    public static TelephonyNetworkFinder getInstance() {
+        synchronized (sLock) {
+            if (sInstance == null) {
+                sInstance =
+                        new TelephonyNetworkFinder(
+                                com.android.i18n.timezone.TelephonyLookup.getInstance()
+                                        .getTelephonyNetworkFinder());
+            }
+            return sInstance;
+        }
+    }
 
     @NonNull
     private final com.android.i18n.timezone.TelephonyNetworkFinder mDelegate;

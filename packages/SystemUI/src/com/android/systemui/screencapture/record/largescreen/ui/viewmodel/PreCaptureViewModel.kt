@@ -22,12 +22,13 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.ui.ScreenCaptureActivity
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -51,21 +52,20 @@ enum class ScreenCaptureRegion {
 class PreCaptureViewModel
 @AssistedInject
 constructor(
-    @ScreenCapture private val activity: ScreenCaptureActivity,
+    @Assisted private val displayId: Int,
     @Application private val applicationContext: Context,
     @Background private val backgroundScope: CoroutineScope,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
     private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     private val isShowingUIFlow = MutableStateFlow(true)
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
-
-    val displayId by lazy { activity.displayId }
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
@@ -90,12 +90,19 @@ constructor(
             )
 
     val captureRegionButtonViewModels: List<RadioButtonGroupItemViewModel> by
-        combine(captureRegionSource, iconProvider.icons) { selectedRegion, icons ->
-                generateCaptureRegionButtonViewModels(selectedRegion, icons)
+        combine(captureRegionSource, captureTypeSource, iconProvider.icons) {
+                selectedRegion,
+                selectedCaptureType,
+                icons ->
+                generateCaptureRegionButtonViewModels(selectedRegion, selectedCaptureType, icons)
             }
             .hydratedStateOf(
                 initialValue =
-                    generateCaptureRegionButtonViewModels(captureRegionSource.value, null)
+                    generateCaptureRegionButtonViewModels(
+                        captureRegionSource.value,
+                        captureTypeSource.value,
+                        null,
+                    )
             )
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
@@ -148,7 +155,9 @@ constructor(
 
     /** Closes the UI by finishing the parent [ScreenCaptureActivity]. */
     fun closeUI() {
-        activity.finish()
+        screenCaptureUiInteractor.hide(
+            com.android.systemui.screencapture.common.shared.model.ScreenCaptureType.RECORD
+        )
     }
 
     override suspend fun onActivated() {
@@ -179,6 +188,7 @@ constructor(
 
     private fun generateCaptureRegionButtonViewModels(
         selectedRegion: ScreenCaptureRegion,
+        selectedCaptureType: ScreenCaptureType,
         icons: ScreenCaptureIcons?,
     ): List<RadioButtonGroupItemViewModel> {
         return buildList {
@@ -188,6 +198,17 @@ constructor(
                         icon = icons?.appWindow,
                         isSelected = (selectedRegion == ScreenCaptureRegion.APP_WINDOW),
                         onClick = { updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
+                        contentDescription =
+                            applicationContext.getString(
+                                when (selectedCaptureType) {
+                                    ScreenCaptureType.SCREENSHOT ->
+                                        R.string
+                                            .screen_capture_toolbar_app_window_button_screenshot_a11y
+                                    ScreenCaptureType.SCREEN_RECORD ->
+                                        R.string
+                                            .screen_capture_toolbar_app_window_button_record_a11y
+                                }
+                            ),
                     )
                 )
             }
@@ -197,6 +218,15 @@ constructor(
                     icon = icons?.region,
                     isSelected = (selectedRegion == ScreenCaptureRegion.PARTIAL),
                     onClick = { updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
+                    contentDescription =
+                        applicationContext.getString(
+                            when (selectedCaptureType) {
+                                ScreenCaptureType.SCREENSHOT ->
+                                    R.string.screen_capture_toolbar_region_button_screenshot_a11y
+                                ScreenCaptureType.SCREEN_RECORD ->
+                                    R.string.screen_capture_toolbar_region_button_record_a11y
+                            }
+                        ),
                 )
             )
 
@@ -205,6 +235,16 @@ constructor(
                     icon = icons?.fullscreen,
                     isSelected = (selectedRegion == ScreenCaptureRegion.FULLSCREEN),
                     onClick = { updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
+                    contentDescription =
+                        applicationContext.getString(
+                            when (selectedCaptureType) {
+                                ScreenCaptureType.SCREENSHOT ->
+                                    R.string
+                                        .screen_capture_toolbar_fullscreen_button_screenshot_a11y
+                                ScreenCaptureType.SCREEN_RECORD ->
+                                    R.string.screen_capture_toolbar_fullscreen_button_record_a11y
+                            }
+                        ),
                 )
             )
         }
@@ -212,6 +252,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): PreCaptureViewModel
+        fun create(displayId: Int): PreCaptureViewModel
     }
 }

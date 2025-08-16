@@ -20,6 +20,7 @@ import android.app.trust.TrustManager
 import android.content.Context
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
+import android.security.Flags.secureLockDevice
 import android.service.dreams.Flags.dreamsV2
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.biometrics.data.repository.FacePropertyRepository
@@ -170,7 +171,12 @@ constructor(
             add(keyguardTransitionInteractor.transition(Edge.create(DOZING, LOCKSCREEN)))
 
             if (dreamsV2()) {
-                add(keyguardTransitionInteractor.transition(Edge.create(DREAMING, LOCKSCREEN)))
+                add(
+                    keyguardTransitionInteractor.transition(
+                        edge = Edge.create(Scenes.Dream, LOCKSCREEN),
+                        edgeWithoutSceneContainer = Edge.create(DREAMING, LOCKSCREEN),
+                    )
+                )
             }
         }
 
@@ -308,6 +314,15 @@ constructor(
 
     override fun onSwipeUpOnBouncer() {
         runFaceAuth(FaceAuthUiEvent.FACE_AUTH_TRIGGERED_SWIPE_UP_ON_BOUNCER, false)
+    }
+
+    override fun onSecureLockDeviceBiometricAuthRequested() {
+        runFaceAuth(FaceAuthUiEvent.FACE_AUTH_UPDATED_BIOMETRIC_ENABLED_ON_KEYGUARD, false)
+    }
+
+    override fun onSecureLockDeviceBiometricAuthHidden() {
+        if (!secureLockDevice()) return
+        repository.cancel()
     }
 
     override fun onNotificationPanelClicked() {

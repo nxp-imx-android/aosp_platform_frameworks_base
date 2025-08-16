@@ -17,17 +17,14 @@
 package com.android.systemui.rotation.impl
 
 import android.content.Context
-import android.provider.Settings.Secure.CAMERA_AUTOROTATE
 import com.android.app.tracing.traceSection
 import com.android.internal.view.RotationPolicy
 import com.android.internal.view.RotationPolicy.RotationPolicyListener
 import com.android.systemui.rotation.RotationPolicyWrapper
-import com.android.systemui.util.settings.SecureSettings
 import javax.inject.Inject
 
 public class RotationPolicyWrapperImpl @Inject constructor(
     private val context: Context,
-    private val secureSettings: SecureSettings
 ) :
         RotationPolicyWrapper {
 
@@ -58,9 +55,6 @@ public class RotationPolicyWrapperImpl @Inject constructor(
 
     override fun isRotationLocked(): Boolean =
         RotationPolicy.isRotationLocked(context)
-
-    override fun isCameraRotationEnabled(): Boolean =
-            secureSettings.getInt(CAMERA_AUTOROTATE, 0) == 1
 
     override fun registerRotationPolicyListener(
         listener: RotationPolicyListener,

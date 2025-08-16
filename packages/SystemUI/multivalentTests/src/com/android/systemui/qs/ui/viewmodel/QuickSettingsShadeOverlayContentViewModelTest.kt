@@ -56,6 +56,7 @@ import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -80,6 +81,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             enableDualShade()
             runCurrent()
             underTest.activateIn(testScope)
+            testScope.backgroundScope.launch { underTest.detectShadeModeChanges() }
         }
 
     @Test

@@ -16,90 +16,112 @@
 package com.android.wm.shell.common.split
 
 import android.app.TaskInfo
-import android.content.Context
-import android.graphics.PixelFormat
-import android.graphics.Rect
-import android.graphics.Region
 import android.os.Binder
+import android.os.IBinder
+import android.os.Looper
+import android.view.DragEvent
+import android.view.InputChannel
+import android.view.InputEvent
+import android.view.InputEventReceiver
+import android.view.MotionEvent
 import android.view.SurfaceControl
-import android.view.SurfaceControlViewHost
 import android.view.View
-import android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION
 import android.view.WindowManager
-import android.view.WindowlessWindowManager
-import java.lang.Integer.MAX_VALUE
+import android.view.WindowManagerGlobal
+import android.window.InputTransferToken
 
 /**
- * Manages a touchable surface that is intended to intercept touches.
+ * Manages a touchable surface that is intended to intercept touches, but does not draw
  */
 class TouchInterceptLayer(
-    val name: String = TAG
+    val name: String = TAG,
 ) {
-    private var viewHost: SurfaceControlViewHost? = null
-    private var leash: SurfaceControl? = null
-    var rootView: View? = null
+    private var clientToken: IBinder? = null
+    private var inputChannel: InputChannel? = null
+    private var inputEventReceiver: InputEventReceiver? = null
+    private var layerLeash: SurfaceControl? = null
+
+    var touchListener: View.OnTouchListener? = null
+
+    /**
+     * Note: This currently does not support the full drag-and-drop flow, as input only sends
+     *       DRAG_EXIT and DRAG_LOCATION events (see ViewRootImpl's
+     *       WindowInputEventReceiver#onDragEvent()), and the other events (ie. START/ENDED/DROP)
+     *       are either dispatched by WM core to known windows, or internally in the
+     *       view system (ie. ENTERED/EXIT).
+     *
+     *       For now, we only simulate the ENTERED/EXIT, and can extend this later as needed.
+     */
+    var dragListener: View.OnDragListener? = null
 
     /**
      * Creates a touch zone.
      */
-    fun inflate(context: Context,
+    fun inflate(
         rootLeash: SurfaceControl,
         rootTaskInfo: TaskInfo
     ) {
-        rootView = View(context.createConfigurationContext(rootTaskInfo.configuration))
-
-        // Set WM flags, tokens, and sizing on the touchable view. Create the smallest sized surface
-        // possible for performance reasons. We don't use MATCH_PARENT here because there isn't
-        // actually a parent (like in normal windows) to resolve a size from, and can result in
-        // an empty input region in the future.
-        val lp = WindowManager.LayoutParams(
-            1, 1,
-            WindowManager.LayoutParams.TYPE_INPUT_CONSUMER,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSPARENT
-        )
-        lp.token = Binder()
-        lp.setTitle(name)
-        lp.privateFlags =
-            lp.privateFlags or (WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION
-                    or WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-        rootView?.setLayoutParams(lp)
+        clientToken = Binder()
 
         // Create a new leash under our stage leash.
-        val builder = SurfaceControl.Builder()
+        val layer = SurfaceControl.Builder()
             .setContainerLayer()
             .setName(name)
-            .setCallsite(name + "[TouchInterceptLayer.inflate]")
-        builder.setParent(rootLeash)
-        leash = builder.build()
+            .setCallsite("$name [TouchInterceptLayer.inflate]")
+            .setParent(rootLeash)
+            .build()
+        layerLeash = layer
 
-        // Create a ViewHost that will hold our view.
-        val wwm = WindowlessWindowManager(rootTaskInfo.configuration, leash, null)
-        viewHost = SurfaceControlViewHost(
-            context, context.display, wwm,
-            name + "[TouchInterceptLayer.inflate]"
+        // Create a new input channel to receive input
+        val windowSession = WindowManagerGlobal.getWindowSession()
+        val inputTransferToken = InputTransferToken()
+        inputChannel = windowSession.grantInputChannel(
+            rootTaskInfo.displayId,
+            layer,
+            clientToken,
+            null,  /* hostInputToken */
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
+            0 /* inputFeatures */,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            null,  /* windowToken */
+            inputTransferToken,
+            name
         )
-        viewHost!!.setView(rootView!!, lp)
 
-        // Request a transparent region (and mark as will not draw to ensure the full view region)
-        // as an optimization to SurfaceFlinger so we don't need to render the transparent surface
-        rootView?.setWillNotDraw(true)
-        rootView?.parent?.requestTransparentRegion(rootView)
+        // Create an input event receiver and proxy calls to the provided listeners
+        inputEventReceiver = object : InputEventReceiver(inputChannel, Looper.myLooper()) {
+            override fun onInputEvent(event: InputEvent?) {
+                if (event is MotionEvent) {
+                    touchListener?.onTouch(null, event)
+                }
+                super.onInputEvent(event)
+            }
 
-        // Workaround for ensuring that we receive touches outside the bounds of the surface (input
-        // currently uses the touchable region to determine if the window should receive events).
-        // TODO(b/433258252): We can revert to using the full root bounds when there is a way to
-        //                    declare that we don't want a buffer
-        wwm.setInsets(viewHost!!.windowToken, TOUCHABLE_INSETS_REGION, Rect(), Rect(),
-            Region(-MAX_VALUE / 2, -MAX_VALUE / 2, MAX_VALUE / 2, MAX_VALUE / 2))
+            override fun onDragEvent(
+                isExiting: Boolean,
+                x: Float,
+                y: Float,
+                displayId: Int
+            ) {
+                val dragEvent = DragEvent.obtain(
+                    if (isExiting) DragEvent.ACTION_DRAG_EXITED else DragEvent.ACTION_DRAG_ENTERED,
+                    x, y, 0f /* offsetX */, 0f /* offsetY */, displayId, 0 /* flags */,
+                    null/* localState */, null/* description */, null /* data */,
+                    null /* dragSurface */, null /* dragAndDropPermissions */, false /* result */)
+                dragListener?.onDrag(null, dragEvent)
+            }
+        }
 
         // Create a transaction so that we can activate and reposition our surface.
         val t = SurfaceControl.Transaction()
         // Set layer to maximum. We want this surface to be above the app layer, or else touches
         // will be blocked.
-        t.setLayer(leash!!, SplitLayout.RESTING_TOUCH_LAYER)
+        t.setLayer(layer, SplitLayout.RESTING_TOUCH_LAYER)
+        // Crop to parent surface
+        t.setCrop(layer, null)
         // Leash starts off hidden, show it.
-        t.show(leash)
+        t.show(layer)
         t.apply()
     }
 
@@ -107,15 +129,21 @@ class TouchInterceptLayer(
      * Releases the touch zone when it's no longer needed.
      */
     fun release() {
-        if (viewHost != null) {
-            viewHost!!.release()
-        }
-        if (leash != null) {
+        inputEventReceiver?.dispose()
+        inputEventReceiver = null
+        if (layerLeash != null) {
             val t = SurfaceControl.Transaction()
-            t.remove(leash!!)
+            t.remove(layerLeash!!)
             t.apply()
-            leash = null
+            layerLeash = null
         }
+        if (clientToken != null) {
+            val windowSession = WindowManagerGlobal.getWindowSession()
+            windowSession.remove(clientToken)
+            clientToken = null
+        }
+        touchListener = null
+        dragListener = null
     }
 
     companion object {

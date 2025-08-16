@@ -165,7 +165,9 @@ public final class MessageHeap {
         m.heapIndex = i;
         mHeap[i] = m;
 
-        siftUp(i);
+        // We sift up to ensure that the heap invariant is maintained,
+        // but we don't care whether the message was actually moved.
+        boolean unused = siftUp(i);
     }
 
     public void maybeShrink() {

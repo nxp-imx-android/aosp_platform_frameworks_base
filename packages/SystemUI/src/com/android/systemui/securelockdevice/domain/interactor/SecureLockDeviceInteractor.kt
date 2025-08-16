@@ -18,6 +18,7 @@ package com.android.systemui.securelockdevice.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +34,7 @@ class SecureLockDeviceInteractor
 constructor(
     @Application applicationScope: CoroutineScope,
     secureLockDeviceRepository: SecureLockDeviceRepository,
+    private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
 ) {
     /** @see SecureLockDeviceRepository.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled: StateFlow<Boolean> =
@@ -66,4 +68,10 @@ constructor(
     val shouldListenForBiometricAuth: Flow<Boolean> =
         // TODO (b/405120698, b/405120700): update to consider confirm / try again buttons
         requiresStrongBiometricAuthForSecureLockDevice
+
+    /** Called when biometric authentication is requested for secure lock device. */
+    // TODO: call when secure lock device biometric auth is shown
+    fun onBiometricAuthRequested() {
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
+    }
 }

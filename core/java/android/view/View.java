@@ -25539,6 +25539,17 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     /**
+     * @see RenderNode#setUsageHint(int)
+     *
+     * @hide
+     */
+    public void setUsageHint(@RenderNode.UsageHint int usageHint) {
+        if (mRenderNode != null) {
+            mRenderNode.setUsageHint(usageHint);
+        }
+    }
+
+    /**
      * Creates a new display list or updates the existing display list for the
      * specified Drawable.
      *

@@ -375,6 +375,20 @@
     <string name="screen_capture_toolbar_record_button">Record</string>
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
     <string name="screen_share_toolbar_share_button">Share</string>
+    <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
+    <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_app_window_button_record_a11y">Record window</string>
+    <!-- Content description for the region button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y">Take screenshot of selected area</string>
+    <!-- Content description for the region button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_region_button_record_a11y">Record selected area</string>
+    <!-- Content description for the fullscreen button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y">Take screenshot of entire screen</string>
+    <!-- Content description for the fullscreen button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y">Record entire screen</string>
+    <!-- Content description for the settings button in the toolbar. [CHAR LIMIT=NONE] -->
+    <string name="screen_capture_toolbar_settings_button_a11y">Screen capture settings</string>
 
     <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
@@ -2893,15 +2907,22 @@
     <!-- Text for the dialog title. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_title">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
     <!-- Text for showing inside the dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>. <xliff:g name="feature_intro" example="Magnification intro">^4</xliff:g></string>
-    <!-- The text for the Magnification introduction. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_dialog_magnifier_intro">This allows you to quickly zoom in on the screen to make content larger.</string>
+    <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>. <xliff:g name="feature_intro" example="Voice Access intro">^4</xliff:g></string>
     <!-- The text for the TalkBack introduction. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_talkback_intro"><xliff:g name="feature_name" example="TalkBack">%1$s</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen.</string>
     <!-- The text for the Voice Access introduction. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_va_intro"><xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> lets you control your device hands-free.</string>
     <!-- Positive button text for the dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_positive_button_text">Turn on</string>
+
+    <!-- Text for the Magnification dialog title. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_magnification_dialog_title"><xliff:g name="feature_name" example="Magnification">%1$s</xliff:g> keyboard shortcut turned on</string>
+    <!-- Text for showing inside the Magnification dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_magnification_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>. This allows you to quickly zoom in on the screen to make content larger. Press Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> and \"+\" or \"-\" to adjust zoom.</string>
+    <!-- Negative button text for the Magnification dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text">Turn off shortcut</string>
+    <!-- Positive button text for the Magnification dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text">Keep on</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->

@@ -169,7 +169,7 @@ public class DisassociationProcessor {
                         if (service.getComponentInfo().getComponentName().getPackageName()
                                 .equals(packageName)) {
                             mNotificationManager.setNotificationListenerAccessGranted(
-                                    service.getComponentInfo().getComponentName(), false);
+                                    service.getComponentInfo().getComponentName(), false, false);
                         }
                     }
                 }

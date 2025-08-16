@@ -131,10 +131,10 @@ flag {
 }
 
 flag {
-  name: "update_root_task_layer_only_with_transition"
+  name: "do_not_force_wallpaper_for_freeform_task"
   namespace: "windowing_frontend"
-  description: "Avoid changing root task layer outside transition"
-  bug: "385142011"
+  description: "Remove legacy condition to reduce overhead"
+  bug: "433694978"
   is_fixed_read_only: true
   metadata {
     purpose: PURPOSE_BUGFIX
@@ -142,11 +142,10 @@ flag {
 }
 
 flag {
-  name: "do_not_force_wallpaper_for_freeform_task"
+  name: "no_alpha_rotation_enter_animation"
   namespace: "windowing_frontend"
-  description: "Remove legacy condition to reduce overhead"
-  bug: "433694978"
-  is_fixed_read_only: true
+  description: "Remove alpha effect of rotation enter animation"
+  bug: "438615184"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
@@ -469,6 +468,15 @@ flag {
     namespace: "windowing_frontend"
     description: "Record the initial z-order while collecting window containers, keep the wallpaper always at the bottom, and use a cross-fade animation when a close wallpaper transition includes an open target."
     bug: "421436197"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+flag {
+    name: "transfer_starting_window_to_next_when_invisible"
+    namespace: "windowing_frontend"
+    description: "Transfer the starting window to the next non-finishing activity when the top activity becomes invisible that contains the starting window."
+    bug: "436461530"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

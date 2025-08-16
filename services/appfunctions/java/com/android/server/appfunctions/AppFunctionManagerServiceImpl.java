@@ -72,7 +72,6 @@ import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.CancellationSignal;
-import android.os.Environment;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -81,6 +80,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.flags.Flags;
@@ -95,14 +95,12 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.FgThread;
 import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.uri.UriGrantsManagerInternal;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -120,8 +118,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static final String ALLOWLISTED_APP_FUNCTIONS_AGENTS =
             "allowlisted_app_functions_agents";
     private static final String NAMESPACE_MACHINE_LEARNING = "machine_learning";
-    private static final String AGENT_ALLOWLIST_FILE_NAME = "agent_allowlist.txt";
-    private static final String APP_FUNCTIONS_DIR = "appfunctions";
     private static final String SHELL_PKG = "com.android.shell";
 
     private static final Uri ADDITIONAL_AGENTS_URI = Settings.Secure.getUriFor(
@@ -147,6 +143,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final IBinder mPermissionOwner;
 
     private final DeviceSettingHelper mDeviceSettingHelper;
+
+    private final MultiUserAppFunctionAccessHistory mMultiUserAppFunctionAccessHistory;
 
     private final Object mAgentAllowlistLock = new Object();
 
@@ -179,7 +177,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 }
             };
 
-    private final Executor mWorkerExecutor;
+    private final Executor mBackgroundExecutor;
 
     private final AppFunctionAgentAllowlistStorage mAgentAllowlistStorage;
 
@@ -188,7 +186,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull PackageManagerInternal packageManagerInternal,
             @NonNull AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             @NonNull IUriGrantsManager uriGrantsManager,
-            @NonNull UriGrantsManagerInternal uriGrantsManagerInternal) {
+            @NonNull UriGrantsManagerInternal uriGrantsManagerInternal,
+            @NonNull AppFunctionsLoggerWrapper loggerWrapper,
+            @NonNull AppFunctionAgentAllowlistStorage agentAllowlistStorage,
+            @NonNull MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
+            @NonNull Executor backgroundExecutor) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -199,21 +201,18 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         Objects.requireNonNull(context.getSystemService(UserManager.class))),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
-                new AppFunctionsLoggerWrapper(context),
+                loggerWrapper,
                 packageManagerInternal,
                 appFunctionAccessServiceInterface,
                 uriGrantsManager,
                 uriGrantsManagerInternal,
                 new DeviceSettingHelperImpl(context),
-                new AppFunctionAgentAllowlistStorage(
-                        new File(
-                                new File(Environment.getDataSystemDirectory(), APP_FUNCTIONS_DIR),
-                                AGENT_ALLOWLIST_FILE_NAME)),
-                THREAD_POOL_EXECUTOR);
+                agentAllowlistStorage,
+                multiUserAppFunctionAccessHistory,
+                backgroundExecutor);
     }
 
-    @VisibleForTesting
-    AppFunctionManagerServiceImpl(
+    private AppFunctionManagerServiceImpl(
             Context context,
             RemoteServiceCaller<IAppFunctionService> remoteServiceCaller,
             CallerValidator callerValidator,
@@ -226,21 +225,26 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             UriGrantsManagerInternal uriGrantsManagerInternal,
             DeviceSettingHelper deviceSettingHelper,
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
-            Executor workerExecutor) {
+            MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
+            Executor backgroundExecutor) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
         mInternalServiceHelper = Objects.requireNonNull(appFunctionInternalServiceHelper);
-        mServiceConfig = serviceConfig;
-        mLoggerWrapper = loggerWrapper;
+        mServiceConfig = Objects.requireNonNull(serviceConfig);
+        mLoggerWrapper = Objects.requireNonNull(loggerWrapper);
         mPackageManagerInternal = Objects.requireNonNull(packageManagerInternal);
         mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessServiceInterface);
         mUriGrantsManager = Objects.requireNonNull(uriGrantsManager);
         mUriGrantsManagerInternal = Objects.requireNonNull(uriGrantsManagerInternal);
-        mPermissionOwner = mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions");
-        mDeviceSettingHelper = deviceSettingHelper;
+        mPermissionOwner =
+                Objects.requireNonNull(
+                        mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions"));
+        mDeviceSettingHelper = Objects.requireNonNull(deviceSettingHelper);
         mAgentAllowlistStorage = Objects.requireNonNull(agentAllowlistStorage);
-        mWorkerExecutor = Objects.requireNonNull(workerExecutor);
+        mMultiUserAppFunctionAccessHistory =
+                Objects.requireNonNull(multiUserAppFunctionAccessHistory);
+        mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
     }
 
     /** Called when the user is unlocked. */
@@ -251,6 +255,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         PackageMonitor pkgMonitorForUser =
                 AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
+        if (accessCheckFlagsEnabled()) {
+            mMultiUserAppFunctionAccessHistory.onUserUnlocked(user);
+        }
     }
 
     /** Called when the user is stopping. */
@@ -263,6 +270,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (mPackageMonitors.contains(userIdentifier)) {
             mPackageMonitors.get(userIdentifier).unregister();
             mPackageMonitors.delete(userIdentifier);
+        }
+        if (accessCheckFlagsEnabled()) {
+            mMultiUserAppFunctionAccessHistory.onUserStopping(user);
         }
     }
 
@@ -305,23 +315,18 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     /**
      * Called during different phases of the system boot process.
      *
-     * <p>This method is used to initialize AppFunctionManagerService components that depend on
-     * other system services being ready. Specifically, it handles reading DeviceConfig properties
-     * related to allowed agent package signatures and registers a listener for changes to these
-     * properties.
-     *
      * @param phase The current boot phase, as defined in {@link SystemService}. This method
      *     specifically acts on {@link SystemService#PHASE_SYSTEM_SERVICES_READY}.
      */
     public void onBootPhase(int phase) {
         if (!Flags.appFunctionAccessServiceEnabled()) return;
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
-            mWorkerExecutor.execute(() ->
+            mBackgroundExecutor.execute(() ->
                     updateAgentAllowlist(/* readFromDeviceConfig */ true,
                             /* readFromSecureSetting= */ true));
             DeviceConfig.addOnPropertiesChangedListener(
                     NAMESPACE_MACHINE_LEARNING,
-                    BackgroundThread.getExecutor(),
+                    mBackgroundExecutor,
                     mDeviceConfigListener);
             mContext.getContentResolver().registerContentObserver(ADDITIONAL_AGENTS_URI, false,
                     mAdbAgentObserver);
@@ -1093,6 +1098,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             long executionStartTimeMillis) {
                         mLoggerWrapper.logAppFunctionSuccess(
                                 requestInternal, result, callingUid, executionStartTimeMillis);
+                        recordAppFunctionAccess(requestInternal, executionStartTimeMillis);
                     }
 
                     @Override
@@ -1103,6 +1109,27 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 error.getErrorCode(),
                                 callingUid,
                                 executionStartTimeMillis);
+                        recordAppFunctionAccess(requestInternal, executionStartTimeMillis);
+                    }
+                });
+    }
+
+    private void recordAppFunctionAccess(
+            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long executionStartTimeMillis) {
+        if (!accessCheckFlagsEnabled()) return;
+        final long duration = SystemClock.elapsedRealtime() - executionStartTimeMillis;
+        mBackgroundExecutor.execute(
+                () -> {
+                    try {
+                        mMultiUserAppFunctionAccessHistory
+                                .asUser(aidlRequest.getUserHandle())
+                                .insertAppFunctionAccessHistory(aidlRequest, duration);
+                    } catch (IllegalStateException e) {
+                        Slog.e(
+                                TAG,
+                                "Fail to insert new access history to user "
+                                        + aidlRequest.getUserHandle().getIdentifier(),
+                                e);
                     }
                 });
     }

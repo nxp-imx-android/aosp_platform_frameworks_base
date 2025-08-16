@@ -21,18 +21,24 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenshotInteractor
-import com.android.systemui.screencapture.ui.mockScreenCaptureActivity
 
-val Kosmos.preCaptureViewModel by Fixture {
-    PreCaptureViewModel(
-        activity = mockScreenCaptureActivity,
-        applicationContext = applicationContext,
-        backgroundScope = backgroundScope,
-        iconProvider = screenCaptureIconProviderKosmos,
-        screenshotInteractor = screenshotInteractor,
-        featuresInteractor = screenCaptureRecordLargeScreenFeaturesInteractor,
-        drawableLoaderViewModelImpl = drawableLoaderViewModelImpl,
-    )
+val Kosmos.preCaptureViewModelFactory by Fixture {
+    object : PreCaptureViewModel.Factory {
+        override fun create(displayId: Int): PreCaptureViewModel {
+            return PreCaptureViewModel(
+                displayId = displayId,
+                applicationContext = applicationContext,
+                backgroundScope = backgroundScope,
+                iconProvider = screenCaptureIconProviderKosmos,
+                screenshotInteractor = screenshotInteractor,
+                featuresInteractor = screenCaptureRecordLargeScreenFeaturesInteractor,
+                drawableLoaderViewModelImpl = drawableLoaderViewModelImpl,
+                screenCaptureUiInteractor = screenCaptureUiInteractor,
+            )
+        }
+    }
 }
+val Kosmos.preCaptureViewModel by Fixture { preCaptureViewModelFactory.create(123) }

@@ -17,22 +17,15 @@
 package com.android.systemui.lowlight.dagger
 
 import com.android.systemui.CoreStartable
-import com.android.systemui.lowlight.AmbientLightModeMonitor
 import com.android.systemui.lowlight.LowLightBehaviorCoreStartable
 import com.android.systemui.lowlight.data.repository.dagger.LowLightRepositoryModule
 import com.android.systemui.lowlight.data.repository.dagger.LowLightSettingsRepositoryModule
-import com.android.systemui.lowlight.shared.model.LightSensor
 import com.android.systemui.lowlightclock.LowLightDisplayController
-import com.android.systemui.util.kotlin.getOrNull
 import dagger.Binds
 import dagger.BindsOptionalOf
 import dagger.Module
-import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
-import java.util.Optional
-import javax.inject.Named
-import javax.inject.Provider
 
 @Module(
     includes = [LowLightSettingsRepositoryModule::class, LowLightRepositoryModule::class],
@@ -47,22 +40,4 @@ abstract class LowLightModule {
     ): CoreStartable
 
     @BindsOptionalOf abstract fun bindsLowLightDisplayController(): LowLightDisplayController
-
-    @BindsOptionalOf @Named(LIGHT_SENSOR) abstract fun bindsLightSensor(): LightSensor
-
-    companion object {
-        const val LIGHT_SENSOR: String = "low_light_monitor_light_sensor"
-        const val LOW_LIGHT_MONITOR: String = "low_light_monitor"
-
-        @Provides
-        @Named(LOW_LIGHT_MONITOR)
-        fun providesLowLightMonitor(
-            factory: AmbientLightModeComponent.Factory,
-            @Named(LIGHT_SENSOR) sensor: Optional<Provider<LightSensor>>,
-        ): AmbientLightModeMonitor? {
-            return sensor.getOrNull()?.get()?.let {
-                factory.create(it).getAmbientLightModeMonitor()
-            }
-        }
-    }
 }

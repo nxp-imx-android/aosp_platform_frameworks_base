@@ -40,12 +40,14 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shade.PulsingGestureListener
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.util.time.SystemClock
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -83,6 +85,7 @@ constructor(
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
     private val pointerDeviceRepository: PointerDeviceRepository,
+    secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
 ) {
     private val _udfpsAccessibilityOverlayBounds: MutableStateFlow<Rect?> = MutableStateFlow(null)
 
@@ -100,8 +103,14 @@ constructor(
                 combine(
                     transitionInteractor.isFinishedIn(KeyguardState.LOCKSCREEN),
                     repository.isQuickSettingsVisible,
-                ) { isFullyTransitionedToLockScreen, isQuickSettingsVisible ->
-                    isFullyTransitionedToLockScreen && !isQuickSettingsVisible
+                    secureLockDeviceInteractor.get().isSecureLockDeviceEnabled,
+                ) {
+                    isFullyTransitionedToLockScreen,
+                    isQuickSettingsVisible,
+                    isSecureLockDeviceEnabled ->
+                    isFullyTransitionedToLockScreen &&
+                        !isQuickSettingsVisible &&
+                        !isSecureLockDeviceEnabled
                 }
             } else {
                 flowOf(false)
@@ -119,13 +128,16 @@ constructor(
                     transitionInteractor.transitionValue(KeyguardState.LOCKSCREEN),
                     repository.isQuickSettingsVisible,
                     isDoubleTapSettingEnabled(),
+                    secureLockDeviceInteractor.get().isSecureLockDeviceEnabled,
                 ) {
                     isFullyTransitionedToLockScreen,
                     isQuickSettingsVisible,
-                    isDoubleTapSettingEnabled ->
+                    isDoubleTapSettingEnabled,
+                    isSecureLockDeviceEnabled ->
                     isFullyTransitionedToLockScreen == 1f &&
                         !isQuickSettingsVisible &&
-                        isDoubleTapSettingEnabled
+                        isDoubleTapSettingEnabled &&
+                        !isSecureLockDeviceEnabled
                 }
             } else {
                 flowOf(false)

@@ -26,7 +26,7 @@ import android.os.Build;
 /**
  * The Download Manager
  *
- * @pending
+ * @hide pending
  */
 public final class Downloads {
     private Downloads() {}

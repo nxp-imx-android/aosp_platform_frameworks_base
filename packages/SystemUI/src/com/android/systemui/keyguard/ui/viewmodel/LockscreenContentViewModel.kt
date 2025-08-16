@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -43,6 +44,7 @@ constructor(
     val touchHandlingFactory: KeyguardTouchHandlingViewModel.Factory,
     shadeModeInteractor: ShadeModeInteractor,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
+    deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     transitionInteractor: KeyguardTransitionInteractor,
     private val keyguardTransitionAnimationCallbackDelegator:
         KeyguardTransitionAnimationCallbackDelegator,
@@ -82,6 +84,14 @@ constructor(
             traceName = "blueprintId",
             initialValue = interactor.getCurrentBlueprint().id,
             source = interactor.blueprint.map { it.id }.distinctUntilChanged(),
+        )
+
+    /** Whether udfps is supported. */
+    val isUdfpsSupported: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isUdfpsSupported",
+            source = deviceEntryUdfpsInteractor.isUdfpsSupported,
+            initialValue = deviceEntryUdfpsInteractor.isUdfpsSupported.value,
         )
 
     override suspend fun onActivated(): Nothing {
