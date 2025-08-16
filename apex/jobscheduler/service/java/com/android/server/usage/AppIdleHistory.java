@@ -51,6 +51,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.CollectionUtils;
 import com.android.internal.util.FastXmlSerializer;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.IntPair;
 import com.android.internal.util.XmlUtils;
 
 import libcore.io.IoUtils;
@@ -616,6 +617,16 @@ public class AppIdleHistory {
         AppUsageHistory appUsageHistory =
                 getPackageHistory(userHistory, packageName, elapsedRealtime, false);
         return appUsageHistory == null ? STANDBY_BUCKET_NEVER : appUsageHistory.currentBucket;
+    }
+
+    public long getAppStandbyBucketAndReason(String packageName, int userId,
+            long elapsedRealtime) {
+        ArrayMap<String, AppUsageHistory> userHistory = getUserHistory(userId);
+        AppUsageHistory appUsageHistory =
+                getPackageHistory(userHistory, packageName, elapsedRealtime, false);
+        return appUsageHistory == null
+                ? IntPair.of(STANDBY_BUCKET_NEVER, REASON_MAIN_DEFAULT)
+                : IntPair.of(appUsageHistory.currentBucket, appUsageHistory.bucketingReason);
     }
 
     public ArrayList<AppStandbyInfo> getAppStandbyBuckets(int userId, boolean appIdleEnabled) {
