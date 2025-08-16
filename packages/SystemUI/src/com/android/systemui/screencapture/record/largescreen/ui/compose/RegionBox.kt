@@ -24,6 +24,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -37,6 +38,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -51,6 +56,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
@@ -675,8 +682,75 @@ fun RegionBox(
                         captureButtonPlaceable.placeRelative(0, 0)
                     }
                 }
+
+                // Draw the 4 resize knobs at the 4 corners of the region box.
+                val handleSize = 20.dp
+                val handleSizePx = with(density) { handleSize.toPx() }.roundToInt()
+                if (state.dragMode != DragMode.MOVING && state.dragMode != DragMode.RESIZING) {
+                    Box {
+                        ResizeHandle(
+                            modifier = Modifier.offset { IntOffset(x = 0, y = 0) },
+                            rotation = 0f,
+                            size = handleSize,
+                        )
+                        ResizeHandle(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = currentRect.width.roundToInt() - handleSizePx,
+                                        y = 0,
+                                    )
+                                },
+                            rotation = 90f,
+                            size = handleSize,
+                        )
+                        ResizeHandle(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = 0,
+                                        y = currentRect.height.roundToInt() - handleSizePx,
+                                    )
+                                },
+                            rotation = 270f,
+                            size = handleSize,
+                        )
+                        ResizeHandle(
+                            modifier =
+                                Modifier.offset {
+                                    IntOffset(
+                                        x = currentRect.width.roundToInt() - handleSizePx,
+                                        y = currentRect.height.roundToInt() - handleSizePx,
+                                    )
+                                },
+                            rotation = 180f,
+                            size = handleSize,
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun ResizeHandle(rotation: Float, size: Dp, modifier: Modifier = Modifier) {
+    val handleColor = MaterialTheme.colorScheme.primary
+    Canvas(modifier = modifier.size(size).graphicsLayer { rotationZ = rotation }) {
+        val strokeWidth = 6.dp.toPx()
+        val canvasSize = this.size.width
+        val path =
+            Path().apply {
+                moveTo(canvasSize - strokeWidth / 2, strokeWidth / 2)
+                lineTo(strokeWidth / 2, strokeWidth / 2)
+                lineTo(strokeWidth / 2, canvasSize - strokeWidth / 2)
+            }
+
+        drawPath(
+            path = path,
+            color = handleColor,
+            style = Stroke(width = strokeWidth, join = StrokeJoin.Round, cap = StrokeCap.Round),
+        )
     }
 }
 
