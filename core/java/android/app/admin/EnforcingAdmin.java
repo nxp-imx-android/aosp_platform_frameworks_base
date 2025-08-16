@@ -74,8 +74,9 @@ public final class EnforcingAdmin implements Parcelable {
         mPackageName = Objects.requireNonNull(source.readString());
         mUserHandle = new UserHandle(source.readInt());
         mAuthority = Objects.requireNonNull(
-                source.readParcelable(Authority.class.getClassLoader()));
-        mComponentName = source.readParcelable(ComponentName.class.getClassLoader());
+                source.readParcelable(Authority.class.getClassLoader(), Authority.class));
+        mComponentName = source.readParcelable(ComponentName.class.getClassLoader(),
+                ComponentName.class);
     }
 
     /**
