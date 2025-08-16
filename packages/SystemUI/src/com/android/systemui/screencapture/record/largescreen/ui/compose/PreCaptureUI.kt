@@ -52,7 +52,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             PreCaptureToolbar(
                 viewModel = viewModel,
                 expanded = true,
-                onCloseClick = { viewModel.closeUI() },
+                onCloseClick = { viewModel.closeUi() },
             )
         }
 
@@ -89,7 +89,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                         R.string.screen_capture_fullscreen_record_button
                                 }
                             ),
-                        onClick = { viewModel.takeFullscreenScreenshot() },
+                        onClick = viewModel::beginCapture,
                     )
                 }
             }
@@ -116,7 +116,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         ),
                     buttonIcon = icon,
                     onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
-                    onCaptureClick = { viewModel.takePartialScreenshot() },
+                    onCaptureClick = viewModel::beginCapture,
                 )
             }
 
