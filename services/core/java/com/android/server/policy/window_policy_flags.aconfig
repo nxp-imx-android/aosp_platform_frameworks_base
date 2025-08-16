@@ -17,3 +17,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "wear_key_gesture_handling"
+    namespace: "wear_frameworks"
+    description: "Migrate Wear key gestures handling logic to Wear code base."
+    bug: "368159846"
+}
