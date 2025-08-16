@@ -68,6 +68,7 @@ cc_defaults {
         "native_headers",
     ],
     static_libs: [
+        "android.content.res.flags-aconfig-cc-host-ro",
         "libandroidfw",
         "libutils",
         "liblog",

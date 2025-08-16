@@ -114,6 +114,7 @@ cc_library_shared_for_libandroid_runtime {
     ],
 
     static_libs: [
+        "android.content.res.flags-aconfig-cc-host-ro",
         "libziparchive_for_incfs",
         "libguiflags",
     ],
