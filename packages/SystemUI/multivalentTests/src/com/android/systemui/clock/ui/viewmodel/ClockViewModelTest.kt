@@ -42,6 +42,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -63,6 +64,12 @@ class ClockViewModelTest : SysuiTestCase() {
     fun tearDown() {
         Locale.setDefault(defaultLocale)
         TimeZone.setDefault(defaultTimeZone)
+    }
+
+    @Before
+    fun setup() {
+        Locale.setDefault(Locale.US)
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
     }
 
     @Test
