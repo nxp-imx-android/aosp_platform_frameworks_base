@@ -77,6 +77,7 @@ import android.util.Pair;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.util.IntPair;
 import com.android.server.LocalServices;
 import com.android.server.job.Flags;
 import com.android.server.job.JobSchedulerInternal;
@@ -1623,10 +1624,9 @@ public class JobStatusTest {
 
     @Test
     public void testCreateJobStatus_validateStandbyBucketAndReason() {
-        doReturn(STANDBY_BUCKET_FREQUENT).when(mUsageStatsManagerInternal)
-                .getAppStandbyBucket(eq(TEST_PACKAGE), anyInt(), anyLong());
-        doReturn(REASON_MAIN_PREDICTED).when(mUsageStatsManagerInternal)
-                .getAppStandbyBucketReason(eq(TEST_PACKAGE), anyInt(), anyLong());
+        doReturn(IntPair.of(STANDBY_BUCKET_FREQUENT, REASON_MAIN_PREDICTED))
+                .when(mUsageStatsManagerInternal)
+                .getAppStandbyBucketAndReason(eq(TEST_PACKAGE), anyInt(), anyLong());
 
         final JobInfo jobInfo = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
                 .build();

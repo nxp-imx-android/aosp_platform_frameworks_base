@@ -108,6 +108,7 @@ import com.android.internal.os.SomeArgs;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.IntPair;
 import com.android.modules.expresslog.Counter;
 import com.android.modules.expresslog.Histogram;
 import com.android.server.AppSchedulingModuleThread;
@@ -4725,18 +4726,21 @@ public class JobSchedulerService extends com.android.server.SystemService
         return bucket;
     }
 
-    public static int standbyBucketReasonForPackage(String packageName, int userId,
-            long elapsedNow) {
-        int reason = sUsageStatsManagerInternal != null
-                ? sUsageStatsManagerInternal.getAppStandbyBucketReason(packageName, userId,
+    public static long standbyBucketAndReasonForPackage(String packageName,
+            int userId, long elapsedNow) {
+        long bucketAndReason = sUsageStatsManagerInternal != null
+                ? sUsageStatsManagerInternal.getAppStandbyBucketAndReason(packageName, userId,
                         elapsedNow)
-                : UsageStatsManager.REASON_MAIN_DEFAULT;
-
+                : 0;
+        long bucketIndexAndReason = IntPair.of(
+                standbyBucketToBucketIndex(IntPair.first(bucketAndReason)),
+                IntPair.second(bucketAndReason));
         if (DEBUG_STANDBY) {
-            Slog.v(TAG, packageName + "/" + userId + " standby bucket reason: "
-                    + UsageStatsManager.reasonToString(reason));
+            Slog.v(TAG, packageName + "/" + userId + " standby bucket index: "
+                    + IntPair.first(bucketIndexAndReason) + " and reason: "
+                    + IntPair.second(bucketIndexAndReason));
         }
-        return reason;
+        return bucketIndexAndReason;
     }
 
     static int safelyScaleBytesToKBForHistogram(long bytes) {

@@ -140,13 +140,10 @@ public final class MediaRouter2 {
     // The manager request ID representing that no manager is involved.
     private static final long MANAGER_REQUEST_ID_NONE = MediaRoute2ProviderService.REQUEST_ID_NONE;
 
-    private record PackageNameUserHandlePair(String packageName, UserHandle user) {}
-
     private record InstanceInvalidatedCallbackRecord(Executor executor, Runnable runnable) {}
 
     @GuardedBy("sSystemRouterLock")
-    private static final Map<PackageNameUserHandlePair, MediaRouter2> sAppToProxyRouterMap =
-            new ArrayMap<>();
+    private static final Map<AppId, MediaRouter2> sAppToProxyRouterMap = new ArrayMap<>();
 
     @GuardedBy("sRouterLock")
     private static MediaRouter2 sInstance;
@@ -438,7 +435,7 @@ public final class MediaRouter2 {
             }
         }
 
-        PackageNameUserHandlePair key = new PackageNameUserHandlePair(clientPackageName, user);
+        AppId key = new AppId(clientPackageName, user);
 
         synchronized (sSystemRouterLock) {
             MediaRouter2 instance = sAppToProxyRouterMap.get(key);
@@ -3720,8 +3717,7 @@ public final class MediaRouter2 {
             // After this block, all following getInstance() calls should throw a SecurityException,
             // so no new onInstanceInvalidatedListeners can be registered to this instance.
             synchronized (sSystemRouterLock) {
-                PackageNameUserHandlePair key =
-                        new PackageNameUserHandlePair(mClientPackageName, mClientUser);
+                AppId key = new AppId(mClientPackageName, mClientUser);
                 sAppToProxyRouterMap.remove(key);
             }
 

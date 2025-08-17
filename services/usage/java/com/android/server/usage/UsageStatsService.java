@@ -3339,8 +3339,9 @@ public class UsageStatsService extends SystemService implements
         }
 
         @Override
-        public int getAppStandbyBucketReason(String packageName, int userId, long nowElapsed) {
-            return mAppStandby.getAppStandbyBucketReason(packageName, userId, nowElapsed);
+        public long getAppStandbyBucketAndReason(String packageName,
+                @UserIdInt int userId, long nowElapsed) {
+            return mAppStandby.getAppStandbyBucketAndReason(packageName, userId, nowElapsed);
         }
 
         @Override
