@@ -26,7 +26,25 @@ object PreferenceGetterFlags {
     const val METADATA = 1 shl 2
     /** Flag to include all preference screens regardless of the `isFlagEnabled()` value. */
     const val FORCE_INCLUDE_ALL_SCREENS = 1 shl 3
-    const val ALL = (1 shl 4) - 1
+    /** Flag to include parameters for parameterized screens. */
+    const val PARAMETERS = 1 shl 4
+    /**
+     * Flag to exclude preference hierarchy.
+     *
+     * If the bit is set, hierarchy will not be included to reduce the data size of preference graph
+     * and the call site can retrieve the graph lazily.
+     *
+     * Leverage [withHierarchy] and [withoutHierarchy] to manipulate this bit.
+     */
+    const val EXCLUDE_HIERARCHY = 1 shl 5
+    /**
+     * Flag to shrink hierarchy (i.e. non-recursive).
+     *
+     * If the bit is set, only hierarchy of given screens are included, otherwise preference graph
+     * will be built recursively to include all reachable screens.
+     */
+    const val SHRINK_HIERARCHY = 1 shl 6
+    const val ALL = (1 shl 7) - 1
 
     fun Int.includeValue() = (this and VALUE) != 0
 
@@ -35,4 +53,24 @@ object PreferenceGetterFlags {
     fun Int.includeMetadata() = (this and METADATA) != 0
 
     fun Int.forceIncludeAllScreens() = (this and FORCE_INCLUDE_ALL_SCREENS) != 0
+
+    /** Returns a new flag to exclude hierarchy. */
+    fun Int.withoutHierarchy() = this or EXCLUDE_HIERARCHY
+
+    /** Returns a new flag to include hierarchy. */
+    fun Int.withHierarchy() = this and EXCLUDE_HIERARCHY.inv()
+
+    /**
+     * Returns a new flag with eager mode.
+     *
+     * In eager mode, all preference hierarchies are included and built recursively.
+     */
+    fun Int.setEagerMode() = this and (EXCLUDE_HIERARCHY or SHRINK_HIERARCHY).inv()
+
+    /**
+     * Returns a new flag with lazy mode.
+     *
+     * In lazy mode, preference hierarchy is excluded.
+     */
+    fun Int.setLazyMode() = (this or EXCLUDE_HIERARCHY or SHRINK_HIERARCHY) and PARAMETERS.inv()
 }
