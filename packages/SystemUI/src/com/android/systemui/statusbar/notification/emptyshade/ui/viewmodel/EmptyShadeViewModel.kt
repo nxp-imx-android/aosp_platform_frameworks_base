@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.emptyshade.ui.viewmodel
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.icu.text.MessageFormat
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.onStart
  * ViewModel for the empty shade (aka the "No notifications" text shown when there are no
  * notifications.
  */
+@SuppressLint("FlowExposedFromViewModel")
 class EmptyShadeViewModel
 @AssistedInject
 constructor(
