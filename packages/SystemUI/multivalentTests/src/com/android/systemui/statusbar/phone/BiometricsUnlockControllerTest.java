@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.phone;
 
+import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 
 import static com.android.systemui.Flags.FLAG_NEW_DOZING_KEYGUARD_STATES;
@@ -65,9 +66,12 @@ import com.android.systemui.keyguard.shared.model.BiometricUnlockSource;
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.SessionTracker;
 import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.securelockdevice.data.repository.FakeSecureLockDeviceRepository;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -141,6 +145,11 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     private BiometricUnlockInteractor mBiometricUnlockInteractor;
     @Mock
     private KeyguardTransitionInteractor mKeyguardTransitionInteractor;
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
+    private final SecureLockDeviceInteractor mSecureLockDeviceInteractor =
+            mKosmos.getSecureLockDeviceInteractor();
+    private final FakeSecureLockDeviceRepository mFakeSecureLockDeviceRepository =
+            mKosmos.getFakeSecureLockDeviceRepository();
     private final FakeSystemClock mSystemClock = new FakeSystemClock();
     private BiometricUnlockController mBiometricUnlockController;
 
@@ -177,7 +186,8 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mBiometricUnlockInteractor,
                 mock(JavaAdapter.class),
-                mKeyguardTransitionInteractor
+                mKeyguardTransitionInteractor,
+                () -> mSecureLockDeviceInteractor
         );
         biometricUnlockController.setKeyguardViewController(mStatusBarKeyguardViewManager);
         biometricUnlockController.addListener(mBiometricUnlockEventsListener);
@@ -490,6 +500,22 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         assertThat(mBiometricUnlockController.getMode())
                 .isEqualTo(BiometricUnlockController.MODE_ONLY_WAKE);
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void onFaceAuthenticated_whenSecureLockDeviceEnabled_skipNotifyKeyguardAuthenticated() {
+        mFakeSecureLockDeviceRepository.onSecureLockDeviceEnabled();
+        mFakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth();
+
+        // the value of isStrongBiometric doesn't matter here since we only care about the returned
+        // value of isUnlockingWithBiometricAllowed()
+        mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
+                BiometricSourceType.FACE, true /* isStrongBiometric */);
+
+        verify(mStatusBarKeyguardViewManager, never()).notifyKeyguardAuthenticated(anyBoolean());
+        assertThat(mBiometricUnlockController.getMode())
+                .isEqualTo(BiometricUnlockController.MODE_NONE);
     }
 
     @Test

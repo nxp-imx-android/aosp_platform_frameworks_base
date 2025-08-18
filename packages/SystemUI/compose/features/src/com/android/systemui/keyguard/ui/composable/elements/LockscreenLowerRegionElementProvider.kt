@@ -55,45 +55,39 @@ constructor(
     private val viewModelFactory: LockscreenLowerRegionViewModel.Factory,
 ) : LockscreenElementProvider {
     private val logger = Logger(blueprintLog, "LockscreenLowerRegionElementProvider")
-    override val elements: List<LockscreenElement> by lazy { listOf(lowerRegionElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(LowerRegionElement()) }
 
-    private val lowerRegionElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Region.Lower
-            override val context = this@LockscreenLowerRegionElementProvider.context
+    private inner class LowerRegionElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Region.Lower
+        override val context = this@LockscreenLowerRegionElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val viewModel = rememberViewModel("LockscreenLowerRegion") { viewModelFactory.create() }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier.navigationBarsPadding()
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal =
+                                dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
+                        ),
             ) {
-                val viewModel =
-                    rememberViewModel("LockscreenLowerRegion") { viewModelFactory.create() }
+                Box(Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.start }) {
+                    factory.lockscreenElement(Shortcuts.Start, context)
+                }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier.navigationBarsPadding()
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal =
-                                    dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
-                            ),
-                ) {
-                    Box(
-                        Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.start }
-                    ) {
-                        factory.lockscreenElement(Shortcuts.Start, context)
-                    }
+                Box(Modifier.weight(1f)) { factory.lockscreenElement(IndicationArea, context) }
 
-                    Box(Modifier.weight(1f)) { factory.lockscreenElement(IndicationArea, context) }
-
-                    Box(
-                        Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }
-                    ) {
-                        factory.lockscreenElement(Shortcuts.End, context)
-                    }
+                Box(Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }) {
+                    factory.lockscreenElement(Shortcuts.End, context)
                 }
             }
         }
+    }
 }

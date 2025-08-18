@@ -29,18 +29,23 @@ import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.BottomEdge
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.StartHalf
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.TopEdgeStartHalf
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 
 /** Models the UI state for the user actions for navigating to other scenes or overlays. */
 class QuickSettingsShadeOverlayActionsViewModel
 @AssistedInject
-constructor(private val editModeViewModel: EditModeViewModel) : UserActionsViewModel() {
+constructor(
+    private val editModeViewModel: EditModeViewModel,
+    private val shadeModeInteractor: ShadeModeInteractor,
+) : UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
-        editModeViewModel.isEditing
-            .map { isEditing ->
+        combine(editModeViewModel.isEditing, shadeModeInteractor.isFullWidthShade) {
+                isEditing,
+                isFullWidthShade ->
                 val hideQuickSettings = HideOverlay(Overlays.QuickSettingsShade)
                 val openNotificationsShade =
                     ShowOverlay(
@@ -57,7 +62,9 @@ constructor(private val editModeViewModel: EditModeViewModel) : UserActionsViewM
                         put(Swipe.Up, hideQuickSettings)
                     }
                     put(Swipe.Down(fromSource = TopEdgeStartHalf), openNotificationsShade)
-                    put(Swipe.Down(fromSource = StartHalf), openNotificationsShade)
+                    if (!isFullWidthShade) {
+                        put(Swipe.Down(fromSource = StartHalf), openNotificationsShade)
+                    }
                 }
             }
             .collect { actions -> setActions(actions) }

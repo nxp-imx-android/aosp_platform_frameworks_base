@@ -600,7 +600,7 @@ public class AudioService extends IAudioService.Stub
             return groupId;
         }
         return AudioProductStrategy.getVolumeGroupIdForStreamType(
-                getAudioProductStrategies(/* filterInternal= */ true), stream);
+                mAudioSystem.getAudioProductStrategies(/* filterInternal= */ true), stream);
     }
 
     /**
@@ -1496,7 +1496,8 @@ public class AudioService extends IAudioService.Stub
         // Priority 1 - Android Property
         // Priority 2 - Audio Policy Service
         // Priority 3 - Default Value
-        if (!mAudioSystem.getAudioProductStrategies(/* filterInternal= */ true).isEmpty()) {
+        var productStrategies = mAudioSystem.getAudioProductStrategies(/* filterInternal*/ true);
+        if (!productStrategies.isEmpty()) {
             int numStreamTypes = AudioSystem.getNumStreamTypes();
 
             for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
@@ -1505,7 +1506,7 @@ public class AudioService extends IAudioService.Stub
 
                 if (volumeGroupManagementUpdate()) {
                     int groupId = AudioProductStrategy.getVolumeGroupIdForStreamType(
-                            getAudioProductStrategies(/* filterInternal= */ true), streamType);
+                            productStrategies, streamType);
                     if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
                         maxVolume = AudioSystem.getMaxVolumeIndexForGroup(groupId);
                         minVolume = AudioSystem.getMinVolumeIndexForGroup(groupId);
@@ -1513,8 +1514,7 @@ public class AudioService extends IAudioService.Stub
                 } else {
                     AudioAttributes attr =
                             AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
-                                    mAudioSystem.getAudioProductStrategies(
-                                            /* filterInternal*/ true), streamType);
+                                    productStrategies, streamType);
                     maxVolume = AudioSystem.getMaxVolumeIndexForAttributes(attr);
                     minVolume = AudioSystem.getMinVolumeIndexForAttributes(attr);
                 }

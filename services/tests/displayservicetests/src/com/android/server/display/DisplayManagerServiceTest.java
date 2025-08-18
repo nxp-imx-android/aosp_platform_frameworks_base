@@ -85,6 +85,7 @@ import static org.mockito.Mockito.verify;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions.LaunchCookie;
 import android.app.PropertyInvalidatedCache;
@@ -186,6 +187,7 @@ import com.android.server.input.InputManagerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.sensors.SensorManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import com.google.common.truth.Expect;
@@ -432,6 +434,8 @@ public class DisplayManagerServiceTest {
     @Mock PackageManagerInternal mMockPackageManagerInternal;
     @Mock DisplayManagerInternal mMockDisplayManagerInternal;
     @Mock ActivityManagerInternal mMockActivityManagerInternal;
+    @Mock
+    ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
     @Mock DisplayAdapter mMockDisplayAdapter;
     @Mock DisplayTopologyCoordinator mMockDisplayTopologyCoordinator;
 
@@ -473,6 +477,8 @@ public class DisplayManagerServiceTest {
         mLocalServiceKeeperRule.overrideLocalService(
                 ActivityManagerInternal.class, mMockActivityManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(
+                ActivityTaskManagerInternal.class, mMockActivityTaskManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(
                 WindowManagerPolicy.class, mMockedWindowManagerPolicy);
         when(BatteryStatsService.getService()).thenReturn(null);
         Display display = mock(Display.class);
@@ -496,6 +502,9 @@ public class DisplayManagerServiceTest {
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
         when(mMockDisplayDeviceConfig.getTempSensor()).thenReturn(
                 SensorData.loadTempSensorUnspecifiedConfig());
+
+        when(mMockActivityTaskManagerInternal.getLockTaskModeState()).thenReturn(
+                ActivityManager.LOCK_TASK_MODE_NONE);
 
         doReturn(Context.PERMISSION_ENFORCER_SERVICE).when(mContext).getSystemServiceName(
                 eq(PermissionEnforcer.class));
@@ -3498,6 +3507,7 @@ public class DisplayManagerServiceTest {
         mPermissionEnforcer.grant(CONTROL_DISPLAY_BRIGHTNESS);
         DisplayManagerService displayManager =
                 new DisplayManagerService(mContext, mShortMockedInjector);
+        displayManager.windowManagerAndInputReady();
         DisplayManagerInternal localService = displayManager.new LocalService();
         DisplayManagerService.BinderService displayManagerBinderService =
                 displayManager.new BinderService();
@@ -3550,6 +3560,7 @@ public class DisplayManagerServiceTest {
         mPermissionEnforcer.grant(CONTROL_DISPLAY_BRIGHTNESS);
         DisplayManagerService displayManager =
                 new DisplayManagerService(mContext, mShortMockedInjector);
+        displayManager.windowManagerAndInputReady();
         DisplayManagerInternal localService = displayManager.new LocalService();
         DisplayManagerService.BinderService displayManagerBinderService =
                 displayManager.new BinderService();
@@ -4064,6 +4075,39 @@ public class DisplayManagerServiceTest {
         final ContentObserver observer = displayManager.getSettingsObserver();
         observer.onChange(false, Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY));
         assertThat(displayManager.shouldMirrorBuiltInDisplay()).isTrue();
+    }
+
+    @Test
+    public void testMirrorBuiltInDisplay_inLockTaskMode() {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        when(mMockFlags.isDisplayMirrorInLockTaskModeEnabled()).thenReturn(true);
+        when(mMockActivityTaskManagerInternal.getLockTaskModeState())
+                .thenReturn(ActivityManager.LOCK_TASK_MODE_LOCKED);
+
+        DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
+        displayManager.windowManagerAndInputReady();
+        displayManager.systemReady(/* safeMode= */ false);
+
+        assertThat(displayManager.shouldMirrorBuiltInDisplay()).isTrue();
+    }
+
+    @Test
+    public void testMirrorBuiltInDisplay_isNotInLockTaskMode() {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        when(mMockFlags.isDisplayMirrorInLockTaskModeEnabled()).thenReturn(true);
+        when(mMockActivityTaskManagerInternal.getLockTaskModeState())
+                .thenReturn(ActivityManager.LOCK_TASK_MODE_NONE);
+
+        Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 1);
+        DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
+        displayManager.windowManagerAndInputReady();
+        displayManager.systemReady(/* safeMode= */ false);
+        assertThat(displayManager.shouldMirrorBuiltInDisplay()).isTrue();
+
+        Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
+        final ContentObserver observer = displayManager.getSettingsObserver();
+        observer.onChange(false, Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY));
+        assertThat(displayManager.shouldMirrorBuiltInDisplay()).isFalse();
     }
 
     @Test

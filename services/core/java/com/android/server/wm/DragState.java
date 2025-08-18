@@ -368,8 +368,15 @@ class DragState {
         }
 
         final WindowState touchedWin = mService.mInputToWindowMap.get(token);
+        final float displayX = touchedWin != null
+                ? touchedWin.getBounds().left + inWindowX
+                : inWindowX;
+        final float displayY = touchedWin != null
+                ? touchedWin.getBounds().top + inWindowY
+                : inWindowY;
         if (!isWindowNotified(touchedWin)) {
-            final DragEvent unhandledDropEvent = createUnhandledDropEvent(inWindowX, inWindowY);
+            if (DEBUG_DRAG) Slog.d(TAG_WM, "Received drop for unnotified window " + touchedWin);
+            final DragEvent unhandledDropEvent = createUnhandledDropEvent(displayX, displayY);
             // Delegate to the unhandled drag listener as a first pass
             if (mDragDropController.notifyUnhandledDrop(unhandledDropEvent, "unhandled-drop")) {
                 // The unhandled drag listener will call back to notify whether it has consumed
@@ -387,8 +394,7 @@ class DragState {
         }
 
         if (DEBUG_DRAG) Slog.d(TAG_WM, "Sending DROP to " + touchedWin);
-        final DragEvent unhandledDropEvent = createUnhandledDropEvent(
-                touchedWin.getBounds().left + inWindowX, touchedWin.getBounds().top + inWindowY);
+        final DragEvent unhandledDropEvent = createUnhandledDropEvent(displayX, displayY);
 
         final IBinder clientToken = touchedWin.mClient.asBinder();
         final DragEvent event = createDropEvent(inWindowX, inWindowY, touchedWin);

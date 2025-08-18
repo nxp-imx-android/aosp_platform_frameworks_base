@@ -20,6 +20,9 @@ import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.padding
@@ -54,95 +56,123 @@ constructor(
     private val keyguardClockViewModel: KeyguardClockViewModel,
 ) : LockscreenElementProvider {
     override val elements: List<LockscreenElement> by lazy {
-        listOf(smallClockRegionElement, largeClockRegionElement)
+        listOf(SmallClockRegionElement(), LargeClockRegionElement())
     }
 
-    private val smallClockRegionElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Region.Clock.Small
-            override val context = this@ClockRegionElementProvider.context
+    private inner class SmallClockRegionElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Region.Clock.Small
+        override val context = this@ClockRegionElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                val shouldDateWeatherBeBelowSmallClock: Boolean by
-                    keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock
-                        .collectAsStateWithLifecycle()
-                val paddingModifier =
-                    Modifier.padding(
-                        horizontal = dimensionResource(clocksR.dimen.clock_padding_start)
-                    )
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val shouldDateWeatherBeBelowSmallClock: Boolean by
+                keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock
+                    .collectAsStateWithLifecycle()
 
-                Column {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = paddingModifier,
-                    ) {
+            // Horizontal Padding is handled internally within the SmartspaceCards element. This
+            // makes the application here to other elements in the hierarchy slightly awkward.
+            val xPadding = dimensionResource(clocksR.dimen.clock_padding_start)
+
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier =
+                        Modifier.padding(horizontal = xPadding)
+                            .padding(top = dimensionResource(R.dimen.keyguard_clock_top_margin)),
+                ) {
+                    factory.lockscreenElement(Clock.Small, context)
+
+                    if (!shouldDateWeatherBeBelowSmallClock) {
                         factory.lockscreenElement(
-                            Clock.Small,
+                            Smartspace.DWA.SmallClock.Column,
                             context,
                             Modifier.padding(
-                                top = dimensionResource(R.dimen.keyguard_clock_top_margin)
+                                horizontal =
+                                    dimensionResource(R.dimen.smartspace_padding_horizontal)
                             ),
                         )
-
-                        if (!shouldDateWeatherBeBelowSmallClock) {
-                            Column(
-                                horizontalAlignment = Alignment.Start,
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = context.burnInModifier,
-                            ) {
-                                factory.lockscreenElement(Smartspace.Date.SmallClock, context)
-                                factory.lockscreenElement(Smartspace.Weather.SmallClock, context)
-                            }
-                        }
                     }
-
-                    if (shouldDateWeatherBeBelowSmallClock) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = paddingModifier.then(context.burnInModifier),
-                        ) {
-                            factory.lockscreenElement(Smartspace.Date.SmallClock, context)
-                            factory.lockscreenElement(Smartspace.Weather.SmallClock, context)
-                        }
-                    }
-
-                    factory.lockscreenElement(Smartspace.Cards, context)
                 }
+
+                if (shouldDateWeatherBeBelowSmallClock) {
+                    factory.lockscreenElement(
+                        Smartspace.DWA.SmallClock.Row,
+                        context,
+                        Modifier.padding(horizontal = xPadding),
+                    )
+                }
+
+                factory.lockscreenElement(Smartspace.Cards, context)
             }
         }
+    }
 
-    private val largeClockRegionElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Region.Clock.Large
-            override val context = this@ClockRegionElementProvider.context
+    private inner class LargeClockRegionElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Region.Clock.Large
+        override val context = this@ClockRegionElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val shouldDateWeatherBeBelowLargeClock: Boolean by
+                keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock
+                    .collectAsStateWithLifecycle()
+
+            // Horizontal Padding is handled internally within the SmartspaceCards element. This
+            // makes the application here to other elements in the hierarchy slightly awkward.
+            val xPadding = dimensionResource(clocksR.dimen.clock_padding_start)
+
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
+                modifier =
+                    Modifier.fillMaxSize()
+                        .padding(top = dimensionResource(R.dimen.keyguard_clock_top_margin)),
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top,
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    factory.lockscreenElement(Smartspace.Cards, context)
-                    factory.lockscreenElement(Clock.Large, context)
+                    if (!shouldDateWeatherBeBelowLargeClock) {
+                        factory.lockscreenElement(
+                            Smartspace.DWA.LargeClock.Above,
+                            context,
+                            Modifier.padding(horizontal = xPadding),
+                        )
+                    }
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = context.burnInModifier,
-                    ) {
-                        factory.lockscreenElement(Smartspace.Date.LargeClock, context)
-                        factory.lockscreenElement(Smartspace.Weather.LargeClock, context)
+                    factory.lockscreenElement(
+                        Smartspace.Cards,
+                        context,
+                        // Always reserve space for smartspace cards, even if they're not visible.
+                        // This keeps the clock position stable when smartspace enters/exits.
+                        Modifier.heightIn(
+                            min = dimensionResource(clocksR.dimen.enhanced_smartspace_height)
+                        ),
+                    )
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement =
+                        Arrangement.spacedBy(
+                            dimensionResource(R.dimen.smartspace_padding_vertical),
+                            Alignment.CenterVertically,
+                        ),
+                    modifier = Modifier.padding(horizontal = xPadding).fillMaxWidth().weight(1f),
+                ) {
+                    factory.lockscreenElement(Clock.Large, context)
+                    if (shouldDateWeatherBeBelowLargeClock) {
+                        factory.lockscreenElement(Smartspace.DWA.LargeClock.Below, context)
                     }
                 }
             }
         }
+    }
 }

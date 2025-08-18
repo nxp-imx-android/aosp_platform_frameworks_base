@@ -145,7 +145,7 @@ public final class WindowContainerTransaction implements Parcelable {
      */
     @NonNull
     public WindowContainerTransaction setAppBounds(
-            @NonNull WindowContainerToken container, @NonNull Rect appBounds) {
+            @NonNull WindowContainerToken container, @Nullable Rect appBounds) {
         final Change chg = getOrCreateChange(container.asBinder());
         chg.mConfiguration.windowConfiguration.setAppBounds(appBounds);
         chg.mConfigSetMask |= ActivityInfo.CONFIG_WINDOW_CONFIGURATION;

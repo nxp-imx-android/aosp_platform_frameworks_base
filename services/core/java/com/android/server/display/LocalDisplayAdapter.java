@@ -1286,36 +1286,6 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             }
         }
 
-        public boolean updateActiveModeLocked(int activeSfModeId, float renderFrameRate,
-                long appVsyncOffsetNanos, long presentationDeadlineNanos) {
-            if (mActiveSfDisplayMode.id == activeSfModeId
-                    && mActiveRenderFrameRate == renderFrameRate
-                    && mAppVsyncOffsetNanos == appVsyncOffsetNanos
-                    && mPresentationDeadlineNanos == presentationDeadlineNanos) {
-                return false;
-            }
-            mActiveSfDisplayMode = getModeById(mSfDisplayModes, activeSfModeId);
-            mActiveModeId = findMatchingModeIdLocked(activeSfModeId);
-            if (mActiveModeId == INVALID_MODE_ID) {
-                Slog.w(TAG, "In unknown mode after setting allowed modes"
-                        + ", activeModeId=" + activeSfModeId);
-            }
-            mActiveRenderFrameRate = renderFrameRate;
-            mAppVsyncOffsetNanos = appVsyncOffsetNanos;
-            mPresentationDeadlineNanos = presentationDeadlineNanos;
-            return true;
-        }
-
-        public boolean updateFrameRateOverridesLocked(
-                DisplayEventReceiver.FrameRateOverride[] overrides) {
-            if (Arrays.equals(overrides, mFrameRateOverrides)) {
-                return false;
-            }
-
-            mFrameRateOverrides = overrides;
-            return true;
-        }
-
         private boolean updateActiveModeAndFrameOverrideChangedLocked(int activeSfModeId,
                 float renderFrameRate, long appVsyncOffsetNanos,
                 long presentationDeadlineNanos,

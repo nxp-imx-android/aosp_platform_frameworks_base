@@ -18,6 +18,7 @@ package android.window;
 
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE;
 import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 
 import android.annotation.NonNull;
@@ -159,6 +160,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION),
     ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS(Flags::enableDisplayFocusInShellTransitions, true,
             Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS),
+    ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE(
+            com.android.server.display.feature.flags.Flags::enableDisplayMirrorInLockTaskMode,
+            false, FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE),
     ENABLE_DISPLAY_RECONNECT_INTERACTION(Flags::enableDisplayReconnectInteraction, true,
             Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION),
     ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING(Flags::enableDisplayWindowingModeSwitching, true,

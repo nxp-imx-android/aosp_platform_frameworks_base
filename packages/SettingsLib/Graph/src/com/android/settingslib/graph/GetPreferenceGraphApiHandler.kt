@@ -20,6 +20,7 @@ import android.app.Application
 import android.os.Bundle
 import android.os.Parcelable
 import android.os.SystemClock
+import com.android.settingslib.graph.PreferenceGetterFlags.setEagerMode
 import com.android.settingslib.graph.proto.PreferenceGraphProto
 import com.android.settingslib.ipc.ApiHandler
 import com.android.settingslib.ipc.ApiPermissionChecker
@@ -63,7 +64,7 @@ class GetPreferenceGraphApiHandler(
                 PreferenceGraphBuilder.of(application, callingPid, callingUid, request, this)
             if (request.screens.isEmpty()) {
                 val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
-                factories.forEachAsync { _, factory -> builder.addPreferenceScreen(factory) }
+                factories.forEachAsync { key, factory -> builder.addPreferenceScreen(key, factory) }
                 for (provider in preferenceScreenProviders) {
                     builder.addPreferenceScreenProvider(provider)
                 }
@@ -96,7 +97,8 @@ constructor(
     val screens: Set<PreferenceScreenCoordinate> = setOf(),
     val visitedScreens: Set<PreferenceScreenCoordinate> = setOf(),
     val locale: Locale? = null,
-    val flags: Int = PreferenceGetterFlags.ALL,
+    // To achieve backward compatibility, use eager mode to materialize hierarchy immediately
+    val flags: Int = PreferenceGetterFlags.ALL.setEagerMode(),
 )
 
 class GetPreferenceGraphRequestCodec : MessageCodec<GetPreferenceGraphRequest> {

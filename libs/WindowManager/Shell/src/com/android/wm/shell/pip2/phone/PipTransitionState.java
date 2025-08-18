@@ -333,6 +333,15 @@ public class PipTransitionState {
         return mState > ENTERING_PIP && mState < EXITING_PIP;
     }
 
+    /**
+     * @return true if we have either scheduled enter PiP or are animating the entering.
+     */
+    public boolean isEnterPipScheduled() {
+        return mState == PipTransitionState.ENTERING_PIP
+                || mState == PipTransitionState.SCHEDULED_ENTER_PIP;
+    }
+
+
     void setSwipePipToHomeState(@Nullable SurfaceControl overlayLeash,
             @NonNull Rect appBounds) {
         mInSwipePipToHomeTransition = true;

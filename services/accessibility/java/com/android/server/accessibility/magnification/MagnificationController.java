@@ -61,6 +61,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.AccessibilityManagerService;
+import com.android.server.accessibility.Flags;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.concurrent.Executor;
@@ -126,7 +127,7 @@ public class MagnificationController implements MagnificationConnectionManager.C
     // in multiple directions at once (for example, up + left), tracking last
     // panned time ensures that panning doesn't occur too frequently.
     private long mLastPannedTime = 0;
-    private long mLastMouseMoveTriggeredUiChangeTime = 0;
+    private long mLastMotionEventTriggeredUiChangeTime = 0;
     private boolean mRepeatKeysEnabled = true;
 
     private @ZoomDirection int mActiveZoomDirection = ZOOM_DIRECTION_IN;
@@ -388,25 +389,17 @@ public class MagnificationController implements MagnificationConnectionManager.C
 
     @Override
     public void onTouchInteractionStart(int displayId, int mode) {
-        // TODO(435498747): Add throttling for touch similarly to mouse events.
-        handleUserInteractionChanged(displayId, mode);
+        handleUserInteractionChanged(displayId, mode, /* isMouse= */ false);
     }
 
     @Override
     public void onTouchInteractionEnd(int displayId, int mode) {
-        // TODO(435498747): Add throttling for touch similarly to mouse events.
-        handleUserInteractionChanged(displayId, mode);
+        handleUserInteractionChanged(displayId, mode, /* isMouse= */ false);
     }
 
     @Override
     public void onMouseMove(int displayId, int mode) {
-        final long currentTime = mSystemClock.uptimeMillis();
-        if (currentTime - mLastMouseMoveTriggeredUiChangeTime
-                < AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS) {
-            return;
-        }
-        mLastMouseMoveTriggeredUiChangeTime = currentTime;
-        handleUserInteractionChanged(displayId, mode);
+        handleUserInteractionChanged(displayId, mode, /* isMouse= */ true);
     }
 
     @Override
@@ -524,10 +517,21 @@ public class MagnificationController implements MagnificationConnectionManager.C
         return mInitialKeyboardRepeatIntervalMs;
     }
 
-    private void handleUserInteractionChanged(int displayId, int mode) {
+    private void handleUserInteractionChanged(int displayId, int mode, boolean isMouse) {
         if (mMagnificationCapabilities != Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL) {
             return;
         }
+
+        // Mouse events are always throttled. Touch events are throttled only when the flag is on.
+        if (isMouse || Flags.throttleMotionEventsForUiUpdate()) {
+            final long currentTime = mSystemClock.uptimeMillis();
+            if (currentTime - mLastMotionEventTriggeredUiChangeTime
+                    < AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS) {
+                return;
+            }
+            mLastMotionEventTriggeredUiChangeTime = currentTime;
+        }
+
         updateMagnificationUIControls(displayId, mode);
     }
 

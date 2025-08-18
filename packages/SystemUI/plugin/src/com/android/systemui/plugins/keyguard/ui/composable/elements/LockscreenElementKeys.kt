@@ -82,22 +82,21 @@ object LockscreenElementKeys {
         val Cards = ElementKey("SmartspaceCards")
 
         /**
-         * Elements for the current date view. The large and small clock version use distinct keys
-         * so that we can differentiate between them for animations when they are both displayed.
+         * DWA is the parent element for date/weather/alarm elements. The relative layout of these
+         * elements is currently controlled by smartspace on the view side. The large / small views
+         * are further broken out into different keys so that we can differentiate between them for
+         * animations.
          */
-        object Date {
-            val LargeClock = ElementKey("SmartspaceDate-LargeClock")
-            val SmallClock = ElementKey("SmartspaceDate-SmallClock")
-        }
+        object DWA {
+            object LargeClock {
+                val Above = ElementKey("SmartspaceDWA-LargeClock-Above")
+                val Below = ElementKey("SmartspaceDWA-LargeClock-Below")
+            }
 
-        /**
-         * Elements for the standalone current weather view. The large and small clock version use
-         * distinct keys so that we can differentiate between them for animations when they are both
-         * displayed.
-         */
-        object Weather {
-            val LargeClock = ElementKey("SmartspaceWeather-LargeClock")
-            val SmallClock = ElementKey("SmartspaceWeather-SmallClock")
+            object SmallClock {
+                val Column = ElementKey("SmartspaceDWA-SmallClock-Column")
+                val Row = ElementKey("SmartspaceDWA-SmallClock-Row")
+            }
         }
     }
 }

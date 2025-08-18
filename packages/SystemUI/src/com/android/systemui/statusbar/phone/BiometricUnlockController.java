@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.phone;
 
 import static android.app.StatusBarManager.SESSION_KEYGUARD;
+import static android.security.Flags.secureLockDevice;
 import static android.service.dreams.Flags.dreamsV2;
 
 import android.annotation.IntDef;
@@ -64,6 +65,7 @@ import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -182,6 +184,8 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     private final LatencyTracker mLatencyTracker;
     private final VibratorHelper mVibratorHelper;
     private final BiometricUnlockInteractor mBiometricUnlockInteractor;
+    private final Lazy<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
+
     private final BiometricUnlockLogger mLogger;
     private final SystemClock mSystemClock;
     private final boolean mOrderUnlockAndWake;
@@ -297,7 +301,8 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             Lazy<SelectedUserInteractor> selectedUserInteractor,
             BiometricUnlockInteractor biometricUnlockInteractor,
             JavaAdapter javaAdapter,
-            KeyguardTransitionInteractor keyguardTransitionInteractor
+            KeyguardTransitionInteractor keyguardTransitionInteractor,
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor
     ) {
         mPowerManager = powerManager;
         mUpdateMonitor = keyguardUpdateMonitor;
@@ -307,6 +312,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         mWakefulnessLifecycle = wakefulnessLifecycle;
         mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
         mBiometricUnlockInteractor = biometricUnlockInteractor;
+        mSecureLockDeviceInteractor = secureLockDeviceInteractor;
 
         mNotificationShadeWindowController = notificationShadeWindowController;
         mDozeScrimController = dozeScrimController;
@@ -426,33 +432,43 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     @Override
     public void onBiometricAuthenticated(int userId, BiometricSourceType biometricSourceType,
             boolean isStrongBiometric) {
-        Trace.beginSection("BiometricUnlockController#onBiometricUnlocked");
-        if (mUpdateMonitor.isGoingToSleep()) {
-            mLogger.deferringAuthenticationDueToSleep(userId,
-                    biometricSourceType,
-                    mPendingAuthenticated != null);
-            mPendingAuthenticated = new PendingAuthenticated(userId, biometricSourceType,
-                    isStrongBiometric);
-            Trace.endSection();
-            return;
-        }
-        mBiometricType = biometricSourceType;
-        mMetricsLogger.write(new LogMaker(MetricsEvent.BIOMETRIC_AUTH)
-                .setType(MetricsEvent.TYPE_SUCCESS).setSubtype(toSubtype(biometricSourceType)));
-        Optional.ofNullable(BiometricUiEvent.SUCCESS_EVENT_BY_SOURCE_TYPE.get(biometricSourceType))
-                .ifPresent(event -> UI_EVENT_LOGGER.log(event, getSessionId()));
+        Trace.beginSection("BiometricUnlockController#onBiometricAuthenticated");
+        try {
+            if (mUpdateMonitor.isGoingToSleep()) {
+                mLogger.deferringAuthenticationDueToSleep(userId,
+                        biometricSourceType,
+                        mPendingAuthenticated != null);
+                mPendingAuthenticated = new PendingAuthenticated(userId, biometricSourceType,
+                        isStrongBiometric);
+                return;
+            }
+            mBiometricType = biometricSourceType;
+            mMetricsLogger.write(new LogMaker(MetricsEvent.BIOMETRIC_AUTH)
+                    .setType(MetricsEvent.TYPE_SUCCESS).setSubtype(toSubtype(biometricSourceType)));
+            Optional.ofNullable(
+                            BiometricUiEvent.SUCCESS_EVENT_BY_SOURCE_TYPE.get(biometricSourceType))
+                    .ifPresent(event -> UI_EVENT_LOGGER.log(event, getSessionId()));
 
-        boolean unlockAllowed =
-                mKeyguardStateController.isOccluded()
-                        || mKeyguardBypassController.onBiometricAuthenticated(
-                                biometricSourceType, isStrongBiometric);
-        if (unlockAllowed) {
-            mKeyguardViewMediator.userActivity();
-            startWakeAndUnlock(biometricSourceType, isStrongBiometric);
-        } else {
-            mLogger.d("onBiometricUnlocked aborted by bypass controller");
+            boolean unlockAllowed =
+                    mKeyguardStateController.isOccluded()
+                            || mKeyguardBypassController.onBiometricAuthenticated(
+                            biometricSourceType, isStrongBiometric);
+
+            if (secureLockDevice() && mSecureLockDeviceInteractor.get().isSecureLockDeviceEnabled()
+                    .getValue() && biometricSourceType == BiometricSourceType.FACE
+            ) {
+                mLogger.d("Delaying face authenticated signal until user confirmation on the "
+                        + "Secure Lock Device UI.");
+                return;
+            } else if (unlockAllowed) {
+                mKeyguardViewMediator.userActivity();
+                startWakeAndUnlock(biometricSourceType, isStrongBiometric);
+            } else {
+                mLogger.d("onBiometricUnlocked aborted by bypass controller");
+            }
+        } finally {
+            Trace.endSection();
         }
-        Trace.endSection();
     }
 
     /**

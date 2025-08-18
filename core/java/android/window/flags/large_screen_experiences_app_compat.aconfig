@@ -114,6 +114,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_refactoring_set_appbounds_to_null_when_empty"
+  namespace: "large_screen_experiences_app_compat"
+  description: "When enabled empty appBounds are set as null."
+  bug: "438406944"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "app_compat_refactoring_force_change_for_letterbox_transitions"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether a Change should always sent for Letterbox transition."

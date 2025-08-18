@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.ScrimAlpha
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.phone.ScrimState
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -40,10 +41,12 @@ class LockscreenToDreamingTransitionViewModel
 @Inject
 constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTransition {
     private val transitionAnimation =
-        animationFlow.setup(
-            duration = TO_DREAMING_DURATION,
-            edge = Edge.create(from = LOCKSCREEN, to = DREAMING),
-        )
+        animationFlow
+            .setup(
+                duration = TO_DREAMING_DURATION,
+                edge = Edge.create(from = LOCKSCREEN, to = Scenes.Dream),
+            )
+            .setupWithoutSceneContainer(Edge.create(from = LOCKSCREEN, to = DREAMING))
 
     /** Lockscreen views y-translation */
     fun lockscreenTranslationY(translatePx: Int): Flow<Float> {

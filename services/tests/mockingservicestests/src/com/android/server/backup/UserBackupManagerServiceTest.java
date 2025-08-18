@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
+import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.IActivityManager;
 import android.app.backup.BackupAgent;
@@ -84,7 +85,6 @@ public class UserBackupManagerServiceTest {
     private static final String TEST_PACKAGE = "package1";
     private static final String[] TEST_PACKAGES = new String[] { TEST_PACKAGE };
     private static final String TEST_TRANSPORT = "transport";
-    @UserIdInt private static final int USER_ID = 0;
 
     @Rule
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
@@ -106,6 +106,7 @@ public class UserBackupManagerServiceTest {
     @Mock
     ActivityManagerInternal mActivityManagerInternal;
 
+    @UserIdInt private int mUserId;
     private TestableContext mContext;
     private MockitoSession mSession;
     private TestBackupService mService;
@@ -121,6 +122,8 @@ public class UserBackupManagerServiceTest {
                 .strictness(Strictness.LENIENT)
                 .startMocking();
         MockitoAnnotations.initMocks(this);
+
+        mUserId = ActivityManager.getCurrentUser();
 
         mContext = new TestableContext(ApplicationProvider.getApplicationContext());
         mContext.addMockSystemService(JobScheduler.class, mJobScheduler);
@@ -145,18 +148,18 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void testSetFrameworkSchedulingEnabled_enablesAndSchedulesBackups() throws Exception {
-        Settings.Secure.putInt(mContext.getContentResolver(),
-                Settings.Secure.BACKUP_SCHEDULING_ENABLED, 0);
+        Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                Settings.Secure.BACKUP_SCHEDULING_ENABLED, 0, mUserId);
 
         mService.setFrameworkSchedulingEnabled(true);
 
         assertThat(mService.isFrameworkSchedulingEnabled()).isTrue();
         verify(mJobScheduler).schedule(
                 matchesJobWithId(KeyValueBackupJob.getJobIdForUserId(
-                        USER_ID)));
+                        mUserId)));
         verify(mJobScheduler).schedule(
                 matchesJobWithId(FullBackupJob.getJobIdForUserId(
-                        USER_ID)));
+                        mUserId)));
     }
 
     private static JobInfo matchesJobWithId(int id) {
@@ -165,14 +168,14 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void testSetFrameworkSchedulingEnabled_disablesAndCancelBackups() throws Exception {
-        Settings.Secure.putInt(mContext.getContentResolver(),
-                Settings.Secure.BACKUP_SCHEDULING_ENABLED, 1);
+        Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                Settings.Secure.BACKUP_SCHEDULING_ENABLED, 1, mUserId);
 
         mService.setFrameworkSchedulingEnabled(false);
 
         assertThat(mService.isFrameworkSchedulingEnabled()).isFalse();
-        verify(mJobScheduler).cancel(FullBackupJob.getJobIdForUserId(USER_ID));
-        verify(mJobScheduler).cancel(KeyValueBackupJob.getJobIdForUserId(USER_ID));
+        verify(mJobScheduler).cancel(FullBackupJob.getJobIdForUserId(mUserId));
+        verify(mJobScheduler).cancel(KeyValueBackupJob.getJobIdForUserId(mUserId));
     }
 
     @Test
@@ -275,7 +278,6 @@ public class UserBackupManagerServiceTest {
         when(mTransportConnection.connectOrThrow(any())).thenReturn(mBackupTransport);
         when(mBackupTransport.getBackupManagerMonitor()).thenReturn(mBackupManagerMonitor);
 
-
         List<DataTypeResult> results = Arrays.asList(new DataTypeResult(/* dataType */ "type_1"),
                 new DataTypeResult(/* dataType */ "type_2"));
         mService.reportDelayedRestoreResult(TEST_PACKAGE, results);
@@ -296,8 +298,9 @@ public class UserBackupManagerServiceTest {
         boolean shouldUseNewBackupEligibilityRules = false;
 
         TestBackupService() {
-            super(mContext, mPackageManager, mOperationStorage, mTransportManager, mBackupHandler,
-                    createConstants(mContext), mActivityManager, mActivityManagerInternal);
+            super(mUserId, mContext, mPackageManager, mOperationStorage, mTransportManager,
+                    mBackupHandler, createConstants(mContext), mActivityManager,
+                    mActivityManagerInternal);
         }
 
         private static BackupManagerConstants createConstants(Context context) {

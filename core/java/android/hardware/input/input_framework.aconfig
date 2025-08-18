@@ -93,6 +93,16 @@ flag {
 }
 
 flag {
+    name: "enable_magnify_magnification_key_gesture_dialog"
+    namespace: "accessibility"
+    description: "Enables magnifying the magnification key gesture dialog so that low vision users can see the dialog"
+    bug: "425722546"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_select_to_speak_key_gestures"
     namespace: "accessibility"
     description: "Adds key gestures for select to speak"

@@ -129,6 +129,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
     @GuardedBy("this")
     private List<MediaRoute2Info> mSelectableRoutes = Collections.emptyList();
 
+    @GuardedBy("this")
+    private @RoutingSessionInfo.ReleaseType int mSessionReleaseType =
+            RoutingSessionInfo.RELEASE_UNSUPPORTED;
+
     // A singleton AudioManagerRouteController.
     private static AudioManagerRouteController mInstance;
 
@@ -137,9 +141,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     // Whether this is a TV device.
     private final boolean mIsTv;
-
-    // Max number of devices allow for a BLE broadcast session.
-    private final int mBroadcastingMaxSinks;
 
     // Get the singleton AudioManagerRouteController. Create a new one if it's not available yet.
     public static AudioManagerRouteController getInstance(
@@ -203,8 +204,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mHandler = new Handler(Objects.requireNonNull(looper));
         mStrategyForMedia = Objects.requireNonNull(strategyForMedia);
         mIsTv = mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
-        mBroadcastingMaxSinks =
-                mContext.getResources().getInteger(R.integer.config_audio_sharing_maximum_sinks);
 
         mBuiltInSpeakerSuitabilityStatus =
                 DeviceRouteController.getBuiltInSpeakerSuitabilityStatus(mContext);
@@ -270,10 +269,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
     }
 
     @Override
-    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
-        return currentOutputIsBLEBroadcast()
-                ? RoutingSessionInfo.RELEASE_TYPE_SHARING
-                : RoutingSessionInfo.RELEASE_UNSUPPORTED;
+    public synchronized @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        return mSessionReleaseType;
     }
 
     @Override
@@ -719,6 +716,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
                                     .toList();
                 }
             }
+            mSessionReleaseType =
+                    currentOutputIsBLEBroadcast
+                            ? RoutingSessionInfo.RELEASE_TYPE_SHARING
+                            : RoutingSessionInfo.RELEASE_UNSUPPORTED;
         }
     }
 

@@ -826,4 +826,7 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
 
     /** Requests to remove a Task by the given Task ID, along with the corresponding reason. */
     public abstract boolean removeTask(int taskId, @NonNull String reason);
+
+    /** Returns the current lock task mode state. */
+    public abstract int getLockTaskModeState();
 }

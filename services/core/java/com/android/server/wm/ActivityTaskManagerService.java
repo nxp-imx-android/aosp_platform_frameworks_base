@@ -7988,6 +7988,11 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 return ActivityTaskManagerService.this.removeTask(taskId, reason);
             }
         }
+
+        @Override
+        public int getLockTaskModeState() {
+            return ActivityTaskManagerService.this.getLockTaskModeState();
+        }
     }
 
     /** Cache the return value for {@link #isPip2ExperimentEnabled()} */

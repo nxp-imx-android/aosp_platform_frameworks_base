@@ -28,10 +28,12 @@ import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Breaks down PRIMARY BOUNCER->LOCKSCREEN transition into discrete steps for corresponding views to
@@ -58,12 +60,19 @@ constructor(private val blurConfig: BlurConfig, animationFlow: KeyguardTransitio
         )
 
     fun lockscreenAlpha(viewState: ViewStateAccessor): Flow<Float> {
-        var currentAlpha = 0f
-        return transitionAnimation.sharedFlow(
-            duration = 250.milliseconds,
-            onStart = { currentAlpha = viewState.alpha() },
-            onStep = { MathUtils.lerp(currentAlpha, 1f, it) },
-        )
+        if (SceneContainerFlag.isEnabled) {
+            // Lockscreen -> Bouncer is a scene transition in Flexiglass.
+            // SharedNotificationContainerViewModel#alphaForShadeAndQsExpansion might be relevant
+            // instead.
+            return emptyFlow()
+        } else {
+            var currentAlpha = 0f
+            return transitionAnimation.sharedFlow(
+                duration = 250.milliseconds,
+                onStart = { currentAlpha = viewState.alpha() },
+                onStep = { MathUtils.lerp(currentAlpha, 1f, it) },
+            )
+        }
     }
 
     val deviceEntryBackgroundViewAlpha: Flow<Float> =

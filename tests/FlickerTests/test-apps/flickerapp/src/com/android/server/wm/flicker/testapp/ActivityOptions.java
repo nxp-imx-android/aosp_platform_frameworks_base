@@ -207,6 +207,10 @@ public class ActivityOptions {
         public static final String LABEL = "LaunchNewTaskActivity";
         public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
                 FLICKER_APP_PACKAGE + ".LaunchNewTaskActivity");
+
+        public static final String RES_ID_NEW_MULTIPLE_TASK_BUTTON = "launch_new_task";
+        public static final String RES_ID_NEW_TASK_RECYCLE_IF_POSSIBLE_BUTTON =
+                "launch_new_task_with_recycle_if_possible";
     }
 
     public static class Game {
@@ -219,6 +223,8 @@ public class ActivityOptions {
         public static final String LABEL = "LaunchNewActivity";
         public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
                 FLICKER_APP_PACKAGE + ".LaunchNewActivity");
+
+        public static final String RES_ID_LAUNCH_SECOND_ACTIVITY_BUTTON = "launch_second_activity";
     }
 
     public static class TransferSplashscreenActivity {
