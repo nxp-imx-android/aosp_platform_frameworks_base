@@ -18,7 +18,6 @@ package com.android.settingslib;
 
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.EnforcingAdmin;
-import android.app.admin.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -129,10 +128,8 @@ public class RestrictedLockUtils {
         if (admin != null) {
             // Although EXTRA_ENFORCING_ADMIN contains all info from other extras, we keep them
             // to provide backward compatibility.
-            if (Flags.enforcingAdminExtraEnabled()) {
-                intent.putExtra(DevicePolicyManager.EXTRA_ENFORCING_ADMIN, admin);
-            }
-            if (Flags.enforcingAdminGetComponentNameEnabled() && admin.getComponentName() != null) {
+            intent.putExtra(DevicePolicyManager.EXTRA_ENFORCING_ADMIN, admin);
+            if (admin.getComponentName() != null) {
                 intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, admin.getComponentName());
             }
             intent.putExtra(Intent.EXTRA_USER, admin.getUserHandle());

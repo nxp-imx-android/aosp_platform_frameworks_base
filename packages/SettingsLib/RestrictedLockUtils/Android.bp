@@ -24,10 +24,6 @@ android_library {
     srcs: ["src/**/*.java"],
     resource_dirs: ["res"],
 
-    static_libs: [
-        "device_policy_aconfig_flags_java_export",
-    ],
-
     libs: [
         "androidx.annotation_annotation",
     ],
