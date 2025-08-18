@@ -257,7 +257,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private boolean mDeviceProvisioned = false;
     private ToggleState mAirplaneState = ToggleState.Off;
     private boolean mIsWaitingForEcmExit = false;
-    private boolean mHasTelephony;
+    private boolean mHasTelephonyCalling;
     private boolean mHasVibrator;
     private final boolean mShowSilentToggle;
     private final boolean mIsTv;
@@ -492,7 +492,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         filter.addAction(TelephonyManager.ACTION_EMERGENCY_CALLBACK_MODE_CHANGED);
         mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter);
 
-        mHasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+        mHasTelephonyCalling = packageManager.hasSystemFeature(
+                PackageManager.FEATURE_TELEPHONY_CALLING);
         mIsTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
 
         // get notified of phone state changes
@@ -877,8 +878,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
     @VisibleForTesting
     boolean shouldDisplayEmergency() {
-        // Emergency calling requires a telephony radio.
-        return mHasTelephony;
+        // Emergency calling requires a telephony radio with voice calling capabilities.
+        return mHasTelephonyCalling;
     }
 
     @VisibleForTesting
@@ -2259,7 +2260,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
 
         void onToggle(boolean on) {
-            if (mHasTelephony && TelephonyProperties.in_ecm_mode().orElse(false)) {
+            if (mHasTelephonyCalling && TelephonyProperties.in_ecm_mode().orElse(false)) {
                 mIsWaitingForEcmExit = true;
                 // Launch ECM exit dialog
                 Intent ecmDialogIntent =
@@ -2273,7 +2274,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
         @Override
         protected void changeStateFromPress(boolean buttonOn) {
-            if (!mHasTelephony) return;
+            if (!mHasTelephonyCalling) return;
 
             // In ECM mode airplane state cannot be changed
             if (!TelephonyProperties.in_ecm_mode().orElse(false)) {
@@ -2431,7 +2432,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             new TelephonyCallback.ServiceStateListener() {
         @Override
         public void onServiceStateChanged(ServiceState serviceState) {
-            if (!mHasTelephony) return;
+            if (!mHasTelephonyCalling) return;
             if (mAirplaneModeOn == null) {
                 Log.d(TAG, "Service changed before actions created");
                 return;
@@ -2471,7 +2472,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
     private void onAirplaneModeChanged() {
         // Let the service state callbacks handle the state.
-        if (mHasTelephony || mAirplaneModeOn == null) return;
+        if (mHasTelephonyCalling || mAirplaneModeOn == null) return;
 
         boolean airplaneModeOn = mGlobalSettings.getInt(
                 Settings.Global.AIRPLANE_MODE_ON,
@@ -2497,7 +2498,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
         intent.putExtra("state", on);
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
-        if (!mHasTelephony) {
+        if (!mHasTelephonyCalling) {
             mAirplaneState = on ? ToggleState.On : ToggleState.Off;
         }
     }
