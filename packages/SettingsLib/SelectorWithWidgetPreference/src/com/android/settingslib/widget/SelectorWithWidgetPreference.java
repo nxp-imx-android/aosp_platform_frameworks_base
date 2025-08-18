@@ -268,4 +268,17 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
     public View getExtraWidget() {
         return mExtraWidget;
     }
+
+
+    /**
+     * Sets the maximum number of lines for the title.
+     *
+     * @param titleMaxLines The maximum number of lines for the title.
+     */
+    public void setTitleMaxLines(int titleMaxLines) {
+        if (titleMaxLines != mTitleMaxLines) {
+            mTitleMaxLines = titleMaxLines;
+            notifyChanged();
+        }
+    }
 }
