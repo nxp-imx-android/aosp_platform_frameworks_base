@@ -65,7 +65,6 @@ import android.util.IndentingPrintWriter;
 import android.util.MathUtils;
 import android.util.MutableFloat;
 import android.util.MutableInt;
-import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
@@ -97,6 +96,7 @@ import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.state.DisplayStateController;
+import com.android.server.display.state.DisplayStateController.DisplayState;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.display.utils.SensorUtils;
 import com.android.server.display.whitebalance.DisplayWhiteBalanceController;
@@ -1365,10 +1365,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             mustNotify = !mDisplayReadyLocked;
         }
 
-        final Pair<Integer, Integer> stateAndReason =
-                mDisplayStateController
-                        .updateDisplayState(mPowerRequest, mIsEnabled, mIsInTransition);
-        int state = stateAndReason.first;
+        final DisplayState displayState = mDisplayStateController.updateDisplayState(
+                mPowerRequest, mIsEnabled, mIsInTransition);
+        int state = displayState.state();
 
         // Initialize things the first time the power state is changed.
         if (mustInitialize) {
@@ -1379,7 +1378,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         // The transition may be deferred, so after this point we will use the
         // actual state instead of the desired one.
         animateScreenStateChange(
-                state, /* reason= */ stateAndReason.second,
+                state, displayState.reason(),
                 mDisplayStateController.shouldPerformScreenOffTransition());
         state = mPowerState.getScreenState();
 
@@ -1806,7 +1805,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mTempBrightnessEvent.setPhysicalDisplayId(mUniqueDisplayId);
         mTempBrightnessEvent.setPhysicalDisplayName(mPhysicalDisplayName);
         mTempBrightnessEvent.setDisplayState(state);
-        mTempBrightnessEvent.setDisplayStateReason(stateAndReason.second);
+        mTempBrightnessEvent.setDisplayStateReason(displayState.reason());
         mTempBrightnessEvent.setDisplayPolicy(mPowerRequest.policy);
         mTempBrightnessEvent.setReason(mBrightnessReason);
         mTempBrightnessEvent.setHbmMax(hbmMax);
