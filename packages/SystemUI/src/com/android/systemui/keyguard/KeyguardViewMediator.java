@@ -724,6 +724,10 @@ public class KeyguardViewMediator implements CoreStartable,
             mHandler.postDelayed(() -> dismiss(null /* callback */, null /* message */),
                     mDismissToken, 500);
         }
+        // We need to adjust the status bar in case there are race conditions where the
+        // previous adjust event was sent before the user switch completed.
+        Log.d(TAG, String.format("onUserSwitchComplete, adjustStatusBarLocked  %d", userId));
+        adjustStatusBarLocked();
     }
 
     KeyguardUpdateMonitorCallback mUpdateCallback = new KeyguardUpdateMonitorCallback() {
