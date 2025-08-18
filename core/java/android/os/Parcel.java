@@ -2090,6 +2090,24 @@ public final class Parcel {
     public final void writeString16Array(@Nullable String[] val) {
         if (val != null) {
             int N = val.length;
+            // reduce the number of times we need to growData from writing each String16
+            int size = 4; // int32_t for the size of the array
+            for (int i = 0; i < N; i++) {
+                if (val[i] == null) {
+                    size += 4; // we write a -1 for len for null strings
+                } else {
+                    // + 4 byte int32 for len
+                    // String.length() * 2 because each char is at least one
+                    // UTF-16 code point (2 bytes)
+                    // + 2 for null char
+                    // The string + null is padded for 4 byte alignment
+                    size += ((val[i].length() * 2 + 2 + 3) & ~3) + 4;
+                }
+            }
+            size += dataPosition();
+            // size * 3/2 is what growData uses
+            if (dataCapacity() < size) setDataCapacity(size / 2 * 3);
+
             writeInt(N);
             for (int i=0; i<N; i++) {
                 writeString16(val[i]);
