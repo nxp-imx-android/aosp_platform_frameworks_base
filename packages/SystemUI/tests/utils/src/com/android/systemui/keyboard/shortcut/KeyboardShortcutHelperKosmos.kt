@@ -210,7 +210,7 @@ val Kosmos.shortcutHelperCategoriesInteractor by
         ShortcutHelperCategoriesInteractor(
             context = applicationContext,
             defaultShortcutCategoriesRepository,
-            customCategoriesRepositoryLazy = { customShortcutCategoriesRepository },
+            customCategoriesRepository = customShortcutCategoriesRepository,
             appsShortcutCategoryRepositoryLazy = { appsShortcutCategoryRepository },
             customizationModeInteractor = shortcutHelperCustomizationModeInteractor,
         )

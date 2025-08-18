@@ -62,21 +62,17 @@ fun ShortcutHelperDualPane(
             Box(modifier = Modifier.width(412.dp), contentAlignment = Alignment.Center) {
                 TitleBar(uiState.isCustomizationModeEnabled)
             }
-            if (uiState.isShortcutCustomizerFlagEnabled) {
-                CustomizationButtonsContainer(
-                    modifier = Modifier.weight(1f),
-                    isCustomizing = uiState.isCustomizationModeEnabled,
-                    onToggleCustomizationMode = {
-                        onCustomizationModeToggled(!uiState.isCustomizationModeEnabled)
-                    },
-                    onReset = {
-                        onShortcutCustomizationRequested(ShortcutCustomizationRequestInfo.Reset)
-                    },
-                    shouldShowResetButton = uiState.shouldShowResetButton,
-                )
-            } else {
-                Spacer(modifier = Modifier.weight(1f))
-            }
+            CustomizationButtonsContainer(
+                modifier = Modifier.weight(1f),
+                isCustomizing = uiState.isCustomizationModeEnabled,
+                onToggleCustomizationMode = {
+                    onCustomizationModeToggled(!uiState.isCustomizationModeEnabled)
+                },
+                onReset = {
+                    onShortcutCustomizationRequested(ShortcutCustomizationRequestInfo.Reset)
+                },
+                shouldShowResetButton = uiState.shouldShowResetButton,
+            )
         }
         Spacer(modifier = Modifier.height(12.dp))
         Row(Modifier.fillMaxWidth()) {
