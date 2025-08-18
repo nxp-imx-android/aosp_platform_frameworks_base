@@ -18,6 +18,7 @@ package com.android.systemui.clipboardoverlay;
 
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
+import static com.android.systemui.Flags.FLAG_CLIPBOARD_OVERLAY_MULTIUSER;
 import static com.android.systemui.Flags.FLAG_SHOW_CLIPBOARD_INDICATION;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISS_TAPPED;
@@ -49,7 +50,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PersistableBundle;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.WindowInsets;
 import android.view.textclassifier.TextLinks;
@@ -60,8 +60,11 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.broadcast.BroadcastSender;
+import com.android.systemui.plugins.ActivityStartOptions;
+import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.screenshot.TimeoutHandler;
 import com.android.systemui.settings.FakeDisplayTracker;
+import com.android.systemui.settings.FakeUserTracker;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 
@@ -103,6 +106,8 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     private ClipboardInputEventReceiver mClipboardInputEventReceiver;
     @Mock
     private UiEventLogger mUiEventLogger;
+    @Mock
+    private ActivityStarter mActivityStarter;
     private FakeDisplayTracker mDisplayTracker = new FakeDisplayTracker(mContext);
 
     @Mock
@@ -122,6 +127,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     private ArgumentCaptor<AnimatorListenerAdapter> mAnimatorArgumentCaptor;
 
     private FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
+    private final FakeUserTracker mFakeUserTracker = new FakeUserTracker();
     private Handler mMainHandler = new Handler(Looper.getMainLooper());
 
     private class FakeClipboardIndicationProvider implements ClipboardIndicationProvider {
@@ -195,6 +201,8 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
                 getFakeBroadcastDispatcher(),
                 mBroadcastSender,
                 mTimeoutHandler,
+                mActivityStarter,
+                mFakeUserTracker,
                 mClipboardUtils,
                 mExecutor,
                 mClipboardImageLoader,
@@ -288,6 +296,20 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     }
 
     @Test
+    public void test_viewCallbacks_onShareTapped_legacy() {
+        initController();
+        mOverlayController.setClipData(mSampleClipData, "");
+
+        mCallbacks.onShareButtonTapped();
+        verify(mEndAnimator).addListener(mAnimatorListenerCaptor.capture());
+        mAnimatorListenerCaptor.getValue().onAnimationEnd(mEndAnimator);
+
+        verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_SHARE_TAPPED, 0, "");
+        verify(mClipboardOverlayView, times(1)).getExitAnimation();
+    }
+
+    @Test
+    @EnableFlags(FLAG_CLIPBOARD_OVERLAY_MULTIUSER)
     public void test_viewCallbacks_onShareTapped() {
         initController();
         mOverlayController.setClipData(mSampleClipData, "");
@@ -298,6 +320,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
         verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_SHARE_TAPPED, 0, "");
         verify(mClipboardOverlayView, times(1)).getExitAnimation();
+        verify(mActivityStarter).startActivityDismissingKeyguard(any(ActivityStartOptions.class));
     }
 
     @Test
