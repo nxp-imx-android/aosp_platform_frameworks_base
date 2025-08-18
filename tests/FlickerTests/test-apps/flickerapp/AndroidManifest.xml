@@ -431,6 +431,17 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".ImmersiveActivity"
+                  android:taskAffinity="com.android.server.wm.flicker.testapp.ImmersiveActivity"
+                  android:immersive="true"
+                  android:configChanges="screenSize"
+                  android:label="ImmersiveActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <service
             android:name=".AssistantInteractionSessionService"
             android:exported="true"
