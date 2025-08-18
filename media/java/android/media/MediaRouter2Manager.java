@@ -1172,5 +1172,10 @@ public final class MediaRouter2Manager {
             // Should never happen since MediaRouter2Manager should only be used with
             // MEDIA_CONTENT_CONTROL, which cannot be revoked.
         }
+
+        @Override
+        public void notifySystemSessionOverridesChanged(List<AppId> apps) {
+            // Not supported by MR2Manager.
+        }
     }
 }

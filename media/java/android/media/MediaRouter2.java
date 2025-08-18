@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1078,6 +1079,38 @@ public final class MediaRouter2 {
     }
 
     /**
+     * Registers a {@link SystemSessionOverridesListener}.
+     *
+     * <p>Passing the same listener to this method twice updates the associated {@code executor} but
+     * does not register the same callback twice.
+     *
+     * @param executor the executor to execute the listener on
+     * @param listener the {@link SystemSessionOverridesListener} to register
+     * @throws UnsupportedOperationException if this method is called on a non-proxy instance
+     *     (instances created using {@link #getInstance(Context)})
+     * @hide
+     */
+    public void registerSystemSessionOverridesListener(
+            @NonNull Executor executor, @NonNull SystemSessionOverridesListener listener) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
+        mImpl.registerSystemSessionOverridesListener(executor, listener);
+    }
+
+    /**
+     * Unregisters the given {@link SystemSessionOverridesListener}.
+     *
+     * @param listener the {@link SystemSessionOverridesListener} to unregister
+     * @throws UnsupportedOperationException if this method is called on a non-proxy instance
+     *     (instances created using {@link #getInstance(Context)})
+     * @hide
+     */
+    public void unregisterSystemSessionOverridesListener(
+            @NonNull SystemSessionOverridesListener listener) {
+        mImpl.unregisterSystemSessionOverridesListener(listener);
+    }
+
+    /**
      * Sets an {@link OnGetControllerHintsListener} to send hints when creating a
      * {@link RoutingController}. To send the hints, listener should be set <em>BEFORE</em> calling
      * {@link #transferTo(MediaRoute2Info)}.
@@ -1930,6 +1963,38 @@ public final class MediaRouter2 {
     }
 
     /**
+     * Listens for changes in the list of apps with an overriding system routing session.
+     *
+     * <p>An overriding system routing session is a system {@link RoutingSessionInfo session} that
+     * overrides the global system routing, which applies to all apps (typically describing the
+     * audio framework's routing decisions, for example {@link
+     * android.media.AudioManager#getPreferredDeviceForStrategy}).
+     *
+     * <p>By default, applications' system routing session (queried using {@link
+     * #getSystemController()}) will be the global session. However, specific apps see a different
+     * {@link #getSystemController() system session} when affected by a {@link
+     * MediaRoute2ProviderService#onCreateSystemRoutingSession service-managed} system routing
+     * session that overrides the global session. This listener reports changes to the set of apps
+     * affected by a system session override.
+     *
+     * <p>The list of apps with overriding system sessions is useful, for example, to display a
+     * dedicated volume slider in SysUI when a physical volume rocker switch is pressed.
+     *
+     * <p>A client interested in specific aspects (for example, volume level) of the overriding
+     * system routing session should register a {@link #getInstance(Context, String, UserHandle)
+     * proxy router} for the relevant app and listen for {@link #registerControllerCallback}routing
+     * session changes.
+     *
+     * @see #registerSystemSessionOverridesListener
+     * @hide
+     */
+    public interface SystemSessionOverridesListener {
+
+        /** Called when the set of apps with an overriding system session changes. */
+        void onSystemSessionOverridesChanged(Set<AppId> appIdsWithOverridingSystemSession);
+    }
+
+    /**
      * Represents an active scan request registered in the system.
      *
      * <p>See {@link #requestScan(ScanRequest)} for more information.
@@ -2500,6 +2565,27 @@ public final class MediaRouter2 {
         }
     }
 
+    private record SystemSessionOverridesListenerRecord(
+            Executor mExecutor, SystemSessionOverridesListener mSystemSessionOverridesListener) {
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof SystemSessionOverridesListenerRecord)) {
+                return false;
+            }
+            return mSystemSessionOverridesListener
+                    == ((SystemSessionOverridesListenerRecord) obj).mSystemSessionOverridesListener;
+        }
+
+        @Override
+        public int hashCode() {
+            return mSystemSessionOverridesListener.hashCode();
+        }
+    }
+
     static final class RouteCallbackRecord {
         public final Executor mExecutor;
         public final RouteCallback mRouteCallback;
@@ -2820,6 +2906,25 @@ public final class MediaRouter2 {
          * associated with this router.
          */
         boolean wasTransferredBySelf(RoutingSessionInfo sessionInfo);
+
+        /**
+         * Registers a {@link SystemSessionOverridesListener}.
+         *
+         * <p>Passing the same listener to this method twice updates the associated {@code executor}
+         * but does not register the same callback twice.
+         *
+         * @param executor the executor to execute the listener on
+         * @param listener The listener to register.
+         */
+        void registerSystemSessionOverridesListener(
+                Executor executor, SystemSessionOverridesListener listener);
+
+        /**
+         * Unregisters a {@link SystemSessionOverridesListener}.
+         *
+         * @param listener The listener to unregister.
+         */
+        void unregisterSystemSessionOverridesListener(SystemSessionOverridesListener listener);
     }
 
     /**
@@ -2837,6 +2942,9 @@ public final class MediaRouter2 {
         private final IMediaRouter2Manager.Stub mClient;
         private final CopyOnWriteArrayList<MediaRouter2Manager.TransferRequest>
                 mTransferRequests = new CopyOnWriteArrayList<>();
+
+        private final CopyOnWriteArraySet<SystemSessionOverridesListenerRecord>
+                mSystemSessionOverridesListenerRecords = new CopyOnWriteArraySet<>();
         private final AtomicInteger mScanRequestCount = new AtomicInteger(/* initialValue= */ 0);
 
         // Fields originating from MediaRouter2.
@@ -3416,6 +3524,26 @@ public final class MediaRouter2 {
                     && Objects.equals(mClientPackageName, transferInitiatorPackageName);
         }
 
+        @Override
+        public void registerSystemSessionOverridesListener(
+                Executor executor, SystemSessionOverridesListener listener) {
+            var record = new SystemSessionOverridesListenerRecord(executor, listener);
+            // We remove it first so as to ensure the latest provided executor for a given listener
+            // is used.
+            mSystemSessionOverridesListenerRecords.remove(record);
+            mSystemSessionOverridesListenerRecords.add(record);
+        }
+
+        @Override
+        public void unregisterSystemSessionOverridesListener(
+                SystemSessionOverridesListener listener) {
+            // We use a placeholder executor to keep the field non-nullable, but it will be ignored
+            // in equality checks.
+            mSystemSessionOverridesListenerRecords.remove(
+                    new SystemSessionOverridesListenerRecord(
+                            /* executor= */ Runnable::run, listener));
+        }
+
         /**
          * Retrieves the system session info for the given package.
          *
@@ -3732,6 +3860,16 @@ public final class MediaRouter2 {
             mTransferCallbackRecords.clear();
         }
 
+        private void notifySystemSessionOverridesChangedOnHandler(List<AppId> appsWithOverrides) {
+            var appsWithOverridesAsSet = Set.copyOf(appsWithOverrides);
+            for (var record : mSystemSessionOverridesListenerRecords) {
+                record.mExecutor.execute(
+                        () ->
+                                record.mSystemSessionOverridesListener
+                                        .onSystemSessionOverridesChanged(appsWithOverridesAsSet));
+            }
+        }
+
         private class Client extends IMediaRouter2Manager.Stub {
 
             @Override
@@ -3829,6 +3967,15 @@ public final class MediaRouter2 {
                         obtainMessage(
                                 ProxyMediaRouter2Impl::onInvalidateInstanceOnHandler,
                                 ProxyMediaRouter2Impl.this));
+            }
+
+            @Override
+            public void notifySystemSessionOverridesChanged(List<AppId> appsWithOverrides) {
+                mHandler.sendMessage(
+                        obtainMessage(
+                                ProxyMediaRouter2Impl::notifySystemSessionOverridesChangedOnHandler,
+                                ProxyMediaRouter2Impl.this,
+                                appsWithOverrides));
             }
         }
     }
@@ -4192,6 +4339,20 @@ public final class MediaRouter2 {
             String transferInitiatorPackageName = sessionInfo.getTransferInitiatorPackageName();
             return Objects.equals(Process.myUserHandle(), transferInitiatorUserHandle)
                     && Objects.equals(mContext.getPackageName(), transferInitiatorPackageName);
+        }
+
+        @Override
+        public void registerSystemSessionOverridesListener(
+                Executor executor, SystemSessionOverridesListener listener) {
+            throw new UnsupportedOperationException(
+                    "registerSystemSessionOverridesListener is only supported on proxy routers.");
+        }
+
+        @Override
+        public void unregisterSystemSessionOverridesListener(
+                SystemSessionOverridesListener listener) {
+            throw new UnsupportedOperationException(
+                    "unregisterSystemSessionOverridesListener is only supported on proxy routers.");
         }
 
         @GuardedBy("mLock")
