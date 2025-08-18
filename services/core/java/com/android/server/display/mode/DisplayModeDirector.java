@@ -1408,6 +1408,7 @@ public class DisplayModeDirector {
         private int mExternalDisplayPeakHeight;
         private int mExternalDisplayPeakRefreshRate;
         private final boolean mRefreshRateSynchronizationEnabled;
+        private int mDefaultDisplayType = Display.TYPE_INTERNAL;
 
         DisplayObserver(Context context, Handler handler, VotesStorage votesStorage,
                 Injector injector) {
@@ -1480,6 +1481,9 @@ public class DisplayModeDirector {
             if (displayInfo == null) {
                 return;
             }
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                mDefaultDisplayType = displayInfo.type;
+            }
             updateDisplayDeviceConfig(displayId);
             registerExternalDisplay(displayInfo);
             updateDisplayModes(displayId, displayInfo);
@@ -1509,6 +1513,14 @@ public class DisplayModeDirector {
         public void onDisplayChanged(int displayId) {
             DisplayInfo displayInfo = getDisplayInfo(displayId);
             if (displayInfo == null) {
+                return;
+            }
+            if (displayId == Display.DEFAULT_DISPLAY && displayInfo.type != mDefaultDisplayType) {
+                // If the default display's type changes (e.g. from internal to external),
+                // treat it as a new display being added to ensure all configurations are
+                // re-initialized correctly for the new display type.
+                onDisplayRemoved(displayId);
+                onDisplayAdded(displayId);
                 return;
             }
             updateDisplayDeviceConfig(displayId);

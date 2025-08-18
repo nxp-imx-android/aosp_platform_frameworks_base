@@ -16,7 +16,6 @@
 
 package com.android.server.display.mode;
 
-
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.Mode.INVALID_MODE_ID;
 
@@ -70,41 +69,44 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(JUnitParamsRunner.class)
 public class DisplayObserverTest {
-    @Rule
-    public FakeSettingsProviderRule mSettingsProviderRule = FakeSettingsProvider.rule();
+    @Rule public FakeSettingsProviderRule mSettingsProviderRule = FakeSettingsProvider.rule();
 
     private static final int EXTERNAL_DISPLAY = 1;
     private static final int MAX_WIDTH = 1920;
     private static final int MAX_HEIGHT = 1080;
     private static final int MAX_REFRESH_RATE = 60;
 
-    private final Display.Mode[] mInternalDisplayModes = new Display.Mode[] {
-            new Display.Mode(/*modeId=*/ 0, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    (float) MAX_REFRESH_RATE / 2),
-            new Display.Mode(/*modeId=*/ 1, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    MAX_REFRESH_RATE),
-            new Display.Mode(/*modeId=*/ 2, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    MAX_REFRESH_RATE * 2),
-            new Display.Mode(/*modeId=*/ 3, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE * 2),
-            new Display.Mode(/*modeId=*/ 4, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE),
-            new Display.Mode(/*modeId=*/ 5, MAX_WIDTH * 2, MAX_HEIGHT * 2,
-                    MAX_REFRESH_RATE),
-            new Display.Mode(/*modeId=*/ 6, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    MAX_REFRESH_RATE * 3),
-    };
+    private final Display.Mode[] mInternalDisplayModes =
+            new Display.Mode[] {
+                new Display.Mode(
+                        /* modeId= */ 0,
+                        MAX_WIDTH / 2,
+                        MAX_HEIGHT / 2,
+                        (float) MAX_REFRESH_RATE / 2),
+                new Display.Mode(/* modeId= */ 1, MAX_WIDTH / 2, MAX_HEIGHT / 2, MAX_REFRESH_RATE),
+                new Display.Mode(
+                        /* modeId= */ 2, MAX_WIDTH / 2, MAX_HEIGHT / 2, MAX_REFRESH_RATE * 2),
+                new Display.Mode(/* modeId= */ 3, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE * 2),
+                new Display.Mode(/* modeId= */ 4, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE),
+                new Display.Mode(/* modeId= */ 5, MAX_WIDTH * 2, MAX_HEIGHT * 2, MAX_REFRESH_RATE),
+                new Display.Mode(
+                        /* modeId= */ 6, MAX_WIDTH / 2, MAX_HEIGHT / 2, MAX_REFRESH_RATE * 3),
+            };
 
-    private final Display.Mode[] mExternalDisplayModes = new Display.Mode[] {
-            new Display.Mode(/*modeId=*/ 0, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    (float) MAX_REFRESH_RATE / 2),
-            new Display.Mode(/*modeId=*/ 1, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    MAX_REFRESH_RATE),
-            new Display.Mode(/*modeId=*/ 2, MAX_WIDTH / 2, MAX_HEIGHT / 2,
-                    MAX_REFRESH_RATE * 2),
-            new Display.Mode(/*modeId=*/ 3, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE * 2),
-            new Display.Mode(/*modeId=*/ 4, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE),
-            new Display.Mode(/*modeId=*/ 5, MAX_WIDTH * 2, MAX_HEIGHT * 2,
-                    MAX_REFRESH_RATE),
-    };
+    private final Display.Mode[] mExternalDisplayModes =
+            new Display.Mode[] {
+                new Display.Mode(
+                        /* modeId= */ 0,
+                        MAX_WIDTH / 2,
+                        MAX_HEIGHT / 2,
+                        (float) MAX_REFRESH_RATE / 2),
+                new Display.Mode(/* modeId= */ 1, MAX_WIDTH / 2, MAX_HEIGHT / 2, MAX_REFRESH_RATE),
+                new Display.Mode(
+                        /* modeId= */ 2, MAX_WIDTH / 2, MAX_HEIGHT / 2, MAX_REFRESH_RATE * 2),
+                new Display.Mode(/* modeId= */ 3, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE * 2),
+                new Display.Mode(/* modeId= */ 4, MAX_WIDTH, MAX_HEIGHT, MAX_REFRESH_RATE),
+                new Display.Mode(/* modeId= */ 5, MAX_WIDTH * 2, MAX_HEIGHT * 2, MAX_REFRESH_RATE),
+            };
 
     private DisplayModeDirector mDmd;
     private Context mContext;
@@ -112,10 +114,8 @@ public class DisplayObserverTest {
     private Handler mHandler;
     private DisplayManager.DisplayListener mObserver;
     private Resources mResources;
-    @Mock
-    private DisplayManagerFlags mDisplayManagerFlags;
-    @Mock
-    private DisplayModeDirector.DisplayDeviceConfigProvider mDisplayDeviceConfigProvider;
+    @Mock private DisplayManagerFlags mDisplayManagerFlags;
+    @Mock private DisplayModeDirector.DisplayDeviceConfigProvider mDisplayDeviceConfigProvider;
     private int mExternalDisplayUserPreferredModeId = INVALID_MODE_ID;
     private int mInternalDisplayUserPreferredModeId = INVALID_MODE_ID;
     private Display mDefaultDisplay;
@@ -131,26 +131,23 @@ public class DisplayObserverTest {
         when(mContext.getResources()).thenReturn(mResources);
         MockContentResolver resolver = mSettingsProviderRule.mockContentResolver(mContext);
         when(mContext.getContentResolver()).thenReturn(resolver);
-        when(mResources.getInteger(R.integer.config_externalDisplayPeakRefreshRate))
-                .thenReturn(0);
-        when(mResources.getInteger(R.integer.config_externalDisplayPeakWidth))
-                .thenReturn(0);
-        when(mResources.getInteger(R.integer.config_externalDisplayPeakHeight))
-                .thenReturn(0);
+        when(mResources.getInteger(R.integer.config_externalDisplayPeakRefreshRate)).thenReturn(0);
+        when(mResources.getInteger(R.integer.config_externalDisplayPeakWidth)).thenReturn(0);
+        when(mResources.getInteger(R.integer.config_externalDisplayPeakHeight)).thenReturn(0);
         when(mResources.getBoolean(R.bool.config_refreshRateSynchronizationEnabled))
                 .thenReturn(false);
 
         // Necessary configs to initialize DisplayModeDirector
         when(mResources.getIntArray(R.array.config_brightnessThresholdsOfPeakRefreshRate))
-                .thenReturn(new int[]{5});
+                .thenReturn(new int[] {5});
         when(mResources.getIntArray(R.array.config_ambientThresholdsOfPeakRefreshRate))
-                .thenReturn(new int[]{10});
+                .thenReturn(new int[] {10});
         when(mResources.getIntArray(
-                R.array.config_highDisplayBrightnessThresholdsOfFixedRefreshRate))
-                .thenReturn(new int[]{250});
+                        R.array.config_highDisplayBrightnessThresholdsOfFixedRefreshRate))
+                .thenReturn(new int[] {250});
         when(mResources.getIntArray(
-                R.array.config_highAmbientBrightnessThresholdsOfFixedRefreshRate))
-                .thenReturn(new int[]{7000});
+                        R.array.config_highAmbientBrightnessThresholdsOfFixedRefreshRate))
+                .thenReturn(new int[] {7000});
     }
 
     /** Vote for user preferred mode */
@@ -158,9 +155,8 @@ public class DisplayObserverTest {
     public void testDefaultDisplay_voteUserPreferredMode() {
         var preferredMode = mInternalDisplayModes[5];
         mInternalDisplayUserPreferredModeId = preferredMode.getModeId();
-        var expectedVote = Vote.forSize(
-                        preferredMode.getPhysicalWidth(),
-                        preferredMode.getPhysicalHeight());
+        var expectedVote =
+                Vote.forSize(preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
         init();
         assertThat(getVote(DEFAULT_DISPLAY, PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE))
                 .isEqualTo(null);
@@ -181,9 +177,8 @@ public class DisplayObserverTest {
 
         preferredMode = mInternalDisplayModes[4];
         mInternalDisplayUserPreferredModeId = preferredMode.getModeId();
-        expectedVote = Vote.forSize(
-                        preferredMode.getPhysicalWidth(),
-                        preferredMode.getPhysicalHeight());
+        expectedVote =
+                Vote.forSize(preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
         mObserver.onDisplayChanged(EXTERNAL_DISPLAY);
         mObserver.onDisplayChanged(DEFAULT_DISPLAY);
         assertThat(getVote(DEFAULT_DISPLAY, PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE))
@@ -199,13 +194,16 @@ public class DisplayObserverTest {
                 .isEqualTo(null);
     }
 
-    /** Vote for user preferred mode with refresh rate,
-     * config_refreshRateSynchronizationEnabled must be disabled */
+    /**
+     * Vote for user preferred mode with refresh rate, config_refreshRateSynchronizationEnabled must
+     * be disabled
+     */
     @Test
     public void testExternalDisplay_voteUserPreferredMode_withRefreshRate() {
         var preferredMode = mExternalDisplayModes[5];
         mExternalDisplayUserPreferredModeId = preferredMode.getModeId();
-        var expectedVote = Vote.forSizeAndPhysicalRefreshRatesRange(
+        var expectedVote =
+                Vote.forSizeAndPhysicalRefreshRatesRange(
                         preferredMode.getPhysicalWidth(),
                         preferredMode.getPhysicalHeight(),
                         preferredMode.getPhysicalWidth(),
@@ -230,7 +228,8 @@ public class DisplayObserverTest {
 
         preferredMode = mExternalDisplayModes[4];
         mExternalDisplayUserPreferredModeId = preferredMode.getModeId();
-        expectedVote = Vote.forSizeAndPhysicalRefreshRatesRange(
+        expectedVote =
+                Vote.forSizeAndPhysicalRefreshRatesRange(
                         preferredMode.getPhysicalWidth(),
                         preferredMode.getPhysicalHeight(),
                         preferredMode.getPhysicalWidth(),
@@ -266,8 +265,8 @@ public class DisplayObserverTest {
 
         var preferredMode = mExternalDisplayModes[5];
         mExternalDisplayUserPreferredModeId = preferredMode.getModeId();
-        var expectedResolutionVote = Vote.forSize(preferredMode.getPhysicalWidth(),
-                preferredMode.getPhysicalHeight());
+        var expectedResolutionVote =
+                Vote.forSize(preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
         init();
         assertThat(getVote(EXTERNAL_DISPLAY, PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE))
                 .isEqualTo(null);
@@ -296,8 +295,8 @@ public class DisplayObserverTest {
                 .thenReturn(MAX_HEIGHT);
         var preferredMode = mInternalDisplayModes[5];
         mInternalDisplayUserPreferredModeId = preferredMode.getModeId();
-        var expectedResolutionVote = Vote.forSize(preferredMode.getPhysicalWidth(),
-                        preferredMode.getPhysicalHeight());
+        var expectedResolutionVote =
+                Vote.forSize(preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
         init();
         assertThat(getVote(DEFAULT_DISPLAY, PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE))
                 .isEqualTo(null);
@@ -338,10 +337,15 @@ public class DisplayObserverTest {
         assertThat(getVote(EXTERNAL_DISPLAY, PRIORITY_LIMIT_MODE)).isEqualTo(null);
         mObserver.onDisplayAdded(EXTERNAL_DISPLAY);
         assertThat(getVote(DEFAULT_DISPLAY, PRIORITY_LIMIT_MODE)).isEqualTo(null);
-        assertThat(getVote(EXTERNAL_DISPLAY, PRIORITY_LIMIT_MODE)).isEqualTo(
-                Vote.forSizeAndPhysicalRefreshRatesRange(0, 0,
-                        MAX_WIDTH, MAX_HEIGHT,
-                        /*minPhysicalRefreshRate=*/ 0, MAX_REFRESH_RATE));
+        assertThat(getVote(EXTERNAL_DISPLAY, PRIORITY_LIMIT_MODE))
+                .isEqualTo(
+                        Vote.forSizeAndPhysicalRefreshRatesRange(
+                                0,
+                                0,
+                                MAX_WIDTH,
+                                MAX_HEIGHT,
+                                /* minPhysicalRefreshRate= */ 0,
+                                MAX_REFRESH_RATE));
         mObserver.onDisplayRemoved(EXTERNAL_DISPLAY);
         assertThat(getVote(DEFAULT_DISPLAY, PRIORITY_LIMIT_MODE)).isEqualTo(null);
         assertThat(getVote(EXTERNAL_DISPLAY, PRIORITY_LIMIT_MODE)).isEqualTo(null);
@@ -369,101 +373,159 @@ public class DisplayObserverTest {
         when(mResources.getBoolean(R.bool.config_refreshRateSynchronizationEnabled))
                 .thenReturn(true);
         init();
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+        assertNoRefreshRateSynchronizationVote();
         mObserver.onDisplayAdded(EXTERNAL_DISPLAY);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(
-                Vote.forPhysicalRefreshRates(
-                        MAX_REFRESH_RATE - SYNCHRONIZED_REFRESH_RATE_TOLERANCE,
-                        MAX_REFRESH_RATE + SYNCHRONIZED_REFRESH_RATE_TOLERANCE));
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(
-                Vote.forRenderFrameRates(
-                        MAX_REFRESH_RATE - SYNCHRONIZED_REFRESH_RATE_TOLERANCE,
-                        MAX_REFRESH_RATE + SYNCHRONIZED_REFRESH_RATE_TOLERANCE));
+        assertRefreshRateSynchronizationVote();
 
         // Remove external display and check that sync vote is no longer present.
         mObserver.onDisplayRemoved(EXTERNAL_DISPLAY);
-
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+        assertNoRefreshRateSynchronizationVote();
     }
 
     /** External display added, disabled feature refresh rates synchronization */
     @Test
     public void testExternalDisplayAdded_disabledFeatureRefreshRatesSynchronization() {
         init();
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+        assertNoRefreshRateSynchronizationVote();
         mObserver.onDisplayAdded(EXTERNAL_DISPLAY);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+        assertNoRefreshRateSynchronizationVote();
     }
 
-    /** External display not applied refresh rates synchronization, because
-     * config_refreshRateSynchronizationEnabled is false. */
+    /**
+     * External display not applied refresh rates synchronization, because
+     * config_refreshRateSynchronizationEnabled is false.
+     */
     @Test
     public void testExternalDisplay_notAppliedRefreshRatesSynchronization() {
         init();
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+        assertNoRefreshRateSynchronizationVote();
         mObserver.onDisplayAdded(EXTERNAL_DISPLAY);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
-        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+        assertNoRefreshRateSynchronizationVote();
+    }
+
+    @Test
+    public void testDefaultInternalDisplayTransferredToExternal_applyRefreshRatesSynchronization() {
+        when(mResources.getBoolean(R.bool.config_refreshRateSynchronizationEnabled))
+                .thenReturn(true);
+        init();
+        mObserver.onDisplayAdded(DEFAULT_DISPLAY);
+        assertNoRefreshRateSynchronizationVote();
+
+        mObserver.onDisplayAdded(EXTERNAL_DISPLAY);
+        assertRefreshRateSynchronizationVote();
+
+        // Simulate the case where the default display is transferred to an external display.
+        doAnswer(
+                        c -> {
+                            DisplayInfo info = c.getArgument(1);
+                            info.type = Display.TYPE_EXTERNAL;
+                            info.displayId = DEFAULT_DISPLAY;
+                            info.defaultModeId = 0;
+                            info.supportedModes = mExternalDisplayModes;
+                            info.userPreferredModeId = mExternalDisplayUserPreferredModeId;
+                            return true;
+                        })
+                .when(mInjector)
+                .getDisplayInfo(eq(DEFAULT_DISPLAY), /* displayInfo= */ any());
+
+        // Trigger the case where the default display is transferred to an external display.
+        mObserver.onDisplayChanged(DEFAULT_DISPLAY);
+        mObserver.onDisplayRemoved(EXTERNAL_DISPLAY);
+        assertRefreshRateSynchronizationVote();
+
+        // Default display is transferred back to the internal display.
+        doAnswer(
+                        c -> {
+                            DisplayInfo info = c.getArgument(1);
+                            // Simulate the case where the default display is transferred to an
+                            // external display.
+                            info.type = Display.TYPE_INTERNAL;
+                            info.displayId = DEFAULT_DISPLAY;
+                            info.defaultModeId = 0;
+                            info.supportedModes = mInternalDisplayModes;
+                            info.userPreferredModeId = mInternalDisplayUserPreferredModeId;
+                            return true;
+                        })
+                .when(mInjector)
+                .getDisplayInfo(eq(DEFAULT_DISPLAY), /* displayInfo= */ any());
+
+        // Trigger the case where the default display is transferred to an external display.
+        mObserver.onDisplayChanged(DEFAULT_DISPLAY);
+        mObserver.onDisplayAdded(EXTERNAL_DISPLAY);
+        assertRefreshRateSynchronizationVote();
+
+        // Remove external display and check that sync vote is no longer present.
+        mObserver.onDisplayRemoved(EXTERNAL_DISPLAY);
+        assertNoRefreshRateSynchronizationVote();
     }
 
     private void init() {
         mInjector = mock(DisplayModeDirector.Injector.class);
-        doAnswer(invocation -> {
-            assertThat(mObserver).isNull();
-            mObserver = invocation.getArgument(0);
-            return null;
-        }).when(mInjector).registerDisplayListener(
-                any(DisplayModeDirector.DisplayObserver.class), any());
+        doAnswer(
+                        invocation -> {
+                            assertThat(mObserver).isNull();
+                            mObserver = invocation.getArgument(0);
+                            return null;
+                        })
+                .when(mInjector)
+                .registerDisplayListener(any(DisplayModeDirector.DisplayObserver.class), any());
 
-        doAnswer(c -> {
-            DisplayInfo info = c.getArgument(1);
-            info.type = Display.TYPE_INTERNAL;
-            info.displayId = DEFAULT_DISPLAY;
-            info.defaultModeId = 0;
-            info.supportedModes = mInternalDisplayModes;
-            info.userPreferredModeId = mInternalDisplayUserPreferredModeId;
-            return true;
-        }).when(mInjector).getDisplayInfo(eq(DEFAULT_DISPLAY), /*displayInfo=*/ any());
+        doAnswer(
+                        c -> {
+                            DisplayInfo info = c.getArgument(1);
+                            info.type = Display.TYPE_INTERNAL;
+                            info.displayId = DEFAULT_DISPLAY;
+                            info.defaultModeId = 0;
+                            info.supportedModes = mInternalDisplayModes;
+                            info.userPreferredModeId = mInternalDisplayUserPreferredModeId;
+                            return true;
+                        })
+                .when(mInjector)
+                .getDisplayInfo(eq(DEFAULT_DISPLAY), /* displayInfo= */ any());
 
-        doAnswer(c -> {
-            DisplayInfo info = c.getArgument(1);
-            info.type = Display.TYPE_EXTERNAL;
-            info.displayId = EXTERNAL_DISPLAY;
-            info.defaultModeId = 0;
-            info.supportedModes = mExternalDisplayModes;
-            info.userPreferredModeId = mExternalDisplayUserPreferredModeId;
-            return true;
-        }).when(mInjector).getDisplayInfo(eq(EXTERNAL_DISPLAY), /*displayInfo=*/ any());
+        doAnswer(
+                        c -> {
+                            DisplayInfo info = c.getArgument(1);
+                            info.type = Display.TYPE_EXTERNAL;
+                            info.displayId = EXTERNAL_DISPLAY;
+                            info.defaultModeId = 0;
+                            info.supportedModes = mExternalDisplayModes;
+                            info.userPreferredModeId = mExternalDisplayUserPreferredModeId;
+                            return true;
+                        })
+                .when(mInjector)
+                .getDisplayInfo(eq(EXTERNAL_DISPLAY), /* displayInfo= */ any());
 
-        doAnswer(c -> mock(SensorManagerInternal.class))
-                .when(mInjector).getSensorManagerInternal();
+        doAnswer(c -> mock(SensorManagerInternal.class)).when(mInjector).getSensorManagerInternal();
         doAnswer(c -> mock(DeviceConfigInterface.class)).when(mInjector).getDeviceConfig();
         doAnswer(c -> mock(DisplayManagerInternal.class))
-                .when(mInjector).getDisplayManagerInternal();
-
+                .when(mInjector)
+                .getDisplayManagerInternal();
 
         mDefaultDisplay = mock(Display.class);
         when(mDefaultDisplay.getDisplayId()).thenReturn(DEFAULT_DISPLAY);
         doAnswer(c -> mInjector.getDisplayInfo(DEFAULT_DISPLAY, c.getArgument(0)))
-                .when(mDefaultDisplay).getDisplayInfo(/*displayInfo=*/ any());
+                .when(mDefaultDisplay)
+                .getDisplayInfo(/* displayInfo= */ any());
 
         mExternalDisplay = mock(Display.class);
         when(mExternalDisplay.getDisplayId()).thenReturn(EXTERNAL_DISPLAY);
         doAnswer(c -> mInjector.getDisplayInfo(EXTERNAL_DISPLAY, c.getArgument(0)))
-                .when(mExternalDisplay).getDisplayInfo(/*displayInfo=*/ any());
+                .when(mExternalDisplay)
+                .getDisplayInfo(/* displayInfo= */ any());
 
         when(mInjector.getDisplays()).thenReturn(new Display[] {mDefaultDisplay, mExternalDisplay});
 
         when(mInjector.getModeChangeObserver(any(), any()))
                 .thenReturn(mock(ModeChangeObserver.class));
 
-        mDmd = new DisplayModeDirector(mContext, mHandler, mInjector,
-                mDisplayManagerFlags, mDisplayDeviceConfigProvider);
+        mDmd =
+                new DisplayModeDirector(
+                        mContext,
+                        mHandler,
+                        mInjector,
+                        mDisplayManagerFlags,
+                        mDisplayDeviceConfigProvider);
         mDmd.start(null);
         assertThat(mObserver).isNotNull();
     }
@@ -471,5 +533,23 @@ public class DisplayObserverTest {
     @Nullable
     private Vote getVote(final int displayId, final int priority) {
         return mDmd.getVote(displayId, priority);
+    }
+
+    private void assertNoRefreshRateSynchronizationVote() {
+        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE)).isEqualTo(null);
+        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE)).isEqualTo(null);
+    }
+
+    private void assertRefreshRateSynchronizationVote() {
+        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_REFRESH_RATE))
+                .isEqualTo(
+                        Vote.forPhysicalRefreshRates(
+                                MAX_REFRESH_RATE - SYNCHRONIZED_REFRESH_RATE_TOLERANCE,
+                                MAX_REFRESH_RATE + SYNCHRONIZED_REFRESH_RATE_TOLERANCE));
+        assertThat(getVote(GLOBAL_ID, PRIORITY_SYNCHRONIZED_RENDER_FRAME_RATE))
+                .isEqualTo(
+                        Vote.forRenderFrameRates(
+                                MAX_REFRESH_RATE - SYNCHRONIZED_REFRESH_RATE_TOLERANCE,
+                                MAX_REFRESH_RATE + SYNCHRONIZED_REFRESH_RATE_TOLERANCE));
     }
 }
