@@ -559,10 +559,8 @@ constructor(
                                 shadeInteractor.qsExpansion,
                                 bouncerInteractor.bouncerExpansion,
                             ) { shadeExpansion, qsExpansion, bouncerExpansion ->
-                                if (bouncerExpansion == 1f) {
-                                    emit(0f)
-                                } else if (bouncerExpansion > 0f) {
-                                    emit(1 - bouncerExpansion)
+                                if (bouncerExpansion > 0f) {
+                                    emit(alphaForBouncerExpansion(bouncerExpansion))
                                 } else if (qsExpansion == 1f) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
@@ -576,10 +574,8 @@ constructor(
                             combineTransform(isAnyExpanded, bouncerInteractor.bouncerExpansion) {
                                 isAnyExpanded,
                                 bouncerExpansion ->
-                                if (bouncerExpansion == 1f) {
-                                    emit(0f)
-                                } else if (bouncerExpansion > 0f) {
-                                    emit(1 - bouncerExpansion)
+                                if (bouncerExpansion > 0f) {
+                                    emit(alphaForBouncerExpansion(bouncerExpansion))
                                 } else if (isAnyExpanded) {
                                     emit(1f)
                                 }
@@ -596,7 +592,7 @@ constructor(
                                 qsExpansion,
                                 bouncerExpansion ->
                                 if (bouncerExpansion > 0f) {
-                                    emit(1 - bouncerExpansion)
+                                    emit(alphaForBouncerExpansion(bouncerExpansion))
                                 } else if (isHeadsUpOrAnimatingAway) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)
@@ -652,6 +648,13 @@ constructor(
             }
             .onStart { emit(1f) }
             .dumpWhileCollecting("alphaForShadeAndQsExpansion")
+
+    private fun alphaForBouncerExpansion(bouncerExpansion: Float): Float {
+        // The shade content fades out faster than the bouncer comes in.
+        // See lockscreenToOverlayTransition for the definition of how
+        // the rest of the content behaves during the transition.
+        return maxOf(0f, 1f - bouncerExpansion * 5f)
+    }
 
     val panelAlpha = keyguardInteractor.panelAlpha
 
