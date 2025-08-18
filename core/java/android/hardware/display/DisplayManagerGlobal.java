@@ -556,7 +556,7 @@ public final class DisplayManagerGlobal {
     private int findDisplayListenerLocked(DisplayListener listener) {
         final int numListeners = mDisplayListeners.size();
         for (int i = 0; i < numListeners; i++) {
-            if (mDisplayListeners.get(i).getListener() == listener) {
+            if (mDisplayListeners.get(i).mListener == listener) {
                 return i;
             }
         }
@@ -573,7 +573,7 @@ public final class DisplayManagerGlobal {
                     || mShouldImplicitlyRegisterRrChanges) {
                 displayListenerDelegate.implicitlyRegisterForRRChanges();
             }
-            mask |= displayListenerDelegate.getInternalEventFlagsMask();
+            mask |= displayListenerDelegate.internalEventFlagsMask;
         }
 
         if (mDispatchNativeCallbacks) {
@@ -1575,8 +1575,9 @@ public final class DisplayManagerGlobal {
 
     @VisibleForTesting
     public static final class DisplayListenerDelegate {
+        @VisibleForTesting public volatile long internalEventFlagsMask;
+
         private final DisplayListener mListener;
-        private volatile long mInternalEventFlagsMask;
 
         // Indicates if the client explicitly supplied the display events to be subscribed to.
         private final boolean mIsEventFilterExplicit;
@@ -1591,17 +1592,9 @@ public final class DisplayManagerGlobal {
                 boolean isEventFilterExplicit) {
             mExecutor = executor;
             mListener = listener;
-            mInternalEventFlagsMask = internalEventFlag;
+            internalEventFlagsMask = internalEventFlag;
             mPackageName = packageName;
             mIsEventFilterExplicit = isEventFilterExplicit;
-        }
-
-        public DisplayListener getListener() {
-            return mListener;
-        }
-
-        public @InternalEventFlag long getInternalEventFlagsMask() {
-            return mInternalEventFlagsMask;
         }
 
         void sendDisplayEvent(int displayId, @DisplayEvent int event, @Nullable DisplayInfo info,
@@ -1628,16 +1621,16 @@ public final class DisplayManagerGlobal {
         }
 
         void setEventsMask(@InternalEventFlag long newInternalEventFlagsMask) {
-            this.mInternalEventFlagsMask = newInternalEventFlagsMask;
+            this.internalEventFlagsMask = newInternalEventFlagsMask;
         }
 
         private void implicitlyRegisterForRRChanges() {
             // For backward compatibility, if the user didn't supply the explicit events while
             // subscribing, register them to refresh rate change events if they subscribed to
             // display changed events
-            if ((mInternalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED) != 0
+            if ((internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED) != 0
                     && !mIsEventFilterExplicit) {
-                setEventsMask(mInternalEventFlagsMask
+                setEventsMask(internalEventFlagsMask
                         | INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE);
             }
         }
@@ -1647,7 +1640,7 @@ public final class DisplayManagerGlobal {
             if (extraLogging()) {
                 Slog.i(TAG, "DLD(" + eventToString(event)
                         + ", display=" + displayId
-                        + ", mEventsMask=" + Long.toBinaryString(mInternalEventFlagsMask)
+                        + ", mEventsMask=" + Long.toBinaryString(internalEventFlagsMask)
                         + ", mPackageName=" + mPackageName
                         + ", displayInfo=" + info
                         + ", listener=" + mListener.getClass() + ")");
@@ -1661,12 +1654,12 @@ public final class DisplayManagerGlobal {
             }
             switch (event) {
                 case EVENT_DISPLAY_ADDED:
-                    if ((mInternalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_ADDED) != 0) {
+                    if ((internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_ADDED) != 0) {
                         mListener.onDisplayAdded(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_BASIC_CHANGED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED) != 0) {
                         if (info != null && (forceUpdate || !info.equals(mDisplayInfo))) {
                             if (extraLogging()) {
@@ -1679,49 +1672,49 @@ public final class DisplayManagerGlobal {
                     }
                     break;
                 case EVENT_DISPLAY_BRIGHTNESS_CHANGED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED) != 0) {
                         mListener.onDisplayChanged(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_REMOVED:
-                    if ((mInternalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_REMOVED)
+                    if ((internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_REMOVED)
                             != 0) {
                         mListener.onDisplayRemoved(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_HDR_SDR_RATIO_CHANGED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED) != 0) {
                         mListener.onDisplayChanged(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_CONNECTED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) != 0) {
                         mListener.onDisplayConnected(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_DISCONNECTED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) != 0) {
                         mListener.onDisplayDisconnected(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_REFRESH_RATE_CHANGED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE) != 0) {
                         mListener.onDisplayChanged(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_STATE_CHANGED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_STATE) != 0) {
                         mListener.onDisplayChanged(displayId);
                     }
                     break;
                 case EVENT_DISPLAY_COMMITTED_STATE_CHANGED:
-                    if ((mInternalEventFlagsMask
+                    if ((internalEventFlagsMask
                             & INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED) != 0) {
                         mListener.onDisplayChanged(displayId);
                     }
@@ -1734,7 +1727,7 @@ public final class DisplayManagerGlobal {
 
         @Override
         public String toString() {
-            return "flag: {" + mInternalEventFlagsMask + "}, for " + mListener.getClass();
+            return "flag: {" + internalEventFlagsMask + "}, for " + mListener.getClass();
         }
     }
 
