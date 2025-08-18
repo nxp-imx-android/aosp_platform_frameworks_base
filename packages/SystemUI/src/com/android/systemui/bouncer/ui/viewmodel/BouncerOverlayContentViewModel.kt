@@ -20,6 +20,8 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyResources
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.core.graphics.drawable.toBitmap
@@ -33,17 +35,19 @@ import com.android.systemui.authentication.shared.model.BouncerInputSide
 import com.android.systemui.bouncer.domain.interactor.BouncerActionButtonInteractor
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
+import com.android.systemui.bouncer.ui.BouncerColors.surfaceColor
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardMediaKeyInteractor
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
@@ -74,7 +78,8 @@ constructor(
     private val bouncerActionButtonInteractor: BouncerActionButtonInteractor,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val sceneInteractor: SceneInteractor,
-) : ExclusiveActivatable() {
+    private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+) : HydratedActivatable() {
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
 
@@ -156,6 +161,19 @@ constructor(
 
     /** How much the bouncer UI should be scaled. */
     val scale: StateFlow<Float> = bouncerInteractor.scale
+
+    /** Bouncer background color */
+    val backgroundColor by
+        windowRootViewBlurInteractor.isBlurCurrentlySupported
+            .map { Color(applicationContext.surfaceColor(it)) }
+            .hydratedStateOf(
+                "backgroundColor",
+                Color(
+                    applicationContext.surfaceColor(
+                        windowRootViewBlurInteractor.isBlurCurrentlySupported.value
+                    )
+                ),
+            )
 
     private val _isInputEnabled =
         MutableStateFlow(authenticationInteractor.lockoutEndTimestamp == null)

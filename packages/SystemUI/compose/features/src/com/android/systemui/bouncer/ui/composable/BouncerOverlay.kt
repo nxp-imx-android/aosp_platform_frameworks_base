@@ -22,17 +22,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.overscroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.internal.R
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
@@ -49,19 +44,6 @@ object Bouncer {
         val Root = ElementKey("BouncerRoot")
         val Background = ElementKey("BouncerBackground")
         val Content = ElementKey("BouncerContent")
-    }
-
-    object Colors {
-        val Background: Color
-            @Composable
-            @ReadOnlyComposable
-            get() =
-                Color(
-                    LocalResources.current.getColor(
-                        R.color.surface_effect_0,
-                        LocalContext.current.theme,
-                    )
-                )
     }
 
     object TestTags {
@@ -107,7 +89,7 @@ private fun ContentScope.BouncerOverlay(
     dialogFactory: BouncerDialogFactory,
     modifier: Modifier = Modifier,
 ) {
-    val backgroundColor = Bouncer.Colors.Background
+    val backgroundColor = viewModel.backgroundColor
 
     DisposableEffect(Unit) { onDispose { viewModel.onUiDestroyed() } }
 
