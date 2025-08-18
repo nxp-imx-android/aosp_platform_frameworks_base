@@ -274,6 +274,16 @@ flag {
 }
 
 flag {
+    name: "fix_task_view_rotation_animation"
+    namespace: "multitasking"
+    description: "Fixes jump-cut animation and un-synced bounds (including bubbles) when rotating."
+    bug: "351813733"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_bubbles_expanded_sysui_flag"
     namespace: "multitasking"
     description: "Fixes a bug when we shell fails to notify launcher of collapsed expanded bubble."

@@ -57,6 +57,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.TransitionDispatchState;
@@ -382,6 +383,47 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         verify(mFinishCallback).onTransitionFinished(wctCaptor.capture());
         WindowContainerTransaction wct = wctCaptor.getValue();
         prepareOpenAnimationAssertions(pending, wct, true /* newTask */, mUnregisteredTokenBinder);
+    }
+
+    @Test
+    public void testMergeAnimation_dispatchDisplayTransition() {
+        assumeTrue(com.android.wm.shell.Flags.fixTaskViewRotationAnimation());
+
+        final TransitionInfo.Change displayChange = new TransitionInfo.Change(
+                /* container= */ null, new SurfaceControl());
+        displayChange.setStartAbsBounds(new Rect(0, 0, 500, 1000));
+        displayChange.setEndAbsBounds(new Rect(0, 0, 1000, 500));
+        displayChange.setMode(TRANSIT_CHANGE);
+        displayChange.setFlags(TransitionInfo.FLAG_IS_DISPLAY);
+        final TransitionInfo.Change taskViewChange = getTaskView(TRANSIT_CHANGE);
+        final TransitionInfo displayChangeInfo = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(taskViewChange).addChange(displayChange).build();
+        when(mTransitions.getMainExecutor()).thenReturn(mock(ShellExecutor.class));
+        final IBinder displayTransition = mock(IBinder.class);
+        final boolean handled = mTaskViewTransitions.startAnimation(displayTransition,
+                displayChangeInfo, mStartTransaction, mFinishTransaction, mFinishCallback);
+
+        assertWithMessage("Handler should have consumed display change transition")
+                .that(handled).isTrue();
+        assertWithMessage("TaskView change should be consumed")
+                .that(displayChangeInfo.getChanges()).doesNotContain(taskViewChange);
+        verify(mFinishCallback, never()).onTransitionFinished(any());
+
+        // Assume that TaskViewTransitions#setTaskBounds starts another transition.
+        final IBinder setTaskBoundsTransition = mock(IBinder.class);
+        final TransitionInfo.Change boundsChange = getTaskView(TRANSIT_CHANGE);
+        final Rect newBounds = new Rect(100, 100, 500, 500);
+        when(boundsChange.getEndAbsBounds()).thenReturn(newBounds);
+        final TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(boundsChange).build();
+        mTaskViewTransitions.mergeAnimation(displayTransition, mergeTransitionInfo,
+                mStartTransaction, mFinishTransaction, setTaskBoundsTransition, mFinishCallback);
+
+        verify(mStartTransaction).setWindowCrop(eq(boundsChange.getLeash()),
+                eq(newBounds.width()), eq(newBounds.height()));
+        verify(mTransitions).dispatchTransition(eq(displayTransition), eq(displayChangeInfo),
+                eq(mStartTransaction), eq(mFinishTransaction),
+                eq(mFinishCallback), eq(mTaskViewTransitions));
     }
 
     @Test
