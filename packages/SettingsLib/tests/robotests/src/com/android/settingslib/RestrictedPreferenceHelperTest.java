@@ -32,10 +32,12 @@ import static org.mockito.Mockito.when;
 
 import android.app.admin.Authority;
 import android.app.admin.DeviceAdminAuthority;
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyResourcesManager;
 import android.app.admin.DpcAuthority;
 import android.app.admin.EnforcingAdmin;
+import android.app.admin.PolicyEnforcementInfo;
 import android.app.admin.RoleAuthority;
 import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
@@ -334,5 +336,113 @@ public class RestrictedPreferenceHelperTest {
                 userRestriction, UserHandle.of(UserHandle.myUserId())));
 
         assertThat(mHelper.isRestrictionEnforcedByAdvancedProtection()).isTrue();
+    }
+
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkRestrictionAndSetDisabled_policyTransparencyRefactorEnabled_disabledByAdmin() {
+        final String restriction = "restriction";
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(new EnforcingAdmin(mPackage, DpcAuthority.DPC_AUTHORITY,
+                        UserHandle.SYSTEM)));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.getIdentifierForUserRestriction(restriction),
+                UserHandle.myUserId())).thenReturn(
+                policyEnforcementInfo);
+
+        mHelper.checkRestrictionAndSetDisabled(restriction, UserHandle.myUserId());
+
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
+    }
+
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkAdminRestrictionEnforced_userRestriction_disabledByAdmin() {
+        final String restriction = "restriction";
+        final EnforcingAdmin admin = new EnforcingAdmin(mPackage, DpcAuthority.DPC_AUTHORITY,
+                UserHandle.SYSTEM);
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(admin));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.getIdentifierForUserRestriction(restriction),
+                UserHandle.myUserId())).thenReturn(
+                policyEnforcementInfo);
+        mHelper.setUserRestriction(restriction);
+
+        assertThat(mHelper.checkAdminRestrictionEnforced()).isEqualTo(admin);
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkAdminRestrictionEnforced_adminPolicy_disabledByAdmin() {
+        final String restriction = "restriction";
+        final EnforcingAdmin admin = new EnforcingAdmin(mPackage, DpcAuthority.DPC_AUTHORITY,
+                UserHandle.SYSTEM);
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(admin));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(restriction,
+                UserHandle.myUserId())).thenReturn(policyEnforcementInfo);
+        mHelper.setAdminPolicyRestriction(restriction);
+
+        assertThat(mHelper.checkAdminRestrictionEnforced()).isEqualTo(admin);
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkRestrictionEnforced_userRestriction_disabledByAdmin() {
+        final String restriction = "restriction";
+        final EnforcingAdmin admin = new EnforcingAdmin(mPackage, DpcAuthority.DPC_AUTHORITY,
+                UserHandle.SYSTEM, mAdmin);
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(admin));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.getIdentifierForUserRestriction(restriction),
+                UserHandle.myUserId())).thenReturn(
+                policyEnforcementInfo);
+
+        mHelper.setUserRestriction(restriction);
+        RestrictedLockUtils.EnforcedAdmin expectedAdmin = new RestrictedLockUtils.EnforcedAdmin(
+                mAdmin, restriction, UserHandle.of(UserHandle.myUserId()));
+        assertThat(mHelper.checkRestrictionEnforced()).isEqualTo(expectedAdmin);
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkRestrictionEnforced_adminPolicy_disabledByAdmin() {
+        final String restriction = "restriction";
+        final EnforcingAdmin admin = new EnforcingAdmin(mPackage, DpcAuthority.DPC_AUTHORITY,
+                UserHandle.SYSTEM, mAdmin);
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(admin));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(
+                restriction,
+                UserHandle.myUserId())).thenReturn(
+                policyEnforcementInfo);
+
+        mHelper.setAdminPolicyRestriction(restriction);
+        RestrictedLockUtils.EnforcedAdmin expectedAdmin = new RestrictedLockUtils.EnforcedAdmin(
+                mAdmin, restriction, UserHandle.of(UserHandle.myUserId()));
+        assertThat(mHelper.checkRestrictionEnforced()).isEqualTo(expectedAdmin);
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkPolicyAndSetDisabled_disabledByAdmin() {
+        final String restriction = "restriction";
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(new EnforcingAdmin(mPackage, DpcAuthority.DPC_AUTHORITY,
+                        UserHandle.SYSTEM)));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(restriction,
+                UserHandle.myUserId())).thenReturn(policyEnforcementInfo);
+
+        mHelper.checkPolicyAndSetDisabled(restriction, UserHandle.myUserId());
+
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
     }
 }
