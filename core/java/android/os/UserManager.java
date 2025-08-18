@@ -6443,6 +6443,36 @@ public class UserManager {
     }
 
     /**
+     * Returns whether the specified user is removable.
+     *
+     * <p>Removing a user is not allowed in the following cases:
+     * <ol>
+     * <li>the user is system user
+     * <li>the user is not found
+     * <li>the user is permanent admin main user
+     * <li>the user is already being removed
+     * <li>the user is a non-removable last admin user
+     *
+     * </ol>
+     *
+     * @return A {@link RemoveResult} flag indicating if the user can be removed, one of
+     * {@link #REMOVE_RESULT_USER_IS_REMOVABLE},
+     * {@link #REMOVE_RESULT_ERROR_SYSTEM_USER},
+     * {@link #REMOVE_RESULT_ERROR_USER_NOT_FOUND},
+     * {@link #REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN},
+     * {@link #REMOVE_RESULT_ALREADY_BEING_REMOVED},
+     * {@link #REMOVE_RESULT_ERROR_LAST_ADMIN_USER}.
+     * @hide
+     */
+    public @RemoveResult int getUserRemovability(@UserIdInt int userId) {
+        try {
+            return mService.getUserRemovability(userId);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Updates the user's name.
      *
      * @param userId the user's integer id

@@ -2425,7 +2425,7 @@ public final class UserManagerServiceMockedTest {
 
     private void expectGetUserRemovability(String who, @UserIdInt int userId,
             @RemoveResult int expectedResult) {
-        int actualResult = mUms.getUserRemovabilityLockedLU(userId, /* msg= */ "not used");
+        int actualResult = mUms.getUserRemovabilityLockedLU(userId);
         expect.withMessage("getUserRemovabilityLockedLU(%s) (where user is %s, %s=%s, and %s=%s)",
                 who, userId,
                 expectedResult, removeResultToString(expectedResult),
