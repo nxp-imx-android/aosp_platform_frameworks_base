@@ -428,6 +428,7 @@ public class UserBackupManagerService {
 
     @VisibleForTesting
     UserBackupManagerService(
+            @UserIdInt int userId,
             Context context,
             PackageManager packageManager,
             LifecycleOperationStorage operationStorage,
@@ -436,9 +437,9 @@ public class UserBackupManagerService {
             BackupManagerConstants backupManagerConstants,
             IActivityManager activityManager,
             ActivityManagerInternal activityManagerInternal) {
+        mUserId = userId;
         mContext = context;
 
-        mUserId = 0;
         mLogIdMsg = "[UserID:" + mUserId + "] ";
         mRegisterTransportsRequestedTime = 0;
         mPackageManager = packageManager;
