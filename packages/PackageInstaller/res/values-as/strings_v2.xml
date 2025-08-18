@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"এপৰ আপডে’ট আনইনষ্টল কৰিবনে?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"সকলো ব্যৱহাৰকাৰীৰ বাবে এপৰ আপডে’ট আনইনষ্টল কৰিবনে?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"সকলো ব্যৱহাৰকাৰীৰ বাবে এই এপ্‌টো আনইনষ্টল কৰিবনে?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"’<xliff:g id="USER_NAME">%1$s</xliff:g>’ ব্যৱহাৰকাৰীৰ বাবে এই এপ্‌টো আৰ্কাইভ কৰিবনে?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"এপ্ পোৱা নগ’ল"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"এই এপ্‌টো আনইনষ্টল কৰিব নোৱাৰি"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"এপ্‌ আনইনষ্টল কৰা হোৱা নাই"</string>
     <string name="title_archive" msgid="2876455228073419830">"এই এপ্‌টো আৰ্কাইভ কৰিবনে?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"সকলো ব্যৱহাৰকাৰীৰ বাবে এই এপ্‌টো আৰ্কাইভ কৰিবনে?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"’<xliff:g id="USER_NAME">%1$s</xliff:g>’ব্যৱহাৰকাৰীৰ বাবে এই এপ্‌টো আৰ্কাইভ কৰিবনে?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"এই এপ্‌টো পুনঃস্থাপন কৰিবনে?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"কাৰ্যব্যৱস্থা লোৱাৰ প্ৰয়োজন"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"ষ্ট’ৰেজত পৰ্যাপ্ত ঠাই নাই"</string>

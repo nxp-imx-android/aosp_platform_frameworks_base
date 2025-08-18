@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"యాప్ అప్‌డేట్‌లను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"యూజర్‌లందరికీ యాప్ అప్‌డేట్‌లను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"యూజర్‌లందరికీ ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"\'<xliff:g id="USER_NAME">%1$s</xliff:g>\' యూజర్‌కు ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"యాప్ దొరకలేదు"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయడం సాధ్యపడదు"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"యాప్ అన్ఇన్‌స్టాల్ కాలేదు"</string>
     <string name="title_archive" msgid="2876455228073419830">"ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"యూజర్‌లందరికీ ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"\'<xliff:g id="USER_NAME">%1$s</xliff:g>\' యూజర్‌కు ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"ఈ యాప్‌ను రీస్టోర్ చేయాలా?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"మీరు పూర్తి చేయాల్సిన చర్య"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"తగినంత స్టోరేజ్ స్పేస్ లేదు"</string>

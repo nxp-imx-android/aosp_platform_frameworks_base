@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Poistetaanko sovelluspäivitykset?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Poistetaanko sovelluspäivitykset kaikilta käyttäjiltä?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Poistetaanko sovellus kaikilta käyttäjiltä?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Poistetaanko sovellus käyttäjältä \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Sovellusta ei löydy"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Sovellusta ei voi poistaa"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Sovellusta ei ole asennettu"</string>
     <string name="title_archive" msgid="2876455228073419830">"Arkistoidaanko sovellus?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Arkistoidaanko sovellus kaikilta käyttäjiltä?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Arkistoidaanko sovellus käyttäjältä \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Palautetaanko sovellus?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Toimi nyt"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Ei tarpeeksi tallennustilaa"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Asenna <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>, jotta voit palauttaa sovelluksen"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Sovelluksen palauttamisessa oli ongelma"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> on osa seuraavaa sovellusta: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Sovellus on estetty. Laitteen ja datan turvallisuuden varmistamiseksi vain todennettujen kehittäjien sovelluksia voidaan asentaa.&lt;/p&gt; &lt;a href=&gt;Lue lisää kehittäjien todennuksesta&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Sovellusta ei päivitetty. Laitteen ja datan turvallisuuden varmistamiseksi vain todennettujen kehittäjien päivitykset voidaan asentaa.&lt;/p&gt; &lt;a href=&gt;Lue lisää kehittäjän todennuksesta&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Sovelluksen kehittäjän todennuksessa oli ongelma. Todentamattomien kehittäjien sovellukset voivat olla vaarallisia, joten sovellusta ei asennettu.&lt;/p&gt; &lt;a href=&gt;Lue lisää kehittäjien todennuksesta&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Sovelluksen kehittäjän todennuksessa oli ongelma. Todentamattomien kehittäjien päivitykset voivat olla vaarallisia, joten sovellusta ei päivitetty.&lt;/p&gt; &lt;a href=&gt;Lue lisää kehittäjän todennuksesta&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Sovellus on estetty, koska kehittäjän todentamisessa oli ongelma. Laitteen ja datan turvallisuuden varmistamiseksi vain todennettujen kehittäjien sovelluksia voidaan asentaa.&lt;/p&gt; &lt;a href=&gt;Lue lisää kehittäjien todennuksesta&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Sovellusta ei päivitetty, koska kehittäjän todentamisessa oli ongelma. Laitteen ja datan turvallisuuden varmistamiseksi vain todennettujen kehittäjien päivitykset voidaan asentaa.&lt;/p&gt; &lt;a href=&gt;Lue lisää kehittäjän todennuksesta&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Jos asennat sovelluksen ilman todennusta, muista, että todentamattomien kehittäjien sovellukset voivat vaarantaa laitteesi ja datasi."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Jos päivität todentamatta, muista, että todennettujen kehittäjien päivitykset voivat vaarantaa laitteesi ja datasi."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Sovelluskehittäjää ei ole todennettu"</string>

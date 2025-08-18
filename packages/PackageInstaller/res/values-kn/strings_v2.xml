@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ಆ್ಯಪ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಆ್ಯಪ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"ಬಳಕೆದಾರರಾದ \'<xliff:g id="USER_NAME">%1$s</xliff:g>\' ಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ಆ್ಯಪ್ ಕಂಡುಬಂದಿಲ್ಲ"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ಈ ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿಲ್ಲ"</string>
     <string name="title_archive" msgid="2876455228073419830">"ಈ ಆ್ಯಪ್ ಅನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"ಬಳಕೆದಾರರಾದ \'<xliff:g id="USER_NAME">%1$s</xliff:g>\' ಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"ಈ ಆ್ಯಪ್ ಅನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ಕ್ರಮ ಕೈಗೊಳ್ಳುವ ಅಗತ್ಯವಿದೆ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"ಸಾಕಷ್ಟು ಸಂಗ್ರಹಣೆ ಇಲ್ಲ"</string>
@@ -98,10 +100,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ಈ ಕೆಳಗಿನ ಆ್ಯಪ್‌ನ ಭಾಗವಾಗಿದೆ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;ಈ ಆ್ಯಪ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಡೇಟಾವನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, ಪರಿಶೀಲಿಸಿದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಮಾತ್ರ ಆ್ಯಪ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬಹುದು&lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;ಈ ಆ್ಯಪ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿಲ್ಲ. ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಡೇಟಾವನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, ಪರಿಶೀಲಿಸಿದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಮಾತ್ರ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬಹುದು.&lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;ಈ ಆ್ಯಪ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿಲ್ಲ. ಪರಿಶೀಲಿಸದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಬರುವ ಆ್ಯಪ್‌ಗಳು ಅಸುರಕ್ಷಿತವಾಗಿರಬಹುದು.&lt;/p&gt; &lt;p&gt;ಆ್ಯಪ್ ಡೆವಲಪರ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಇಂಟರ್‌ನೆಟ್ ಕನೆಕ್ಷನ್ ಅಗತ್ಯವಿದೆ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಕನೆಕ್ಷನ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ, ನಂತರ ಆ್ಯಪ್ ಅನ್ನು ಪುನಃ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ. &lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;ಈ ಆ್ಯಪ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿಲ್ಲ. ಪರಿಶೀಲಿಸದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಬರುವ ಅಪ್‌ಡೇಟ್‌ಗಳು ಅಸುರಕ್ಷಿತವಾಗಿರಬಹುದು.&lt;/p&gt; &lt;p&gt;ಆ್ಯಪ್ ಡೆವಲಪರ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಇಂಟರ್‌ನೆಟ್ ಕನೆಕ್ಷನ್ ಅಗತ್ಯವಿದೆ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಕನೆಕ್ಷನ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ, ನಂತರ ಆ್ಯಪ್ ಅನ್ನು ಪುನಃ ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ. &lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;ಈ ಆ್ಯಪ್‌ನ ಡೆವಲಪರ್ ಅನ್ನು ಪರಿಶೀಲಿಸುವಲ್ಲಿ ಸಮಸ್ಯೆ ಕಂಡುಬಂದಿದೆ. ಪರಿಶೀಲಿಸದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಬರುವ ಆ್ಯಪ್‌ಗಳು ಅಸುರಕ್ಷಿತವಾಗಿರಬಹುದು, ಆದ್ದರಿಂದ ಆ್ಯಪ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿಲ್ಲ.&lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;ಈ ಆ್ಯಪ್‌ನ ಡೆವಲಪರ್ ಅನ್ನು ಪರಿಶೀಲಿಸುವಲ್ಲಿ ಸಮಸ್ಯೆ ಕಂಡುಬಂದಿದೆ. ಪರಿಶೀಲಿಸದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಅಪ್‌ಡೇಟ್‌ಗಳು ಅಸುರಕ್ಷಿತವಾಗಿರಬಹುದು, ಆದ್ದರಿಂದ ಆ್ಯಪ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿಲ್ಲ.&lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;ಈ ಆ್ಯಪ್‌ನ ಡೆವಲಪರ್ ಅನ್ನು ಪರಿಶೀಲಿಸುವಲ್ಲಿ ಸಮಸ್ಯೆ ಇದ್ದ ಕಾರಣ ಇದನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಡೇಟಾವನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, ಪರಿಶೀಲಿಸಿದ ಡೆವಲಪರ್‌ಗಳಿಂದ ಮಾತ್ರ ಆ್ಯಪ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬಹುದು&lt;/p&gt; &lt;a href=&gt;ಡೆವಲಪರ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;"</string>
@@ -129,7 +129,6 @@
     <string name="button_restore" msgid="4388317532933866637">"ಮರುಸ್ಥಾಪಿಸಿ"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ"</string>
     <string name="button_settings" msgid="3837571366246132287">"ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"ಪುನಃ ಪ್ರಯತ್ನಿಸಿ"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ಕ್ಲೋನ್"</string>
 </resources>

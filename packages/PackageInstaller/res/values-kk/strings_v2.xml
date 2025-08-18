@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Қолданбаның жаңа нұсқаларын жою қажет пе?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Қолданбаның жаңа нұсқаларын барлық пайдаланушы үшін жою қажет пе?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Бұл қолданбаны барлық пайдаланушы үшін жою қажет пе?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Бұл қолданбаны пайдаланушы <xliff:g id="USER_NAME">%1$s</xliff:g> үшін жою қажет пе?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Қолданба табылмады"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Бұл қолданбаны жою мүмкін емес"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Қолданба жойылмады"</string>
     <string name="title_archive" msgid="2876455228073419830">"Бұл қолданбаны мұрағаттау қажет пе?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Бұл қолданбаны барлық пайдаланушы үшін мұрағаттау қажет пе?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Бұл қолданбаны пайдаланушы <xliff:g id="USER_NAME">%1$s</xliff:g> үшін мұрағаттау қажет пе?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Бұл қолданбаны қалпына келтіру қажет пе?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Әрекет қажет"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Жадта орын жеткіліксіз"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> орнату құралын орнатуыңыз керек"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Бұл қолданбаны қалпына келтіру кезінде мәселе орын алды"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – келесі қолданбаның бір бөлігі: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Бұл қолданба блокталған. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің қолданбаларын орнатуға болады.&lt;/p&gt; &lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Бұл қолданба жаңартылмады. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің жаңа нұсқаларын орнатуға болады.&lt;/p&gt; &lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Бұл қолданба әзірлеушісін растауға қатысты бір мәселе орын алды. Расталмаған әзірлеушілердің қолданбалары қауіпті болуы мүмкін, сол себепті қолданба орнатылмады.&lt;/p&gt; &lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Бұл қолданба әзірлеушісін растауға қатысты бір мәселе орын алды. Расталмаған әзірлеушілердің жаңа нұсқалары қауіпті болуы мүмкін, сол себепті қолданба жаңартылмады.&lt;/p&gt; &lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Бұл қолданба блокталды, себебі әзірлеушіні растауға қатысты бір мәселе орын алды. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің қолданбаларын орнатуға болады.&lt;/p&gt; &lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Бұл қолданба жаңартылмады, себебі әзірлеушіні растауға қатысты бір мәселе орын алды. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің жаңа нұсқаларын орнатуға болады.&lt;/p&gt; &lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Растамай орнатсаңыз, расталмаған әзірлеушілердің қолданбалары құрылғы мен деректерге қауіп төндіруі мүмкін екенін ескеріңіз."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Растамай жаңартсаңыз, расталмаған әзірлеушілердің қолданбалары құрылғы мен деректерге қауіп төндіруі мүмкін екенін ескеріңіз."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Қолданба әзірлеушісі расталмаған"</string>

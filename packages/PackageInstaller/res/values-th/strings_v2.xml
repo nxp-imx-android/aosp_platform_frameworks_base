@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ถอนการติดตั้งอัปเดตแอปใช่ไหม"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ถอนการติดตั้งอัปเดตแอปสำหรับผู้ใช้ทุกคนใช่ไหม"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ถอนการติดตั้งแอปนี้สำหรับผู้ใช้ทุกคนใช่ไหม"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"ถอนการติดตั้งแอปนี้สำหรับผู้ใช้ \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ใช่ไหม"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ไม่พบแอป"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ถอนการติดตั้งแอปนี้ไม่ได้"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ไม่ได้ถอนการติดตั้งแอป"</string>
     <string name="title_archive" msgid="2876455228073419830">"เก็บแอปนี้ใช่ไหม"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"เก็บแอปนี้สำหรับผู้ใช้ทุกคนใช่ไหม"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"เก็บแอปนี้สำหรับผู้ใช้ \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ใช่ไหม"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"คืนค่าแอปนี้ใช่ไหม"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ขอให้ดำเนินการ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"พื้นที่เก็บข้อมูลไม่เพียงพอ"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"หากต้องการคืนค่าแอปนี้ คุณจะต้องติดตั้ง <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"เกิดปัญหาขณะพยายามคืนค่าแอปนี้"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> เป็นส่วนหนึ่งของแอปต่อไปนี้ <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;แอปนี้ถูกบล็อก ระบบจะติดตั้งได้เฉพาะแอปจากนักพัฒนาแอปที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt; &lt;a href=&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;แอปนี้ไม่ได้รับการอัปเดต ระบบจะติดตั้งได้เฉพาะการอัปเดตจากนักพัฒนาซอฟต์แวร์ที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยให้อุปกรณ์และข้อมูลของคุณปลอดภัย&lt;/p&gt; &lt;a href=&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาซอฟต์แวร์&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;เกิดปัญหาในการตรวจสอบนักพัฒนาแอปนี้ แอปจากนักพัฒนาที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย ระบบจึงไม่ได้ติดตั้งแอป&lt;/p&gt; &lt;a href=&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;เกิดปัญหาในการตรวจสอบนักพัฒนาแอปนี้ การอัปเดตจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจไม่ปลอดภัย ระบบจึงไม่อัปเดตแอป&lt;/p&gt; &lt;a href=&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;แอปนี้ถูกบล็อกเนื่องจากเกิดปัญหาในการตรวจสอบนักพัฒนาแอป ระบบจะติดตั้งได้เฉพาะแอปจากนักพัฒนาแอปที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยรักษาความปลอดภัยให้อุปกรณ์และข้อมูลของคุณ&lt;/p&gt; &lt;a href=&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาแอป&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;แอปนี้ไม่อัปเดตเนื่องจากเกิดปัญหาในการตรวจสอบนักพัฒนาซอฟต์แวร์ ระบบจะติดตั้งได้เฉพาะการอัปเดตจากนักพัฒนาซอฟต์แวร์ที่ได้รับการตรวจสอบแล้วเท่านั้น เพื่อช่วยให้อุปกรณ์และข้อมูลของคุณปลอดภัย&lt;/p&gt; &lt;a href=&gt;ดูข้อมูลเพิ่มเติมเกี่ยวกับการตรวจสอบนักพัฒนาซอฟต์แวร์&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"หากติดตั้งโดยไม่ตรวจสอบ โปรดทราบว่าแอปจากนักพัฒนาแอปที่ไม่ได้รับการตรวจสอบอาจทำให้อุปกรณ์และข้อมูลของคุณมีความเสี่ยง"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"หากอัปเดตโดยไม่ยืนยัน โปรดทราบว่าการอัปเดตจากนักพัฒนาซอฟต์แวร์ที่ไม่ได้รับการตรวจสอบอาจทำให้อุปกรณ์และข้อมูลของคุณตกอยู่ในความเสี่ยง"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"นักพัฒนาแอปยังไม่ได้รับการตรวจสอบ"</string>

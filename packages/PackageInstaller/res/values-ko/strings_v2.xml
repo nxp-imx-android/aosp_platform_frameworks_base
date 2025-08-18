@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"앱 업데이트를 제거하시겠습니까?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"모든 사용자를 대상으로 앱 업데이트를 제거하시겠습니까?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"모든 사용자를 대상으로 이 앱을 제거하시겠습니까?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"\'<xliff:g id="USER_NAME">%1$s</xliff:g>\' 사용자를 대상으로 이 앱을 제거하시겠습니까?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"앱을 찾을 수 없음"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"이 앱을 제거할 수 없음"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"앱이 제거되지 않음"</string>
     <string name="title_archive" msgid="2876455228073419830">"이 앱을 보관처리하시겠습니까?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"모든 사용자를 대상으로 이 앱을 보관처리하시겠습니까?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"\'<xliff:g id="USER_NAME">%1$s</xliff:g>\' 사용자를 대상으로 이 앱을 보관처리하시겠습니까?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"이 앱을 복원하시겠습니까?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"조치 필요"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"저장용량 부족"</string>
@@ -98,10 +100,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> 활동은 <xliff:g id="APP_NAME">%2$s</xliff:g> 앱의 일부입니다."</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;이 앱은 차단되었습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;이 앱은 설치되지 않았습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 연결 상태를 확인한 후 앱을 다시 설치해 보세요. &lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 연결 상태를 확인한 후 앱을 다시 업데이트해 보세요. &lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있으므로 앱이 설치되지 않았습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있으므로 앱이 업데이트되지 않았습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 차단되었습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
@@ -129,7 +129,6 @@
     <string name="button_restore" msgid="4388317532933866637">"복원"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"업데이트 제거"</string>
     <string name="button_settings" msgid="3837571366246132287">"설정"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"다시 시도"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> 클론"</string>
 </resources>

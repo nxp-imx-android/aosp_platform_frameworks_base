@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Uninstall app updates?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Uninstall app updates for all users?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Uninstall this app for all users?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Uninstall this app for user \'<xliff:g id="USER_NAME">%1$s</xliff:g>\'?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Uninstall this app for user \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App not found"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Can\'t uninstall this app"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"App not uninstalled"</string>
     <string name="title_archive" msgid="2876455228073419830">"Archive this app?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Archive this app for all users?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Archive this app for user \'<xliff:g id="USER_NAME">%1$s</xliff:g>\'?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Archive this app for user \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Restore this app?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Action required"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Not enough storage"</string>

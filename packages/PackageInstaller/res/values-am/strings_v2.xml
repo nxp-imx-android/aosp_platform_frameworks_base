@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"የመተግበሪያ ዝማኔዎች ይራገፉ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ለሁሉም ተጠቃሚዎች የመተግበሪያ ዝማኔዎች ይራገፉ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ይህ መተግበሪያ ለሁሉም ተጠቃሚዎች ይራገፍ?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"ይህ መተግበሪያ ለተጠቃሚ «<xliff:g id="USER_NAME">%1$s</xliff:g>» ይራገፍ?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"መተግበሪያ አልተገኘም"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ይህን መተግበሪያ መጫን አልተቻለም"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"መተግበሪያ እንዳይራገፍ አልተደረገም"</string>
     <string name="title_archive" msgid="2876455228073419830">"ይህ መተግበሪያ በማህበር ይቀመጥ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ይህ መተግበሪያ ለሁሉም ተጠቃሚዎች በማህደር ይቀመጥ?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"ይህ መተግበሪያ ለተጠቃሚ «<xliff:g id="USER_NAME">%1$s</xliff:g>» በማህደር ይቀመጥ?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"ይህ መተግበሪያ ወደነበረበት ይመለስ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"የሚያስፈልግ እርምጃ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"በቂ ማከማቻ የለም"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ይህን መተግበሪያ ወደነበረበት ለመመለስ፣ <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>ን መጫን አለብዎት"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ይህን መተግበሪያ ወደነበረበት ለመመለስ እየተሞከረ ሳለ አንድ ችግር ነበር"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> የሚከተለው መተግበሪያ አካል ነው፦ <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;ይህ መተግበሪያ ታግዷል። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ መተግበሪያዎች ብቻ ናቸው&lt;/p&gt; &lt;a href=&gt;ስለ ገንቢ ማረጋገጫ የበለጠ ይወቁ&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;ይህ መተግበሪያ አልተዘመነም። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ ዝማኔዎች ብቻ ናቸው&lt;/p&gt; &lt;a href=&gt;ስለ ገንቢ ማረጋገጫ የበለጠ እወቅ&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;የዚህን መተግበሪያ ገንቢ ማረጋገጥ ላይ ችግር ነበር። ካልተረጋገጡ ዝማኔዎች የመጡ መተግበሪያዎች ደኅንነታቸው ያልተጠበቀ ሊሆኑ ይችላሉ፣ ስለዚህ መተግበሪያው አልተዘመነም።&lt;/p&gt; &lt;a href=&gt;ስለ ገንቢ ማረጋገጫ የበለጠ ይወቁ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;የዚህን መተግበሪያ ገንቢ ማረጋገጥ ላይ ችግር ነበር። ካልተረጋገጡ ዝማኔዎች የመጡ ዝማኔዎች ደኅንነታቸው ያልተጠበቀ ሊሆኑ ይችላሉ፣ ስለዚህ መተግበሪያው አልተዘመነም።&lt;/p&gt; &lt;a href=&gt;ስለ ገንቢ ማረጋገጫ የበለጠ ይወቁ&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;ገንቢውን ማረጋገጥ ላይ ችግር ስለነበር ይህ መተግበሪያ ታግዷል። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ መተግበሪያዎች ብቻ ናቸው&lt;/p&gt; &lt;a href=&gt;ስለ ገንቢ ማረጋገጫ የበለጠ ይወቁ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;ገንቢውን ማረጋገጥ ላይ ችግር ስለነበር ይህ መተግበሪያ አልተዘመነም። መሣሪያዎን እና ውሂብዎን ደኅንነታቸው የተጠበቀ አድርጎ ለማቆየት እንዲያግዝ ሊጫኑ የሚችሉት ከተረጋገጡ ገንቢዎች የሚመጡ ዝማኔዎች ብቻ ናቸው&lt;/p&gt; &lt;a href=&gt;ስለ ገንቢ ማረጋገጫ የበለጠ እወቅ&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"ሳያረጋግጡ ከጫኑ ካልተረጋገጡ ገንቢዎች የመጡ መተግበሪያዎች መሣሪያዎን እና ውሂብዎን ስጋት ላይ ሊጥሉ እንደሚችሉ ያስታውሱ።"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"ሳያረጋግጡ ካዘመኑ ካልተረጋገጡ ገንቢዎች የመጡ ዝማኔዎች መሣሪያዎን እና ውሂብዎን ስጋት ላይ ሊጥሉ እንደሚችሉ ያስታውሱ።"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"የመተግበሪያ ገንቢ አልተረጋገጠም"</string>

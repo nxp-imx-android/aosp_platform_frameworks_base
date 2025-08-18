@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Désinstaller les mises à jour de l\'application ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Désinstaller les mises à jour de l\'application pour tous les utilisateurs ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Désinstaller cette application pour tous les utilisateurs ?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Désinstaller cette application pour l\'utilisateur \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Application non trouvée"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Impossible de désinstaller cette application"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Échec de la désinstallation de l\'application"</string>
     <string name="title_archive" msgid="2876455228073419830">"Archiver cette application ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Archiver cette application pour tous les utilisateurs ?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Archiver cette application pour l\'utilisateur \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Restaurer cette application ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Action requise"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Espace de stockage insuffisant"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Pour restaurer cette application, vous devrez installer <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Un problème est survenu lors de la restauration de cette application"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> fait partie de l\'application suivante : <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Cette appli a été bloquée. Pour protéger votre appareil et vos données, seules les applis de développeurs validés peuvent être installées.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la validation des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Pour protéger votre appareil et vos données, seules les mises à jour provenant de développeurs validés peuvent être installées.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la validation des développeurs&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Un problème est survenu lors de la validation du développeur de cette appli. Les applis de développeurs non validés peuvent être dangereuses. L\'appli n\'a donc pas été installée.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la validation des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Un problème est survenu lors de la validation du développeur de cette appli. Les mises à jour provenant de développeurs non validés peuvent être dangereuses. L\'appli n\'a donc pas été mise à jour.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la validation des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Cette appli a été bloquée, car un problème est survenu lors de la validation du développeur. Pour protéger votre appareil et vos données, seules les applis de développeurs validés peuvent être installées.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la validation des développeurs&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Cette appli n\'a pas été mise à jour, car un problème est survenu lors de la validation du développeur. Pour protéger votre appareil et vos données, seules les mises à jour provenant de développeurs validés peuvent être installées.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la validation des développeurs&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si vous installez cette appli sans valider le développeur, gardez à l\'esprit que ces applis peuvent présenter des risques pour votre appareil et vos données."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si vous mettez à jour sans valider le développeur, gardez à l\'esprit que ces mises à jour peuvent présenter des risques pour votre appareil et vos données."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Développeur d\'applications non validé"</string>
