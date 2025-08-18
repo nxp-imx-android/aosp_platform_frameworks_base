@@ -19,7 +19,6 @@ package com.android.server.appfunctions;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
-import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION;
@@ -746,7 +745,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     @NonNull
     private List<SignedPackage> readAdbAgentAllowlist() {
         String agents = Settings.Secure.getStringForUser(mContext.getContentResolver(),
-                Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST, USER_SYSTEM);
+                Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST,
+                Process.myUserHandle().getIdentifier());
         if (agents == null) {
             return Collections.emptyList();
         }
