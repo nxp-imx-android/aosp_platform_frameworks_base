@@ -78,6 +78,7 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
+import android.app.TaskStackListener;
 import android.app.backup.BackupManager;
 import android.app.compat.CompatChanges;
 import android.companion.virtual.IVirtualDevice;
@@ -202,6 +203,7 @@ import com.android.server.display.utils.DebugUtils;
 import com.android.server.display.utils.SensorUtils;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.utils.FoldSettingProvider;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.DesktopModeHelper;
 import com.android.server.wm.SurfaceAnimationThread;
 import com.android.server.wm.WindowManagerInternal;
@@ -305,6 +307,7 @@ public final class DisplayManagerService extends SystemService {
     @Nullable
     private InputManagerInternal mInputManagerInternal;
     private ActivityManagerInternal mActivityManagerInternal;
+    private ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final UidImportanceListener mUidImportanceListener = new UidImportanceListener();
 
     private final DisplayFrameworkStatsLogger mStatsLogger = new DisplayFrameworkStatsLogger();
@@ -853,6 +856,8 @@ public final class DisplayManagerService extends SystemService {
                 mInputManagerInternal.setDisplayTopology(graph);
             }
             mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
+            mActivityTaskManagerInternal = LocalServices.getService(
+                    ActivityTaskManagerInternal.class);
 
             ActivityManager activityManager = mContext.getSystemService(ActivityManager.class);
             activityManager.addOnUidImportanceListener(mUidImportanceListener, IMPORTANCE_CACHED);
@@ -860,6 +865,10 @@ public final class DisplayManagerService extends SystemService {
             mDeviceStateManager = LocalServices.getService(DeviceStateManagerInternal.class);
             mContext.getSystemService(DeviceStateManager.class).registerCallback(
                     mHandlerExecutor, new DeviceStateListener());
+
+            if (mFlags.isDisplayMirrorInLockTaskModeEnabled()) {
+                setupTaskStackListener();
+            }
 
             mLogicalDisplayMapper.onWindowManagerReady();
             scheduleTraversalLocked(false);
@@ -1275,9 +1284,20 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private boolean updateMirrorBuiltInDisplaySettingLocked(boolean shouldSendDisplayChangeEvent) {
-        ContentResolver resolver = mContext.getContentResolver();
-        final boolean mirrorBuiltInDisplay = Settings.Secure.getIntForUser(resolver,
-                MIRROR_BUILT_IN_DISPLAY, 0, UserHandle.USER_CURRENT) != 0;
+        final boolean mirrorBuiltInDisplay;
+        if (mFlags.isDisplayMirrorInLockTaskModeEnabled()
+                && mActivityTaskManagerInternal.getLockTaskModeState()
+                == ActivityManager.LOCK_TASK_MODE_LOCKED) {
+            // If the device is in lock task mode, enable external displays mirroring regardless of
+            // the system setting.
+            mirrorBuiltInDisplay = true;
+        } else {
+            // If the device isn't in lock task mode, update the external mirroring to match the
+            // system setting.
+            ContentResolver resolver = mContext.getContentResolver();
+            mirrorBuiltInDisplay = Settings.Secure.getIntForUser(resolver,
+                    MIRROR_BUILT_IN_DISPLAY, 0, UserHandle.USER_CURRENT) != 0;
+        }
         if (mMirrorBuiltInDisplay == mirrorBuiltInDisplay) {
             // No change in setting.
             return false;
@@ -3791,6 +3811,21 @@ public final class DisplayManagerService extends SystemService {
                     listener.onDisplayGroupRemoved(groupId);
                 }
                 break;
+        }
+    }
+
+    private void setupTaskStackListener() {
+        final TaskStackListener taskStackListener = new TaskStackListener() {
+            @Override
+            public void onLockTaskModeChanged(int mode) {
+                updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/ true);
+            }
+        };
+
+        try {
+            mActivityTaskManagerInternal.registerTaskStackListener(taskStackListener);
+        } catch (Exception e) {
+            Slog.w(TAG, "Failed to call registerTaskStackListener", e);
         }
     }
 
