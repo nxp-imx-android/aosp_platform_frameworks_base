@@ -16,8 +16,6 @@
   -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- TODO(b/274120822): Add product configs for required strings -->
-
     <!-- Dialog Titles -->
     <string name="title_unknown_source_blocked">Permission required</string>
     <string name="title_install_blocked">Install blocked</string>
