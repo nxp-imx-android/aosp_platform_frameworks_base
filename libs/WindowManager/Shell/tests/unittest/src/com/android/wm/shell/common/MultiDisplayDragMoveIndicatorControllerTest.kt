@@ -16,6 +16,7 @@
 package com.android.wm.shell.common
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.graphics.RectF
@@ -37,7 +38,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -53,11 +53,14 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val indicatorSurfaceFactory = mock<MultiDisplayDragMoveIndicatorSurface.Factory>()
     private val desktopState = FakeDesktopState()
-    private val indicatorSurface = mock<MultiDisplayDragMoveIndicatorSurface>()
+    private val indicatorSurface0 = mock<MultiDisplayDragMoveIndicatorSurface>()
+    private val indicatorSurface1 = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val transaction = mock<SurfaceControl.Transaction>()
     private val transactionSupplier = mock<Supplier<SurfaceControl.Transaction>>()
     private val taskInfo = mock<RunningTaskInfo>()
     private val taskLeash = mock<SurfaceControl>()
+    private val displayContext0 = mock<Context>()
+    private val displayContext1 = mock<Context>()
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
 
@@ -87,10 +90,12 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         taskInfo.taskId = TASK_ID
         whenever(displayController.getDisplayLayout(0)).thenReturn(spyDisplayLayout0)
         whenever(displayController.getDisplayLayout(1)).thenReturn(spyDisplayLayout1)
-        whenever(displayController.getDisplayContext(0)).thenReturn(mContext)
-        whenever(displayController.getDisplayContext(1)).thenReturn(mContext)
-        whenever(indicatorSurfaceFactory.create(eq(mContext), eq(taskLeash)))
-            .thenReturn(indicatorSurface)
+        whenever(displayController.getDisplayContext(0)).thenReturn(displayContext0)
+        whenever(displayController.getDisplayContext(1)).thenReturn(displayContext1)
+        whenever(indicatorSurfaceFactory.create(eq(displayContext0), eq(taskLeash)))
+            .thenReturn(indicatorSurface0)
+        whenever(indicatorSurfaceFactory.create(eq(displayContext1), eq(taskLeash)))
+            .thenReturn(indicatorSurface1)
         whenever(transactionSupplier.get()).thenReturn(transaction)
         desktopState.canEnterDesktopMode = true
     }
@@ -125,8 +130,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             transaction
         }
 
-        verify(indicatorSurfaceFactory, times(1)).create(eq(mContext), eq(taskLeash))
-        verify(indicatorSurface, times(1))
+        verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash))
+        verify(indicatorSurface0)
             .show(
                 transaction,
                 taskInfo,
@@ -139,7 +144,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     }
 
     @Test
-    fun onDrag_boundsIntersectWithDesktopModeUnsupportedDisplay_noIndicator() {
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun onDrag_boundsIntersectWithDesktopModeUnsupportedDisplay_noIndicatorOnThatDisplay() {
         desktopState.overrideDesktopModeSupportPerDisplay[1] = false
 
         controller.onDragMove(
@@ -153,11 +159,12 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             transaction
         }
 
-        verify(indicatorSurfaceFactory, never()).create(any(), any())
+        verify(indicatorSurfaceFactory, never()).create(eq(displayContext1), any())
     }
 
     @Test
-    fun onDrag_boundsIntersectWithNonStartDisplay_showAndDisposeIndicator() {
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun onDrag_boundsIntersectWithNonStartDisplayAndMoveAway_showHideAndDisposeIndicator() {
         controller.onDragMove(
             RectF(100f, -100f, 200f, 200f), // intersect with display 0 and 1
             currentDisplayId = 1,
@@ -169,8 +176,19 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             transaction
         }
 
-        verify(indicatorSurfaceFactory, times(1)).create(eq(mContext), eq(taskLeash))
-        verify(indicatorSurface, times(1))
+        verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash))
+        verify(indicatorSurfaceFactory).create(eq(displayContext1), eq(taskLeash))
+        verify(indicatorSurface0)
+            .show(
+                transaction,
+                taskInfo,
+                rootTaskDisplayAreaOrganizer,
+                0,
+                Rect(100, -100, 200, 200),
+                MultiDisplayDragMoveIndicatorSurface.Visibility.TRANSLUCENT,
+                1f,
+            )
+        verify(indicatorSurface1)
             .show(
                 transaction,
                 taskInfo,
@@ -182,7 +200,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             )
 
         controller.onDragMove(
-            RectF(2000f, 2000f, 2100f, 2200f), // not intersect with display 1
+            RectF(100f, 0f, 200f, 300f), // intersect with only display 0
             currentDisplayId = 0,
             startDisplayId = 0,
             taskLeash,
@@ -192,7 +210,13 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             transaction
         }
 
-        verify(indicatorSurface, times(1))
+        verify(indicatorSurface0)
+            .relayout(
+                any(),
+                eq(transaction),
+                eq(MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE),
+            )
+        verify(indicatorSurface1)
             .relayout(
                 any(),
                 eq(transaction),
@@ -201,7 +225,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
 
         controller.onDragEnd(TASK_ID, transaction)
 
-        verify(indicatorSurface, times(1)).dispose(transaction)
+        verify(indicatorSurface0).dispose(transaction)
+        verify(indicatorSurface1).dispose(transaction)
     }
 
     companion object {
