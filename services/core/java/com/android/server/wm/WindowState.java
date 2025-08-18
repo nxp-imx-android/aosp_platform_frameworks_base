@@ -2379,8 +2379,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     mActivityRecord != null && mActivityRecord.inTransition(),
                     Debug.getCallers(6));
 
-            if (Flags.excludeNonMainWindowFromSnapshot()
-                    && mAttrs.type != TYPE_BASE_APPLICATION && mHasSurface
+            if (mAttrs.type != TYPE_BASE_APPLICATION && mHasSurface
                     && mActivityRecord != null && !mActivityRecord.isVisibleRequested()
                     && mWinAnimator.getShown()) {
                 // Only remove the activity snapshot, because the user might still want to see the
