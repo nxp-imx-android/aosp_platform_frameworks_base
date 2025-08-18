@@ -71,14 +71,6 @@ flag {
 }
 
 flag {
-  name: "update_network_factory_protection_level"
-  is_exported: false
-  namespace: "android_core_networking"
-  description: "Flag for change to NETWORK_FACTORY permission to include priviliged"
-  bug: "431500580"
-}
-
-flag {
   name: "create_app_specific_network_permission"
   namespace: "android_core_networking"
   is_exported: true
