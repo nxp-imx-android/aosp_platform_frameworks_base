@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"삭제"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"선택한 영역의 스크린샷 찍기"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"스크린샷"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"녹화"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"공유"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"화면 공유 중"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"콘텐츠 공유"</string>
@@ -395,8 +411,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"이름이 없는 기기"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"사용 가능한 기기가 없습니다."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi 또는 이더넷 연결 없음"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"연결 해제"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"밝기"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"색상 반전"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"색상 보정"</string>
@@ -406,8 +421,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"닫기"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"연결됨"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"연결 중..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Wi‑Fi 검색 중…"</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"핫스팟"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"켜는 중..."</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"데이터 절약 모드"</string>
@@ -1119,10 +1133,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>페이지 중 <xliff:g id="ID_1">%1$d</xliff:g>페이지"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 기능을 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"이를 통해 화면을 빠르게 확대하여 콘텐츠를 더 크게 표시할 수 있습니다."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g>은 항목을 소리 내어 읽어 주는 스크린 리더입니다. 이 기능은 화면을 보기 어려운 사용자에게 도움을 줄 수 있습니다."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g>를 사용하면 핸즈프리로 기기를 제어할 수 있습니다."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"사용 설정"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"해결 방법 확인하기"</string>
@@ -1171,12 +1192,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"백그라운드에서 실행 중인 앱"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"탭하여 배터리 및 데이터 사용량 확인"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"모바일 데이터를 사용 중지하시겠습니까?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"모바일 데이터를 사용 설정하시겠습니까?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"모바일 데이터를 사용하면 휴대전화 요금제에 따라 요금이 부과될 수도 있습니다."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"사용 설정"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"<xliff:g id="CARRIER">%s</xliff:g>을(를) 통해 데이터 또는 인터넷에 액세스할 수 없게 됩니다. 인터넷은 Wi-Fi를 통해서만 사용할 수 있습니다."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"이동통신사"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"다시 <xliff:g id="CARRIER">%s</xliff:g>(으)로 전환할까요?"</string>

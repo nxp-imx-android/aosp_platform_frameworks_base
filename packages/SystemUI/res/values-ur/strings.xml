@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف کریں"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"پوری اسکرین کا اسکرین شاٹ لیں"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"منتخب علاقے کا اسکرین شاٹ لیں"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"اسکرین شاٹ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ریکارڈ کریں"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"اشتراک کریں"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="HEIGHT">%2$d</xliff:g> x <xliff:g id="WIDTH">%1$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"اسکرین کا اشتراک ہو رہا ہے"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"مواد کا اشتراک کیا جا رہا ہے"</string>
@@ -1119,10 +1135,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"صفحہ <xliff:g id="ID_1">%1$d</xliff:g> از <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"‫<xliff:g id="ID_1">%1$s</xliff:g> آن کریں؟"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‫<xliff:g id="ID_3">^3</xliff:g> استعمال کرنے کے لیے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"اس سے آپ مواد کو بڑا کرنے کے لیے اسکرین پر تیزی سے زوم ان کر سکتے ہیں۔"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> ایک سکرین قاری ہے جو آپ کو بلند آواز میں بولے جانے والے آئٹمز کو سننے کی اجازت دیتی ہے۔ یہ ان لوگوں کیلئے مفید ثابت ہو سکتی ہے جنہیں اسکرین دیکھنے میں دشواری پیش آتی ہے۔"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"‫<xliff:g id="ID_1">%1$s</xliff:g> آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"آن کریں"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"مقفل اسکرین"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"بند ہو رہا ہے…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"نگہداشت کے اقدامات ملاحظہ کریں"</string>

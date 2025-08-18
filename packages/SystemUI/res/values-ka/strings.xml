@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"წაშლა"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"სრული ეკრანის ანაბეჭდის გადაღება"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ეკრანის მონიშნული მონაკვეთის ანაბეჭდის გადაღება"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ეკრანის ანაბეჭდი"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ჩაწერა"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"გაზიარება"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"მიმდინარეობს ეკრანის გაზიარება"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"კონტენტის გაზიარება"</string>
@@ -395,8 +411,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"უსახელო მოწყობილობა"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"მოწყობილობები მიუწვდომელია"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi ან Ethernet-ის კავშირი არ არის"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"კავშირის გაწყვეტა"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"განათება"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"ფერთა ინვერსია"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ფერთა კორექცია"</string>
@@ -406,8 +421,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"დახურვა"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"დაკავშირებულია"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"დაკავშირება..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"მიმდინარეობს Wi-Fi-ს სკანირება..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"წვდომის წერტილი"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ირთვება…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"მონაცემთა დამზოგველი ჩართულია"</string>
@@ -1119,10 +1133,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"გვერდი <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>-დან"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ჩაირთოს <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"მოქმედების "<annotation id="action_key_icon">"ხატულა"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> არის კლავიატურის მალსახმობი <xliff:g id="ID_3">^3</xliff:g>-ის გამოსაყენებლად. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"ეს საშუალებას გაძლევთ, სწრაფად გაადიდოთ მასშტაბი ეკრანზე კონტენტის გასადიდებლად."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> არის ეკრანის წამკითხველი, რომელიც საშუალებას გაძლევთ, მოისმინოთ ხმამაღლა წარმოთქმული ტექსტი. ეს ეხმარება მხედველობის შეზღუდვის მქონე ადამიანებს, რომლებსაც ეკრანის ყურება უჭირთ."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> საშუალებას გაძლევთ, თქვენი მოწყობილობა უკონტაქტოდ მართოთ."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ჩართვა"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ჩაკეტილი ეკრანი"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"მიმდინარეობს გამორთვა…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"მისაღები ზომების გაცნობა"</string>
@@ -1171,12 +1192,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"ფონურ რეჟიმში გაშვებული აპები"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"შეეხეთ ბატარეისა და მონაცემების მოხმარების შესახებ დეტალური ინფორმაციისთვის"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"გსურთ მობილური ინტერნეტის გამორთვა?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"გსურთ მობილური ინტერნეტის ჩართვა?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"ფიჭური მომსახურების თქვენი გეგმის მიხედვით მობილური ინტერნეტის გამოყენების გამო შესაძლოა თანხა ჩამოგეჭრათ."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ჩართვა"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"თქვენ არ გექნებათ მობილურ ინტერნეტზე ან ზოგადად ინტერნეტზე წვდომა <xliff:g id="CARRIER">%s</xliff:g>-ის მეშვეობით. ინტერნეტი მხოლოდ Wi-Fi-კავშირის მეშვეობით იქნება ხელმისაწვდომი."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"თქვენი ოპერატორი"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"გსურთ ისევ <xliff:g id="CARRIER">%s</xliff:g>-ზე გადართვა?"</string>
