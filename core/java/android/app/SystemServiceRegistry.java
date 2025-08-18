@@ -77,7 +77,9 @@ import android.bluetooth.BluetoothFrameworkInitializer;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
+import android.companion.datatransfer.continuity.IUniversalClipboardManager;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.companion.datatransfer.continuity.UniversalClipboardManager;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.Compatibility;
@@ -1513,6 +1515,21 @@ public final class SystemServiceRegistry {
                             ITaskContinuityManager service =
                                     ITaskContinuityManager.Stub.asInterface(iBinder);
                             return new TaskContinuityManager(ctx, service);
+                        }
+                    });
+        }
+
+        if (android.companion.Flags.enableUniversalClipboard()) {
+            registerService(Context.UNIVERSAL_CLIPBOARD_SERVICE, UniversalClipboardManager.class,
+                    new CachedServiceFetcher<UniversalClipboardManager>() {
+                        @Override
+                        public UniversalClipboardManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder iBinder = ServiceManager.getServiceOrThrow(
+                                    Context.UNIVERSAL_CLIPBOARD_SERVICE);
+                            IUniversalClipboardManager service =
+                                    IUniversalClipboardManager.Stub.asInterface(iBinder);
+                            return new UniversalClipboardManager(ctx, service);
                         }
                     });
         }

@@ -7011,6 +7011,16 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.companion.datatransfer.continuity.UniversalClipboardManager}.
+     *
+     * @see #getSystemService(String)
+     * @see UniversalClipboardManager
+     * @hide
+     */
+    public static final String UNIVERSAL_CLIPBOARD_SERVICE = "universal_clipboard";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.app.ondeviceintelligence.OnDeviceIntelligenceManager}.
      *
      * @see #getSystemService(String)
