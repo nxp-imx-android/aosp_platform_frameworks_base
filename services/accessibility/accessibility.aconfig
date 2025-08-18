@@ -149,6 +149,16 @@ flag {
 }
 
 flag {
+    name: "throttle_motion_events_for_ui_update"
+    namespace: "accessibility"
+    description: "Throttles motion events for requesting the System UI to update magnification UIs."
+    bug: "435498747"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "touch_explorer_a11y_events_include_display_id"
     namespace: "accessibility"
     description: "When sending an A11y event, TouchExplorer will include its displayId"
