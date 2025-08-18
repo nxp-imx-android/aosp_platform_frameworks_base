@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ComposeView
@@ -126,6 +127,7 @@ fun SystemUIDialogFactory.createBottomSheet(
     isDraggable: Boolean = true,
     // TODO(b/337205027): remove maxWidth parameter when aligned to M3 spec
     maxWidth: Dp = Dp.Unspecified,
+    containerColorProvider: @Composable () -> Color = { MaterialTheme.colorScheme.surfaceContainer },
 ): ComponentSystemUIDialog {
     return create(
         context = context,
@@ -189,7 +191,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                                     else DraggableBottomSheet.MaxWidth
                             ),
                     shape = RoundedCornerShape(topStart = radius, topEnd = radius),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    color = containerColorProvider(),
                 ) {
                     Box(
                         Modifier.padding(
