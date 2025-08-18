@@ -4468,6 +4468,24 @@ public abstract class Context {
     public abstract void unbindService(@NonNull ServiceConnection conn);
 
     /**
+     * Rebind an application service with updated bind service flags
+     *
+     * @param conn The connection interface previously supplied to
+     *             bindService().  This parameter must not be null.
+     * @param flags Updated flags for the binding as per {@link #bindService}.
+     *              Only flags returned from {@link #getUpdateableFlags} may
+     *              be added or removed.
+     *
+     * @see #bindService
+     * @see #updateServiceBindings
+     */
+    @FlaggedApi(FLAG_ENABLE_UPDATE_SERVICE_BINDINGS)
+    public void rebindService(@NonNull ServiceConnection conn,
+            @NonNull BindServiceFlags flags) {
+        throw new RuntimeException("Not implemented. Must override in a subclass.");
+    }
+
+    /**
      * Start executing an {@link android.app.Instrumentation} class.  The given
      * Instrumentation component will be run by killing its target application
      * (if currently running), starting the target process, instantiating the
