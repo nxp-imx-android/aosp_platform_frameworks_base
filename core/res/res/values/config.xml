@@ -7031,6 +7031,11 @@
     <!-- Wear OS: the name of the package containing the Media Sessions APK. -->
     <string name="config_wearMediaSessionsPackage" translatable="false"/>
 
+    <!-- WebView: the name of the class to be used by WebView to customise text selection menus. -->
+    <string name="config_webViewSelectionActionMenuClientPackage" translatable="false">
+        android.webkit.SelectionActionMenuClient
+    </string>
+
     <bool name="config_secondaryBuiltInDisplayIsRound">@bool/config_windowIsRound</bool>
 
     <!-- The display round config for each display in a multi-display device. -->
