@@ -146,6 +146,26 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         return wct;
     }
 
+    /**
+     * Returns a wct for exiting PiP and expanding on a different display.
+     */
+    @Nullable
+    public WindowContainerTransaction getExitPipViaExpandIntoDisplayTransaction(int displayId) {
+        WindowContainerToken pipToken = mPipTransitionState.getPipTaskToken();
+        WindowContainerTransaction wct = getExitPipViaExpandTransaction();
+        DisplayAreaInfo displayAreaInfo =
+                mPipDesktopState.getRootTaskDisplayAreaOrganizer().getDisplayAreaInfo(
+                        displayId);
+
+        if (pipToken == null || wct == null || displayAreaInfo == null) {
+            return null;
+        }
+
+        wct.reparent(pipToken, displayAreaInfo.token, true);
+        wct.setDensityDpi(pipToken, displayAreaInfo.configuration.densityDpi);
+        return wct;
+    }
+
     @Nullable
     private WindowContainerTransaction getRemovePipTransaction() {
         WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
