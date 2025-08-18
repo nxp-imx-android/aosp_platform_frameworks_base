@@ -453,7 +453,7 @@ public class PipController implements ConfigurationChangeListener,
             mPipDisplayLayoutState.rotateTo(toRotation);
         }
 
-        if (!shouldUpdatePipStateOnDisplayChange()) {
+        if (!mPipTransitionState.isInPip() && !mPipTransitionState.isEnterPipScheduled()) {
             // Skip the PiP-relevant updates if we aren't in a valid PiP state.
             if (mPipTransitionState.isInFixedRotation()) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -543,14 +543,6 @@ public class PipController implements ConfigurationChangeListener,
         mPipDisplayLayoutState.setDisplayLayout(layout);
     }
 
-    private boolean shouldUpdatePipStateOnDisplayChange() {
-        // We should at least update internal PiP state, such as PiP bounds state or movement bounds
-        // if we are either in PiP or about to enter PiP.
-        return mPipTransitionState.isInPip()
-                || mPipTransitionState.getState() == PipTransitionState.ENTERING_PIP
-                || mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP;
-    }
-
     //
     // IPip Binder stub helpers
     //
@@ -560,6 +552,15 @@ public class PipController implements ConfigurationChangeListener,
             int launcherRotation, Rect hotseatKeepClearArea) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "getSwipePipToHomeBounds: %s", componentName);
+        if (mPipTransitionState.isInPip() || mPipTransitionState.isEnterPipScheduled()) {
+            // Launcher might sometimes be unaware that we have scheduled PiP entry already,
+            // so make sure swipe-pip-to-home does not go through in case Launcher still requests
+            // entry destination bounds from Shell.
+            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                    "Launcher attempted to swipe-pip-to-home while already in PiP"
+                            + " or about to enter PiP");
+            return null;
+        }
 
         // If PiP is enabled on Connected Displays, update PipDisplayLayoutState to have the correct
         // display info that PiP is entering in.
