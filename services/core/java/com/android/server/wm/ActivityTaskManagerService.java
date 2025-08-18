@@ -4147,15 +4147,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 }
 
                 getTransitionController().startCollectOrQueue(enterPipTransition, (deferred) -> {
-                    if (deferred && !r.checkEnterPictureInPictureState(
-                            "enterPictureInPictureMode-collect", false /* beforeStopping */)) {
-                        // If the transition was queued to collect, it is possible the PiP candidate
-                        // activity isn't in a proper state to enter PiP anymore, so double check.
-                        Slog.w(TAG, "PiP candidate activity in invalid state on transit collect");
-                        enterPipTransition.abort();
-                        return;
-                    }
-
                     mChainTracker.start("enterPip2", enterPipTransition);
                     // Collecting PiP activity explicitly to avoid stopping PiP activity while
                     // Shell handles the request; see task supervisor's
