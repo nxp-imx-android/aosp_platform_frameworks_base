@@ -521,6 +521,158 @@ internal fun <A, B, C, D, E, Z> zipStates(
     return StateImpl(nameData, calm, stateStore)
 }
 
+internal fun <A, B, C, D, E, F, Z> zipStates(
+    nameData: NameData,
+    sa: Init<StateImpl<A>>,
+    sb: Init<StateImpl<B>>,
+    sc: Init<StateImpl<C>>,
+    sd: Init<StateImpl<D>>,
+    se: Init<StateImpl<E>>,
+    sf: Init<StateImpl<F>>,
+    transform: EvalScope.(A, B, C, D, E, F) -> Z,
+): StateImpl<Z> {
+    val stateStore = DerivedZipped6(nameData, sa, sb, sc, sd, se, sf, transform)
+    @Suppress("UNCHECKED_CAST")
+    val mergedChanges: EventsImpl<Z> =
+        switchDeferredImpl(
+            nameData + "mergedChanges",
+            getStorage = {
+                listOf(
+                        sa.connect(this).changes,
+                        sb.connect(this).changes,
+                        sc.connect(this).changes,
+                        sd.connect(this).changes,
+                        se.connect(this).changes,
+                        sf.connect(this).changes,
+                    )
+                    .asIterableWithIndex()
+            },
+            getPatches = { neverImpl },
+            storeFactory = ArrayMapK.Factory,
+        ) {
+            val results = it.asArrayMapK()
+            val a =
+                if (results.containsKey(0)) {
+                    results.getValue(0).getPushEvent(logIndent = 0, evalScope = this) as A
+                } else {
+                    sa.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val b =
+                if (results.containsKey(1)) {
+                    results.getValue(1).getPushEvent(logIndent = 0, evalScope = this) as B
+                } else {
+                    sb.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val c =
+                if (results.containsKey(2)) {
+                    results.getValue(2).getPushEvent(logIndent = 0, evalScope = this) as C
+                } else {
+                    sc.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val d =
+                if (results.containsKey(3)) {
+                    results.getValue(3).getPushEvent(logIndent = 0, evalScope = this) as D
+                } else {
+                    sd.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val e =
+                if (results.containsKey(4)) {
+                    results.getValue(4).getPushEvent(logIndent = 0, evalScope = this) as E
+                } else {
+                    se.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val f =
+                if (results.containsKey(5)) {
+                    results.getValue(5).getPushEvent(logIndent = 0, evalScope = this) as F
+                } else {
+                    sf.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            transform(a, b, c, d, e, f)
+        }
+    val calm = distinctChanges({ mergedChanges }, nameData + "calm", stateStore)
+    return StateImpl(nameData, calm, stateStore)
+}
+
+internal fun <A, B, C, D, E, F, G, Z> zipStates(
+    nameData: NameData,
+    sa: Init<StateImpl<A>>,
+    sb: Init<StateImpl<B>>,
+    sc: Init<StateImpl<C>>,
+    sd: Init<StateImpl<D>>,
+    se: Init<StateImpl<E>>,
+    sf: Init<StateImpl<F>>,
+    sg: Init<StateImpl<G>>,
+    transform: EvalScope.(A, B, C, D, E, F, G) -> Z,
+): StateImpl<Z> {
+    val stateStore = DerivedZipped7(nameData, sa, sb, sc, sd, se, sf, sg, transform)
+    @Suppress("UNCHECKED_CAST")
+    val mergedChanges: EventsImpl<Z> =
+        switchDeferredImpl(
+            nameData + "mergedChanges",
+            getStorage = {
+                listOf(
+                        sa.connect(this).changes,
+                        sb.connect(this).changes,
+                        sc.connect(this).changes,
+                        sd.connect(this).changes,
+                        se.connect(this).changes,
+                        sf.connect(this).changes,
+                        sg.connect(this).changes,
+                    )
+                    .asIterableWithIndex()
+            },
+            getPatches = { neverImpl },
+            storeFactory = ArrayMapK.Factory,
+        ) {
+            val results = it.asArrayMapK()
+            val a =
+                if (results.containsKey(0)) {
+                    results.getValue(0).getPushEvent(logIndent = 0, evalScope = this) as A
+                } else {
+                    sa.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val b =
+                if (results.containsKey(1)) {
+                    results.getValue(1).getPushEvent(logIndent = 0, evalScope = this) as B
+                } else {
+                    sb.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val c =
+                if (results.containsKey(2)) {
+                    results.getValue(2).getPushEvent(logIndent = 0, evalScope = this) as C
+                } else {
+                    sc.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val d =
+                if (results.containsKey(3)) {
+                    results.getValue(3).getPushEvent(logIndent = 0, evalScope = this) as D
+                } else {
+                    sd.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val e =
+                if (results.containsKey(4)) {
+                    results.getValue(4).getPushEvent(logIndent = 0, evalScope = this) as E
+                } else {
+                    se.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val f =
+                if (results.containsKey(5)) {
+                    results.getValue(5).getPushEvent(logIndent = 0, evalScope = this) as F
+                } else {
+                    sf.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            val g =
+                if (results.containsKey(6)) {
+                    results.getValue(6).getPushEvent(logIndent = 0, evalScope = this) as G
+                } else {
+                    sg.connect(initScope = this).getCurrentWithEpoch(evalScope = this).first
+                }
+            transform(a, b, c, d, e, f, g)
+        }
+    val calm = distinctChanges({ mergedChanges }, nameData + "calm", stateStore)
+    return StateImpl(nameData, calm, stateStore)
+}
+
 internal fun <K, V> zipStateMap(
     nameData: NameData,
     numStates: Int,
@@ -721,6 +873,91 @@ internal class DerivedZipped5<A, B, C, D, E, Z>(
 
         return if (newEpoch > validatedEpoch) {
             evalScope.transform(a, b, c, d, e) to newEpoch
+        } else {
+            null
+        }
+    }
+
+    override fun toString(): String = "${this::class.simpleName}@$hashString[$nameData]"
+}
+
+internal class DerivedZipped6<A, B, C, D, E, F, Z>(
+    val nameData: NameData,
+    val sa: Init<StateImpl<A>>,
+    val sb: Init<StateImpl<B>>,
+    val sc: Init<StateImpl<C>>,
+    val sd: Init<StateImpl<D>>,
+    val se: Init<StateImpl<E>>,
+    val sf: Init<StateImpl<F>>,
+    val transform: EvalScope.(A, B, C, D, E, F) -> Z,
+) : StateDerived<Z>() {
+
+    init {
+        nameData.forceInit()
+    }
+
+    override fun recalc(evalScope: EvalScope): Pair<Z, Long>? {
+        var newEpoch = 0L
+
+        val (a, epochA) = sa.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochA)
+        val (b, epochB) = sb.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochB)
+        val (c, epochC) = sc.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochC)
+        val (d, epochD) = sd.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochD)
+        val (e, epochE) = se.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochE)
+        val (f, epochF) = sf.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochF)
+
+        return if (newEpoch > validatedEpoch) {
+            evalScope.transform(a, b, c, d, e, f) to newEpoch
+        } else {
+            null
+        }
+    }
+
+    override fun toString(): String = "${this::class.simpleName}@$hashString[$nameData]"
+}
+
+internal class DerivedZipped7<A, B, C, D, E, F, G, Z>(
+    val nameData: NameData,
+    val sa: Init<StateImpl<A>>,
+    val sb: Init<StateImpl<B>>,
+    val sc: Init<StateImpl<C>>,
+    val sd: Init<StateImpl<D>>,
+    val se: Init<StateImpl<E>>,
+    val sf: Init<StateImpl<F>>,
+    val sg: Init<StateImpl<G>>,
+    val transform: EvalScope.(A, B, C, D, E, F, G) -> Z,
+) : StateDerived<Z>() {
+
+    init {
+        nameData.forceInit()
+    }
+
+    override fun recalc(evalScope: EvalScope): Pair<Z, Long>? {
+        var newEpoch = 0L
+
+        val (a, epochA) = sa.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochA)
+        val (b, epochB) = sb.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochB)
+        val (c, epochC) = sc.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochC)
+        val (d, epochD) = sd.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochD)
+        val (e, epochE) = se.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochE)
+        val (f, epochF) = sf.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochF)
+        val (g, epochG) = sg.connect(evalScope).getCurrentWithEpoch(evalScope)
+        newEpoch = maxOf(newEpoch, epochG)
+
+        return if (newEpoch > validatedEpoch) {
+            evalScope.transform(a, b, c, d, e, f, g) to newEpoch
         } else {
             null
         }

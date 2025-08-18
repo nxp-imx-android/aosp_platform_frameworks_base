@@ -256,3 +256,113 @@ internal fun <A, B, C, D, E, Z> combine(
             }
         }
     )
+
+/**
+ * Returns a [State] whose value is generated with [transform] by combining the current values of
+ * each given [State].
+ *
+ * @see State.combine
+ */
+@ExperimentalKairosApi
+fun <A, B, C, D, E, F, Z> combine(
+    stateA: State<A>,
+    stateB: State<B>,
+    stateC: State<C>,
+    stateD: State<D>,
+    stateE: State<E>,
+    stateF: State<F>,
+    transform: KairosScope.(A, B, C, D, E, F) -> Z,
+): State<Z> =
+    combine(
+        nameTag("combine6").toNameData("combine6"),
+        stateA,
+        stateB,
+        stateC,
+        stateD,
+        stateE,
+        stateF,
+        transform,
+    )
+
+internal fun <A, B, C, D, E, F, Z> combine(
+    nameData: NameData,
+    stateA: State<A>,
+    stateB: State<B>,
+    stateC: State<C>,
+    stateD: State<D>,
+    stateE: State<E>,
+    stateF: State<F>,
+    transform: KairosScope.(A, B, C, D, E, F) -> Z,
+): State<Z> =
+    StateInit(
+        init(nameData) {
+            zipStates(
+                nameData,
+                stateA.init,
+                stateB.init,
+                stateC.init,
+                stateD.init,
+                stateE.init,
+                stateF.init,
+            ) { a, b, c, d, e, f ->
+                NoScope.transform(a, b, c, d, e, f)
+            }
+        }
+    )
+
+/**
+ * Returns a [State] whose value is generated with [transform] by combining the current values of
+ * each given [State].
+ *
+ * @see State.combine
+ */
+@ExperimentalKairosApi
+fun <A, B, C, D, E, F, G, Z> combine(
+    stateA: State<A>,
+    stateB: State<B>,
+    stateC: State<C>,
+    stateD: State<D>,
+    stateE: State<E>,
+    stateF: State<F>,
+    stateG: State<G>,
+    transform: KairosScope.(A, B, C, D, E, F, G) -> Z,
+): State<Z> =
+    combine(
+        nameTag("combine7").toNameData("combine7"),
+        stateA,
+        stateB,
+        stateC,
+        stateD,
+        stateE,
+        stateF,
+        stateG,
+        transform,
+    )
+
+internal fun <A, B, C, D, E, F, G, Z> combine(
+    nameData: NameData,
+    stateA: State<A>,
+    stateB: State<B>,
+    stateC: State<C>,
+    stateD: State<D>,
+    stateE: State<E>,
+    stateF: State<F>,
+    stateG: State<G>,
+    transform: KairosScope.(A, B, C, D, E, F, G) -> Z,
+): State<Z> =
+    StateInit(
+        init(nameData) {
+            zipStates(
+                nameData,
+                stateA.init,
+                stateB.init,
+                stateC.init,
+                stateD.init,
+                stateE.init,
+                stateF.init,
+                stateG.init,
+            ) { a, b, c, d, e, f, g ->
+                NoScope.transform(a, b, c, d, e, f, g)
+            }
+        }
+    )
