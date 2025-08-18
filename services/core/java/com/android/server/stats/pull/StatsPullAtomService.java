@@ -75,7 +75,6 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__MANUAL;
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__TELEPHONY;
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__UNKNOWN;
-import static com.android.server.am.MemoryStatUtil.readMemoryStatFromFilesystem;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
 import static com.android.server.stats.pull.IonMemoryUtil.readProcessSystemIonHeapSizesFromDebugfs;
 import static com.android.server.stats.pull.IonMemoryUtil.readSystemIonHeapSizeFromDebugfs;
@@ -486,7 +485,6 @@ public class StatsPullAtomService extends SystemService {
     private final Object mUwbActivityInfoLock = new Object();
     private final Object mSystemElapsedRealtimeLock = new Object();
     private final Object mSystemUptimeLock = new Object();
-    private final Object mProcessMemoryStateLock = new Object();
     private final Object mProcessMemoryHighWaterMarkLock = new Object();
     private final Object mSystemIonHeapSizeLock = new Object();
     private final Object mIonHeapSizeLock = new Object();
@@ -640,10 +638,6 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.SYSTEM_UPTIME:
                         synchronized (mSystemUptimeLock) {
                             return pullSystemUptimeLocked(atomTag, data);
-                        }
-                    case FrameworkStatsLog.PROCESS_MEMORY_STATE:
-                        synchronized (mProcessMemoryStateLock) {
-                            return pullProcessMemoryStateLocked(atomTag, data);
                         }
                     case FrameworkStatsLog.PROCESS_MEMORY_HIGH_WATER_MARK:
                         synchronized (mProcessMemoryHighWaterMarkLock) {
@@ -994,7 +988,6 @@ public class StatsPullAtomService extends SystemService {
         registerBluetoothActivityInfo();
         registerSystemElapsedRealtime();
         registerSystemUptime();
-        registerProcessMemoryState();
         registerProcessMemoryHighWaterMark();
         registerProcessMemorySnapshot();
         registerSystemIonHeapSize();
@@ -2490,37 +2483,6 @@ public class StatsPullAtomService extends SystemService {
 
     int pullSystemUptimeLocked(int atomTag, List<StatsEvent> pulledData) {
         pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, SystemClock.uptimeMillis()));
-        return StatsManager.PULL_SUCCESS;
-    }
-
-    private void registerProcessMemoryState() {
-        int tagId = FrameworkStatsLog.PROCESS_MEMORY_STATE;
-        PullAtomMetadata metadata = new PullAtomMetadata.Builder()
-                .setAdditiveFields(new int[]{4, 5, 6, 7, 8})
-                .build();
-        mStatsManager.setPullAtomCallback(
-                tagId,
-                metadata,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl
-        );
-    }
-
-    int pullProcessMemoryStateLocked(int atomTag, List<StatsEvent> pulledData) {
-        List<ProcessMemoryState> processMemoryStates =
-                LocalServices.getService(ActivityManagerInternal.class)
-                        .getMemoryStateForProcesses();
-        for (ProcessMemoryState processMemoryState : processMemoryStates) {
-            final MemoryStat memoryStat = readMemoryStatFromFilesystem(processMemoryState.uid,
-                    processMemoryState.pid);
-            if (memoryStat == null) {
-                continue;
-            }
-            pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, processMemoryState.uid,
-                    processMemoryState.processName, processMemoryState.oomScore, memoryStat.pgfault,
-                    memoryStat.pgmajfault, memoryStat.rssInBytes, memoryStat.cacheInBytes,
-                    memoryStat.swapInBytes, -1 /*unused*/, -1 /*unused*/, -1 /*unused*/));
-        }
         return StatsManager.PULL_SUCCESS;
     }
 
