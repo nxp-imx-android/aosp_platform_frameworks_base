@@ -29,6 +29,8 @@
     *** fillMaxWidth*$default(...);
     *** fillMaxHeight*$default(...);
     *** wrapContentSize*$default(...);
+    *** wrapContentWidth*$default(...);
+    *** wrapContentHeight*$default(...);
 }
 
 -keep class androidx.compose.foundation.layout.SpacerKt {
@@ -66,6 +68,7 @@
     *** getStart(...);
     *** getEnd(...);
     *** getSpaceBetween(...);
+    *** getCenter(...);
 }
 
 -keep class androidx.compose.ui.Alignment {
@@ -78,6 +81,7 @@
     *** getBottom(...);
     *** getStart(...);
     *** getEnd(...);
+    *** getCenterHorizontally(...);
 }
 
 -keep class androidx.compose.foundation.layout.ColumnKt {
@@ -86,6 +90,14 @@
 
 -keep class androidx.compose.foundation.layout.RowKt {
     *** rowMeasurePolicy(...);
+}
+
+-keep class androidx.compose.foundation.layout.ColumnScope {
+    *** weight*$default(...);
+}
+
+-keep class androidx.compose.foundation.layout.RowScope {
+    *** weight*$default(...);
 }
 
 -keep class androidx.compose.runtime.ComposablesKt {

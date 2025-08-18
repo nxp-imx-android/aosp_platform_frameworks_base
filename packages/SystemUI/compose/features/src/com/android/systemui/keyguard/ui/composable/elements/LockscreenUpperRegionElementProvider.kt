@@ -62,29 +62,27 @@ constructor(
     private val viewModelFactory: LockscreenUpperRegionViewModel.Factory,
 ) : LockscreenElementProvider {
     private val logger = Logger(blueprintLog, "LockscreenUpperRegionElementProvider")
-    override val elements: List<LockscreenElement> by lazy { listOf(upperRegionElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(UpperRegionElement()) }
 
     private val wideLayout = WideLayout()
     private val narrowLayout = NarrowLayout()
 
-    private val upperRegionElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Region.Upper
-            override val context = this@LockscreenUpperRegionElementProvider.context
+    private inner class UpperRegionElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Region.Upper
+        override val context = this@LockscreenUpperRegionElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                val viewModel =
-                    rememberViewModel("LockscreenUpperRegion") { viewModelFactory.create() }
-                when (getLayoutType()) {
-                    LayoutType.WIDE -> with(wideLayout) { Layout(viewModel, factory, context) }
-                    LayoutType.NARROW -> with(narrowLayout) { Layout(viewModel, factory, context) }
-                }
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val viewModel = rememberViewModel("LockscreenUpperRegion") { viewModelFactory.create() }
+            when (getLayoutType()) {
+                LayoutType.WIDE -> with(wideLayout) { Layout(viewModel, factory, context) }
+                LayoutType.NARROW -> with(narrowLayout) { Layout(viewModel, factory, context) }
             }
         }
+    }
 
     /** The Narrow Layouts are intended for phones */
     private inner class NarrowLayout {

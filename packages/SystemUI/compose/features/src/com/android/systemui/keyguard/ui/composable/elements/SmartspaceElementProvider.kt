@@ -17,6 +17,8 @@
 package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
+import android.view.View
+import android.widget.LinearLayout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -30,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.modifiers.padding
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
@@ -55,15 +58,15 @@ constructor(
 ) : LockscreenElementProvider {
     override val elements: List<LockscreenElement> by lazy {
         listOf(
-            DateElement(Smartspace.Date.LargeClock, isLargeClock = true),
-            DateElement(Smartspace.Date.SmallClock, isLargeClock = false),
-            WeatherElement(Smartspace.Weather.LargeClock, isLargeClock = true),
-            WeatherElement(Smartspace.Weather.SmallClock, isLargeClock = false),
-            cardsElement,
+            DWAColumnElement(Smartspace.DWA.SmallClock.Column, isLargeClock = false),
+            DWARowElement(Smartspace.DWA.SmallClock.Row, isLargeClock = false),
+            DWARowElement(Smartspace.DWA.LargeClock.Above, isLargeClock = true),
+            DWARowElement(Smartspace.DWA.LargeClock.Below, isLargeClock = true),
+            CardsElement(),
         )
     }
 
-    private inner class DateElement(
+    private inner class DWAColumnElement(
         override val key: ElementKey,
         private val isLargeClock: Boolean,
     ) : LockscreenElement {
@@ -74,79 +77,108 @@ constructor(
             factory: LockscreenElementFactory,
             context: LockscreenElementContext,
         ) {
-            val isDateEnabled = keyguardSmartspaceViewModel.isDateEnabled
-            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled || !isDateEnabled) {
+            if (!keyguardSmartspaceViewModel.isDateWeatherDecoupled) {
                 return
             }
 
-            AndroidView(
-                factory = { ctx ->
-                    smartspaceController.buildAndConnectDateView(ctx, isLargeClock)!!
-                }
-            )
-        }
-    }
-
-    private inner class WeatherElement(
-        override val key: ElementKey,
-        private val isLargeClock: Boolean,
-    ) : LockscreenElement {
-        override val context = this@SmartspaceElementProvider.context
-
-        @Composable
-        override fun ContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
             val isWeatherEnabled: Boolean by
                 keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
-            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled || !isWeatherEnabled) {
-                return
-            }
 
             AndroidView(
                 factory = { ctx ->
-                    smartspaceController.buildAndConnectWeatherView(ctx, isLargeClock)!!
-                }
+                    setupDWA(ctx, isWeatherEnabled, isLargeClock) {
+                        it.orientation = LinearLayout.VERTICAL
+                    }
+                },
+                modifier = context.burnInModifier,
             )
         }
     }
 
-    private val cardsElement =
-        object : LockscreenElement {
-            override val key = Smartspace.Cards
-            override val context = this@SmartspaceElementProvider.context
+    private inner class DWARowElement(
+        override val key: ElementKey,
+        private val isLargeClock: Boolean,
+    ) : LockscreenElement {
+        override val context = this@SmartspaceElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
-                    return
-                }
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            if (!keyguardSmartspaceViewModel.isDateWeatherDecoupled) {
+                return
+            }
 
-                AndroidView(
-                    factory = { ctx ->
-                        val view = smartspaceController.buildAndConnectView(ctx)!!
-                        keyguardUnlockAnimationController.lockscreenSmartspace = view
-                        view
-                    },
-                    onRelease = { view ->
-                        if (keyguardUnlockAnimationController.lockscreenSmartspace == view) {
-                            keyguardUnlockAnimationController.lockscreenSmartspace = null
-                        }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(
-                                // Note: smartspace adds 16dp of start padding internally
-                                start = 12.dp,
-                                bottom =
-                                    dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
-                            )
-                            .then(context.burnInModifier),
-                )
+            val isWeatherEnabled: Boolean by
+                keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
+
+            AndroidView(
+                factory = { ctx ->
+                    setupDWA(ctx, isWeatherEnabled, isLargeClock) {
+                        it.orientation = LinearLayout.HORIZONTAL
+                    }
+                },
+                modifier = context.burnInModifier,
+            )
+        }
+    }
+
+    private fun setupDWA(
+        ctx: Context,
+        isWeatherEnabled: Boolean,
+        isLargeClock: Boolean,
+        callback: (LinearLayout) -> Unit,
+    ): View {
+        val dateView =
+            smartspaceController.buildAndConnectDateView(ctx, isLargeClock) as LinearLayout
+        if (isWeatherEnabled) {
+            smartspaceController.buildAndConnectWeatherView(ctx, isLargeClock)?.let {
+                // Place weather right after the date, before the extras (alarm and dnd)
+                val index = if (dateView.childCount == 0) 0 else 1
+                dateView.addView(it, index)
             }
         }
+        callback(dateView)
+        return dateView
+    }
+
+    private inner class CardsElement : LockscreenElement {
+        override val key = Smartspace.Cards
+        override val context = this@SmartspaceElementProvider.context
+
+        @Composable
+        override fun ContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
+                return
+            }
+
+            val clockPadding = dimensionResource(clocksR.dimen.clock_padding_start)
+
+            AndroidView(
+                factory = { ctx ->
+                    val view = smartspaceController.buildAndConnectView(ctx)!!
+                    keyguardUnlockAnimationController.lockscreenSmartspace = view
+                    view
+                },
+                onRelease = { view ->
+                    if (keyguardUnlockAnimationController.lockscreenSmartspace == view) {
+                        keyguardUnlockAnimationController.lockscreenSmartspace = null
+                    }
+                },
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(
+                            // Note: smartspace adds 16dp of start padding internally
+                            start = clockPadding - 16.dp,
+                            end = clockPadding,
+                            bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
+                        )
+                        .then(context.burnInModifier),
+            )
+        }
+    }
 }

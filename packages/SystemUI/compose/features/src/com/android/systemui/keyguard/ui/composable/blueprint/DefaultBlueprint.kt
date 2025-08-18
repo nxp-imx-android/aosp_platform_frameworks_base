@@ -138,8 +138,8 @@ constructor(
 
             LockscreenSceneLayout(
                 viewModel = viewModel,
-                elementFactory = elementFactory,
-                elementContext = elementContext,
+                factory = elementFactory,
+                context = elementContext,
             )
         }
     }
