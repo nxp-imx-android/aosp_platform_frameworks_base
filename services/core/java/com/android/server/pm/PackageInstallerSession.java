@@ -246,7 +246,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -479,22 +478,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private Boolean mUserActionRequired;
 
     /**
-     * Used for tracking whether user was notified regarding an incomplete verification.
+     * Used for tracking whether user was notified regarding an incomplete verification and the
+     * reason for the user action for developer verification. Also handles the user response.
      */
-    private boolean mVerificationUserActionNeeded;
-
-    /**
-     * Indicates the reason why a verification needs user action. Used to check whether a user can
-     * bypass verification.
-     */
-    private @DeveloperVerificationUserConfirmationInfo.UserActionNeededReason int
-            mVerificationUserActionNeededReason =
-            DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
-
-    /**
-     * Holds the message describing the reason of a failed verification.
-     */
-    private String mVerificationFailedMessage = null;
+    private DeveloperVerificationUserActionState mDeveloperVerificationUserActionState;
 
     /**
      * The developer verification status which will be preserved into the package state if the
@@ -1552,11 +1539,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      */
     public PackageInstaller.DeveloperVerificationUserConfirmationInfo
                 generateDeveloperVerificationUserConfirmationInfo() {
-        if (!mVerificationUserActionNeeded) {
+        if (mDeveloperVerificationUserActionState == null) {
             return null;
         }
         return new PackageInstaller.DeveloperVerificationUserConfirmationInfo(
-                mCurrentVerificationPolicy.get(), mVerificationUserActionNeededReason);
+                mCurrentVerificationPolicy.get(),
+                mDeveloperVerificationUserActionState.mUserActionNeededReason);
     }
 
     public boolean isPrepared() {
@@ -3043,7 +3031,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             onSessionVerificationFailure(e.error, errorMsg, /* extras= */ null);
         }
         if (isVerificationServiceEnabled()) {
-            performDeveloperVerification(/* retry= */ false);
+            performDeveloperVerification();
         } else {
             // No need to check with verifier. Proceed with the rest of the verification.
             resumeVerify();
@@ -3076,7 +3064,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    boolean shouldAllowDeveloperVerificationEmergencyBypass(String packageName, Computer snapshot) {
+    boolean shouldAllowDeveloperVerificationEmergencyBypass(String packageName) {
         final String verifierPackageName = mDeveloperVerifierController.getVerifierPackageName();
         if (verifierPackageName == null) {
             // Impossible condition. The verifier must exist because otherwise we wouldn't get
@@ -3086,6 +3074,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         if (packageName == null) {
             return false;
         }
+        final Computer snapshot = mPm.snapshotComputer();
         PackageStateInternal ps = snapshot.getPackageStateInternal(packageName, Process.SYSTEM_UID);
         if (ps == null || !ps.isSystem()) {
             // The app being installed must be a system app to be considered a critical app for
@@ -3165,8 +3154,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         return false;
     }
 
-    private void performDeveloperVerification(boolean retry) {
-        CompletableFuture<DeveloperVerificationFutureResult> future = new CompletableFuture<>();
+    private void performDeveloperVerification() {
+        final CompletableFuture<DeveloperVerificationFutureResult> future;
         if (isMultiPackage()) {
             // This is the parent session of a multi-package session. Perform developer verification
             // on individual child sessions but not the parent session.
@@ -3177,86 +3166,91 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 final PackageInstallerSession childSession = childSessions.get(i);
                 final CompletableFuture<DeveloperVerificationFutureResult> childFuture =
                         new CompletableFuture<>();
-                childSession.startDeveloperVerificationSession(
-                        new DeveloperVerifierCallback(childFuture), retry);
+                childSession.startDeveloperVerificationSession(childFuture, /* retry= */ false);
                 futures.add(childFuture);
             }
             final CompletableFuture<DeveloperVerificationFutureResult>[] futuresArray =
                     new CompletableFuture[futures.size()];
-            future = CompletableFuture.allOf(futures.toArray(futuresArray)).thenApply((v) -> {
-                return mergeDeveloperVerificationResults(futures);
-            });
+            future = CompletableFuture.allOf(futures.toArray(futuresArray)).thenApply(
+                    (v) -> mergeDeveloperVerificationResults(futures));
         } else {
             // Not a multi-package session
-            startDeveloperVerificationSession(new DeveloperVerifierCallback(future), retry);
+            future = new CompletableFuture<>();
+            startDeveloperVerificationSession(future, /* retry= */ false);
         }
         var unused = future.thenAccept(this::processDeveloperVerificationResults);
     }
 
     // Process multiple developer verification results from child sessions.
-    // TODO(b/360129657): handle user action requirements for different packages in child sessions.
     private DeveloperVerificationFutureResult mergeDeveloperVerificationResults(
             List<CompletableFuture<DeveloperVerificationFutureResult>> futures) {
-        int numReceivedResults = 0;
-        final HashSet<DeveloperVerificationFutureResult> results = new HashSet<>();
+        final List<DeveloperVerificationFutureResult> results = new ArrayList<>();
         for (int i = 0; i < futures.size(); i++) {
             try {
                 results.add(futures.get(i).get());
-                numReceivedResults++;
             } catch (ExecutionException | InterruptedException e) {
                 // Ignore for now. We will do a size check right after this.
             }
         }
-        if (results.isEmpty() || numReceivedResults != futures.size()) {
-            // Failed to receive any result from developer verification. Cannot proceed.
+        if (results.size() != futures.size()) {
+            // Failed to receive developer verification results from all sessions. Cannot proceed.
             setSessionFailedDueToDeveloperVerification(
-                    DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
+                    /* verificationFailedReason= */ DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN,
                     /* isLiteVerification= */ false, /* includeExtraIntent= */ false,
                     /* extensionResponse= */ null,
                     "Session failed due to missing developer verification result");
         }
-        if (results.size() > 1) {
-            // For a multi-package session, if different child sessions received different
-            // developer verification results for the same package, we cannot proceed.
-            setSessionFailedDueToDeveloperVerification(
-                    DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
-                    /* isLiteVerification= */ false, /* includeExtraIntent= */ false,
-                    /* extensionResponse= */ null,
-                    "Multi-package session failed developer verification due to "
-                            + "incoherent results for child sessions");
+
+        // Fail the parent session if any of the child sessions failed developer verification.
+        // Use combined error message and extension response in the final result.
+        boolean hasFailure = false;
+        StringBuilder errorMessage = null;
+        PersistableBundle extensionResponse = new PersistableBundle();
+        for (int i = 0; i < results.size(); i++) {
+            final DeveloperVerificationFutureResult result = results.get(i);
+            if (!result.mSuccess) {
+                hasFailure = true;
+                if (errorMessage == null) {
+                    errorMessage = new StringBuilder();
+                } else {
+                    errorMessage.append("\n");
+                }
+                errorMessage.append(result.mFailedMessage);
+                if (result.mExtensionResponse != null) {
+                    extensionResponse.putAll(result.mExtensionResponse);
+                }
+            }
         }
-        return results.iterator().next();
+
+        if (hasFailure) {
+            return DeveloperVerificationFutureResult.ofFailure(
+                    DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
+                    /* failedMessage= */ errorMessage.toString(),
+                    /* extensionResponse= */ extensionResponse);
+        } else {
+            return DeveloperVerificationFutureResult.ofSuccess();
+        }
     }
 
     private void processDeveloperVerificationResults(
             DeveloperVerificationFutureResult finalResult) {
-        // If a critical package is being updated, bypass the developer verification result checking
-        // and directly proceed to the rest of the installation.
-        if (shouldAllowDeveloperVerificationEmergencyBypass(
-                getPackageName(), mPm.snapshotComputer())) {
-            synchronized (mMetrics) {
-                mMetrics.onDeveloperVerificationBypassed(
-                        DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
-            }
-            finalResult = DeveloperVerificationFutureResult.ofBypassed();
-        }
-        if (finalResult.mBypassed || finalResult.mSuccess) {
+        if (finalResult.mSuccess) {
             resumeVerify();
-        } else if (finalResult.mShouldSendUserAction) {
-            sendDeveloperVerificationUserAction(finalResult.mUserActionNeededReason,
-                    finalResult.mFailedMessage);
         } else {
             setSessionFailedDueToDeveloperVerification(
-                    finalResult.mUserActionNeededReason,
-                    /* isLiteVerification= */ false, /* includeExtraIntent= */ true,
+                    finalResult.mVerificationFailureReason,
+                    /* isLiteVerification= */
+                    mDeveloperVerificationStatusInternal.isLiteVerification(),
+                    /* includeExtraIntent= */ true,
                     /* extensionResponse= */ finalResult.mExtensionResponse,
                     finalResult.mFailedMessage);
         }
     }
 
-    private void startDeveloperVerificationSession(DeveloperVerifierCallback callback,
-            boolean retry) {
+    private void startDeveloperVerificationSession(
+            CompletableFuture<DeveloperVerificationFutureResult> future, boolean retry) {
         final String packageName = getPackageName();
+        DeveloperVerifierCallback callback = new DeveloperVerifierCallback(future);
         // First check if we have any local experiment for this package. If so, use previously
         // configured test results instead of doing the real verification.
         if (mDeveloperVerifierController.hasExperiments(packageName)) {
@@ -3437,16 +3431,23 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
-                mFuture.complete(
-                        DeveloperVerificationFutureResult.ofUserActionOrFailure(
-                                /* shouldSendUserAction= */
-                                shouldSendUserActionForVerification(/* blockingFailure= */ false),
-                                /* userActionNeededReason= */
-                                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
-                                /* failedMessage= */
-                                "A verifier agent is specified on device but cannot "
-                                        + "be connected because of unknown error.",
-                                /* extensionResponse= */ null));
+                if (shouldAllowDeveloperVerificationEmergencyBypass(getPackageName())) {
+                    setDeveloperVerificationBypassedForEmergency();
+                    return;
+                }
+
+                final int userActionNeededReason =
+                        DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
+                if (shouldSendUserActionForVerification(/* blockingFailure= */ false)) {
+                    sendDeveloperVerificationUserAction(userActionNeededReason, mFuture);
+                } else {
+                    mFuture.complete(DeveloperVerificationFutureResult.ofFailure(
+                            userActionNeededReason,
+                            /* failedMessage= */
+                            "A verifier agent is specified on device but cannot "
+                                    + "be connected because of unknown error.",
+                            /* extensionResponse= */ null));
+                }
             });
         }
 
@@ -3467,16 +3468,24 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
-                mFuture.complete(
-                        DeveloperVerificationFutureResult.ofUserActionOrFailure(
-                                /* shouldSendUserAction= */
-                                shouldSendUserActionForVerification(/* blockingFailure= */ false),
-                                /* userActionNeededReason= */
-                                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
-                                /* failedMessage= */
-                                "A verifier agent is available on device but cannot "
-                                        + "be connected.",
-                                /* extensionResponse= */ null));
+                if (shouldAllowDeveloperVerificationEmergencyBypass(getPackageName())) {
+                    setDeveloperVerificationBypassedForEmergency();
+                    return;
+                }
+
+                final int userActionNeededReason =
+                        DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
+                if (shouldSendUserActionForVerification(/* blockingFailure= */ false)) {
+                    sendDeveloperVerificationUserAction(userActionNeededReason, mFuture);
+                } else {
+                    mFuture.complete(
+                            DeveloperVerificationFutureResult.ofFailure(
+                                    userActionNeededReason,
+                                    /* failedMessage= */
+                                    "A verifier agent is available on device but cannot "
+                                            + "be connected.",
+                                    /* extensionResponse= */ null));
+                }
             });
         }
 
@@ -3508,16 +3517,24 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
-                mFuture.complete(
-                        DeveloperVerificationFutureResult.ofUserActionOrFailure(
-                                /* shouldSendUserAction= */
-                                shouldSendUserActionForVerification(/* blockingFailure= */ false),
-                                /* userActionNeededReason= */
-                                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
-                                /* failedMessage= */
-                                "Verification timed out; missing a response from the "
-                                        + "verifier within the time limit",
-                                /* extensionResponse= */ null));
+                if (shouldAllowDeveloperVerificationEmergencyBypass(getPackageName())) {
+                    setDeveloperVerificationBypassedForEmergency();
+                    return;
+                }
+
+                final int userActionNeededReason =
+                        DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
+                if (shouldSendUserActionForVerification(/* blockingFailure= */ false)) {
+                    sendDeveloperVerificationUserAction(userActionNeededReason, mFuture);
+                } else {
+                    mFuture.complete(
+                            DeveloperVerificationFutureResult.ofFailure(
+                                    userActionNeededReason,
+                                    /* failedMessage= */
+                                    "Verification timed out; missing a response from the "
+                                            + "verifier within the time limit",
+                                    /* extensionResponse= */ null));
+                }
             });
         }
 
@@ -3553,21 +3570,26 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
-                // Package is blocked
-                StringBuilder sb = new StringBuilder("Verifier rejected the installation");
-                if (!TextUtils.isEmpty(statusReceived.getFailureMessage())) {
-                    sb.append(" with message: ").append(statusReceived.getFailureMessage());
+                if (shouldAllowDeveloperVerificationEmergencyBypass(getPackageName())) {
+                    setDeveloperVerificationBypassedForEmergency();
+                    return;
                 }
 
-                mFuture.complete(
-                        DeveloperVerificationFutureResult.ofUserActionOrFailure(
-                                /* shouldSendUserAction= */
-                                shouldSendUserActionForVerification(/* blockingFailure= */ true),
-                                /* userActionNeededReason= */
-                                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED,
-                                /* failedMessage= */
-                                sb.toString(),
-                                /* extensionResponse= */ extensionResponse));
+                final int userActionNeededReason =
+                        DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
+                if (shouldSendUserActionForVerification(/* blockingFailure= */ true)) {
+                    sendDeveloperVerificationUserAction(userActionNeededReason, mFuture);
+                } else {
+                    // Package is blocked
+                    StringBuilder sb = new StringBuilder("Verifier rejected the installation");
+                    if (!TextUtils.isEmpty(statusReceived.getFailureMessage())) {
+                        sb.append(" with message: ").append(statusReceived.getFailureMessage());
+                    }
+                    mFuture.complete(DeveloperVerificationFutureResult.ofFailure(
+                            userActionNeededReason,
+                            /* failedMessage= */ sb.toString(),
+                            /* extensionResponse= */ extensionResponse));
+                }
             });
         }
 
@@ -3592,6 +3614,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
+                if (shouldAllowDeveloperVerificationEmergencyBypass(getPackageName())) {
+                    setDeveloperVerificationBypassedForEmergency();
+                    return;
+                }
+
                 final int userActionNeededReason;
                 StringBuilder sb = new StringBuilder(
                         "Verification cannot be completed because of ");
@@ -3604,16 +3631,17 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                             DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
                     sb.append("unknown reasons.");
                 }
-
-                mFuture.complete(
-                        DeveloperVerificationFutureResult.ofUserActionOrFailure(
-                                /* shouldSendUserAction= */
-                                shouldSendUserActionForVerification(/* blockingFailure= */ false),
-                                /* userActionNeededReason= */
-                                userActionNeededReason,
-                                /* failedMessage= */
-                                sb.toString(),
-                                /* extensionResponse= */ null));
+                if (shouldSendUserActionForVerification(/* blockingFailure= */ false)) {
+                    sendDeveloperVerificationUserAction(userActionNeededReason, mFuture);
+                } else {
+                    mFuture.complete(
+                            DeveloperVerificationFutureResult.ofFailure(
+                                    /* userActionNeededReason= */
+                                    userActionNeededReason,
+                                    /* failedMessage= */
+                                    sb.toString(),
+                                    /* extensionResponse= */ null));
+                }
             });
         }
 
@@ -3629,9 +3657,23 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             mHandler.post(() -> {
                 // The verifier informed the system to bypass the verification. Continue with the
                 // rest of the verification and installation.
-                mFuture.complete(DeveloperVerificationFutureResult.ofBypassed());
+                mFuture.complete(DeveloperVerificationFutureResult.ofSuccess());
             });
         }
+
+
+        /**
+         *  If a critical package is being updated, bypass the failed developer verification result
+         *  and directly proceed to the rest of the installation.
+         */
+        private void setDeveloperVerificationBypassedForEmergency() {
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationBypassed(
+                        DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
+            }
+            mFuture.complete(DeveloperVerificationFutureResult.ofSuccess());
+        }
+
     }
 
     /**
@@ -3682,26 +3724,33 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     }
 
     private void sendDeveloperVerificationUserAction(int userActionNeededReason,
-            String failedMessage) {
+            CompletableFuture<DeveloperVerificationFutureResult> future) {
+        mDeveloperVerificationUserActionState = new DeveloperVerificationUserActionState(
+                userActionNeededReason, future);
+
         Intent intent = getDeveloperVerificationUserActionIntent();
-        // Set these member fields now because they will be queried by the developer
-        // verification user confirmation activity for information about the session.
-        mVerificationUserActionNeeded = true;
-        mVerificationUserActionNeededReason = userActionNeededReason;
-        mVerificationFailedMessage = failedMessage;
-        sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId, intent);
+        final IntentSender target;
+        // If this is a child session, use the target receiver from the parent session
+        if (hasParentSessionId()) {
+            final PackageInstallerSession parentSession =
+                    mSessionProvider.getSession(getParentSessionId());
+            target = parentSession.getRemoteStatusReceiver();
+        } else {
+            target = getRemoteStatusReceiver();
+        }
+        sendOnUserActionRequired(mContext, target, sessionId, intent);
+
         synchronized (mMetrics) {
-            mMetrics.onDeveloperVerificationUserActionRequired(
-                    mVerificationUserActionNeededReason);
+            mMetrics.onDeveloperVerificationUserActionRequired(userActionNeededReason);
         }
     }
 
     private void setSessionFailedDueToDeveloperVerification(
-            int userActionNeededReason, boolean isLiteVerification, boolean includeExtraIntent,
+            @PackageInstaller.DeveloperVerificationFailedReason int verificationFailedReason,
+            boolean isLiteVerification, boolean includeExtraIntent,
             PersistableBundle extensionResponse, String failedMessage) {
         Bundle bundle = new Bundle();
-        bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
-                getVerificationFailureReason(userActionNeededReason));
+        bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON, verificationFailedReason);
         bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
                 isLiteVerification);
         if (includeExtraIntent) {
@@ -3723,88 +3772,38 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     }
 
     private static class DeveloperVerificationFutureResult {
-        final boolean mBypassed;
         final boolean mSuccess;
-        final boolean mShouldSendUserAction;
-        final int mUserActionNeededReason;
+        final int mVerificationFailureReason;
         final String mFailedMessage;
         final PersistableBundle mExtensionResponse;
 
-        static DeveloperVerificationFutureResult ofBypassed() {
-            return new DeveloperVerificationFutureResult(
-                    /* bypassed= */ true,
-                    /* success= */ false,
-                    /* shouldSendUserAction= */ false,
-                    /* userActionNeededReason= */
-                    DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
-                    /* failedMessage= */ null,
-                    /* extensionResponse= */ null);
-        }
         static DeveloperVerificationFutureResult ofSuccess() {
             return new DeveloperVerificationFutureResult(
-                    /* bypassed= */ false,
                     /* success= */ true,
-                    /* shouldSendUserAction= */ false,
-                    /* userActionNeededReason= */
-                    DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
+                    /* verificationFailureReason= */ DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN,
                     /* failedMessage= */ null,
                     /* extensionResponse= */ null);
         }
 
-        static DeveloperVerificationFutureResult ofUserActionOrFailure(boolean shouldSendUserAction,
+        static DeveloperVerificationFutureResult ofFailure(
                 int userActionNeededReason, String failedMessage,
                 PersistableBundle extensionResponse) {
             return new DeveloperVerificationFutureResult(
-                    /* bypassed= */ false,
                     /* success= */ false,
-                    /* shouldSendUserAction= */ shouldSendUserAction,
-                    /* userActionNeededReason= */ userActionNeededReason,
+                    /* verificationFailureReason= */
+                    getVerificationFailureReason(userActionNeededReason),
                     /* failedMessage= */ failedMessage,
                     /* extensionResponse= */ extensionResponse);
         }
 
         private DeveloperVerificationFutureResult(
-                boolean bypassed,
                 boolean success,
-                boolean shouldSendUserAction,
-                int userActionNeededReason, String failedMessage,
+                int verificationFailureReason, String failedMessage,
                 PersistableBundle extensionResponse) {
-            mBypassed = bypassed;
             mSuccess = success;
-            mShouldSendUserAction = shouldSendUserAction;
-            mUserActionNeededReason = userActionNeededReason;
+            mVerificationFailureReason = verificationFailureReason;
             mFailedMessage = failedMessage;
             mExtensionResponse = extensionResponse;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            if (other instanceof DeveloperVerificationFutureResult that) {
-                return mBypassed == that.mBypassed
-                        && mSuccess == that.mSuccess
-                        && mShouldSendUserAction == that.mShouldSendUserAction
-                        && mUserActionNeededReason == that.mUserActionNeededReason
-                        && Objects.equals(mFailedMessage, that.mFailedMessage)
-                        && Objects.equals(mExtensionResponse, that.mExtensionResponse);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            int _hash = 1;
-            _hash = 31 * _hash + Boolean.hashCode(mBypassed);
-            _hash = 31 * _hash + Boolean.hashCode(mSuccess);
-            _hash = 31 * _hash + Boolean.hashCode(mShouldSendUserAction);
-            _hash = 31 * _hash + Integer.hashCode(mUserActionNeededReason);
-            if (mFailedMessage != null) {
-                _hash = 31 * _hash + mFailedMessage.hashCode();
-            }
-            if (mExtensionResponse != null) {
-                _hash = 31 * _hash + mExtensionResponse.toString().hashCode();
-            }
-            return _hash;
         }
     }
 
@@ -5494,7 +5493,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             Log.e(TAG, "Session " + sessionId + " already abandoned or marked as failed.");
             return;
         }
-        if (!mVerificationUserActionNeeded) {
+        if (mDeveloperVerificationUserActionState == null) {
             Log.e(TAG, "User action was not requested for this verification. "
                     + "SessionID: " + sessionId);
             return;
@@ -5505,23 +5504,44 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 mMetrics.onDeveloperVerificationUserResponseReceived(userResponse);
             }
         }
-        switch (userResponse) {
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR,
-                 DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT -> {
-                String errorMsg = userResponse == DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
-                        ? "User could not be notified about the pending verification."
-                        : "User denied proceeding with the pending verification.";
-                setSessionFailedDueToDeveloperVerification(
-                        mVerificationUserActionNeededReason,
-                        mDeveloperVerificationStatusInternal.isLiteVerification(),
-                        /* includeExtraIntent= */ false, /* extensionResponse= */ null, errorMsg);
-            }
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {
-                performDeveloperVerification(/* retry= */ true);
-            }
+        mDeveloperVerificationUserActionState.onUserResponseReceived(userResponse);
+    }
 
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY -> resumeVerify();
-            default -> throw new IllegalArgumentException("Invalid user response " + userResponse);
+    private class DeveloperVerificationUserActionState {
+        final CompletableFuture<DeveloperVerificationFutureResult> mFuture;
+        final int mUserActionNeededReason;
+
+        DeveloperVerificationUserActionState(
+                @DeveloperVerificationUserConfirmationInfo.UserActionNeededReason
+                int userActionNeededReason,
+                CompletableFuture<DeveloperVerificationFutureResult> future)  {
+            mUserActionNeededReason = userActionNeededReason;
+            mFuture = future;
+        }
+
+        void onUserResponseReceived(@DeveloperVerificationUserResponse int userResponse) {
+            switch (userResponse) {
+                case DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR,
+                     DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT -> {
+                    String errorMsg = userResponse == DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+                            ? "User could not be notified about the pending verification."
+                            : "User denied proceeding with the pending verification.";
+                    mFuture.complete(DeveloperVerificationFutureResult.ofFailure(
+                            mUserActionNeededReason, errorMsg, /* extensionResponse= */ null));
+                }
+                case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {
+                    // The future is not completed until the retry of developer verification has
+                    // either succeeded or aborted. If another retry is requested after this, the
+                    // the same future is reused.
+                    startDeveloperVerificationSession(mFuture, /* retry= */ true);
+                }
+
+                case DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY -> {
+                    mFuture.complete(DeveloperVerificationFutureResult.ofSuccess());
+                }
+                default -> throw new IllegalArgumentException(
+                        "Invalid user response " + userResponse);
+            }
         }
     }
 

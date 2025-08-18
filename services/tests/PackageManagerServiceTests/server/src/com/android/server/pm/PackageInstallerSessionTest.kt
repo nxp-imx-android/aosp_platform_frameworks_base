@@ -171,17 +171,17 @@ class PackageInstallerSessionTest {
     fun testShouldAllowDeveloperVerificationEmergencyBypassReturnsFalseForNullPackageName() {
         // Test no package name
         val session = createSession()
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            null, mSnapshot)).isFalse()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(null)).isFalse()
     }
 
     @Test
     fun testShouldAllowDeveloperVerificationEmergencyBypassReturnsFalseForNonVerifierPackageName() {
+        val testPackageName = "testPackageName"
         // Test no verifier package name
         whenever(mMockDeveloperVerifierController.verifierPackageName).thenReturn(null)
         val session = createSession()
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            "testPackageName", mSnapshot)).isFalse()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(testPackageName))
+            .isFalse()
     }
 
     @Test
@@ -190,8 +190,8 @@ class PackageInstallerSessionTest {
         val session = createSession()
         whenever(mSnapshot.getPackageStateInternal(eq(testPackageName), eq(Process.SYSTEM_UID)))
             .thenReturn(null)
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            testPackageName, mSnapshot)).isFalse()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(testPackageName))
+            .isFalse()
     }
 
     @Test
@@ -202,8 +202,8 @@ class PackageInstallerSessionTest {
         whenever(mockPs.isSystem).thenReturn(false)
         whenever(mSnapshot.getPackageStateInternal(eq(testPackageName), eq(Process.SYSTEM_UID)))
             .thenReturn(mockPs)
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            testPackageName, mSnapshot)).isFalse()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(testPackageName))
+            .isFalse()
     }
 
     @Test
@@ -230,8 +230,8 @@ class PackageInstallerSessionTest {
         whenever(mSnapshot.checkUidPermission(anyString(), eq(updateOwnerUid)))
             .thenReturn(PackageManager.PERMISSION_GRANTED)
         val session = createSession(installerPackageName = updateOwnerName)
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            verifierPackageName, mSnapshot)).isTrue()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(verifierPackageName))
+            .isTrue()
     }
 
     @Test
@@ -248,8 +248,8 @@ class PackageInstallerSessionTest {
         whenever(mMockPackageManagerInternal.getSystemAppUpdateOwnerPackageName(
         eq(verifierPackageName))).thenReturn(null)
         val session = createSession(installerPackageName = updateOwnerName)
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            updateOwnerName, mSnapshot)).isFalse()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(updateOwnerName))
+            .isFalse()
     }
 
     @Test
@@ -272,8 +272,8 @@ class PackageInstallerSessionTest {
         whenever(mSnapshot.checkUidPermission(anyString(), eq(updateOwnerUid)))
             .thenReturn(PackageManager.PERMISSION_GRANTED)
         val session = createSession(installerPackageName = updateOwnerName)
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            updateOwnerName, mSnapshot)).isTrue()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(updateOwnerName))
+            .isTrue()
     }
 
     @Test
@@ -315,7 +315,7 @@ class PackageInstallerSessionTest {
 
         val session = createSession(installerPackageName = updateOwnerName)
         assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            emergencyInstallerPackageName, mSnapshot)).isTrue()
+            emergencyInstallerPackageName)).isTrue()
     }
 
     @Test
@@ -356,8 +356,8 @@ class PackageInstallerSessionTest {
             .thenReturn(PackageManager.PERMISSION_GRANTED)
 
         val session = createSession(installerPackageName = emergencyInstallerPackageName)
-        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(
-            updateOwnerName, mSnapshot)).isTrue()
+        assertThat(session.shouldAllowDeveloperVerificationEmergencyBypass(updateOwnerName))
+            .isTrue()
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_VERIFICATION_SERVICE)
