@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ആപ്പ് അപ്‌ഡേറ്റുകൾ അൺഇൻസ്റ്റാൾ ചെയ്യണോ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"എല്ലാ ഉപയോക്താക്കൾക്കും ആപ്പ് അപ്‌ഡേറ്റുകൾ അൺഇൻസ്റ്റാൾ ചെയ്യണോ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"എല്ലാ ഉപയോക്താക്കൾക്കും ഈ ആപ്പ് അൺഇൻസ്‌റ്റാൾ ചെയ്യണോ?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"ഈ ആപ്പ് \'<xliff:g id="USER_NAME">%1$s</xliff:g>\' എന്ന ഉപയോക്താവിനായി അൺഇൻസ്റ്റാൾ ചെയ്യണോ?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"ഈ ആപ്പ് \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" എന്ന ഉപയോക്താവിനായി അൺഇൻസ്റ്റാൾ ചെയ്യണോ?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ആപ്പ് കണ്ടെത്തിയില്ല"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ഈ ആപ്പ് അൺഇൻസ്റ്റാൾ ചെയ്യാനാകില്ല"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ആപ്പ് അൺഇൻസ്റ്റാൾ ചെയ്‌തിട്ടില്ല"</string>
     <string name="title_archive" msgid="2876455228073419830">"ഈ ആപ്പ് ആർക്കൈവ് ചെയ്യണോ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"എല്ലാ ഉപയോക്താക്കൾക്കും ഈ ആപ്പ് ആർക്കൈവ് ചെയ്യണോ?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"ഈ ആപ്പ് \'<xliff:g id="USER_NAME">%1$s</xliff:g>\' എന്ന ഉപയോക്താവിനായി ആർക്കൈവ് ചെയ്യണോ?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"ഈ ആപ്പ് \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" എന്ന ഉപയോക്താവിനായി ആർക്കൈവ് ചെയ്യണോ?"</string>
     <string name="title_restore" msgid="8934911753892124574">"ഈ ആപ്പ് പുനഃസ്ഥാപിക്കണോ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"നടപടി ആവശ്യമാണ്"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"മതിയായ സ്റ്റോറേജ് ഇല്ല"</string>

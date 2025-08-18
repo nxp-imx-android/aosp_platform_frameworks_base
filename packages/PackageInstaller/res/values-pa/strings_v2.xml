@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ਕੀ ਐਪ ਸੰਬੰਧੀ ਅੱਪਡੇਟਾਂ ਨੂੰ ਅਣਸਥਾਪਤ ਕਰਨਾ ਹੈ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ਕੀ ਐਪ ਸੰਬੰਧੀ ਅੱਪਡੇਟਾਂ ਨੂੰ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਲਈ ਅਣਸਥਾਪਤ ਕਰਨਾ ਹੈ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ਕੀ ਇਸ ਐਪ ਨੂੰ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਲਈ ਅਣਸਥਾਪਤ ਕਰਨਾ ਹੈ?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"ਕੀ ਇਸ ਐਪ ਨੂੰ ਵਰਤੋਂਕਾਰ ‘<xliff:g id="USER_NAME">%1$s</xliff:g>\' ਲਈ ਅਣਸਥਾਪਤ ਕਰਨਾ ਹੈ?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ਐਪ ਨਹੀਂ ਮਿਲੀ"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ਇਸ ਐਪ ਨੂੰ ਅਣਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ਐਪ ਨੂੰ ਅਣਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ"</string>
     <string name="title_archive" msgid="2876455228073419830">"ਕੀ ਇਸ ਐਪ ਨੂੰ ਪੁਰਾਲੇਖਬੱਧ ਕਰਨਾ ਹੈ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ਕੀ ਇਸ ਐਪ ਨੂੰ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਲਈ ਪੁਰਾਲੇਖਬੱਧ ਕਰਨਾ ਹੈ?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"ਕੀ ਇਸ ਐਪ ਨੂੰ ਵਰਤੋਂਕਾਰ ‘<xliff:g id="USER_NAME">%1$s</xliff:g>\' ਲਈ ਪੁਰਾਲੇਖਬੱਧ ਕਰਨਾ ਹੈ?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"ਕੀ ਇਸ ਐਪ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰਨਾ ਹੈ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ਕਾਰਵਾਈ ਦੀ ਲੋੜ ਹੈ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"ਲੋੜੀਂਦੀ ਸਟੋਰੇਜ ਨਹੀਂ ਹੈ"</string>

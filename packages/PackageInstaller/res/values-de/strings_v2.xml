@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"App-Updates deinstallieren?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"App-Updates für alle Nutzer deinstallieren?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Diese App für alle Nutzer deinstallieren?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Diese App für den Nutzer <xliff:g id="USER_NAME">%1$s</xliff:g> deinstallieren?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App nicht gefunden"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Diese App kann nicht deinstalliert werden"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"App nicht deinstalliert"</string>
     <string name="title_archive" msgid="2876455228073419830">"Diese App archivieren?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Diese App für alle Nutzer archivieren?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Diese App für den Nutzer <xliff:g id="USER_NAME">%1$s</xliff:g> archivieren?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Diese App wiederherstellen?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Wichtige Informationen"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nicht genügend Speicherplatz verfügbar"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Wenn du diese App wiederherstellen möchtest, musst du <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> installieren"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Beim Versuch, diese App wiederherzustellen, gab es ein Problem"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"„<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>“ gehört zu folgender App: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Diese App wurde blockiert. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Diese App wurde nicht aktualisiert. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Beim Überprüfen des App-Entwicklers ist ein Problem aufgetreten. Apps von nicht überprüften Entwicklern können unsicher sein, daher wurde die App nicht installiert.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Beim Überprüfen des App-Entwicklers ist ein Problem aufgetreten. Updates von nicht überprüften Entwicklern können unsicher sein, daher wurde die App nicht aktualisiert.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Diese App wurde blockiert, weil der Entwickler nicht überprüft werden konnte. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Diese App wurde wegen eines Problems mit der Überprüfung des Entwicklers nicht aktualisiert. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Wenn du die Installation ohne Überprüfung durchführst, solltest du bedenken, dass Apps von nicht überprüften Entwicklern dein Gerät und deine Daten gefährden können."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Wenn du das Update ohne Überprüfung durchführst, solltest du bedenken, dass Updates von nicht überprüften Entwicklern dein Gerät und deine Daten gefährden können."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"App-Entwickler nicht überprüft"</string>

@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"एपका अपडेटहरू अनइन्स्टल गर्ने हो?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"सबै प्रयोगकर्ताहरूका लागि एपका अपडेटहरू अनइन्स्टल गर्ने हो?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"यो एप सबै प्रयोगकर्ताहरूका लागि अनइन्स्टल गर्ने हो?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"यो एप प्रयोगकर्ता \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" का लागि अनइन्स्टल गर्ने हो?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"एप भेटिएन"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"यो एप अनइन्स्टल गर्न सकिँदैन"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"एप अनइन्स्टल गर्न सकिएन"</string>
     <string name="title_archive" msgid="2876455228073419830">"यो एप अभिलेखमा राख्ने हो?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"यो एप सबै प्रयोगकर्ताहरूका लागि अभिलेखमा राख्ने हो?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"यो एप प्रयोगकर्ता \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" का लागि अभिलेखमा राख्ने हो?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"यो एप रिस्टोर गर्ने हो?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"कारबाही गर्नु पर्ने हुन्छ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"भण्डारणमा पर्याप्त खाली ठाउँ छैन"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"यो एप रिस्टोर गर्न तपाईंले <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इन्स्टल गर्नु पर्ने हुन्छ"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"यो एप रिस्टोर गर्ने क्रममा कुनै समस्या आयो"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> निम्न एपको अंश हो: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;यो एप ब्लक गरिएको छ। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताका एपहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;यो एप अपडेट गरिएको छैन। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताले उपलब्ध गराएका अपडेटहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आयो। पुष्टि नगरिएका विकासकर्ताहरूका एपहरू असुरक्षित हुन सक्ने भएकाले यो एप इन्स्टल गरिएन।&lt;/p&gt; &lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आयो। पुष्टि नगरिएका विकासकर्ताहरूले उपलब्ध गराउने अपडेटहरू असुरक्षित हुन सक्ने भएकाले यो एप अपडेट गरिएको छैन।&lt;/p&gt; &lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आएकाले यो एप ब्लक गरिएको छ। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताका एपहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;यो एपको विकासकर्ता पुष्टि गर्ने क्रममा कुनै समस्या आएकाले यो एप अपडेट गरिएको छैन। तपाईंको डिभाइस र डेटा सुरक्षित राख्न सघाउन पुष्टि गरिएका विकासकर्ताले उपलब्ध गराएका अपडेटहरू मात्र इन्स्टल गर्न सकिन्छ।&lt;/p&gt; &lt;a href=&gt;विकासकर्ता पुष्टि गर्ने प्रक्रियाका बारेमा थप जान्नुहोस्&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"तपाईंले पुष्टि नगरिकनै इन्स्टल गर्नुभयो भने पुष्टि नगरिएका विकासकर्ताहरूका एपहरूले गर्दा तपाईंको डिभाइस र डेटा जोखिममा पर्न सक्छन् भन्ने कुरा ख्याल गर्नुहोस्।"</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"तपाईंले पुष्टि नगरिकनै अपडेट गर्नुभयो भने पुष्टि नगरिएका विकासकर्ताहरूले उपलब्ध गराउने अपडेटहरूले गर्दा तपाईंको डिभाइस र डेटा जोखिममा पर्न सक्छन् भन्ने कुरा ख्याल गर्नुहोस्।"</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"एपको विकासकर्ता पुष्टि गरिएको छैन"</string>

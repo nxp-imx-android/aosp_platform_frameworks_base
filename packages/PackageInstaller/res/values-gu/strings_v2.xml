@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ઍપ સંબંધિત અપડેટને અનઇન્સ્ટૉલ કરીએ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ઍપ સંબંધિત અપડેટને બધા વપરાશકર્તાઓ માટે અનઇન્સ્ટૉલ કરીએ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"આ ઍપને બધા વપરાશકર્તાઓ માટે અનઇન્સ્ટૉલ કરીએ?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"આ ઍપને વપરાશકર્તા ‘<xliff:g id="USER_NAME">%1$s</xliff:g>\' માટે અનઇન્સ્ટૉલ કરીએ?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ઍપ મળી નથી"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"આ ઍપ અનઇન્સ્ટૉલ કરી શકાતી નથી"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ઍપ અનઇન્સ્ટૉલ થઈ નથી"</string>
     <string name="title_archive" msgid="2876455228073419830">"આ ઍપને આર્કાઇવ કરીએ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"આ ઍપને બધા વપરાશકર્તાઓ માટે આર્કાઇવ કરીએ?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"આ ઍપને વપરાશકર્તા ‘<xliff:g id="USER_NAME">%1$s</xliff:g>\' માટે આર્કાઇવ કરીએ?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"આ ઍપને રિસ્ટોર કરીએ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"આવશ્યક પગલું"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"પર્યાપ્ત સ્ટોરેજ નથી"</string>
@@ -98,10 +100,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> નીચેની ઍપનો ભાગ છે: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;આ ઍપ બ્લૉક કરવામાં આવી હતી. તમારા ડિવાઇસ અને ડેટાને સલામત રાખવામાં મદદ માટે ફક્ત ચકાસણી કરાયેલા ડેવલપરની ઍપ ઇન્સ્ટૉલ કરી શકાય છે.&lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;આ ઍપને અપડેટ કરવામાં આવી ન હતી. તમારા ડિવાઇસ અને ડેટાને સલામત રાખવામાં મદદ કરવા માટે, ફક્ત ચકાસણી કરાયેલા ડેવલપરની અપડેટને ઇન્સ્ટૉલ કરી શકાય છે.&lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;આ ઍપ ઇન્સ્ટૉલ કરવામાં આવી ન હતી. ચકાસણી ન થઈ હોય તેવા ડેવલપરની ઍપ કદાચ અસલામત હોઈ શકે છે.&lt;/p&gt; &lt;p&gt;ઍપના ડેવલપરની ચકાસણી કરવા માટે ઇન્ટરનેટ કનેક્શન જરૂરી છે. તમારું કનેક્શન ચેક કરો, પછી ફરીથી ઍપ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરો. &lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;આ ઍપ અપડેટ કરવામાં આવી ન હતી. ચકાસણી ન થઈ હોય તેવા ડેવલપરની અપડેટ કદાચ અસલામત હોઈ શકે છે.&lt;/p&gt; &lt;p&gt;ઍપના ડેવલપરની ચકાસણી કરવા માટે ઇન્ટરનેટ કનેક્શન જરૂરી છે. તમારું કનેક્શન ચેક કરો, પછી ઍપ અપડેટ કરવાનો પ્રયાસ કરો. &lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;આ ઍપના ડેવલપરની ચકાસણી કરતી વખતે સમસ્યા આવી હતી. ચકાસણી ન કરાયેલા ડેવલપરની ઍપ કદાચ અસલામત હોઈ શકે છે, તેથી ઍપ ઇન્સ્ટૉલ કરી શકાઈ નથી.&lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;આ ઍપના ડેવલપરની ચકાસણી કરતી વખતે સમસ્યા આવી હતી. ચકાસણી ન કરાયેલા ડેવલપરની અપડેટ કદાચ અસલામત હોઈ શકે છે, તેથી ઍપ અપડેટ કરી શકાઈ નથી.&lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;ડેવલપરની ચકાસણી કરવામાં સમસ્યા આવી હોવાના કારણે આ ઍપને બ્લૉક કરવામાં આવી હતી. તમારા ડિવાઇસ અને ડેટાને સલામત રાખવામાં મદદ માટે ફક્ત ચકાસણી કરાયેલા ડેવલપરની ઍપ ઇન્સ્ટૉલ કરી શકાય છે.&lt;/p&gt; &lt;a href=&gt;ડેવલપરની ચકાસણી વિશે વધુ જાણો&lt;/a&gt;"</string>
@@ -129,7 +129,6 @@
     <string name="button_restore" msgid="4388317532933866637">"રિસ્ટોર કરો"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"અપડેટ અનઇન્સ્ટૉલ કરો"</string>
     <string name="button_settings" msgid="3837571366246132287">"સેટિંગ"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"ફરી પ્રયાસ કરો"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>ની ક્લોન"</string>
 </resources>

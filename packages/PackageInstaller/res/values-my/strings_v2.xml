@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"အက်ပ်အပ်ဒိတ်များကို ဖြုတ်မလား။"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"အက်ပ်အပ်ဒိတ်များကို အသုံးပြုသူအားလုံးအတွက် ဖြုတ်မလား။"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ဤအက်ပ်ကို အသုံးပြုသူအားလုံးအတွက် ဖြုတ်မလား။"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"ဤအက်ပ်ကို အသုံးပြုသူ ‘<xliff:g id="USER_NAME">%1$s</xliff:g>’ အတွက် ဖြုတ်မလား။"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"အက်ပ် မတွေ့ပါ"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ဤအက်ပ်ကို ဖြုတ်၍မရလိုက်ပါ"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"အက်ပ်ကို ဖြုတ်မထားပါ"</string>
     <string name="title_archive" msgid="2876455228073419830">"ဤအက်ပ်ကို သိမ်းဆည်းမလား။"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ဤအက်ပ်ကို အသုံးပြုသူအားလုံးအတွက် သိမ်းဆည်းမလား။"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"ဤအက်ပ်ကို အသုံးပြုသူ ‘<xliff:g id="USER_NAME">%1$s</xliff:g>’ အတွက် သိမ်းဆည်းမလား။"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"ဤအက်ပ်ကို ပြန်ယူမလား။"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"လုပ်ဆောင်ချက် လိုအပ်သည်"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"သိုလှောင်ခန်း မလုံလောက်ပါ"</string>

@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Vols desinstal·lar les actualitzacions de l\'aplicació?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Vols desinstal·lar les actualitzacions de l\'aplicació per a tots els usuaris?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Vols desinstal·lar aquesta aplicació per a tots els usuaris?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Vols desinstal·lar aquesta aplicació per a l\'usuari <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"No s\'ha trobat l\'aplicació"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"No es pot desinstal·lar aquesta aplicació"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"No s\'ha pogut desinstal·lar l\'aplicació"</string>
     <string name="title_archive" msgid="2876455228073419830">"Vols arxivar aquesta aplicació?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Vols arxivar aquesta aplicació per a tots els usuaris?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Vols arxivar aquesta aplicació per a l\'usuari <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Vols restaurar aquesta aplicació?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Acció necessària"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"No hi ha prou emmagatzematge"</string>
