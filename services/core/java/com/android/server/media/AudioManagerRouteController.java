@@ -138,9 +138,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
     // Whether this is a TV device.
     private final boolean mIsTv;
 
-    // Max number of devices allow for a BLE broadcast session.
-    private final int mBroadcastingMaxSinks;
-
     // Get the singleton AudioManagerRouteController. Create a new one if it's not available yet.
     public static AudioManagerRouteController getInstance(
             @NonNull Context context,
@@ -203,8 +200,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mHandler = new Handler(Objects.requireNonNull(looper));
         mStrategyForMedia = Objects.requireNonNull(strategyForMedia);
         mIsTv = mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
-        mBroadcastingMaxSinks =
-                mContext.getResources().getInteger(R.integer.config_audio_sharing_maximum_sinks);
 
         mBuiltInSpeakerSuitabilityStatus =
                 DeviceRouteController.getBuiltInSpeakerSuitabilityStatus(mContext);
