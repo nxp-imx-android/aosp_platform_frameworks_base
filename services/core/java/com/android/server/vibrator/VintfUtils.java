@@ -25,7 +25,6 @@ import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -111,26 +110,66 @@ class VintfUtils {
         }
     }
 
-    /** Same as {@link #get(VintfSupplier, VintfGetter)}, but throws no exception. */
-    @NonNull
-    static <I, T> Optional<T> getNoThrow(VintfSupplier<I> supplier, VintfGetter<I, T> getter,
-            Consumer<Throwable> errorHandler) {
+    /**
+     * Same as {@link #get(VintfSupplier, VintfGetter)}, but throws no exception and
+     * returns default on error.
+     */
+    @Nullable
+    static <I, T> T getOrDefault(VintfSupplier<I> supplier, VintfGetter<I, T> getter,
+            @Nullable T defaultValue, Consumer<Throwable> errorHandler) {
         try {
-            return Optional.ofNullable(get(supplier, getter));
+            return get(supplier, getter);
         } catch (RuntimeException e) {
             errorHandler.accept(e);
         }
-        return Optional.empty();
+        return defaultValue;
     }
 
-    /** Same as {@link #getNoThrow}, but returns {@code true} when successful. */
+    /** Same as {@link #get(VintfSupplier, VintfGetter)}, but throws no exception. */
+    static <I, T> void getNoThrow(VintfSupplier<I> supplier, VintfGetter<I, T> getter,
+            Consumer<T> resultHandler, Consumer<Throwable> errorHandler) {
+        try {
+            resultHandler.accept(get(supplier, getter));
+        } catch (RuntimeException e) {
+            errorHandler.accept(e);
+        }
+    }
+
+    /**
+     * Runs runnable on VINTF object provided by supplier, if any.
+     *
+     * <p>This automatically clears the cached object in given {@code supplier} if a
+     * {@link DeadObjectException} is thrown by the remote method call, so future interactions can
+     * load a new instance.
+     *
+     * @throws RuntimeException if supplier returns null or there is a {@link RemoteException} or
+     * {@link RuntimeException} from the remote method call.
+     */
+    static <I> void run(VintfSupplier<I> supplier, VintfRunnable<I> runnable) {
+        I hal = supplier.get();
+        if (hal == null) {
+            throw new RuntimeException("Missing HAL service");
+        }
+        try {
+            runnable.run(hal);
+        } catch (RemoteException e) {
+            if (e instanceof DeadObjectException) {
+                supplier.clear();
+            }
+            throw e.rethrowAsRuntimeException();
+        }
+    }
+
+    /** Same as {@link #run(VintfSupplier, VintfRunnable)}, but throws no exception. */
     static <I> boolean runNoThrow(VintfSupplier<I> supplier, VintfRunnable<I> runnable,
             Consumer<Throwable> errorHandler) {
-        VintfGetter<I, Boolean> getter = hal -> {
-            runnable.run(hal);
+        try {
+            run(supplier, runnable);
             return true;
-        };
-        return getNoThrow(supplier, getter, errorHandler).orElse(false);
+        } catch (RuntimeException e) {
+            errorHandler.accept(e);
+        }
+        return false;
     }
 
     // Non-instantiable helper class.

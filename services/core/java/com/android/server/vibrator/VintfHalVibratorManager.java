@@ -42,7 +42,6 @@ import com.android.server.vibrator.VintfUtils.VintfSupplier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.IntFunction;
 
 /** Implementations for {@link HalVibratorManager} backed by VINTF objects. */
@@ -145,14 +144,14 @@ class VintfHalVibratorManager {
             // Load vibrator hardware info. The vibrator ids and manager capabilities are loaded
             // once and assumed unchanged for the lifecycle of this service. Each vibrator can still
             // retry loading each individual vibrator hardware spec once more at systemReady.
-            Optional<Integer> capabilities = VintfUtils.getNoThrow(mHalSupplier,
-                    IVibratorManager::getCapabilities,
+            mCapabilities = VintfUtils.getOrDefault(mHalSupplier,
+                    IVibratorManager::getCapabilities, 0,
                     e -> Slog.e(TAG, "Error getting capabilities", e));
-            Optional<int[]> vibratorIds = VintfUtils.getNoThrow(mHalSupplier,
-                    IVibratorManager::getVibratorIds,
+            int[] vibratorIds = VintfUtils.getOrDefault(mHalSupplier,
+                    IVibratorManager::getVibratorIds, /* defaultValue= */ null,
                     e -> Slog.e(TAG, "Error getting vibrator ids", e));
-            mCapabilities = capabilities.orElse(0).longValue();
-            mVibratorIds = vibratorIds.orElseGet(() -> new int[0]);
+            // Make sure IDs are never null.
+            mVibratorIds = vibratorIds == null ? new int[0] : vibratorIds;
             for (int id : mVibratorIds) {
                 HalVibrator vibrator = mVibratorFactory.apply(id);
                 vibrator.init(vibratorCallbacks);
