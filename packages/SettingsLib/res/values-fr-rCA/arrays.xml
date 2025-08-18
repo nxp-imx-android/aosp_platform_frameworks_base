@@ -297,7 +297,7 @@
   <string-array name="shade_display_awareness_summaries">
     <item msgid="2964753205732912921">"Affichez le volet sur l\'écran de l\'appareil seulement"</item>
     <item msgid="1955398604822147783">"Afficher le volet sur un seul écran externe"</item>
-    <item msgid="391477482416751568">"Afficher le volet sur l\'écran avec lequel la barre d\'état a interagi en dernier"</item>
+    <item msgid="391477482416751568">"Afficher le volet sur l\'écran dont la barre d’état a été utilisée en dernier"</item>
     <item msgid="1746820128097981528">"Afficher le volet sur le dernier affichage mis en évidence"</item>
   </string-array>
   <string-array name="shade_display_awareness_values">
