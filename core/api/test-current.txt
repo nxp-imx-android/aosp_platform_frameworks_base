@@ -2230,9 +2230,9 @@ package android.media {
     method public android.media.PlaybackParams setAudioStretchMode(int);
   }
 
-  @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public class Utils {
-    field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String SYNCHRONIZED_VIBRATION = "synchronized";
-    field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String VIBRATION_URI_PARAM = "vibration_uri";
+  public class Utils {
+    field public static final String SYNCHRONIZED_VIBRATION = "synchronized";
+    field public static final String VIBRATION_URI_PARAM = "vibration_uri";
   }
 
   public final class VolumePolicy implements android.os.Parcelable {

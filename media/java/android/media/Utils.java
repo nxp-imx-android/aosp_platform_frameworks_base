@@ -16,19 +16,14 @@
 
 package android.media;
 
-import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
-
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
-import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.media.audio.Flags;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Environment;
@@ -65,16 +60,10 @@ import java.util.concurrent.Executor;
  *
  * This class is hidden but public to allow CTS testing and verification
  * of the static methods and classes.
- *
- * Also, this class provides the utility methods of System APIs for Mainlines to be able to handle
- * ringtone/vibration uri check.
- *
  * @hide
  */
 @TestApi
 @SuppressLint({"StaticUtils"})
-@FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
-@SystemApi(client = MODULE_LIBRARIES)
 public class Utils {
 
     // Not instantiable.
@@ -87,8 +76,6 @@ public class Utils {
      * @hide
      */
     @TestApi
-    @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
-    @SystemApi(client = MODULE_LIBRARIES)
     public static final String VIBRATION_URI_PARAM = "vibration_uri";
 
     /**
@@ -96,8 +83,6 @@ public class Utils {
      * @hide
      */
     @TestApi
-    @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
-    @SystemApi(client = MODULE_LIBRARIES)
     public static final String SYNCHRONIZED_VIBRATION = "synchronized";
 
     /**
@@ -768,8 +753,6 @@ public class Utils {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_RINGTONE_VIBRATION_UTILS_API)
-    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean hasVibrationParameter(@Nullable Uri ringtoneUri) {
         if (ringtoneUri == null) {
             return false;
@@ -806,7 +789,6 @@ public class Utils {
      *
      * @hide
      */
-    @SuppressWarnings("FlaggedApi") // VibrationXmlParser is available internally as hidden APIs.
     public static VibrationEffect parseVibrationEffect(Vibrator vibrator, Uri vibrationUri) {
         if (vibrationUri == null) {
             Log.w(TAG, "The vibration Uri is null.");

@@ -225,7 +225,7 @@ package android.media {
     method @Nullable public android.os.IBinder get();
   }
 
-  @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public class Utils {
+  @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public final class VibrationUtils {
     method @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static boolean hasVibrationParameter(@Nullable android.net.Uri);
     field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String SYNCHRONIZED_VIBRATION = "synchronized";
     field @FlaggedApi("android.media.audio.ringtone_vibration_utils_api") public static final String VIBRATION_URI_PARAM = "vibration_uri";
