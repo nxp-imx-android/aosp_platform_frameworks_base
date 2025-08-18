@@ -31,7 +31,6 @@ import com.android.systemui.keyboard.shortcut.appsShortcutCategoryRepository
 import com.android.systemui.keyboard.shortcut.data.repository.FakeAppsShortcutCategoryRepository
 import com.android.systemui.keyboard.shortcut.data.source.FakeKeyboardShortcutGroupsSource
 import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts
-import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.allCustomizableInputGesturesWithSimpleShortcutCombinations
 import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.customInputGestureTypeHome
 import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.groupWithGoHomeShortcutInfo
 import com.android.systemui.keyboard.shortcut.data.source.TestShortcuts.systemCategoryWithCustomHomeShortcut
@@ -291,24 +290,7 @@ class ShortcutHelperCategoriesInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_KEYBOARD_SHORTCUT_HELPER_SHORTCUT_CUSTOMIZER)
-    fun categories_excludesCustomShortcutsWhenFlagIsOff() {
-        testScope.runTest {
-            setCustomInputGestures(allCustomizableInputGesturesWithSimpleShortcutCombinations)
-            helper.showFromActivity()
-            val categories by collectLastValue(interactor.shortcutCategories)
-            assertThat(categories)
-                .containsExactly(
-                    TestShortcuts.systemCategory,
-                    TestShortcuts.multitaskingCategory,
-                    TestShortcuts.imeCategory,
-                )
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYBOARD_SHORTCUT_HELPER_SHORTCUT_CUSTOMIZER)
-    fun categories_includesCustomShortcutsWhenFlagIsOn() {
+    fun categories_includesCustomShortcuts() {
         testScope.runTest {
             setCustomInputGestures(listOf(customInputGestureTypeHome))
             helper.showFromActivity()
@@ -323,7 +305,6 @@ class ShortcutHelperCategoriesInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_KEYBOARD_SHORTCUT_HELPER_SHORTCUT_CUSTOMIZER)
     fun categories_correctlyMergesDefaultAndCustomShortcutsOfSameType() {
         testScope.runTest {
             setCustomInputGestures(listOf(customInputGestureTypeHome))
