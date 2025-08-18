@@ -16,7 +16,6 @@
 
 package com.android.systemui.media.controls.domain.pipeline
 
-import android.bluetooth.BluetoothLeBroadcast
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
@@ -37,6 +36,7 @@ import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
+import com.android.settingslib.flags.Flags
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED
@@ -134,7 +134,6 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     @Mock private lateinit var controller: MediaController
     @Mock private lateinit var playbackInfo: PlaybackInfo
     @Mock private lateinit var configurationController: ConfigurationController
-    @Mock private lateinit var bluetoothLeBroadcast: BluetoothLeBroadcast
     @Mock private lateinit var localBluetoothProfileManager: LocalBluetoothProfileManager
     @Mock private lateinit var localBluetoothLeBroadcast: LocalBluetoothLeBroadcast
     @Mock private lateinit var packageManager: PackageManager
@@ -178,7 +177,10 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         whenever(muteAwaitFactory.create(lmm)).thenReturn(muteAwaitManager)
         whenever(lmm.getCurrentConnectedDevice()).thenReturn(device)
         whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(routingSession)
-
+        whenever(localBluetoothManager.profileManager).thenReturn(localBluetoothProfileManager)
+        whenever(localBluetoothProfileManager.leAudioBroadcastProfile)
+            .thenReturn(localBluetoothLeBroadcast)
+        whenever(localBluetoothLeBroadcast.isEnabled(null)).thenReturn(false)
         suggestedDeviceInfo =
             SuggestedDeviceInfo.Builder(SUGGESTED_DEVICE_NAME, DEVICE_ID, TYPE_REMOTE_SPEAKER)
                 .build()
@@ -652,6 +654,51 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val data = captureDeviceData(KEY)
         assertThat(data.enabled).isFalse()
         assertThat(data.name).isEqualTo(context.getString(R.string.media_seamless_other_device))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
+    fun onDeviceListUpdate_withBroadcastOnAndRemotePlaybackType_usesNonNullRoutingSessionName() {
+        // GIVEN a notif is added
+        loadMediaAndCaptureDeviceData()
+        reset(listener)
+        // GIVEN that MR2Manager returns a valid routing session
+        whenever(routingSession.name).thenReturn(REMOTE_DEVICE_NAME)
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
+        // GIVEN that broadcast is on
+        whenever(localBluetoothLeBroadcast.isEnabled(null)).thenReturn(true)
+        // WHEN the selected device changes state
+        val deviceCallback = captureCallback()
+        deviceCallback.onDeviceListUpdate(mutableListOf(device))
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+        // THEN device is enabled and name and icon are set to remote device name.
+        val data = captureDeviceData(KEY)
+        assertThat(data.enabled).isTrue()
+        assertThat(data.name).isEqualTo(REMOTE_DEVICE_NAME)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_LE_AUDIO_SHARING,
+        com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
+    )
+    fun onDeviceListUpdate_withBroadcastOn_returnsBroadcastDevice() {
+        // GIVEN a notif is added
+        loadMediaAndCaptureDeviceData()
+        reset(listener)
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_LOCAL)
+        // GIVEN that broadcast is on
+        whenever(localBluetoothLeBroadcast.isEnabled(null)).thenReturn(true)
+        // WHEN the selected device changes state
+        val deviceCallback = captureCallback()
+        deviceCallback.onDeviceListUpdate(mutableListOf(device))
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+        // THEN device is enabled and name and icon are set to "Sharing audio".
+        val data = captureDeviceData(KEY)
+        assertThat(data.enabled).isTrue()
+        assertThat(data.name).isEqualTo(context.getString(R.string.audio_sharing_description))
     }
 
     @Test
