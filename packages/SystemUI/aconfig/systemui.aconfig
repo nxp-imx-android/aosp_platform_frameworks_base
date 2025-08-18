@@ -1016,6 +1016,16 @@ flag {
 }
 
 flag {
+    name: "qs_edit_mode_v2"
+    namespace: "systemui"
+    description: "Updates the removal process of tiles and improves tiles selection."
+    bug: "438943936"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "remove_dream_overlay_hide_on_touch"
   namespace: "systemui"
   description: "Removes logic to hide the dream overlay on user interaction, as it conflicts with various transitions"
