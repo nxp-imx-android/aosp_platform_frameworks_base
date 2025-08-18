@@ -245,6 +245,7 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_EXPORT_ASSIST_VIRTUAL_NODE_TO_CCAPI)
     public void testNotifyVirtualChildrenAppearedWithCustomView_1() throws Throwable {
         testNumberOfTypeViewAppearedEvents(
                 R.layout.test_export_virtual_assist_node_activity,
@@ -254,6 +255,7 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_EXPORT_ASSIST_VIRTUAL_NODE_TO_CCAPI)
     public void testNotifyVirtualChildrenAppearedWithCustomView_10() throws Throwable {
         testNumberOfTypeViewAppearedEvents(
                 R.layout.test_export_virtual_assist_node_activity,
@@ -263,6 +265,7 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_EXPORT_ASSIST_VIRTUAL_NODE_TO_CCAPI)
     public void testNotifyVirtualChildrenAppearedWithCustomView_100() throws Throwable {
         testNumberOfTypeViewAppearedEvents(
                 R.layout.test_export_virtual_assist_node_activity,
