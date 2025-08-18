@@ -445,6 +445,10 @@ public class BubbleTransitions {
         default boolean isConvertingBubbleToBar() {
             return (this instanceof FloatingToBarConversion);
         }
+        /** Whether this transition is for switching from one bubble to another using jumpcut. */
+        default boolean isJumpcutBubbleSwitching() {
+            return (this instanceof JumpcutBubbleSwitchTransition);
+        }
     }
 
     /**

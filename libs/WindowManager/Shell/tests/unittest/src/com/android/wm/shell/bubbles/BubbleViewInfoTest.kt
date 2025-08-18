@@ -177,7 +177,8 @@ class BubbleViewInfoTest : ShellTestCase() {
                 mainExecutor,
                 bubbleSessionTracker,
             )
-        bubbleBarLayerView = BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger)
+        bubbleBarLayerView = BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger,
+            mainExecutor)
     }
 
     @Test

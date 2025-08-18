@@ -1083,7 +1083,8 @@ public class BubbleController implements ConfigurationChangeListener,
             // window to show this in, but we use a separate code path.
             // TODO(b/273312602): consider foldables where we do need a stack view when folded
             if (mLayerView == null) {
-                mLayerView = new BubbleBarLayerView(mContext, this, mBubbleData, mLogger);
+                mLayerView = new BubbleBarLayerView(mContext, this, mBubbleData, mLogger,
+                        mMainExecutor);
                 mLayerView.setUnBubbleConversationCallback(mSysuiProxy::onUnbubbleConversation);
             }
         } else {
@@ -2676,9 +2677,14 @@ public class BubbleController implements ConfigurationChangeListener,
         public void selectionChanged(BubbleViewProvider selectedBubble) {
             // Only need to update the layer view if we're currently expanded for selection changes.
             if (mLayerView != null && mLayerView.isExpanded()) {
-                mLayerView.showExpandedView(selectedBubble);
+                final Bubble b = (selectedBubble instanceof Bubble bubble) ? bubble : null;
+                if (b == null || !b.isJumpcutBubbleSwitching()) {
+                    // Otherwise the animation will be called by the TransitionHandler when ready to
+                    // play.
+                    mLayerView.showExpandedView(selectedBubble);
+                }
 
-                if (selectedBubble instanceof Bubble) {
+                if (b != null) {
                     mLogger.log((Bubble) selectedBubble,
                             BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
                 }
