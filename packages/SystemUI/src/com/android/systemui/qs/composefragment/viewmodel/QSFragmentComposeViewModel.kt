@@ -527,7 +527,7 @@ constructor(
         initMediaHosts() // init regardless of using media (same as current QS).
         coroutineScope {
             launch { hydrateSquishinessInteractor() }
-            if (usingMedia) {
+            if (usingMedia && !MediaControlsInComposeFlag.isEnabled) {
                 launch { hydrateQqsMediaExpansion() }
                 launch { hydrateMediaSquishiness() }
                 launch { hydrateMediaDisappearParameters() }
@@ -542,6 +542,8 @@ constructor(
     }
 
     private fun initMediaHosts() {
+        if (MediaControlsInComposeFlag.isEnabled) return
+
         qqsMediaHost.apply {
             expansion = qqsMediaExpansion
             showsOnlyActiveMedia = true

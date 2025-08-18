@@ -36,7 +36,6 @@ import androidx.annotation.VisibleForTesting
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
-import com.android.keyguard.KeyguardViewController
 import com.android.systemui.Dumpable
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel
 import com.android.systemui.dagger.SysUISingleton
@@ -51,10 +50,10 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dream.MediaDreamComplication
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.CrossFadeHelper
@@ -112,14 +111,13 @@ constructor(
     private val bypassController: KeyguardBypassController,
     private val mediaCarouselController: MediaCarouselController,
     private val mediaManager: MediaDataManager,
-    private val keyguardViewController: KeyguardViewController,
     private val dreamOverlayStateController: DreamOverlayStateController,
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
-    communalTransitionViewModel: CommunalTransitionViewModel,
-    @ShadeDisplayAware configurationController: ConfigurationController,
-    wakefulnessLifecycle: WakefulnessLifecycle,
-    shadeInteractor: ShadeInteractor,
+    private val communalTransitionViewModel: CommunalTransitionViewModel,
+    @ShadeDisplayAware private val configurationController: ConfigurationController,
+    private val wakefulnessLifecycle: WakefulnessLifecycle,
+    private val shadeInteractor: ShadeInteractor,
     private val secureSettings: SecureSettings,
     @Background private val handler: Handler,
     @Application private val coroutineScope: CoroutineScope,
@@ -503,6 +501,12 @@ constructor(
 
     init {
         dumpManager.registerNormalDumpable(TAG, this)
+        setUpListenersAndCallbacks()
+    }
+
+    private fun setUpListenersAndCallbacks() {
+        if (MediaControlsInComposeFlag.isEnabled) return
+
         updateConfiguration()
         configurationController.addCallback(
             object : ConfigurationController.ConfigurationListener {
@@ -515,15 +519,18 @@ constructor(
         statusBarStateController.addCallback(
             object : StatusBarStateController.StateListener {
                 override fun onStatePreChange(oldState: Int, newState: Int) {
-                    // We're updating the location before the state change happens, since we want
-                    // the location of the previous state to still be up to date when the animation
+                    // We're updating the location before the state change happens, since we
+                    // want
+                    // the location of the previous state to still be up to date when the
+                    // animation
                     // starts
                     if (
                         newState == StatusBarState.SHADE_LOCKED &&
                             oldState == StatusBarState.KEYGUARD &&
                             fullShadeTransitionProgress < 1.0f
                     ) {
-                        // Since the new state is SHADE_LOCKED, we need to set the transition amount
+                        // Since the new state is SHADE_LOCKED, we need to set the transition
+                        // amount
                         // to maximum if the progress is not 1f.
                         setTransitionToFullShadeAmount(distanceForFullShadeTransition.toFloat())
                     }
@@ -658,15 +665,18 @@ constructor(
             UserHandle.USER_ALL,
         )
 
-        // Listen to the communal UI state. Make sure that communal UI is showing and hub itself is
+        // Listen to the communal UI state. Make sure that communal UI is showing and hub itself
+        // is
         // available, ie. not disabled and able to be shown.
-        // When dreaming, qs expansion is immediately set to 1f, so we listen to shade expansion to
+        // When dreaming, qs expansion is immediately set to 1f, so we listen to shade expansion
+        // to
         // calculate the new location.
         coroutineScope.launch {
             combine(
                     communalTransitionViewModel.isUmoOnCommunal,
                     keyguardInteractor.isDreaming,
-                    // keep on communal before the shade is expanded enough to show the elements in
+                    // keep on communal before the shade is expanded enough to show the elements
+                    // in
                     // QS
                     shadeInteractor.shadeExpansion
                         .mapLatest { it < EXPANSION_THRESHOLD }
@@ -720,6 +730,8 @@ constructor(
 
     /** Close the guts in all players in [MediaCarouselController]. */
     fun closeGuts() {
+        if (MediaControlsInComposeFlag.isEnabled) return
+
         mediaCarouselController.closeGuts()
     }
 
@@ -757,6 +769,8 @@ constructor(
         forceStateUpdate: Boolean = false,
     ) =
         traceSection("MediaHierarchyManager#updateDesiredLocation") {
+            if (MediaControlsInComposeFlag.isEnabled) return
+
             val desiredLocation = calculateLocation()
             if (
                 desiredLocation != this.desiredLocation || forceStateUpdate && !blockLocationChanges
@@ -1129,6 +1143,8 @@ constructor(
         clipBounds: Rect = EMPTY_RECT,
     ) =
         traceSection("MediaHierarchyManager#applyState") {
+            if (MediaControlsInComposeFlag.isEnabled) return
+
             currentBounds.set(bounds)
             currentClipping = clipBounds
             carouselAlpha = if (isCurrentlyFading()) alpha else 1.0f
@@ -1159,17 +1175,7 @@ constructor(
 
     private fun updateHostAttachment() =
         traceSection("MediaHierarchyManager#updateHostAttachment") {
-            if (SceneContainerFlag.isEnabled) {
-                // No need to manage transition states - just update the desired location directly
-                val host = getHost(desiredLocation)
-                logger.logMediaHostAttachment(desiredLocation, host?.visible)
-                mediaCarouselController.onDesiredLocationChanged(
-                    desiredLocation = desiredLocation,
-                    desiredHostState = host,
-                    animate = false,
-                )
-                return
-            }
+            if (MediaControlsInComposeFlag.isEnabled) return
 
             var newLocation = resolveLocationForFading()
             // Don't use the overlay when fading or when we don't have active media
@@ -1342,6 +1348,8 @@ constructor(
 
     /** Update whether or not the media carousel could be visible to the user */
     private fun updateUserVisibility() {
+        if (MediaControlsInComposeFlag.isEnabled) return
+
         val shadeVisible =
             isLockScreenVisibleToUser() ||
                 isHomeScreenShadeVisibleToUser() ||
@@ -1373,9 +1381,7 @@ constructor(
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.apply {
             println(
-                "current attachment: $currentAttachmentLocation, " +
-                    "desired location: $desiredLocation, " +
-                    "visible ${getHost(desiredLocation)?.visible}"
+                "current attachment: $currentAttachmentLocation, desired location: $desiredLocation, visible ${getHost(desiredLocation)?.visible}"
             )
             println("previous location: $previousLocation")
             println("bounds: $currentBounds, target $targetBounds")
@@ -1384,8 +1390,7 @@ constructor(
             println("Host bounds:")
             mediaHosts.forEachIndexed { location, host ->
                 println(
-                    "\t$location: bounds ${host?.currentBounds}" +
-                        ", clipping ${host?.currentClipping}"
+                    "\t$location: bounds ${host?.currentBounds}, clipping ${host?.currentClipping}"
                 )
             }
         }

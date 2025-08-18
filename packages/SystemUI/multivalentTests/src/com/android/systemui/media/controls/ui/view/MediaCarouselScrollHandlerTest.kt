@@ -17,13 +17,16 @@
 package com.android.systemui.media.controls.ui.view
 
 import android.content.res.Resources
+import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.PageIndicator
@@ -48,6 +51,8 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @RunWith(AndroidJUnit4::class)
+@DisableSceneContainer
+@DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
 class MediaCarouselScrollHandlerTest : SysuiTestCase() {
 
     private val carouselWidth = 1038
