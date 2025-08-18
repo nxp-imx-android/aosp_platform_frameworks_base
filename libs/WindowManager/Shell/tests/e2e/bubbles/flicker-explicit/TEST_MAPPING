@@ -68,6 +68,9 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest"
     }
   ]
 }
