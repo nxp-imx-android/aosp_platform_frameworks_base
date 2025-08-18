@@ -90,9 +90,7 @@ class DisplayWindowSettingsXmlHelper {
 
                 out.startTag(null, "display");
                 out.attribute(null, "name", displayIdentifier);
-                if (settingsEntry.mWindowingMode != WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
-                    out.attributeInt(null, "windowingMode", settingsEntry.mWindowingMode);
-                }
+
                 if (settingsEntry.mUserRotationMode != null) {
                     out.attributeInt(null, "userRotationMode",
                             settingsEntry.mUserRotationMode);
@@ -101,55 +99,61 @@ class DisplayWindowSettingsXmlHelper {
                     out.attributeInt(null, "userRotation",
                             settingsEntry.mUserRotation);
                 }
-                if (settingsEntry.mForcedWidth != 0 && settingsEntry.mForcedHeight != 0
-                        && !forBackup) {
-                    out.attributeInt(null, "forcedWidth", settingsEntry.mForcedWidth);
-                    out.attributeInt(null, "forcedHeight", settingsEntry.mForcedHeight);
-                }
-                if (settingsEntry.mForcedDensity != 0  && !forBackup) {
-                    out.attributeInt(null, "forcedDensity", settingsEntry.mForcedDensity);
-                }
                 if (settingsEntry.mForcedDensityRatio != 0.0f) {
                     out.attributeFloat(null, "forcedDensityRatio",
                             settingsEntry.mForcedDensityRatio);
                 }
-                if (settingsEntry.mForcedScalingMode != null) {
-                    out.attributeInt(null, "forcedScalingMode",
-                            settingsEntry.mForcedScalingMode);
-                }
-                if (settingsEntry.mRemoveContentMode != REMOVE_CONTENT_MODE_UNDEFINED) {
-                    out.attributeInt(null, "removeContentMode", settingsEntry.mRemoveContentMode);
-                }
-                if (settingsEntry.mShouldShowWithInsecureKeyguard != null) {
-                    out.attributeBoolean(null, "shouldShowWithInsecureKeyguard",
-                            settingsEntry.mShouldShowWithInsecureKeyguard);
-                }
-                if (settingsEntry.mShouldShowSystemDecors != null) {
-                    out.attributeBoolean(null, "shouldShowSystemDecors",
-                            settingsEntry.mShouldShowSystemDecors);
-                }
-                if (settingsEntry.mImePolicy != null) {
-                    out.attributeInt(null, "imePolicy", settingsEntry.mImePolicy);
-                }
-                if (settingsEntry.mFixedToUserRotation != null) {
-                    out.attributeInt(null, "fixedToUserRotation",
-                            settingsEntry.mFixedToUserRotation);
-                }
-                if (settingsEntry.mIgnoreOrientationRequest != null) {
-                    out.attributeBoolean(null, "ignoreOrientationRequest",
-                            settingsEntry.mIgnoreOrientationRequest);
-                }
-                if (settingsEntry.mIgnoreDisplayCutout != null) {
-                    out.attributeBoolean(null, "ignoreDisplayCutout",
-                            settingsEntry.mIgnoreDisplayCutout);
-                }
-                if (settingsEntry.mDontMoveToTop != null) {
-                    out.attributeBoolean(null, "dontMoveToTop",
-                            settingsEntry.mDontMoveToTop);
-                }
-                if (settingsEntry.mIsHomeSupported != null) {
-                    out.attributeBoolean(null, "isHomeSupported",
-                            settingsEntry.mIsHomeSupported);
+                if (!forBackup) {
+                    if (settingsEntry.mWindowingMode
+                            != WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
+                        out.attributeInt(null, "windowingMode", settingsEntry.mWindowingMode);
+                    }
+                    if (settingsEntry.mForcedWidth != 0 && settingsEntry.mForcedHeight != 0) {
+                        out.attributeInt(null, "forcedWidth", settingsEntry.mForcedWidth);
+                        out.attributeInt(null, "forcedHeight", settingsEntry.mForcedHeight);
+                    }
+                    if (settingsEntry.mForcedDensity != 0) {
+                        out.attributeInt(null, "forcedDensity", settingsEntry.mForcedDensity);
+                    }
+                    if (settingsEntry.mForcedScalingMode != null) {
+                        out.attributeInt(null, "forcedScalingMode",
+                                settingsEntry.mForcedScalingMode);
+                    }
+                    if (settingsEntry.mRemoveContentMode != REMOVE_CONTENT_MODE_UNDEFINED) {
+                        out.attributeInt(null, "removeContentMode",
+                                settingsEntry.mRemoveContentMode);
+                    }
+                    if (settingsEntry.mShouldShowWithInsecureKeyguard != null) {
+                        out.attributeBoolean(null, "shouldShowWithInsecureKeyguard",
+                                settingsEntry.mShouldShowWithInsecureKeyguard);
+                    }
+                    if (settingsEntry.mShouldShowSystemDecors != null) {
+                        out.attributeBoolean(null, "shouldShowSystemDecors",
+                                settingsEntry.mShouldShowSystemDecors);
+                    }
+                    if (settingsEntry.mImePolicy != null) {
+                        out.attributeInt(null, "imePolicy", settingsEntry.mImePolicy);
+                    }
+                    if (settingsEntry.mFixedToUserRotation != null) {
+                        out.attributeInt(null, "fixedToUserRotation",
+                                settingsEntry.mFixedToUserRotation);
+                    }
+                    if (settingsEntry.mIgnoreOrientationRequest != null) {
+                        out.attributeBoolean(null, "ignoreOrientationRequest",
+                                settingsEntry.mIgnoreOrientationRequest);
+                    }
+                    if (settingsEntry.mIgnoreDisplayCutout != null) {
+                        out.attributeBoolean(null, "ignoreDisplayCutout",
+                                settingsEntry.mIgnoreDisplayCutout);
+                    }
+                    if (settingsEntry.mDontMoveToTop != null) {
+                        out.attributeBoolean(null, "dontMoveToTop",
+                                settingsEntry.mDontMoveToTop);
+                    }
+                    if (settingsEntry.mIsHomeSupported != null) {
+                        out.attributeBoolean(null, "isHomeSupported",
+                                settingsEntry.mIsHomeSupported);
+                    }
                 }
                 out.endTag(null, "display");
             }
