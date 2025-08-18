@@ -601,9 +601,6 @@ void NativeInputManager::dump(std::string& dump) {
     dump += "Input Manager State:\n";
     { // acquire lock
         std::scoped_lock _l(mLock);
-        auto logicalDisplayIdToString = [](const ui::LogicalDisplayId& displayId) {
-            return std::to_string(displayId.val());
-        };
         dump += StringPrintf(INDENT "Display not interactive: %s\n",
                              dumpContainer(mLocked.nonInteractiveDisplays, streamableToString)
                                      .c_str());
