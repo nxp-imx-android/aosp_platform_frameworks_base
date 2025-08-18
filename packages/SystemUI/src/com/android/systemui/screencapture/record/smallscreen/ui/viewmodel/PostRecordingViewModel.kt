@@ -33,7 +33,7 @@ private const val MIME_TYPE = "video/mp4"
 class PostRecordingViewModel
 @AssistedInject
 constructor(
-    @Assisted private val videoUri: Uri,
+    @Assisted val videoUri: Uri,
     private val context: Context,
     private val activityStarter: ActivityStarter,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,

@@ -69,12 +69,16 @@ import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.VideoPlayer
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
 import javax.inject.Inject
 
 class SmallScreenPostRecordingActivity
 @Inject
-constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : ComponentActivity() {
+constructor(
+    private val videoPlayer: VideoPlayer,
+    private val viewModelFactory: PostRecordingViewModel.Factory,
+) : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,13 +109,17 @@ constructor(private val viewModelFactory: PostRecordingViewModel.Factory) : Comp
 
         val shouldUseFlatBottomBar =
             booleanResource(R.bool.screen_record_post_recording_flat_bottom_bar)
-        Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+        Box(
+            modifier =
+                Modifier.background(MaterialTheme.colorScheme.surface)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 if (!shouldUseFlatBottomBar) {
                     Spacer(modifier = Modifier.size(50.dp))
                 }
                 Box(modifier = Modifier.weight(1f).align(Alignment.CenterHorizontally)) {
-                    // TODO(b/430553811): Add video player
+                    videoPlayer.Content(uri = viewModel.videoUri, modifier = Modifier.fillMaxSize())
                 }
                 Spacer(modifier = Modifier.size(32.dp))
                 Row(
