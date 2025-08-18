@@ -63,11 +63,40 @@ sealed interface TransitionState {
      */
     val currentOverlays: Set<OverlayKey>
 
+    /**
+     * Whether we are idle. If [content] isn't `null`, return `true` if idle and current content
+     * contains [content]. If [content] is `null`, will return `true` if idle, regardless of current
+     * content.
+     */
+    fun isIdle(content: ContentKey? = null): Boolean
+
+    /**
+     * Whether we are transitioning. If [from] or [to] are `null`, only the non-`null` one would be
+     * checked; if both are `null`, will return `true` if any transition is ongoing.
+     */
+    fun isTransitioning(from: ContentKey? = null, to: ContentKey? = null): Boolean
+
+    /** Whether we are transitioning from [content] to [other], or from [other] to [content]. */
+    fun isTransitioningBetween(content: ContentKey, other: ContentKey): Boolean
+
+    /** Whether we are transitioning from or to [content]. */
+    fun isTransitioningFromOrTo(content: ContentKey): Boolean
+
     /** The scene [currentScene] is idle. */
     data class Idle(
         override val currentScene: SceneKey,
         override val currentOverlays: Set<OverlayKey> = emptySet(),
-    ) : TransitionState
+    ) : TransitionState {
+        override fun isIdle(content: ContentKey?): Boolean {
+            return content == null || content == currentScene || currentOverlays.contains(content)
+        }
+
+        override fun isTransitioning(from: ContentKey?, to: ContentKey?): Boolean = false
+
+        override fun isTransitioningBetween(content: ContentKey, other: ContentKey): Boolean = false
+
+        override fun isTransitioningFromOrTo(content: ContentKey): Boolean = false
+    }
 
     sealed class Transition(
         val fromContent: ContentKey,
@@ -337,22 +366,18 @@ sealed interface TransitionState {
             }
         }
 
-        /**
-         * Whether we are transitioning. If [from] or [to] is empty, we will also check that they
-         * match the contents we are animating from and/or to.
-         */
-        fun isTransitioning(from: ContentKey? = null, to: ContentKey? = null): Boolean {
+        override fun isIdle(content: ContentKey?): Boolean = false
+
+        override fun isTransitioning(from: ContentKey?, to: ContentKey?): Boolean {
             return (from == null || fromContent == from) && (to == null || toContent == to)
         }
 
-        /** Whether we are transitioning from [content] to [other], or from [other] to [content]. */
-        fun isTransitioningBetween(content: ContentKey, other: ContentKey): Boolean {
+        override fun isTransitioningBetween(content: ContentKey, other: ContentKey): Boolean {
             return isTransitioning(from = content, to = other) ||
                 isTransitioning(from = other, to = content)
         }
 
-        /** Whether we are transitioning from or to [content]. */
-        fun isTransitioningFromOrTo(content: ContentKey): Boolean {
+        override fun isTransitioningFromOrTo(content: ContentKey): Boolean {
             return fromContent == content || toContent == content
         }
 
