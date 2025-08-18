@@ -359,7 +359,7 @@
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"tomar fotografías y grabar videos"</string>
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"Dispositivos cercanos"</string>
     <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"descubrir y conectarse a dispositivos cercanos"</string>
-    <string name="permgrouplab_calllog" msgid="7926834372073550288">"Registros de llamadas"</string>
+    <string name="permgrouplab_calllog" msgid="7926834372073550288">"Llamadas"</string>
     <string name="permgroupdesc_calllog" msgid="2026996642917801803">"leer y escribir el registro de llamadas telefónicas"</string>
     <string name="permgrouplab_phone" msgid="570318944091926620">"Teléfono"</string>
     <string name="permgroupdesc_phone" msgid="270048070781478204">"hacer y administrar llamadas telefónicas"</string>
@@ -2604,4 +2604,10 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Presiona para revisar las sugerencias para mejorar la experiencia de desbloqueo"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Sin parpadeo"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Mantén presionado el botón de encendido para apagar la TV"</string>
+    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
+    <skip />
 </resources>

@@ -1236,7 +1236,7 @@
     <string name="copyUrl" msgid="6229645005987260230">"Kopier webadresse"</string>
     <string name="selectTextMode" msgid="3225108910999318778">"Markér tekst"</string>
     <string name="undo" msgid="3175318090002654673">"Fortryd"</string>
-    <string name="redo" msgid="7231448494008532233">"Annuller fortryd"</string>
+    <string name="redo" msgid="7231448494008532233">"Annuller fortrydelse"</string>
     <string name="autofill" msgid="511224882647795296">"Autofyld"</string>
     <string name="textSelectionCABTitle" msgid="5151441579532476940">"Tekstmarkering"</string>
     <string name="addToDictionary" msgid="8041821113480950096">"Føj til ordbog"</string>
@@ -2603,4 +2603,10 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tryk for at få tips til, hvordan du forbedrer oplåsningsoplevelsen"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Blink ikke"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Hold afbryderknappen nede for at slukke fjernsynet"</string>
+    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
+    <skip />
 </resources>
