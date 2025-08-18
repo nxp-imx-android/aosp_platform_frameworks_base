@@ -370,7 +370,8 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         if (mEnableAoaUserspaceImplementation) {
             if (!nativeOpenAccessoryControl()) {
-                Slog.e(TAG, "Failed to open control for accessory");
+                Slog.e(TAG, "Failed to open control for accessory, disabling userspace AOA");
+                mEnableAoaUserspaceImplementation = false;
             }
         }
 

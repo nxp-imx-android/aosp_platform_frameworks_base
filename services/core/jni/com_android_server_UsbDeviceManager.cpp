@@ -21,13 +21,13 @@
 #include <asyncio/AsyncIO.h>
 #include <core_jni_helpers.h>
 #include <fcntl.h>
-#include <fstream>
 #include <linux/aio_abi.h>
 
 #include <linux/uhid.h>
 #include <linux/usb/f_accessory.h>
 #include <nativehelper/JNIPlatformHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
+#include <selinux/android.h>
 #include <stdio.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -36,6 +36,8 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include <fstream>
 #include <map>
 #include <thread>
 
@@ -254,7 +256,6 @@ const struct acc_functionfs_strings acc_strings = {
                         .str1 = ACC_INTERFACE_STR,
                 },
 };
-
 
 } // namespace
 
@@ -1503,6 +1504,20 @@ static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /*
         return JNI_FALSE;
     }
 
+    int err = selinux_android_restorecon(FFS_ACCESSORY_EP1, 0);
+    if (err < 0) {
+        ALOGE("Applying SELINUX labels to accessory EP1 failed: %d", err);
+        close(fd);
+        return JNI_FALSE;
+    }
+    err = selinux_android_restorecon(FFS_ACCESSORY_EP2, 0);
+    if (err < 0) {
+        ALOGE("Applying SELINUX labels to accessory EP2 failed: %d", err);
+        close(fd);
+        return JNI_FALSE;
+    }
+
+    ALOGI("USB Accessory Descriptors written successfully");
     return JNI_TRUE;
 }
 
@@ -1559,6 +1574,7 @@ static jboolean android_server_UsbDeviceManager_checkAccessoryFfsDirectories(JNI
         return JNI_FALSE;
     }
 
+    ALOGI("USB Accessory FFS directory check success");
     return JNI_TRUE;
 }
 
