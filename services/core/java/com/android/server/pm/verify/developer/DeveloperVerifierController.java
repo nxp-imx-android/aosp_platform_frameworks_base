@@ -219,7 +219,7 @@ public class DeveloperVerifierController {
      * {@link PackageInstallerSession.DeveloperVerifierCallback#onConnectionFailed}.
      */
     public boolean bindToVerifierServiceIfNeeded(Supplier<Computer> snapshotSupplier, int userId,
-            PackageInstallerSession.DeveloperVerifierCallback callback) {
+            Runnable onConnectionEstablished) {
         if (DEBUG) {
             Slog.i(TAG, "Requesting to bind to the verifier service for user " + userId);
         }
@@ -265,7 +265,7 @@ public class DeveloperVerifierController {
                         Slog.i(TAG, "Verifier " + verifierPackageName + " is connected"
                                 + " on user " + userId);
                         // Logging the success of connecting to the verifier.
-                        callback.onConnectionEstablished();
+                        onConnectionEstablished.run();
                         // Aggressively auto-disconnect until verification requests are sent out
                         startAutoDisconnectCountdown(
                                 remoteServiceWrapper.getAutoDisconnectCallback());
@@ -391,9 +391,9 @@ public class DeveloperVerifierController {
             @PackageInstaller.DeveloperVerificationPolicy int verificationPolicy,
             @Nullable PersistableBundle extensionParams,
             PackageInstallerSession.DeveloperVerifierCallback callback,
-            boolean retry) {
+            Runnable onConnectionEstablished, boolean retry) {
         // Try connecting to the verifier if not already connected
-        if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId, callback)) {
+        if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId, onConnectionEstablished)) {
             return false;
         }
         // For now, the verification id is the same as the installation session id.
