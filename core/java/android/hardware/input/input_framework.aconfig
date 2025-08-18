@@ -112,7 +112,14 @@ flag {
 flag {
     name: "enable_talkback_and_magnifier_key_gestures"
     namespace: "input"
-    description: "Adds key gestures for TalkBack and Magnification"
+    description: "Adds key gestures for Magnification. TalkBack key gesture has been flagged separately under enable_talkback_key_gestures."
+    bug: "375277034"
+}
+
+flag {
+    name: "enable_talkback_key_gestures"
+    namespace: "accessibility"
+    description: "Adds key gesture for TalkBack"
     bug: "375277034"
 }
 
