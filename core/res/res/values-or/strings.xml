@@ -2603,4 +2603,10 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ଆପଣଙ୍କ ଅନଲକ କରିବାର ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଟିପ୍ସର ସମୀକ୍ଷା କରିବାକୁ ଟାପ କରନ୍ତୁ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ବ୍ଲିଙ୍କ କରନ୍ତୁ ନାହିଁ"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ଟିଭି ବନ୍ଦ କରିବା ପାଇଁ ପାୱାର ବଟନକୁ ଅଧିକ ସମୟ ଦବାନ୍ତୁ"</string>
+    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
+    <skip />
 </resources>
