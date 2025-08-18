@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"刪除"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"拍攝整個畫面的螢幕截圖"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"拍攝所選區域的螢幕截圖"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"螢幕截圖"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"錄影"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"共用"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在分享畫面"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"正在分享內容"</string>
@@ -220,16 +236,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"已通過驗證"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"取消驗證"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"更多選項"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"以其他方式驗證"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"以其他方式驗證"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"管理「身分驗證」"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"進一步瞭解「身分驗證」"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"「身分驗證」已開啟，因此只能透過指紋或臉孔驗證身分。%1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"正在評估風險…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"無法使用"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"使用 PIN 碼"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"使用解鎖圖案"</string>
@@ -330,9 +342,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"減少時間。"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"已停止投放螢幕。"</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"螢幕亮度"</string>
-    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"相機正在使用中"</string>
-    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"麥克風正在使用中"</string>
-    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"相機和麥克風正在使用中"</string>
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"相機使用中"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"麥克風使用中"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"相機和麥克風使用中"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"行動數據已暫停使用"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"已暫停數據連線"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"你的數據用量已達設定的用量上限，因此系統已停止使用行動數據連線。\n\n如果你繼續使用行動數據連線，可能需要支付相關的數據傳輸費用。"</string>
@@ -879,7 +891,7 @@
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>，<xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"套用"</string>
-    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"關閉"</string>
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"關閉通知功能"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"靜音"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"預設"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"自動"</string>
@@ -899,7 +911,7 @@
     <string name="notification_priority_title" msgid="2079708866333537093">"優先"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」不支援對話功能"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"意見回饋"</string>
-    <string name="notification_inline_dismiss" msgid="88423586921134258">"關閉"</string>
+    <string name="notification_inline_dismiss" msgid="88423586921134258">"取消"</string>
     <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"關閉"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"禁止此應用程式顯示最新即時資訊"</string>
     <string name="live_notifications_title" msgid="5926318111951903878">"即時更新"</string>
@@ -1123,10 +1135,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 頁，共 <xliff:g id="ID_2">%2$d</xliff:g> 頁"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要開啟「<xliff:g id="ID_1">%1$s</xliff:g>」嗎？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"動作 "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 鍵是使用「<xliff:g id="ID_3">^3</xliff:g>」的鍵盤快速鍵。<xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"這項功能可以快速放大畫面內容。"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是螢幕閱讀器，可朗讀畫面上的項目。如果使用者無法看清楚螢幕，這項功能就能派上用場。"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"有了 <xliff:g id="ID_1">%1$s</xliff:g>，不必動手就能控制裝置。"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"開啟"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"螢幕鎖定"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"關機中…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"查看處理步驟"</string>

@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"Избриши"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направи снимак целог екрана"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Направи снимак екрана изабране области"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Снимак екрана"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Снимање екрана"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Дели"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>×<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Екран се дели"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Дељење садржаја"</string>
@@ -395,8 +411,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Неименовани уређај"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Није доступан ниједан уређај"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Нема WiFi нити етернет везе"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Прекини везу"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Осветљеност"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Инверзија боја"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Корекција боја"</string>
@@ -406,8 +421,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Затвори"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Повезан"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Повезује се..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Скенира се WiFi..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Хотспот"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Укључује се..."</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Уштеда података је укључена"</string>
@@ -1119,10 +1133,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_1">%1$d</xliff:g>. страна од <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Желите да укључите функцију <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Радња "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> је тастерска пречица за коришћење функције <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"То вам омогућава да брзо зумирате екран да би садржај био већи."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> је читач екрана који вам омогућава да чујете наглас изговорене називе ставки. Може да буде користан људима који имају потешкоћа са видом."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> вам омогућава да контролишете уређај хендсфри."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Укључи"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Закључан екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Искључује се…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Погледајте упозорења"</string>
@@ -1171,12 +1192,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"Апликације покренуте у позадини"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"Додирните за детаље о батерији и потрошњи података"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"Желите да искључите мобилне податке?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"Желите да укључите мобилне податке?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"Коришћење мобилних података може да доведе до трошкова у складу са мобилним тарифним пакетом."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"Укључи"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"Нећете имати приступ подацима или интернету преко мобилног оператера <xliff:g id="CARRIER">%s</xliff:g>. Интернет ће бити доступан само преко WiFi везе."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"мобилни оператер"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"Желите да се вратите на мобилног оператера <xliff:g id="CARRIER">%s</xliff:g>?"</string>

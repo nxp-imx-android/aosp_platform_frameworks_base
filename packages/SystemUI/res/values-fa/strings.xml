@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"گرفتن اسکرین شات از کل صفحه"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"گرفتن اسکرین شات از ناحیه انتخاب شده"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"نماگرفت"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ضبط کردن"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"هم‌رسانی"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"‪<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"درحال هم‌رسانی صفحه"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"هم‌رسانی محتوا"</string>
@@ -220,16 +236,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"راستی‌آزمایی‌شده"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"لغو اصالت‌سنجی"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"گزینه‌های بیشتر"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"درستی‌سنجی با روش دیگر"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"درستی‌سنجی با روشی دیگر"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"مدیریت «احراز هویت»"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"درباره «احراز هویت» بیشتر بدانید"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏بررسی هویت روشن است و فقط با اثر انگشت یا چهره شما را تایید می‌کند. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"درحال ارزیابی مخاطرات…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"دردسترس نیست"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استفاده از پین"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استفاده از الگو"</string>
@@ -1123,10 +1135,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"صفحه <xliff:g id="ID_1">%1$d</xliff:g> از <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"‫<xliff:g id="ID_1">%1$s</xliff:g> روشن شود؟"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‏کنش "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> صفحه‌خوانی است که به شما امکان می‌دهد موارد روی صفحه را با صدای بلند بشنوید. این ویژگی برای افرادی که دیدن صفحه‌نمایش برایشان دشوار است می‌تواند مفید باشد."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"«<xliff:g id="ID_1">%1$s</xliff:g>» به شما امکان می‌دهد دستگاهتان را به‌صورت دست‌آزاد کنترل کنید."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"روشن کردن"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"درحال خاموش شدن…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"دیدن اقدامات محافظتی"</string>
@@ -1372,8 +1391,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"جلسه مشترک برای انتقال رسانه به دستگاهی دیگر متوقف می‌شود"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"توقف"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"توقف هم‌رسانی"</string>
-    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"درحال اشتراک‌گذاری صدا"</string>
-    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"اشتراک‌گذاری صدا"</string>
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"درحال هم‌رسانی صدا"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"هم‌رسانی صدا"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"شماره ساخت"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"شماره ساخت در بریده‌دان کپی شد."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"کپی کردن در بریده‌دان."</string>

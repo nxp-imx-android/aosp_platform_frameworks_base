@@ -148,9 +148,18 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"削除"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"画面全体のスクリーンショットを撮影"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"選択した領域のスクリーンショットを撮影"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"スクリーンショット"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"録画"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"共有"</string>
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ウィンドウのスクリーンショットを撮影"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ウィンドウを録画"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"選択した領域のスクリーンショットを撮影"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"選択した領域を録画"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"画面全体のスクリーンショットを撮影"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"画面全体を録画"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"スクリーン キャプチャの設定"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"画面を共有しています"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"コンテンツの共有"</string>
@@ -220,16 +229,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"認証済み"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"認証をキャンセルします"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"その他のオプション"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"別の方法で確認"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"別の方法で検証"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ID チェックの管理"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"ID チェックの詳細"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"ID チェックが ON になっているため、指紋または顔でのみ本人確認ができます。%1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"リスクを評価しています…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"使用不可"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN を使用"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"パターンを使用"</string>
@@ -401,8 +406,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"名前のないデバイス"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"利用可能なデバイスがありません"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi-Fi またはイーサネットに接続されていません"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"接続を解除"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"画面の明るさ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"色反転"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"色補正"</string>
@@ -412,8 +416,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"閉じる"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"接続済み"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"接続しています..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Wi-Fi をスキャンしています..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"アクセスポイント"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ON にしています…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"データセーバー ON"</string>
@@ -521,7 +524,7 @@
     <string name="sensor_privacy_dialog_open_settings" msgid="5635865896053011859">"設定を開く"</string>
     <string name="media_seamless_other_device" msgid="4654849800789196737">"その他のデバイス"</string>
     <string name="media_suggestion_disconnected_text" msgid="8777932417076437525">"<xliff:g id="DEVICE_NAME">%s</xliff:g> で再生"</string>
-    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"接続できません。もう一度お試しください。"</string>
+    <string name="media_suggestion_failure_text" msgid="8453022394887613774">"接続できません。再度お試しください。"</string>
     <string name="quick_step_accessibility_toggle_overview" msgid="7908949976727578403">"概要を切り替え"</string>
     <string name="zen_modes_dialog_title" msgid="8854640808100096934">"モード"</string>
     <string name="zen_modes_dialog_done" msgid="6654130880256438950">"完了"</string>
@@ -1125,10 +1128,13 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ページ <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 機能を ON にしますか？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> は、<xliff:g id="ID_3">^3</xliff:g>機能を使用するためのキーボード ショートカットです。<xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"画面をすばやくズームインして、コンテンツを拡大できます。"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> は画面上の項目を読み上げるスクリーン リーダーで、目の不自由な方に役立ちます。"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> を使用すると、デバイスをハンズフリーで操作できます。"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ON にする"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> のキーボード ショートカットを ON にしました"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> は、<xliff:g id="ID_3">^3</xliff:g>機能を使用するためのキーボード ショートカットです。画面をすばやくズームインして、コンテンツを拡大できます。ズームを調整するには、アクション "<annotation id="action_key_icon">"アイコン"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> と「+」または「-」を押します。"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ショートカットを OFF にする"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ON のままにする"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ロック画面"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"シャットダウン中…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"取り扱いに関する手順をご覧ください"</string>
@@ -1177,12 +1183,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"バックグラウンドで実行中のアプリ"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"タップしてバッテリーやデータの使用量を確認"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"モバイルデータを OFF にしますか？"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"モバイルデータを ON にしますか？"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"モバイルデータを使用すると、お使いのモバイル サービスプランに応じて料金が発生する場合があります。"</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ON にする"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"<xliff:g id="CARRIER">%s</xliff:g>でデータやインターネットにアクセスできなくなります。インターネットには Wi-Fi からのみ接続できます。"</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"携帯通信会社"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"<xliff:g id="CARRIER">%s</xliff:g> に戻しますか？"</string>
