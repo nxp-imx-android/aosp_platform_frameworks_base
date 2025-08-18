@@ -139,20 +139,9 @@ public class DisplayWindowSettingsXmlHelperTests {
         data.mIdentifierType = 1;
 
         SettingsEntry entry = new SettingsEntry();
-        entry.mWindowingMode = 0;
         entry.mUserRotationMode = 0;
         entry.mUserRotation = 0;
         entry.mForcedDensityRatio = 1.2f;
-        entry.mForcedScalingMode = 0;
-        entry.mRemoveContentMode = 0;
-        entry.mShouldShowWithInsecureKeyguard = true;
-        entry.mShouldShowSystemDecors = false;
-        entry.mImePolicy = 2;
-        entry.mFixedToUserRotation = 2;
-        entry.mIgnoreOrientationRequest = true;
-        entry.mIgnoreDisplayCutout = false;
-        entry.mDontMoveToTop = true;
-        entry.mIsHomeSupported = false;
 
         data.mSettings.put(DISPLAY_NAME, entry);
         return data;
