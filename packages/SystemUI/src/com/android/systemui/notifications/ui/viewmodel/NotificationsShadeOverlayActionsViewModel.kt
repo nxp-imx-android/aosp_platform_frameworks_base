@@ -27,12 +27,15 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.EndHalf
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.TopEdgeEndHalf
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.map
 
 /** Models the UI state for the user actions for navigating to other scenes or overlays. */
-class NotificationsShadeOverlayActionsViewModel @AssistedInject constructor() :
-    UserActionsViewModel() {
+class NotificationsShadeOverlayActionsViewModel
+@AssistedInject
+constructor(private val shadeModeInteractor: ShadeModeInteractor) : UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
         val hideNotificationsShade = HideOverlay(Overlays.NotificationsShade)
@@ -41,14 +44,19 @@ class NotificationsShadeOverlayActionsViewModel @AssistedInject constructor() :
                 Overlays.QuickSettingsShade,
                 hideCurrentOverlays = HideCurrentOverlays.Some(Overlays.NotificationsShade),
             )
-        setActions(
-            mapOf(
-                Swipe.Up to hideNotificationsShade,
-                Back to hideNotificationsShade,
-                Swipe.Down(fromSource = EndHalf) to openQuickSettingsShade,
-                Swipe.Down(fromSource = TopEdgeEndHalf) to openQuickSettingsShade,
-            )
-        )
+
+        shadeModeInteractor.isFullWidthShade
+            .map { isFullWidthShade ->
+                buildMap {
+                    put(Swipe.Up, hideNotificationsShade)
+                    put(Back, hideNotificationsShade)
+                    if (!isFullWidthShade) {
+                        put(Swipe.Down(fromSource = EndHalf), openQuickSettingsShade)
+                    }
+                    put(Swipe.Down(fromSource = TopEdgeEndHalf), openQuickSettingsShade)
+                }
+            }
+            .collect { actions -> setActions(actions) }
     }
 
     @AssistedFactory
