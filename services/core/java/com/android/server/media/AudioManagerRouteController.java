@@ -129,6 +129,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
     @GuardedBy("this")
     private List<MediaRoute2Info> mSelectableRoutes = Collections.emptyList();
 
+    @GuardedBy("this")
+    private @RoutingSessionInfo.ReleaseType int mSessionReleaseType =
+            RoutingSessionInfo.RELEASE_UNSUPPORTED;
+
     // A singleton AudioManagerRouteController.
     private static AudioManagerRouteController mInstance;
 
@@ -265,10 +269,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
     }
 
     @Override
-    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
-        return currentOutputIsBLEBroadcast()
-                ? RoutingSessionInfo.RELEASE_TYPE_SHARING
-                : RoutingSessionInfo.RELEASE_UNSUPPORTED;
+    public synchronized @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        return mSessionReleaseType;
     }
 
     @Override
@@ -714,6 +716,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
                                     .toList();
                 }
             }
+            mSessionReleaseType =
+                    currentOutputIsBLEBroadcast
+                            ? RoutingSessionInfo.RELEASE_TYPE_SHARING
+                            : RoutingSessionInfo.RELEASE_UNSUPPORTED;
         }
     }
 

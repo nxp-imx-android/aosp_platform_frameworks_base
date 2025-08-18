@@ -483,32 +483,8 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    public void getSessionReleaseType_returnTypeSharing() {
-        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ false);
-        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
-                .thenReturn(
-                        List.of(
-                                createAudioDeviceAttribute(
-                                        AudioDeviceInfo.TYPE_BLE_BROADCAST, /* address= */ "")));
-        assertThat(mControllerUnderTest.getSessionReleaseType())
-                .isEqualTo(RoutingSessionInfo.RELEASE_TYPE_SHARING);
-    }
-
-    @Test
-    public void getSessionReleaseType_returnTypeUnsupported() {
-        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ false);
-        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
-                .thenReturn(
-                        List.of(
-                                createAudioDeviceAttribute(
-                                        AudioDeviceInfo.TYPE_WIRED_HEADSET, /* address= */ "")));
-        assertThat(mControllerUnderTest.getSessionReleaseType())
-                .isEqualTo(RoutingSessionInfo.RELEASE_UNSUPPORTED);
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getRoutes_whenLEAudioBroadcastNotSupported_returnsCorrectList() {
+    public void getRoutes_whenLEAudioBroadcastNotSupported_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(false);
         addAvailableAudioDeviceInfo(
@@ -532,11 +508,13 @@ public class AudioManagerRouteControllerTest {
         assertThat(availableRoutesNames).contains(FAKE_AUDIO_DEVICE_LE_HEADSET_2_NAME);
         assertThat(selectedRoutesNames).containsExactly(FAKE_AUDIO_DEVICE_LE_HEADSET_1_NAME);
         assertThat(deselectableRoutes).isEmpty();
+        assertThat(mControllerUnderTest.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_UNSUPPORTED);
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getRoutes_singleDeviceSelectedAndOutputNotBroadcast_returnsCorrectList() {
+    public void getRoutes_singleDeviceSelectedAndOutputNotBroadcast_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
         addAvailableAudioDeviceInfo(
@@ -563,11 +541,13 @@ public class AudioManagerRouteControllerTest {
         assertThat(availableRoutesNames).contains(FAKE_AUDIO_DEVICE_LE_HEADSET_2_NAME);
         assertThat(selectedRoutesNames).containsExactly(FAKE_AUDIO_DEVICE_LE_HEADSET_1_NAME);
         assertThat(deselectableRoutes).isEmpty();
+        assertThat(mControllerUnderTest.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_UNSUPPORTED);
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getRoutes_singleDeviceSelectedAndOutputIsBroadcast_returnsCorrectList() {
+    public void getRoutes_singleDeviceSelectedAndOutputIsBroadcast_returnsCorrectStates() {
         setUpControllerAndLEAudioMocks();
         when(mMockBluetoothDeviceRoutesManager.isLEAudioBroadcastSupported()).thenReturn(true);
         when(mMockBluetoothDeviceRoutesManager.getBroadcastingDeviceRoutes())
@@ -602,6 +582,8 @@ public class AudioManagerRouteControllerTest {
         assertThat(availableRoutesNames).contains(FAKE_AUDIO_DEVICE_LE_HEADSET_2_NAME);
         assertThat(selectedRoutesNames).containsExactly(FAKE_AUDIO_DEVICE_LE_HEADSET_1_NAME);
         assertThat(deselectableRoutesNames).containsExactly(FAKE_AUDIO_DEVICE_LE_HEADSET_1_NAME);
+        assertThat(mControllerUnderTest.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_TYPE_SHARING);
     }
 
     // Internal methods.
