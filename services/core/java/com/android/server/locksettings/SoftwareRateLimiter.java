@@ -84,10 +84,10 @@ class SoftwareRateLimiter {
     @VisibleForTesting static final Duration SAVED_WRONG_GUESS_TIMEOUT = Duration.ofMinutes(5);
 
     /**
-     * A table that maps the number of (real) failures to the delay that is enforced after that
+     * A table that maps the number of (real) failures to the timeout that is enforced after that
      * number of (real) failures. Out-of-bounds indices default to not allowed.
      */
-    private static final Duration[] DELAY_TABLE =
+    private static final Duration[] TIMEOUT_TABLE =
             new Duration[] {
                 /* 0 */ Duration.ZERO,
                 /* 1 */ Duration.ZERO,
@@ -115,7 +115,7 @@ class SoftwareRateLimiter {
 
     /**
      * Whether the software rate-limiter is actually in enforcing mode. In non-enforcing mode all
-     * delays are considered to be zero, and "duplicate wrong guess" results are not returned.
+     * timeouts are considered to be zero, and "duplicate wrong guess" results are not returned.
      */
     private final boolean mEnforcing;
 
@@ -129,7 +129,7 @@ class SoftwareRateLimiter {
         /**
          * The number of failed attempts since the last successful attempt, not counting attempts
          * that never reached the real credential check for a reason such as detection of a
-         * duplicate wrong guess, credential too short, delay still remaining, etc.
+         * duplicate wrong guess, credential too short, timeout still remaining, etc.
          */
         public int numFailures;
 
@@ -205,7 +205,7 @@ class SoftwareRateLimiter {
                             // For LSKF-based synthetic password protectors the only persistent
                             // software rate-limiter state is the failure counter.
                             // timeSinceBootOfLastFailure is just set to zero, so effectively the
-                            // delay resets to its original value (for the current failure count)
+                            // timeout resets to its original value (for the current failure count)
                             // upon reboot. That matches what typical hardware rate-limiter
                             // implementations do; they typically do not have access to a trusted
                             // real-time clock that runs without the device being powered on.
@@ -214,30 +214,26 @@ class SoftwareRateLimiter {
                             return new RateLimiterState(readFailureCounter(id), guess);
                         });
 
-        // Check for remaining delay. Note that the case of a positive remaining delay normally
-        // won't be reached, since reportFailure() will have returned the delay when the last guess
-        // was made, causing the lock screen to block inputs for that amount of time. But checking
-        // for it is still needed to cover any cases where a guess gets made anyway, for example
-        // following a reboot which causes the lock screen to "forget" the delay.
-        final Duration delay;
+        // Check for remaining timeout. Note that the case of a positive remaining timeout normally
+        // won't be reached, since reportFailure() will have returned the timeout when the last
+        // guess was made, causing the lock screen to block inputs for that amount of time. But
+        // checking for it is still needed to cover any cases where a guess gets made anyway, for
+        // example following a reboot which causes the lock screen to "forget" the timeout.
+        final Duration originalTimeout;
         if (mEnforcing) {
-            if (state.numFailures >= DELAY_TABLE.length || state.numFailures < 0) {
+            if (state.numFailures >= TIMEOUT_TABLE.length || state.numFailures < 0) {
                 Slogf.e(TAG, "No more guesses allowed; numFailures=%d", state.numFailures);
                 return SoftwareRateLimiterResult.noMoreGuesses();
             }
-            delay = DELAY_TABLE[state.numFailures];
+            originalTimeout = TIMEOUT_TABLE[state.numFailures];
         } else {
-            delay = Duration.ZERO;
+            originalTimeout = Duration.ZERO;
         }
         final Duration now = mInjector.getTimeSinceBoot();
-        final Duration remainingDelay = state.timeSinceBootOfLastFailure.plus(delay).minus(now);
-        if (remainingDelay.isPositive()) {
-            Slogf.e(
-                    TAG,
-                    "Rate-limited; numFailures=%d, remainingDelay=%s",
-                    state.numFailures,
-                    remainingDelay);
-            return SoftwareRateLimiterResult.rateLimited(remainingDelay);
+        final Duration timeout = state.timeSinceBootOfLastFailure.plus(originalTimeout).minus(now);
+        if (timeout.isPositive()) {
+            Slogf.e(TAG, "Rate-limited; numFailures=%d, timeout=%s", state.numFailures, timeout);
+            return SoftwareRateLimiterResult.rateLimited(timeout);
         }
 
         // Check for duplicate wrong guess.
@@ -309,7 +305,7 @@ class SoftwareRateLimiter {
      * @param guess the LSKF that was attempted
      * @param isCertainlyWrongGuess true if it's certain that the failure was caused by the guess
      *     being wrong, as opposed to e.g. a transient hardware glitch
-     * @return the delay until when the next guess will be allowed
+     * @return the remaining timeout until when the next guess will be allowed
      */
     synchronized Duration reportFailure(
             LskfIdentifier id, LockscreenCredential guess, boolean isCertainlyWrongGuess) {
@@ -325,10 +321,11 @@ class SoftwareRateLimiter {
         // Increment the failure counter regardless of whether the failure is a certainly wrong
         // guess or not. A generic failure might still be caused by a wrong guess. Gatekeeper only
         // ever returns generic failures, and some Weaver implementations prefer THROTTLE to
-        // INCORRECT_KEY once the delay becomes nonzero. Instead of making the software rate-limiter
-        // ineffective on all such devices, still apply it. This does mean that correct guesses that
-        // encountered an error will be rate-limited. However, by design the rate-limiter kicks in
-        // gradually anyway, so there will be a chance for the user to try again.
+        // INCORRECT_KEY once the timeout becomes nonzero. Instead of making the software
+        // rate-limiter ineffective on all such devices, still apply it. This does mean that correct
+        // guesses that encountered an error will be rate-limited. However, by design the
+        // rate-limiter kicks in gradually anyway, so there will be a chance for the user to try
+        // again.
         state.numFailures++;
         state.timeSinceBootOfLastFailure = mInjector.getTimeSinceBoot();
 
@@ -364,12 +361,12 @@ class SoftwareRateLimiter {
         if (!mEnforcing) {
             return Duration.ZERO;
         }
-        if (state.numFailures >= DELAY_TABLE.length || state.numFailures < 0) {
+        if (state.numFailures >= TIMEOUT_TABLE.length || state.numFailures < 0) {
             // In this case actually no more guesses are allowed, but currently there is no way to
-            // convey that information. For now just report the final delay again.
-            return DELAY_TABLE[DELAY_TABLE.length - 1];
+            // convey that information. For now just report the final timeout again.
+            return TIMEOUT_TABLE[TIMEOUT_TABLE.length - 1];
         }
-        return DELAY_TABLE[state.numFailures];
+        return TIMEOUT_TABLE[state.numFailures];
     }
 
     private static int getStatsCredentialType(LockscreenCredential firstGuess) {
@@ -478,8 +475,8 @@ class SoftwareRateLimiter {
 
     // Only for unit tests.
     @VisibleForTesting
-    Duration[] getDelayTable() {
-        return DELAY_TABLE;
+    Duration[] getTimeoutTable() {
+        return TIMEOUT_TABLE;
     }
 
     synchronized void dump(IndentingPrintWriter pw) {

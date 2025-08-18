@@ -64,43 +64,44 @@ public class SoftwareRateLimiterTest {
     public void testRateLimitSchedule() {
         mRateLimiter = new SoftwareRateLimiter(mInjector);
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
-        final Duration[] delayTable = mRateLimiter.getDelayTable();
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
 
-        for (int i = 0; i < delayTable.length; i++) {
+        for (int i = 0; i < timeoutTable.length; i++) {
             final LockscreenCredential guess = newPassword("password" + i);
-            Duration expectedDelay = delayTable[i];
-            if (!expectedDelay.isZero()) {
-                verifyRateLimited(id, guess, expectedDelay);
+            Duration expectedTimeout = timeoutTable[i];
+            if (!expectedTimeout.isZero()) {
+                verifyRateLimited(id, guess, expectedTimeout);
                 mInjector.advanceTime(Duration.ofSeconds(1));
-                verifyRateLimited(id, guess, expectedDelay.minus(Duration.ofSeconds(1)));
-                mInjector.advanceTime(expectedDelay.minus(Duration.ofMillis(1001)));
+                verifyRateLimited(id, guess, expectedTimeout.minus(Duration.ofSeconds(1)));
+                mInjector.advanceTime(expectedTimeout.minus(Duration.ofMillis(1001)));
                 verifyRateLimited(id, guess, Duration.ofMillis(1));
                 mInjector.advanceTime(Duration.ofMillis(1));
             }
-            verifyUniqueWrongGuess(id, guess, delayTable[Math.min(i + 1, delayTable.length - 1)]);
+            verifyUniqueWrongGuess(
+                    id, guess, timeoutTable[Math.min(i + 1, timeoutTable.length - 1)]);
             verifyFailureCounter(id, i + 1);
         }
         verifyNoMoreGuesses(id, newPassword("password"));
     }
 
     // This test re-instantiates the SoftwareRateLimiter, like what happens after a reboot, after
-    // there have already been a certain number of wrong guesses. It verifies that the delay for the
-    // current number of wrong guesses is reset to its original value and starts counting down from
-    // the new instantiation time.
+    // there have already been a certain number of wrong guesses. It verifies that the timeout for
+    // the current number of wrong guesses is reset to its original value and starts counting down
+    // from the new instantiation time.
     @Test
-    public void testExistingDelayResetsOnReinstantiation() {
+    public void testExistingTimeoutResetsOnReinstantiation() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         final LockscreenCredential guess = newPassword("password");
-        final Duration[] delayTable = mRateLimiter.getDelayTable();
-        final int numWrongGuesses = delayTable.length - 1;
-        final Duration expectedDelay = delayTable[numWrongGuesses];
+        final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
+        final int numWrongGuesses = timeoutTable.length - 1;
+        final Duration expectedTimeout = timeoutTable[numWrongGuesses];
 
         mInjector.setTime(Duration.ofSeconds(10));
         mInjector.writeFailureCounter(id, numWrongGuesses);
         mRateLimiter = new SoftwareRateLimiter(mInjector);
 
         mInjector.setTime(Duration.ofSeconds(1));
-        verifyRateLimited(id, guess, expectedDelay.minus(Duration.ofSeconds(1)));
+        verifyRateLimited(id, guess, expectedTimeout.minus(Duration.ofSeconds(1)));
     }
 
     @Test
@@ -194,7 +195,7 @@ public class SoftwareRateLimiterTest {
 
         for (int i = 0; i < n; i++) {
             verifyUniqueWrongGuess(id, newPassword("password" + i));
-            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any delay
+            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any timeout
         }
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, newPassword("password0"));
         assertThat(result.code).isEqualTo(expectedResultCode);
@@ -206,7 +207,7 @@ public class SoftwareRateLimiterTest {
 
         for (int i = 0; i < SoftwareRateLimiter.MAX_SAVED_WRONG_GUESSES; i++) {
             verifyUniqueWrongGuess(id, newPassword("password" + i));
-            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any delay
+            mInjector.advanceTime(Duration.ofDays(1)); // Advance past any timeout
         }
         // The list of saved guesses should now be full. Try the oldest one, which should cause it
         // to be moved to the front of the list.
@@ -214,7 +215,7 @@ public class SoftwareRateLimiterTest {
 
         // Try a new guess. Then verify that it caused the eviction of password1, not password0.
         verifyUniqueWrongGuess(id, newPassword("passwordN"));
-        mInjector.advanceTime(Duration.ofDays(1)); // Advance past any delay
+        mInjector.advanceTime(Duration.ofDays(1)); // Advance past any timeout
         verifyDuplicateWrongGuess(id, newPassword("password0"));
         verifyUniqueWrongGuess(id, newPassword("password1"));
     }
@@ -496,10 +497,10 @@ public class SoftwareRateLimiterTest {
     }
 
     private void verifyRateLimited(
-            LskfIdentifier id, LockscreenCredential guess, Duration expectedRemainingDelay) {
+            LskfIdentifier id, LockscreenCredential guess, Duration expectedTimeout) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(RATE_LIMITED);
-        assertThat(result.remainingDelay).isEqualTo(expectedRemainingDelay);
+        assertThat(result.timeout).isEqualTo(expectedTimeout);
     }
 
     // Verifies that the rate-limiter returns a status of DUPLICATE_WRONG_GUESS for the given guess.
@@ -516,14 +517,14 @@ public class SoftwareRateLimiterTest {
         mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
     }
 
-    // Same as above but also verifies the next delay reported by reportFailure().
+    // Same as above but also verifies the next timeout reported by reportFailure().
     private void verifyUniqueWrongGuess(
-            LskfIdentifier id, LockscreenCredential guess, Duration expectedNextDelay) {
+            LskfIdentifier id, LockscreenCredential guess, Duration expectedNextTimeout) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        Duration nextDelay =
+        Duration nextTimeout =
                 mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
-        assertThat(nextDelay).isEqualTo(expectedNextDelay);
+        assertThat(nextTimeout).isEqualTo(expectedNextTimeout);
     }
 
     private void verifyFailureCounter(LskfIdentifier id, int expectedValue) {

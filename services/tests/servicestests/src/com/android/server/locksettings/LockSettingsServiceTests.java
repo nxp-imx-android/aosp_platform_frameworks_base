@@ -761,7 +761,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     // Tests that if verifyCredential is passed a correct guess but it fails due to Weaver reporting
     // a status of THROTTLE (which is the expected status when there is a remaining rate-limiting
-    // delay in Weaver), then LockSettingsService does not block the same guess from being
+    // timeout in Weaver), then LockSettingsService does not block the same guess from being
     // re-attempted and in particular does not reject it as a duplicate wrong guess.
     @Test
     @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
