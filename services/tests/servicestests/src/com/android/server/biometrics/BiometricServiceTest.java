@@ -48,6 +48,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -1424,6 +1425,37 @@ public class BiometricServiceTest {
         waitForIdle();
 
         verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
+    }
+
+    @Test
+    public void testAuthenticationPolicyManagerInitialization_whenAuthenticationIsInvoked()
+            throws Exception {
+        when(mInjector.getAuthenticationPolicyManager(mContext)).thenReturn(
+                mAuthenticationPolicyManager);
+
+        setupAuthForOnly(TYPE_FACE, Authenticators.BIOMETRIC_STRONG);
+        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
+                false /* requireConfirmation */, null /* authenticators */);
+
+        verify(mInjector).getAuthenticationPolicyManager(mContext);
+        assertThat(mBiometricService.mAuthenticationPolicyManager).isEqualTo(
+                mAuthenticationPolicyManager);
+
+        //Finish current authentication
+        mBiometricService.mAuthSession.mSensorReceiver.onError(
+                SENSOR_ID_FACE,
+                getCookieForCurrentSession(mBiometricService.mAuthSession),
+                BiometricConstants.BIOMETRIC_ERROR_TIMEOUT,
+                0 /* vendorCode */);
+        mBiometricService.mAuthSession.mSysuiReceiver.onDialogDismissed(
+                BiometricPrompt.DISMISSED_REASON_CONTENT_VIEW_MORE_OPTIONS,
+                null /* credentialAttestation */);
+        waitForIdle();
+
+        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
+                false /* requireConfirmation */, null /* authenticators */);
+
+        verify(mInjector, atMostOnce()).getAuthenticationPolicyManager(mContext);
     }
 
     @Test
