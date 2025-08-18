@@ -171,6 +171,9 @@
   "desktop-presubmit": [
     {
       "name": "SystemUIGoogleScreenshotTests_desktop"
+    },
+    {
+      "name": "SystemUITests_desktop"
     }
   ],
 

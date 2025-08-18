@@ -17,6 +17,7 @@
 package com.android.systemui.brightness.ui.compose
 
 import android.content.res.Configuration
+import android.platform.test.annotations.WithDesktopTest
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.CompositionLocalProvider
@@ -66,6 +67,7 @@ class BrightnessSliderTest : SysuiTestCase() {
     private var localeConfiguration by mutableStateOf(englishLocaleConfiguration)
 
     @Test
+    @WithDesktopTest
     fun stateDescription_hasPercentage() {
         val value = 25
         val range = 0..200
