@@ -1671,7 +1671,6 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             mInitialHeightOnTouch = mExpansionHeight;
             mInitialTouchY = event.getY();
             mInitialTouchX = event.getX();
-            maybeSetEarlyExpansion();
         }
         if (!isFullyCollapsed && !isShadeOrQsHeightAnimationRunning) {
             handleDown(event);
