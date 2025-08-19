@@ -38308,6 +38308,7 @@ package android.provider {
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.READ_CONTACTS) public static long getAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @Nullable public static android.accounts.Account getDefaultAccount(@NonNull android.content.ContentResolver);
+    method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void resetAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void setAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String, long);
     field public static final String ACTION_SET_DEFAULT_ACCOUNT = "android.provider.action.SET_DEFAULT_ACCOUNT";
     field public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/setting";
