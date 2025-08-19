@@ -1,7 +1,8 @@
 {
   "wm": [
     {
-      "name": "WMShellSmokeTestsDesktopMode"
+      "name": "WMShellSmokeTestsDesktopMode",
+      "keywords": ["device", "desktop"]
     }
   ]
 }
