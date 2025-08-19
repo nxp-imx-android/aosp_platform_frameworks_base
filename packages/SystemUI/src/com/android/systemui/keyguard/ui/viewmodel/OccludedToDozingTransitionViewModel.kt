@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
+import com.android.systemui.scene.shared.model.Scenes
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
@@ -43,10 +44,12 @@ constructor(
     dozingTransitionFlows: DozingTransitionFlows,
 ) : DeviceEntryIconTransition {
     private val transitionAnimation =
-        animationFlow.setup(
-            duration = FromOccludedTransitionInteractor.TO_DOZING_DURATION,
-            edge = Edge.create(from = OCCLUDED, to = DOZING),
-        )
+        animationFlow
+            .setup(
+                duration = FromOccludedTransitionInteractor.TO_DOZING_DURATION,
+                edge = Edge.create(from = Scenes.Occluded, to = DOZING),
+            )
+            .setupWithoutSceneContainer(edge = Edge.create(from = OCCLUDED, to = DOZING))
 
     /** Lockscreen views alpha */
     val lockscreenAlpha: Flow<Float> =

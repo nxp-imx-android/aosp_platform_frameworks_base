@@ -990,6 +990,7 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
         }
 
     @Test
+    @DisableSceneContainer
     fun alpha_idleOnOccluded_isZero() =
         testScope.runTest {
             val alpha by collectLastValue(underTest.alpha(viewState))

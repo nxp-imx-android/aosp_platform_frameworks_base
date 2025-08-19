@@ -29,6 +29,7 @@ import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -43,7 +44,6 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.plugins.DarkIconDispatcher
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -265,7 +265,7 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
     private val sceneInteractor: SceneInteractor,
-    sceneContainerOcclusionInteractor: SceneContainerOcclusionInteractor,
+    occlusionInteractor: KeyguardOcclusionInteractor,
     private val shadeInteractor: ShadeInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
@@ -285,14 +285,18 @@ constructor(
     private val statusBarPopupChips by lazy { statusBarPopupChipsViewModelFactory.create() }
 
     override val isTransitioningFromLockscreenToOccluded: StateFlow<Boolean> =
-        keyguardTransitionInteractor
-            .isInTransition(Edge.create(from = LOCKSCREEN, to = OCCLUDED))
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                tableLogBuffer = tableLogger,
-                columnName = COL_LOCK_TO_OCCLUDED,
-                initialValue = false,
-            )
+        if (SceneContainerFlag.isEnabled) {
+                flowOf(false)
+            } else {
+                keyguardTransitionInteractor
+                    .isInTransition(Edge.create(from = LOCKSCREEN, to = OCCLUDED))
+                    .distinctUntilChanged()
+                    .logDiffsForTable(
+                        tableLogBuffer = tableLogger,
+                        columnName = COL_LOCK_TO_OCCLUDED,
+                        initialValue = false,
+                    )
+            }
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     override val transitionFromLockscreenToDreamStartedEvent: Flow<Unit> =
@@ -376,7 +380,7 @@ constructor(
         combine(
                 sceneInteractor.currentScene,
                 isShadeVisibleOnAnyDisplay,
-                sceneContainerOcclusionInteractor.invisibleDueToOcclusion,
+                occlusionInteractor.isKeyguardOccluded,
                 isShadeWindowOnThisDisplay,
             ) { currentScene, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
                 if (isOccluded) {

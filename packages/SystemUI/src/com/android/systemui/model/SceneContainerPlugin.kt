@@ -20,7 +20,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -56,7 +55,6 @@ interface SceneContainerPlugin {
     data class SceneContainerPluginState(
         val scene: SceneKey,
         val overlays: Set<OverlayKey>,
-        val invisibleDueToOcclusion: Boolean,
         val isVisible: Boolean,
     )
 }
@@ -66,7 +64,6 @@ class SceneContainerPluginImpl
 @Inject
 constructor(
     private val sceneInteractor: Lazy<SceneInteractor>,
-    private val occlusionInteractor: Lazy<SceneContainerOcclusionInteractor>,
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
 ) : SceneContainerPlugin {
 
@@ -89,14 +86,12 @@ constructor(
         }
         val transitionState = sceneInteractor.get().transitionState.value
         val idleTransitionStateOrNull = transitionState as? ObservableTransitionState.Idle
-        val invisibleDueToOcclusion = occlusionInteractor.get().invisibleDueToOcclusion.value
         return idleTransitionStateOrNull?.let { idleState ->
             EvaluatorByFlag[flag]?.invoke(
                 SceneContainerPlugin.SceneContainerPluginState(
                     scene = idleState.currentScene,
                     overlays = idleState.currentOverlays,
                     isVisible = sceneInteractor.get().isVisible.value,
-                    invisibleDueToOcclusion = invisibleDueToOcclusion,
                 )
             )
         }
@@ -148,10 +143,7 @@ constructor(
                     {
                         it.isVisible && it.scene == Scenes.Lockscreen
                     },
-                SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED to
-                    {
-                        it.scene == Scenes.Lockscreen && it.invisibleDueToOcclusion
-                    },
+                SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED to { it.scene == Scenes.Occluded },
                 SYSUI_STATE_COMMUNAL_HUB_SHOWING to { it.isVisible && it.scene == Scenes.Communal },
             )
     }

@@ -428,7 +428,8 @@ constructor(
          * Content that is part of the keyguard and are shown when the device is locked or when the
          * keyguard still needs to be dismissed.
          */
-        val keyguardScenes: Set<SceneKey> = setOf(Scenes.Lockscreen, Scenes.Communal, Scenes.Dream)
+        val keyguardScenes: Set<SceneKey> =
+            setOf(Scenes.Lockscreen, Scenes.Communal, Scenes.Dream, Scenes.Occluded)
 
         /**
          * Scenes that show "shade" like content and can show whether the device is entered or not.

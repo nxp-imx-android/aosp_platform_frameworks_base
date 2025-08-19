@@ -24,7 +24,6 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.FakeStatusBarStateController
@@ -42,7 +41,6 @@ var Kosmos.statusBarStateController: SysuiStatusBarStateController by
             { shadeInteractor },
             { deviceUnlockedInteractor },
             { sceneInteractor },
-            { sceneContainerOcclusionInteractor },
             { keyguardClockInteractor },
             { sceneBackInteractor },
             { alternateBouncerInteractor },

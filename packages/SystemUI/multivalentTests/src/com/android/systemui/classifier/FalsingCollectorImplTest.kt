@@ -38,12 +38,12 @@ import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.scene.data.repository.sceneContainerRepository
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.StatusBarState
@@ -83,7 +83,7 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private var kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     private val isDeviceEntered = MutableStateFlow(false)
-    private val isInvisibleDueToOcclusion = MutableStateFlow(false)
+    private val isKeyguardOccluded = MutableStateFlow(false)
 
     private var falsingDataProvider = mock<FalsingDataProvider>()
     private var keyguardUpdateMonitor = mock<KeyguardUpdateMonitor>()
@@ -102,10 +102,8 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private var selectedUserInteractor = mock<SelectedUserInteractor>()
     private var deviceEntryInteractor =
         mock<DeviceEntryInteractor> { on { isDeviceEntered } doReturn isDeviceEntered }
-    private var sceneContainerOcclusionInteractor =
-        mock<SceneContainerOcclusionInteractor> {
-            on { invisibleDueToOcclusion } doReturn isInvisibleDueToOcclusion
-        }
+    private var occlusionInteractor =
+        mock<KeyguardOcclusionInteractor> { on { isKeyguardOccluded } doReturn isKeyguardOccluded }
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
@@ -127,7 +125,7 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 { communalInteractor },
                 { communalSceneInteractor },
                 { deviceEntryInteractor },
-                { sceneContainerOcclusionInteractor },
+                { occlusionInteractor },
             )
         }
 
@@ -243,7 +241,7 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun testRegisterSensor_OccludingActivity_sceneContainerEnabled() =
         kosmos.runTest {
-            isInvisibleDueToOcclusion.value = true
+            isKeyguardOccluded.value = true
 
             val stateListenerArgumentCaptor =
                 argumentCaptor<StatusBarStateController.StateListener>()

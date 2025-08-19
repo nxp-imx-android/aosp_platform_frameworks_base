@@ -37,7 +37,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@DisableSceneContainer
 class LockscreenToGoneTransitionViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
@@ -99,6 +98,7 @@ class LockscreenToGoneTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun notificationAlpha_leaveShadeOpen() =
         testScope.runTest {
             val values by collectValues(underTest.notificationAlpha(ViewStateAccessor()))

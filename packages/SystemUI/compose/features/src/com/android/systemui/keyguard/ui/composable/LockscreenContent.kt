@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard.ui.composable
 
 import android.view.View
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
@@ -83,15 +82,6 @@ class LockscreenContent(
 
         // Ensure clock events are connected. This is a no-op if they are already registered.
         clockInteractor.clockEventController.registerListeners()
-
-        if (!viewModel.isContentVisible) {
-            // If the content isn't supposed to be visible, show a large empty box as it's needed
-            // for scene transition animations (can't just skip rendering everything or shared
-            // elements won't have correct final/initial bounds from animating in and out of the
-            // lockscreen scene).
-            Box(modifier)
-            return
-        }
 
         DisposableEffect(view) {
             val handle = clockInteractor.clockEventController.bind(view)
