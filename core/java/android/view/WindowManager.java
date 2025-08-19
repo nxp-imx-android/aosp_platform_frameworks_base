@@ -6452,7 +6452,6 @@ public interface WindowManager extends ViewManager {
      *                   when entered or exited trusted presentation per the thresholds.
      * @see TrustedPresentationThresholds
      */
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     default void registerTrustedPresentationListener(@NonNull IBinder window,
             @NonNull TrustedPresentationThresholds thresholds,  @NonNull Executor executor,
             @NonNull Consumer<Boolean> listener) {
@@ -6465,7 +6464,6 @@ public interface WindowManager extends ViewManager {
      *
      * @see WindowManager#registerTrustedPresentationListener(IBinder, TrustedPresentationThresholds, Executor, Consumer)
      */
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     default void unregisterTrustedPresentationListener(@NonNull Consumer<Boolean> listener) {
         throw new UnsupportedOperationException();
     }
