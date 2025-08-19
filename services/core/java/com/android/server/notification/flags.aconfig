@@ -242,6 +242,16 @@ flag {
 }
 
 flag {
+  name: "use_on_binding_died"
+  namespace: "notifications"
+  description: "Prefer onBindingDied for package updates to avoid duplicate service bindings"
+  bug: "434679743"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "limit_managed_services_count"
   namespace: "systemui"
   description: "Enforce a maximum number of allowed components in ManagedServices"
