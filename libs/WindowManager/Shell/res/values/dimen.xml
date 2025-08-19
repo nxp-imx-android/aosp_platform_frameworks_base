@@ -579,8 +579,8 @@
     <!-- The top margin of the handle menu in desktop mode. -->
     <dimen name="desktop_mode_handle_menu_margin_top">4dp</dimen>
 
-    <!-- The start margin of the handle menu in desktop mode. -->
-    <dimen name="desktop_mode_handle_menu_margin_start">6dp</dimen>
+    <!-- The left, bottom, and right padding of the handle menu in desktop mode. -->
+    <dimen name="desktop_mode_handle_menu_padding_left_bottom_right">6dp</dimen>
 
     <!-- The radius of the caption menu corners. -->
     <dimen name="desktop_mode_handle_menu_corner_radius">26dp</dimen>

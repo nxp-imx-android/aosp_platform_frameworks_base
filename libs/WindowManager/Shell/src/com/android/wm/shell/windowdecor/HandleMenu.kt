@@ -132,8 +132,8 @@ private constructor(
     private val menuWidth = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_width)
     private val menuHeight = getHandleMenuHeight()
     private val marginMenuTop = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_top)
-    private val marginMenuStart =
-        loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_start)
+    private val marginMenuPadding =
+        loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_padding_left_bottom_right)
 
     @VisibleForTesting var handleMenuViewContainer: AdditionalViewContainer? = null
 
@@ -253,8 +253,8 @@ private constructor(
                     taskId = taskInfo.taskId,
                     x = x,
                     y = y,
-                    width = menuWidth,
-                    height = menuHeight,
+                    width = menuWidth + 2 * marginMenuPadding,
+                    height = menuHeight + marginMenuPadding,
                     flags = lpFlags,
                     view = handleMenuView.rootView,
                     forciblyShownTypes =
@@ -273,8 +273,8 @@ private constructor(
                     t,
                     x,
                     y,
-                    menuWidth,
-                    menuHeight,
+                    menuWidth + 2 * marginMenuPadding,
+                    menuHeight + marginMenuPadding,
                     lpFlags,
                 )
             } else {
@@ -286,8 +286,8 @@ private constructor(
                     ssg,
                     x,
                     y,
-                    menuWidth,
-                    menuHeight,
+                    menuWidth + 2 * marginMenuPadding,
+                    menuHeight + marginMenuPadding,
                 )
             }
 
@@ -353,7 +353,6 @@ private constructor(
             calculateMenuPosition(
                 splitScreenController,
                 taskInfo,
-                marginStart = marginMenuStart,
                 marginMenuTop,
                 captionX,
                 captionY,
@@ -366,9 +365,9 @@ private constructor(
             // Align the handle menu to the start of the header.
             menuX =
                 if (context.isRtl()) {
-                    taskBounds.width() - menuWidth - marginMenuStart
+                    taskBounds.width() - menuWidth
                 } else {
-                    marginMenuStart
+                    0
                 }
             menuY = captionY + marginMenuTop
         } else {

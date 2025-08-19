@@ -149,7 +149,7 @@ class HandleMenuTest : ShellTestCase() {
             addOverride(R.dimen.desktop_mode_handle_menu_width, MENU_WIDTH)
             addOverride(R.dimen.desktop_mode_handle_menu_height, MENU_HEIGHT)
             addOverride(R.dimen.desktop_mode_handle_menu_margin_top, MENU_TOP_MARGIN)
-            addOverride(R.dimen.desktop_mode_handle_menu_margin_start, MENU_START_MARGIN)
+            addOverride(R.dimen.desktop_mode_handle_menu_padding_left_bottom_right, MENU_PADDING)
             addOverride(
                 R.dimen.desktop_mode_handle_menu_pill_spacing_margin,
                 MENU_PILL_SPACING_MARGIN,
@@ -177,7 +177,7 @@ class HandleMenuTest : ShellTestCase() {
         handleMenu = createAndShowHandleMenu(SPLIT_POSITION_UNDEFINED)
         assertTrue(handleMenu.handleMenuViewContainer is AdditionalViewHostViewContainer)
         // Verify menu is created near top-left of task.
-        val expected = Point(MENU_START_MARGIN, MENU_TOP_MARGIN)
+        val expected = Point(0, MENU_TOP_MARGIN)
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
     }
 
@@ -377,7 +377,7 @@ class HandleMenuTest : ShellTestCase() {
         private const val MENU_WIDTH = 200
         private const val MENU_HEIGHT = 400
         private const val MENU_TOP_MARGIN = 10
-        private const val MENU_START_MARGIN = 20
+        private const val MENU_PADDING = 20
         private const val MENU_PILL_SPACING_MARGIN = 4
         private const val HANDLE_WIDTH = 80
         private const val APP_NAME = "Test App"
