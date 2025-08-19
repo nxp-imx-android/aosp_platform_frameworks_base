@@ -19,11 +19,11 @@ package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
 import androidx.benchmark.ExperimentalBlackHoleApi
-import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark
-import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.ExecutorThreadBuilder
+import com.android.app.concurrent.benchmark.base.BaseSchedulerBenchmark
+import com.android.app.concurrent.benchmark.util.ExecutorThreadBuilder
 import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.times
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.sqrt
@@ -46,93 +46,8 @@ import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
-@RunWith(Parameterized::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class CoroutineContextSwitchBenchmark(param: ThreadFactory<ExecutorService, Executor>) :
-    BaseExecutorBenchmark(param) {
-
-    companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = listOf(ExecutorThreadBuilder)
-    }
-
-    lateinit var bgScope: CoroutineScope
-
-    @Before
-    fun setupScope() {
-        bgScope = CoroutineScope(executor.asCoroutineDispatcher())
-    }
-
-    @After
-    fun tearDownScope() {
-        bgScope.cancel()
-    }
-
-    private fun benchmark_withContext(context: CoroutineContext) {
-        var sum = 0.0
-        val state = MutableStateFlow(0.00)
-        benchmarkRule.runBenchmark {
-            beforeFirstIteration(count = 1) { barrier ->
-                bgScope.launch {
-                    state.collect {
-                        withContext(context) {
-                            sum += sqrt(it)
-                            barrier.countDown()
-                        }
-                    }
-                }
-            }
-            mainBlock { n -> state.value = sqrt(n.toDouble()) }
-        }
-        BlackHole.consume(sum)
-    }
-
-    private fun benchmark_flowOn(context: CoroutineContext) {
-        var sum = 0.0
-        val state = MutableStateFlow(0.00)
-        benchmarkRule.runBenchmark {
-            beforeFirstIteration(count = 1) { barrier ->
-                bgScope.launch {
-                    state
-                        .filter { it > -1.0 } // always true
-                        .flowOn(context)
-                        .map { it + 1.0 }
-                        .flowOn(context)
-                        .filter { it > -1.0 } // always true
-                        .flowOn(context)
-                        .map { it - 1.0 } // restore to original input value
-                        .flowOn(context)
-                        .map { sqrt(it) }
-                        .collect {
-                            sum += it
-                            barrier.countDown()
-                        }
-                }
-            }
-            mainBlock { n -> state.value = sqrt(n.toDouble()) }
-        }
-        BlackHole.consume(sum)
-    }
-
-    @Test
-    fun benchmark_withContext_unwrapped() {
-        benchmark_withContext(EmptyCoroutineContext)
-    }
-
-    @Test
-    fun benchmark_withContext_wrapped() {
-        benchmark_withContext(wrapDispatcher(executor))
-    }
-
-    @Test
-    fun benchmark_flowOn_unwrapped() {
-        benchmark_flowOn(EmptyCoroutineContext)
-    }
-
-    @Test
-    fun benchmark_flowOn_wrapped() {
-        val dispatcher = wrapDispatcher(executor)
-        benchmark_flowOn(dispatcher)
-    }
+class ContextTransformParam(val name: String, val transform: (Executor) -> CoroutineContext) {
+    override fun toString(): String = name
 }
 
 /**
@@ -141,4 +56,89 @@ class CoroutineContextSwitchBenchmark(param: ThreadFactory<ExecutorService, Exec
  */
 private fun wrapDispatcher(executor: Executor): CoroutineDispatcher {
     return Executor { command -> executor.execute(command) }.asCoroutineDispatcher()
+}
+
+@RunWith(Parameterized::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+class CoroutineContextSwitchBenchmark(
+    param: ThreadFactory<Any, Executor>,
+    contextTransformer: ContextTransformParam,
+) : BaseSchedulerBenchmark<Executor>(param) {
+
+    companion object {
+        @Parameters(name = "{0},{1}")
+        @JvmStatic
+        fun getDispatchers() =
+            listOf(ExecutorThreadBuilder) *
+                listOf(
+                    ContextTransformParam("unwrapped") { _ -> EmptyCoroutineContext },
+                    ContextTransformParam("wrapped") { executor -> wrapDispatcher(executor) },
+                )
+    }
+
+    lateinit var bgScope: CoroutineScope
+
+    val transformContext = contextTransformer.transform
+
+    @Before
+    fun setupScope() {
+        bgScope = CoroutineScope(scheduler.asCoroutineDispatcher())
+    }
+
+    @After
+    fun tearDownScope() {
+        bgScope.cancel()
+    }
+
+    @Test
+    fun benchmark_withContext() {
+        var sum = 0.0
+        val state = MutableStateFlow(0.00)
+        benchmarkRule.runBenchmark {
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    bgScope.launch {
+                        state.collect {
+                            withContext(transformContext(scheduler)) {
+                                sum += sqrt(it)
+                                barrier.countDown()
+                            }
+                        }
+                    }
+                }
+            }
+            onEachIteration { n -> state.value = sqrt(n.toDouble()) }
+        }
+        BlackHole.consume(sum)
+    }
+
+    @Test
+    fun benchmark_flowOn() {
+        var sum = 0.0
+        val state = MutableStateFlow(0.00)
+        benchmarkRule.runBenchmark {
+            withBarrier(count = 1) {
+                beforeFirstIteration { barrier ->
+                    bgScope.launch {
+                        state
+                            .filter { it > -1.0 } // always true
+                            .flowOn(transformContext(scheduler))
+                            .map { it + 1.0 }
+                            .flowOn(transformContext(scheduler))
+                            .filter { it > -1.0 } // always true
+                            .flowOn(transformContext(scheduler))
+                            .map { it - 1.0 } // restore to original input value
+                            .flowOn(transformContext(scheduler))
+                            .map { sqrt(it) }
+                            .collect {
+                                sum += it
+                                barrier.countDown()
+                            }
+                    }
+                }
+            }
+            onEachIteration { n -> state.value = sqrt(n.toDouble()) }
+        }
+        BlackHole.consume(sum)
+    }
 }

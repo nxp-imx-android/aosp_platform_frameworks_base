@@ -27,30 +27,59 @@ import androidx.benchmark.traceprocessor.PerfettoTrace
 import androidx.benchmark.traceprocessor.Row
 import androidx.benchmark.traceprocessor.TraceProcessor
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.app.concurrent.benchmark.builder.ConcurrentBenchmarkBuilder
-import com.android.app.concurrent.benchmark.builder.StateChecker
-import com.android.app.concurrent.benchmark.util.BARRIER_TIMEOUT_MILLIS
 import com.android.app.concurrent.benchmark.util.CsvMetricCollector
 import com.android.app.concurrent.benchmark.util.CsvMetricCollector.Helper.getCurrentBgThreadName
-import com.android.app.concurrent.benchmark.util.CyclicCountDownBarrier
 import com.android.app.concurrent.benchmark.util.DEBUG
 import com.android.app.concurrent.benchmark.util.PERFETTO_CONFIG
 import com.android.app.concurrent.benchmark.util.PERFETTO_SQL_QUERY_FORMAT_STR
-import java.util.concurrent.CyclicBarrier
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import org.junit.Assert
-import org.junit.Assert.fail
+import com.android.app.concurrent.benchmark.util.ThreadFactory
+import com.android.app.concurrent.benchmark.util.dbg
+import org.junit.Rule
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
-private const val TAG = "ConcurrentBenchmarkRule"
+abstract class BaseConcurrentBenchmark {
+    @get:Rule val benchmarkRule = ConcurrentBenchmarkRule()
+}
+
+abstract class BaseSchedulerBenchmark<T : Any>(param: ThreadFactory<Any, out T>) {
+    val schedulerRule = SchedulerBenchmarkRule(param)
+    val benchmarkRule = ConcurrentBenchmarkRule()
+
+    @get:Rule val chain: RuleChain = RuleChain.outerRule(schedulerRule).around(benchmarkRule)
+
+    val scheduler: T
+        get() = schedulerRule.scheduler
+}
+
+class SchedulerBenchmarkRule<R : Any, S : Any>(val threadFactory: ThreadFactory<R, S>) : TestRule {
+    lateinit var scheduler: S
+        private set
+
+    override fun apply(base: Statement, description: Description): Statement {
+        return object : Statement() {
+            override fun evaluate() {
+                dbg { "evaluate $base#$description" }
+                scheduler = threadFactory.startThreadAndGetScheduler()
+                try {
+                    base.evaluate()
+                } finally {
+                    threadFactory.stopThreadAndQuitScheduler()
+                }
+            }
+        }
+    }
+}
 
 class ConcurrentBenchmarkRule() : TestRule {
 
     val benchmarkRule = BenchmarkRule()
+
+    companion object {
+        private val TAG = "ConcurrentBenchmarkRule"
+    }
 
     @OptIn(ExperimentalPerfettoCaptureApi::class)
     override fun apply(base: Statement, description: Description): Statement {
@@ -91,6 +120,7 @@ class ConcurrentBenchmarkRule() : TestRule {
     private fun applyInternal(base: Statement, description: Description) =
         object : Statement() {
             override fun evaluate() {
+                dbg { "evaluate" }
                 CsvMetricCollector.Helper.setActiveName(
                     description.testClass.simpleName,
                     description.methodName,
@@ -99,94 +129,55 @@ class ConcurrentBenchmarkRule() : TestRule {
             }
         }
 
+    fun runBenchmark(build: ConcurrentBenchmarkDsl.() -> Unit) {
+        ConcurrentBenchmarkDsl(build).measure(this)
+    }
+
     fun measureRepeated(
-        unsafeInitialSetup: List<() -> Unit>,
-        synchronizedBgWork: List<CyclicCountDownBarrier.Builder> = listOf(),
-        mainBlock: (Int) -> Unit,
-        stateChecker: StateChecker = StateChecker.NoOpStateChecker,
+        beforeFirstIteration: () -> Unit,
+        onEachIteration: (n: Int) -> Unit,
         afterLastIteration: () -> Unit,
     ) {
-        // Each thread should call `CyclicBarrier.await()` when all work it expected to do is
-        // completed, including the main thread (named "BenchmarkRunner"), so create a
-        // `CyclicBarrier` with a party count matching the number of threads.
-        unsafeInitialSetup.forEach { it() }
+        dbg { "measureRepeated" }
         var n = 0
-        val barrier = CyclicBarrier(synchronizedBgWork.size + 1) // +1 for the main thread
-        val bgContexts =
-            synchronizedBgWork.mapNotNull {
-                val context = it.build(barrier)
-                context.runOnce(n)
-                if (it.runOnEachIteration) context else null
-            }
-        try {
-            // wait for all bg setup to be completed
-            barrier.await(BARRIER_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-        } catch (e: TimeoutException) {
-            fail("Timeout while awaiting initial setup")
-            throw e
-        }
+        beforeFirstIteration()
 
         // No need to set THREAD_PRIORITY_MOST_FAVORABLE here; it is already set by the benchmark
         // initialization in AndroidX
         val state = benchmarkRule.getState()
         while (state.keepRunning()) {
-            Assert.assertEquals(
-                "Barrier should have 0 parties awaiting before mainBlock runs",
-                0,
-                barrier.numberWaiting,
-            )
             n++
-            bgContexts.forEach { it.runOnce(n) }
-            mainBlock(n)
-            try {
-                barrier.await(BARRIER_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            } catch (e: TimeoutException) {
-                fail("Timeout while awaiting iteration #$n")
-                throw e
-            }
-            if (!stateChecker.isInExpectedState(n)) {
-                var message = "Benchmark is not in expected state."
-                message += " Expected (${stateChecker.expectedStr}) == true, "
-                message += "but it evaluated to false instead (${stateChecker.expectedCalc(n)})."
-                fail(message)
-            }
+            onEachIteration(n)
         }
         afterLastIteration()
     }
 
-    fun runBenchmark(build: ConcurrentBenchmarkBuilder.() -> Unit) {
-        with(ConcurrentBenchmarkBuilder()) {
-            build()
-            measure()
-        }
-    }
-}
-
-private fun putValueFromRow(bundle: Bundle, row: Row, key: String): Boolean {
-    // Key name for Perfetto metrics computed by looking at each measurement slice, e.g.
-    // "measurement 0", "measurement 1", "measurement 2", etc.
-    // mt = "measurement timeline"
-    val metricName = "perfetto_mt_$key"
-    val metricValue = row[key]
-    val strValue =
-        when (metricValue) {
-            is String,
-            is Int,
-            is Long -> "$metricValue"
-            is Float,
-            is Double -> String.format("%.3f", metricValue)
-            null -> {
-                Log.w(TAG, "Metric not found for key: $key")
-                null
+    private fun putValueFromRow(bundle: Bundle, row: Row, key: String): Boolean {
+        // Key name for Perfetto metrics computed by looking at each measurement slice, e.g.
+        // "measurement 0", "measurement 1", "measurement 2", etc.
+        // mt = "measurement timeline"
+        val metricName = "perfetto_mt_$key"
+        val metricValue = row[key]
+        val strValue =
+            when (metricValue) {
+                is String,
+                is Int,
+                is Long -> "$metricValue"
+                is Float,
+                is Double -> String.format("%.3f", metricValue)
+                null -> {
+                    Log.w(TAG, "Metric not found for key: $key")
+                    null
+                }
+                else -> {
+                    Log.w(TAG, "Unsupported metric type: ${metricValue::class}")
+                    null
+                }
             }
-            else -> {
-                Log.w(TAG, "Unsupported metric type: ${metricValue::class}")
-                null
-            }
+        if (strValue != null) {
+            bundle.putString(metricName, strValue)
+            CsvMetricCollector.Helper.putMetric(metricName, strValue)
         }
-    if (strValue != null) {
-        bundle.putString(metricName, strValue)
-        CsvMetricCollector.Helper.putMetric(metricName, strValue)
+        return strValue != "=NA()"
     }
-    return strValue != "=NA()"
 }
