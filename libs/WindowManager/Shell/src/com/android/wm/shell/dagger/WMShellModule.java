@@ -200,7 +200,6 @@ import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
 import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
-import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoaderImpl;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.common.viewhost.PooledWindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -1340,9 +1339,8 @@ public abstract class WMShellModule {
             @ShellBackgroundThread MainCoroutineDispatcher bgDispatcher,
             @NonNull ShellCommandHandler shellCommandHandler,
             @NonNull UserProfileContexts userProfileContexts) {
-        return new WindowDecorTaskResourceLoaderImpl(context, shellInit, shellController,
-                mainHandler, mainScope, mainDispatcher, bgDispatcher, shellCommandHandler,
-                userProfileContexts);
+        return new WindowDecorTaskResourceLoader(context, shellInit, shellController, mainHandler,
+                mainScope, mainDispatcher, bgDispatcher, shellCommandHandler, userProfileContexts);
     }
 
     @WMSingleton

@@ -37,7 +37,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 /**
  * Utility class to handle task operations performed on a window decoration.
  */
-public class TaskOperations {
+class TaskOperations {
     private static final String TAG = "TaskOperations";
 
     private final FreeformTaskTransitionStarter mTransitionStarter;

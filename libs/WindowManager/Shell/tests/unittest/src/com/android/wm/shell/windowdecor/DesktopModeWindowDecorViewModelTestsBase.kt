@@ -358,7 +358,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             .setActivityType(activityType)
             .build()
             .apply {
-                topActivityInfo = activityInfo.apply { applicationInfo = mock() }
+                topActivityInfo = activityInfo
                 isResizeable = true
                 requestedVisibleTypes =
                     if (requestingImmersive) {
