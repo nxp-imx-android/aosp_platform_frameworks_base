@@ -5205,9 +5205,23 @@ class DesktopTasksController(
     /** Removes all the available desks on all displays. */
     fun removeAllDesks(userId: Int = shellController.currentUserId, exitReason: ExitReason) {
         val repository = userRepositories.getProfile(userId)
-        repository.getAllDeskIds().forEach { deskId ->
-            removeDesk(deskId = deskId, userId = userId, exitReason = exitReason)
-        }
+        val deskIds = repository.getAllDeskIds()
+        logV("removeAllDesks userId=%d reason=%s deskIds=%s", userId, exitReason, deskIds)
+        val wct = WindowContainerTransaction()
+        val runOnTransitStartList =
+            deskIds.mapNotNull { deskId ->
+                val displayId = repository.getDisplayForDesk(deskId)
+                addDeskRemovalChanges(
+                    wct = wct,
+                    deskId = deskId,
+                    displayId = displayId,
+                    userId = userId,
+                    exitReason = exitReason,
+                )
+            }
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && wct.isEmpty) return
+        val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
+        runOnTransitStartList.forEach { runOnTransitStart -> runOnTransitStart(transition) }
     }
 
     private fun removeDesk(displayId: Int, deskId: Int, userId: Int, exitReason: ExitReason) {
