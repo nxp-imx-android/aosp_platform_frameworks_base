@@ -27,6 +27,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerInternal;
 import android.util.ArraySet;
+import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayEventReceiver;
@@ -77,6 +78,13 @@ final class LogicalDisplay {
     private static final int BLANK_LAYER_STACK = -1;
 
     private static final DisplayInfo EMPTY_DISPLAY_INFO = new DisplayInfo();
+
+    private static final double DEFAULT_DISPLAY_SIZE = 24.0;
+    // Touch target size 10.4mm in inches (divided by mm per inch 25.4)
+    private static final double EXTERNAL_DISPLAY_BASE_TOUCH_TARGET_SIZE_IN_INCHES = 10.4 / 25.4;
+    private static final int EXTERNAL_DISPLAY_MIN_DENSITY_DPI = 100;
+
+    private static final double BASE_TOUCH_TARGET_SIZE_DP = 48.0;
 
     private final DisplayInfo mBaseDisplayInfo = new DisplayInfo();
     private final int mDisplayId;
@@ -539,7 +547,10 @@ final class LogicalDisplay {
             mBaseDisplayInfo.userDisabledHdrTypes = mUserDisabledHdrTypes;
             mBaseDisplayInfo.minimalPostProcessingSupported =
                     deviceInfo.allmSupported || deviceInfo.gameContentTypeSupported;
-            mBaseDisplayInfo.logicalDensityDpi = deviceInfo.densityDpi;
+            mBaseDisplayInfo.logicalDensityDpi = deviceInfo.densityDpi > 0
+                    ? deviceInfo.densityDpi
+                    : calculateBaseDensity(deviceInfo.xDpi, deviceInfo.yDpi, maskedWidth,
+                            maskedHeight);
             mBaseDisplayInfo.physicalXDpi = deviceInfo.xDpi;
             mBaseDisplayInfo.physicalYDpi = deviceInfo.yDpi;
             mBaseDisplayInfo.appVsyncOffsetNanos = deviceInfo.appVsyncOffsetNanos;
@@ -587,6 +598,25 @@ final class LogicalDisplay {
             mInfo.set(null);
             mDirty = false;
         }
+    }
+
+    private int calculateBaseDensity(float xDpi, float yDpi, int width, int height) {
+        // physical pixel density of the display
+        double ppi;
+        if (xDpi > 0 && yDpi > 0) {
+            ppi = Math.sqrt((Math.pow(xDpi, 2)
+                    + Math.pow(yDpi, 2)) / 2);
+        } else {
+            // xDPI and yDPI is missing, calculate DPI from display resolution and
+            // default display size
+            ppi = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2))
+                    / DEFAULT_DISPLAY_SIZE;
+        }
+        // pixels needed to achieve target touch target size
+        double pixels = ppi * EXTERNAL_DISPLAY_BASE_TOUCH_TARGET_SIZE_IN_INCHES;
+        double dpi =
+                pixels * DisplayMetrics.DENSITY_DEFAULT / BASE_TOUCH_TARGET_SIZE_DP;
+        return Math.max((int) (dpi + 0.5), EXTERNAL_DISPLAY_MIN_DENSITY_DPI);
     }
 
     private void updateFrameRateOverrides(DisplayDeviceInfo deviceInfo) {
