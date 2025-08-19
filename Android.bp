@@ -334,7 +334,7 @@ java_defaults {
             "media/aidl",
         ],
         include_dirs: [
-            "frameworks/av/aidl",
+            "frameworks/av/media/aidl",
             "frameworks/native/libs/permission/aidl",
             "packages/modules/Bluetooth/framework/aidl-export",
             "packages/modules/Connectivity/framework/aidl-export",
