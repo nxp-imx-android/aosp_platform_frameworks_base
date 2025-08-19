@@ -61,6 +61,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -77,10 +78,10 @@ import com.android.compose.animation.Expandable
 import com.android.compose.animation.bounceable
 import com.android.compose.animation.rememberExpandableController
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.mechanics.compose.modifier.verticalFadeContentReveal
+import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
@@ -105,6 +106,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.toIconProvider
 import com.android.systemui.qs.panels.ui.viewmodel.toUiState
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.tileimpl.QSTileImpl
+import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import kotlinx.coroutines.CoroutineScope
@@ -172,7 +174,7 @@ fun ContentScope.Tile(
     isVisible: () -> Boolean = { true },
     requestToggleTextFeedback: (TileSpec) -> Unit = {},
     detailsViewModel: DetailsViewModel?,
-    revealEffectContainer: ElementKey? = null,
+    enableRevealEffect: Boolean = false,
 ) {
     trace(tile.traceName) {
         val currentBounceableInfo by rememberUpdatedState(bounceableInfo)
@@ -205,6 +207,27 @@ fun ContentScope.Tile(
         val animatedColor by animateColorAsState(colors.background, label = "QSTileBackgroundColor")
         val isDualTarget = uiState.handlesSecondaryClick
 
+        val surfaceRevealModifier: Modifier
+        val contentRevealModifier: Modifier
+        if (enableRevealEffect) {
+            val motionBuilderContext = rememberMotionBuilderContext()
+            val marginBottom =
+                with(LocalDensity.current) { QuickSettingsShade.Dimensions.Padding.toPx() }
+            surfaceRevealModifier =
+                Modifier.verticalTactileSurfaceReveal(
+                    motionBuilderContext = motionBuilderContext,
+                    deltaY = marginBottom,
+                )
+            contentRevealModifier =
+                Modifier.verticalFadeContentReveal(
+                    motionBuilderContext = motionBuilderContext,
+                    deltaY = marginBottom,
+                )
+        } else {
+            surfaceRevealModifier = Modifier
+            contentRevealModifier = Modifier
+        }
+
         TileExpandable(
             color = { animatedColor },
             shape = tileShape,
@@ -212,6 +235,7 @@ fun ContentScope.Tile(
             hapticsViewModel = hapticsViewModel,
             modifier =
                 modifier
+                    .then(surfaceRevealModifier)
                     .borderOnFocus(color = MaterialTheme.colorScheme.secondary, tileShape.topEnd)
                     .fillMaxWidth()
                     .thenIf(currentBounceableInfo != null) {
@@ -291,16 +315,7 @@ fun ContentScope.Tile(
                 accessibilityUiState = uiState.accessibilityUiState,
                 iconOnly = iconOnly,
                 isDualTarget = isDualTarget,
-                modifier =
-                    if (revealEffectContainer != null) {
-                        Modifier.verticalFadeContentReveal(
-                            contentScope = this,
-                            motionBuilderContext = rememberMotionBuilderContext(),
-                            container = revealEffectContainer,
-                        )
-                    } else {
-                        Modifier
-                    },
+                modifier = contentRevealModifier,
             ) {
                 val iconProvider: Context.() -> Icon = { getTileIcon(icon = icon) }
                 if (iconOnly) {
