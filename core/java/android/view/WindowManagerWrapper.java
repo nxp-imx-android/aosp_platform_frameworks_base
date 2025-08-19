@@ -232,7 +232,6 @@ public class WindowManagerWrapper implements WindowManager {
         return mBase.replaceContentOnDisplayWithSc(displayId, sc);
     }
 
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     @Override
     public void registerTrustedPresentationListener(@NonNull IBinder window,
             @NonNull TrustedPresentationThresholds thresholds, @NonNull Executor executor,
@@ -240,7 +239,6 @@ public class WindowManagerWrapper implements WindowManager {
         mBase.registerTrustedPresentationListener(window, thresholds, executor, listener);
     }
 
-    @FlaggedApi(Flags.FLAG_TRUSTED_PRESENTATION_LISTENER_FOR_WINDOW)
     @Override
     public void unregisterTrustedPresentationListener(@NonNull Consumer<Boolean> listener) {
         mBase.unregisterTrustedPresentationListener(listener);
