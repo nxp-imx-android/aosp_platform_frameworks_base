@@ -24,6 +24,8 @@ import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
 
+import android.util.Log;
+
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
@@ -52,6 +54,8 @@ import com.android.internal.protolog.common.LogLevel;
 // LINT.IfChange
 public class ProtoLog {
 // LINT.ThenChange(frameworks/base/tools/protologtool/src/com/android/protolog/tool/ProtoLogTool.kt)
+
+    private static final String LOG_TAG = "ProtoLog";
 
     // Needs to be set directly otherwise the protologtool tries to transform the method call
     @Deprecated
@@ -236,8 +240,8 @@ public class ProtoLog {
             @NonNull String stringMessage, @NonNull Object... args) {
         final var instance = sController.mProtoLogInstance;
         if (instance == null) {
-            throw new IllegalStateException(
-                    "Trying to use ProtoLog before it is initialized in this process.");
+            Log.wtf(LOG_TAG, "Trying to use ProtoLog before it is initialized in this process.");
+            return;
         }
 
         if (instance.isEnabled(group, logLevel)) {
