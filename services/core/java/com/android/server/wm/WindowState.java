@@ -182,7 +182,6 @@ import static com.android.server.wm.WindowStateAnimator.DRAW_PENDING;
 import static com.android.server.wm.WindowStateAnimator.HAS_DRAWN;
 import static com.android.server.wm.WindowStateAnimator.PRESERVED_SURFACE_LAYER;
 import static com.android.server.wm.WindowStateAnimator.READY_TO_SHOW;
-import static com.android.window.flags.Flags.surfaceTrustedOverlay;
 
 import android.annotation.CallSuper;
 import android.annotation.NonNull;
@@ -1077,9 +1076,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mInputWindowHandle.setName(getName());
         mInputWindowHandle.setPackageName(mAttrs.packageName);
         mInputWindowHandle.setLayoutParamsType(mAttrs.type);
-        if (!surfaceTrustedOverlay()) {
-            mInputWindowHandle.setTrustedOverlay(isWindowTrustedOverlay());
-        }
         if (DEBUG) {
             Slog.v(TAG, "Window " + this + " client=" + c.asBinder()
                             + " token=" + token + " (" + mAttrs.token + ")" + " params=" + a);
@@ -1142,9 +1138,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
         super.setInitialSurfaceControlProperties(b);
-        if (surfaceTrustedOverlay() && isWindowTrustedOverlay()) {
-            getPendingTransaction().setTrustedOverlay(mSurfaceControl, true);
-        }
+        getPendingTransaction().setTrustedOverlay(mSurfaceControl, isWindowTrustedOverlay());
         getPendingTransaction().setSecure(mSurfaceControl, isSecureLocked());
         // All apps should be considered as occluding when computing TrustedPresentation Thresholds.
         final boolean canOccludePresentation = !mSession.mCanAddInternalSystemWindow;
@@ -6060,13 +6054,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isTrustedOverlay() {
-        if (surfaceTrustedOverlay()) {
-            WindowState parentWindow = getParentWindow();
-            return isWindowTrustedOverlay() || (parentWindow != null
-                    && parentWindow.isWindowTrustedOverlay());
-        } else {
-            return mInputWindowHandle.isTrustedOverlay();
-        }
+        WindowState parentWindow = getParentWindow();
+        return isWindowTrustedOverlay() || (parentWindow != null
+                && parentWindow.isWindowTrustedOverlay());
     }
 
     public boolean receiveFocusFromTapOutside() {
