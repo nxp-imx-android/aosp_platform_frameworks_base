@@ -4661,9 +4661,23 @@ final class InstallPackageHelper {
     }
 
     private static boolean hasLauncherEntry(ParsedPackage parsedPackage) {
+        return hasLauncherEntry(parsedPackage.getActivities());
+    }
+
+    /**
+     * Checks whether a launcher entry exists within the given list of activities that are
+     * associated with a {@link ParsedPackage} or {@link AndroidPackage}.
+     *
+     * <p>An activity is considered a launcher entry if it is enabled, exported, and has an intent
+     * filter with the {@link android.content.Intent#CATEGORY_LAUNCHER} category.
+     *
+     * @param activities a list of activities retrieved from either a {@link ParsedPackage} or
+     *                   {@link AndroidPackage}
+     * @return {@code true} if a launcher entry is found, otherwise {@code false}
+     */
+    static boolean hasLauncherEntry(List<ParsedActivity> activities) {
         final HashSet<String> categories = new HashSet<>();
         categories.add(Intent.CATEGORY_LAUNCHER);
-        final List<ParsedActivity> activities = parsedPackage.getActivities();
         for (int indexActivity = 0; indexActivity < activities.size(); indexActivity++) {
             final ParsedActivity activity = activities.get(indexActivity);
             if (!activity.isEnabled() || !activity.isExported()) {

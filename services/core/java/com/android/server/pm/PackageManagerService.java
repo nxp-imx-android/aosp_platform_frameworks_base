@@ -64,6 +64,7 @@ import android.app.ApplicationExitInfo;
 import android.app.ApplicationPackageManager;
 import android.app.BroadcastOptions;
 import android.app.IActivityManager;
+import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SecurityLog;
@@ -982,6 +983,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final ResolveIntentHelper mResolveIntentHelper;
     private final DexOptHelper mDexOptHelper;
     private final SuspendPackageHelper mSuspendPackageHelper;
+    private final AppLockPackageHelper mAppLockPackageHelper;
     private final DistractingPackageHelper mDistractingPackageHelper;
     private final StorageEventHelper mStorageEventHelper;
     private final FreeStorageHelper mFreeStorageHelper;
@@ -1951,6 +1953,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mResolveIntentHelper = testParams.resolveIntentHelper;
         mDexOptHelper = testParams.dexOptHelper;
         mSuspendPackageHelper = testParams.suspendPackageHelper;
+        mAppLockPackageHelper = testParams.appLockPackageHelper;
         mDistractingPackageHelper = testParams.distractingPackageHelper;
 
         mSharedLibraries.setDeletePackageHelper(mDeletePackageHelper);
@@ -2138,6 +2141,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mDexOptHelper = new DexOptHelper(this);
         mSuspendPackageHelper = new SuspendPackageHelper(this, mInjector, mBroadcastHelper,
                 mProtectedPackages);
+        mAppLockPackageHelper = new AppLockPackageHelper(mContext, this);
         mDistractingPackageHelper = new DistractingPackageHelper(this, mBroadcastHelper,
                 mSuspendPackageHelper);
         mStorageEventHelper = new StorageEventHelper(this, mDeletePackageHelper,
@@ -5473,6 +5477,39 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             } catch (PackageManager.NameNotFoundException e) {
                 return null;
             }
+        }
+
+        @Override
+        @android.annotation.EnforcePermission(Manifest.permission.LOCK_APPS)
+        @Nullable
+        public PendingIntent getEnableAppLockIntentForPackage(String pkgName, boolean enabled) {
+            getEnableAppLockIntentForPackage_enforcePermission();
+            if (!android.security.Flags.appLockApis()) {
+                return null;
+            }
+            final Computer snapshot = snapshotComputer();
+            final int callingUserId = UserHandle.getUserId(Binder.getCallingUid());
+            return mAppLockPackageHelper.getEnableAppLockIntentForPackage(snapshot, pkgName,
+                    callingUserId, enabled);
+        }
+
+        @Override
+        public boolean setPackageAppLockEnabled(String pkgName, int userId, boolean enabled) {
+            if (!android.security.Flags.appLockApis()) {
+                return false;
+            }
+            return mAppLockPackageHelper.setPackageAppLockEnabled(
+                    PackageManagerService.this::snapshotComputer, pkgName, userId, enabled,
+                    Binder.getCallingUid());
+        }
+
+        @Override
+        public boolean isPackageAppLockEnabled(String pkgName, int userId) {
+            if (!android.security.Flags.appLockApis()) {
+                return false;
+            }
+            final Computer snapshot = snapshotComputer();
+            return mAppLockPackageHelper.isPackageAppLockEnabled(snapshot, pkgName, userId);
         }
 
         @Override

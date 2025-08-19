@@ -17,6 +17,7 @@
 
 package android.content.pm;
 
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -329,6 +330,13 @@ interface IPackageManager {
     Bundle getSuspendedPackageAppExtras(String packageName, int userId);
 
     String getSuspendingPackage(String packageName, int userId);
+
+    @EnforcePermission("LOCK_APPS")
+    @nullable PendingIntent getEnableAppLockIntentForPackage(String packageName, boolean enabled);
+
+    boolean setPackageAppLockEnabled(String packageName, int userId, boolean enabled);
+
+    boolean isPackageAppLockEnabled(String packageName, int userId);
 
     /**
      * Backup/restore support - only the system uid may use these.

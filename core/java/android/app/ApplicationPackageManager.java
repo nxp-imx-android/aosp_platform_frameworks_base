@@ -3103,6 +3103,33 @@ public class ApplicationPackageManager extends PackageManager {
         }
     }
 
+    @Override
+    public PendingIntent getEnableAppLockIntentForPackage(String packageName, boolean enabled) {
+        try {
+            return mPM.getEnableAppLockIntentForPackage(packageName, enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public boolean setPackageAppLockEnabled(@NonNull String packageName, boolean enabled) {
+        try {
+            return mPM.setPackageAppLockEnabled(packageName, getUserId(), enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public boolean isPackageAppLockEnabled(@NonNull String packageName) {
+        try {
+            return mPM.isPackageAppLockEnabled(packageName, getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     /** @hide */
     @Override
     public boolean isPackageSuspended(String packageName) throws NameNotFoundException {
