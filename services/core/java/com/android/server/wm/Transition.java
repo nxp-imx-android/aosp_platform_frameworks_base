@@ -4201,6 +4201,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS, " Add condition %s for #%d",
                     condition, mTransition.mSyncId);
             condition.startTracking();
+            mTransition.applyReady();
         }
 
         void meet(@NonNull ReadyCondition condition) {
