@@ -58,6 +58,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.media.MediaRoute2Info;
+import android.media.MediaRouter2;
 import android.media.NearbyDevice;
 import android.media.RouteListingPreference;
 import android.os.Build;
@@ -116,6 +117,21 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
         int SELECTION_BEHAVIOR_GO_TO_APP = 2;
     }
 
+    public static final int SUGGESTION_PROVIDER_UNSPECIFIED = 0;
+    public static final int SUGGESTION_PROVIDER_RLP = 1;
+    public static final int SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP = 2;
+    public static final int SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER = 3;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            value = {
+                SUGGESTION_PROVIDER_UNSPECIFIED,
+                SUGGESTION_PROVIDER_RLP,
+                SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP,
+                SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER
+            })
+    public @interface SuggestionProvider {}
+
     @VisibleForTesting
     int mType;
 
@@ -129,6 +145,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
     @Nullable private final DynamicRouteAttributes mDynamicRouteAttributes;
     protected final RouteListingPreference.Item mRlpItem;
     private boolean mIsSuggested;
+    private boolean mIsSuggestedByApp;
 
     MediaDevice(
             @NonNull Context context,
@@ -328,7 +345,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
 
     /**
      * Checks if device is suggested device from application. A device can be suggested through
-     * either RouteListingPreferences or through MediaRouter2#setDeviceSuggestions.
+     * either {@link RouteListingPreference} or through {@link MediaRouter2#setDeviceSuggestions}.
      *
      * <p>Prioritization and conflict resolution between the two APIs is as follows: - Suggestions
      * from both RLP and the new API will be visible in OSw - Only suggestions from the new API will
@@ -349,6 +366,24 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
     public boolean isSuggestedByRouteListingPreferences() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
                 && Api34Impl.isSuggestedDevice(mRlpItem);
+    }
+
+    /**
+     * Returns the provider influencing the route ordering in the Output Switcher. See {@link
+     * SuggestionProvider}
+     *
+     * @return the provider influencing the route ordering.
+     */
+    public @SuggestionProvider int getSuggestionProvider() {
+        if (!isSuggestedDevice()) {
+            return SUGGESTION_PROVIDER_UNSPECIFIED;
+        }
+        if (isSuggestedByRouteListingPreferences()) {
+            return SUGGESTION_PROVIDER_RLP;
+        }
+        return mIsSuggestedByApp
+                ? SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP
+                : SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER;
     }
 
     void setConnectedRecord() {
@@ -466,8 +501,9 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
     }
 
     /** Sets whether the current device is suggested. */
-    public void setIsSuggested(boolean suggested) {
+    public void setIsSuggested(boolean suggested, boolean suggestedByApp) {
         mIsSuggested = suggested;
+        mIsSuggestedByApp = suggestedByApp;
     }
 
     /**
