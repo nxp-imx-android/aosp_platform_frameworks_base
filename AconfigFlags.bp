@@ -95,6 +95,7 @@ aconfig_declarations_group {
         "backstage_power_flags_lib",
         "backup_flags_lib",
         "camera_platform_flags_core_java_lib",
+        "com.android.eyedropper.flags-aconfig-java",
         "com.android.hardware.input-aconfig-java",
         "com.android.input.flags-aconfig-java",
         "com.android.internal.compat.flags-aconfig-java",
