@@ -22,6 +22,7 @@ import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
+import androidx.compose.ui.geometry.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
@@ -278,4 +279,18 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
         assertThat(currentScene).isEqualTo(Scenes.Gone)
     }
+
+    @Test
+    fun onShadeBoundsChanged_forwardsToShadeOverlayInteractor() =
+        testScope.runTest {
+            var shadeBounds: android.graphics.Rect? = null
+            kosmos.shadeInteractor.addShadeOverlayBoundsListener { shadeBounds = it }
+            assertThat(shadeBounds).isNull()
+
+            val bounds = Rect(0f, 0f, 100f, 100f)
+            val expectedShadeBounds = android.graphics.Rect(0, 0, 100, 100)
+            underTest.onShadeOverlayBoundsChanged(bounds)
+
+            assertThat(shadeBounds).isEqualTo(expectedShadeBounds)
+        }
 }

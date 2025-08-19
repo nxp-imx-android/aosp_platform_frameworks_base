@@ -17,9 +17,12 @@
 
 package com.android.systemui.shade.data.repository
 
+import android.graphics.Rect
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.shade.ShadeOverlayBoundsListener
 import dagger.Binds
 import dagger.Module
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,6 +32,9 @@ import kotlinx.coroutines.flow.asStateFlow
 /** Fake implementation of [ShadeRepository] */
 @SysUISingleton
 class FakeShadeRepository @Inject constructor() : ShadeRepository {
+    private var shadeOverlayBounds: Rect? = null
+    private val shadeOverlayBoundsListeners = CopyOnWriteArrayList<ShadeOverlayBoundsListener>()
+
     private val _qsExpansion = MutableStateFlow(0f)
 
     @Deprecated("Use ShadeInteractor.qsExpansion instead")
@@ -126,6 +132,21 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
     private val _legacyIsClosing = MutableStateFlow(false)
 
     @Deprecated("Use ShadeInteractor instead") override val legacyIsClosing = _legacyIsClosing
+
+    override fun setShadeOverlayBounds(bounds: Rect?) {
+        shadeOverlayBounds = bounds
+        shadeOverlayBoundsListeners.forEach { listener ->
+            listener.onShadeOverlayBoundsChanged(shadeOverlayBounds)
+        }
+    }
+
+    override fun addShadeBoundsListener(listener: ShadeOverlayBoundsListener) {
+        shadeOverlayBoundsListeners.add(listener)
+    }
+
+    override fun removeShadeBoundsListener(listener: ShadeOverlayBoundsListener) {
+        shadeOverlayBoundsListeners.remove(listener)
+    }
 
     @Deprecated("Use ShadeInteractor instead")
     override fun setLegacyIsClosing(isClosing: Boolean) {

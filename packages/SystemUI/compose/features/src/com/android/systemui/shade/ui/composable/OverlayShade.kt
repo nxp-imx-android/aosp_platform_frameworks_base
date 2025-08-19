@@ -98,6 +98,8 @@ fun ContentScope.OverlayShade(
                         .element(panelElement)
                         .thenIf(TileRevealFlag.isEnabled) { Modifier.motionDriver(gestureContext) }
                         .panelWidth(isFullWidth)
+                        // TODO(440566878): Investigate if this can be optimized by replacing with
+                        // onLayoutRectChanged.
                         .onPlaced { coordinates ->
                             val bounds = coordinates.boundsInWindow()
                             val isTopRounded = panelSpec.isFloating

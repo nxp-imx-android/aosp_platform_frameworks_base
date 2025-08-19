@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,11 @@
 package com.android.systemui.shade.data.repository
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.shade.ShadeOverlayBoundsListener
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -123,6 +126,9 @@ interface ShadeRepository {
     /** NPVC.mClosing as a flow. */
     @Deprecated("Use ShadeAnimationInteractor instead") val legacyIsClosing: StateFlow<Boolean>
 
+    /** Sets the bounds of a shade overlay if it is currently visible. */
+    fun setShadeOverlayBounds(bounds: Rect?)
+
     /** Sets whether the shade layout should be wide (true) or narrow (false). */
     fun setShadeLayoutWide(isShadeLayoutWide: Boolean)
 
@@ -184,6 +190,10 @@ interface ShadeRepository {
      */
     @Deprecated("Should only be called by NPVC and tests")
     fun setLegacyShadeExpansion(expandedFraction: Float)
+
+    fun addShadeBoundsListener(listener: ShadeOverlayBoundsListener)
+
+    fun removeShadeBoundsListener(listener: ShadeOverlayBoundsListener)
 }
 
 /** Business logic for shade interactions */
@@ -193,6 +203,9 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
     private val _qsExpansion = MutableStateFlow(0f)
     @Deprecated("Use ShadeInteractor.qsExpansion instead")
     override val qsExpansion: StateFlow<Float> = _qsExpansion.asStateFlow()
+
+    private var shadeOverlayBounds: Rect? = null
+    private val shadeOverlayBoundsListeners = CopyOnWriteArrayList<ShadeOverlayBoundsListener>()
 
     private val _lockscreenShadeExpansion = MutableStateFlow(0f)
     override val lockscreenShadeExpansion: StateFlow<Float> =
@@ -245,6 +258,16 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
     private val _legacyQsFullscreen = MutableStateFlow(false)
     @Deprecated("Use ShadeInteractor instead")
     override val legacyQsFullscreen: StateFlow<Boolean> = _legacyQsFullscreen.asStateFlow()
+
+    override fun setShadeOverlayBounds(bounds: Rect?) {
+        if (shadeOverlayBounds == bounds) {
+            return
+        }
+        shadeOverlayBounds = bounds
+        shadeOverlayBoundsListeners.forEach { listener ->
+            listener.onShadeOverlayBoundsChanged(shadeOverlayBounds)
+        }
+    }
 
     override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
         isWideScreen.value = isShadeLayoutWide
@@ -316,5 +339,14 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
     @Deprecated("Should only be called by NPVC and tests")
     override fun setLegacyShadeExpansion(expandedFraction: Float) {
         _legacyShadeExpansion.value = expandedFraction
+    }
+
+    override fun addShadeBoundsListener(listener: ShadeOverlayBoundsListener) {
+        listener.onShadeOverlayBoundsChanged(shadeOverlayBounds)
+        shadeOverlayBoundsListeners.add(listener)
+    }
+
+    override fun removeShadeBoundsListener(listener: ShadeOverlayBoundsListener) {
+        shadeOverlayBoundsListeners.remove(listener)
     }
 }

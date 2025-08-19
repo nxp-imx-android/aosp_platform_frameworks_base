@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.data.repository
 
+import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -35,6 +36,21 @@ class ShadeRepositoryImplTest : SysuiTestCase() {
     private val testScope = TestScope(testDispatcher)
 
     private val underTest by lazy { ShadeRepositoryImpl(testScope) }
+
+    @Test
+    fun setShadeOverlayBounds_notifiesListener() =
+        testScope.runTest {
+            var shadeBounds: Rect? = null
+            underTest.addShadeBoundsListener { shadeBounds = it }
+            assertThat(shadeBounds).isNull()
+
+            val bounds = Rect(0, 0, 100, 100)
+            underTest.setShadeOverlayBounds(bounds)
+            assertThat(shadeBounds).isEqualTo(bounds)
+
+            underTest.setShadeOverlayBounds(null)
+            assertThat(shadeBounds).isNull()
+        }
 
     @Test
     fun updateQsExpansion() =
