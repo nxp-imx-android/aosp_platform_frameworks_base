@@ -1457,7 +1457,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         val touchListener = onTouchListenerCaptor.firstValue
-        if (touchListener is DesktopModeTouchEventListener) {
+        if (touchListener is DesktopModeWindowDecorViewModel.DesktopModeTouchEventListener) {
             val taskInfo = decor.taskInfo
             shellDesktopState.overrideWindowDropTargetEligibility[DEFAULT_DISPLAY] = true
             shellDesktopState.overrideWindowDropTargetEligibility[SECOND_DISPLAY] = true
@@ -1587,7 +1587,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             )
 
         val touchListener = onTouchListenerCaptor.firstValue
-        if (touchListener is DesktopModeTouchEventListener) {
+        if (touchListener is DesktopModeWindowDecorViewModel.DesktopModeTouchEventListener) {
             val taskInfo = decor.taskInfo
             shellDesktopState.overrideWindowDropTargetEligibility[DEFAULT_DISPLAY] = true
             shellDesktopState.overrideWindowDropTargetEligibility[SECOND_DISPLAY] = false

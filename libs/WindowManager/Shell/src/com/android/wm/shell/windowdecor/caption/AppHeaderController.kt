@@ -747,7 +747,6 @@ class AppHeaderController(
     }
 
     private companion object {
-        private const val TAG = "AppHeaderController"
         const val CLOSE_MAXIMIZE_MENU_DELAY_MS = 150L
     }
 }
