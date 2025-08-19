@@ -53,6 +53,7 @@ message RemoteTaskInfo {
     string label = 2;
     int64 lastUsedTimeMillis = 3;
     bytes taskIcon = 4;
+    bool isHandoffEnabled = 5;
 }
 
 message RemoteTaskRemovedMessage {

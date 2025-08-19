@@ -43,6 +43,7 @@ public class RemoteTaskInfoTest {
         assertThat(remoteTaskInfo.label()).isEmpty();
         assertThat(remoteTaskInfo.lastUsedTimeMillis()).isEqualTo(0);
         assertThat(remoteTaskInfo.taskIcon()).isEmpty();
+        assertThat(remoteTaskInfo.isHandoffEnabled()).isFalse();
     }
 
     @Test
@@ -51,6 +52,7 @@ public class RemoteTaskInfoTest {
         String expectedLabel = "test";
         long expectedLastActiveTime = 1;
         byte[] expectedTaskIcon = new byte[] {1, 2, 3};
+        boolean expectedIsHandoffEnabled = true;
 
         // Setup the proto stream
         ProtoOutputStream pos = new ProtoOutputStream();
@@ -61,6 +63,8 @@ public class RemoteTaskInfoTest {
             expectedLastActiveTime);
         pos.writeBytes(android.companion.RemoteTaskInfo.TASK_ICON,
             expectedTaskIcon);
+        pos.writeBool(android.companion.RemoteTaskInfo.IS_HANDOFF_ENABLED,
+            expectedIsHandoffEnabled);
 
         pos.flush();
 
@@ -74,6 +78,7 @@ public class RemoteTaskInfoTest {
         assertThat(remoteTaskInfo.lastUsedTimeMillis())
             .isEqualTo(expectedLastActiveTime);
         assertThat(remoteTaskInfo.taskIcon()).isEqualTo(expectedTaskIcon);
+        assertThat(remoteTaskInfo.isHandoffEnabled()).isEqualTo(expectedIsHandoffEnabled);
     }
 
     @Test
@@ -81,11 +86,13 @@ public class RemoteTaskInfoTest {
         int expectedId = 1;
         String expectedLabel = "test";
         long expectedLastActiveTime = 1;
+        boolean expectedIsHandoffEnabled = true;
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(
             expectedId,
             expectedLabel,
             expectedLastActiveTime,
-            new byte[0]);
+            new byte[0],
+            expectedIsHandoffEnabled);
 
         ProtoOutputStream pos = new ProtoOutputStream();
         remoteTaskInfo.writeToProto(pos);
@@ -98,6 +105,7 @@ public class RemoteTaskInfoTest {
         assertThat(result.label()).isEqualTo(expectedLabel);
         assertThat(result.lastUsedTimeMillis())
             .isEqualTo(expectedLastActiveTime);
+        assertThat(result.isHandoffEnabled()).isEqualTo(expectedIsHandoffEnabled);
     }
 
     @Test
@@ -108,11 +116,13 @@ public class RemoteTaskInfoTest {
         long expectedLastActiveTime = 100;
         String expectedDeviceName = "test_device";
         int expectedDeviceId = 2;
+        boolean expectedIsHandoffEnabled = true;
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(
             expectedId,
             expectedLabel,
             expectedLastActiveTime,
-            new byte[0]);
+            new byte[0],
+            expectedIsHandoffEnabled);
 
         // Convert to RemoteTask
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(
@@ -126,5 +136,6 @@ public class RemoteTaskInfoTest {
             .isEqualTo(expectedLastActiveTime);
         assertThat(remoteTask.getDeviceId()).isEqualTo(expectedDeviceId);
         assertThat(remoteTask.getSourceDeviceName()).isEqualTo(expectedDeviceName);
+        assertThat(remoteTask.isHandoffEnabled()).isEqualTo(expectedIsHandoffEnabled);
     }
 }

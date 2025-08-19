@@ -91,7 +91,8 @@ public class TaskBroadcasterTest {
             100 /* taskId */,
             "test" /* label */,
             100 /* lastActiveTime */,
-            new byte[0] /* icon */);
+            new byte[0] /* icon */,
+            true /* isHandoffEnabled */);
         when(mMockRunningTaskFetcher.getRunningTasks())
             .thenReturn(List.of(expectedRemoteTaskInfo));
 
@@ -115,7 +116,8 @@ public class TaskBroadcasterTest {
             123 /* taskId */,
             "newTask" /* label */,
             0 /* lastActiveTime */,
-            new byte[0] /* icon */);
+            new byte[0] /* icon */,
+            true /* isHandoffEnabled */);
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
             .thenReturn(expectedRemoteTaskInfo);
 
@@ -155,7 +157,8 @@ public class TaskBroadcasterTest {
             1 /* taskId */,
             "task" /* label */,
             100 /* lastActiveTime */,
-            new byte[0] /* icon */);
+            new byte[0] /* icon */,
+            true /* isHandoffEnabled */);
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
             .thenReturn(expectedRemoteTaskInfo);
         RunningTaskInfo taskInfo = new RunningTaskInfo();

@@ -55,7 +55,7 @@ public class ContinuityDeviceConnectedTest {
         String expectedLabel = "test";
         long expectedLastActiveTime = 0;
         ContinuityDeviceConnected expected = new ContinuityDeviceConnected(
-            Arrays.asList(new RemoteTaskInfo(1, "task", 50, new byte[0])));
+            Arrays.asList(new RemoteTaskInfo(1, "task", 50, new byte[0], true)));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
