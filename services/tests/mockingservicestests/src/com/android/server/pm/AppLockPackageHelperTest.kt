@@ -46,6 +46,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.never
@@ -83,7 +84,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         instrumentation.uiAutomation
             .adoptShellPermissionIdentity("android.permission.GET_INTENT_SENDER_INTENT")
 
-        appLockPackageHelper = AppLockPackageHelper(instrumentation.context, pms, testInjector)
+        appLockPackageHelper =
+            AppLockPackageHelper(instrumentation.context, pms, broadcastHelper, testInjector)
         whenever(mockSnapshot.getPackageStateInternal(eq(EXEMPT_PACKAGE_NAME)))
             .thenReturn(mockPackageStateInternal)
         whenever(mockSnapshot.getPackageStateInternal(eq(TEST_PACKAGE_NAME)))
@@ -129,7 +131,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         // Disk write occurs only if the current state was true, as exempt apps cannot have App Lock
         // enabled.
         if (currentEnabledState) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(stateToWrite = false, EXEMPT_PACKAGE_NAME)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -161,7 +163,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         // Disk write occurs only if the current state was true, as headless apps cannot have App
         // Lock enabled.
         if (currentEnabledState) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(stateToWrite = false)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -192,7 +194,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         // Disk write occurs only if the current state was true, as profile users cannot have App
         // Lock enabled.
         if (currentEnabledState) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(stateToWrite = false)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -222,7 +224,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         // Disk write occurs only if the current state was true, as profile users cannot have App
         // Lock enabled.
         if (currentEnabledState) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(stateToWrite = false, TEST_PACKAGE_NAME)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -253,7 +255,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         // Disk write occurs only if the current state was true, as supervised users cannot have App
         // Lock enabled.
         if (currentEnabledState) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(stateToWrite = false)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -282,7 +284,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         // Disk write occurs only if the current state was true, as App Lock is not supported on
         // insecure devices.
         if (currentEnabledState) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(stateToWrite = false)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -364,7 +366,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
             )
         ).isEqualTo(appLockSupportedForSecureDevice)
         if (expectDiskWrite) {
-            verifyDiskWriteAndPackageUpdate()
+            verifyDiskWriteAndPackageUpdate(targetState)
         } else {
             verifyNoWriteOrPackageUpdate()
         }
@@ -443,14 +445,27 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         assertThat(intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME)).isEqualTo(TEST_PACKAGE_NAME)
     }
 
-    private fun verifyDiskWriteAndPackageUpdate() {
+    private fun verifyDiskWriteAndPackageUpdate(
+        stateToWrite: Boolean,
+        packageName: String = TEST_PACKAGE_NAME
+    ) {
         verify(pms).commitPackageStateMutation(any(), any())
         verify(pms).scheduleWritePackageRestrictions(eq(TEST_USER_ID))
+        verify(broadcastHelper).sendPackageAppLockStateChangedForUser(
+            eq(packageName),
+            eq(TEST_USER_ID),
+            eq(stateToWrite)
+        )
     }
 
     private fun verifyNoWriteOrPackageUpdate() {
         verify(pms, never()).commitPackageStateMutation(any(), any())
         verify(pms, never()).scheduleWritePackageRestrictions(anyInt())
+        verify(broadcastHelper, never()).sendPackageAppLockStateChangedForUser(
+            any(),
+            anyInt(),
+            anyBoolean()
+        )
     }
 
     private fun setupTestForSetPackageAppLockEnabled(

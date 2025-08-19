@@ -55,6 +55,7 @@ public final class AppLockPackageHelper {
     private static final boolean DEBUG = Build.IS_DEBUGGABLE && Log.isLoggable(TAG, Log.DEBUG);
     private final Context mContext;
     private final PackageManagerService mPms;
+    private final BroadcastHelper mBroadcastHelper;
     private final Injector mInjector;
 
     private static Boolean sIsSupportedDeviceForAppLock = null;
@@ -62,14 +63,16 @@ public final class AppLockPackageHelper {
 
     @VisibleForTesting
     AppLockPackageHelper(Context context, PackageManagerService packageManagerService,
-            Injector injector) {
+            BroadcastHelper broadcastHelper, Injector injector) {
         mContext = context;
         mPms = packageManagerService;
+        mBroadcastHelper = broadcastHelper;
         mInjector = injector;
     }
 
-    public AppLockPackageHelper(Context context, PackageManagerService packageManagerService) {
-        this(context, packageManagerService, new InjectorImpl());
+    public AppLockPackageHelper(Context context, PackageManagerService packageManagerService,
+            BroadcastHelper broadcastHelper) {
+        this(context, packageManagerService, broadcastHelper, new InjectorImpl());
     }
 
     // Use the static version to set the ApplicationInfo field
@@ -318,7 +321,7 @@ public final class AppLockPackageHelper {
             userState.setAppLockEnabled(enabled);
         });
         mPms.scheduleWritePackageRestrictions(userId);
-
+        mBroadcastHelper.sendPackageAppLockStateChangedForUser(packageName, userId, enabled);
     }
 
     @VisibleForTesting

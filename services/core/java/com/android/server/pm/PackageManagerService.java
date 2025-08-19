@@ -2141,7 +2141,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mDexOptHelper = new DexOptHelper(this);
         mSuspendPackageHelper = new SuspendPackageHelper(this, mInjector, mBroadcastHelper,
                 mProtectedPackages);
-        mAppLockPackageHelper = new AppLockPackageHelper(mContext, this);
+        mAppLockPackageHelper = new AppLockPackageHelper(mContext, this, mBroadcastHelper);
         mDistractingPackageHelper = new DistractingPackageHelper(this, mBroadcastHelper,
                 mSuspendPackageHelper);
         mStorageEventHelper = new StorageEventHelper(this, mDeletePackageHelper,

@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,7 +36,7 @@ import android.app.ActivityManagerInternal;
 import android.app.BroadcastOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.Flags;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,7 +44,6 @@ import android.os.Message;
 import android.os.UserHandle;
 import android.platform.test.annotations.AppModeFull;
 import android.platform.test.annotations.AppModeNonSdkSandbox;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -69,6 +69,7 @@ import java.util.ArrayList;
 public class BroadcastHelperTest {
     private static final String TAG = "BroadcastHelperTest";
     private static final String PACKAGE_CHANGED_TEST_PACKAGE_NAME = "testpackagename";
+    private static final int PACKAGE_CHANGED_TEST_USER_ID = 1234;
     private static final String PACKAGE_CHANGED_TEST_MAIN_ACTIVITY =
             PACKAGE_CHANGED_TEST_PACKAGE_NAME + ".MainActivity";
 
@@ -174,6 +175,44 @@ public class BroadcastHelperTest {
         Intent intent = captor.getValue();
         assertNotNull(intent);
         assertNull(intent.getPackage());
+    }
+
+    @Test
+    public void sendPackageAppLockStateChanged_appLockEnabled_onlySendsPackageMonitorBroadcast()
+            throws Exception {
+        boolean enabled = true;
+
+        mBroadcastHelper.sendPackageAppLockStateChangedForUser(PACKAGE_CHANGED_TEST_PACKAGE_NAME,
+                PACKAGE_CHANGED_TEST_USER_ID, enabled);
+
+        ArgumentCaptor<Bundle> captor = ArgumentCaptor.forClass(Bundle.class);
+        verify(mMockPackageMonitorCallbackHelper).notifyPackageMonitor(
+                eq(PackageManager.ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED),
+                eq(PACKAGE_CHANGED_TEST_PACKAGE_NAME),
+                captor.capture(), any(int[].class), eq(null), eq(null), eq(mMockHandler), eq(null));
+        Bundle bundle = captor.getValue();
+        assertThat(bundle.getBoolean(PackageManager.EXTRA_APP_LOCK_NEW_STATE)).isTrue();
+        verify(mMockActivityManagerInternal, never()).broadcastIntentWithCallback(any(), any(),
+                any(), anyInt(), any(), any(), any());
+    }
+
+    @Test
+    public void sendPackageAppLockStateChanged_appLockDisabled_onlySendsPackageMonitorBroadcast()
+            throws Exception {
+        boolean enabled = false;
+
+        mBroadcastHelper.sendPackageAppLockStateChangedForUser(PACKAGE_CHANGED_TEST_PACKAGE_NAME,
+                PACKAGE_CHANGED_TEST_USER_ID, enabled);
+
+        ArgumentCaptor<Bundle> captor = ArgumentCaptor.forClass(Bundle.class);
+        verify(mMockPackageMonitorCallbackHelper).notifyPackageMonitor(
+                eq(PackageManager.ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED),
+                eq(PACKAGE_CHANGED_TEST_PACKAGE_NAME),
+                captor.capture(), any(int[].class), eq(null), eq(null), eq(mMockHandler), eq(null));
+        Bundle bundle = captor.getValue();
+        assertThat(bundle.getBoolean(PackageManager.EXTRA_APP_LOCK_NEW_STATE)).isFalse();
+        verify(mMockActivityManagerInternal, never()).broadcastIntentWithCallback(any(), any(),
+                any(), anyInt(), any(), any(), any());
     }
 
     private void changeComponentAndSendPackageChangedBroadcast(boolean changeExportedComponent,

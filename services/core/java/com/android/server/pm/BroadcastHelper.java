@@ -1216,6 +1216,21 @@ public final class BroadcastHelper {
         });
     }
 
+    void sendPackageAppLockStateChangedForUser(@NonNull String pkgName, int userId,
+            boolean enabled) {
+        String action = PackageManager.ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED;
+        final Bundle extras = new Bundle();
+        extras.putBoolean(PackageManager.EXTRA_APP_LOCK_NEW_STATE, enabled);
+
+        // Do not call sendPackageBroadcast, notify via PackageMonitor only.
+        // These broadcasts are intended only for internal system components listening via
+        // PackageMonitor, not for general application consumption, so we don't use the standard
+        // broadcast mechanism.
+        notifyPackageMonitor(action, pkgName, extras, new int[]{userId},
+                null /* instantUserIds */, null /* broadcastAllowList */,
+                null /* filterExtrasForReceiver */);
+    }
+
     /**
      * Send broadcast intents for packages distracting changes.
      *

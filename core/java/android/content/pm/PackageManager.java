@@ -5220,13 +5220,22 @@ public abstract class PackageManager {
 
     /**
      * Extra field name used with {@link #ACTION_SET_APP_LOCK} for the new App Lock state to be set
-     * after successful authentication. This should be a boolean, where {@code true} means App Lock
-     * should be enabled, and {@code false} means that App Lock should be disabled.
+     * after successful authentication and {@link #ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED}
+     * for the App Lock state that was just updated. This should be a boolean, where {@code true}
+     * means App Lock should be enabled, and {@code false} means that App Lock should be disabled.
      *
      * @hide
      */
     public static final String EXTRA_APP_LOCK_NEW_STATE =
             "android.content.pm.extra.APP_LOCK_NEW_STATE";
+
+    /**
+     * Broadcast action: Package's App Lock enabled state has changed.
+     *
+     * @hide
+     */
+    public static final String ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED =
+            "android.content.pm.action.PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED";
 
     /**
      * The action used to request that the user approve a permission request
