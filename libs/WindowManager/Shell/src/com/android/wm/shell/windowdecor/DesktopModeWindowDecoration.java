@@ -60,6 +60,7 @@ import android.os.Handler;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.util.Size;
+import android.util.Slog;
 import android.view.Choreographer;
 import android.view.Display;
 import android.view.InsetsState;
@@ -948,6 +949,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /** Update the view holder for app header. */
     private void updateAppHeaderViewHolder(boolean inFullImmersive, boolean hasGlobalFocus) {
         if (!isAppHeader(mWindowDecorViewHolder)) return;
+        if (mDisplayController.getDisplayLayout(mTaskInfo.displayId) == null) {
+            Slog.w(TAG, "Display" + mTaskInfo.displayId
+                    + " is not found, task displayId might be stale");
+            return;
+        }
         asAppHeader(mWindowDecorViewHolder).bindData(new AppHeaderViewHolder.HeaderData(
                 mTaskInfo,
                 DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
