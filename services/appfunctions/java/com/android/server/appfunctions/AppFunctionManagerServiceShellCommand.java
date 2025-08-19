@@ -20,10 +20,10 @@ import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER
 import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_DENIED;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRANTED;
 
-import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertGenericDocumentsToJsonArray;
+import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertGenericDocumentToJson;
 import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertJsonToGenericDocument;
 import static com.android.server.appfunctions.AppSearchDataJsonConverter.searchResultToJsonObject;
-import static com.android.server.appfunctions.AppSearchDataYamlConverter.convertGenericDocumentsToYaml;
+import static com.android.server.appfunctions.AppSearchDataYamlConverter.convertGenericDocumentToYaml;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
@@ -449,29 +449,20 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     @Override
                     public void onSuccess(ExecuteAppFunctionResponse response) {
                         try {
-                            GenericDocument[] functionReturn =
-                                    response.getResultDocument()
-                                            .getPropertyDocumentArray(
-                                                    ExecuteAppFunctionResponse
-                                                            .PROPERTY_RETURN_VALUE);
-                            if (functionReturn == null || functionReturn.length == 0) {
-                                pw.println(new JSONObject());
-                                return;
-                            }
                             // HACK: GenericDocument doesn't tell whether a property is singular
                             // or repeated. We always assume the return is an array here.
                             if (finalBriefYaml) {
                                 String functionReturnYaml =
-                                        convertGenericDocumentsToYaml(
-                                            functionReturn,
+                                        convertGenericDocumentToYaml(
+                                                response.getResultDocument(),
                                             /*keepEmptyValues=*/ false,
                                             /*keepNullValues=*/ false,
                                             /*keepGenericDocumentProperties=*/ false
                                         );
                                 pw.println(functionReturnYaml);
                             } else {
-                                JSONArray functionReturnJson =
-                                    convertGenericDocumentsToJsonArray(functionReturn);
+                                JSONObject functionReturnJson =
+                                        convertGenericDocumentToJson(response.getResultDocument());
                                 pw.println(functionReturnJson.toString(/*indentSpace=*/ 2));
                             }
                         } catch (JSONException e) {
