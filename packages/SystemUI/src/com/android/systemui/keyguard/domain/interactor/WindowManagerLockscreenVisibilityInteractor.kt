@@ -26,6 +26,7 @@ import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.deviceIsAsleepInState
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -34,14 +35,15 @@ import com.android.systemui.statusbar.notification.domain.interactor.Notificatio
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.util.kotlin.Utils.Companion.toQuad
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
-import dagger.Lazy
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import dagger.Lazy
+import javax.inject.Inject
 
 @SysUISingleton
 class WindowManagerLockscreenVisibilityInteractor
@@ -59,6 +61,7 @@ constructor(
     deviceEntryInteractor: Lazy<DeviceEntryInteractor>,
     wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     deviceProvisioningInteractor: Lazy<DeviceProvisioningInteractor>,
+    powerInteractor: PowerInteractor,
 ) {
     private val defaultSurfaceBehindVisibility =
         combine(
@@ -198,6 +201,26 @@ constructor(
                 .distinctUntilChanged()
         }
 
+    /**
+     * WM lockscreen visibility during Gone -> Lockscreen.
+     *
+     * Lockscreen only needs to remain non-visible (unlocked app content visible) in order to play
+     * the screen off animation. If we become awake during the transition, that means the animation
+     * was cancelled and we should hide the unlocked content so it's not visible behind the
+     * lockscreen during Gone -> Lockscreen.
+     *
+     * This also covers the Lockdown case, where Gone -> Lockscreen starts while awake. There is no
+     * lockdown animation, so we should immediately hide the unlocked content.
+     *
+     * We also need Lockscreen to remain non-visible at all times if the unlocked power button
+     * gesture is triggered, since we'll be returning to Gone as if we never tried to lock in the
+     * first place.
+     */
+    private val goneToLockscreenLsVisibility =
+        powerInteractor.detailedWakefulness
+            .distinctUntilChangedBy { it.isAwake() }
+            .map { it.isAwake() && !it.powerButtonLaunchGestureTriggered }
+
     private val lockscreenVisibilityWithScenes: Flow<Boolean> =
         deviceProvisioningInteractor.get().isDeviceProvisioned.flatMapLatestConflated {
             isProvisioned ->
@@ -232,6 +255,11 @@ constructor(
                                         // visible.
                                         it.currentOverlays.contains(Overlays.Bouncer) ->
                                             flowOf(true)
+                                        // If we're transitioning to Lockscreen from Gone, special
+                                        // cases apply.
+                                        it.fromScene == Scenes.Gone &&
+                                            it.toScene == Scenes.Lockscreen ->
+                                            goneToLockscreenLsVisibility
                                         // Otherwise, default to showing the lockscreen if the
                                         // device is not yet entered, or leaving it not showing if
                                         // the device was entered. This covers two requirements:
