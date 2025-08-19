@@ -269,6 +269,11 @@ public class DisplayManagerFlags {
             DesktopExperienceFlags.ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE::isTrue
     );
 
+    private final FlagState mIsSizeOverrideForExternalDisplaysEnabled = new FlagState(
+        Flags.FLAG_ENABLE_SIZE_OVERRIDE_FOR_EXTERNAL_DISPLAYS,
+        Flags::enableSizeOverrideForExternalDisplays
+    );
+
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
@@ -524,6 +529,10 @@ public class DisplayManagerFlags {
         return mIsDisplayMirrorInLockTaskModeEnabled.isEnabled();
     }
 
+    public boolean isSizeOverrideForExternalDisplaysEnabled() {
+        return mIsSizeOverrideForExternalDisplaysEnabled.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -579,6 +588,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
         pw.println(" " + mIsSingleAppEventForModeAndFrameRateOverrideEnabled);
         pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
+        pw.println(" " + mIsSizeOverrideForExternalDisplaysEnabled);
     }
 
     private static class FlagState {
