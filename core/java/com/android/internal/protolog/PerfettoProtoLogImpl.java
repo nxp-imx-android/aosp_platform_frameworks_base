@@ -492,7 +492,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         if (isProtoEnabled()) {
             long tsNanos = SystemClock.elapsedRealtimeNanos();
             final String stacktrace;
-            if (mCollectStackTraceGroupCounts.getOrDefault(group.name(), 0) > 0) {
+            if (logLevel == LogLevel.WTF
+                    || mCollectStackTraceGroupCounts.getOrDefault(group.name(), 0) > 0) {
                 stacktrace = collectStackTrace();
             } else {
                 stacktrace = null;
