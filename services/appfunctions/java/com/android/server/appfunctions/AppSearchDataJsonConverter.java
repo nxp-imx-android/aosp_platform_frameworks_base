@@ -116,23 +116,6 @@ public class AppSearchDataJsonConverter {
     }
 
     /**
-     * Converts an array of {@link GenericDocument} objects into a {@link JSONArray}.
-     *
-     * @param documents The array of {@link GenericDocument} to convert.
-     * @return A {@link JSONArray} where each element is the JSON representation of a {@link
-     *     GenericDocument}.
-     * @throws JSONException if there is an error during JSON conversion.
-     */
-    public static JSONArray convertGenericDocumentsToJsonArray(GenericDocument[] documents)
-            throws JSONException {
-        JSONArray jsonArray = new JSONArray();
-        for (GenericDocument doc : documents) {
-            jsonArray.put(convertGenericDocumentToJson(doc));
-        }
-        return jsonArray;
-    }
-
-    /**
      * Converts a single {@link GenericDocument} into a {@link JSONObject}.
      *
      * <p>This method iterates over all properties of the given {@code GenericDocument}. All

@@ -204,12 +204,8 @@ class AppSearchDataJsonConverterTest {
             .setPropertyString("prop", "val2")
             .build()
 
-        val jsonArray =
-            AppSearchDataJsonConverter.convertGenericDocumentsToJsonArray(arrayOf(doc1, doc2))
-
-        assertThat(jsonArray.length()).isEqualTo(2)
-        assertThat(jsonArray.getJSONObject(0).getJSONArray("prop").getString(0)).isEqualTo("val1")
-        assertThat(jsonArray.getJSONObject(1).getJSONArray("prop").getString(0)).isEqualTo("val2")
+        assertThat(AppSearchDataJsonConverter.convertGenericDocumentToJson(doc1).getJSONArray("prop").getString(0)).isEqualTo("val1")
+        assertThat(AppSearchDataJsonConverter.convertGenericDocumentToJson(doc2).getJSONArray("prop").getString(0)).isEqualTo("val2")
     }
 
     @Test
