@@ -662,6 +662,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         setupBubble();
         final IBinder unfoldTransition = mock(IBinder.class);
         when(mBubbleData.getSelectedBubble()).thenReturn(mBubble);
+        when(mBubbleData.isExpanded()).thenReturn(true);
         mBubbleTransitions.notifyUnfoldTransitionStarting(unfoldTransition);
 
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
@@ -672,6 +673,18 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void notifyUnfoldTransitionStarting_bubbleBarEnabled_noSelectedBubble() {
         final IBinder unfoldTransition = mock(IBinder.class);
         when(mBubbleData.getSelectedBubble()).thenReturn(null);
+        mBubbleTransitions.notifyUnfoldTransitionStarting(unfoldTransition);
+
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    public void notifyUnfoldTransitionStarting_bubblesCollapsed_doesNotEnqueueExternal() {
+        setupBubble();
+        final IBinder unfoldTransition = mock(IBinder.class);
+        when(mBubbleData.getSelectedBubble()).thenReturn(mBubble);
+        when(mBubbleData.isExpanded()).thenReturn(false);
         mBubbleTransitions.notifyUnfoldTransitionStarting(unfoldTransition);
 
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
@@ -694,6 +707,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         setupBubble();
         final IBinder unfoldTransition = mock(IBinder.class);
         when(mBubbleData.getSelectedBubble()).thenReturn(mBubble);
+        when(mBubbleData.isExpanded()).thenReturn(true);
         mBubbleTransitions.notifyUnfoldTransitionStarting(unfoldTransition);
 
         assertThat(mTaskViewTransitions.hasPending()).isTrue();

@@ -627,6 +627,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 mLeftoversHandler.onTransitionConsumed(transition, aborted, finishT);
                 break;
             case TYPE_UNFOLD:
+                mBubbleTransitions.notifyUnfoldTransitionFinished(transition);
                 mUnfoldHandler.onTransitionConsumed(transition, aborted, finishT);
                 break;
             case TYPE_OPEN_IN_DESKTOP:
