@@ -4428,9 +4428,7 @@ class DesktopTasksController(
             wct.setBounds(task.token, inheritedTaskBounds)
         } else {
             val initialBounds = getInitialBounds(displayLayout, task, deskId)
-            if (canChangeTaskPosition(task)) {
-                wct.setBounds(task.token, initialBounds)
-            }
+            wct.setBounds(task.token, initialBounds)
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct = wct, deskId = deskId, task = task)
@@ -4520,8 +4518,14 @@ class DesktopTasksController(
             } else {
                 calculateDefaultDesktopTaskBounds(displayLayout)
             }
-
-        if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
+        var hasLayoutGravityApplied = false
+        if (!repository.isActiveTask(taskInfo.taskId)) {
+            // Only apply layout gravity to new tasks in desk.
+            val stableBounds = Rect()
+            displayLayout.getStableBoundsForDesktopMode(stableBounds)
+            hasLayoutGravityApplied = applyLayoutGravityIfNeeded(taskInfo, bounds, stableBounds)
+        }
+        if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue && !hasLayoutGravityApplied) {
             cascadeWindow(
                 context,
                 recentTasksController,
