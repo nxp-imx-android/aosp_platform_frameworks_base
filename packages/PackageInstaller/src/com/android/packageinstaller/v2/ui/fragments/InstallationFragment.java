@@ -92,7 +92,6 @@ public class InstallationFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         final InstallStage installStage = getCurrentInstallStage();
-        Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + installStage);
 
         // There is no root view here. Ok to pass null view root
         @SuppressWarnings("InflateParams")
@@ -173,6 +172,8 @@ public class InstallationFragment extends DialogFragment {
 
         // Get the current install stage
         final InstallStage installStage = getCurrentInstallStage();
+        Log.i(LOG_TAG, "updateUI " + LOG_TAG + "\n" + installStage.getStageCode());
+
         this.setCancelable(true);
 
         // When A11y is enabled, if there are no buttons in some cases E.g. installing,
