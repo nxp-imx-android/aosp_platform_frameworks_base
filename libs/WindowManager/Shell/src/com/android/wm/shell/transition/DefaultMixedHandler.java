@@ -863,7 +863,12 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             return null;
         }
-        return DefaultMixedTransition.getChangeForBubblingTask(info, mBubbleTransitions);
+        final TransitionInfo.Change change =
+                DefaultMixedTransition.getChangeForBubblingTask(info, mBubbleTransitions);
+        if (!com.android.wm.shell.Flags.fixTaskViewRotationAnimation()) {
+            return change;
+        }
+        return change != null && TransitionUtil.isOpeningMode(change.getMode()) ? change : null;
     }
 
     /**
