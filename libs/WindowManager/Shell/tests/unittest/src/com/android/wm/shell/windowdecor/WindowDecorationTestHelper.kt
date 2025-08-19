@@ -220,7 +220,6 @@ object WindowDecorationTestHelper {
                 displayExclusionRegion = Region.obtain(),
                 inSyncWithTransition = true,
                 taskSurface = null,
-                forceReinflation = false,
             )
         }
 
