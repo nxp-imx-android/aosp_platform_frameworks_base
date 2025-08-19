@@ -391,9 +391,8 @@ public class TaskStackChangeListeners {
                         }
                         if (!snapshotConsumed) {
                             thumbnail.recycleBitmap();
-                            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                                snapshot.closeBuffer();
-                            } else if (snapshot.getHardwareBuffer() != null) {
+                            if (!com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()
+                                    && snapshot.getHardwareBuffer() != null) {
                                 snapshot.getHardwareBuffer().close();
                             }
                         }

@@ -264,9 +264,9 @@ public class TaskSnapshotManager {
         }
     }
 
-    void createTracker(int taskId, TaskSnapshot snapshot) {
+    void createTrackerWithCount(int taskId, TaskSnapshot snapshot, int initialReferenceCount) {
         synchronized (sLock) {
-            mGlobalSnapshotTracker.createTracker(taskId, snapshot);
+            mGlobalSnapshotTracker.createTracker(taskId, snapshot, initialReferenceCount);
         }
     }
 
@@ -296,19 +296,24 @@ public class TaskSnapshotManager {
     private static class GlobalSnapshotTracker {
         final SparseArray<SingleTaskTracker> mSnapshotTrackers = new SparseArray<>();
 
-        void createTracker(int taskId, TaskSnapshot snapshot) {
+        void createTracker(int taskId, TaskSnapshot snapshot, int initialReferenceCount) {
             SingleTaskTracker taskTracker = mSnapshotTrackers.get(taskId);
             if (taskTracker == null) {
                 taskTracker = new SingleTaskTracker();
                 mSnapshotTrackers.put(taskId, taskTracker);
             }
-            final SnapshotTracker tracker = new SnapshotTracker(taskId, snapshot);
+            final SnapshotTracker tracker = new SnapshotTracker(taskId, snapshot,
+                    initialReferenceCount);
             taskTracker.addTracker(tracker);
             sCleaner.register(snapshot, () -> {
                 synchronized (sLock) {
                     removeTracker(tracker, true /* forceRemove */);
                 }
             });
+        }
+
+        void createTracker(int taskId, TaskSnapshot snapshot) {
+            createTracker(taskId, snapshot, 1 /* initialReferenceCount */);
         }
 
         void removeTracker(SnapshotTracker tracker, boolean forceRemove) {
@@ -443,7 +448,7 @@ public class TaskSnapshotManager {
         final WeakReference<TaskSnapshot> mSnapshot;
         int mReferenceCount;
 
-        SnapshotTracker(int taskId, TaskSnapshot snapshot) {
+        SnapshotTracker(int taskId, TaskSnapshot snapshot, int referenceCount) {
             super();
             mTaskId = taskId;
             mSnapshotId = snapshot.getId();
@@ -451,7 +456,7 @@ public class TaskSnapshotManager {
             mIsLowResolution = snapshot.isLowResolution();
             snapshot.setSnapshotTracker(this);
             mSnapshot = new WeakReference<>(snapshot);
-            mReferenceCount = 1;
+            mReferenceCount = referenceCount;
         }
         void increaseReference() {
             mReferenceCount++;
