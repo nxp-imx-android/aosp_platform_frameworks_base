@@ -671,9 +671,8 @@ static int createAshmemRegionWithData(JNIEnv* env, const void* data, size_t leng
         ALOGE("ashmem_create_region failed: %s", strerror(error));
     } else {
         if (length > 0) {
-            std::unique_ptr<base::MappedFile> mappedFile =
-                    base::MappedFile::FromFd(fd, 0, length, PROT_READ | PROT_WRITE);
-            if (mappedFile == nullptr) {
+            auto mappedFile = base::MappedFile::Create(fd, 0, length, PROT_READ | PROT_WRITE);
+            if (!mappedFile) {
                 error = errno;
                 ALOGE("mmap failed: %s", strerror(error));
             } else {

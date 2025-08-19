@@ -76,7 +76,7 @@ fail_silent:
 status_t CursorWindow::maybeInflate() {
     int ashmemFd = 0;
     void* newData = nullptr;
-    std::unique_ptr<MappedFile> newMappedFile = nullptr;
+    std::optional<MappedFile> newMappedFile;
 
     // Bail early when we can't expand any further
     if (mReadOnly || mSize == mInflatedSize) {
@@ -97,8 +97,8 @@ status_t CursorWindow::maybeInflate() {
         goto fail_silent;
     }
 
-    newMappedFile = MappedFile::FromFd(ashmemFd, 0, mInflatedSize, PROT_READ | PROT_WRITE);
-    if (newMappedFile == nullptr) {
+    newMappedFile = MappedFile::Create(ashmemFd, 0, mInflatedSize, PROT_READ | PROT_WRITE);
+    if (!newMappedFile) {
         PLOG(ERROR) << "Failed mmap";
         goto fail_silent;
     }
@@ -134,7 +134,6 @@ status_t CursorWindow::maybeInflate() {
 fail:
     LOG(ERROR) << "Failed maybeInflate";
 fail_silent:
-    newMappedFile.reset();
     ::close(ashmemFd);
     return UNKNOWN_ERROR;
 }
@@ -171,8 +170,8 @@ status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outWindow
             PLOG(ERROR) << "Failed F_DUPFD_CLOEXEC";
             goto fail_silent;
         }
-        window->mMappedFile = MappedFile::FromFd(tempFd, 0, window->mSize, PROT_READ);
-        if (window->mMappedFile == nullptr) {
+        window->mMappedFile = MappedFile::Create(tempFd, 0, window->mSize, PROT_READ);
+        if (!window->mMappedFile) {
             ::close(tempFd);
             PLOG(ERROR) << "Failed mmap";
             goto fail_silent;
