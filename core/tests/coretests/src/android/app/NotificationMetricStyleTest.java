@@ -22,10 +22,6 @@ import static android.view.View.VISIBLE;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 import android.app.Notification.Metric;
 import android.app.Notification.Metric.FixedDate;
 import android.app.Notification.Metric.FixedFloat;
@@ -45,6 +41,7 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.Chronometer;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -260,148 +257,6 @@ public class NotificationMetricStyleTest {
 
         assertThat(style1.areNotificationsVisiblyDifferent(style2)).isFalse();
         assertThat(style2.areNotificationsVisiblyDifferent(style1)).isFalse();
-    }
-
-    @Test
-    public void valueToString_timeDifferenceRunning() {
-        TimeDifference runningTimer = TimeDifference.forTimer(
-                NOW.plusSeconds(90), // Rings in 90 seconds
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:30"));
-
-        TimeDifference overrunSeconds = TimeDifference.forTimer(
-                NOW.minusSeconds(10), // Rang 10 seconds ago
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(overrunSeconds.toValueString(mContext)).isEqualTo(new ValueString("−0:10"));
-
-        TimeDifference overrunMinutes = TimeDifference.forTimer(
-                NOW.minus(2, MINUTES).minus(10, SECONDS), // Rang 2 minutes 10 seconds ago
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(overrunMinutes.toValueString(mContext)).isEqualTo(new ValueString("−2:10"));
-
-        TimeDifference overrunHours = TimeDifference.forTimer(
-                NOW.minus(3, HOURS).minus(2, MINUTES).minus(10, SECONDS), // Are you asleep?
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(overrunHours.toValueString(mContext)).isEqualTo(new ValueString("−3:02:10"));
-
-        TimeDifference runningStopwatch = TimeDifference.forStopwatch(
-                NOW.minusSeconds(120), // Started 2 minutes ago
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(runningStopwatch.toValueString(mContext)).isEqualTo(new ValueString("2:00"));
-
-        TimeDifference longRunningStopwatch = TimeDifference.forStopwatch(
-                NOW.minus(500, HOURS).minus(40, MINUTES), // Started looooong ago
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(longRunningStopwatch.toValueString(mContext)).isEqualTo(
-                new ValueString("500:40:00"));
-    }
-
-    @Test
-    public void valueToString_timeDifferenceInstant_updatesWithSystemClock() {
-        TimeDifference runningTimer = TimeDifference.forTimer(
-                NOW.plusSeconds(60), // Rings in 60 seconds
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
-
-        Notification.sElapsedRealtimeClock =
-                () -> ELAPSED_REALTIME + Duration.ofSeconds(10).toMillis();
-
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
-
-        Notification.sSystemClock = () -> NOW.plusSeconds(3);
-
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("0:57"));
-    }
-
-    @Test
-    public void valueToString_timeDifferenceElapsedRealtime_updatesWithElapsedRealtime() {
-        TimeDifference runningTimer = TimeDifference.forTimer(
-                ELAPSED_REALTIME + Duration.ofSeconds(60).toMillis(), // Rings in 60 seconds
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
-
-        Notification.sSystemClock = () -> NOW.plusSeconds(3);
-
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
-
-        Notification.sElapsedRealtimeClock =
-                () -> ELAPSED_REALTIME + Duration.ofSeconds(10).toMillis();
-
-        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("0:50"));
-    }
-
-    @Test
-    public void valueToString_timeDifferencePaused() {
-        TimeDifference pausedTimer = TimeDifference.forPausedTimer(
-                Duration.ofHours(2).plusMinutes(5),
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(pausedTimer.toValueString(mContext)).isEqualTo(
-                new ValueString("2:05:00"));
-
-        TimeDifference pausedStopWatch = TimeDifference.forPausedStopwatch(
-                Duration.ofMinutes(12),
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(pausedStopWatch.toValueString(mContext)).isEqualTo(
-                new ValueString("12:00"));
-    }
-
-    @Test
-    public void valueToString_timeDifferenceAdaptive() {
-        TimeDifference diffHms = TimeDifference.forPausedTimer(
-                Duration.ofHours(2).plusMinutes(30).plusSeconds(58),
-                TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffHms.toValueString(mContext)).isEqualTo(new ValueString("2h 30m 58s"));
-
-        TimeDifference diffH = TimeDifference.forPausedTimer(
-                Duration.ofHours(2), TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffH.toValueString(mContext)).isEqualTo(new ValueString("2h"));
-
-        TimeDifference diffHm = TimeDifference.forPausedTimer(
-                Duration.ofHours(2).plusMinutes(30), TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffHm.toValueString(mContext)).isEqualTo(new ValueString("2h 30m"));
-
-        TimeDifference diffHs = TimeDifference.forPausedTimer(
-                Duration.ofHours(2).plusSeconds(10), TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffHs.toValueString(mContext)).isEqualTo(new ValueString("2h 10s"));
-
-        TimeDifference diffMs = TimeDifference.forPausedTimer(
-                Duration.ofMinutes(30).plusSeconds(58), TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffMs.toValueString(mContext)).isEqualTo(new ValueString("30m 58s"));
-
-        TimeDifference diffZero = TimeDifference.forPausedTimer(
-                Duration.ofSeconds(0), TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffZero.toValueString(mContext)).isEqualTo(new ValueString("0s"));
-
-        TimeDifference diffNegative = TimeDifference.forPausedTimer(
-                Duration.ZERO.minusHours(2).minusMinutes(30).minusSeconds(58),
-                TimeDifference.FORMAT_ADAPTIVE);
-        expect.that(diffNegative.toValueString(mContext)).isEqualTo(new ValueString("−2h 30m 58s"));
-    }
-
-    @Test
-    public void valueToString_timeDifferenceChronometer() {
-        TimeDifference formatAutoAboveHour = TimeDifference.forPausedTimer(
-                Duration.ofHours(2).plusMinutes(30),
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(formatAutoAboveHour.toValueString(mContext)).isEqualTo(
-                new ValueString("2:30:00"));
-
-        TimeDifference formatAutoBelowHour = TimeDifference.forPausedTimer(
-                Duration.ofMinutes(8),
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(formatAutoBelowHour.toValueString(mContext)).isEqualTo(
-                new ValueString("8:00"));
-
-        TimeDifference formatChrono = TimeDifference.forPausedTimer(
-                Duration.ofHours(2).plusMinutes(30),
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(formatChrono.toValueString(mContext)).isEqualTo(new ValueString("2:30:00"));
-
-        TimeDifference pausedNegative = TimeDifference.forPausedTimer(
-                Duration.ZERO.minusHours(2).minusMinutes(30).minusSeconds(10),
-                TimeDifference.FORMAT_CHRONOMETER);
-        expect.that(pausedNegative.toValueString(mContext)).isEqualTo(
-                new ValueString("−2:30:10"));
     }
 
     @Test
@@ -677,6 +532,60 @@ public class NotificationMetricStyleTest {
         assertThat(((TextView) container.findViewById(R.id.metric_value_1)).getText().toString())
                 .isEqualTo("273");
         assertThat(container.findViewById(R.id.metric_unit_1).getVisibility()).isEqualTo(GONE);
+    }
+
+    @Test
+    public void makeContentView_pausedTimer_showsDuration() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(
+                                TimeDifference.forPausedTimer(Duration.ofMinutes(8),
+                                        TimeDifference.FORMAT_CHRONOMETER),
+                                "Paused timer")));
+
+        RemoteViews remoteViews = n.getStyle().makeExpandedContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+        Chronometer chronometer = container.findViewById(R.id.metric_chronometer_0);
+
+        assertThat(chronometer.getText()).isEqualTo("08:00");
+        assertThat(chronometer.isCountDown()).isTrue();
+    }
+
+    @Test
+    public void makeContentView_pausedOverrunTimer_showsNegativeDuration() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(
+                                TimeDifference.forPausedTimer(Duration.ofSeconds(-5),
+                                        TimeDifference.FORMAT_CHRONOMETER),
+                                "Paused overrun timer")));
+
+        RemoteViews remoteViews = n.getStyle().makeExpandedContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+        Chronometer chronometer = container.findViewById(R.id.metric_chronometer_0);
+
+        assertThat(chronometer.getText()).isEqualTo("−00:05");
+        assertThat(chronometer.isCountDown()).isTrue();
+    }
+
+    @Test
+    public void makeContentView_pausedStopwatch_showsDuration() {
+        Notification.Builder n = new Notification.Builder(mContext, "channel")
+                .setStyle(new MetricStyle()
+                        .addMetric(new Metric(
+                                TimeDifference.forPausedStopwatch(Duration.ofSeconds(10),
+                                        TimeDifference.FORMAT_CHRONOMETER),
+                                "Paused stopwatch")));
+
+        RemoteViews remoteViews = n.getStyle().makeExpandedContentView();
+        FrameLayout container = new FrameLayout(mContext);
+        container.addView(remoteViews.apply(mContext, container));
+        Chronometer chronometer = container.findViewById(R.id.metric_chronometer_0);
+
+        assertThat(chronometer.getText()).isEqualTo("00:10");
+        assertThat(chronometer.isCountDown()).isFalse();
     }
 
     @Test

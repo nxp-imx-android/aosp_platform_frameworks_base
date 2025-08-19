@@ -77,6 +77,7 @@ import androidx.annotation.NonNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -258,6 +259,35 @@ public class RemoteViewsSerializers {
         }
 
         return Instant.ofEpochSecond(seconds, nanos);
+    }
+
+    /** Write {@link Duration} to proto. */
+    public static void writeDurationToProto(@NonNull ProtoOutputStream out,
+            @NonNull Duration duration) {
+        out.write(RemoteViewsProto.Duration.SECONDS, duration.getSeconds());
+        out.write(RemoteViewsProto.Duration.NANOS, duration.getNano());
+    }
+
+    /** Create {@link Duration} from proto. */
+    public static Duration createDurationFromProto(@NonNull ProtoInputStream in)
+            throws IOException {
+        long seconds = 0;
+        int nanos = 0;
+        while (in.nextField() != NO_MORE_FIELDS) {
+            switch (in.getFieldNumber()) {
+                case (int) RemoteViewsProto.Duration.SECONDS:
+                    seconds = in.readLong(RemoteViewsProto.Duration.SECONDS);
+                    break;
+                case (int) RemoteViewsProto.Duration.NANOS:
+                    nanos = in.readInt(RemoteViewsProto.Duration.NANOS);
+                    break;
+                default:
+                    Log.w(TAG, "Unhandled field while reading Duration proto!\n"
+                            + ProtoUtils.currentFieldToString(in));
+            }
+        }
+
+        return Duration.ofSeconds(seconds, nanos);
     }
 
     public static void writeCharSequenceToProto(@NonNull ProtoOutputStream out,

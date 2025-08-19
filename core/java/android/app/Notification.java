@@ -17,10 +17,10 @@
 package android.app;
 
 import static android.annotation.Dimension.DP;
+import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
-import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.apiMetricStyle;
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
@@ -35,7 +35,6 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import static com.android.internal.util.Preconditions.checkArgument;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.ColorInt;
@@ -82,9 +81,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.icu.number.NumberFormatter;
 import android.icu.number.Precision;
-import android.icu.text.MeasureFormat;
-import android.icu.util.Measure;
-import android.icu.util.MeasureUnit;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.PlayerBase;
@@ -11853,8 +11849,7 @@ public class Notification implements Parcelable
                         contentView.setTextViewText(metricView.unitId(), valueString.subtext());
                     }
 
-                    if (metricValue instanceof Metric.TimeDifference timeDifference
-                            && timeDifference.getPausedDuration() == null) {
+                    if (metricValue instanceof Metric.TimeDifference timeDifference) {
                         contentView.setViewVisibility(metricView.textValueId(), View.GONE);
                         contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
                         contentView.setChronometerCountDown(
@@ -11868,9 +11863,13 @@ public class Notification implements Parcelable
                             contentView.setChronometer(metricView.chronometerId(),
                                     timeDifference.getZeroElapsedRealtime(), /* format= */ null,
                                     /* started= */ true);
+                        } else if (timeDifference.getPausedDuration() != null) {
+                            contentView.setChronometerPaused(metricView.chronometerId(),
+                                    timeDifference.getPausedDuration());
                         } else {
                             throw new IllegalStateException(
-                                    "No zeroTime for running TimeDifference in " + metric);
+                                    "No zeroTime or pausedDuration for running TimeDifference in "
+                                            + metric);
                         }
                         // TODO(b/434910979): implement format support for Chronometer.
                     } else {
@@ -12057,6 +12056,8 @@ public class Notification implements Parcelable
                 public ValueString(String text) {
                     this(text, null);
                 }
+
+                private static final ValueString EMPTY = new ValueString("", null);
             }
 
             /**
@@ -12357,73 +12358,8 @@ public class Notification implements Parcelable
             @NonNull
             @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
-                Duration duration = getCurrentDuration();
-                duration = duration.truncatedTo(SECONDS); // ms are ignored and we don't want -0:00
-
-                Duration absDuration = duration.abs();
-                Measure hours = new Measure(absDuration.toHours(), MeasureUnit.HOUR);
-                Measure minutes = new Measure(absDuration.toMinutesPart(), MeasureUnit.MINUTE);
-                Measure seconds = new Measure(absDuration.toSecondsPart(), MeasureUnit.SECOND);
-
-                String absText = formatAbsoluteDuration(mFormat, hours, minutes, seconds);
-                String text = duration.isNegative()
-                        ? context.getString(R.string.negative_duration, absText)
-                        : absText;
-
-                return new ValueString(text, null);
-            }
-
-            private Duration getCurrentDuration() {
-                if (mPausedDuration != null) {
-                    return mPausedDuration;
-                } else if (mZeroTime != null) {
-                    // If the timer/stopwatch is running we likely want a Chronometer view, so this
-                    // path is mostly for debugging/completeness.
-                    Instant now = getSystemClock().instant();
-                    if (isStopwatch()) {
-                        return Duration.between(mZeroTime, now);
-                    } else {
-                        return Duration.between(now, mZeroTime);
-                    }
-                } else if (mZeroElapsedRealtime != null) {
-                    // If the timer/stopwatch is running we likely want a Chronometer view, so this
-                    // path is mostly for debugging/completeness.
-                    long elapsedRealtimeNow = getElapsedRealtimeClock().getAsLong();
-                    if (isStopwatch()) {
-                        return Duration.ofMillis(elapsedRealtimeNow - mZeroElapsedRealtime);
-                    } else {
-                        return Duration.ofMillis(mZeroElapsedRealtime - elapsedRealtimeNow);
-                    }
-                } else {
-                    throw new IllegalStateException(
-                            "None of mPausedDuration, mZeroTime, mZeroElapsedRealtime set!");
-                }
-            }
-
-            private static String formatAbsoluteDuration(@Format int format, Measure hours,
-                    Measure minutes, Measure seconds) {
-                if (format == FORMAT_ADAPTIVE) {
-                    MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
-                            MeasureFormat.FormatWidth.NARROW);
-                    ArrayList<Measure> partsList = new ArrayList<>();
-                    if (hours.getNumber().intValue() != 0) {
-                        partsList.add(hours);
-                    }
-                    if (minutes.getNumber().intValue() != 0) {
-                        partsList.add(minutes);
-                    }
-                    if (seconds.getNumber().intValue() != 0 || partsList.isEmpty()) {
-                        partsList.add(seconds);
-                    }
-                    return formatter.formatMeasures(partsList.toArray(new Measure[0]));
-                } else {
-                    // FORMAT_AUTOMATIC / FORMAT_CHRONOMETER
-                    MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
-                            MeasureFormat.FormatWidth.NUMERIC);
-                    return hours.getNumber().intValue() != 0
-                            ? formatter.formatMeasures(hours, minutes, seconds)
-                            : formatter.formatMeasures(minutes, seconds);
-                }
+                // Not used; Chronometer view will take charge of formatting.
+                return ValueString.EMPTY;
             }
         }
 
