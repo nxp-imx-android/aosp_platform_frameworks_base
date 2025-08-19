@@ -2998,6 +2998,20 @@ class MediaRouter2ServiceImpl {
             }
         }
 
+        /**
+         * Notifies the corresponding manager that {@link RouteListingPreference} has changed for
+         * the given {@code packageName}.
+         */
+        public void notifyRouteListingPreferenceChange(
+                String routerPackageName, RouteListingPreference routeListingPreference) {
+            try {
+                mManager.notifyRouteListingPreferenceChange(
+                        routerPackageName, routeListingPreference);
+            } catch (RemoteException ex) {
+                logRemoteException("notifyRouteListingPreferenceChange", ex);
+            }
+        }
+
         public void notifyDeviceSuggestionsUpdated(
                 String routerPackageName,
                 String suggestingPackageName,
@@ -4049,26 +4063,12 @@ class MediaRouter2ServiceImpl {
 
         private void notifyRouteListingPreferenceChangeToManagers(
                 String routerPackageName, @Nullable RouteListingPreference routeListingPreference) {
-            List<IMediaRouter2Manager> managers = new ArrayList<>();
             synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
-                    managers.add(managerRecord.mManager);
-                }
-            }
-            for (IMediaRouter2Manager manager : managers) {
-                try {
-                    manager.notifyRouteListingPreferenceChange(
+                    managerRecord.notifyRouteListingPreferenceChange(
                             routerPackageName, routeListingPreference);
-                } catch (RemoteException ex) {
-                    Slog.w(
-                            TAG,
-                            "Failed to notify route listing preference changed."
-                                    + " Manager probably died.",
-                            ex);
                 }
             }
-            // TODO(b/238178508): In order to support privileged media router instances, we also
-            //    need to update routers other than the one making the update.
         }
 
         private void notifyDeviceSuggestionsUpdatedOnHandler(
