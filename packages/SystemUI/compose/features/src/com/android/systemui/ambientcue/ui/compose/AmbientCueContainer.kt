@@ -45,7 +45,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.android.compose.windowsizeclass.calculateWindowSizeClass
-import com.android.systemui.ambientcue.ui.utils.AmbientCueAnimationState
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.PillStyleViewModel
@@ -58,7 +57,6 @@ fun AmbientCueContainer(
     ambientCueViewModelFactory: AmbientCueViewModel.Factory,
     onShouldInterceptTouches: (Boolean, Rect?) -> Unit,
     modifier: Modifier = Modifier,
-    onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit,
 ) {
     val viewModel = rememberViewModel("AmbientCueContainer") { ambientCueViewModelFactory.create() }
 
@@ -91,7 +89,6 @@ fun AmbientCueContainer(
                     expanded = expanded,
                     onShouldInterceptTouches = onShouldInterceptTouches,
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    onAnimationStateChange = onAnimationStateChange,
                 )
             }
             is PillStyleViewModel.ShortPillStyle -> {
@@ -109,7 +106,6 @@ fun AmbientCueContainer(
                         } else {
                             Modifier
                         },
-                    onAnimationStateChange = onAnimationStateChange,
                 )
             }
             is PillStyleViewModel.Uninitialized -> {}
@@ -126,7 +122,6 @@ private fun TaskBarAnd3ButtonAmbientCue(
     pillPositionInWindow: Rect?,
     onShouldInterceptTouches: (Boolean, Rect?) -> Unit,
     modifier: Modifier = Modifier,
-    onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit,
 ) {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
@@ -221,7 +216,6 @@ private fun TaskBarAnd3ButtonAmbientCue(
             },
         onClick = { viewModel.expand() },
         onCloseClick = { viewModel.hide() },
-        onAnimationStateChange = onAnimationStateChange,
     )
 }
 
@@ -233,7 +227,6 @@ private fun NavBarAmbientCue(
     expanded: Boolean,
     onShouldInterceptTouches: (Boolean, Rect?) -> Unit,
     modifier: Modifier = Modifier,
-    onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit,
 ) {
     val windowWidthSizeClass = calculateWindowSizeClass().widthSizeClass
 
@@ -278,7 +271,6 @@ private fun NavBarAmbientCue(
         },
         onCloseClick = { viewModel.hide() },
         onCloseEducation = { viewModel.disableFirstTimeHint() },
-        onAnimationStateChange = onAnimationStateChange,
     )
 }
 
