@@ -24,32 +24,36 @@ import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureComponentInteractor
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
-import com.android.systemui.screencapture.ui.ScreenCaptureUi
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @SysUISingleton
-class ScreenCaptureUiStartable
+class ScreenCaptureStartable
 @Inject
 constructor(
     @Application private val appScope: CoroutineScope,
+    private val screenCaptureComponentInteractor: ScreenCaptureComponentInteractor,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-    private val screenCaptureUiFactory: ScreenCaptureUi.Factory,
     private val focusedDisplayRepository: FocusedDisplayRepository,
     private val displayRepository: DisplayRepository,
 ) : CoreStartable {
 
     override fun start() {
+        appScope.launch { screenCaptureComponentInteractor.initialize() }
         ScreenCaptureType.entries.forEach { observeUiState(it) }
     }
 
     private fun observeUiState(type: ScreenCaptureType) {
-        screenCaptureUiInteractor
-            .uiState(type)
-            .onEach { state ->
+        combine(
+                screenCaptureUiInteractor.uiState(type),
+                screenCaptureComponentInteractor.screenCaptureComponent(type).filterNotNull(),
+            ) { state, screenCaptureComponent ->
                 if (state is ScreenCaptureUiState.Visible) {
                     val displayId = focusedDisplayRepository.focusedDisplayId.value
                     val display = displayRepository.getDisplay(displayId)
@@ -58,7 +62,8 @@ constructor(
                         Log.e("ScreenCapture", "Couldn't find display for id=$displayId")
                         screenCaptureUiInteractor.hide(type)
                     } else {
-                        screenCaptureUiFactory
+                        screenCaptureComponent
+                            .screenCaptureUiFactory()
                             .create(type = state.parameters.screenCaptureType, display = display)
                             .attachWindow()
                     }

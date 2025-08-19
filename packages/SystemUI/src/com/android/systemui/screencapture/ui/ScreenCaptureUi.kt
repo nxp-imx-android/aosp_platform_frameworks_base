@@ -155,7 +155,6 @@ constructor(
                             val component =
                                 remember(parameters, coroutineScope) {
                                     builder
-                                        .setParameters(parameters)
                                         .setScope(coroutineScope)
                                         .setDisplay(display)
                                         .setWindow(window)
