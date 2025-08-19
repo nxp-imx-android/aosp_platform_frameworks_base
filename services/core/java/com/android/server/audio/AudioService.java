@@ -6724,22 +6724,33 @@ public class AudioService extends IAudioService.Stub
                 final int ringerModeExternal = getRingerModeExternal();
                 if (external) {
                     setRingerModeExt(ringerMode);
+                    int delegateModified = ringerMode;
                     if (mRingerModeDelegate != null) {
-                        ringerMode = mRingerModeDelegate.onSetRingerModeExternal(ringerModeExternal,
-                                ringerMode, caller, ringerModeInternal, mVolumePolicy);
+                        delegateModified =
+                                mRingerModeDelegate.onSetRingerModeExternal(ringerModeExternal,
+                                        ringerMode, caller, ringerModeInternal, mVolumePolicy);
                     }
-                    if (ringerMode != ringerModeInternal) {
-                        setRingerModeInt(ringerMode, true /*persist*/);
+                    if (delegateModified != ringerModeInternal) {
+                        setRingerModeInt(delegateModified, true /*persist*/);
                     }
+                    sVolumeLogger.enqueue(new EventLogger.StringEvent("setRingerMode external to "
+                                + ringerMode + ", caller=" + caller
+                                + ", delegateModified=" + delegateModified));
+
                 } else /*internal*/ {
                     if (ringerMode != ringerModeInternal) {
                         setRingerModeInt(ringerMode, true /*persist*/);
                     }
+                    int delegateModified = ringerMode;
                     if (mRingerModeDelegate != null) {
-                        ringerMode = mRingerModeDelegate.onSetRingerModeInternal(ringerModeInternal,
-                                ringerMode, caller, ringerModeExternal, mVolumePolicy);
+                        delegateModified =
+                                mRingerModeDelegate.onSetRingerModeInternal(ringerModeInternal,
+                                        ringerMode, caller, ringerModeExternal, mVolumePolicy);
                     }
-                    setRingerModeExt(ringerMode);
+                    sVolumeLogger.enqueue(new EventLogger.StringEvent("setRingerMode internal to "
+                                + ringerMode + ", caller=" + caller
+                                + ", delegateModified=" + delegateModified));
+                    setRingerModeExt(delegateModified);
                 }
             }
         } finally {

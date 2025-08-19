@@ -2605,4 +2605,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Palieskite, kad peržiūrėtumėte patarimus, kaip pagerinti atrakinimo funkciją"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Nemirksi"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Ilgai paspauskite maitinimo mygtuką, kad išjungtumėte televizorių"</string>
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sistemos šaltinių įspėjimai"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Piktnaudžiavimas šaltiniais"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Programa „<xliff:g id="APP_NAME">%1$s</xliff:g>“ naudoja per daug šaltinių."</string>
 </resources>

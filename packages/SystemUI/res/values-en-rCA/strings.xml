@@ -148,9 +148,18 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"Delete"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Take screenshot of entire screen"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Take screenshot of selected area"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Record"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Share"</string>
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Take screenshot of window"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Record window"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Take screenshot of selected area"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Record selected area"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Take screenshot of entire screen"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Record entire screen"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Screen capture settings"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sharing screen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Sharing content"</string>
@@ -1117,10 +1126,13 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> of <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Turn on <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is the keyboard shortcut to use <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"This allows you to quickly zoom in on the screen to make content larger."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> lets you control your device hands-free."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Turn on"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> keyboard shortcut turned on"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is the keyboard shortcut to use <xliff:g id="ID_3">^3</xliff:g>. This allows you to quickly zoom in on the screen to make content larger. Press Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> and \"+\" or \"-\" to adjust zoom."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Turn off shortcut"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Keep on"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Shutting down…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"See care steps"</string>

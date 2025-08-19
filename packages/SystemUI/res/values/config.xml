@@ -1178,6 +1178,17 @@
     <!-- Indicates post recording flow to use flat bottom bar to save vertical space -->
     <bool name="screen_record_post_recording_flat_bottom_bar">false</bool>
 
+    <!--
+    Whether to enable use brightness mirror in the QuickSettings shade overlay.
+
+    By default, when a user interacts with the brightness slider, the rest of the
+    Quick Settings shade overlay fades out to reduce distraction.
+    -If true (default), the Quick Settings shade overlay will fade out when the brightness slider
+     is used.
+    -If false, the Quick Settings shade overlay will remain visible during brightness adjustments.
+    -->
+    <bool name="config_useBrightnessMirrorInOverlay">true</bool>
+
     <!-- List of allowed tiles for headless system user's quick settings.
 
          Some example values are 'alarm', 'internet', 'bt' (bluetooth),

@@ -312,6 +312,7 @@ public class ActivityOptionsTest {
                 case "android:activity.animAbortListener": // KEY_ANIM_ABORT_LISTENER
                 case "android.activity.allowPassThroughOnTouchOutside":
                     // KEY_ALLOW_PASS_THROUGH_ON_TOUCH_OUTSIDE
+                case "android.activity.windowingLayer": // KEY_WINDOWING_LAYER
                     // Existing keys
 
                     break;

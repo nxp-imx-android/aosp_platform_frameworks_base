@@ -68,6 +68,7 @@ import com.android.systemui.desktop.dagger.DesktopModule;
 import com.android.systemui.deviceentry.DeviceEntryModule;
 import com.android.systemui.display.DisplayModule;
 import com.android.systemui.doze.dagger.DozeComponent;
+import com.android.systemui.doze.dagger.RootDozeModule;
 import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.FlagDependenciesModule;
@@ -247,6 +248,7 @@ import javax.inject.Named;
         DeviceEntryModule.class,
         DisableFlagsModule.class,
         DisplayModule.class,
+        RootDozeModule.class,
         DreamModule.class,
         EventLogModule.class,
         FalsingModule.class,
@@ -351,6 +353,7 @@ public abstract class SystemUIModule {
     @Binds
     public abstract NotificationRowBinder bindNotificationRowBinder(
             NotificationRowBinderImpl notificationRowBinder);
+
 
     @SysUISingleton
     @Provides

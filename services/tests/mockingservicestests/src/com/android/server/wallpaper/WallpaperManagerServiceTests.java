@@ -507,7 +507,6 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testSaveLoadSettings_withoutWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
@@ -547,7 +546,6 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testSaveLoadSettings_withWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);

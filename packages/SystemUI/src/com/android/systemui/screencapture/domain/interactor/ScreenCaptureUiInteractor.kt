@@ -21,8 +21,8 @@ import com.android.dream.lowlight.dagger.qualifiers.Application
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.ScreenCaptureUiRepository
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -53,7 +53,7 @@ constructor(
 
     fun uiState(type: ScreenCaptureType): Flow<ScreenCaptureUiState> = repository.uiState(type)
 
-    fun show(parameters: ScreenCaptureActivityIntentParameters) {
+    fun show(parameters: ScreenCaptureUiParameters) {
         repository.updateStateForType(type = parameters.screenCaptureType) {
             if (it is ScreenCaptureUiState.Visible) {
                 return@updateStateForType it

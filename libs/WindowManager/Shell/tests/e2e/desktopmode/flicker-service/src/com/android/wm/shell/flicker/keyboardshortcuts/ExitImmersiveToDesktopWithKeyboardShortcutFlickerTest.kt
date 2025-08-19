@@ -33,7 +33,6 @@ import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.flicker.utils.resizeVeilKeepsDecreasingInSize
 import com.android.wm.shell.scenarios.ExitImmersiveToDesktopWithKeyboardShortcut
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,7 +70,7 @@ class ExitImmersiveToDesktopWithKeyboardShortcutFlickerTest(
     val testSetupRule =
         Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
     val scenario = ExitImmersiveToDesktopWithKeyboardShortcutScenario()
-    private val gameApp = scenario.gameApp
+    private val immersiveApp = scenario.immersiveApp
     private val navBarMatcher: IComponentNameMatcher = ComponentNameMatcher.NAV_BAR
     private val statusBarMatcher: IComponentNameMatcher = ComponentNameMatcher.STATUS_BAR
 
@@ -83,20 +82,19 @@ class ExitImmersiveToDesktopWithKeyboardShortcutFlickerTest(
         }
 
     @Test
-    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(gameApp)
+    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(immersiveApp)
 
     @Test
-    fun appWindowKeepVisible() = flicker.appWindowKeepVisible(gameApp)
+    fun appWindowKeepVisible() = flicker.appWindowKeepVisible(immersiveApp)
 
     @Test
     fun resizeVeilKeepsDecreasingInSize() =
-        flicker.resizeVeilKeepsDecreasingInSize(gameApp)
+        flicker.resizeVeilKeepsDecreasingInSize(immersiveApp)
 
     @Test
     fun statusBarLayerBecomesVisible() = flicker.layerBecomesVisible(statusBarMatcher)
 
     @Test
-    @Ignore("TODO: Reinstate this test once b/435359906 is fixed")
     fun taskBarLayerBecomesVisible() = flicker.layerBecomesVisible(navBarMatcher)
 
     companion object {

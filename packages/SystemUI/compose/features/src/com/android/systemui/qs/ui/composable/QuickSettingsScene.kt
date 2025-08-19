@@ -58,10 +58,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.lifecycle.DisposableEffectWithLifecycle
@@ -306,10 +306,8 @@ private fun ContentScope.QuickSettingsContent(
         // When animating into the scene, we don't want it to be able to scroll, as it could mess
         // up with the expansion animation.
         val isScrollable =
-            when (val state = layoutState.transitionState) {
-                is TransitionState.Idle -> true
-                is TransitionState.Transition -> state.fromContent == Scenes.QuickSettings
-            }
+            layoutState.isIdle(Scenes.QuickSettings) ||
+                layoutState.isTransitioning(from = Scenes.QuickSettings)
 
         LaunchedEffectWithLifecycle(isScrollable) {
             if (!isScrollable) {
@@ -370,7 +368,7 @@ private fun ContentScope.QuickSettingsContent(
         HeadsUpNotificationSpace(
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
-            useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState.transitionState) },
+            useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState) },
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .navigationBarsPadding()
@@ -408,6 +406,6 @@ private fun ContentScope.QuickSettingsContent(
     }
 }
 
-private fun shouldUseQuickSettingsHunBounds(state: TransitionState): Boolean {
-    return state is TransitionState.Idle && state.currentScene == Scenes.QuickSettings
+private fun shouldUseQuickSettingsHunBounds(layoutState: SceneTransitionLayoutState): Boolean {
+    return layoutState.isIdle(Scenes.QuickSettings)
 }

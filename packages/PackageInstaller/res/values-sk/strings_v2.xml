@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Chcete odinštalovať aktualizácie aplikácie?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Chcete odinštalovať aktualizácie aplikácie pre všetkých používateľov?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Chcete túto aplikáciu odinštalovať pre všetkých používateľov?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Chcete túto aplikáciu odinštalovať pre používateľa <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplikácia sa nenašla"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Táto aplikácia sa nedá odinštalovať"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplikácia nebola odinštalovaná"</string>
     <string name="title_archive" msgid="2876455228073419830">"Chcete túto aplikáciu archivovať?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Chcete túto aplikáciu archivovať pre všetkých používateľov?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Chcete túto aplikáciu archivovať pre používateľa <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Chcete túto aplikáciu obnoviť?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Vyžaduje sa akcia"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nedostatok úložiska"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Ak chcete túto aplikáciu obnoviť, musíte si nainštalovať <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Pri pokuse o obnovenie tejto aplikácie sa vyskytol problém"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je súčasťou nasledujúcej aplikácie: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Táto aplikácia bola zablokovaná. Inštalovať sa môžu iba aplikácie od overených vývojárov, aby sa zaistila bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt; &lt;a href=&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Táto aplikácia nebola aktualizovaná. Inštalovať sa môžu iba aktualizácie od overených vývojárov, aby sa zaistila bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt; &lt;a href=&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Pri overovaní vývojára tejto aplikácie sa vyskytol problém. Aplikácie od neoverených vývojárov môžu byť nebezpečné, preto aplikácia nebola nainštalovaná.&lt;/p&gt; &lt;a href=&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Pri overovaní vývojára tejto aplikácie sa vyskytol problém. Aktualizácie od neoverených vývojárov môžu byť nebezpečné, preto aplikácia nebola aktualizovaná.&lt;/p&gt; &lt;a href=&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Táto aplikácia bola zablokovaná, pretože sa vyskytol problém s overením vývojára. Inštalovať sa môžu iba aplikácie od overených vývojárov, aby sa zaistila bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt; &lt;a href=&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Táto aplikácia nebola aktualizovaná, pretože sa vyskytol problém s overením vývojára. Inštalovať sa môžu iba aktualizácie od overených vývojárov, aby sa zaistila bezpečnosť vášho zariadenia aj údajov.&lt;/p&gt; &lt;a href=&gt;Ďalšie informácie o overení vývojárov&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ak aplikáciu nainštalujete bez overenia, pamätajte, že aplikácie od neoverených vývojárov môžu ohroziť vaše zariadenie aj údaje."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ak aktualizujete bez overenia, pamätajte, že aktualizácie od neoverených vývojárov môžu ohroziť vaše zariadenie aj údaje."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Vývojár aplikácie nie je overený"</string>

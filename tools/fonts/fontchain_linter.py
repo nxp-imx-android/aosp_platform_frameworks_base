@@ -541,7 +541,7 @@ def check_emoji_defaults(default_emoji):
 def parse_unicode_seq(chars):
     if ' ' in chars:  # character sequence
         sequence = [int(ch, 16) for ch in chars.split(' ')]
-        additions = [tuple(sequence)]
+        additions = [tuple([ch for ch in sequence if ch != EMOJI_VS])]
     elif '..' in chars:  # character range
         char_start, char_end = chars.split('..')
         char_start = int(char_start, 16)
@@ -648,6 +648,9 @@ def parse_ucd(ucd_path):
         path.join(ucd_path, 'DerivedAge.txt'))
     _age_by_chars.update(parse_sequence_age(
         path.join(ucd_path, 'emoji-sequences.txt')))
+    _age_by_chars.update(parse_sequence_age(
+        path.join(ucd_path, 'emoji-zwj-sequences.txt')
+    ))
     sequences = parse_emoji_variants(
         path.join(ucd_path, 'emoji-variation-sequences.txt'))
     _text_variation_sequences, _emoji_variation_sequences = sequences
@@ -762,12 +765,10 @@ def compute_expected_emoji():
     _emoji_sequences[EMPTY_FLAG_SEQUENCE] = 'Emoji_Tag_Sequence'
 
     for sequence in _emoji_sequences.keys():
-        sequence = tuple(ch for ch in sequence if ch != EMOJI_VS)
         all_sequences.add(sequence)
         sequence_pieces.update(sequence)
 
     for sequence in adjusted_emoji_zwj_sequences.keys():
-        sequence = tuple(ch for ch in sequence if ch != EMOJI_VS)
         all_sequences.add(sequence)
         sequence_pieces.update(sequence)
 

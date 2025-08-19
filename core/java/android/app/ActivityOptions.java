@@ -498,6 +498,12 @@ public class ActivityOptions extends ComponentOptions {
      */
     public static final String KEY_LAUNCH_COOKIE = "android.activity.launchCookie";
 
+    /**
+     * @see #setWindowingLayer
+     * @hide
+     */
+    public static final String KEY_WINDOWING_LAYER = "android.activity.windowingLayer";
+
     /** @hide */
     public static final int ANIM_UNDEFINED = -1;
     /** @hide */
@@ -530,6 +536,36 @@ public class ActivityOptions extends ComponentOptions {
     public static final int ANIM_REMOTE_ANIMATION = 13;
     /** @hide */
     public static final int ANIM_FROM_STYLE = 14;
+
+    /**
+     * The windowing layer is not specified. The system will use a default layer.
+     * @hide
+     */
+    public static final int WINDOWING_LAYER_UNDEFINED = 0;
+    /**
+     * The windowing layer for normal application windows.
+     * @hide
+     */
+    public static final int WINDOWING_LAYER_NORMAL_APP = 1;
+    /**
+     * The windowing layer for pinned windows, these windows are typically displayed above normal
+     * application windows.
+     * @hide
+     */
+    public static final int WINDOWING_LAYER_PINNED = 2;
+
+    /**
+     * Defines the windowing layer for an activity, which can affect its Z-ordering.
+     * @hide
+     */
+    @IntDef(prefix = { "WINDOWING_LAYER_" }, value = {
+            WINDOWING_LAYER_UNDEFINED,
+            WINDOWING_LAYER_NORMAL_APP,
+            WINDOWING_LAYER_PINNED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface WindowingLayer {
+    }
 
     private String mPackageName;
     private Rect mLaunchBounds;
@@ -597,6 +633,8 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mFlexibleLaunchSize = false;
     private boolean mDisableStartingWindow;
     private boolean mAllowPassThroughOnTouchOutside;
+    @WindowingLayer
+    private int mWindowingLayer = WINDOWING_LAYER_UNDEFINED;
 
     /**
      * Create an ActivityOptions specifying a custom animation to run when
@@ -1444,6 +1482,7 @@ public class ActivityOptions extends ComponentOptions {
         mAllowPassThroughOnTouchOutside = opts.getBoolean(KEY_ALLOW_PASS_THROUGH_ON_TOUCH_OUTSIDE);
         mAnimationAbortListener = IRemoteCallback.Stub.asInterface(
                 opts.getBinder(KEY_ANIM_ABORT_LISTENER));
+        mWindowingLayer = opts.getInt(KEY_WINDOWING_LAYER);
     }
 
     /**
@@ -2107,6 +2146,31 @@ public class ActivityOptions extends ComponentOptions {
     }
 
     /**
+     * Sets the windowing layer for the activity. This can be used to affect the Z-ordering
+     * of the activity's window relative to other windows.
+     *
+     * <p>
+     * The new activity will be displayed at the requested layer if possible.
+     * This can only be used in conjunction with {@link Intent.FLAG_ACTIVITY_NEW_TASK}.
+     * Also, setting {@link Intent.FLAG_ACTIVITY_MULTIPLE_TASK} is required if you
+     * want a new instance of an existing activity to be created.
+     *
+     * @param windowingLayer The windowing layer to set.
+     * @return {@code this} {@link ActivityOptions} instance for chaining.
+     * @hide
+     */
+    public ActivityOptions setWindowingLayer(@WindowingLayer int windowingLayer) {
+        mWindowingLayer = windowingLayer;
+        return this;
+    }
+
+    /** @hide */
+    @WindowingLayer
+    public int getWindowingLayer() {
+        return mWindowingLayer;
+    }
+
+    /**
      * An opaque token to use with {@link #setLaunchCookie(LaunchCookie)}.
      *
      * @hide
@@ -2655,6 +2719,9 @@ public class ActivityOptions extends ComponentOptions {
         }
         b.putBinder(KEY_ANIM_ABORT_LISTENER,
                 mAnimationAbortListener != null ? mAnimationAbortListener.asBinder() : null);
+        if (mWindowingLayer != WINDOWING_LAYER_UNDEFINED) {
+            b.putInt(KEY_WINDOWING_LAYER, mWindowingLayer);
+        }
         return b;
     }
 

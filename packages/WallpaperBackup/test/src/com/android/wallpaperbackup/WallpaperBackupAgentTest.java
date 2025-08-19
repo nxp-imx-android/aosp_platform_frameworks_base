@@ -16,7 +16,6 @@
 
 package com.android.wallpaperbackup;
 
-import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
 import static android.app.Flags.fixWallpaperCropsOnRestore;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -440,7 +439,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_immediate_systemAndLock()
             throws IOException {
         mWallpaperBackupAgent.mPackageExists = true;
@@ -460,7 +458,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_immediate_systemOnly() throws IOException {
         mWallpaperBackupAgent.mPackageExists = true;
 
@@ -478,7 +475,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_systemAndLock()
             throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
@@ -500,7 +496,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_systemOnly() throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
 
@@ -925,7 +920,6 @@ public class WallpaperBackupAgentTest {
 
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_succeeds_logsSuccess() throws Exception {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
         when(mWallpaperManager.setWallpaperComponentWithDescription(any(),
@@ -973,7 +967,6 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testUpdateWallpaperDescription_delayed_fails_logsFailure() throws Exception {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
         BackupRestoreEventLogger logger = new BackupRestoreEventLogger(

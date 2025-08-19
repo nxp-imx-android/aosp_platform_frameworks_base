@@ -122,7 +122,8 @@ public class BroadcastHelperTest {
         mBroadcastHelper = new BroadcastHelper(mMockPackageManagerServiceInjector);
     }
 
-    @EnableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
+    @EnableFlags({Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS,
+            Flags.FLAG_INCLUDE_BROADCAST_DEBUG_REASON})
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSystemAndApplicationItself()
             throws Exception {
@@ -141,6 +142,7 @@ public class BroadcastHelperTest {
         Bundle actualOptions = captorOptions.getValue();
         assertThat(actualOptions).isNotNull();
         verifyIncludedPackages(actualOptions, "android", PACKAGE_CHANGED_TEST_PACKAGE_NAME);
+        verifyBroadcastDebugReason(actualOptions, PackageMetrics.STRING_TEST);
     }
 
     @DisableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
@@ -164,7 +166,8 @@ public class BroadcastHelperTest {
         assertThat(intent2.getPackage()).isEqualTo(PACKAGE_CHANGED_TEST_PACKAGE_NAME);
     }
 
-    @EnableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
+    @EnableFlags({Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS,
+            Flags.FLAG_INCLUDE_BROADCAST_DEBUG_REASON})
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSharedUserIdApplications()
             throws Exception {
@@ -184,6 +187,7 @@ public class BroadcastHelperTest {
         assertThat(actualOptions).isNotNull();
         verifyIncludedPackages(actualOptions, "android", PACKAGE_CHANGED_TEST_PACKAGE_NAME,
                 "shared.package");
+        verifyBroadcastDebugReason(actualOptions, PackageMetrics.STRING_TEST);
     }
 
     @DisableFlags(Flags.FLAG_CONSOLIDATE_PACKAGE_CHANGED_BROADCASTS)
@@ -263,5 +267,11 @@ public class BroadcastHelperTest {
         BroadcastOptions actualBroadcastOptions = new BroadcastOptions(actualOptions);
         assertThat(actualBroadcastOptions.getIncludedPackages())
                 .isEqualTo(expectedIncludedPackages);
+    }
+
+    private void verifyBroadcastDebugReason(Bundle actualOptions, String expectedReason) {
+        BroadcastOptions actualBroadcastOptions = new BroadcastOptions(actualOptions);
+        assertThat(actualBroadcastOptions.getDebugReason())
+                .isEqualTo(expectedReason);
     }
 }

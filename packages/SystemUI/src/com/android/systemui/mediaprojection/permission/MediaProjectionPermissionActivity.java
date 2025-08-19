@@ -65,8 +65,8 @@ import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelect
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDevicePolicyResolver;
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDisabledDialogDelegate;
 import com.android.systemui.res.R;
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor;
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ScreenCaptureShareScreenFeaturesInteractor;
 import com.android.systemui.statusbar.phone.AlertDialogWithDelegate;
@@ -246,9 +246,8 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void showShareScreenUI() {
-
-        final ScreenCaptureActivityIntentParameters params =
-                new ScreenCaptureActivityIntentParameters(
+        final ScreenCaptureUiParameters params =
+                new ScreenCaptureUiParameters(
                         ScreenCaptureType.SHARE_SCREEN,
                         mReviewGrantedConsentRequired,
                         /* resultReceiver= */ null,

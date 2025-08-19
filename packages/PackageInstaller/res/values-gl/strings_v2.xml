@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Queres desinstalar as actualizacións da aplicación?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Queres desinstalar as actualizacións da aplicación para todos os usuarios?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Queres desinstalar esta aplicación para todos os usuarios?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Queres desinstalar esta aplicación para o usuario <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Non se encontrou a aplicación"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Non se pode desinstalar esta aplicación"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Non se desinstalou a aplicación"</string>
     <string name="title_archive" msgid="2876455228073419830">"Queres arquivar esta aplicación?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Queres arquivar esta aplicación para todos os usuarios?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Queres arquivar esta aplicación para o usuario <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Queres restaurar esta aplicación?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Cómpre levar a cabo unha acción"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Non hai almacenamento suficiente"</string>
@@ -96,22 +98,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restaurar esta aplicación, tes que instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Produciuse un problema ao restaurar esta aplicación"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma parte da seguinte aplicación: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Bloqueouse esta aplicación. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar aplicacións de programadores verificados.&lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Esta aplicación non se actualizou. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar actualizacións de programadores verificados.&lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Non se instalou esta aplicación. É posible que as aplicacións de programadores sen verificar non sexan seguras.&lt;/p&gt; &lt;p&gt;Requírese conexión a Internet para realizar a verificación. Comproba a túa conexión e despois proba a instalar a aplicación de novo. &lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Esta aplicación non se actualizou. As actualizacións de programadores sen verificar poden non ser seguras.&lt;/p&gt; &lt;p&gt;Cómpre dispor de conexión a Internet para verificar o programador da aplicación. Comproba a túa conexión e despois proba a actualizar a aplicación de novo. &lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Produciuse un problema ao verificar o programador desta aplicación. Non se instalou a aplicación porque as aplicacións de programadores sen verificar poden non ser seguras..&lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Produciuse un problema ao verificar o programador desta aplicación. Non se actualizou a aplicación porque as actualizacións de programadores sen verificar poden non ser seguras.&lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Esta aplicación bloqueouse porque se produciu un problema ao verificar o programador. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar aplicacións de programadores verificados.&lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Esta aplicación non se actualizou porque se produciu un problema ao verificar o programador. Co fin de axudarche a protexer o teu dispositivo e os teus datos, só se poden instalar actualizacións de programadores verificados.&lt;/p&gt; &lt;a href=&gt;Obtén máis información sobre a verificación de programadores&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Se decides continuar coa instalación, lembra que as aplicacións de programadores sen verificar poden poñer en perigo o teu dispositivo e os teus datos."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Se decides continuar, lembra que as actualizacións de programadores sen verificar poden poñer en perigo o teu dispositivo e os teus datos."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programador da aplicación sen verificar"</string>
@@ -135,7 +129,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Restaurar"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalar actualizacións"</string>
     <string name="button_settings" msgid="3837571366246132287">"Configuración"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Tentar de novo"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clon de <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

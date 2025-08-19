@@ -148,9 +148,18 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"Ištrinti"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Padaryti viso ekrano kopiją"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Padaryti pasirinktos srities ekrano kopiją"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Ekrano kopija"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Įrašyti"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Bendrinti"</string>
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kurti lango ekrano kopiją"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Įrašyti langą"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Padaryti pasirinktos srities ekrano kopiją"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Įrašyti pasirinktą sritį"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Padaryti viso ekrano kopiją"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Įrašyti visą ekraną"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Ekrano fiksavimo nustatymai"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Bendrinamas ekranas"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Bendrint turinį"</string>
@@ -1119,10 +1128,13 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_1">%1$d</xliff:g> psl. iš <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Įjungti „<xliff:g id="ID_1">%1$s</xliff:g>“?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Veiksmo "<annotation id="action_key_icon">"piktograma"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> yra spartusis klavišas, skirtas naudoti <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Taip galite greitai artinti ekrano vaizdą, kad turinys būtų didesnis."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"„<xliff:g id="ID_1">%1$s</xliff:g>“ yra ekrano skaitytuvas, leidžiantis girdėti garsiai ištartus elementus. Jis gali būti naudingas žmonėms, kuriems sudėtinga matyti ekraną."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"„<xliff:g id="ID_1">%1$s</xliff:g>“ leidžia valdyti įrenginį laisvų rankų režimu."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Įjungti"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Įjungtas spartusis klavišas „<xliff:g id="ID_1">%1$s</xliff:g>“"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Veiksmo "<annotation id="action_key_icon">"piktograma"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> yra spartusis klavišas, skirtas naudoti <xliff:g id="ID_3">^3</xliff:g>. Taip galite greitai artinti ekrano vaizdą, kad turinys būtų didesnis. Paspauskite veiksmo "<annotation id="action_key_icon">"piktogramą"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ir + arba -, kad koreguotumėte mastelį."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Išjungti spartųjį klavišą"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Palikti įjungtą"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Užrakinimo ekranas"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Išjungiama…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Žr. priežiūros veiksmus"</string>
@@ -1542,7 +1554,7 @@
     <string name="start_mirroring" msgid="3611044878130481882">"Veidrodis"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Ekranas prijungtas"</string>
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Prijungta prie išorinio ekrano"</string>
-    <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikr., vaizdo kam. ir vietovė"</string>
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikr., fotoaparat. ir vietovė"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Pastarasis programos naudojimas"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Žr. pastarąją prieigą"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Atlikta"</string>

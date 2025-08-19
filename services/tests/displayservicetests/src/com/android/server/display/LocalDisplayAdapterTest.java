@@ -555,10 +555,10 @@ public class LocalDisplayAdapterTest {
 
         assertDisplayDpi(
                 mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked(), PORT_A, 100, 100,
-                136);
+                0);
         assertDisplayDpi(
                 mListener.addedDisplays.get(1).getDisplayDeviceInfoLocked(), PORT_B, 100, 100,
-                136);
+                0);
     }
 
     private static class DisplayModeWrapper {

@@ -41,13 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"გსურთ აპის განახლებების დეინსტალაცია?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"გსურთ აპის განახლებების ყველა მომხმარებლისთვის დეინსტალაცია?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"გსურთ ამ აპის ყველა მომხმარებლისთვის დეინსტალაცია?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"გსურთ ამ აპის <xliff:g id="USER_NAME">%1$s</xliff:g>-ისთვის დეინსტალაცია?"</string>
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"გსურთ ამ აპის დეინსტალაცია მოხმარებლისთვის სახელად „<xliff:g id="USER_NAME">%1$s</xliff:g>“?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"აპი ვერ მოიძებნა"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ამ აპის დეინსტალაცია ვერ ხერხდება"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"აპის დეინსტალაცია წარუმატებელია"</string>
     <string name="title_archive" msgid="2876455228073419830">"გსურთ ამ აპის დაარქივება?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"გსურთ ამ აპის ყველა მომხმარებლისთვის დაარქივება?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"გსურთ ამ აპის <xliff:g id="USER_NAME">%1$s</xliff:g>-ისთვის დაარქივება?"</string>
+    <string name="title_archive_other_user" msgid="6686508642274629645">"გსურთ ამ აპის დაარქვივება მოხმარებლისთვის სახელად „<xliff:g id="USER_NAME">%1$s</xliff:g>“?"</string>
     <string name="title_restore" msgid="8934911753892124574">"გსურთ ამ აპის აღდგენა?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"საჭიროა მოქმედება"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"მეხსიერება საკმარისი არ არის"</string>
@@ -98,10 +98,10 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> <xliff:g id="APP_NAME">%2$s</xliff:g> აპის ნაწილია"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;ეს აპი დაიბლოკა. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად მხოლოდ დადასტურებული დეველოპერების აპების ინსტალაციაა შესაძლებელი.&lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;ეს აპი არ განახლდა. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად მხოლოდ დადასტურებული დეველოპერების განახლებების ინსტალაციაა შესაძლებელი.&lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <!-- syntax error in translation for cannot_install_verification_no_internet_summary (7724830883028720846) org.xmlpull.v1.XmlPullParserException: expected: /string read: p (position:END_TAG </p>@1:191 in     <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;ეს აპი არ დაინსტალირდა. დაუდასტურებელი დეველოპერების აპები შეიძლება სახიფათო იყოს.</p> <p>აპის დეველოპერის დასადასტურებლად საჭიროა ინტერნეტკავშირი. შეამოწმეთ თქვენი კავშირი და შემდეგ ხელახლა ცადეთ აპის ინსტალაცია. &lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
+)  -->
+    <!-- syntax error in translation for cannot_update_verification_no_internet_summary (1204784740944424893) org.xmlpull.v1.XmlPullParserException: expected: /string read: p (position:END_TAG </p>@1:192 in     <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;ეს აპი არ განახლდა. დაუდასტურებელი დეველოპერების განახლებები შეიძლება სახიფათო იყოს.</p> <p>აპის დეველოპერის დასადასტურებლად საჭიროა ინტერნეტკავშირი. შეამოწმეთ თქვენი კავშირი და შემდეგ ხელახლა ცადეთ აპის განახლება. &lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
+)  -->
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;ამ აპის დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. დაუდასტურებელი დეველოპერების აპები შეიძლება სახიფათო იყოს, ამიტომ აპი არ დაინსტალირდა.&lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;ამ აპის დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. დაუდასტურებელი დეველოპერების განახლებები შეიძლება სახიფათო იყოს, ამიტომ აპი არ განახლდა.&lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;ეს აპი დაიბლოკა, რადგან დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად მხოლოდ დადასტურებული დეველოპერების აპების ინსტალაციაა შესაძლებელი.&lt;/p&gt; &lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;"</string>
@@ -129,7 +129,6 @@
     <string name="button_restore" msgid="4388317532933866637">"აღდგენა"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"განახლებების დეინსტალაცია"</string>
     <string name="button_settings" msgid="3837571366246132287">"პარამეტრები"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"ხელახლა ცდა"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> კლონი"</string>
 </resources>

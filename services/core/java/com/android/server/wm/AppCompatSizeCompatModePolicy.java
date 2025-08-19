@@ -26,6 +26,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.ActivityReco
 import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX;
 
+import static com.android.server.wm.AppCompatUtils.isDesktopFirst;
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
 import android.annotation.NonNull;
@@ -593,8 +594,8 @@ class AppCompatSizeCompatModePolicy {
      * such as when:
      * - Moving from an external display to a smaller phone screen.
      * - Transitioning from desktop mode to fullscreen.
-     * This treatment is not applied to internal displays that ignore orientation requests to
-     * maintain consistent scaling behavior with orientation changes on those displays.
+     * This treatment is not applied to fullscreen-first, internal displays that ignore orientation
+     * requests to maintain consistent scaling behavior with orientation changes on those displays.
      */
     private boolean shouldAllowUpscalingForDisplayOrWindowingModeChange(boolean isInDesktopMode) {
         final boolean launchedInAndExitedFromDesktop  = getAppCompatDisplayInsets() != null
@@ -604,10 +605,10 @@ class AppCompatSizeCompatModePolicy {
         final boolean isOnIgnoreOrientationRequestInternalDisplay = isOnInternalDisplay()
                 && mActivityRecord.getDisplayContent().getIgnoreOrientationRequest();
 
-        // TODO(b/432329483): Polish the policy for desktop-first devices.
         return ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX.isTrue()
                 && (launchedInAndExitedFromDesktop || hasMovedBetweenDisplays)
-                && !isOnIgnoreOrientationRequestInternalDisplay;
+                && (!isOnIgnoreOrientationRequestInternalDisplay
+                        || isDesktopFirst(mActivityRecord.getDisplayArea()));
     }
 
     /** Returns whether the activity is on an internal display. */

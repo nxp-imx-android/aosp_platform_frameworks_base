@@ -213,7 +213,8 @@ public class BubbleTransitions {
         // we only do this when switching from floating bubbles to bar bubbles so guard this with
         // the bubble bar flag, but once these are combined we should be able to remove this.
         if (com.android.wm.shell.Flags.enableBubbleBar()
-                && mBubbleData.getSelectedBubble() instanceof Bubble) {
+                && mBubbleData.getSelectedBubble() instanceof Bubble
+                && mBubbleData.isExpanded()) {
             ProtoLog.d(
                     WM_SHELL_BUBBLES, "notifyUnfoldTransitionStarting transition=%s", transition);
             Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
@@ -1703,6 +1704,7 @@ public class BubbleTransitions {
         public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
                 @Nullable SurfaceControl.Transaction finishTransaction) {
             if (!aborted) return;
+            mBubble.setPreparingTransition(null);
             mTransition = null;
             mTaskViewTransitions.onExternalDone(transition);
         }

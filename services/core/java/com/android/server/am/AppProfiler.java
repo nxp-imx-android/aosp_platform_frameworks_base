@@ -26,6 +26,8 @@ import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_CRI
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_LOW;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_MODERATE;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_NORMAL;
+import static com.android.internal.os.ProcfsMemoryUtil.DmaBufType;
+import static com.android.internal.os.ProcfsMemoryUtil.readDmabufFromProcfs;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_RSS;
@@ -1637,11 +1639,15 @@ public class AppProfiler {
         for (int i = 0; i < statsCount; i++) {
             ProcessCpuTracker.Stats st = stats.get(i);
             long pss = Debug.getPss(st.pid, swaptrackTmp, memtrackTmp);
-            if (pss > 0) {
+            long dmabufRss = readDmabufFromProcfs(DmaBufType.RSS, st.pid);
+            long dmabufPss = readDmabufFromProcfs(DmaBufType.PSS, st.pid);
+            if (pss > 0 || dmabufPss > 0) {
                 if (infoMap.indexOfKey(st.pid) < 0) {
                     ProcessMemInfo mi = new ProcessMemInfo(st.name, st.pid,
                             ProcessList.NATIVE_ADJ, -1, "native", null);
                     mi.pss = pss;
+                    mi.dmabufRss = dmabufRss;
+                    mi.dmabufPss = dmabufPss;
                     mi.swapPss = swaptrackTmp[1];
                     mi.memtrack = memtrackTmp[0];
                     totalMemtrackGraphics += memtrackTmp[1];
@@ -1658,6 +1664,8 @@ public class AppProfiler {
             ProcessMemInfo mi = memInfos.get(i);
             if (mi.pss == 0) {
                 mi.pss = Debug.getPss(mi.pid, swaptrackTmp, memtrackTmp);
+                mi.dmabufRss = readDmabufFromProcfs(DmaBufType.RSS, mi.pid);
+                mi.dmabufPss = readDmabufFromProcfs(DmaBufType.PSS, mi.pid);
                 mi.swapPss = swaptrackTmp[1];
                 mi.memtrack = memtrackTmp[0];
                 totalMemtrackGraphics += memtrackTmp[1];
@@ -1755,7 +1763,7 @@ public class AppProfiler {
                 // from smaller native processes let's dump a summary of that.
                 if (extraNativeRam > 0) {
                     appendBasicMemEntry(shortNativeBuilder, ProcessList.NATIVE_ADJ,
-                            -1, extraNativeRam, extraNativeMemtrack, "(Other native)");
+                            -1, -1, -1, extraNativeRam, extraNativeMemtrack, "(Other native)");
                     shortNativeBuilder.append('\n');
                     extraNativeRam = 0;
                 }

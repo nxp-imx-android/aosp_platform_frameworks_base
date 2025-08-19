@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"¿Desinstalar actualizaciones de la aplicación?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"¿Desinstalar actualizaciones de la aplicación para todos los usuarios?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"¿Desinstalar esta aplicación para todos los usuarios?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"¿Desinstalar esta aplicación para el usuario \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplicación no encontrada"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"No se puede desinstalar esta aplicación"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplicación no instalada"</string>
     <string name="title_archive" msgid="2876455228073419830">"¿Archivar esta aplicación?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"¿Archivar esta aplicación para todos los usuarios?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"¿Archivar esta aplicación para el usuario \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"¿Restaurar esta aplicación?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Acción necesaria"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"No hay suficiente espacio"</string>
@@ -96,22 +98,16 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restaurar esta aplicación, tendrás que instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"No se ha podido restaurar esta aplicación"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma parte de esta aplicación: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (2712509801474290273) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (3440450480752915265) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Esta app se ha bloqueado. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Esta app no se ha actualizado. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
     <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
     <skip />
     <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2484702041510825332) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (314354415455227761) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (757425632344179567) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (7020007697606511471) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;No se ha podido verificar el desarrollador de esta app. Las apps de desarrolladores no verificados pueden ser peligrosas, por lo que no se ha instalado la app.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;No se ha podido verificar el desarrollador de esta app. Las actualizaciones de desarrolladores no verificados pueden no ser seguras, por lo que la app no se ha actualizado.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Esta app se ha bloqueado porque ha habido un problema al verificar al desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Esta app no se ha actualizado porque ha habido un problema al verificar al desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si instalas la app sin verificar, ten en cuenta que las apps de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si actualizas la aplicación sin verificar, ten en cuenta que las actualizaciones de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desarrollador de apps no verificado"</string>

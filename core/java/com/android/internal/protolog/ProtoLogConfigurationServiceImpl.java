@@ -32,6 +32,7 @@ import android.annotation.Nullable;
 import android.annotation.SystemService;
 import android.content.Context;
 import android.os.Binder;
+import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
@@ -395,8 +396,12 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
                                 + String.join(", ", clientGroups) + "]");
                         clientRecord.client.toggleLogcat(enabled, clientGroups);
                         pw.println("- Done");
+                    } catch (DeadObjectException e) {
+                        pw.println("- Failed (client may have died)");
+                        Log.w(LOG_TAG, "Failed to toggle logcat status for groups on client "
+                                + clientRecord.client + ", it likely has died", e);
                     } catch (RemoteException e) {
-                        pw.println("- Failed");
+                        pw.println("- Failed (unexpected RemoteException)");
                         throw new RuntimeException(
                                 "Failed to toggle logcat status for groups on client", e);
                     }

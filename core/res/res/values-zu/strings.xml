@@ -2603,4 +2603,10 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Thepha ukuze ubone amacebiso okuthi ungayithuthukisa kanjani indlela ovula ngayo"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ungacwayizi"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Cindezela Inkinobho yamandla isikhathi eside ukuze uvale i-TV"</string>
+    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
+    <skip />
+    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
+    <skip />
 </resources>

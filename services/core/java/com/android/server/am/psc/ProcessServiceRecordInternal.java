@@ -96,4 +96,7 @@ public abstract class ProcessServiceRecordInternal {
 
     /** Checks if there are any services currently executing in this process. */
     public abstract boolean hasExecutingServices();
+
+    /** Checks if this process has any foreground services (even timed-out short-FGS) */
+    public abstract boolean hasForegroundServices();
 }

@@ -88,6 +88,27 @@ public class ChronometerTest extends ActivityInstrumentationTestCase2<Chronomete
         assertThat(chronometer.getText().toString()).isEqualTo("01:35");
     }
 
+    @UiThreadTest
+    public void testChronometerStartingFromPausedDuration() {
+        var clocks = new Object() {
+            public Instant systemNow = Instant.ofEpochMilli(1748615185000L);
+            public long elapsedRealtime = 10_000L;
+        };
+        Chronometer chronometer = new Chronometer(mActivity, () -> clocks.elapsedRealtime,
+                () -> clocks.systemNow, null, 0, 0);
+        mActivity.setContentView(chronometer);
+
+        // Starts paused at 5 seconds.
+        chronometer.setCountDown(true);
+        chronometer.setPausedDuration(Duration.ofSeconds(5));
+        assertThat(chronometer.getText().toString()).isEqualTo("00:05");
+
+        // "Continue countdown" for 3 seconds.
+        clocks.elapsedRealtime = clocks.elapsedRealtime + Duration.ofSeconds(3).toMillis();
+        chronometer.updateText();
+        assertThat(chronometer.getText().toString()).isEqualTo("00:02");
+    }
+
     public void testChronometerTicksSequentially() throws Throwable {
         final CountDownLatch latch = new CountDownLatch(6);
         ArrayList<String> ticks = new ArrayList<>();

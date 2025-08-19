@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.footer.ui.viewmodel
 
+import android.annotation.SuppressLint
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
 /** ViewModel for [FooterView]. */
+@SuppressLint("FlowExposedFromViewModel")
 class FooterViewModel
 @AssistedInject
 constructor(
@@ -95,9 +97,6 @@ constructor(
     // Settings buttons are not visible when the message is.
     val settingsButtonVisible: Flow<Boolean> = message.isVisible.map { !it }
     val historyButtonVisible: Flow<Boolean> = message.isVisible.map { !it }
-
-    val manageButtonShouldLaunchHistory =
-        notificationSettingsInteractor.isNotificationHistoryEnabled
 
     val manageOrHistoryButtonClick: Flow<SettingsIntent> by lazy {
         notificationSettingsInteractor.isNotificationHistoryEnabled.map {

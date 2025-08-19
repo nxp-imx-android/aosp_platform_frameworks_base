@@ -831,6 +831,10 @@ public class StackAnimationController extends
 
     // TODO: do we need this & BubbleStackView#updateBadgesAndZOrder?
     private void updateBadgesAndZOrder(View v, int index) {
+        if (v == null) {
+            // View was removed
+            return;
+        }
         v.setZ(index < NUM_VISIBLE_WHEN_RESTING ? (mMaxBubbles * mElevation) - index : 0f);
         BadgedImageView bv = (BadgedImageView) v;
         if (index == 0) {

@@ -19,9 +19,14 @@ import static android.media.MediaRoute2Info.TYPE_BLUETOOTH_A2DP;
 import static android.media.MediaRoute2Info.TYPE_BUILTIN_SPEAKER;
 import static android.media.MediaRoute2Info.TYPE_REMOTE_SPEAKER;
 import static android.media.MediaRoute2Info.TYPE_WIRED_HEADPHONES;
+import static android.media.RouteListingPreference.Item.FLAG_SUGGESTED;
 import static android.media.RouteListingPreference.Item.SELECTION_BEHAVIOR_GO_TO_APP;
 
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_SELECTED;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_RLP;
+import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_UNSPECIFIED;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -387,8 +392,8 @@ public class MediaDeviceTest {
 
     @Test
     public void compareTo_suggestedDevice_comesBeforeNonSuggested() {
-        mInfoMediaDevice2.setIsSuggested(true);
-        mInfoMediaDevice1.setIsSuggested(false);
+        mInfoMediaDevice2.setIsSuggested(/* suggested= */ true, /* suggestedByApp= */ true);
+        mInfoMediaDevice1.setIsSuggested(/* suggested= */ false, /* suggestedByApp= */ true);
 
         mMediaDevices.add(mInfoMediaDevice1);
         mMediaDevices.add(mInfoMediaDevice2);
@@ -402,7 +407,7 @@ public class MediaDeviceTest {
 
     @Test
     public void compareTo_selectedAndSuggested_selectedIsFirst() {
-        mInfoMediaDevice1.setIsSuggested(true);
+        mInfoMediaDevice1.setIsSuggested(/* suggested= */ true, /* suggestedByApp= */ true);
         mInfoMediaDevice2.setState(STATE_SELECTED);
 
         mMediaDevices.add(mInfoMediaDevice1);
@@ -607,5 +612,80 @@ public class MediaDeviceTest {
         assertThat(mediaDevice.isSelected()).isFalse();
         assertThat(mediaDevice.isSelectable()).isFalse();
         assertThat(mediaDevice.isDeselectable()).isFalse();
+    }
+
+    @Test
+    public void getSuggestionProvider_notSuggestedDevice_returnsSuggestionProviderUnspecified() {
+        MediaDevice device =
+                new PhoneMediaDevice(
+                        mContext,
+                        mRouteInfo1,
+                        /* dynamicRouteAttributes= */ null,
+                        /* item= */ null);
+        assertThat(device.getSuggestionProvider()).isEqualTo(SUGGESTION_PROVIDER_UNSPECIFIED);
+    }
+
+    @Test
+    public void getSuggestionProvider_rlpSuggestedDevice_returnsSuggestionProviderRlp() {
+        RouteListingPreference.Item item =
+                new RouteListingPreference.Item.Builder(DEVICE_ADDRESS_1)
+                        .setSelectionBehavior(SELECTION_BEHAVIOR_TRANSFER)
+                        .setFlags(FLAG_SUGGESTED)
+                        .build();
+        MediaDevice device =
+                new PhoneMediaDevice(
+                        mContext,
+                        mRouteInfo1,
+                        /* dynamicRouteAttributes= */ null,
+                        /* item= */ item);
+
+        assertThat(device.getSuggestionProvider()).isEqualTo(SUGGESTION_PROVIDER_RLP);
+    }
+
+    @Test
+    public void getSuggestionProvider_rlpAndDeviceSuggestion_returnsSuggestionProviderRlp() {
+        RouteListingPreference.Item item =
+                new RouteListingPreference.Item.Builder(DEVICE_ADDRESS_1)
+                        .setSelectionBehavior(SELECTION_BEHAVIOR_TRANSFER)
+                        .setFlags(FLAG_SUGGESTED)
+                        .build();
+
+        MediaDevice device =
+                new PhoneMediaDevice(
+                        mContext,
+                        mRouteInfo1,
+                        /* dynamicRouteAttributes= */ null,
+                        /* item= */ item);
+        device.setIsSuggested(/* suggested= */ true, /* suggestedByApp= */ true);
+
+        assertThat(device.getSuggestionProvider()).isEqualTo(SUGGESTION_PROVIDER_RLP);
+    }
+
+    @Test
+    public void getSuggestionProvider_suggestedDeviceNotByApp_returnsSuggestionProviderOther() {
+        MediaDevice device =
+                new PhoneMediaDevice(
+                        mContext,
+                        mRouteInfo1,
+                        /* dynamicRouteAttributes= */ null,
+                        /* item= */ null);
+        device.setIsSuggested(/* suggested= */ true, /* suggestedByApp= */ false);
+
+        assertThat(device.getSuggestionProvider())
+                .isEqualTo(SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER);
+    }
+
+    @Test
+    public void getSuggestionProvider_suggestedDeviceByApp_returnsSuggestionProviderApp() {
+        MediaDevice device =
+                new PhoneMediaDevice(
+                        mContext,
+                        mRouteInfo1,
+                        /* dynamicRouteAttributes= */ null,
+                        /* item= */ null);
+        device.setIsSuggested(/* suggested= */ true, /* suggestedByApp= */ true);
+
+        assertThat(device.getSuggestionProvider())
+                .isEqualTo(SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP);
     }
 }

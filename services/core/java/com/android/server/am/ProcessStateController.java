@@ -201,10 +201,10 @@ public class ProcessStateController {
         private volatile boolean mUnlockingStaged = false;
         private boolean mUnlocking = false;
         private boolean mExpandedNotificationShade = false;
-        private ProcessRecord mTopProcess = null;
+        private ProcessRecordInternal mTopProcess = null;
         private ProcessRecordInternal mHomeProcess = null;
         private ProcessRecordInternal mHeavyWeightProcess = null;
-        private ProcessRecord mShowingUiWhileDozingProcess = null;
+        private ProcessRecordInternal mShowingUiWhileDozingProcess = null;
         private ProcessRecordInternal mPreviousProcess = null;
 
         private void commitStagedState() {
@@ -237,7 +237,7 @@ public class ProcessStateController {
         }
 
         @Nullable
-        public ProcessRecord getTopProcess() {
+        public ProcessRecordInternal getTopProcess() {
             return mTopProcess;
         }
 
@@ -252,7 +252,7 @@ public class ProcessStateController {
         }
 
         @Nullable
-        public ProcessRecord getShowingUiWhileDozingProcess() {
+        public ProcessRecordInternal getShowingUiWhileDozingProcess() {
             return mShowingUiWhileDozingProcess;
         }
 
@@ -297,7 +297,7 @@ public class ProcessStateController {
     }
 
     @GuardedBy("mLock")
-    private void setVisibleDozeUiProcess(@Nullable ProcessRecord proc) {
+    private void setVisibleDozeUiProcess(@Nullable ProcessRecordInternal proc) {
         mGlobalState.mShowingUiWhileDozingProcess = proc;
     }
 

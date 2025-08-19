@@ -41,13 +41,15 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Ali želite odmestiti posodobitve aplikacije?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Ali želite odmestiti posodobitve aplikacije za vse uporabnike?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Ali želite odmestiti to aplikacijo za vse uporabnike?"</string>
-    <string name="title_uninstall_other_user" msgid="7739452181899248303">"Ali želite odmestiti to aplikacijo za uporabnika »<xliff:g id="USER_NAME">%1$s</xliff:g>«?"</string>
+    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
+    <skip />
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplikacije ni bilo mogoče najti"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Te aplikacije ni mogoče odmestiti"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplikacija ni odmeščena"</string>
     <string name="title_archive" msgid="2876455228073419830">"Želite arhivirati to aplikacijo?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Ali želite to aplikacijo arhivirati za vse uporabnike?"</string>
-    <string name="title_archive_other_user" msgid="5996047192919423497">"Ali želite to aplikacijo arhivirati za uporabnika »<xliff:g id="USER_NAME">%1$s</xliff:g>«?"</string>
+    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
+    <skip />
     <string name="title_restore" msgid="8934911753892124574">"Ali želite obnoviti to aplikacijo?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Potrebno je ukrepanje"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Ni dovolj prostora za shranjevanje"</string>
@@ -98,10 +100,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je del te aplikacije: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Ta aplikacija je bila blokirana. Za zaščito naprave in podatkov je mogoče namestiti samo aplikacije preverjenih razvijalcev.&lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Ta aplikacija ni bila posodobljena. Za zaščito naprave in podatkov je mogoče namestiti samo posodobitve preverjenih razvijalcev.&lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Ta aplikacija ni bila nameščena. Aplikacije nepreverjenih razvijalcev morda niso varne.&lt;/p&gt; &lt;p&gt;Za preverjanje razvijalca aplikacije je potrebna internetna povezava. Preverite povezavo in nato znova poskusite namestiti aplikacijo. &lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Ta aplikacija ni bila posodobljena. Posodobitve nepreverjenih razvijalcev morda niso varne.&lt;/p&gt; &lt;p&gt;Za preverjanje razvijalca aplikacije je potrebna internetna povezava. Preverite povezavo in nato znova poskusite posodobiti aplikacijo. &lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Pri preverjanju razvijalca te aplikacije je prišlo do težave. Aplikacije nepreverjenih razvijalcev morda niso varne, zato aplikacija ni bila nameščena.&lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Pri preverjanju razvijalca te aplikacije je prišlo do težave. Posodobitve nepreverjenih razvijalcev morda niso varne, zato aplikacija ni bila posodobljena.&lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Ta aplikacija je bila blokirana, ker je prišlo do težave pri preverjanju njenega razvijalca. Za zaščito naprave in podatkov je mogoče namestiti samo aplikacije preverjenih razvijalcev.&lt;/p&gt; &lt;a href=&gt;Več o preverjanju razvijalcev&lt;/a&gt;"</string>
@@ -129,7 +129,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Obnovi"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Odmesti posodobitve"</string>
     <string name="button_settings" msgid="3837571366246132287">"Nastavitve"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Poskusi znova"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Klon paketa <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

@@ -571,6 +571,12 @@ public class FrameworkServicesModule {
         return context.getSystemService(UiModeManager.class);
     }
 
+    @Provides
+    @Singleton
+    static UserScopedService<UiModeManager> provideUserScopedUiModeManager(Context context) {
+        return new UserScopedServiceImpl<>(context, UiModeManager.class);
+    }
+
     /** */
     @Provides
     @Singleton

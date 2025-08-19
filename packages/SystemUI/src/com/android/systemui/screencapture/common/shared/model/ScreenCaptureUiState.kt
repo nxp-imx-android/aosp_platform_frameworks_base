@@ -20,6 +20,5 @@ sealed interface ScreenCaptureUiState {
 
     data object Invisible : ScreenCaptureUiState
 
-    data class Visible(val parameters: ScreenCaptureActivityIntentParameters) :
-        ScreenCaptureUiState
+    data class Visible(val parameters: ScreenCaptureUiParameters) : ScreenCaptureUiState
 }

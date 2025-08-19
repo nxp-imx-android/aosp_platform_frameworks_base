@@ -835,6 +835,76 @@ public class ImeTrackerServiceTest {
     }
 
     /**
+     * Verifies that no new request entries can be created when the collection of active entries
+     * is full.
+     */
+    @Test
+    public void testCannotCreateWhenActiveFull() {
+        ImeTracker.Token token = null;
+        final int uid = 10;
+        final int type = ImeTracker.TYPE_SHOW;
+        final int origin = ImeTracker.ORIGIN_CLIENT;
+        final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
+        final boolean fromUser = false;
+
+        synchronized (mService.mLock) {
+            for (int id = 0; id < History.ACTIVE_CAPACITY; id++) {
+                final var tag = "tag#" + id;
+                token = new ImeTracker.Token(id, tag);
+                mService.onStart(token, uid, type, origin, reason, fromUser,
+                        System.currentTimeMillis());
+                assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
+            }
+
+            assertWithMessage("Active entries should be full")
+                    .that(mHistory.isActiveFull()).isTrue();
+        }
+
+        final var otherId = -1;
+        final var otherTag = "B";
+        final var otherToken = new ImeTracker.Token(otherId, otherTag);
+        final int otherType = ImeTracker.TYPE_HIDE;
+
+        mService.onStart(otherToken, uid, otherType, origin, reason, fromUser,
+                System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage(
+                    "Other entry should not be created in onStart when active entries are full")
+                    .that(mHistory.getActive(otherId)).isNull();
+        }
+
+        mService.onProgress(otherToken, ImeTracker.PHASE_SERVER_HAS_IME);
+        synchronized (mService.mLock) {
+            assertWithMessage(
+                    "Other entry should not be created in onProgress when active entries are full")
+                    .that(mHistory.getActive(otherId)).isNull();
+        }
+
+        mService.onHidden(otherToken);
+        synchronized (mService.mLock) {
+            assertWithMessage(
+                    "Other entry should not be created in onHidden when active entries are full")
+                    .that(mHistory.getActive(otherId)).isNull();
+        }
+
+        mService.onShown(token);
+        synchronized (mService.mLock) {
+            assertWithMessage("Last created entry was completed")
+                    .that(mHistory.getActive(token.getId())).isNull();
+            assertWithMessage("Active entries should no longer be full")
+                    .that(mHistory.isActiveFull()).isFalse();
+        }
+
+        mService.onStart(otherToken, uid, otherType, origin, reason, fromUser,
+                System.currentTimeMillis());
+        synchronized (mService.mLock) {
+            assertWithMessage(
+                    "Other entry should be created in onStart when active entries are not full")
+                    .that(mHistory.getActive(otherId)).isNotNull();
+        }
+    }
+
+    /**
      * Advances the time on the test handler by the specified amount.
      *
      * @param timeMs how long to advance the time by.

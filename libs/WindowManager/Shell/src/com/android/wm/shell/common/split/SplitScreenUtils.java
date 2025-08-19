@@ -26,15 +26,22 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.window.DesktopExperienceFlags;
+import android.window.DisplayAreaInfo;
+import android.window.WindowContainerToken;
 
 import com.android.internal.util.ArrayUtils;
 import com.android.wm.shell.Flags;
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.shared.split.SplitScreenConstants;
+import com.android.wm.shell.splitscreen.StageTaskListener;
 
 /** Helper utility class for split screen components to use. */
 public class SplitScreenUtils {
@@ -151,5 +158,31 @@ public class SplitScreenUtils {
             default:
                 return false;
         }
+    }
+
+    /**
+     * Retrieves the new parent WindowContainerToken for tasks in the main or stage display area
+     * after the split pair is dismissed. This token will be used for reparenting tasks. The
+     * specific stage (main or side) from which the display ID is obtained does not alter the
+     * resulting parent token, as it's based on the display area of the display itself.
+     *
+     * @param stage The StageTaskListener representing the current stage.
+     * @param rootTDAOrganizer The RootTaskDisplayAreaOrganizer to query for DisplayAreaInfo.
+     * @return The WindowContainerToken of the parent display area if
+     *         DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT is true and a valid
+     *         DisplayAreaInfo is found for the main stage's display; otherwise, returns null.
+     */
+    @Nullable
+    public static WindowContainerToken getNewParentTokenForStage(
+            @Nullable StageTaskListener stage,
+            @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer) {
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()
+                || stage == null || stage.getRunningTaskInfo() == null) {
+            return null;
+        }
+
+        final int displayId = stage.getRunningTaskInfo().displayId;
+        final DisplayAreaInfo displayAreaInfo = rootTDAOrganizer.getDisplayAreaInfo(displayId);
+        return displayAreaInfo != null ? displayAreaInfo.token : null;
     }
 }

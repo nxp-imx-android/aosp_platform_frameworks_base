@@ -1605,6 +1605,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 allAppsIntent.addFlags(
                         Intent.FLAG_ACTIVITY_NEW_TASK
                                 | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
                 startActivityAsUser(allAppsIntent, UserHandle.CURRENT_OR_SELF);
                 break;
             case SHORT_PRESS_PRIMARY_LAUNCH_TARGET_ACTIVITY:

@@ -27,6 +27,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 
+import static com.android.wm.shell.common.split.SplitScreenUtils.getNewParentTokenForStage;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10;
@@ -624,11 +625,15 @@ public class SplitTransitionTests extends ShellTestCase {
         for (int i = 0; i < wct.getHierarchyOps().size(); ++i) {
             WindowContainerTransaction.HierarchyOp op = wct.getHierarchyOps().get(i);
             if (op.getType() == HIERARCHY_OP_TYPE_CHILDREN_TASKS_REPARENT) {
+                IBinder expectedNewParentBinder = Optional.ofNullable(
+                        getNewParentTokenForStage(mMainStage, mRootTDAOrganizer))
+                                .map(WindowContainerToken::asBinder)
+                                .orElse(null);
                 if (op.getContainer() == mMainStage.mRootTaskInfo.token.asBinder()
-                        && op.getNewParent() == null) {
+                        && op.getNewParent() == expectedNewParentBinder) {
                     reparentedMain = true;
                 } else if (op.getContainer() == mSideStage.mRootTaskInfo.token.asBinder()
-                        && op.getNewParent() == null) {
+                        && op.getNewParent() == expectedNewParentBinder) {
                     reparentedSide = true;
                 }
             }

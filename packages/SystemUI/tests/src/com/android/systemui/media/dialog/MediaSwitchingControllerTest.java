@@ -1062,7 +1062,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
 
         testMediaSwitchingController.addDeviceToPlayMedia(mMediaDevice2);
-        verify(mockLocalMediaManager).addDeviceToPlayMedia(mMediaDevice2);
+        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
+        verify(mockLocalMediaManager).addDeviceToPlayMedia(eq(mMediaDevice2), captor.capture());
+        RoutingChangeInfo capturedInfo = captor.getValue();
+        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
+        assertThat(capturedInfo.isSuggested()).isEqualTo(false);
     }
 
     @Test
@@ -1092,7 +1096,13 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
 
         testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2);
-        verify(mockLocalMediaManager).removeDeviceFromPlayMedia(mMediaDevice2);
+        ArgumentCaptor<RoutingChangeInfo> argumentCaptor =
+                ArgumentCaptor.forClass(RoutingChangeInfo.class);
+        verify(mockLocalMediaManager)
+                .removeDeviceFromPlayMedia(eq(mMediaDevice2), argumentCaptor.capture());
+        RoutingChangeInfo capturedInfo = argumentCaptor.getValue();
+        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
+        assertThat(capturedInfo.isSuggested()).isFalse();
     }
 
     @Test

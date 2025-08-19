@@ -3505,8 +3505,8 @@ public class UserManagerService extends IUserManager.Stub {
         synchronized (mPackagesLock) {
             final UserData userData;
             synchronized (mUsersLock) {
-                final int userRemovability =
-                        getUserRemovabilityLockedLU(userId, "set as ephemeral");
+                final int userRemovability = getUserRemovabilityLockedLU(userId);
+                logRemoveResultError(userRemovability, userId, "set as ephemeral");
                 if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                     return userRemovability;
                 }
@@ -6942,7 +6942,8 @@ public class UserManagerService extends IUserManager.Stub {
         final boolean isProfile;
         final IntArray profileIds;
         synchronized (mUsersLock) {
-            final int userRemovability = getUserRemovabilityLockedLU(userId, "removed");
+            final int userRemovability = getUserRemovabilityLockedLU(userId);
+            logRemoveResultError(userRemovability, userId, "removed");
             if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                 return UserManager.isRemoveResultSuccessful(userRemovability);
             }
@@ -7028,7 +7029,8 @@ public class UserManagerService extends IUserManager.Stub {
             final UserData userData;
             synchronized (mPackagesLock) {
                 synchronized (mUsersLock) {
-                    final int userRemovability = getUserRemovabilityLockedLU(userId, "removed");
+                    final int userRemovability = getUserRemovabilityLockedLU(userId);
+                    logRemoveResultError(userRemovability, userId, "removed");
                     if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                         return UserManager.isRemoveResultSuccessful(userRemovability);
                     }
@@ -7156,32 +7158,46 @@ public class UserManagerService extends IUserManager.Stub {
      */
     @GuardedBy("mUsersLock")
     @VisibleForTesting
-    @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId, String msg) {
+    @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId) {
         if (userId == UserHandle.USER_SYSTEM) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, system user cannot be removed.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
         }
         final UserData userData = mUsers.get(userId);
         if (userData == null) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, invalid user id provided.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
         }
         if (isNonRemovableMainUser(userData.info)) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, main user cannot be removed when it's a"
-                    + " permanent admin user.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
         }
         if (mRemovingUserIds.get(userId)) {
-            Slogf.w(LOG_TAG, "User %d can not be %s, it is already scheduled for removal.", userId,
-                    msg);
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
         }
         if (isNonRemovableLastAdminUserLU(userData.info)) {
-            Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.", userId,
-                    msg);
             return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
         }
         return UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
+    }
+
+    private void logRemoveResultError(@UserManager.RemoveResult int result, @UserIdInt int userId,
+            String action) {
+        switch (result) {
+            case UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, system user cannot be removed.", userId,
+                        action);
+            case UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, invalid user id provided.", userId,
+                        action);
+            case UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, main user cannot be removed when it's a"
+                        + " permanent admin user.", userId, action);
+            case UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED ->
+                Slogf.w(LOG_TAG, "User %d can not be %s, it is already scheduled for removal.",
+                        userId, action);
+            case UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER ->
+                Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.",
+                        userId, action);
+            default -> {}
+        }
     }
 
     private void finishRemoveUser(final @UserIdInt int userId) {
@@ -9051,6 +9067,17 @@ public class UserManagerService extends IUserManager.Stub {
      */
     private boolean isNonRemovableMainUser(UserInfo userInfo) {
         return userInfo.isMain() && isMainUserPermanentAdmin();
+    }
+
+    @Override
+    public @UserManager.RemoveResult int getUserRemovability(@UserIdInt int userId) {
+        if (!Flags.disallowRemovingLastAdminUser()) {
+            throw new UnsupportedOperationException(
+                    "aconfig flag android.multiuser.disallow_removing_last_admin_user not enabled");
+        }
+        synchronized (mUsersLock) {
+            return getUserRemovabilityLockedLU(userId);
+        }
     }
 
     /**

@@ -50,8 +50,8 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor;
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
@@ -135,7 +135,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
             UserHandle userHandle = UserHandle.of(getCurrentTileUser());
             mActivityStarter.postQSRunnableDismissingKeyguard(
                     () -> mScreenCaptureUiInteractor.show(
-                            new ScreenCaptureActivityIntentParameters(
+                            new ScreenCaptureUiParameters(
                                     /* screenCaptureType= */ ScreenCaptureType.RECORD,
                                     /* isUserConsentRequired= */ false,
                                     /* resultReceiver= */ null,

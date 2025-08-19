@@ -367,17 +367,17 @@ public final class BroadcastHelper {
             tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
                     "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
                     componentNames.size(), callingPackageNameForTrace);
-            Bundle bOptions = null;
+            BroadcastOptions bOptions = null;
             if (android.content.pm.Flags.mergePackageChangedBroadcast()) {
                 bOptions = new BroadcastOptions()
                         .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
                         .setDeliveryGroupMatchingKey(Intent.ACTION_PACKAGE_CHANGED,
-                                packageName + "-" + packageUid)
-                        .toBundle();
+                                packageName + "-" + packageUid);
             }
             sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp, componentNames,
                     packageUid, reason, userIds, instantUserIds, broadcastAllowList,
-                    null /* targetPackageName */, null /* requiredPermissions */, bOptions);
+                    null /* targetPackageName */, null /* requiredPermissions */,
+                    reasonForTrace, bOptions);
             return;
         }
 
@@ -413,10 +413,9 @@ public final class BroadcastHelper {
             }
 
             if (android.content.pm.Flags.consolidatePackageChangedBroadcasts()) {
-                final Bundle bOptions = BroadcastOptions.makeBasic()
+                final BroadcastOptions bOptions = BroadcastOptions.makeBasic()
                         .setIncludedPackages(targetPackages.toArray(
-                                new String[targetPackages.size()]))
-                        .toBundle();
+                                new String[targetPackages.size()]));
                 tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace,
                         packageName, "<explicit-pkg-list>" /* targetPackageName */,
                         "notExported" /* targetComponent */,
@@ -424,7 +423,7 @@ public final class BroadcastHelper {
                 sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                         notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
                         broadcastAllowList, null /* targetPackageName */,
-                        null /* requiredPermissions */, bOptions);
+                        null /* requiredPermissions */, reasonForTrace, bOptions);
             } else {
                 for (int i = 0; i < targetPackages.size(); ++i) {
                     final String targetPackageName = targetPackages.get(i);
@@ -435,7 +434,7 @@ public final class BroadcastHelper {
                     sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                             notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
                             broadcastAllowList, targetPackageName,
-                            null /* requiredPermissions */, null /* bOptions */);
+                            null /* requiredPermissions */, reasonForTrace, null /* bOptions */);
                 }
             }
         }
@@ -447,7 +446,7 @@ public final class BroadcastHelper {
             sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                     exportedComponentNames, packageUid, reason, userIds, instantUserIds,
                     broadcastAllowList, null /* targetPackageName */,
-                    null /* requiredPermissions */, null /* bOptions */);
+                    null /* requiredPermissions */, reasonForTrace, null /* bOptions */);
         }
     }
 
@@ -461,7 +460,8 @@ public final class BroadcastHelper {
             @Nullable SparseArray<int[]> broadcastAllowList,
             @Nullable String targetPackageName,
             @Nullable String[] requiredPermissions,
-            @Nullable Bundle bOptions) {
+            @NonNull String broadcastDebugReason,
+            @Nullable BroadcastOptions bOptions) {
         if (DEBUG_INSTALL) {
             Log.v(TAG, "Sending package changed: package=" + packageName + " components="
                     + componentNames);
@@ -476,6 +476,10 @@ public final class BroadcastHelper {
         if (reason != null) {
             extras.putString(Intent.EXTRA_REASON, reason);
         }
+        if (android.content.pm.Flags.includeBroadcastDebugReason()) {
+            bOptions = bOptions == null ? BroadcastOptions.makeBasic() : bOptions;
+            bOptions.setDebugReason(broadcastDebugReason);
+        }
         // If this is not reporting a change of the overall package, then only send it
         // to registered receivers.  We don't want to launch a swath of apps for every
         // little component state change.
@@ -483,8 +487,8 @@ public final class BroadcastHelper {
                 ? Intent.FLAG_RECEIVER_REGISTERED_ONLY : 0;
         sendPackageBroadcast(Intent.ACTION_PACKAGE_CHANGED, packageName, extras, flags,
                 targetPackageName, null /* finishedReceiver */, userIds, instantUserIds,
-                broadcastAllowList, null /* filterExtrasForReceiver */, bOptions,
-                requiredPermissions);
+                broadcastAllowList, null /* filterExtrasForReceiver */,
+                bOptions == null ? null : bOptions.toBundle(), requiredPermissions);
     }
 
     static void sendDeviceCustomizationReadyBroadcast() {

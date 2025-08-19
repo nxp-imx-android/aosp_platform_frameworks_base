@@ -47,6 +47,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.flow.emptyFlow
@@ -251,6 +252,20 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             underTest.navigateBack()
             runCurrent()
             assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
+    fun backgroundColor_changesBasedOnWhetherBlurIsSupported() =
+        kosmos.runTest {
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+            runCurrent()
+
+            assertThat(underTest.backgroundColor.alpha).isEqualTo(1.0f)
+
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            runCurrent()
+
+            assertThat(underTest.backgroundColor.alpha).isLessThan(1.0f)
         }
 
     private fun authMethodsToTest(): List<AuthenticationMethodModel> {

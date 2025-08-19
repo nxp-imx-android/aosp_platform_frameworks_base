@@ -47,6 +47,7 @@ import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
@@ -63,6 +64,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Slog;
 
+import com.android.adbdauth.flags.Flags;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
@@ -190,6 +192,12 @@ public class AdbDebuggingManager {
     }
 
     private void startTLSPortPoller() {
+        if (wifiLifeCycleOverAdbdauthSupported()) {
+            Slog.d(TAG, "Expecting tls port from adbdauth");
+            return;
+        }
+
+        Slog.d(TAG, "Expecting tls port from ADB Wifi connection poller");
         mConnectionPortPoller =
                 new AdbConnectionPortPoller(
                         port -> {
@@ -448,6 +456,26 @@ public class AdbDebuggingManager {
         }
     }
 
+    // We need to know if ADBd will have access to the version of adbdauth which allows
+    // to send ADB Wifi TSL port and ADBWifi lifecycle management over methods.
+    private static boolean wifiLifeCycleOverAdbdauthSupported() {
+        return Flags.useTlsLifecycle()
+                && (Build.VERSION.SDK_INT >= 37
+                        || (Build.VERSION.SDK_INT == 36 && isAtLeastPreReleaseCodename("Baklava")));
+    }
+
+    // This should only be used with NDK APIs because the NDK lacks flagging support.
+    private static boolean isAtLeastPreReleaseCodename(@NonNull String codename) {
+        // Special case "REL", which means the build is not a pre-release build.
+        if ("REL".equals(Build.VERSION.CODENAME)) {
+            return false;
+        }
+
+        // Otherwise lexically compare them. Return true if the build codename is equal to or
+        // greater than the requested codename.
+        return Build.VERSION.CODENAME.compareTo(codename) >= 0;
+    }
+
     class AdbDebuggingHandler extends Handler {
         private NotificationManager mNotificationManager;
         private boolean mAdbNotificationShown;
@@ -605,11 +633,19 @@ public class AdbDebuggingManager {
         }
 
         private void startAdbdWifi() {
-            AdbService.enableADBdWifi();
+            if (wifiLifeCycleOverAdbdauthSupported()) {
+                mThread.sendResponse(MSG_START_ADB_WIFI);
+            } else {
+                AdbService.enableADBdWifi();
+            }
         }
 
         private void stopAdbdWifi() {
-            AdbService.disableADBdWifi();
+            if (wifiLifeCycleOverAdbdauthSupported()) {
+                mThread.sendResponse(MSG_STOP_ADB_WIFI);
+            } else {
+                AdbService.disableADBdWifi();
+            }
         }
 
         // AdbService/AdbDebuggingManager are always created but we only start the connection

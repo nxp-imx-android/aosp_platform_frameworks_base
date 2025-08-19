@@ -675,4 +675,67 @@ public class LogicalDisplayTest {
         mLogicalDisplay.setCanHostTasksLocked(false);
         assertTrue(mLogicalDisplay.canHostTasksLocked());
     }
+
+    @Test
+    public void testCalculateBaseDensity_withValidDpi() {
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice);
+        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
+        mDisplayDeviceInfo.densityDpi = 0; // To trigger calculateBaseDensity
+        mDisplayDeviceInfo.xDpi = 100f;
+        mDisplayDeviceInfo.yDpi = 100f;
+        mDisplayDeviceInfo.width = 1920;
+        mDisplayDeviceInfo.height = 1080;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+        DisplayInfo info = mLogicalDisplay.getDisplayInfoLocked();
+
+        assertEquals(136, info.logicalDensityDpi);
+    }
+
+    @Test
+    public void testCalculateBaseDensity_withValidDpi_usesMinimumDensityDpi() {
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice);
+        mDisplayDeviceInfo.densityDpi = 0; // To trigger calculateBaseDensity
+        mDisplayDeviceInfo.xDpi = 50f;
+        mDisplayDeviceInfo.yDpi = 50f;
+        mDisplayDeviceInfo.width = 1920;
+        mDisplayDeviceInfo.height = 1080;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+        DisplayInfo info = mLogicalDisplay.getDisplayInfoLocked();
+
+        assertEquals(100, info.logicalDensityDpi);
+    }
+
+    @Test
+    public void testCalculateBaseDensity_notCalledWhenDensityDpiIsSet() {
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice);
+        mDisplayDeviceInfo.densityDpi = 320;
+        mDisplayDeviceInfo.xDpi = 100f;
+        mDisplayDeviceInfo.yDpi = 100f;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+        DisplayInfo info = mLogicalDisplay.getDisplayInfoLocked();
+
+        assertEquals(320, info.logicalDensityDpi);
+    }
+
+    @Test
+    public void testCalculateBaseDensity_withMissingDpi() {
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice);
+        mDisplayDeviceInfo.densityDpi = 0;
+        mDisplayDeviceInfo.xDpi = 0f;
+        mDisplayDeviceInfo.yDpi = 0f;
+        mDisplayDeviceInfo.width = 1920;
+        mDisplayDeviceInfo.height = 1080;
+
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+        DisplayInfo info = mLogicalDisplay.getDisplayInfoLocked();
+
+        assertEquals(125, info.logicalDensityDpi);
+    }
 }

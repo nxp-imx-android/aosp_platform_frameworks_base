@@ -201,6 +201,7 @@ public final class CompanionDeviceManager {
     /** @hide */
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
             FLAG_CALL_METADATA,
+            FLAG_TASK_CONTINUITY,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DataSyncTypes {}
@@ -208,9 +209,15 @@ public final class CompanionDeviceManager {
     /**
      * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
      * Sync call metadata like muting, ending and silencing a call.
-     *
      */
     public static final int FLAG_CALL_METADATA = 1;
+
+    /**
+     * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
+     * Synchronize task continuity data like open tasks, and enable this transport for Handoff.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public static final int FLAG_TASK_CONTINUITY = 2;
 
     /**
      * A device, returned in the activity result of the {@link IntentSender} received in
@@ -605,7 +612,7 @@ public final class CompanionDeviceManager {
     }
 
     /**
-     * <p>Enable system data sync (it only supports call metadata sync for now).
+     * <p>Enable system data sync.
      * By default all supported system data types are enabled.</p>
      *
      * <p>Calling this API requires a uses-feature
@@ -628,7 +635,7 @@ public final class CompanionDeviceManager {
     }
 
     /**
-     * <p>Disable system data sync (it only supports call metadata sync for now).
+     * <p>Disable system data sync.
      * By default all supported system data types are enabled.</p>
      *
      * <p>Calling this API requires a uses-feature

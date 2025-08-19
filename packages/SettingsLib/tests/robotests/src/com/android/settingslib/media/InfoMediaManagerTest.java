@@ -557,7 +557,8 @@ public class InfoMediaManagerTest {
         when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
-        assertThat(mInfoMediaManager.addDeviceToPlayMedia(device)).isTrue();
+        assertThat(mInfoMediaManager.addDeviceToPlayMedia(device, /* routingChangeInfo= */ null))
+                .isTrue();
     }
 
     @Test
@@ -578,7 +579,8 @@ public class InfoMediaManagerTest {
         when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
-        assertThat(mInfoMediaManager.addDeviceToPlayMedia(device)).isFalse();
+        assertThat(mInfoMediaManager.addDeviceToPlayMedia(device, /* routingChangeInfo= */ null))
+                .isFalse();
     }
 
     @Test
@@ -599,7 +601,10 @@ public class InfoMediaManagerTest {
         when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
-        assertThat(mInfoMediaManager.removeDeviceFromPlayMedia(device)).isTrue();
+        assertThat(
+                        mInfoMediaManager.removeDeviceFromPlayMedia(
+                                device, /* routingChangeInfo= */ null))
+                .isTrue();
     }
 
     @Test
@@ -620,7 +625,10 @@ public class InfoMediaManagerTest {
         when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
-        assertThat(mInfoMediaManager.removeDeviceFromPlayMedia(device)).isFalse();
+        assertThat(
+                        mInfoMediaManager.removeDeviceFromPlayMedia(
+                                device, /* routingChangeInfo= */ null))
+                .isFalse();
     }
 
     @Test

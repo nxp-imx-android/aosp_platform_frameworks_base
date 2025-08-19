@@ -881,7 +881,14 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
         final boolean forceFlush = disableFlush ? !started : FORCE_FLUSH;
 
         final ContentCaptureEvent event = new ContentCaptureEvent(sessionId, type);
-        enqueueEvent(event, forceFlush);
+
+        if (Flags.reduceBinderTransactionEnabled()) {
+            // Don't force a flush for view tree events. A dedicated flush event will be sent
+            // after the entire view tree is processed, reducing binder transactions.
+            enqueueEvent(event);
+        } else {
+            enqueueEvent(event, forceFlush);
+        }
     }
 
     @Override
@@ -1074,9 +1081,7 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
                     }
                 }
                 internalNotifyViewTreeEvent(sessionId, /* started= */ false);
-                if (Flags.flushAfterEachFrame()) {
-                    internalNotifySessionFlushEvent(sessionId);
-                }
+                internalNotifySessionFlushEvent(sessionId);
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIEW);

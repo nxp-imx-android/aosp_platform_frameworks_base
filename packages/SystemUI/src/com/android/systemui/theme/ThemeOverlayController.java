@@ -15,7 +15,7 @@
  */
 
 package com.android.systemui.theme;
-
+import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 
 import static com.android.systemui.Flags.hardwareColorStyles;
@@ -85,6 +85,7 @@ import com.android.systemui.monet.Style;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController.DeviceProvisionedListener;
+import com.android.systemui.user.utils.UserScopedService;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.settings.SecureSettings;
 
@@ -173,6 +174,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
     private final StateFlow<Boolean> mIsKeyguardOnAsleepState;
     private final UiModeManager mUiModeManager;
+    private final UserScopedService<UiModeManager> mUiModeManagerProvider;
     private ColorScheme mDarkColorScheme;
     private ColorScheme mLightColorScheme;
 
@@ -237,15 +239,30 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private final UserTracker.Callback mUserTrackerCallback = new UserTracker.Callback() {
         @Override
         public void onUserChanged(int newUser, @NonNull Context userContext) {
+            if (fixContrastAndForceInvertStateForMultiUser()) {
+                UiModeManager uiModeManager = mUiModeManagerProvider.forUser(
+                        UserHandle.of(newUser));
+                uiModeManager.removeContrastChangeListener(mContrastChangeListener);
+                uiModeManager.addContrastChangeListener(mMainExecutor, mContrastChangeListener);
+                mContrast = uiModeManager.getContrast();
+            }
+
             boolean isManagedProfile = mUserManager.isManagedProfile(newUser);
             if (!mDeviceProvisionedController.isCurrentUserSetup() && isManagedProfile) {
                 Log.i(TAG, "User setup not finished when new user event was received. "
                         + "Deferring... Managed profile? " + isManagedProfile);
                 return;
             }
+
             if (DEBUG) Log.d(TAG, "Updating overlays for user switch / profile added.");
             reevaluateSystemTheme(true /* forceReload */);
         }
+    };
+
+    private final UiModeManager.ContrastChangeListener mContrastChangeListener = contrast -> {
+        mContrast = contrast;
+        // Force reload so that we update even when the main color has not changed
+        reevaluateSystemTheme(true /* forceReload */);
     };
 
     private int getDefaultWallpaperColorsSource(int userId) {
@@ -427,7 +444,8 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             WakefulnessLifecycle wakefulnessLifecycle,
             JavaAdapter javaAdapter,
             KeyguardTransitionInteractor keyguardTransitionInteractor,
-            UiModeManager uiModeManager,
+            UiModeManager uiModeManager, // TODO(b/362682063) legacy argument, remove
+            UserScopedService<UiModeManager> uiModeManagerProvider,
             ActivityManager activityManager,
             SystemPropertiesHelper systemPropertiesHelper
     ) {
@@ -448,6 +466,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         mJavaAdapter = javaAdapter;
         mKeyguardTransitionInteractor = keyguardTransitionInteractor;
         mUiModeManager = uiModeManager;
+        mUiModeManagerProvider = uiModeManagerProvider;
         mActivityManager = activityManager;
         mSystemPropertiesHelper = systemPropertiesHelper;
         dumpManager.registerDumpable(TAG, this);
@@ -490,12 +509,19 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                     }
                 },
                 UserHandle.USER_ALL);
-        mContrast = mUiModeManager.getContrast();
-        mUiModeManager.addContrastChangeListener(mMainExecutor, contrast -> {
-            mContrast = contrast;
-            // Force reload so that we update even when the main color has not changed
-            reevaluateSystemTheme(true /* forceReload */);
-        });
+        int userId = mUserTracker.getUserId();
+        if (fixContrastAndForceInvertStateForMultiUser()) {
+            UiModeManager uiModeManager = mUiModeManagerProvider.forUser(UserHandle.of(userId));
+            uiModeManager.addContrastChangeListener(mMainExecutor, mContrastChangeListener);
+            mContrast = uiModeManager.getContrast();
+        } else {
+            mContrast = mUiModeManager.getContrast();
+            mUiModeManager.addContrastChangeListener(mMainExecutor, contrast -> {
+                mContrast = contrast;
+                // Force reload so that we update even when the main color has not changed
+                reevaluateSystemTheme(true /* forceReload */);
+            });
+        }
 
         // All wallpaper color and keyguard logic only applies when Monet is enabled.
         if (!mIsMonetEnabled) {
@@ -522,11 +548,10 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             );
 
             /* We update the json in THEME_CUSTOMIZATION_OVERLAY_PACKAGES to reflect the preset. */
-            final int currentUser = mUserTracker.getUserId();
             final String overlayPackageJson = Objects.requireNonNullElse(
                     mSecureSettings.getStringForUser(
                             Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-                            currentUser),
+                            userId),
                     "{}"
             );
 
@@ -578,7 +603,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                 UserHandle.USER_ALL);
 
         Runnable whenAsleepHandler = () -> {
-            final int userId = mUserTracker.getUserId();
             final WallpaperColors colors = mDeferredWallpaperColors.get(userId);
             if (colors != null) {
                 int flags = mDeferredWallpaperColorsFlags.get(userId);

@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"ဖျက်ရန်"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ဖန်သားပြင်တစ်ခုလုံးကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ရွေးထားသောနေရာကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ဖန်သားပြင်ဓာတ်ပုံ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ရုပ်သံဖမ်းရန်"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"မျှဝေရန်"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ဖန်သားပြင်ကို မျှဝေနေသည်"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"အကြောင်းအရာကို မျှဝေနေသည်"</string>
@@ -222,7 +238,7 @@
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"နောက်ထပ်ရွေးစရာများ"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"အခြားနည်းဖြင့် အတည်ပြုရန်"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"အခြားနည်းဖြင့် အတည်ပြုရန်"</string>
-    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"‘မည်သူမည်ဝါဖြစ်ကြောင်း စစ်ဆေးခြင်း’ စီမံရန်"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Identity Check ကို စီမံရန်"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"‘အထောက်အထား စစ်ဆေးခြင်း’ အကြောင်း ပိုလေ့လာရန်"</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‘အထောက်အထား စစ်ဆေးခြင်း’ ဖွင့်ထားပြီး သင့်လက်ဗွေ (သို့) မျက်နှာဖြင့်သာ အတည်ပြုနိုင်သည်။ %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"အန္တရာယ်ကို အကဲဖြတ်နေသည်…"</string>
@@ -761,7 +777,7 @@
     <string name="screen_pinning_negative" msgid="6882816864569211666">"မလိုပါ"</string>
     <string name="screen_pinning_start" msgid="7483998671383371313">"အက်ပ်ကို ပင်ထိုးလိုက်သည်"</string>
     <string name="screen_pinning_exit" msgid="4553787518387346893">"အက်ပ်ကို ပင်ဖြုတ်လိုက်သည်"</string>
-    <string name="stream_voice_call" msgid="7468348170702375660">"ဖုန်းခေါ်ရန်"</string>
+    <string name="stream_voice_call" msgid="7468348170702375660">"ဖုန်းခေါ်ဆိုခြင်း"</string>
     <string name="stream_system" msgid="7663148785370565134">"စနစ်"</string>
     <string name="stream_ring" msgid="7550670036738697526">"ဖုန်းမြည်သံ"</string>
     <string name="stream_music" msgid="2188224742361847580">"မီဒီယာ"</string>
@@ -1119,10 +1135,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"စာမျက်နှာ <xliff:g id="ID_2">%2$d</xliff:g> အနက်မှ စာမျက်နှာ <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ကို ဖွင့်မလား။"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"လုပ်ဆောင်ချက် "<annotation id="action_key_icon">"သင်္ကေတ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> သည် <xliff:g id="ID_3">^3</xliff:g> အသုံးပြုရန် လက်ကွက်ဖြတ်လမ်းဖြစ်သည်။ <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"၎င်းသည် အကြောင်းအရာကို ပိုကြီးအောင်လုပ်ရန်အတွက် စခရင်တွင် အမြန်ဇူးမ်ဆွဲခွင့်ပြုသည်။"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> သည် ဖန်သားပြင်ဖတ်အက်ပ်ဖြစ်ပြီး သင့်အတွက် အကြောင်းအရာများကို အသံထွက်ဖတ်ပြပေးသည်။ ၎င်းသည် စခရင်ကိုကြည့်ရန် အခက်အခဲရှိသူများအတွက် အထောက်အကူဖြစ်စေသည်။"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> က သင့်စက်ကို လက်လွတ်ထိန်းချုပ်ခွင့်ပြုသည်။"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ဖွင့်ရန်"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"လော့ခ်မျက်နှာပြင်"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"စက်ပိတ်နေသည်…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ဂရုပြုစရာ အဆင့်များ ကြည့်ရန်"</string>

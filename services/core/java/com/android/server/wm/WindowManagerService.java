@@ -2621,7 +2621,6 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             final int oldVisibility = win.mViewVisibility;
-            final int oldBufferSeqId = win.mBufferSeqId;
 
             // If the window is becoming visible, visibleOrAdding may change which may in turn
             // change the IME layering target.
@@ -2850,9 +2849,9 @@ public class WindowManagerService extends IWindowManager.Stub
                             : -1;
                     win.markRedrawForSyncReported();
                 } else {
-                    if (win.mBufferSeqId > oldBufferSeqId) {
-                        // A sync was started so this current layout is invalid until subsequent
-                        // reportResized.
+                    if (mAlwaysSeqId && win.cancelAndRedraw(syncSeqId)) {
+                        // Surface-placement has resulted in a new configuration or a new sync,
+                        // so this current layout is invalid until subsequent reportResized.
                         result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
                     }
                     outRelayoutResult.syncSeqId = -1;
@@ -3938,6 +3937,9 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Update the current user. */
     public void setCurrentUser(@UserIdInt int newUserId, UserState uss) {
         synchronized (mGlobalLock) {
+            if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                mRoot.mTaskSupervisor.mStartingUsers.add(uss);
+            }
             final TransitionController controller = mAtmService.getTransitionController();
             final Runnable applyUserChange = () -> {
                 mCurrentUserId = newUserId;

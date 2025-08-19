@@ -533,10 +533,11 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     }
 
     void deactivate(WindowContainerTransaction wct) {
-        deactivate(wct, false /* toTop */);
+        deactivate(wct, false /* toTop */, null /* newParent */);
     }
 
-    void deactivate(WindowContainerTransaction wct, boolean reparentTasksToTop) {
+    void deactivate(WindowContainerTransaction wct, boolean reparentTasksToTop,
+            @Nullable WindowContainerToken newParent) {
         if (!mIsActive && !enableFlexibleSplit()) return;
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "deactivate: reparentTasksToTop=%b "
                         + "rootTaskInfo=%s stage=%s",
@@ -549,7 +550,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         final WindowContainerToken rootToken = mRootTaskInfo.token;
         wct.reparentTasks(
                 rootToken,
-                null /* newParent */,
+                newParent,
                 null /* windowingModes */,
                 null /* activityTypes */,
                 reparentTasksToTop);
@@ -557,14 +558,15 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
 
     // --------
     // Previously only used in SideStage. With flexible split this is called for all stages
-    boolean removeAllTasks(WindowContainerTransaction wct, boolean toTop) {
+    boolean removeAllTasks(WindowContainerTransaction wct, boolean toTop,
+            @Nullable WindowContainerToken newParent) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "remove all side stage tasks: childCount=%d toTop=%b "
                         + " stageI=%s",
                 mChildrenTaskInfo.size(), toTop, stageTypeToString(mId));
         if (mChildrenTaskInfo.size() == 0) return false;
         wct.reparentTasks(
                 mRootTaskInfo.token,
-                null /* newParent */,
+                newParent,
                 null /* windowingModes */,
                 null /* activityTypes */,
                 toTop);

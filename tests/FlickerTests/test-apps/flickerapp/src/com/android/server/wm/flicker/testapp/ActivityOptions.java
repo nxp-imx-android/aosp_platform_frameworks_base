@@ -318,4 +318,10 @@ public class ActivityOptions {
     public static final ComponentName ASSISTANT_SERVICE_COMPONENT_NAME =
             new ComponentName(
                     FLICKER_APP_PACKAGE, FLICKER_APP_PACKAGE + ".AssistantInteractionService");
+
+    public static class ImmersiveActivity {
+        public static final String LABEL = "ImmersiveActivity";
+        public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
+                FLICKER_APP_PACKAGE + ".ImmersiveActivity");
+    }
 }

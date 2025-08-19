@@ -148,9 +148,25 @@
     <string name="screen_record_delete" msgid="1023421937978254537">"Supprimer"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Capturer tout l\'écran"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Faire une capture d\'écran de la zone sélectionnée"</string>
+    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Capture d\'écran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
+    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Partage de l\'écran…"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Partage de contenu"</string>
@@ -220,16 +236,12 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Authentifié"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Annuler l\'authentification"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Plus d\'options"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (2337887849267443214) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Autre méthode de validation"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Autre méthode de validation"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gérer la vérification de l\'identité"</string>
-    <!-- no translation found for biometric_dialog_identity_check_footer_link_text (5445804502968287214) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_footer (4176895548458429932) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (2994378079915744485) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"En savoir plus sur la vérification de l\'identité"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"La vérification de l\'identité est activée et ne peut confirmer votre identité qu\'à l\'aide de votre empreinte digitale ou de votre visage. %1$s"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Évaluation des risques…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Indisponible"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Utiliser un code"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Utiliser un schéma"</string>
@@ -1123,10 +1135,17 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"L\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Cela vous permet de faire un zoom avant rapide sur l\'écran pour agrandir le contenu."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre des éléments prononcés à voix haute. Cet outil est conçu pour les personnes qui ont du mal à voir l\'écran."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> vous permet de contrôler votre appareil en mode mains libres."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activer"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Afficher les étapes d\'entretien"</string>
@@ -1357,7 +1376,7 @@
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Connecté"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Impossible de changer. Appuyez pour réessayer."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Connecter un appareil"</string>
-    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connecter l\'appareil"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connecter un appareil"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"Appli inconnue"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Arrêter la diffusion"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Appareils disponibles pour la sortie audio."</string>
@@ -1373,7 +1392,7 @@
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Arrêter"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Arrêter le partage"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Audio partagé"</string>
-    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Partager le contenu audio"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Partager l\'audio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numéro de build"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Numéro de build copié dans le presse-papiers."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"copier dans le presse-papiers."</string>

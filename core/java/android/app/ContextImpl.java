@@ -2373,6 +2373,32 @@ class ContextImpl extends Context {
     }
 
     @Override
+    public void rebindService(ServiceConnection conn, @NonNull BindServiceFlags flags) {
+        if (conn == null) {
+            throw new IllegalArgumentException("ServiceConnection is null");
+        }
+        if (mPackageInfo == null) {
+            throw new RuntimeException("Not supported in system context");
+        }
+        final IServiceConnection sd = mPackageInfo.lookupServiceDispatcher(
+                        conn, getOuterContext());
+        if (sd == null) {
+            throw new IllegalArgumentException("ServiceConnection not currently bound: " + conn);
+        }
+        final BindUpdateInfo update = new BindUpdateInfo();
+        update.connection = sd.asBinder();
+        update.unbind = false;
+        update.flags = flags.getValue();
+        final ArrayList<BindUpdateInfo> updates = new ArrayList<>(1);
+        updates.add(update);
+        try {
+            ActivityManager.getService().updateServiceBindings(updates);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
     public boolean startInstrumentation(ComponentName className,
             String profileFile, Bundle arguments) {
         try {

@@ -23,6 +23,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,15 +49,15 @@ class ConnectedAssociationStore {
 
     interface Listener {
         void onTransportConnected(@NonNull AssociationInfo associationInfo);
+
         void onTransportDisconnected(
-            int associationId,
-            @NonNull Collection<AssociationInfo> connectedAssociations);
+                int associationId, @NonNull Collection<AssociationInfo> connectedAssociations);
     }
 
     ConnectedAssociationStore(
-        @NonNull CompanionDeviceManager companionDeviceManager,
-        @NonNull Executor executor,
-        @NonNull Listener listener) {
+            @NonNull CompanionDeviceManager companionDeviceManager,
+            @NonNull Executor executor,
+            @NonNull Listener listener) {
 
         Objects.requireNonNull(companionDeviceManager);
         Objects.requireNonNull(executor);
@@ -65,7 +66,7 @@ class ConnectedAssociationStore {
         mCompanionDeviceManager = companionDeviceManager;
         mListener = listener;
         mExecutor = executor;
-   }
+    }
 
     public void enable() {
         synchronized (this) {
@@ -75,8 +76,7 @@ class ConnectedAssociationStore {
             }
             mAssociationInfoConsumer = this::onTransportsChanged;
             mCompanionDeviceManager.addOnTransportsChangedListener(
-                mExecutor,
-                mAssociationInfoConsumer);
+                    mExecutor, mAssociationInfoConsumer);
             Slog.i(TAG, "Enabled ConnectedAssociationStore.");
         }
     }
@@ -103,11 +103,19 @@ class ConnectedAssociationStore {
 
     @VisibleForTesting
     void onTransportsChanged(List<AssociationInfo> associationInfos) {
-        Set<Integer> removedAssociations
-            = new HashSet<>(mConnectedAssociations.keySet());
+        List<AssociationInfo> newTaskContinuityAssociations = new ArrayList<>();
+        for (AssociationInfo associationInfo : associationInfos) {
+            int taskContinuityFlag = associationInfo.getSystemDataSyncFlags()
+                    & CompanionDeviceManager.FLAG_TASK_CONTINUITY;
+            if (taskContinuityFlag != 0) {
+                newTaskContinuityAssociations.add(associationInfo);
+            }
+        }
+
+        Set<Integer> removedAssociations = new HashSet<>(mConnectedAssociations.keySet());
 
         Set<AssociationInfo> addedAssociations = new HashSet<>();
-        for (AssociationInfo associationInfo : associationInfos) {
+        for (AssociationInfo associationInfo : newTaskContinuityAssociations) {
             if (!mConnectedAssociations.containsKey(associationInfo.getId())) {
                 addedAssociations.add(associationInfo);
             }
@@ -118,18 +126,14 @@ class ConnectedAssociationStore {
         }
 
         for (Integer associationId : removedAssociations) {
-            Slog.i(
-                TAG,
-                "Transport disconnected for association: " + associationId);
+            Slog.i(TAG, "Transport disconnected for association: " + associationId);
 
             mConnectedAssociations.remove(associationId);
-            mListener.onTransportDisconnected(associationId, associationInfos);
+            mListener.onTransportDisconnected(associationId, newTaskContinuityAssociations);
         }
 
         for (AssociationInfo associationInfo : addedAssociations) {
-            Slog.i(
-                TAG,
-                "Transport connected for association: " + associationInfo.getId());
+            Slog.i(TAG, "Transport connected for association: " + associationInfo.getId());
 
             mConnectedAssociations.put(associationInfo.getId(), associationInfo);
             mListener.onTransportConnected(associationInfo);
