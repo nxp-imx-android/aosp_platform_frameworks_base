@@ -65,3 +65,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "always_rebind_user_set_wallpaper"
+    namespace: "systemui"
+    description: "Always rebind wallpapers after a change via WallpaperManager API"
+    bug: "438411848"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
