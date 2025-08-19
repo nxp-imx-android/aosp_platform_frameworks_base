@@ -2960,6 +2960,21 @@ class MediaRouter2ServiceImpl {
         }
 
         /**
+         * Notifies the corresponding manager of the creation of the given {@link
+         * RoutingSessionInfo}.
+         *
+         * @param requestId The id of the request that originated the creation of the session.
+         * @param session The session that was created.
+         */
+        public void notifySessionCreated(int requestId, @NonNull RoutingSessionInfo session) {
+            try {
+                mManager.notifySessionCreated(requestId, session);
+            } catch (RemoteException ex) {
+                logRemoteException("notifySessionCreated", ex);
+            }
+        }
+
+        /**
          * Notifies the corresponding manager of the availability of the given routes.
          *
          * @param routes The routes available to the manager that corresponds to this record.
@@ -4020,14 +4035,11 @@ class MediaRouter2ServiceImpl {
             int originalRequestId = toOriginalRequestId(managerRequestId);
 
             for (ManagerRecord manager : getManagerRecords()) {
-                try {
-                    manager.mManager.notifySessionCreated(
-                            ((manager.mManagerId == requesterId) ? originalRequestId :
-                                    MediaRouter2Manager.REQUEST_ID_NONE), session);
-                } catch (RemoteException ex) {
-                    Slog.w(TAG, "notifySessionCreatedToManagers: "
-                            + "Failed to notify. Manager probably died.", ex);
-                }
+                int requestId =
+                        manager.mManagerId == requesterId
+                                ? originalRequestId
+                                : MediaRouter2Manager.REQUEST_ID_NONE;
+                manager.notifySessionCreated(requestId, session);
             }
         }
 
