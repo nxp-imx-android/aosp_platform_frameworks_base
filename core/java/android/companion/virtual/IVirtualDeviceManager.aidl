@@ -104,6 +104,11 @@ interface IVirtualDeviceManager {
     int getDevicePolicy(int deviceId, int policyType);
 
     /**
+     * Returns the device policy for the given display ID and policy type.
+     */
+    int getDevicePolicyForDisplayId(int displayId, int policyType);
+
+    /**
      * Returns device-specific session id for playback, or AUDIO_SESSION_ID_GENERATE
      * if there's none.
      */

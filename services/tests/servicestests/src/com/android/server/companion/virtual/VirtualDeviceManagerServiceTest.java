@@ -19,6 +19,7 @@ package com.android.server.companion.virtual;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 import static android.content.Context.DEVICE_ID_DEFAULT;
@@ -543,6 +544,71 @@ public class VirtualDeviceManagerServiceTest {
         GenericWindowPolicyController gwpc =
                 mDeviceImpl.getDisplayWindowPolicyControllerForTest(DISPLAY_ID_1);
         assertThat(gwpc.canShowTasksInHostDeviceRecents()).isTrue();
+    }
+
+    @Test
+    public void getDevicePolicyForDisplayId() {
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_SENSORS, DEVICE_POLICY_CUSTOM)
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+
+        mDeviceImpl.setDevicePolicyForDisplay(
+            DISPLAY_ID_1, POLICY_TYPE_RECENTS, DEVICE_POLICY_DEFAULT);
+        mDeviceImpl.setDevicePolicyForDisplay(
+            DISPLAY_ID_1, POLICY_TYPE_ACTIVITY, DEVICE_POLICY_DEFAULT);
+
+        // Device-level policy is unchanged.
+        assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId(), POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId(), POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+
+        // Display-level policy is changed.
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_1, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+    }
+
+    @Test
+    public void getDevicePolicyForDisplayId_unownedDisplay() {
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                .setDevicePolicy(POLICY_TYPE_SENSORS, DEVICE_POLICY_CUSTOM)
+                .build();
+        mDeviceImpl.close();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+
+        assertThat(mVdm.getDevicePolicyForDisplayId(Display.DEFAULT_DISPLAY, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(Display.DEFAULT_DISPLAY, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(Display.DEFAULT_DISPLAY, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+
+        // Non-existent display.
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_RECENTS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
+        assertThat(mVdm.getDevicePolicyForDisplayId(DISPLAY_ID_2, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_DEFAULT);
     }
 
     @Test

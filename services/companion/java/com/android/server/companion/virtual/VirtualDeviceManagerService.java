@@ -568,6 +568,23 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override // Binder call
+        @VirtualDeviceParams.DevicePolicy
+        public int getDevicePolicyForDisplayId(int displayId,
+            @VirtualDeviceParams.PolicyType int policyType) {
+            final int deviceId = getDeviceIdForDisplayId(displayId);
+            if (deviceId == Context.DEVICE_ID_DEFAULT) {
+                return DEVICE_POLICY_DEFAULT;
+            }
+            VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
+            // Do not return DEVICE_POLICY_INVALID here, because the display may exist but not
+            // owned by any virtual device, just like the default display.
+            if (virtualDevice == null) {
+                return DEVICE_POLICY_DEFAULT;
+            }
+            return virtualDevice.getDevicePolicyForDisplayId(displayId, policyType);
+        }
+
+        @Override // Binder call
         public int getDeviceIdForDisplayId(int displayId) {
             if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
                 return Context.DEVICE_ID_DEFAULT;

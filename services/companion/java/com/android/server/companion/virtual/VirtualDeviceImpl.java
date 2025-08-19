@@ -605,6 +605,25 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         }
     }
 
+    public @VirtualDeviceParams.DevicePolicy int getDevicePolicyForDisplayId(
+            int displayId, @VirtualDeviceParams.PolicyType int policyType) {
+        synchronized (mVirtualDeviceLock) {
+            switch (policyType) {
+                case POLICY_TYPE_RECENTS:
+                    return mVirtualDisplays.get(displayId).getWindowPolicyController()
+                            .canShowTasksInHostDeviceRecents()
+                            ? DEVICE_POLICY_DEFAULT : DEVICE_POLICY_CUSTOM;
+                case POLICY_TYPE_ACTIVITY:
+                    return mVirtualDisplays.get(displayId).getWindowPolicyController()
+                            .isActivityLaunchAllowedByDefault()
+                            ? DEVICE_POLICY_DEFAULT : DEVICE_POLICY_CUSTOM;
+                default:
+                    // fallback to device-level policy
+                    return mDevicePolicies.get(policyType, DEVICE_POLICY_DEFAULT);
+            }
+        }
+    }
+
     /** Returns device-specific audio session id for playback. */
     public int getAudioPlaybackSessionId() {
         return mParams.getAudioPlaybackSessionId();
