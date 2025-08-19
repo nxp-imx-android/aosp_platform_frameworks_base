@@ -1672,6 +1672,8 @@ public class BubbleTransitions {
         private SurfaceControl mTaskLeash;
         private SurfaceControl.Transaction mFinishTransaction;
         private boolean mIsStarted = false;
+        private boolean mHasBounds = false;
+        private boolean mCanExpand = false;
 
         FloatingToBarConversion(Bubble bubble, BubblePositioner positioner) {
             this(bubble, SurfaceControl.Transaction::new, positioner);
@@ -1760,11 +1762,24 @@ public class BubbleTransitions {
 
         @Override
         public void continueConvert(BubbleBarLayerView layerView) {
+            mHasBounds = true;
             mPositioner.getTaskViewRestBounds(mBounds);
             mWct.setBounds(mBubble.getTaskView().getTaskInfo().token, mBounds);
-            if (!mIsStarted) {
+            if (canStart()) {
                 startTransition();
             }
+        }
+
+        @Override
+        public void continueExpand() {
+            mCanExpand = true;
+            if (canStart()) {
+                startTransition();
+            }
+        }
+
+        private boolean canStart() {
+            return mHasBounds && mCanExpand && !mIsStarted;
         }
 
         private void startTransition() {
