@@ -142,6 +142,7 @@ class ReusableWindowDecorViewHost(
         onDrawTransaction: SurfaceControl.Transaction?,
     ) {
         Trace.beginSection("ReusableWindowDecorViewHost#updateViewHost")
+        rootView.layoutDirection = configuration.layoutDirection
         viewHostAdapter.prepareViewHost(configuration, touchableRegion)
         onDrawTransaction?.let { viewHostAdapter.applyTransactionOnDraw(it) }
         when {
