@@ -133,6 +133,11 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                     complete(id, entry);
                 }
             } else {
+                if (mHistory.isActiveFull()) {
+                    log("%s: onStart while active entries are full, not tracking request", tag);
+                    return;
+                }
+
                 final var newEntry = new History.Entry();
                 // Prefer current time to startTime when creating the entry in onStart.
                 newEntry.onStart(tag, uid, type, origin, reason, fromUser,
@@ -162,6 +167,11 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 entry.onProgress(phase);
             } else {
                 if (mHistory.isCompleted(id)) {
+                    return;
+                }
+
+                if (mHistory.isActiveFull()) {
+                    log("%s: onProgress while active entries are full, not tracking request", tag);
                     return;
                 }
 
@@ -212,6 +222,14 @@ public final class ImeTrackerService extends IImeTracker.Stub {
         } else {
             if (mHistory.isCompleted(id)) {
                 log("%s: onFinished on previously finished token at %s with %s", tag,
+                        ImeTracker.Debug.phaseToString(phase),
+                        ImeTracker.Debug.statusToString(status));
+                return;
+            }
+
+            if (mHistory.isActiveFull()) {
+                log("%s: onFinished at %s with %s while active entries are full,"
+                        + " not tracking request", tag,
                         ImeTracker.Debug.phaseToString(phase),
                         ImeTracker.Debug.statusToString(status));
                 return;
@@ -384,20 +402,26 @@ public final class ImeTrackerService extends IImeTracker.Stub {
     static final class History {
 
         /** The maximum number of completed entries to store in {@link #mCompletedEntries}. */
-        private static final int CAPACITY = 100;
+        private static final int COMPLETED_CAPACITY = 200;
+
+        /**
+         * The maximum number of active entries to track in {@link #mActiveEntries} simultaneously.
+         */
+        @VisibleForTesting
+        static final int ACTIVE_CAPACITY = 1000;
 
         /**
          * Circular buffer of completed requests, mapped by their unique ID. The buffer has a fixed
-         * capacity ({@link #CAPACITY}), with older entries overwritten when the capacity
+         * capacity ({@link #COMPLETED_CAPACITY}), with older entries overwritten when the capacity
          * is reached.
          */
         @GuardedBy("mLock")
         private final LinkedHashMap<Long, History.Entry> mCompletedEntries =
-                new LinkedHashMap<>(CAPACITY) {
+                new LinkedHashMap<>(COMPLETED_CAPACITY) {
 
                     @Override
                     protected boolean removeEldestEntry(Map.Entry<Long, History.Entry> eldest) {
-                        return size() > CAPACITY;
+                        return size() > COMPLETED_CAPACITY;
                     }
                 };
 
@@ -458,6 +482,12 @@ public final class ImeTrackerService extends IImeTracker.Stub {
         @GuardedBy("mLock")
         boolean isCompleted(long id) {
             return mCompletedEntries.containsKey(id);
+        }
+
+        /** Checks whether the collection of active entries is full. */
+        @GuardedBy("mLock")
+        boolean isActiveFull() {
+            return mActiveEntries.size() >= ACTIVE_CAPACITY;
         }
 
         /**
