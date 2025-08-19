@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastLastOrNull
 import com.android.compose.animation.scene.content.state.TransitionState
 import kotlin.math.roundToInt
@@ -277,25 +278,19 @@ internal fun <T> animateSharedValueAsState(
     type: SharedValueType<T, *>,
     canOverflow: Boolean,
 ): AnimatedState<T> {
+    val sharedTargetValue = SharedTargetValue(layoutImpl.state, value)
     DisposableEffect(layoutImpl, content, element, key) {
         // Create the associated maps that hold the current value for each (element, content) pair.
         val valueMap = layoutImpl.sharedValues.getOrPut(key) { mutableMapOf() }
         val sharedValue = valueMap.getOrPut(element) { SharedValue(type) } as SharedValue<T, *>
         val targetValues = sharedValue.targetValues
-        targetValues[content] = value
+        targetValues[content] = sharedTargetValue
 
         onDispose {
             // Remove the value associated to the current scene, and eventually remove the maps if
             // they are empty.
             targetValues.remove(content)
-
-            if (targetValues.isEmpty() && valueMap[element] === sharedValue) {
-                valueMap.remove(element)
-
-                if (valueMap.isEmpty() && layoutImpl.sharedValues[key] === valueMap) {
-                    layoutImpl.sharedValues.remove(key)
-                }
-            }
+            maybePruneMaps(layoutImpl, element, key, valueMap, sharedValue, targetValues)
         }
     }
 
@@ -306,11 +301,60 @@ internal fun <T> animateSharedValueAsState(
             error("value is equal to $value, which is the undefined value for this type.")
         }
 
-        sharedValue<T, Any>(layoutImpl, key, element).targetValues[content] = value
+        sharedValue<T, Any>(layoutImpl, key, element).targetValues[content] = sharedTargetValue
+    }
+
+    // Propagate the value to ancestor STLs if this content is the current scene. Note that only
+    // scenes can propagate their shared values to ancestor STLs, because multiple overlays with
+    // different values could be shown and there is no way to decide why one should be propagated.
+    if (
+        layoutImpl.ancestors.isNotEmpty() &&
+            content is SceneKey &&
+            layoutImpl.state.currentScene == content
+    ) {
+        DisposableEffect(sharedTargetValue) {
+            val valueMap = layoutImpl.sharedValues.getValue(key)
+            val sharedValue = valueMap.getValue(element) as SharedValue<T, *>
+            val targetValues = sharedValue.targetValues
+
+            layoutImpl.ancestors.fastForEach { ancestor ->
+                val previousTarget = targetValues[ancestor.inContent]
+                if (previousTarget == null || previousTarget.sourceState == layoutImpl.state) {
+                    targetValues[ancestor.inContent] = sharedTargetValue
+                }
+            }
+
+            onDispose {
+                layoutImpl.ancestors.fastForEach { ancestor ->
+                    if (targetValues[ancestor.inContent] == sharedTargetValue) {
+                        targetValues.remove(ancestor.inContent)
+                    }
+                }
+
+                maybePruneMaps(layoutImpl, element, key, valueMap, sharedValue, targetValues)
+            }
+        }
     }
 
     return remember(layoutImpl, content, element, canOverflow) {
         AnimatedStateImpl<T, Any>(layoutImpl, content, element, key, canOverflow)
+    }
+}
+
+private fun maybePruneMaps(
+    layoutImpl: SceneTransitionLayoutImpl,
+    element: ElementKey?,
+    key: ValueKey,
+    valueMap: MutableMap<ElementKey?, SharedValue<*, *>>,
+    sharedValue: SharedValue<*, *>,
+    targetValues: Map<ContentKey, *>,
+) {
+    if (targetValues.isEmpty() && valueMap[element] === sharedValue) {
+        valueMap.remove(element)
+
+        if (valueMap.isEmpty() && layoutImpl.sharedValues[key] === valueMap) {
+            layoutImpl.sharedValues.remove(key)
+        }
     }
 }
 
@@ -330,7 +374,7 @@ private fun valueReadTooEarlyMessage(key: ValueKey) =
 
 internal class SharedValue<T, Delta>(val type: SharedValueType<T, Delta>) {
     /** The target value of this shared value for each content. */
-    val targetValues = SnapshotStateMap<ContentKey, T>()
+    val targetValues = SnapshotStateMap<ContentKey, SharedTargetValue<T>>()
 
     /** The last value of this shared value. */
     var lastValue: T = type.unspecifiedValue
@@ -344,6 +388,12 @@ internal class SharedValue<T, Delta>(val type: SharedValueType<T, Delta>) {
     /** The last transition that was used when the value of this shared state. */
     var lastTransition: TransitionState.Transition? = null
 }
+
+/**
+ * A holder for the target value of a [SharedValue] that keeps a reference of the [sourceState]
+ * owning that value, which is used to propagate shared value to ancestors from nested STLs.
+ */
+internal data class SharedTargetValue<T>(val sourceState: SceneTransitionLayoutState, val value: T)
 
 private class AnimatedStateImpl<T, Delta>(
     private val layoutImpl: SceneTransitionLayoutImpl,
@@ -370,7 +420,9 @@ private class AnimatedStateImpl<T, Delta>(
         return interruptedValue
     }
 
-    private operator fun SharedValue<T, *>.get(content: ContentKey): T? = targetValues[content]
+    private operator fun SharedValue<T, *>.get(content: ContentKey): T? {
+        return targetValues[content]?.value
+    }
 
     private fun valueOrNull(
         sharedValue: SharedValue<T, *>,
@@ -430,19 +482,26 @@ private class AnimatedStateImpl<T, Delta>(
 
     private fun transition(sharedValue: SharedValue<T, Delta>): TransitionState.Transition? {
         val targetValues = sharedValue.targetValues
+        val nestedTransitionStates = getAllNestedTransitionStates(layoutImpl)
         val transition =
             if (element != null) {
                 layoutImpl.elements[element]?.let { element ->
                     elementState(
-                        listOf(layoutImpl.state.transitionStates),
+                        nestedTransitionStates,
                         elementKey = element.key,
                         isInContent = { it in element.stateByContent },
                     )
                         as? TransitionState.Transition
                 }
             } else {
-                layoutImpl.state.currentTransitions.fastLastOrNull { transition ->
-                    transition.fromContent in targetValues || transition.toContent in targetValues
+                nestedTransitionStates.fastFirstNotNullOfOrNull { transitionStates ->
+                    transitionStates
+                        .fastLastOrNull { transitionState ->
+                            transitionState is TransitionState.Transition &&
+                                (transitionState.fromContent in targetValues ||
+                                    transitionState.toContent in targetValues)
+                        }
+                        ?.let { it as TransitionState.Transition }
                 }
             }
 
@@ -503,4 +562,14 @@ private class AnimatedStateImpl<T, Delta>(
 
         return state
     }
+}
+
+private inline fun <T, R : Any> List<T>.fastFirstNotNullOfOrNull(transform: (T) -> R?): R? {
+    fastForEach { element ->
+        val result = transform(element)
+        if (result != null) {
+            return result
+        }
+    }
+    return null
 }
