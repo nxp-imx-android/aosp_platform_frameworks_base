@@ -319,6 +319,9 @@ public class SystemConfig {
     final ArrayMap<String, ArrayMap<String, Boolean>> mPackageComponentEnabledState =
             new ArrayMap<>();
 
+    // These are the packages that cannot enable App Lock
+    final ArraySet<String> mAppLockExemptPackages = new ArraySet<>();
+
     // Package names that are exempted from private API blacklisting
     final ArraySet<String> mHiddenApiPackageWhitelist = new ArraySet<>();
 
@@ -492,6 +495,10 @@ public class SystemConfig {
 
     public ArraySet<String> getLinkedApps() {
         return mLinkedApps;
+    }
+
+    public ArraySet<String> getAppLockExemptPackages() {
+        return mAppLockExemptPackages;
     }
 
     public ArraySet<String> getHiddenApiWhitelistedApps() {
@@ -1002,6 +1009,9 @@ public class SystemConfig {
                         break;
                     case "oem-permissions":
                         readOemPermissions(parser, permFile, allowOemPermissions);
+                        break;
+                    case "app-lock-exempt":
+                        readAppLockExemptApps(parser, permFile, name);
                         break;
                     case "hidden-api-whitelisted-app":
                         readHiddenApiWhitelistedApp(parser, permFile, allowApiWhitelisting, name);
@@ -1679,6 +1689,20 @@ public class SystemConfig {
             logNotAllowedInPartition("oem-permissions", permFile, parser);
             XmlUtils.skipCurrentTag(parser);
         }
+    }
+
+    private void readAppLockExemptApps(XmlPullParser parser, File permFile, String name)
+            throws IOException, XmlPullParserException {
+        if (android.security.Flags.appLockApis()) {
+            String pkgName = parser.getAttributeValue(null, "package");
+            if (pkgName == null) {
+                Slog.w(TAG, "<" + name + "> without package in "
+                        + permFile + " at " + parser.getPositionDescription());
+            } else {
+                mAppLockExemptPackages.add(pkgName);
+            }
+        }
+        XmlUtils.skipCurrentTag(parser);
     }
 
     private void readHiddenApiWhitelistedApp(XmlPullParser parser, File permFile, boolean allow,
