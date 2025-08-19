@@ -35,6 +35,8 @@ import com.android.systemui.statusbar.notification.domain.interactor.Notificatio
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.util.kotlin.Utils.Companion.toQuad
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import dagger.Lazy
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -42,8 +44,6 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import dagger.Lazy
-import javax.inject.Inject
 
 @SysUISingleton
 class WindowManagerLockscreenVisibilityInteractor
@@ -132,7 +132,7 @@ constructor(
                                     FromPrimaryBouncerTransitionInteractor
                                         .TO_GONE_SURFACE_BEHIND_VISIBLE_THRESHOLD
                             }
-                        else -> lockscreenVisibilityWithScenes.map { !it }
+                        else -> lockscreenVisibilityWithScenes.map { !it.first }
                     }
                 }
             } else {
@@ -219,9 +219,15 @@ constructor(
     private val goneToLockscreenLsVisibility =
         powerInteractor.detailedWakefulness
             .distinctUntilChangedBy { it.isAwake() }
-            .map { it.isAwake() && !it.powerButtonLaunchGestureTriggered }
+            .map {
+                if (it.powerButtonLaunchGestureTriggered) {
+                    false to "ChangeScene Gone -> LS, power button launch"
+                } else {
+                    it.isAwake() to "ChangeScene Gone -> LS, awake w/ no power button launch"
+                }
+            }
 
-    private val lockscreenVisibilityWithScenes: Flow<Boolean> =
+    private val lockscreenVisibilityWithScenes: Flow<Pair<Boolean, String>> =
         deviceProvisioningInteractor.get().isDeviceProvisioned.flatMapLatestConflated {
             isProvisioned ->
             if (isProvisioned) {
@@ -232,29 +238,34 @@ constructor(
                                     when {
                                         // If idle on one of the keyguard scenes, report that the
                                         // keyguard is visible.
-                                        it.currentScene in keyguardScenes -> flowOf(true)
+                                        it.currentScene in keyguardScenes ->
+                                            flowOf(true to "Idle on keyguard scene")
                                         // If showing the bouncer overlay, report that the keyguard
                                         // is visible.
                                         it.currentOverlays.contains(Overlays.Bouncer) ->
-                                            flowOf(true)
+                                            flowOf(true to "Idle w/ bouncer showing")
                                         // If showing a shade scene, report that the keyguard is
                                         // visible if the device hasn't been entered yet.
-                                        it.currentScene in shadeScenes -> isDeviceNotEnteredDirectly
+                                        it.currentScene in shadeScenes ->
+                                            isDeviceNotEnteredDirectly.map {
+                                                it to "Idle in shade and deviceNotEntered=$it"
+                                            }
                                         // If idle on any other scene, report that the keyguard is
                                         // not visible.
-                                        else -> flowOf(false)
+                                        else -> flowOf(false to "Idle on non-keyguard scene")
                                     }
 
                                 is Transition.ChangeScene ->
                                     when {
                                         // If transitioning between keyguard and another scene, keep
                                         // lockscreen visible until the transition ends.
-                                        it.fromScene in keyguardScenes -> flowOf(true)
+                                        it.fromScene in keyguardScenes ->
+                                            flowOf(true to "ChangeScene *from* keyguard scene")
                                         // If transitioning between two non-keyguard scenes but the
                                         // bouncer overlay is showing, report that the keyguard is
                                         // visible.
                                         it.currentOverlays.contains(Overlays.Bouncer) ->
-                                            flowOf(true)
+                                            flowOf(true to "ChangeScene while bouncer showing")
                                         // If we're transitioning to Lockscreen from Gone, special
                                         // cases apply.
                                         it.fromScene == Scenes.Gone &&
@@ -270,7 +281,10 @@ constructor(
                                         // - For transitions such as Shade -> LS, which can occur
                                         //   both while locked and unlocked, the lockscreen
                                         //   visibility should simply not change.
-                                        else -> isDeviceNotEnteredDirectly
+                                        else ->
+                                            isDeviceNotEnteredDirectly.map {
+                                                it to "ChangeScene default, deviceNotEntered=$it"
+                                            }
                                     }
 
                                 is Transition.OverlayTransition ->
@@ -278,18 +292,22 @@ constructor(
                                         // If showing, hiding, or replacing an overlay and the
                                         // current scene under those overlays is one of the keyguard
                                         // scenes, report that the keyguard is showing.
-                                        it.currentScene in keyguardScenes -> flowOf(true)
+                                        it.currentScene in keyguardScenes ->
+                                            flowOf(true to "keyguard underneath overlays")
                                         // While animating away the bouncer overlay, report that the
                                         // keyguard is still being shown.
-                                        it.fromContent == Overlays.Bouncer -> flowOf(true)
+                                        it.fromContent == Overlays.Bouncer ->
+                                            flowOf(true to "animating away bouncer")
                                         // While animating in the bouncer overlay, report that the
                                         // keyguard is still being shown.
-                                        it.toContent == Overlays.Bouncer -> flowOf(true)
+                                        it.toContent == Overlays.Bouncer ->
+                                            flowOf(true to "animating in bouncer")
                                         // In all other cases, report that the keyguard is visible
                                         // while the bouncer overlay is visible.
                                         else ->
                                             it.currentOverlays.map { currentOverlays ->
-                                                currentOverlays.contains(Overlays.Bouncer)
+                                                currentOverlays.contains(Overlays.Bouncer) to
+                                                    "bouncer visible"
                                             }
                                     }
                             }
@@ -298,11 +316,15 @@ constructor(
                         ::Pair,
                     )
                     .map { (lockscreenVisibilityByTransitionState, canWakeDirectlyToGone) ->
-                        lockscreenVisibilityByTransitionState && !canWakeDirectlyToGone
+                        if (canWakeDirectlyToGone) {
+                            false to "can wake directly to gone, LS must never show"
+                        } else {
+                            lockscreenVisibilityByTransitionState
+                        }
                     }
             } else {
                 // Lockscreen is never visible when the device isn't provisioned.
-                flowOf(false)
+                flowOf(false to "device is not provisioned")
             }
         }
 
@@ -333,13 +355,13 @@ constructor(
                     // transition. Same for waking directly to gone, due to the lockscreen being
                     // disabled or because the device was woken back up before the lock timeout
                     // duration elapsed.
-                    false
+                    false to "returning to gone or waking directly to gone"
                 } else if (canWakeDirectlyToGone) {
                     // Never show the lockscreen if we can wake directly to GONE. This means
                     // that the lock timeout has not yet elapsed, or the keyguard is disabled.
                     // In either case, we don't show the activity lock screen until one of those
                     // conditions changes.
-                    false
+                    false to "can wake directly to gone"
                 } else if (
                     currentState == KeyguardState.DREAMING &&
                         if (SceneContainerFlag.isEnabled) {
@@ -349,7 +371,7 @@ constructor(
                         }
                 ) {
                     // Dreams dismiss keyguard and return to GONE if they can.
-                    false
+                    false to "dreaming and can return to gone"
                 } else if (
                     startedWithPrev.newValue.from == KeyguardState.OCCLUDED &&
                         startedWithPrev.newValue.to == KeyguardState.GONE
@@ -361,14 +383,14 @@ constructor(
                     // background and the app remains on top, while we're now GONE. In this case
                     // we should simply tell WM that the lockscreen is no longer visible, and
                     // *not* play the going away animation or related animations.
-                    false
+                    false to "occluded -> gone directly"
                 } else if (!surfaceBehindVis) {
                     // If the surface behind is not visible, then the lockscreen has to be visible
                     // since there's nothing to show. The surface behind will never be invisible if
                     // the lockscreen is disabled or suppressed.
-                    true
+                    true to "surface behind not visible"
                 } else {
-                    currentState != KeyguardState.GONE
+                    (currentState != KeyguardState.GONE) to "current state != gone"
                 }
             }
 
@@ -379,13 +401,13 @@ constructor(
      * only inform WM once we're done with the keyguard and we're fully GONE. Don't use this if you
      * want to know if the AOD/clock/notifs/etc. are visible.
      */
-    val lockscreenVisibility: Flow<Boolean> =
+    val lockscreenVisibility: Flow<Pair<Boolean, String>> =
         if (SceneContainerFlag.isEnabled) {
                 lockscreenVisibilityWithScenes
             } else {
                 lockscreenVisibilityLegacy
             }
-            .distinctUntilChanged()
+            .distinctUntilChangedBy { it.first }
 
     /**
      * Whether always-on-display (AOD) is visible when the lockscreen is visible, from window
