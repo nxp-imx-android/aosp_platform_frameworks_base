@@ -23,6 +23,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -135,6 +136,11 @@ private fun TaskBarAnd3ButtonAmbientCue(
     }
     val content = LocalContext.current
     val rotation = content.display.rotation
+    val windowWidthSizeClass = calculateWindowSizeClass().widthSizeClass
+    val windowHeightSizeClass = calculateWindowSizeClass().heightSizeClass
+    val largeScreen =
+        (windowWidthSizeClass != WindowWidthSizeClass.Compact &&
+            windowHeightSizeClass != WindowHeightSizeClass.Compact)
 
     ActionList(
         actions = actions,
@@ -178,7 +184,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
         pillCenter = pillCenter,
         pillWidth = pillSize.width,
         rotation = rotation,
-        inTaskBarOr3ButtonMode = true,
+        taskBarMode = largeScreen,
     )
     ShortPill(
         actions = actions,
@@ -186,6 +192,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
         horizontal = portrait,
         expanded = expanded,
         rotation = rotation,
+        taskBarMode = largeScreen,
         modifier =
             if (pillPositionInWindow == null) {
                 modifier.padding(bottom = 12.dp, end = 24.dp).onGloballyPositioned {
@@ -283,4 +290,4 @@ private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from La
 private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
 private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 24
 private const val ACTIONS_HORIZONTAL_PADDING = 32
-private const val ACTIONS_TOP_PADDING = 32
+private const val ACTIONS_TOP_PADDING = 42
