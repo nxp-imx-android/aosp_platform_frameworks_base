@@ -40,10 +40,12 @@ import android.window.DesktopExperienceFlags
 import android.window.TaskConstants
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.BoxShadowHelper
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.windowdecor.caption.CaptionController
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
@@ -163,6 +165,7 @@ abstract class WindowDecoration2<T>(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "WindowDecoration2#relayout",
         ) {
+            logD("relayout(task=%d) startT=%d finishT=%d", taskInfo.taskId, startT.id, finishT.id)
             taskInfo = params.runningTaskInfo
             hasGlobalFocus = params.hasGlobalFocus
             exclusionRegion.set(params.displayExclusionRegion)
@@ -186,6 +189,7 @@ abstract class WindowDecoration2<T>(
                 if (params.setTaskVisibilityPositionAndCrop) {
                     finishT.hide(taskSurface)
                 }
+                logD("relayout(task=%d) invisible task, skipping", taskInfo.taskId)
                 return null
             }
 
@@ -193,7 +197,10 @@ abstract class WindowDecoration2<T>(
 
             // If display has not yet appeared, return. Relayout will run again once display is
             // registered
-            display ?: return null
+            if (display == null) {
+                logD("relayout(task=%d) null display, skipping", taskInfo.taskId)
+                return null
+            }
 
             val taskBounds = taskInfo.getConfiguration().windowConfiguration.bounds
             val taskWidth = taskBounds.width()
@@ -246,7 +253,11 @@ abstract class WindowDecoration2<T>(
                 )
             }
 
-            val controller = getOrCreateCaptionController(params.captionType) ?: return null
+            val controller = getOrCreateCaptionController(params.captionType)
+            if (controller == null) {
+                logD("relayout(task=%d) null caption controller, skipping", taskInfo.taskId)
+                return null
+            }
             val captionResult =
                 controller.relayout(
                     params = params,
@@ -418,6 +429,10 @@ abstract class WindowDecoration2<T>(
                 "expected non-null decoration container surface"
             }
         startT.setWindowCrop(containerSurface, taskWidth, taskHeight).show(containerSurface)
+    }
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
     }
 
     private fun releaseViewsIfNeeded(params: RelayoutParams, wct: WindowContainerTransaction) =
