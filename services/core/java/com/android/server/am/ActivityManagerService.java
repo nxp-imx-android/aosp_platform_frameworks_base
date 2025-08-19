@@ -13466,13 +13466,17 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     static void appendBasicMemEntry(StringBuilder sb, int oomAdj, int procState, long pss,
-            long memtrack, String name) {
+            long dmabufRss, long dmabufPss, long memtrack, String name) {
         sb.append("  ");
         sb.append(ProcessList.makeOomAdjString(oomAdj, false));
         sb.append(' ');
         sb.append(ProcessList.makeProcStateString(procState));
         sb.append(' ');
         ProcessList.appendRamKb(sb, pss);
+        sb.append(' ');
+        ProcessList.appendRamKb(sb, dmabufRss);
+        sb.append(' ');
+        ProcessList.appendRamKb(sb, dmabufPss);
         sb.append(": ");
         sb.append(name);
         if (memtrack > 0) {
@@ -13483,7 +13487,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     static void appendMemInfo(StringBuilder sb, ProcessMemInfo mi) {
-        appendBasicMemEntry(sb, mi.oomAdj, mi.procState, mi.pss, mi.memtrack, mi.name);
+        appendBasicMemEntry(sb, mi.oomAdj, mi.procState, mi.pss, mi.dmabufRss, mi.dmabufPss,
+                mi.memtrack, mi.name);
         sb.append(" (pid ");
         sb.append(mi.pid);
         sb.append(") ");
