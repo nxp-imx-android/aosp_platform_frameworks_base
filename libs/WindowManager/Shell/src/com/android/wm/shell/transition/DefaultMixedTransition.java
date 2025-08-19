@@ -42,6 +42,7 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
@@ -235,7 +236,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         }
 
         TransitionInfo.Change pipChange = null;
-        TransitionInfo.Change pipActivityChange = null;
+        final TransitionInfo pipInfo = subCopy(info, TRANSIT_PIP, false /* withChanges */);
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             TransitionInfo.Change change = info.getChanges().get(i);
             if (mPipHandler.isEnteringPip(change, info.getType())) {
@@ -245,12 +246,14 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 }
                 pipChange = change;
                 info.getChanges().remove(i);
+                pipInfo.addChange(pipChange);
             } else if (change.getTaskInfo() == null && change.getParent() != null
                     && pipChange != null && change.getParent().equals(pipChange.getContainer())) {
                 // Cache the PiP activity if it's a target and cached pip task change is its parent;
                 // note that we are bottom-to-top, so if such activity has a task
                 // that is also a target, then it must have been cached already as pipChange.
-                pipActivityChange = change;
+                TransitionInfo.Change pipActivityChange = info.getChanges().remove(i);
+                pipInfo.getChanges().addFirst(pipActivityChange);
             }
         }
         TransitionInfo.Change desktopChange = null;
@@ -295,15 +298,12 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             // make a new startTransaction because pip's startEnterAnimation "consumes" it so
             // we need a separate one to send over to launcher.
             SurfaceControl.Transaction otherStartT = new SurfaceControl.Transaction();
-            if (pipActivityChange == null) {
-                mPipHandler.startEnterAnimation(pipChange, otherStartT, finishTransaction,
-                        finishCB);
-            } else {
-                info.getChanges().remove(pipActivityChange);
-                TransitionInfo pipInfo = subCopy(info, TRANSIT_PIP, false /* withChanges */);
-                pipInfo.getChanges().addAll(List.of(pipChange, pipActivityChange));
+            if (PipFlags.isPip2ExperimentEnabled()) {
                 mPipHandler.startAnimation(mTransition, pipInfo, startTransaction,
                         finishTransaction, finishCB);
+            } else {
+                mPipHandler.startEnterAnimation(pipChange, otherStartT, finishTransaction,
+                        finishCB);
             }
 
             // Dispatch the rest of the transition normally.
