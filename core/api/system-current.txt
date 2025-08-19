@@ -477,6 +477,7 @@ package android {
   public static final class R.array {
     field public static final int config_keySystemUuidMapping = 17235973; // 0x1070005
     field public static final int config_optionalIpSecAlgorithms = 17235974; // 0x1070006
+    field @FlaggedApi("android.permission.flags.watch_face_role_enabled") public static final int config_watchFacePermissions;
   }
 
   public static final class R.attr {

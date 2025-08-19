@@ -7699,4 +7699,8 @@
     <!-- The delay in milliseconds to show the toast after the user presses the power button. -->
     <integer name="config_turnOffTvToastPostDelayMs">0</integer>
 
+    <!-- A list of permissions to be granted under WatchFaceBehavior role
+        It can only contain non-AOSP permissions outside of the android.*
+        and com.android.* namespace. -->
+    <string-array name="config_watchFacePermissions" translatable="false"/>
 </resources>
