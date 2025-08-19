@@ -26,9 +26,11 @@ import static com.android.settingslib.Utils.getColorAttrDefaultColor;
 import android.annotation.UserIdInt;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.EnforcingAdmin;
 import android.app.admin.PackagePolicy;
+import android.app.admin.PolicyEnforcementInfo;
 import android.app.admin.SystemAuthority;
 import android.app.ecm.EnhancedConfirmationManager;
 import android.app.role.RoleManager;
@@ -270,6 +272,53 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
             return findEnforcedAdmin(dpm.getActiveAdminsAsUser(userId), dpm, userId, check);
         }
         return checkForLockSetting(context, userId, check);
+    }
+
+    /**
+     * Checks whether keyguard features are disabled by policy and returns the admin information.
+     *
+     * @param context          {@link Context} for the calling user.
+     * @param keyguardFeatures Any one of keyguard features that can be disabled by {@link
+     *                         android.app.admin.DevicePolicyManager#setKeyguardDisabledFeatures}.
+     * @param userId           User to check keyguard features for.
+     * @return PolicyEnforcementInfo Object containing the enforcing admin information. null if
+     * keyguard features are not disabled.
+     * @throws IllegalStateException if
+     * {@link android.app.admin.flags.Flags#setKeyguardDisabledFeaturesCoexistence} is not enabled.
+     * When the flag is disabled, please use {@link #checkIfKeyguardFeaturesDisabled} instead.
+     */
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+    public static PolicyEnforcementInfo getEnforcingAdminsForKeyguardFeatures(Context context,
+            int keyguardFeatures, @UserIdInt int userId) {
+        // TODO(b/359186276): Remove this check once the flag is ready for clean-up.
+        if (!android.app.admin.flags.Flags.setKeyguardDisabledFeaturesCoexistence()) {
+            throw new IllegalStateException(
+                    "setKeyguardDisabledFeaturesCoexistence is not enabled. Use "
+                            + "checkIfKeyguardFeaturesDisabled instead.");
+        }
+
+        DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+        if (dpm == null) {
+            Log.w(LOG_TAG, "DevicePolicyManager is null");
+            return null;
+        }
+
+        if (!isKeyguardFeaturesDisabled(dpm, keyguardFeatures, userId)) {
+            return null;
+        }
+
+        // We don't need to check separately for managed profile or parent profile policies as
+        // the policy application is handled by DPM in {@link android.app.admin
+        // .DevicePolicyManager#setKeyguardDisabledFeatures} already.
+        return dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.KEYGUARD_DISABLED_FEATURES_POLICY, userId);
+    }
+
+    private static boolean isKeyguardFeaturesDisabled(DevicePolicyManager dpm, int keyguardFeatures,
+            int userId) {
+        // Set admin as null to check for all admins who has set policy.
+        int disabledFeatures = dpm.getKeyguardDisabledFeatures(/*admin=*/null, userId);
+        return (disabledFeatures & keyguardFeatures) != KEYGUARD_DISABLE_FEATURES_NONE;
     }
 
     /**
