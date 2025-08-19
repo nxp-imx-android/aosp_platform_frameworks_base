@@ -228,7 +228,7 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             // WHEN the transition occurs
             sceneInteractor.setTransitionState(MutableStateFlow(validTransition))
             runCurrent()
-            assertThat(isUserInteracting).isFalse()
+            assertThat(isUserInteracting).isTrue()
 
             // THEN the expected token plays without interaction properties
             assertThat(msdlPlayer.latestTokenPlayed).isEqualTo(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
@@ -254,7 +254,7 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             // WHEN the transition occurs
             sceneInteractor.setTransitionState(MutableStateFlow(validTransition))
             runCurrent()
-            assertThat(isUserInteracting).isFalse()
+            assertThat(isUserInteracting).isTrue()
 
             // THEN the expected token plays without interaction properties
             assertThat(msdlPlayer.latestTokenPlayed).isEqualTo(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
