@@ -1,0 +1,9 @@
+{
+  "policies": [
+    {
+      "name": "android.app.admin.PolicyIdentifier<T>.TEST_POLICY_1",
+      "type": "java.lang.Boolean",
+      "documentation": " Test policy 1\n"
+    }
+  ]
+}
