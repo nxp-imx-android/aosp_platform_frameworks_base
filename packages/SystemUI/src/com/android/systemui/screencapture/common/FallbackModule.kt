@@ -22,7 +22,7 @@ import dagger.Module
 import dagger.Provides
 
 /**
- * Dagger Module for default bindings expected to be provided by [ScreenCaptureComponent]
+ * Dagger Module for default bindings expected to be provided by [ScreenCaptureUiComponent]
  * implementation.
  */
 @Module

@@ -18,7 +18,7 @@ package com.android.systemui.screencapture.common.data.repository
 
 import android.graphics.Bitmap
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.shared.system.ActivityManagerWrapper
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -31,7 +31,7 @@ interface ScreenCaptureThumbnailRepository {
 }
 
 /** Default implementation of [ScreenCaptureThumbnailRepository]. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureThumbnailRepositoryImpl
 @Inject
 constructor(

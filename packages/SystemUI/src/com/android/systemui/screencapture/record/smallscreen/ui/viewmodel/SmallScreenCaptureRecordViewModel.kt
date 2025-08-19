@@ -21,7 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
@@ -96,7 +96,7 @@ constructor(
     }
 
     @AssistedFactory
-    @ScreenCaptureScope
+    @ScreenCaptureUiScope
     interface Factory {
         fun create(): SmallScreenCaptureRecordViewModel
     }

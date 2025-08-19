@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.sharescreen
+package com.android.systemui.screencapture.cast
 
 import com.android.systemui.screencapture.common.CommonModule
-import com.android.systemui.screencapture.common.ScreenCaptureComponent
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import dagger.Subcomponent
 
-/** Dagger subcomponent for Screen Sharing. */
-@ScreenCaptureScope
-@Subcomponent(modules = [CommonModule::class, ShareScreenModule::class])
-interface ScreenCaptureShareScreenComponent : ScreenCaptureComponent {
+/** Dagger subcomponent for Casting. */
+@ScreenCaptureUiScope
+@Subcomponent(modules = [CastModule::class, CommonModule::class])
+interface ScreenCaptureCastUiComponent : ScreenCaptureUiComponent {
     @Subcomponent.Builder
-    interface Builder : ScreenCaptureComponent.Builder {
-        override fun build(): ScreenCaptureShareScreenComponent
+    interface Builder : ScreenCaptureUiComponent.Builder {
+        override fun build(): ScreenCaptureCastUiComponent
     }
 }

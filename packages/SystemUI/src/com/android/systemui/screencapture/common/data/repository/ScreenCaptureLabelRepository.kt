@@ -22,7 +22,7 @@ import android.content.pm.PackageManager
 import android.os.UserHandle
 import android.util.Log
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
@@ -38,7 +38,7 @@ interface ScreenCaptureLabelRepository {
 }
 
 /** Default implementation of [ScreenCaptureLabelRepository]. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureLabelRepositoryImpl
 @Inject
 constructor(

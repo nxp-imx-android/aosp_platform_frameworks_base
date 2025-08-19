@@ -49,7 +49,7 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.screencapture.common.ScreenCaptureComponent
+import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
@@ -78,9 +78,9 @@ constructor(
             @JvmSuppressWildcards
             ScreenCaptureType,
             @JvmSuppressWildcards
-            ScreenCaptureComponent.Builder,
+            ScreenCaptureUiComponent.Builder,
         >,
-    private val defaultBuilder: Lazy<ScreenCaptureComponent.Builder>,
+    private val defaultBuilder: Lazy<ScreenCaptureUiComponent.Builder>,
 ) :
     ScreenshotWindow(
         display = display,
@@ -135,7 +135,7 @@ constructor(
                                 scaleOut(transformOrigin = scaleTransformOrigin) +
                                     slideOutVertically(),
                         ) {
-                            val builder: ScreenCaptureComponent.Builder =
+                            val builder: ScreenCaptureUiComponent.Builder =
                                 componentBuilders[parameters.screenCaptureType]
                                     ?: defaultBuilder.get()
                             val coroutineScope = rememberCoroutineScope()

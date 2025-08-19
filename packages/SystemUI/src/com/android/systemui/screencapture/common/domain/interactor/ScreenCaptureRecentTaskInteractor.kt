@@ -16,14 +16,14 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRecentTaskRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureRecentTaskInteractor
 @Inject
 constructor(repository: ScreenCaptureRecentTaskRepository) {

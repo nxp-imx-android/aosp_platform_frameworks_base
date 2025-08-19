@@ -37,7 +37,7 @@ import dagger.Module
 import dagger.Provides
 
 /**
- * Dagger Module for bindings common to all [ScreenCaptureComponent]s.
+ * Dagger Module for bindings common to all [ScreenCaptureUiComponent]s.
  *
  * This module must be included in the Subcomponent or replaced with equivalent bindings.
  */
@@ -74,7 +74,7 @@ interface CommonModule {
 
     companion object {
         @Provides
-        @ScreenCapture
+        @ScreenCaptureUi
         fun provideIconFactory(context: Context): IconFactory = IconFactory.obtain(context)
     }
 }

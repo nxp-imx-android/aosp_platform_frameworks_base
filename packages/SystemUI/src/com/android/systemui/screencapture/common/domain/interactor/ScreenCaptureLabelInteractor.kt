@@ -16,13 +16,13 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureLabelRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import javax.inject.Inject
 
 /** Interactor for fetching app labels. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureLabelInteractor
 @Inject
 constructor(private val repository: ScreenCaptureLabelRepository) {

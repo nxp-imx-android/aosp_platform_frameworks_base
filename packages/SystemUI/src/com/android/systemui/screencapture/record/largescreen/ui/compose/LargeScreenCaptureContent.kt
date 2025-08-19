@@ -19,12 +19,12 @@ package com.android.systemui.screencapture.record.largescreen.ui.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import javax.inject.Inject
 
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class LargeScreenCaptureContent
 @Inject
 constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenCaptureContent {
