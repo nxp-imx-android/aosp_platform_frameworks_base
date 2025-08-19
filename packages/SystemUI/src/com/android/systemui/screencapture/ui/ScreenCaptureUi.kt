@@ -50,8 +50,8 @@ import com.android.systemui.compose.ComposeInitializer
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureUiViewModel
 import com.android.systemui.screenshot.ScreenshotWindow
@@ -102,7 +102,7 @@ constructor(
                         rememberViewModel("ScreenCaptureUi#viewModel") {
                             viewModelFactory.create(type)
                         }
-                    var parametersState: ScreenCaptureActivityIntentParameters? by remember {
+                    var parametersState: ScreenCaptureUiParameters? by remember {
                         mutableStateOf(null)
                     }
                     LaunchedEffect(viewModel.state) {

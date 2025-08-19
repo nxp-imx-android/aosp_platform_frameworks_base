@@ -19,9 +19,9 @@ package com.android.systemui.screencapture.common.shared.model
 import android.os.UserHandle
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.recordScreenCaptureActivityIntentParameters: ScreenCaptureActivityIntentParameters by
+val Kosmos.recordScreenCaptureUiParameters: ScreenCaptureUiParameters by
     Kosmos.Fixture {
-        ScreenCaptureActivityIntentParameters(
+        ScreenCaptureUiParameters(
             screenCaptureType = ScreenCaptureType.RECORD,
             isUserConsentRequired = false,
             resultReceiver = null,
@@ -31,9 +31,9 @@ val Kosmos.recordScreenCaptureActivityIntentParameters: ScreenCaptureActivityInt
         )
     }
 
-val Kosmos.castScreenCaptureActivityIntentParameters: ScreenCaptureActivityIntentParameters by
+val Kosmos.castScreenCaptureUiParameters: ScreenCaptureUiParameters by
     Kosmos.Fixture {
-        ScreenCaptureActivityIntentParameters(
+        ScreenCaptureUiParameters(
             screenCaptureType = ScreenCaptureType.CAST,
             isUserConsentRequired = false,
             resultReceiver = null,
@@ -43,9 +43,9 @@ val Kosmos.castScreenCaptureActivityIntentParameters: ScreenCaptureActivityInten
         )
     }
 
-val Kosmos.shareScreenCaptureActivityIntentParameters: ScreenCaptureActivityIntentParameters by
+val Kosmos.shareScreenCaptureUiParameters: ScreenCaptureUiParameters by
     Kosmos.Fixture {
-        ScreenCaptureActivityIntentParameters(
+        ScreenCaptureUiParameters(
             screenCaptureType = ScreenCaptureType.SHARE_SCREEN,
             isUserConsentRequired = false,
             resultReceiver = null,
