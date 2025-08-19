@@ -414,6 +414,13 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
+    fun testConnectDefaultDisplay() {
+        onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
+        verify(mockDesktopDisplayModeController, never()).updateExternalDisplayWindowingMode(any())
+        verify(mockDesktopDisplayModeController).updateDefaultDisplayWindowingMode()
+    }
+
+    @Test
     fun testConnectExternalDisplay() {
         onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(externalDisplayId)
         verify(mockDesktopDisplayModeController)
