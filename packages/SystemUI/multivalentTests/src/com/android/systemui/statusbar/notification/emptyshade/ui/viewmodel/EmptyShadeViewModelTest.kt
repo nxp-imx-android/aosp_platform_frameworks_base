@@ -27,17 +27,17 @@ import com.android.settingslib.notification.data.repository.updateNotificationPo
 import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.andSceneContainer
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -48,11 +48,7 @@ import platform.test.runner.parameterized.Parameters
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
 class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
-    private val zenModeRepository = kosmos.zenModeRepository
-    private val activeNotificationListRepository = kosmos.activeNotificationListRepository
-    private val fakeSecureSettingsRepository = kosmos.fakeSecureSettingsRepository
+    private val kosmos = testKosmos().apply { useUnconfinedTestDispatcher() }
     private val fakeConfigurationRepository = kosmos.fakeConfigurationRepository
 
     /** Backup of the current locales, to be restored at the end of the test if they are changed. */
@@ -86,70 +82,58 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun areNotificationsHiddenInShade_true() =
-        testScope.runTest {
+        kosmos.runTest {
             val hidden by collectLastValue(underTest.areNotificationsHiddenInShade)
 
             zenModeRepository.updateNotificationPolicy(
                 suppressedVisualEffects = Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST
             )
             zenModeRepository.updateZenMode(Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS)
-            runCurrent()
 
             assertThat(hidden).isTrue()
         }
 
     @Test
     fun areNotificationsHiddenInShade_false() =
-        testScope.runTest {
+        kosmos.runTest {
             val hidden by collectLastValue(underTest.areNotificationsHiddenInShade)
 
             zenModeRepository.updateNotificationPolicy(
                 suppressedVisualEffects = Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST
             )
             zenModeRepository.updateZenMode(Settings.Global.ZEN_MODE_OFF)
-            runCurrent()
 
             assertThat(hidden).isFalse()
         }
 
     @Test
     fun hasFilteredOutSeenNotifications_true() =
-        testScope.runTest {
+        kosmos.runTest {
             val hasFilteredNotifs by collectLastValue(underTest.hasFilteredOutSeenNotifications)
-
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
-            runCurrent()
-
             assertThat(hasFilteredNotifs).isTrue()
         }
 
     @Test
     fun hasFilteredOutSeenNotifications_false() =
-        testScope.runTest {
+        kosmos.runTest {
             val hasFilteredNotifs by collectLastValue(underTest.hasFilteredOutSeenNotifications)
-
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = false
-            runCurrent()
-
             assertThat(hasFilteredNotifs).isFalse()
         }
 
     @Test
     fun text_changesWhenLocaleChanges() =
-        testScope.runTest {
+        kosmos.runTest {
             val text by collectLastValue(underTest.text)
 
             zenModeRepository.updateNotificationPolicy(
                 suppressedVisualEffects = Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST
             )
             zenModeRepository.updateZenMode(Settings.Global.ZEN_MODE_OFF)
-            runCurrent()
-
             assertThat(text).isEqualTo("No notifications")
 
             updateLocales(LocaleList(Locale.GERMAN))
-            runCurrent()
-
             assertThat(text).isEqualTo("Keine Benachrichtigungen")
 
             // Make sure we restore the original locales
@@ -158,7 +142,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun text_reflectsModesHidingNotifications() =
-        testScope.runTest {
+        kosmos.runTest {
             val text by collectLastValue(underTest.text)
 
             assertThat(text).isEqualTo("No notifications")
@@ -171,7 +155,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     .setVisualEffect(VISUAL_EFFECT_NOTIFICATION_LIST, /* allowed= */ false)
                     .build()
             )
-            runCurrent()
             assertThat(text).isEqualTo("Notifications paused by Do not disturb")
 
             zenModeRepository.addMode(
@@ -182,7 +165,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     .setVisualEffect(VISUAL_EFFECT_NOTIFICATION_LIST, /* allowed= */ false)
                     .build()
             )
-            runCurrent()
             assertThat(text).isEqualTo("Notifications paused by Do not disturb and one other mode")
 
             zenModeRepository.addMode(
@@ -193,36 +175,29 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     .setVisualEffect(VISUAL_EFFECT_NOTIFICATION_LIST, /* allowed= */ false)
                     .build()
             )
-            runCurrent()
             assertThat(text).isEqualTo("Notifications paused by Do not disturb and 2 other modes")
 
             zenModeRepository.deactivateMode("Do not disturb")
             zenModeRepository.deactivateMode("Work")
-            runCurrent()
             assertThat(text).isEqualTo("Notifications paused by Gym")
         }
 
     @Test
     fun footer_isVisibleWhenSeenNotifsAreFilteredOut() =
-        testScope.runTest {
+        kosmos.runTest {
             val footerVisible by collectLastValue(underTest.footer.isVisible)
 
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = false
-            runCurrent()
-
             assertThat(footerVisible).isFalse()
 
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
-            runCurrent()
-
             assertThat(footerVisible).isTrue()
         }
 
     @Test
     fun onClick_whenHistoryDisabled_leadsToSettingsPage() =
-        testScope.runTest {
+        kosmos.runTest {
             val onClick by collectLastValue(underTest.onClick)
-            runCurrent()
 
             fakeSecureSettingsRepository.setInt(Settings.Secure.NOTIFICATION_HISTORY_ENABLED, 0)
 
@@ -233,9 +208,8 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun onClick_whenHistoryEnabled_leadsToHistoryPage() =
-        testScope.runTest {
+        kosmos.runTest {
             val onClick by collectLastValue(underTest.onClick)
-            runCurrent()
 
             fakeSecureSettingsRepository.setInt(Settings.Secure.NOTIFICATION_HISTORY_ENABLED, 1)
 
@@ -247,7 +221,7 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun onClick_whenOneModeHidingNotifications_leadsToModeSettings() =
-        testScope.runTest {
+        kosmos.runTest {
             val onClick by collectLastValue(underTest.onClick)
             runCurrent()
 
@@ -258,7 +232,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     .setVisualEffect(VISUAL_EFFECT_NOTIFICATION_LIST, /* allowed= */ false)
                     .build()
             )
-            runCurrent()
 
             assertThat(onClick?.targetIntent?.action)
                 .isEqualTo(Settings.ACTION_AUTOMATIC_ZEN_RULE_SETTINGS)
@@ -272,9 +245,8 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     fun onClick_whenMultipleModesHidingNotifications_leadsToGeneralModesSettings() =
-        testScope.runTest {
+        kosmos.runTest {
             val onClick by collectLastValue(underTest.onClick)
-            runCurrent()
 
             zenModeRepository.addMode(
                 TestModeBuilder()
@@ -288,7 +260,6 @@ class EmptyShadeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     .setVisualEffect(VISUAL_EFFECT_NOTIFICATION_LIST, /* allowed= */ false)
                     .build()
             )
-            runCurrent()
 
             assertThat(onClick?.targetIntent?.action).isEqualTo(Settings.ACTION_ZEN_MODE_SETTINGS)
             assertThat(onClick?.backStack).isEmpty()
