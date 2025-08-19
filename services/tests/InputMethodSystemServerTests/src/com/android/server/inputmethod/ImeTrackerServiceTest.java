@@ -21,6 +21,7 @@ import static android.view.ViewProtoLogGroups.IME_TRACKER;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.annotation.NonNull;
+import android.os.SystemClock;
 import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.annotations.GuardedBy;
@@ -79,7 +80,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -111,7 +114,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.HIDE_SWITCH_USER;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -143,7 +148,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_AUTO_EDITOR_FORWARD_NAV;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -175,7 +182,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT_FROM_IME;
         final boolean fromUser = true;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -207,7 +216,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.CONTROL_WINDOW_INSETS_ANIMATION;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -239,14 +250,17 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
         mService.onStart(token, 20, ImeTracker.TYPE_HIDE, ImeTracker.ORIGIN_SERVER,
                 SoftInputShowHideReason.SHOW_RESTORE_IME_VISIBILITY, true /* fromUser */,
-                1000 /* startTime */);
+                1000 /* startWallTimeMs */,
+                1000 /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("One active entry").that(mHistory.activeEntries()).hasSize(1);
         }
@@ -280,7 +294,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -293,7 +309,8 @@ public class ImeTrackerServiceTest {
 
         final int secondType = ImeTracker.TYPE_HIDE;
         mService.onStart(token, uid, secondType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -340,13 +357,16 @@ public class ImeTrackerServiceTest {
         // re-using the id for token creation only in onStart, but that scenario is already
         // checked in testStartTwice. This emulated scenario can happen if the completed entry is
         // old, and the history is flushed due to many new entries.
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("One active entry").that(mHistory.activeEntries()).hasSize(1);
         }
 
         mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
                     .isEmpty();
@@ -380,7 +400,9 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
 
         mService.onShown(token);
         synchronized (mService.mLock) {
@@ -417,7 +439,9 @@ public class ImeTrackerServiceTest {
 
         mService.onProgress(token, ImeTracker.PHASE_SERVER_CLIENT_KNOWN);
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
                     .isEmpty();
@@ -445,7 +469,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -486,7 +512,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -501,7 +529,8 @@ public class ImeTrackerServiceTest {
         final var secondToken = new ImeTracker.Token(id, secondTag);
         final int secondType = ImeTracker.TYPE_HIDE;
         mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -547,7 +576,9 @@ public class ImeTrackerServiceTest {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
                     .isEmpty();
@@ -579,7 +610,9 @@ public class ImeTrackerServiceTest {
 
         mService.onFailed(token, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
                     .isEmpty();
@@ -607,7 +640,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -650,7 +685,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -665,7 +702,8 @@ public class ImeTrackerServiceTest {
         final var secondToken = new ImeTracker.Token(id, secondTag);
         final int secondType = ImeTracker.TYPE_HIDE;
         mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -703,7 +741,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -792,7 +832,9 @@ public class ImeTrackerServiceTest {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
         final boolean fromUser = false;
 
-        mService.onStart(token, uid, type, origin, reason, fromUser, System.currentTimeMillis());
+        mService.onStart(token, uid, type, origin, reason, fromUser,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -810,7 +852,8 @@ public class ImeTrackerServiceTest {
         final var secondToken = new ImeTracker.Token(id, secondTag);
         final int secondType = ImeTracker.TYPE_HIDE;
         mService.onStart(secondToken, uid, secondType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage("Second created entry").that(mHistory.getActive(id)).isNotNull();
         }
@@ -852,7 +895,8 @@ public class ImeTrackerServiceTest {
                 final var tag = "tag#" + id;
                 token = new ImeTracker.Token(id, tag);
                 mService.onStart(token, uid, type, origin, reason, fromUser,
-                        System.currentTimeMillis());
+                        System.currentTimeMillis() /* startWallTimeMs */,
+                        SystemClock.elapsedRealtime() /* startTimestampMs */);
                 assertWithMessage("Created entry").that(mHistory.getActive(id)).isNotNull();
             }
 
@@ -866,7 +910,8 @@ public class ImeTrackerServiceTest {
         final int otherType = ImeTracker.TYPE_HIDE;
 
         mService.onStart(otherToken, uid, otherType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage(
                     "Other entry should not be created in onStart when active entries are full")
@@ -896,7 +941,8 @@ public class ImeTrackerServiceTest {
         }
 
         mService.onStart(otherToken, uid, otherType, origin, reason, fromUser,
-                System.currentTimeMillis());
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
         synchronized (mService.mLock) {
             assertWithMessage(
                     "Other entry should be created in onStart when active entries are not full")

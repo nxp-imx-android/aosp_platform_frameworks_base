@@ -18,7 +18,9 @@ package android.view.inputmethod;
 
 import android.Manifest;
 import android.annotation.AnyThread;
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
+import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
@@ -617,13 +619,15 @@ final class IInputMethodManagerGlobalInvoker {
     @AnyThread
     static void onStart(@NonNull ImeTracker.Token statsToken, int uid, @ImeTracker.Type int type,
             @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason, boolean fromUser,
-            long startTime) {
+            @CurrentTimeMillisLong long startWallTimeMs,
+            @ElapsedRealtimeLong long startTimestampMs) {
         final var service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            service.onStart(statsToken, uid, type, origin, reason, fromUser, startTime);
+            service.onStart(statsToken, uid, type, origin, reason, fromUser, startWallTimeMs,
+                    startTimestampMs);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
