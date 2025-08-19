@@ -176,15 +176,14 @@ constructor(
         val activeModesList =
             modes.filter { mode -> mode.isActive }.sortedWith(ZenMode.PRIORITIZING_COMPARATOR)
         val mainActiveMode =
-            activeModesList.firstOrNull()?.let { ZenModeInfo(it.name, getModeIcon(it)) }
+            activeModesList.firstOrNull()?.let { ZenModeInfo(it.id, it.name, getModeIcon(it)) }
 
         return ActiveZenModes(activeModesList.map { m -> m.name }, mainActiveMode)
     }
 
-    val mainActiveMode: Flow<ZenModeInfo?> =
-        activeModes.map { a -> a.mainMode }.distinctUntilChanged()
+    val mainActiveMode: Flow<ZenModeInfo?> = activeModes.map { a -> a.main }.distinctUntilChanged()
 
-    val modesHidingNotifications: Flow<List<ZenMode>> by lazy {
+    val modesHidingNotifications: Flow<ActiveZenModes> by lazy {
         modes
             .map { modes ->
                 modes.filter { mode ->
@@ -195,6 +194,7 @@ constructor(
                         )
                 }
             }
+            .map { modes -> buildActiveZenModes(modes) }
             .flowOn(bgDispatcher)
             .distinctUntilChanged()
     }

@@ -85,9 +85,9 @@ constructor(
             zenModeInteractor.activeModesBlockingStream(stream),
             ringerModeForStream(stream),
         ) { activeModesBlockingStream, ringerMode ->
-            if (activeModesBlockingStream?.mainMode?.icon != null) {
+            if (activeModesBlockingStream?.main?.icon != null) {
                 Icon.Loaded(
-                    drawable = activeModesBlockingStream.mainMode.icon.drawable,
+                    drawable = activeModesBlockingStream.main.icon.drawable,
                     contentDescription = null,
                 )
             } else {
