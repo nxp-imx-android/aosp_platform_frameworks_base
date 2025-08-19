@@ -1457,10 +1457,10 @@ public final class ActivityThread extends ClientTransactionHandler
         private void updateCompatOverrideScale(CompatibilityInfo info) {
             if (info.hasOverrideScaling()) {
                 CompatibilityInfo.setOverrideInvertedScale(info.applicationInvertedScale,
-                        info.applicationDensityInvertedScale);
+                        info.applicationDensityInvertedScale, info.overrideDensityDisplayIds);
             } else {
                 CompatibilityInfo.setOverrideInvertedScale(/* invertScale */ 1f,
-                        /* densityInvertScale */1f);
+                        /* densityInvertScale */1f, /* densityDisplayIds */ null);
             }
         }
 
@@ -6779,7 +6779,7 @@ public final class ActivityThread extends ClientTransactionHandler
         final ActivityRelaunchItem activityRelaunchItem = new ActivityRelaunchItem(
                 r.token, null /* pendingResults */, null /* pendingIntents */,
                 0 /* configChanges */, mergedConfiguration, r.mPreserveWindow,
-                r.getActivityWindowInfo());
+                r.getActivityWindowInfo(), r.activity.getDisplayId());
         // Make sure to match the existing lifecycle state in the end of the transaction.
         final ActivityLifecycleItem lifecycleRequest =
                 TransactionExecutorHelper.getLifecycleRequestForCurrentState(r);

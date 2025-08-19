@@ -1396,8 +1396,8 @@ final class ActivityRecord extends WindowToken {
         ProtoLog.v(WM_DEBUG_CONFIGURATION, "Sending new config to %s, "
                 + "config: %s", this, config);
 
-        final ActivityConfigurationChangeItem item =
-                new ActivityConfigurationChangeItem(token, config, activityWindowInfo);
+        final ActivityConfigurationChangeItem item = new ActivityConfigurationChangeItem(token,
+                config, activityWindowInfo, getDisplayId());
         mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
     }
 
@@ -8825,7 +8825,7 @@ final class ActivityRecord extends WindowToken {
                 pendingResults, pendingNewIntents, configChangeFlags,
                 new MergedConfiguration(getProcessGlobalConfiguration(),
                         getMergedOverrideConfiguration()),
-                preserveWindow, getActivityWindowInfo());
+                preserveWindow, getActivityWindowInfo(), getDisplayId());
         final ActivityLifecycleItem lifecycleItem;
         if (andResume) {
             lifecycleItem = new ResumeActivityItem(token, isTransitionForward(),

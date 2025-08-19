@@ -1059,7 +1059,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 results, newIntents, r.takeSceneTransitionInfo(), isTransitionForward,
                 proc.createProfilerInfoIfNeeded(), r.assistToken, activityClientController,
                 r.shareableActivityToken, r.getLaunchedFromBubble(), fragmentToken,
-                r.initialCallerInfoAccessToken, activityWindowInfo);
+                r.initialCallerInfoAccessToken, activityWindowInfo, r.getDisplayId());
 
         // Set desired final state.
         final ActivityLifecycleItem lifecycleItem;
