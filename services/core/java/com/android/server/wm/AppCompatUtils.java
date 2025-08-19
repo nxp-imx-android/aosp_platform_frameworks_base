@@ -321,6 +321,14 @@ final class AppCompatUtils {
     }
 
     /**
+     * Return {@code true} if the given display area is desktop-first.
+     */
+    static boolean isDesktopFirst(@Nullable TaskDisplayArea taskDisplayArea) {
+        return taskDisplayArea != null
+                && taskDisplayArea.getWindowingMode() == WINDOWING_MODE_FREEFORM;
+    }
+
+    /**
      * Creates a {@link AppCompatTransitionInfo} which encapsulate the letterbox
      * information if needed.
      *

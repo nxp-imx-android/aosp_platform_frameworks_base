@@ -162,6 +162,8 @@ public class SizeCompatTests extends WindowTestsBase {
 
     private static final float DELTA_ASPECT_RATIO_TOLERANCE = 0.005f;
 
+    private static final double DELTA_COMPAT_SCALE_TOLERANCE = 1e7;
+
     @Rule
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
@@ -4611,8 +4613,6 @@ public class SizeCompatTests extends WindowTestsBase {
         displayInfo.logicalWidth = dw;
         displayInfo.logicalHeight = dh;
         final DisplayContent display = new TestDisplayContent.Builder(mAtm, displayInfo).build();
-        display.getDefaultTaskDisplayArea()
-                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM);
         final TaskBuilder taskBuilder =
                 new TaskBuilder(mSupervisor).setWindowingMode(WINDOWING_MODE_FREEFORM);
         setUpApp(display, null /* appBuilder */, taskBuilder);
@@ -4642,14 +4642,24 @@ public class SizeCompatTests extends WindowTestsBase {
         internalDisplay.setIgnoreOrientationRequest(true);
         mActivity.onConfigurationChanged(mTask.getConfiguration());
         assertTrue(mActivity.inSizeCompatMode());
-        assertEquals(1f, mActivity.getCompatScale(), 1e7);
+        assertEquals(1f, mActivity.getCompatScale(), DELTA_COMPAT_SCALE_TOLERANCE);
 
         // Make the display not ignore-orientation-request.
         internalDisplay.setIgnoreOrientationRequest(false);
         mActivity.onConfigurationChanged(mTask.getConfiguration());
         assertUpScaled();
-    }
 
+        // Make the display ignore-orientation-request again.
+        internalDisplay.setIgnoreOrientationRequest(true);
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        assertEquals(1f, mActivity.getCompatScale(), DELTA_COMPAT_SCALE_TOLERANCE);
+
+        // Make the display desktop-first.
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        display.getDefaultTaskDisplayArea()
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM);
+        assertUpScaled();
+    }
 
     @Test
     @EnableFlags(Flags.FLAG_IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES)
