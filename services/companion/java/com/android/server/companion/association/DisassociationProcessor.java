@@ -34,6 +34,7 @@ import android.companion.AssociationInfo;
 import android.companion.Flags;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.os.Binder;
@@ -75,6 +76,8 @@ public class DisassociationProcessor {
     @NonNull
     private final PackageManagerInternal mPackageManagerInternal;
     @NonNull
+    private final PackageManager mPackageManager;
+    @NonNull
     private final DevicePresenceProcessor mDevicePresenceMonitor;
     @NonNull
     private final SystemDataTransferRequestStore mSystemDataTransferRequestStore;
@@ -106,6 +109,7 @@ public class DisassociationProcessor {
         mSystemDataTransferRequestStore = systemDataTransferRequestStore;
         mTransportManager = companionTransportManager;
         mNotificationManager = notificationManager;
+        mPackageManager = context.getPackageManager();
     }
 
     /**
@@ -301,16 +305,20 @@ public class DisassociationProcessor {
                 return;
             }
 
-            final String packageName = mPackageManagerInternal.getNameForUid(uid);
-            if (packageName == null) {
+            // A UID can be shared by multiple packages if android:sharedUserId is used.
+            // We must get all packages for the UID to ensure we find the correct one.
+            final String[] packageNames = mPackageManager.getPackagesForUid(uid);
+            if (packageNames == null || packageNames.length == 0) {
                 // Not interested in this uid.
                 return;
             }
 
             int userId = UserHandle.getUserId(uid);
-            for (AssociationInfo association : mAssociationStore.getRevokedAssociations(userId,
-                    packageName)) {
-                disassociate(association.getId(), REASON_REVOKED);
+            for (String packageName : packageNames) {
+                for (AssociationInfo association : mAssociationStore.getRevokedAssociations(userId,
+                        packageName)) {
+                    disassociate(association.getId(), REASON_REVOKED);
+                }
             }
 
             if (mAssociationStore.getRevokedAssociations().isEmpty()) {
