@@ -65,6 +65,7 @@ public class AssociationStore {
             CHANGE_TYPE_REMOVED,
             CHANGE_TYPE_UPDATED_ADDRESS_CHANGED,
             CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED,
+            CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChangeType {
@@ -74,6 +75,7 @@ public class AssociationStore {
     public static final int CHANGE_TYPE_REMOVED = 1;
     public static final int CHANGE_TYPE_UPDATED_ADDRESS_CHANGED = 2;
     public static final int CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED = 3;
+    public static final int CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES = 4;
 
     /** Listener for any changes to associations. */
     public interface OnChangeListener {
@@ -96,6 +98,10 @@ public class AssociationStore {
                     break;
 
                 case CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED:
+                    onAssociationUpdated(association, false);
+                    break;
+
+                case CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES:
                     onAssociationUpdated(association, false);
                     break;
             }
@@ -271,6 +277,11 @@ public class AssociationStore {
 
             broadcastChange(macAddressChanged ? CHANGE_TYPE_UPDATED_ADDRESS_CHANGED
                     : CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED, updated);
+            return;
+        }
+
+        if (updated.getSystemDataSyncFlags() != current.getSystemDataSyncFlags()) {
+            broadcastChange(CHANGE_TYPE_UPDATED_DATA_SYNC_TYPES, updated);
         }
     }
 
