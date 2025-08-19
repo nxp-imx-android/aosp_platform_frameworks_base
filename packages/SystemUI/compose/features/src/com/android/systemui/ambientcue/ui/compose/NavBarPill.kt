@@ -79,7 +79,6 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.lerp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
-import com.android.systemui.ambientcue.ui.utils.AmbientCueAnimationState
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
@@ -96,7 +95,6 @@ fun NavBarPill(
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
     onCloseEducation: () -> Unit = {},
-    onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit = { _, _ -> },
 ) {
     val maxPillWidth = 248.dp
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
@@ -105,10 +103,6 @@ fun NavBarPill(
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
     var wasEverCollapsed by remember(actions) { mutableStateOf(false) }
-    val showAnimationInProgress = remember { mutableStateOf(false) }
-    val hideAnimationInProgress = remember { mutableStateOf(false) }
-    val expandAnimationInProgress = remember { mutableStateOf(false) }
-    val collapseAnimationInProgress = remember { mutableStateOf(false) }
     LaunchedEffect(expanded) {
         if (expanded) {
             wasEverCollapsed = true
@@ -162,17 +156,6 @@ fun NavBarPill(
             animationSpec = tween(250, delayMillis = 200),
             label = "smartScrimOffset",
         )
-    AmbientCueJankMonitorComposable(
-        visibleTargetState = visibleState.targetState,
-        enterProgress = enterProgress,
-        expanded = expanded,
-        expansionAlpha = expansionAlpha,
-        showAnimationInProgress = showAnimationInProgress,
-        hideAnimationInProgress = hideAnimationInProgress,
-        expandAnimationInProgress = expandAnimationInProgress,
-        collapseAnimationInProgress = collapseAnimationInProgress,
-        onAnimationStateChange = onAnimationStateChange,
-    )
 
     val config = LocalConfiguration.current
     val isBoldTextEnabled = config.fontWeightAdjustment > 0

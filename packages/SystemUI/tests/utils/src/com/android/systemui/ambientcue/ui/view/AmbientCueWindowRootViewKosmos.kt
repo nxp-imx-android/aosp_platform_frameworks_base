@@ -19,7 +19,6 @@ package com.android.systemui.ambientcue.ui.view
 import android.content.applicationContext
 import android.view.windowManager
 import com.android.systemui.ambientcue.ui.viewmodel.ambientCueViewModelFactory
-import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 
@@ -28,6 +27,5 @@ val Kosmos.ambientCueWindowRootView by Fixture {
         windowManager = windowManager,
         applicationContext = applicationContext,
         ambientCueViewModelFactory = ambientCueViewModelFactory,
-        interactionJankMonitor = interactionJankMonitor,
     )
 }
