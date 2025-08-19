@@ -528,9 +528,12 @@ public class ZOrderingTests extends WindowTestsBase {
         final Task task = createTask(mDisplayContent);
         final WindowState imeAppTarget = createAppWindow(task, TYPE_APPLICATION, "imeAppTarget");
         final Rect bounds = mImeWindow.getParentFrame();
+        assertWithMessage("IME Parent Frame should not be empty").that(bounds.isEmpty()).isFalse();
+
         final ScreenCaptureInternal.ScreenshotHardwareBuffer imeBuffer =
                 ScreenCaptureInternal.captureLayersExcluding(
                         mImeWindow.getSurfaceControl(), bounds, 1.0f, PixelFormat.RGB_565, null);
+        assertWithMessage("IME screenshot buffer should not be null").that(imeBuffer).isNotNull();
 
         spyOn(mDisplayContent.mWmService.mTaskSnapshotController);
         doReturn(imeBuffer).when(mDisplayContent.mWmService.mTaskSnapshotController)
@@ -540,7 +543,6 @@ public class ZOrderingTests extends WindowTestsBase {
 
         assertEquals(imeAppTarget, mDisplayContent.mImeScreenshot.getImeTarget());
         assertNotNull(mDisplayContent.mImeScreenshot);
-        assertNotNull(imeBuffer);
         assertZOrderGreaterThan(mTransaction, mDisplayContent.mImeScreenshot.getSurface(),
                 imeAppTarget.mSurfaceControl);
     }

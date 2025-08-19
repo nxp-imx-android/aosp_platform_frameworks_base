@@ -140,6 +140,7 @@ import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_R
 import static com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
+import static com.android.server.wm.WallpaperWindowToken.createWallpaperToken;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
@@ -1742,19 +1743,19 @@ public class WindowManagerService extends IWindowManager.Stub
                     final Bundle options = mWindowContextListenerController
                             .getOptions(windowContextToken);
                     token = new WindowToken.Builder(this, binder, type)
-                            .setDisplayContent(displayContent)
                             .setOwnerCanManageAppTokens(session.mCanAddInternalSystemWindow)
                             .setRoundedCornerOverlay(isRoundedCornerOverlay)
                             .setFromClientToken(true)
                             .setOptions(options)
                             .build();
+                    displayContent.addWindowToken(token.token, token);
                 } else {
                     final IBinder binder = attrs.token != null ? attrs.token : client.asBinder();
                     token = new WindowToken.Builder(this, binder, type)
-                            .setDisplayContent(displayContent)
                             .setOwnerCanManageAppTokens(session.mCanAddInternalSystemWindow)
                             .setRoundedCornerOverlay(isRoundedCornerOverlay)
                             .build();
+                    displayContent.addWindowToken(token.token, token);
                 }
             } else if (rootType >= FIRST_APPLICATION_WINDOW
                     && rootType <= LAST_APPLICATION_WINDOW) {
@@ -1826,9 +1827,9 @@ public class WindowManagerService extends IWindowManager.Stub
                 // instead make a new token for it (as if null had been passed in for the token).
                 attrs.token = null;
                 token = new WindowToken.Builder(this, client.asBinder(), type)
-                        .setDisplayContent(displayContent)
                         .setOwnerCanManageAppTokens(session.mCanAddInternalSystemWindow)
                         .build();
+                displayContent.addWindowToken(token.token, token);
             }
 
             final WindowState win = new WindowState(this, session, client, token, parentWindow,
@@ -3047,7 +3048,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 return;
             }
 
-            WindowToken token = dc.getWindowToken(binder);
+            final WindowToken token = dc.getWindowToken(binder);
             if (token != null) {
                 ProtoLog.w(WM_ERROR, "addWindowToken: Attempted to add binder token: %s"
                         + " for already created window token: %s"
@@ -3055,15 +3056,14 @@ public class WindowManagerService extends IWindowManager.Stub
                 return;
             }
             if (type == TYPE_WALLPAPER) {
-                new WallpaperWindowToken(this, binder, true, dc,
-                        true /* ownerCanManageAppTokens */, options);
+                createWallpaperToken(this, binder, options, dc);
             } else {
-                new WindowToken.Builder(this, binder, type)
-                        .setDisplayContent(dc)
+                final var windowToken = new WindowToken.Builder(this, binder, type)
                         .setPersistOnEmpty(true)
                         .setOwnerCanManageAppTokens(true)
                         .setOptions(options)
                         .build();
+                dc.addWindowToken(windowToken.token, windowToken);
             }
         }
     }

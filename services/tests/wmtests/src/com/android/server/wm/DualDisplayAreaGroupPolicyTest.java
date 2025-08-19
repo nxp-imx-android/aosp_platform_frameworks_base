@@ -374,6 +374,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
+        mDisplay.addWindowToken(imeToken.token, imeToken);
 
         // By default, the ime container is attached to DC as defined in DAPolicy.
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);
@@ -422,6 +423,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
+        mDisplay.addWindowToken(imeToken.token, imeToken);
         final WindowState firstActivityWin = newWindowBuilder("firstActivityWin",
                 TYPE_APPLICATION_STARTING).setWindowToken(mFirstActivity).build();
         spyOn(firstActivityWin);
@@ -455,6 +457,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
+        mDisplay.addWindowToken(imeToken.token, imeToken);
 
         // By default, the ime container is attached to DC as defined in DAPolicy.
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);
@@ -489,6 +492,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
+        mDisplay.addWindowToken(imeToken.token, imeToken);
 
         // By default, the ime container is attached to DC as defined in DAPolicy.
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);
@@ -560,9 +564,9 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         mDisplay.mInputMethodWindow = imeWindow;
     }
 
+    @NonNull
     private WindowToken tokenOfType(int type) {
-        return new WindowToken.Builder(mWm, new Binder(), type)
-                .setDisplayContent(mDisplay).build();
+        return new WindowToken.Builder(mWm, new Binder(), type).build();
     }
 
     /** Display with two {@link DisplayAreaGroup}. Each of them take half of the screen. */

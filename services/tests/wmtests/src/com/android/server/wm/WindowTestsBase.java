@@ -470,8 +470,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         return win;
     }
 
-    private WindowToken createWindowToken(
-            DisplayContent dc, int windowingMode, int activityType, int type) {
+    @NonNull
+    private WindowToken createWindowToken(@NonNull DisplayContent dc, int windowingMode,
+            int activityType, @WindowManager.LayoutParams.WindowType int type) {
         if (type == TYPE_WALLPAPER) {
             return createWallpaperToken(dc);
         }
@@ -482,9 +483,10 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         return createActivityRecord(dc, windowingMode, activityType);
     }
 
-    private WindowToken createWallpaperToken(DisplayContent dc) {
-        return new WallpaperWindowToken(mWm, mock(IBinder.class), true /* explicit */, dc,
-                true /* ownerCanManageAppTokens */);
+    @NonNull
+    private WindowToken createWallpaperToken(@NonNull DisplayContent dc) {
+        return WallpaperWindowToken.createWallpaperToken(mWm, mock(IBinder.class),
+                null /* options */, dc);
     }
 
     WindowState createNavBarWithProvidedInsets(DisplayContent dc) {
@@ -2038,35 +2040,46 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     }
 
 
-    static TestWindowToken createTestWindowToken(int type, DisplayContent dc) {
+    @NonNull
+    static TestWindowToken createTestWindowToken(int type, @NonNull DisplayContent dc) {
         return createTestWindowToken(type, dc, false /* persistOnEmpty */);
     }
 
-    static TestWindowToken createTestWindowToken(int type, DisplayContent dc,
-            boolean persistOnEmpty) {
+    @NonNull
+    static TestWindowToken createTestWindowToken(@WindowManager.LayoutParams.WindowType int type,
+            @NonNull DisplayContent dc, boolean persistOnEmpty) {
         SystemServicesTestRule.checkHoldsLock(dc.mWmService.mGlobalLock);
 
-        return new TestWindowToken(type, dc, persistOnEmpty);
+        final var windowToken = new TestWindowToken(dc.mWmService, type, persistOnEmpty);
+        dc.addWindowToken(windowToken.token, windowToken);
+        return windowToken;
     }
 
-    static TestWindowToken createTestClientWindowToken(int type, DisplayContent dc) {
+    @NonNull
+    static TestWindowToken createTestClientWindowToken(
+            @WindowManager.LayoutParams.WindowType int type, @NonNull DisplayContent dc) {
         SystemServicesTestRule.checkHoldsLock(dc.mWmService.mGlobalLock);
 
-        return new TestWindowToken(type, dc, false /* persistOnEmpty */, true /* fromClient */);
+        final var windowToken = new TestWindowToken(dc.mWmService, type, false /* persistOnEmpty */,
+                true /* fromClient */);
+        dc.addWindowToken(windowToken.token, windowToken);
+        return windowToken;
     }
 
     /** Used so we can gain access to some protected members of the {@link WindowToken} class */
     static class TestWindowToken extends WindowToken {
 
-        private TestWindowToken(int type, DisplayContent dc, boolean persistOnEmpty,
+        private TestWindowToken(@NonNull WindowManagerService service,
+                @WindowManager.LayoutParams.WindowType int type, boolean persistOnEmpty,
                 boolean fromClient) {
-            super(dc.mWmService, mock(IBinder.class), type, persistOnEmpty, dc,
+            super(service, mock(IBinder.class), type, persistOnEmpty,
                     false /* ownerCanManageAppTokens */, false /* roundedCornerOverlay */,
                     fromClient /* fromClientToken */, null /* options */);
         }
 
-        private TestWindowToken(int type, DisplayContent dc, boolean persistOnEmpty) {
-            super(dc.mWmService, mock(IBinder.class), type, persistOnEmpty, dc,
+        private TestWindowToken(@NonNull WindowManagerService service,
+                @WindowManager.LayoutParams.WindowType int type, boolean persistOnEmpty) {
+            super(service, mock(IBinder.class), type, persistOnEmpty,
                     false /* ownerCanManageAppTokens */);
         }
 
