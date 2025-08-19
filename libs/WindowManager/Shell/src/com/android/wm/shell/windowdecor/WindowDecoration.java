@@ -18,7 +18,6 @@ package com.android.wm.shell.windowdecor;
 
 import static android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS;
 import static android.content.pm.ActivityInfo.CONFIG_UI_MODE;
-import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
@@ -404,29 +403,23 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         }
 
         outResult.mRootView = rootView;
-        final boolean fontScaleChanged = mWindowDecorConfig != null
-                && mWindowDecorConfig.fontScale != mTaskInfo.configuration.fontScale;
-        final boolean localeListChanged = mWindowDecorConfig != null
-                && !mWindowDecorConfig.getLocales()
-                    .equals(mTaskInfo.getConfiguration().getLocales());
-        final int oldDensityDpi = mWindowDecorConfig != null
-                ? mWindowDecorConfig.densityDpi : DENSITY_DPI_UNDEFINED;
-        final int oldNightMode =  mWindowDecorConfig != null
-                ? (mWindowDecorConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK)
-                : Configuration.UI_MODE_NIGHT_UNDEFINED;
-        // TODO(b/437224867): Remove themeChanged workaround for "Wallpaper & Style" bug in Settings
-        final Configuration oldConfig = mWindowDecorConfig != null
-                ? mWindowDecorConfig : mTaskInfo.configuration;
-        final Configuration newConfig = params.mWindowDecorConfig != null
-                ? params.mWindowDecorConfig : mTaskInfo.configuration;
+        final Configuration oldConfig =
+                mWindowDecorConfig != null ? mWindowDecorConfig : mTaskInfo.getConfiguration();
+        final Configuration newConfig =
+                params.mWindowDecorConfig != null ? params.mWindowDecorConfig :
+                        mTaskInfo.getConfiguration();
+        final boolean fontScaleChanged = oldConfig.fontScale != mTaskInfo.configuration.fontScale;
+        final boolean localeListChanged =
+                !oldConfig.getLocales().equals(mTaskInfo.configuration.getLocales());
+        final boolean densityDpiChanged = oldConfig.densityDpi != newConfig.densityDpi;
+        final int oldNightMode = oldConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        final int newNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         final int diff = newConfig.diff(oldConfig);
-        final boolean themeChanged = (diff & CONFIG_ASSETS_PATHS) != 0
-                || (diff & CONFIG_UI_MODE) != 0;
-        mWindowDecorConfig = params.mWindowDecorConfig != null ? params.mWindowDecorConfig
-                : mTaskInfo.getConfiguration();
-        final int newDensityDpi = mWindowDecorConfig.densityDpi;
-        final int newNightMode =  mWindowDecorConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        if (oldDensityDpi != newDensityDpi
+        final boolean themeChanged =
+                (diff & CONFIG_ASSETS_PATHS) != 0 || (diff & CONFIG_UI_MODE) != 0;
+        mWindowDecorConfig = newConfig;
+
+        if (densityDpiChanged
                 || mDisplay == null
                 || mDisplay.getDisplayId() != mTaskInfo.displayId
                 || oldLayoutResId != mLayoutResId
@@ -434,8 +427,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 || mDecorWindowContext == null
                 || fontScaleChanged
                 || localeListChanged
-                || themeChanged
-                || params.mForceReinflation) {
+                || themeChanged) {
             releaseViews(wct);
 
             if (!obtainDisplayOrRegisterListener()) {
@@ -938,8 +930,6 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         boolean mShouldSetBackground;
 
         boolean mInSyncWithTransition;
-        /** TODO(b/437224867): Remove mForceReinflation */
-        boolean mForceReinflation;
 
         void reset() {
             mLayoutResId = Resources.ID_NULL;
@@ -973,7 +963,6 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mShouldSetAppBounds = false;
             mShouldSetBackground = false;
             mInSyncWithTransition = false;
-            mForceReinflation = false;
         }
 
         boolean hasInputFeatureSpy() {

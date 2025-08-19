@@ -18,6 +18,8 @@ package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS
+import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
@@ -131,16 +133,11 @@ abstract class WindowDecoration2<T>(
         captionType: CaptionController.CaptionType
     ): CaptionController<T>?
 
-    /**
-     * Updates the window decorations when limited information is available.
-     *
-     * TODO(b/437224867): Remove forceReinflation
-     */
+    /** Updates the window decorations when limited information is available. */
     abstract fun relayout(
         taskInfo: RunningTaskInfo,
         hasGlobalFocus: Boolean,
         displayExclusionRegion: Region,
-        forceReinflation: Boolean = false,
     )
 
     /**
@@ -441,35 +438,33 @@ abstract class WindowDecoration2<T>(
             name = "WindowDecoration2#relayout-releaseViewsIfNeeded",
         ) {
             val windowDecorConfigInitialized = windowDecorConfig != null
-            val fontScaleChanged = windowDecorConfig?.fontScale != taskInfo.configuration.fontScale
-            val localeListChanged =
-                windowDecorConfig?.locales != taskInfo.getConfiguration().locales
-            val oldDensityDpi = windowDecorConfig?.densityDpi ?: Configuration.DENSITY_DPI_UNDEFINED
-            val oldNightMode =
-                windowDecorConfig?.let { it.uiMode and Configuration.UI_MODE_NIGHT_MASK }
-                    ?: Configuration.UI_MODE_NIGHT_UNDEFINED
-            windowDecorConfig = params.windowDecorConfig ?: taskInfo.getConfiguration()
-            val config =
-                checkNotNull(windowDecorConfig) {
-                    "Expected Non-null Configuration for Window Decoration"
-                }
-            val newDensityDpi = config.densityDpi
-            val newNightMode = config.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            val oldConfig = windowDecorConfig ?: taskInfo.configuration
+            val newConfig = params.windowDecorConfig ?: taskInfo.configuration
+            checkNotNull(newConfig) { "Expected Non-null Configuration for Window Decoration" }
+            val fontScaleChanged = oldConfig.fontScale != taskInfo.configuration.fontScale
+            val localeListChanged = oldConfig.locales != taskInfo.configuration.locales
+            val densityDpiChanged = oldConfig.densityDpi != newConfig.densityDpi
+            val oldNightMode = oldConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            val newNightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            val diff = newConfig.diff(oldConfig)
+            val themeChanged = (diff and CONFIG_ASSETS_PATHS) != 0 || (diff and CONFIG_UI_MODE) != 0
+            windowDecorConfig = newConfig
 
             if (
-                oldDensityDpi != newDensityDpi ||
+                densityDpiChanged ||
                     display == null ||
                     display?.displayId != taskInfo.displayId ||
                     oldNightMode != newNightMode ||
                     !windowDecorConfigInitialized ||
                     fontScaleChanged ||
-                    localeListChanged
+                    localeListChanged ||
+                    themeChanged
             ) {
                 releaseViews(wct)
                 if (!obtainDisplayOrRegisterListener()) {
                     return
                 }
-                decorWindowContext = context.createConfigurationContext(config)
+                decorWindowContext = context.createConfigurationContext(newConfig)
                 decorWindowContext.setTheme(context.themeResId)
             }
         }
@@ -493,11 +488,6 @@ abstract class WindowDecoration2<T>(
         if (changed) {
             relayout(taskInfo, hasGlobalFocus, exclusionRegion)
         }
-    }
-
-    /** TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings */
-    fun onThemeChanged() {
-        relayout(taskInfo, hasGlobalFocus, exclusionRegion, forceReinflation = true)
     }
 
     /** Updates the window decorations when exclusion region changes. */
@@ -561,11 +551,7 @@ abstract class WindowDecoration2<T>(
         surfaceControlSupplier: () -> SurfaceControl,
     ) = surfaceControlSupplier().apply { copyFrom(sc, TAG) }
 
-    /**
-     * Holds the data required to update the window decorations.
-     *
-     * TODO(b/437224867): Remove forceReinflation
-     */
+    /** Holds the data required to update the window decorations. */
     data class RelayoutParams(
         val runningTaskInfo: RunningTaskInfo,
         val captionType: CaptionController.CaptionType,
@@ -588,7 +574,6 @@ abstract class WindowDecoration2<T>(
         val shouldSetAppBounds: Boolean = false,
         val shouldSetBackground: Boolean = false,
         val inSyncWithTransition: Boolean = false,
-        val forceReinflation: Boolean = false,
     ) {
 
         /** Returns true if caption input should fall through to the app. */

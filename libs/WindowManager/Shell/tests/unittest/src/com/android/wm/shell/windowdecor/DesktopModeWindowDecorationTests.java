@@ -183,7 +183,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private static final boolean DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS = false;
     private static final boolean DEFAULT_IN_SYNC_WITH_TRANSITION = true;
     private static final boolean DEFAULT_IS_TASK_LOCKED = false;
-    private static final boolean DEFAULT_FORCE_REINFLATION = false;
     private static final Supplier<List<OccludingElement>> DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR =
             () -> List.of();
 
@@ -472,7 +471,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mCornerRadius).isEqualTo(INVALID_CORNER_RADIUS);
@@ -625,7 +623,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
@@ -832,7 +829,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         // Force consuming flags are disabled.
@@ -872,7 +868,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) != 0).isTrue();
@@ -956,7 +951,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         // Takes status bar inset as padding, ignores caption bar inset.
@@ -989,7 +983,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsInsetSource).isFalse();
@@ -1021,7 +1014,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         // Header is always shown because it's assumed the status bar is always visible.
@@ -1054,7 +1046,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 /* isTaskLocked= */ true,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         // Caption should not show when in Lock Task mode
@@ -1086,7 +1077,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
@@ -1117,7 +1107,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
@@ -1148,7 +1137,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
@@ -1180,7 +1168,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
@@ -1204,7 +1191,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
@@ -1236,7 +1222,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
@@ -1268,7 +1253,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
@@ -1298,48 +1282,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         // App Headers must be rendered in sync with the task animation, so it cannot be delayed.
         assertThat(relayoutParams.mAsyncViewHost).isFalse();
-    }
-
-    @Test
-    public void updateRelayoutParams_forceReinflationNotSet() {
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        final RelayoutParams relayoutParams = new RelayoutParams();
-
-        updateRelayoutParams(relayoutParams, taskInfo);
-
-        assertThat(relayoutParams.mForceReinflation).isFalse();
-    }
-
-    @Test
-    public void updateRelayoutParams_forceReinflationSet() {
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        final RelayoutParams relayoutParams = new RelayoutParams();
-
-        DesktopModeWindowDecoration.updateRelayoutParams(
-                relayoutParams,
-                mTestableContext,
-                taskInfo,
-                mMockSplitScreenController,
-                DEFAULT_APPLY_START_TRANSACTION_ON_DRAW,
-                DEFAULT_SHOULD_SET_TASK_POSITIONING_AND_CROP,
-                DEFAULT_IS_STATUSBAR_VISIBLE,
-                DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
-                /* inFullImmersiveMode */ true,
-                DEFAULT_IS_DRAGGING,
-                new InsetsState(),
-                DEFAULT_HAS_GLOBAL_FOCUS,
-                mExclusionRegion,
-                DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig,
-                DEFAULT_IN_SYNC_WITH_TRANSITION,
-                DEFAULT_IS_TASK_LOCKED,
-                /* forceReinflation= */true,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
-
-        assertThat(relayoutParams.mForceReinflation).isTrue();
     }
 
     @Test
@@ -2057,7 +1999,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_FORCE_REINFLATION,
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
     }
 

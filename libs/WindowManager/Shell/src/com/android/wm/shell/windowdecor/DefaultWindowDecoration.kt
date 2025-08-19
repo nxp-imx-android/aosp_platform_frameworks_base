@@ -273,16 +273,11 @@ constructor(
         decorationContainerSurface?.let { updateDragResizeListenerIfNeeded(it) }
     }
 
-    /**
-     * Updates all window decorations, including any existing caption.
-     *
-     * TODO(b/437224867): Remove forceReinflation param
-     */
+    /** Updates all window decorations, including any existing caption. */
     override fun relayout(
         taskInfo: RunningTaskInfo,
         hasGlobalFocus: Boolean,
         displayExclusionRegion: Region,
-        forceReinflation: Boolean,
     ) {
         val t = surfaceControlTransactionSupplier.invoke()
         // The visibility, crop and position of the task should only be set when a task is
@@ -313,18 +308,13 @@ constructor(
             displayExclusionRegion,
             inSyncWithTransition = false,
             taskSurface,
-            forceReinflation = forceReinflation,
         )
         if (!applyTransactionOnDraw) {
             t.apply()
         }
     }
 
-    /**
-     * Updates all window decorations, including any existing caption.
-     *
-     * TODO(b/437224867): Remove forceReinflation param
-     */
+    /** Updates all window decorations, including any existing caption. */
     fun relayout(
         taskInfo: RunningTaskInfo,
         startT: SurfaceControl.Transaction,
@@ -335,7 +325,6 @@ constructor(
         displayExclusionRegion: Region,
         inSyncWithTransition: Boolean,
         taskSurface: SurfaceControl?,
-        forceReinflation: Boolean = false,
     ) =
         traceSection("DefaultWindowDecoration#relayout") {
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue) {
@@ -366,7 +355,6 @@ constructor(
                     desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
                     desktopConfig,
                     inSyncWithTransition,
-                    forceReinflation,
                 )
 
             val wct = windowContainerTransactionSupplier.invoke()
@@ -402,7 +390,6 @@ constructor(
             decorationContainerSurface?.let { updateDragResizeListenerIfNeeded(it) }
         }
 
-    /** TODO(b/437224867): Remove forceReinflation param */
     private fun getRelayoutParams(
         context: Context,
         taskInfo: RunningTaskInfo,
@@ -415,7 +402,6 @@ constructor(
         shouldExcludeCaptionFromAppBounds: Boolean,
         desktopConfig: DesktopConfig,
         inSyncWithTransition: Boolean,
-        forceReinflation: Boolean,
     ): RelayoutParams {
         val captionType =
             if (taskInfo.isFreeform) {
@@ -514,7 +500,6 @@ constructor(
             shouldSetAppBounds = shouldSetAppBounds,
             shouldSetBackground = shouldSetBackground,
             inSyncWithTransition = inSyncWithTransition,
-            forceReinflation = forceReinflation,
         )
     }
 
