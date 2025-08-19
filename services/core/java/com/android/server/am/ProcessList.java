@@ -148,6 +148,7 @@ import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService.ProcessChangeItem;
 import com.android.server.am.psc.PlatformCompatCache;
+import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.compat.PlatformCompat;
@@ -181,7 +182,8 @@ import java.util.function.Function;
 /**
  * Activity manager code dealing with processes.
  */
-public final class ProcessList implements ProcessStateController.ProcessLruUpdater {
+public final class ProcessList implements ProcessListInternal,
+        ProcessStateController.ProcessLruUpdater {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ProcessList" : TAG_AM;
 
     static final String TAG_PROCESS_OBSERVERS = TAG + POSTFIX_PROCESS_OBSERVERS;
@@ -3389,9 +3391,10 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
      *
      * @param uid UID to return sansdbox processes for
      */
+    @Override
     @Nullable
     @GuardedBy("mService")
-    List<ProcessRecord> getSdkSandboxProcessesForAppLocked(int uid) {
+    public List<ProcessRecord> getSdkSandboxProcessesForAppLocked(int uid) {
         return mSdkSandboxes.get(uid);
     }
 
@@ -4308,8 +4311,9 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     /**
      * Return the reference to the LRU list, call this function for read-only access
      */
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    ArrayList<ProcessRecord> getLruProcessesLOSP() {
+    public ArrayList<ProcessRecord> getLruProcessesLOSP() {
         return mLruProcesses;
     }
 

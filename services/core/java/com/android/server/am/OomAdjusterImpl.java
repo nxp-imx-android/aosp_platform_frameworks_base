@@ -718,7 +718,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         mProcessRecordProcStateNodes.reset();
         mProcessRecordAdjNodes.reset();
 
-        final ArrayList<ProcessRecord> lru = mProcessList.getLruProcessesLOSP();
+        final ArrayList<? extends ProcessRecordInternal> lru = mProcessList.getLruProcessesLOSP();
         for (int i = lru.size() - 1; i >= 0; i--) {
             final ProcessRecordInternal app = lru.get(i);
             app.resetCachedInfo();

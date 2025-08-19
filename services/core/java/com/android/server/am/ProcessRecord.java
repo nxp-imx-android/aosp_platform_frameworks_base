@@ -1542,6 +1542,17 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mPkgList.getPackageNames();
     }
 
+    @Override
+    public boolean shouldKeepWarm() {
+        final ArraySet<ComponentName> warmServices = mService.mConstants.KEEP_WARMING_SERVICES;
+        for (int i = warmServices.size() - 1; i >= 0; i--) {
+            if (mPkgList.containsKey(warmServices.valueAt(i).getPackageName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<VersionedPackage> getPackageListWithVersionCode() {
         return mPkgList.getPackageListWithVersionCode();
     }
