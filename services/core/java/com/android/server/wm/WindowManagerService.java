@@ -3938,6 +3938,9 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Update the current user. */
     public void setCurrentUser(@UserIdInt int newUserId, UserState uss) {
         synchronized (mGlobalLock) {
+            if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                mRoot.mTaskSupervisor.mStartingUsers.add(uss);
+            }
             final TransitionController controller = mAtmService.getTransitionController();
             final Runnable applyUserChange = () -> {
                 mCurrentUserId = newUserId;
