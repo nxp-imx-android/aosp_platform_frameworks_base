@@ -1398,6 +1398,13 @@ class MediaRouter2ServiceImpl {
         userRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::updateDiscoveryPreferenceOnHandler,
                         userRecord.mHandler));
+        routerRecord.mUserRecord.mHandler.sendMessage(
+                obtainMessage(
+                        UserHandler::notifyDeviceSuggestionsClearedOnHandler,
+                        routerRecord.mUserRecord.mHandler,
+                        routerRecord.mPackageName,
+                        routerRecord.getDeviceSuggestionsLocked().keySet()));
+        routerRecord.mDeviceSuggestions.clear();
         mMediaRouterMetricLogger.notifyRouterUnregistered(routerRecord.mUid);
         routerRecord.dispose();
         disposeUserIfNeededLocked(userRecord); // since router removed from user
@@ -1813,8 +1820,7 @@ class MediaRouter2ServiceImpl {
                         "setDeviceSuggestions | router: %d suggestion: %d",
                         routerRecord.mPackageName, suggestedDeviceInfo));
 
-        routerRecord.mUserRecord.updateDeviceSuggestionsLocked(
-                routerRecord.mPackageName, routerRecord.mPackageName, suggestedDeviceInfo);
+        routerRecord.putDeviceSuggestionsLocked(routerRecord.mPackageName, suggestedDeviceInfo);
         routerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(
                         UserHandler::notifyDeviceSuggestionsUpdatedOnHandler,
@@ -1836,7 +1842,7 @@ class MediaRouter2ServiceImpl {
                     TAG,
                     TextUtils.formatSimple(
                             "Attempted to get device suggestion for unknown router: %s", router));
-            return null;
+            return Collections.emptyMap();
         }
 
         Slog.i(
@@ -1844,7 +1850,7 @@ class MediaRouter2ServiceImpl {
                 TextUtils.formatSimple(
                         "getDeviceSuggestions | router: %d", routerRecord.mPackageName));
 
-        return routerRecord.mUserRecord.getDeviceSuggestionsLocked(routerRecord.mPackageName);
+        return routerRecord.getDeviceSuggestionsLocked();
     }
 
     // End of locked methods that are used by MediaRouter2.
@@ -2281,10 +2287,19 @@ class MediaRouter2ServiceImpl {
                         managerRecord.mOwnerPackageName,
                         suggestedDeviceInfo));
 
-        managerRecord.mUserRecord.updateDeviceSuggestionsLocked(
-                managerRecord.mTargetPackageName,
-                managerRecord.mOwnerPackageName,
-                suggestedDeviceInfo);
+        RouterRecord routerRecord =
+                managerRecord.mUserRecord.findRouterRecordLocked(managerRecord.mTargetPackageName);
+        if (routerRecord == null) {
+            Slog.w(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "Router record not found for the target package: %s",
+                            managerRecord.mTargetPackageName));
+            return;
+        }
+
+        routerRecord.putDeviceSuggestionsLocked(
+                managerRecord.mOwnerPackageName, suggestedDeviceInfo);
         managerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(
                         UserHandler::notifyDeviceSuggestionsUpdatedOnHandler,
@@ -2306,7 +2321,7 @@ class MediaRouter2ServiceImpl {
                     TAG,
                     TextUtils.formatSimple(
                             "Attempted to get device suggestion for unknown manager: %s", manager));
-            return null;
+            return Collections.emptyMap();
         }
 
         Slog.i(
@@ -2315,8 +2330,17 @@ class MediaRouter2ServiceImpl {
                         "getDeviceSuggestionsWithManagerLocked | manager: %d",
                         managerRecord.mManagerId));
 
-        return managerRecord.mUserRecord.getDeviceSuggestionsLocked(
-                managerRecord.mTargetPackageName);
+        RouterRecord routerRecord =
+                managerRecord.mUserRecord.findRouterRecordLocked(managerRecord.mTargetPackageName);
+        if (routerRecord == null) {
+            Slog.w(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "Router record not found for the target package: %s",
+                            managerRecord.mTargetPackageName));
+            return Collections.emptyMap();
+        }
+        return routerRecord.getDeviceSuggestionsLocked();
     }
 
     @GuardedBy("mLock")
@@ -2430,10 +2454,6 @@ class MediaRouter2ServiceImpl {
         // @GuardedBy("mLock")
         private final Set<String> mLastPackagesWithSystemOverridesLocked = new ArraySet<>();
 
-        // @GuardedBy("mLock")
-        private final Map<String, Map<String, List<SuggestedDeviceInfo>>> mDeviceSuggestions =
-                new HashMap<>();
-
         RouteDiscoveryPreference mCompositeDiscoveryPreference = RouteDiscoveryPreference.EMPTY;
         Map<String, RouteDiscoveryPreference> mPerAppPreferences = Map.of();
         Set<String> mActivelyScanningPackages = Set.of();
@@ -2494,26 +2514,6 @@ class MediaRouter2ServiceImpl {
             return packageNames.stream().map(it -> new AppId(it, mUserHandle)).toList();
         }
 
-        // @GuardedBy("mLock")
-        public void updateDeviceSuggestionsLocked(
-                String packageName,
-                String suggestingPackageName,
-                List<SuggestedDeviceInfo> deviceSuggestions) {
-            mDeviceSuggestions.putIfAbsent(
-                    packageName, new HashMap<String, List<SuggestedDeviceInfo>>());
-            Map<String, List<SuggestedDeviceInfo>> suggestions =
-                    mDeviceSuggestions.get(packageName);
-            suggestions.put(suggestingPackageName, deviceSuggestions);
-        }
-
-        // @GuardedBy("mLock")
-        @NonNull
-        public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsLocked(
-                String packageName) {
-            return mDeviceSuggestions.getOrDefault(
-                    packageName, new HashMap<String, List<SuggestedDeviceInfo>>());
-        }
-
         public void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
             pw.println(prefix + "UserRecord");
 
@@ -2570,6 +2570,8 @@ class MediaRouter2ServiceImpl {
 
         public RouteDiscoveryPreference mDiscoveryPreference;
         @Nullable public RouteListingPreference mRouteListingPreference;
+        // @GuardedBy("mLock")
+        private final Map<String, List<SuggestedDeviceInfo>> mDeviceSuggestions = new HashMap<>();
 
         RouterRecord(
                 Context context,
@@ -2812,6 +2814,29 @@ class MediaRouter2ServiceImpl {
             } catch (RemoteException ex) {
                 logRemoteException("notifySessionInfoChanged", ex);
             }
+        }
+
+        /**
+         * Updates the device suggestions for the given suggesting package.
+         *
+         * @param suggestingPackageName The package name of the suggesting app.
+         * @param deviceSuggestions The device suggestions.
+         */
+        @GuardedBy("mLock")
+        public void putDeviceSuggestionsLocked(
+                String suggestingPackageName, List<SuggestedDeviceInfo> deviceSuggestions) {
+            mDeviceSuggestions.put(suggestingPackageName, deviceSuggestions);
+        }
+
+        /**
+         * Returns the device suggestions for all suggesting packages.
+         *
+         * @return The device suggestions.
+         */
+        @NonNull
+        @GuardedBy("mLock")
+        public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestionsLocked() {
+            return new HashMap<>(mDeviceSuggestions);
         }
 
         private RoutingSessionInfo maybeClearTransferInitiatorIdentity(
@@ -4144,6 +4169,14 @@ class MediaRouter2ServiceImpl {
                     managerRecord.notifyRouteListingPreferenceChange(
                             routerPackageName, routeListingPreference);
                 }
+            }
+        }
+
+        private void notifyDeviceSuggestionsClearedOnHandler(
+                String routerPackageName, Set<String> suggestingPackages) {
+            for (String suggestingPackage : suggestingPackages) {
+                notifyDeviceSuggestionsUpdatedOnHandler(
+                        routerPackageName, suggestingPackage, /* suggestedDeviceInfo= */ null);
             }
         }
 
