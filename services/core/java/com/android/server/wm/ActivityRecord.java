@@ -1277,10 +1277,15 @@ final class ActivityRecord extends WindowToken {
 
     /** Update if handoff is enabled for this activity. */
     void setHandoffEnabled(boolean handoffEnabled, boolean allowFullTaskRecreation) {
+        final boolean didChange = mHandoffEnabled != handoffEnabled;
         mHandoffEnabled = handoffEnabled;
         mAllowFullTaskRecreation = allowFullTaskRecreation;
         if (!mHandoffEnabled) {
             mHandoffActivityData = null;
+        }
+
+        if (didChange) {
+            mAtmService.notifyHandoffEnablementChanged(this, handoffEnabled);
         }
     }
 

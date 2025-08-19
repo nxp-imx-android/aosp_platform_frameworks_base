@@ -285,6 +285,7 @@ import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.am.ActivityManagerServiceDumpProcessesProto;
+import com.android.server.wm.ActivityTaskManagerInternal.HandoffEnablementListener;
 import com.android.server.am.AppTimeTracker;
 import com.android.server.am.AssistDataRequester;
 import com.android.server.am.BaseErrorDialog;
@@ -510,6 +511,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     final BackNavigationController mBackNavigationController;
 
     private TaskChangeNotificationController mTaskChangeNotificationController;
+    private List<ActivityTaskManagerInternal.HandoffEnablementListener>
+        mHandoffEnablementListeners = Collections.synchronizedList(new ArrayList<>());
+
     /** The controller for all operations related to locktask. */
     private LockTaskController mLockTaskController;
     private ActivityStartController mActivityStartController;
@@ -4692,6 +4696,21 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mRecentTasks.notifyTaskPersisterLocked(task, flush);
     }
 
+    void notifyHandoffEnablementChanged(ActivityRecord activity, boolean isHandoffEnabled) {
+        if (!android.companion.Flags.enableTaskContinuity()) {
+            return;
+        }
+
+        final int taskId = activity.getRootTaskId();
+        mH.post(() -> {
+            for (int i = mHandoffEnablementListeners.size() - 1; i >= 0; i--) {
+                mHandoffEnablementListeners
+                    .get(i)
+                    .onHandoffEnabledChanged(taskId, isHandoffEnabled);
+            }
+        });
+    }
+
     /**
      * Clears launch params for the given package.
      *
@@ -6420,6 +6439,42 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     final class LocalService extends ActivityTaskManagerInternal {
+
+        @Override
+        public boolean isHandoffEnabledForTask(int taskId) {
+            if (!android.companion.Flags.enableTaskContinuity()) {
+                return false;
+            }
+            synchronized (mGlobalLock) {
+                final Task task = mRootWindowContainer.anyTaskForId(taskId);
+                if (task == null) {
+                    return false;
+                }
+
+                final ActivityRecord activity = task.getTopNonFinishingActivity();
+                return activity != null && activity.isHandoffEnabled();
+            }
+        }
+
+        @Override
+        public void registerHandoffEnablementListener(@NonNull HandoffEnablementListener listener) {
+            if (!android.companion.Flags.enableTaskContinuity()) {
+                return;
+            }
+
+            mHandoffEnablementListeners.add(listener);
+        }
+
+        @Override
+        public void unregisterHandoffEnablementListener(
+            @NonNull HandoffEnablementListener listener) {
+
+            if (!android.companion.Flags.enableTaskContinuity()) {
+                return;
+            }
+
+            mHandoffEnablementListeners.remove(listener);
+        }
 
         @Override
         public ComponentName getHomeActivityForUser(int userId) {
