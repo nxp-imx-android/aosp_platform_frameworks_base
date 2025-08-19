@@ -357,3 +357,13 @@ flag {
     bug: "258223472"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "include_broadcast_debug_reason"
+    namespace: "package_manager_service"
+    description: "Include the debug reason when sending the package_changed broadcast"
+    bug: "433392586"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
