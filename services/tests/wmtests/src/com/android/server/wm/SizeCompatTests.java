@@ -4662,6 +4662,30 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX)
+    public void testUpscaling_boundsUpscaledWithDisplayMove() {
+        final int dw = 1000;
+        final int dh = 600;
+        final DisplayContent display = new TestDisplayContent.Builder(mAtm, dw, dh).build();
+        setUpApp(display);
+        prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(WindowConfiguration.WINDOWING_MODE_FULLSCREEN, mTask.getWindowingMode());
+        assertFitted();
+
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        displayInfo.type = TYPE_EXTERNAL;
+        displayInfo.logicalWidth = dw * 2;
+        displayInfo.logicalHeight = dh * 2;
+        final DisplayContent biggerExternalDisplay =
+                new TestDisplayContent.Builder(mAtm, displayInfo).build();
+        mActivity.mRootWindowContainer.moveRootTaskToDisplay(mTask.mTaskId,
+                biggerExternalDisplay.mDisplayId, true /* onTop */);
+        mActivity.onConfigurationChanged(mTask.getConfiguration());
+        assertUpScaled();
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES)
     public void testUserAspectRatioOverridesNotAppliedToResizeableFreeformActivity() {
         final TaskBuilder taskBuilder =
