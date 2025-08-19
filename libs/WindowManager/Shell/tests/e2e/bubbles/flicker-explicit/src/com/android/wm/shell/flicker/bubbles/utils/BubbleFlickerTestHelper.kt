@@ -496,8 +496,11 @@ internal object BubbleFlickerTestHelper {
 
         waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
 
-        assertWithMessage("The education must not show for Application bubble")
-            .that(Root.get().bubble.isEducationVisible).isFalse()
+        // The bubble will be occluded if IME shows.
+        if (testApp !is ImeAppHelper) {
+            assertWithMessage("The education must not show for Application bubble")
+                .that(Root.get().bubble.isEducationVisible).isFalse()
+        }
     }
 
     private fun waitAndAssertBubbleAppInExpandedState(
