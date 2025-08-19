@@ -149,6 +149,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ComponentUtils;
+import com.android.wm.shell.common.DisplayChangeController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -207,7 +208,8 @@ import java.util.function.Predicate;
  * - Both stages are put under a single-top root task.
  */
 public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
-        DisplayController.OnDisplaysChangedListener, Transitions.TransitionHandler,
+        DisplayController.OnDisplaysChangedListener,
+        DisplayChangeController.OnDisplayChangingListener, Transitions.TransitionHandler,
         ShellTaskOrganizer.TaskListener, StageTaskListener.StageListenerCallbacks,
         SplitMultiDisplayProvider {
 
@@ -519,6 +521,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mSplitTransitions = new SplitScreenTransitions(transactionPool, transitions,
                 this::onTransitionAnimationComplete, this);
         mDisplayController.addDisplayWindowListener(this);
+        mDisplayController.addDisplayChangingController(this);
         transitions.addHandler(this);
         mSplitUnsupportedToast = Toast.makeText(mContext,
                 R.string.dock_non_resizeble_failed_to_dock_text, Toast.LENGTH_SHORT);
@@ -3050,14 +3053,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mTaskOrganizer.applyTransaction(wct);
     }
 
-    public void onDisplayAdded(int displayId) {
-        if (displayId != DEFAULT_DISPLAY) {
-            return;
-        }
-        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onDisplayAdded: display=%d", displayId);
-        mDisplayController.addDisplayChangingController(this::onDisplayChange);
-    }
-
     /**
      * Update surfaces of the split screen layout based on the current state
      * @param transaction to write the updates to
@@ -3067,7 +3062,15 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mSplitLayout.update(transaction, true /* resetImePosition */);
     }
 
-    private void onDisplayChange(int displayId, int fromRotation, int toRotation,
+    /**
+     *
+     * @param displayId display id of the display that is under the change
+     * @param fromRotation rotation before the change
+     * @param toRotation rotation after the change
+     * @param newDisplayAreaInfo display area info after applying the update
+     * @param wct A task transaction to populate.
+     */
+    public void onDisplayChange(int displayId, int fromRotation, int toRotation,
             @Nullable DisplayAreaInfo newDisplayAreaInfo, WindowContainerTransaction wct) {
         if (displayId != DEFAULT_DISPLAY || !isSplitActive()) {
             return;
@@ -3077,9 +3080,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 "onDisplayChange: display=%d fromRot=%d toRot=%d config=%s",
                 displayId, fromRotation, toRotation,
                 newDisplayAreaInfo != null ? newDisplayAreaInfo.configuration : null);
-        mSplitLayout.rotateTo(toRotation);
         if (newDisplayAreaInfo != null) {
             mSplitLayout.updateConfiguration(newDisplayAreaInfo.configuration);
+        } else {
+            mSplitLayout.rotateTo(toRotation);
         }
         updateWindowBounds(mSplitLayout, wct);
         sendOnBoundsChanged();
