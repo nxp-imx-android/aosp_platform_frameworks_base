@@ -120,7 +120,6 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
-import android.app.ActivityThread;
 import android.app.ApplicationExitInfo;
 import android.app.usage.UsageEvents;
 import android.content.BroadcastReceiver;
@@ -296,12 +295,6 @@ public abstract class OomAdjuster {
      * Service for optimizing resource usage from background apps.
      */
     CachedAppOptimizer mCachedAppOptimizer;
-
-    /**
-     * Re-rank apps getting a cache oom adjustment from lru to weighted order
-     * based on weighted scores for LRU, PSS and cache use count.
-     */
-    CacheOomRanker mCacheOomRanker;
 
     ActivityManagerConstants mConstants;
 
@@ -501,7 +494,6 @@ public abstract class OomAdjuster {
 
         mConstants = mService.mConstants;
         mCachedAppOptimizer = cachedAppOptimizer;
-        mCacheOomRanker = new CacheOomRanker(service);
 
         mLogger = new OomAdjusterDebugLogger(this, mService.mConstants);
 
@@ -548,7 +540,6 @@ public abstract class OomAdjuster {
 
     void initSettings() {
         mCachedAppOptimizer.init();
-        mCacheOomRanker.init(ActivityThread.currentApplication().getMainExecutor());
         if (mService.mConstants.KEEP_WARMING_SERVICES.size() > 0) {
             final IntentFilter filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
             mService.mContext.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -2622,11 +2613,6 @@ public abstract class OomAdjuster {
 
     void dumpCachedAppOptimizerSettings(PrintWriter pw) {
         mCachedAppOptimizer.dump(pw);
-    }
-
-    @GuardedBy("mService")
-    void dumpCacheOomRankerSettings(PrintWriter pw) {
-        mCacheOomRanker.dump(pw);
     }
 
     /**
