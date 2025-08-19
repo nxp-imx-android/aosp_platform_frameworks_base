@@ -667,7 +667,7 @@ public class SplitDecorManager extends WindowlessWindowManager {
     }
 
     /** Release or hide decor hint. */
-    private void releaseDecor(SurfaceControl.Transaction t) {
+    public void releaseDecor(SurfaceControl.Transaction t) {
         if (mBackgroundLeash != null) {
             t.remove(mBackgroundLeash);
             mBackgroundLeash = null;
