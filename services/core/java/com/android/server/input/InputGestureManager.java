@@ -323,7 +323,7 @@ final class InputGestureManager {
                     createKeyGesture(
                             KeyEvent.KEYCODE_W,
                             KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
                             /* allowCaptureByFocusedWindow = */false
                     ));
         }
