@@ -17,7 +17,6 @@
 package com.android.wallpaperbackup;
 
 import static android.app.Flags.fixWallpaperCropsOnRestore;
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
@@ -614,7 +613,7 @@ public class WallpaperBackupAgent extends BackupAgent {
     void updateWallpaperComponent(Pair<ComponentName, WallpaperDescription> wpService, int which)
             throws IOException {
         WallpaperDescription description = wpService.second;
-        boolean hasDescription = (liveWallpaperContentHandling() && description != null);
+        boolean hasDescription = description != null;
         ComponentName component = hasDescription ? description.getComponent() : wpService.first;
         if (servicePackageExists(component)) {
             if (hasDescription) {
@@ -1213,12 +1212,10 @@ public class WallpaperBackupAgent extends BackupAgent {
             // Always read the description if it's there - there may be one from a previous save
             // with content handling enabled even if it's enabled now
             description = WallpaperDescription.restoreFromXml(parser);
-            if (liveWallpaperContentHandling()) {
-                // null component means that wallpaper was last saved without content handling, so
-                // populate description from saved component
-                if (description.getComponent() == null) {
-                    description = description.toBuilder().setComponent(component).build();
-                }
+            // null component means that wallpaper was last saved without content handling, so
+            // populate description from saved component
+            if (description.getComponent() == null) {
+                description = description.toBuilder().setComponent(component).build();
             }
         }
         return description;
@@ -1291,8 +1288,8 @@ public class WallpaperBackupAgent extends BackupAgent {
                     return;
                 }
 
-                boolean useDescription = (liveWallpaperContentHandling() && description != null
-                        && description.getComponent() != null);
+                boolean useDescription =
+                        (description != null && description.getComponent() != null);
                 if (useDescription && description.getComponent().getPackageName().equals(
                         packageName)) {
                     Slog.d(TAG, "Applying description " + description);

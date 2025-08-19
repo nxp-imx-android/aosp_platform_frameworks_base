@@ -16,9 +16,7 @@
 
 package android.service.wallpaper;
 
-import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
 import static android.app.Flags.enableWallpaperTransformSurfaceControlCommand;
-import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.WallpaperManager.COMMAND_FREEZE;
 import static android.app.WallpaperManager.COMMAND_TRANSFORM_SURFACE_CONTROL;
 import static android.app.WallpaperManager.COMMAND_UNFREEZE;
@@ -35,7 +33,6 @@ import android.animation.AnimationHandler;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
@@ -955,7 +952,6 @@ public abstract class WallpaperService extends Service {
          * unchanged
          */
         @Nullable
-        @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
         public WallpaperDescription onApplyWallpaper(@SetWallpaperFlags int which) {
             return null;
         }
@@ -2702,11 +2698,7 @@ public abstract class WallpaperService extends Service {
         private void doAttachEngine() {
             Trace.beginSection("WPMS.onCreateEngine");
             Engine engine;
-            if (liveWallpaperContentHandling()) {
-                engine = onCreateEngine(mDescription);
-            } else {
-                engine = onCreateEngine();
-            }
+            engine = onCreateEngine(mDescription);
             Trace.endSection();
             mEngine = engine;
             Trace.beginSection("WPMS.mConnection.attachEngine-" + mDisplayId);
@@ -3029,7 +3021,6 @@ public abstract class WallpaperService extends Service {
      * @param description content to display
      * @return the rendering engine
      */
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     @MainThread
     @Nullable
     public Engine onCreateEngine(@NonNull WallpaperDescription description) {
