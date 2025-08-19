@@ -25,9 +25,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Slog;
 
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadata;
 import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadataCache;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,22 +45,26 @@ public class RunningTaskFetcher {
     private static final String TAG = "RunningTaskFetcher";
 
     private final ActivityTaskManager mActivityTaskManager;
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final PackageManager mPackageManager;
     private final PackageMetadataCache mPackageMetadataCache;
 
     public RunningTaskFetcher(@NonNull Context context) {
         this(
             Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
+            Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
             Objects.requireNonNull(context).getPackageManager(),
             new PackageMetadataCache(Objects.requireNonNull(context).getPackageManager()));
     }
 
     public RunningTaskFetcher(
         @NonNull ActivityTaskManager activityTaskManager,
+        @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
         @NonNull PackageManager packageManager,
         @NonNull PackageMetadataCache packageMetadataCache) {
 
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
+        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mPackageManager = Objects.requireNonNull(packageManager);
         mPackageMetadataCache = Objects.requireNonNull(packageMetadataCache);
     }
@@ -107,12 +113,15 @@ public class RunningTaskFetcher {
             return null;
         }
 
+        boolean isHandoffEnabled
+            = mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
+
         return new RemoteTaskInfo(
             taskInfo.taskId,
             packageMetadata.label(),
             taskInfo.lastActiveTime,
             packageMetadata.icon(),
-            false);
+            isHandoffEnabled);
     }
 
     @NonNull

@@ -39,6 +39,7 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskI
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RunningTaskFetcher;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +55,7 @@ import java.util.List;
 public class TaskBroadcasterTest {
 
     @Mock private ActivityTaskManager mMockActivityTaskManager;
+    @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
     @Mock private RunningTaskFetcher mMockRunningTaskFetcher;
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
 
@@ -65,6 +67,7 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster = new TaskBroadcaster(
             mMockTaskContinuityMessenger,
             mMockActivityTaskManager,
+            mMockActivityTaskManagerInternal,
             mMockRunningTaskFetcher);
     }
 
@@ -72,6 +75,8 @@ public class TaskBroadcasterTest {
     public void testOnAllDevicesDisconnected_doesNothingIfNoDeviceConnected() {
         mTaskBroadcaster.onAllDevicesDisconnected();
         verify(mMockActivityTaskManager, never()).registerTaskStackListener(mTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, never())
+            .registerHandoffEnablementListener(mTaskBroadcaster);
     }
 
     @Test
@@ -79,10 +84,14 @@ public class TaskBroadcasterTest {
         // Connect a device, verify the listener is registered.
         mTaskBroadcaster.onDeviceConnected(1);
         verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, times(1))
+            .registerHandoffEnablementListener(mTaskBroadcaster);
 
         // Disconnect all devices, verify the listener is unregistered.
         mTaskBroadcaster.onAllDevicesDisconnected();
         verify(mMockActivityTaskManager, times(1)).unregisterTaskStackListener(mTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, times(1))
+            .unregisterHandoffEnablementListener(mTaskBroadcaster);
     }
 
     @Test
@@ -149,6 +158,27 @@ public class TaskBroadcasterTest {
         // Verify sendMessage is called
         RemoteTaskRemovedMessage expectedMessage = new RemoteTaskRemovedMessage(taskId);
         verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
+    }
+
+    @Test
+    public void testOnHandoffEnabledChanged_sendsMessageToAllAssociations() throws RemoteException {
+        RemoteTaskInfo expectedRemoteTaskInfo = new RemoteTaskInfo(
+            1 /* taskId */,
+            "task" /* label */,
+            100 /* lastActiveTime */,
+            new byte[0] /* icon */,
+            true /* isHandoffEnabled */);
+        when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
+            .thenReturn(expectedRemoteTaskInfo);
+        RunningTaskInfo taskInfo = new RunningTaskInfo();
+        taskInfo.taskId = expectedRemoteTaskInfo.id();
+
+        mTaskBroadcaster.onHandoffEnabledChanged(expectedRemoteTaskInfo.id(), true);
+
+        // Verify sendMessage is called for each association.
+        RemoteTaskUpdatedMessage expectedMessage
+            = new RemoteTaskUpdatedMessage(expectedRemoteTaskInfo);
+       verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
     }
 
     @Test
