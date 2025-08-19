@@ -47,16 +47,6 @@ flag {
 }
 
 flag {
-  name: "fix_get_bitmap_crops"
-  namespace: "systemui"
-  description: "Avoid some rounding errors in WallpaperManager.getBitmapCrops(..., originalBitmap=true)"
-  bug: "384502688"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "fix_wallpaper_crops_on_restore"
   namespace: "systemui"
   description: "Preserve center for wallpaper crops on restore"

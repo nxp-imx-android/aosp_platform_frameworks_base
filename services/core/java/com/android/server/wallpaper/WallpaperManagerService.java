@@ -20,10 +20,9 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-import static android.app.Flags.fixGetBitmapCrops;
+import static android.app.Flags.alwaysRebindUserSetWallpaper;
 import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.Flags.updateRecentsFromSystem;
-import static android.app.Flags.alwaysRebindUserSetWallpaper;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -2282,8 +2281,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             }
 
             SparseArray<Rect> relativeCropHints = WallpaperCropper.getRelativeCropHints(
-                    wallpaper, fixGetBitmapCrops() && originalBitmap);
-            Point relativeCropSize = (fixGetBitmapCrops() && originalBitmap)
+                    wallpaper, /* ignoreSampleSize= */ originalBitmap);
+            Point relativeCropSize = originalBitmap
                     ? new Point(wallpaper.cropHint.width(), wallpaper.cropHint.height())
                     : new Point(
                             (int) Math.ceil(wallpaper.cropHint.width() / wallpaper.mSampleSize),
@@ -2308,20 +2307,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     == View.LAYOUT_DIRECTION_RTL;
             WallpaperDefaultDisplayInfo defaultDisplayInfo =
                     mWallpaperDisplayHelper.getDefaultDisplayInfo();
-            SparseArray<Rect> cropHints = fixGetBitmapCrops()
-                    ? relativeCropHints
-                    : adjustedRelativeSuggestedCrops;
             for (Point displaySize : displaySizes) {
                 result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo,
-                        relativeCropSize, cropHints, rtl));
+                        relativeCropSize, relativeCropHints, rtl));
             }
             if (originalBitmap) {
-                if (fixGetBitmapCrops()) {
-                    result.forEach(crop ->
-                            crop.offset(wallpaper.cropHint.left, wallpaper.cropHint.top));
-                } else {
-                    result = WallpaperCropper.getOriginalCropHints(wallpaper, result);
-                }
+                result.forEach(crop ->
+                        crop.offset(wallpaper.cropHint.left, wallpaper.cropHint.top));
             }
             return result;
         }

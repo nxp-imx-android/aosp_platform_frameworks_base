@@ -53,8 +53,6 @@ import libcore.io.IoUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -429,21 +427,6 @@ public class WallpaperCropper {
             }
 
             result.put(wallpaper.mCropHints.keyAt(i), adjustedRect);
-        }
-        return result;
-    }
-
-    /**
-     * Inverse operation of {@link #getRelativeCropHints(WallpaperData)}
-     */
-    static List<Rect> getOriginalCropHints(
-            WallpaperData wallpaper, List<Rect> relativeCropHints) {
-        List<Rect> result = new ArrayList<>();
-        for (Rect crop : relativeCropHints) {
-            Rect originalRect = new Rect(crop);
-            originalRect.scale(wallpaper.mSampleSize);
-            originalRect.offset(wallpaper.cropHint.left, wallpaper.cropHint.top);
-            result.add(originalRect);
         }
         return result;
     }
