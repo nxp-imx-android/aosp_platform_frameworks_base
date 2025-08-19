@@ -988,12 +988,21 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         onChanged();
     }
 
+    void setAppLockEnabled(boolean appLockEnabled, int userId) {
+        modifyUserState(userId).setAppLockEnabled(appLockEnabled);
+        onChanged();
+    }
+
     boolean getInstalled(int userId) {
         return readUserState(userId).isInstalled();
     }
 
     boolean isArchived(int userId) {
         return PackageArchiver.isArchived(readUserState(userId));
+    }
+
+    boolean isAppLockEnabled(int userId) {
+        return readUserState(userId).isAppLockEnabled();
     }
 
     /**
@@ -1169,7 +1178,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                       ArraySet<String> enabledComponents, ArraySet<String> disabledComponents,
                       int installReason, int uninstallReason,
                       String harmfulAppWarning, String splashScreenTheme,
-                      long firstInstallTime, int aspectRatio, ArchiveState archiveState) {
+                      long firstInstallTime, int aspectRatio, ArchiveState archiveState,
+                      boolean appLockEnabled) {
         modifyUserState(userId)
                 .setSuspendParams(suspendParams)
                 .setCeDataInode(ceDataInode)
@@ -1191,7 +1201,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 .setSplashScreenTheme(splashScreenTheme)
                 .setFirstInstallTimeMillis(firstInstallTime)
                 .setMinAspectRatio(aspectRatio)
-                .setArchiveState(archiveState);
+                .setArchiveState(archiveState)
+                .setAppLockEnabled(appLockEnabled);
         onChanged();
     }
 
@@ -1210,7 +1221,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 otherState.getInstallReason(), otherState.getUninstallReason(),
                 otherState.getHarmfulAppWarning(), otherState.getSplashScreenTheme(),
                 otherState.getFirstInstallTimeMillis(), otherState.getMinAspectRatio(),
-                otherState.getArchiveState());
+                otherState.getArchiveState(), otherState.isAppLockEnabled());
     }
 
     WatchedArraySet<String> getEnabledComponents(int userId) {
@@ -1422,6 +1433,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
             proto.write(PackageProto.UserInfoProto.FIRST_INSTALL_TIME_MS,
                     state.getFirstInstallTimeMillis());
             writeArchiveState(proto, state.getArchiveState());
+            proto.write(PackageProto.UserInfoProto.IS_APP_LOCK_ENABLED, state.isAppLockEnabled());
             proto.end(userToken);
         }
     }
