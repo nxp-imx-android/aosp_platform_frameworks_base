@@ -81,7 +81,6 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             enableDualShade()
             runCurrent()
             underTest.activateIn(testScope)
-            testScope.backgroundScope.launch { underTest.detectShadeModeChanges() }
         }
 
     @Test
@@ -129,6 +128,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
+            testScope.backgroundScope.launch { underTest.detectShadeModeChanges() }
             enableDualShade()
             shadeInteractor.expandQuickSettingsShade("test")
             runCurrent()
@@ -147,6 +147,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
+            testScope.backgroundScope.launch { underTest.detectShadeModeChanges() }
             enableDualShade()
             shadeInteractor.expandQuickSettingsShade("test")
             runCurrent()
