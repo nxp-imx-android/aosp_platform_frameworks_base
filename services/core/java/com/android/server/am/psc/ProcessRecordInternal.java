@@ -36,6 +36,7 @@ import android.app.ActivityManager;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
@@ -173,6 +174,28 @@ public abstract class ProcessRecordInternal {
     /** @return {@code true} if the process is associated with any recent tasks. */
     public abstract boolean hasRecentTasks();
 
+    /** Checks if the process is currently showing UI while the device is in doze mode. */
+    public abstract boolean isShowingUiWhileDozing();
+
+    /**
+     * Retrieves the activity state flags from the underlying window process controller.
+     * TODO: b/401350380 - Remove it after the feature of pushing activity state is launched.
+     */
+    public abstract int getActivityStateFlagsLegacy();
+
+    /**
+     * Retrieves the perceptible task stopped time in milliseconds from the underlying window
+     * process controller.
+     * TODO: b/401350380 - Remove it after the feature of pushing activity state is launched.
+     */
+    public abstract long getPerceptibleTaskStoppedTimeMillisLegacy();
+
+    /** Retrieves the last reported PSS (Proportional Set Size) for this process. */
+    public abstract long getLastPss();
+
+    /** Retrieves the last reported RSS (Resident Set Size) for this process. */
+    public abstract long getLastRss();
+
     /**
      * Checks if the process is currently receiving a broadcast.
      *
@@ -192,6 +215,21 @@ public abstract class ProcessRecordInternal {
 
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
+
+    /** Returns whether this process is frozen. */
+    public abstract boolean isFrozen();
+
+    /** Returns whether this process has been scheduled for freezing. */
+    public abstract boolean isPendingFreeze();
+
+    /** Returns whether this process is exempt from being frozen by the system's app freezer. */
+    public abstract boolean isFreezeExempt();
+
+    /**
+     * Returns the OOM adjustment sequence number when this process's
+     * {@link #shouldNotFreeze()} state was last updated.
+     */
+    public abstract int shouldNotFreezeAdjSeq();
 
     /** Returns whether this process should be exempt from freezing. */
     public abstract boolean shouldNotFreeze();
@@ -224,10 +262,25 @@ public abstract class ProcessRecordInternal {
     /** Returns the internal broadcast receiver related record for this process. */
     public abstract ProcessReceiverRecordInternal getReceivers();
 
+    /** Returns the process ID. */
+    public abstract int getPid();
+
+    /** Checks if the process is currently running (i.e. has an active thread). */
+    public abstract boolean isProcessRunning();
+
+    /** Sends the given process state to the application thread. */
+    public abstract void setProcessStateToThread(int state);
+
+    /** Determines if UI scheduling for this process should use FIFO priority. */
+    public abstract boolean useFifoUiScheduling();
+
+    /** Notifies the window process controller about a change in top process status. */
+    public abstract void notifyTopProcChanged();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 
-    private final String mProcessName;
+    public final String processName;
     private String mTrackName;
 
     /**
@@ -235,6 +288,11 @@ public abstract class ProcessRecordInternal {
      * This may differ from {@link #getApplicationUid()} if it's an isolated process.
      */
     public final int uid;
+    /**
+     * The user ID of the process.
+     * This is derived from {@link #uid} using {@link android.os.UserHandle#getUserId(int)}.
+     */
+    public final int userId;
     public final boolean isolated;     // true if this is a special isolated process
     public final boolean isSdkSandbox; // true if this is an SDK sandbox process
 
@@ -245,6 +303,14 @@ public abstract class ProcessRecordInternal {
     private final Object mServiceLock;
     // The ActivityManagerGlobalLock object, which can only be used as a lock object.
     private final Object mProcLock;
+
+    /** True once we know the process has been killed. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mKilled;
+
+    /** True when proc has been killed by activity manager, not for RAM. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mKilledByAm;
 
     /**
      * Maximum OOM adjustment for this process.
@@ -676,8 +742,9 @@ public abstract class ProcessRecordInternal {
             new OomAdjusterImpl.ProcessRecordNode[NUM_NODE_TYPE];
 
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
-        mProcessName = processName;
+        this.processName = processName;
         this.uid = uid;
+        userId = UserHandle.getUserId(uid);
         isSdkSandbox = Process.isSdkSandboxUid(this.uid);
         isolated = Process.isIsolatedUid(this.uid);
         mServiceLock = serviceLock;
@@ -690,6 +757,27 @@ public abstract class ProcessRecordInternal {
         mStartedServiceObserver = startedServiceObserver;
         mLastStateTime = now;
     }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean isKilled() {
+        return mKilled;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setKilled(boolean killed) {
+        mKilled = killed;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean isKilledByAm() {
+        return mKilledByAm;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setKilledByAm(boolean killedByAm) {
+        mKilledByAm = killedByAm;
+    }
+
 
     @GuardedBy("mServiceLock")
     public void setMaxAdj(int maxAdj) {
@@ -1658,7 +1746,7 @@ public abstract class ProcessRecordInternal {
      */
     private String getTrackName() {
         if (mTrackName == null) {
-            mTrackName = "oom:" + mProcessName + "/u" + uid;
+            mTrackName = "oom:" + processName + "/u" + uid;
         }
         return mTrackName;
     }
