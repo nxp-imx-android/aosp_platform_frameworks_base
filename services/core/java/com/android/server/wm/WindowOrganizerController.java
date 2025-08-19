@@ -1338,6 +1338,15 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (isLockTaskModeViolation(wc.getParent(), wc.asTask(), isInLockTaskMode)) {
                         break;
                     }
+                }  else if (type == HIERARCHY_OP_TYPE_REPARENT && hop.getNewParent() != null) {
+                    final WindowContainer parentWc = WindowContainer.fromBinder(hop.getNewParent());
+                    final Task parentTask = parentWc != null ? parentWc.asTask() : null;
+                    if (parentTask != null && parentTask.isLeafTask()
+                            && parentTask.hasDirectChildActivities()) {
+                        Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                                + " on a leaf task.");
+                        break;
+                    }
                 }
                 if (syncId >= 0) {
                     addToSyncSet(syncId, wc);
