@@ -211,18 +211,24 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
     }
 
     @Override
-    protected void selectRoute(@NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info) {
+    protected void selectRoute(
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         RoutingController controller = getControllerForSession(info);
         if (controller != null) {
-            controller.selectRoute(route);
+            controller.selectRoute(route, routingChangeInfo);
         }
     }
 
     @Override
-    protected void deselectRoute(@NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info) {
+    protected void deselectRoute(
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo info,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         RoutingController controller = getControllerForSession(info);
         if (controller != null) {
-            controller.deselectRoute(route);
+            controller.deselectRoute(route, routingChangeInfo);
         }
     }
 

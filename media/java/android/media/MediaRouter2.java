@@ -2216,6 +2216,17 @@ public final class MediaRouter2 {
          * @see ControllerCallback#onControllerUpdated
          */
         public void selectRoute(@NonNull MediaRoute2Info route) {
+            selectRoute(route, /* routingChangeInfo= */ null);
+        }
+
+        /**
+         * Same as {@link #selectRoute(MediaRoute2Info)} but also takes {@link RoutingChangeInfo} as
+         * a parameter for logging purposes.
+         *
+         * @hide
+         */
+        public void selectRoute(
+                @NonNull MediaRoute2Info route, @Nullable RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(route, "route must not be null");
             if (isReleased()) {
                 Log.w(TAG, "selectRoute: Called on released controller. Ignoring.");
@@ -2234,7 +2245,7 @@ public final class MediaRouter2 {
                 return;
             }
 
-            mImpl.selectRoute(route, getRoutingSessionInfo());
+            mImpl.selectRoute(route, getRoutingSessionInfo(), routingChangeInfo);
         }
 
         /**
@@ -2255,6 +2266,17 @@ public final class MediaRouter2 {
          * @see ControllerCallback#onControllerUpdated
          */
         public void deselectRoute(@NonNull MediaRoute2Info route) {
+            deselectRoute(route, /* routingChangeInfo= */ null);
+        }
+
+        /**
+         * Same as {@link #deselectRoute(MediaRoute2Info)} but also takes {@link RoutingChangeInfo}
+         * as a parameter for logging purposes.
+         *
+         * @hide
+         */
+        public void deselectRoute(
+                @NonNull MediaRoute2Info route, RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(route, "route must not be null");
             if (isReleased()) {
                 Log.w(TAG, "deselectRoute: called on released controller. Ignoring.");
@@ -2273,7 +2295,7 @@ public final class MediaRouter2 {
                 return;
             }
 
-            mImpl.deselectRoute(route, getRoutingSessionInfo());
+            mImpl.deselectRoute(route, getRoutingSessionInfo(), routingChangeInfo);
         }
 
         /**
@@ -2806,9 +2828,15 @@ public final class MediaRouter2 {
         // RoutingController methods.
         void setSessionVolume(int volume, RoutingSessionInfo sessionInfo);
 
-        void selectRoute(MediaRoute2Info route, RoutingSessionInfo sessionInfo);
+        void selectRoute(
+                MediaRoute2Info route,
+                RoutingSessionInfo sessionInfo,
+                RoutingChangeInfo routingChangeInfo);
 
-        void deselectRoute(MediaRoute2Info route, RoutingSessionInfo sessionInfo);
+        void deselectRoute(
+                MediaRoute2Info route,
+                RoutingSessionInfo sessionInfo,
+                RoutingChangeInfo routingChangeInfo);
 
         void releaseSession(
                 boolean shouldReleaseSession,
@@ -3342,7 +3370,10 @@ public final class MediaRouter2 {
          * @see RoutingSessionInfo#getSelectableRoutes()
          */
         @Override
-        public void selectRoute(MediaRoute2Info route, RoutingSessionInfo sessionInfo) {
+        public void selectRoute(
+                MediaRoute2Info route,
+                RoutingSessionInfo sessionInfo,
+                RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(sessionInfo, "sessionInfo must not be null");
             Objects.requireNonNull(route, "route must not be null");
 
@@ -3359,7 +3390,7 @@ public final class MediaRouter2 {
             try {
                 int requestId = mNextRequestId.getAndIncrement();
                 mMediaRouterService.selectRouteWithManager(
-                        mClient, requestId, sessionInfo.getId(), route);
+                        mClient, requestId, sessionInfo.getId(), route, routingChangeInfo);
             } catch (RemoteException ex) {
                 throw ex.rethrowFromSystemServer();
             }
@@ -3377,7 +3408,10 @@ public final class MediaRouter2 {
          * @see RoutingSessionInfo#getDeselectableRoutes()
          */
         @Override
-        public void deselectRoute(MediaRoute2Info route, RoutingSessionInfo sessionInfo) {
+        public void deselectRoute(
+                MediaRoute2Info route,
+                RoutingSessionInfo sessionInfo,
+                RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(sessionInfo, "sessionInfo must not be null");
             Objects.requireNonNull(route, "route must not be null");
 
@@ -3393,8 +3427,13 @@ public final class MediaRouter2 {
 
             try {
                 int requestId = mNextRequestId.getAndIncrement();
+                if (routingChangeInfo == null) {
+                    routingChangeInfo =
+                            new RoutingChangeInfo(
+                                    ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false);
+                }
                 mMediaRouterService.deselectRouteWithManager(
-                        mClient, requestId, sessionInfo.getId(), route);
+                        mClient, requestId, sessionInfo.getId(), route, routingChangeInfo);
             } catch (RemoteException ex) {
                 throw ex.rethrowFromSystemServer();
             }
@@ -4127,14 +4166,24 @@ public final class MediaRouter2 {
         }
 
         @Override
-        public void selectRoute(MediaRoute2Info route, RoutingSessionInfo sessionInfo) {
+        public void selectRoute(
+                MediaRoute2Info route,
+                RoutingSessionInfo sessionInfo,
+                RoutingChangeInfo routingChangeInfo) {
             MediaRouter2Stub stub;
             synchronized (mLock) {
                 stub = mStub;
             }
             if (stub != null) {
                 try {
-                    mMediaRouterService.selectRouteWithRouter2(stub, sessionInfo.getId(), route);
+                    if (routingChangeInfo == null) {
+                        routingChangeInfo =
+                                new RoutingChangeInfo(
+                                        ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED,
+                                        /* isSuggested= */ false);
+                    }
+                    mMediaRouterService.selectRouteWithRouter2(
+                            stub, sessionInfo.getId(), route, routingChangeInfo);
                 } catch (RemoteException ex) {
                     Log.e(TAG, "Unable to select route for session.", ex);
                 }
@@ -4142,14 +4191,24 @@ public final class MediaRouter2 {
         }
 
         @Override
-        public void deselectRoute(MediaRoute2Info route, RoutingSessionInfo sessionInfo) {
+        public void deselectRoute(
+                MediaRoute2Info route,
+                RoutingSessionInfo sessionInfo,
+                RoutingChangeInfo routingChangeInfo) {
             MediaRouter2Stub stub;
             synchronized (mLock) {
                 stub = mStub;
             }
             if (stub != null) {
                 try {
-                    mMediaRouterService.deselectRouteWithRouter2(stub, sessionInfo.getId(), route);
+                    if (routingChangeInfo == null) {
+                        routingChangeInfo =
+                                new RoutingChangeInfo(
+                                        ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED,
+                                        /* isSuggested= */ false);
+                    }
+                    mMediaRouterService.deselectRouteWithRouter2(
+                            stub, sessionInfo.getId(), route, routingChangeInfo);
                 } catch (RemoteException ex) {
                     Log.e(TAG, "Unable to deselect route from session.", ex);
                 }

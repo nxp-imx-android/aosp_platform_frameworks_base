@@ -518,8 +518,11 @@ class MediaRouter2ServiceImpl {
         }
     }
 
-    public void selectRouteWithRouter2(@NonNull IMediaRouter2 router,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    public void selectRouteWithRouter2(
+            @NonNull IMediaRouter2 router,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         Objects.requireNonNull(router, "router must not be null");
         Objects.requireNonNull(route, "route must not be null");
         if (TextUtils.isEmpty(uniqueSessionId)) {
@@ -529,15 +532,18 @@ class MediaRouter2ServiceImpl {
         final long token = Binder.clearCallingIdentity();
         try {
             synchronized (mLock) {
-                selectRouteWithRouter2Locked(router, uniqueSessionId, route);
+                selectRouteWithRouter2Locked(router, uniqueSessionId, route, routingChangeInfo);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
         }
     }
 
-    public void deselectRouteWithRouter2(@NonNull IMediaRouter2 router,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    public void deselectRouteWithRouter2(
+            @NonNull IMediaRouter2 router,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         Objects.requireNonNull(router, "router must not be null");
         Objects.requireNonNull(route, "route must not be null");
         if (TextUtils.isEmpty(uniqueSessionId)) {
@@ -547,7 +553,7 @@ class MediaRouter2ServiceImpl {
         final long token = Binder.clearCallingIdentity();
         try {
             synchronized (mLock) {
-                deselectRouteWithRouter2Locked(router, uniqueSessionId, route);
+                deselectRouteWithRouter2Locked(router, uniqueSessionId, route, routingChangeInfo);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -796,8 +802,12 @@ class MediaRouter2ServiceImpl {
         }
     }
 
-    public void selectRouteWithManager(@NonNull IMediaRouter2Manager manager, int requestId,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    public void selectRouteWithManager(
+            @NonNull IMediaRouter2Manager manager,
+            int requestId,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         Objects.requireNonNull(manager, "manager must not be null");
         if (TextUtils.isEmpty(uniqueSessionId)) {
             throw new IllegalArgumentException("uniqueSessionId must not be empty");
@@ -807,15 +817,20 @@ class MediaRouter2ServiceImpl {
         final long token = Binder.clearCallingIdentity();
         try {
             synchronized (mLock) {
-                selectRouteWithManagerLocked(requestId, manager, uniqueSessionId, route);
+                selectRouteWithManagerLocked(
+                        requestId, manager, uniqueSessionId, route, routingChangeInfo);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
         }
     }
 
-    public void deselectRouteWithManager(@NonNull IMediaRouter2Manager manager, int requestId,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    public void deselectRouteWithManager(
+            @NonNull IMediaRouter2Manager manager,
+            int requestId,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         Objects.requireNonNull(manager, "manager must not be null");
         if (TextUtils.isEmpty(uniqueSessionId)) {
             throw new IllegalArgumentException("uniqueSessionId must not be empty");
@@ -825,7 +840,8 @@ class MediaRouter2ServiceImpl {
         final long token = Binder.clearCallingIdentity();
         try {
             synchronized (mLock) {
-                deselectRouteWithManagerLocked(requestId, manager, uniqueSessionId, route);
+                deselectRouteWithManagerLocked(
+                        requestId, manager, uniqueSessionId, route, routingChangeInfo);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -1497,7 +1513,8 @@ class MediaRouter2ServiceImpl {
         if (routerRecord == null) {
             mMediaRouterMetricLogger.logOperationFailure(
                     MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND);
+                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND,
+                    routingChangeInfo);
             return;
         }
 
@@ -1519,7 +1536,8 @@ class MediaRouter2ServiceImpl {
                 Slog.w(TAG, "requestCreateSessionWithRouter2Locked: Ignoring unknown request.");
                 mMediaRouterMetricLogger.logOperationFailure(
                         MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_MANAGER_RECORD_NOT_FOUND);
+                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_MANAGER_RECORD_NOT_FOUND,
+                        routingChangeInfo);
                 routerRecord.notifySessionCreationFailed(requestId);
                 return;
             }
@@ -1531,7 +1549,8 @@ class MediaRouter2ServiceImpl {
                                 + "Ignoring unmatched routing session.");
                 mMediaRouterMetricLogger.logOperationFailure(
                         MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_SESSION_ID);
+                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_SESSION_ID,
+                        routingChangeInfo);
                 routerRecord.notifySessionCreationFailed(requestId);
                 return;
             }
@@ -1549,7 +1568,8 @@ class MediaRouter2ServiceImpl {
                                     + "Ignoring unmatched route.");
                     mMediaRouterMetricLogger.logOperationFailure(
                             MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                            MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_ROUTE_ID);
+                            MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_ROUTE_ID,
+                            routingChangeInfo);
                     routerRecord.notifySessionCreationFailed(requestId);
                     return;
                 }
@@ -1563,7 +1583,8 @@ class MediaRouter2ServiceImpl {
                 Slog.w(TAG, "MODIFY_AUDIO_ROUTING permission is required to transfer to" + route);
                 mMediaRouterMetricLogger.logOperationFailure(
                         MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
-                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_PERMISSION_DENIED);
+                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_PERMISSION_DENIED,
+                        routingChangeInfo);
                 routerRecord.notifySessionCreationFailed(requestId);
                 return;
             }
@@ -1572,7 +1593,8 @@ class MediaRouter2ServiceImpl {
         long uniqueRequestId = toUniqueRequestId(routerRecord.mRouterId, requestId);
         mMediaRouterMetricLogger.addRequestInfo(
                 uniqueRequestId,
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                routingChangeInfo);
         mMediaRouterMetricLogger.notifyRoutingChangeRequested(uniqueRequestId, routingChangeInfo);
         userHandler.sendMessage(
                 obtainMessage(
@@ -1587,15 +1609,19 @@ class MediaRouter2ServiceImpl {
     }
 
     @GuardedBy("mLock")
-    private void selectRouteWithRouter2Locked(@NonNull IMediaRouter2 router,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    private void selectRouteWithRouter2Locked(
+            @NonNull IMediaRouter2 router,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         final IBinder binder = router.asBinder();
         final RouterRecord routerRecord = mAllRouterRecords.get(binder);
 
         if (routerRecord == null) {
             mMediaRouterMetricLogger.logOperationFailure(
                     MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE,
-                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND);
+                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND,
+                    routingChangeInfo);
             return;
         }
 
@@ -1606,7 +1632,8 @@ class MediaRouter2ServiceImpl {
                         routerRecord.mPackageName, routerRecord.mRouterId, route.getId()));
         mMediaRouterMetricLogger.logOperationTriggered(
                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE,
-                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                routingChangeInfo);
 
         routerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::selectRouteOnHandler,
@@ -1615,15 +1642,19 @@ class MediaRouter2ServiceImpl {
     }
 
     @GuardedBy("mLock")
-    private void deselectRouteWithRouter2Locked(@NonNull IMediaRouter2 router,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    private void deselectRouteWithRouter2Locked(
+            @NonNull IMediaRouter2 router,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         final IBinder binder = router.asBinder();
         final RouterRecord routerRecord = mAllRouterRecords.get(binder);
 
         if (routerRecord == null) {
             mMediaRouterMetricLogger.logOperationFailure(
                     MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE,
-                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND);
+                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND,
+                    routingChangeInfo);
             return;
         }
 
@@ -1634,7 +1665,8 @@ class MediaRouter2ServiceImpl {
                         routerRecord.mPackageName, routerRecord.mRouterId, route.getId()));
         mMediaRouterMetricLogger.logOperationTriggered(
                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE,
-                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                routingChangeInfo);
 
         routerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::deselectRouteOnHandler,
@@ -1655,7 +1687,8 @@ class MediaRouter2ServiceImpl {
         if (routerRecord == null) {
             mMediaRouterMetricLogger.logOperationFailure(
                     MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE,
-                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND);
+                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND,
+                    routingChangeInfo);
             return;
         }
 
@@ -1666,7 +1699,8 @@ class MediaRouter2ServiceImpl {
                         routerRecord.mPackageName, routerRecord.mRouterId, route.getId()));
         mMediaRouterMetricLogger.logOperationTriggered(
                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE,
-                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
+                routingChangeInfo);
 
         UserHandler userHandler = routerRecord.mUserRecord.mHandler;
         String defaultRouteId = userHandler.getSystemProvider().getDefaultRoute().getId();
@@ -1728,7 +1762,8 @@ class MediaRouter2ServiceImpl {
         if (routerRecord == null) {
             mMediaRouterMetricLogger.logOperationFailure(
                     MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION,
-                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND);
+                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_ROUTER_RECORD_NOT_FOUND,
+                    /* routingChangeInfo= */ null);
             return;
         }
 
@@ -2045,8 +2080,12 @@ class MediaRouter2ServiceImpl {
     }
 
     @GuardedBy("mLock")
-    private void selectRouteWithManagerLocked(int requestId, @NonNull IMediaRouter2Manager manager,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+    private void selectRouteWithManagerLocked(
+            int requestId,
+            @NonNull IMediaRouter2Manager manager,
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         final IBinder binder = manager.asBinder();
         ManagerRecord managerRecord = mAllManagerRecords.get(binder);
 
@@ -2064,7 +2103,9 @@ class MediaRouter2ServiceImpl {
 
         long uniqueRequestId = toUniqueRequestId(managerRecord.mManagerId, requestId);
         mMediaRouterMetricLogger.addRequestInfo(
-                uniqueRequestId, MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE);
+                uniqueRequestId,
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE,
+                routingChangeInfo);
 
         managerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::selectRouteOnHandler,
@@ -2073,9 +2114,12 @@ class MediaRouter2ServiceImpl {
     }
 
     @GuardedBy("mLock")
-    private void deselectRouteWithManagerLocked(int requestId,
+    private void deselectRouteWithManagerLocked(
+            int requestId,
             @NonNull IMediaRouter2Manager manager,
-            @NonNull String uniqueSessionId, @NonNull MediaRoute2Info route) {
+            @NonNull String uniqueSessionId,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
         final IBinder binder = manager.asBinder();
         ManagerRecord managerRecord = mAllManagerRecords.get(binder);
 
@@ -2094,7 +2138,8 @@ class MediaRouter2ServiceImpl {
         long uniqueRequestId = toUniqueRequestId(managerRecord.mManagerId, requestId);
         mMediaRouterMetricLogger.addRequestInfo(
                 uniqueRequestId,
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE);
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE,
+                routingChangeInfo);
 
         managerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(UserHandler::deselectRouteOnHandler,
@@ -2130,7 +2175,8 @@ class MediaRouter2ServiceImpl {
         long uniqueRequestId = toUniqueRequestId(managerRecord.mManagerId, requestId);
         mMediaRouterMetricLogger.addRequestInfo(
                 uniqueRequestId,
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE);
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE,
+                routingChangeInfo);
 
         managerRecord.mUserRecord.mHandler.sendMessage(
                 obtainMessage(
