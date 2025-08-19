@@ -1392,13 +1392,8 @@ public final class MediaProjectionManagerService extends SystemService
                 return;
             }
 
-            Binder.withCleanCallingIdentity(() -> {
-                String contextualSearchPackage = mContext.getResources().getString(
-                        R.string.config_defaultContextualSearchPackageName);
-                if (packageName.equals(contextualSearchPackage)) {
-                    mIsRecordingOverlay = isRecordingOverlay;
-                }
-            });
+            mIsRecordingOverlay = isRecordingOverlay;
+
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_MEDIA_PROJECTION)
