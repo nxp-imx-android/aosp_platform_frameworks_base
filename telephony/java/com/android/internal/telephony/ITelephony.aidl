@@ -852,9 +852,11 @@ interface ITelephony {
      * @param subId the id of the subscription.
      * @param reason the reason the allowed network type change is taking place
      * @param allowedNetworkTypes the allowed network types.
+     * @param callingPackage the package that changed set the allowed network types.
      * @return true on success; false on any failure.
      */
-    boolean setAllowedNetworkTypesForReason(int subId, int reason, long allowedNetworkTypes);
+    boolean setAllowedNetworkTypesForReason(int subId, int reason, long allowedNetworkTypes,
+            String callingPackage);
 
     /**
      * Get the user enabled state of Mobile Data.
