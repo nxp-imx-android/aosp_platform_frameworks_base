@@ -538,7 +538,7 @@ class ConnectedDisplayCujSmokeTests {
     fun findDefaultDisplayObject(paneObject: UiObject2) = paneObject.children[1]
 
     fun launchAppFromTaskbar(displayId: Int, appHelper: StandardAppHelper) {
-        val selector = By.text(appHelper.appName).hasParent(taskbarSelector(displayId))
+        val selector = By.text(appHelper.appName).hasAncestor(taskbarSelector(displayId))
         val appName = appHelper.appName
         DeviceHelpers.waitForObj(selector) {
             "Can't find an app icon of $appName on taskbar on display#$displayId"
