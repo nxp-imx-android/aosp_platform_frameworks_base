@@ -1127,57 +1127,77 @@ private fun BoxScope.CommunalHubLazyGrid(
 @Composable
 private fun EmptyStateCta(contentPadding: PaddingValues, viewModel: BaseCommunalViewModel) {
     val colors = MaterialTheme.colorScheme
-    Card(
-        modifier = Modifier.height(hubDimensions.GridHeight).padding(contentPadding),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = colors.primary,
-                contentColor = colors.onPrimary,
-            ),
-        shape = RoundedCornerShape(size = 80.adjustedDp),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 110.adjustedDp),
-            verticalArrangement =
-                Arrangement.spacedBy(Dimensions.Spacing, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Card(
+            modifier = Modifier.height(hubDimensions.GridHeight).padding(contentPadding),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = colors.primary,
+                    contentColor = colors.onPrimary,
+                ),
+            shape = RoundedCornerShape(size = 80.adjustedDp),
         ) {
-            val titleForEmptyStateCTA = stringResource(R.string.title_for_empty_state_cta)
-            BasicText(
-                text = titleForEmptyStateCTA,
-                style =
-                    MaterialTheme.typography.displaySmall.merge(
-                        color = colors.onPrimary,
-                        textAlign = TextAlign.Center,
-                    ),
-                autoSize = TextAutoSize.StepBased(maxFontSize = 36.sp, stepSize = 0.1.sp),
+            Column(
                 modifier =
-                    Modifier.focusable().semantics(mergeDescendants = true) {
-                        contentDescription = titleForEmptyStateCTA
-                        heading()
-                    },
-            )
+                    Modifier.fillMaxSize().padding(horizontal = hubDimensions.emptyStatePadding),
+                verticalArrangement = Arrangement.aligned(Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                val titleForEmptyStateCTA = stringResource(R.string.title_for_empty_state_cta)
+                val windowSizeCategory = WindowSizeUtils.getWindowSizeCategory(LocalContext.current)
+                // On larger screens, allow the text and button to cluster together near the center.
+                // On smaller screens, push the button to the bottom of the card for a nicer
+                // appearance.
+                val modifier =
+                    if (windowSizeCategory == WindowSizeUtils.WindowSizeCategory.MOBILE_PORTRAIT) {
+                        Modifier.weight(1f).fillMaxSize()
+                    } else {
+                        Modifier
+                    }
+                Box(modifier = modifier, contentAlignment = Alignment.Center) {
+                    BasicText(
+                        text = titleForEmptyStateCTA,
+                        style =
+                            MaterialTheme.typography.displaySmall.merge(
+                                color = colors.onPrimary,
+                                textAlign = TextAlign.Center,
+                            ),
+                        autoSize = TextAutoSize.StepBased(maxFontSize = 36.sp, stepSize = 0.1.sp),
+                        modifier =
+                            Modifier.focusable().semantics(mergeDescendants = true) {
+                                contentDescription = titleForEmptyStateCTA
+                                heading()
+                            },
+                    )
+                }
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Button(
-                    modifier = Modifier.height(56.dp),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = colors.primaryContainer,
-                            contentColor = colors.onPrimaryContainer,
-                        ),
-                    onClick = { viewModel.onOpenWidgetEditor(shouldOpenWidgetPickerOnStart = true) },
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth().wrapContentHeight().padding(vertical = 24.dp),
+                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(
-                        text = stringResource(R.string.label_for_button_in_empty_state_cta),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
+                    Button(
+                        modifier = Modifier.height(56.dp),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = colors.primaryContainer,
+                                contentColor = colors.onPrimaryContainer,
+                            ),
+                        onClick = {
+                            viewModel.onOpenWidgetEditor(shouldOpenWidgetPickerOnStart = true)
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Text(
+                            text = stringResource(R.string.label_for_button_in_empty_state_cta),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
                 }
             }
         }
@@ -2179,6 +2199,19 @@ class Dimensions(val context: Context, val config: Configuration) {
                 ItemSpacingCompact
             } else {
                 ItemSpacing
+            }
+        }
+
+    val emptyStatePadding: Dp
+        get() {
+            return if (
+                WindowSizeUtils.getWindowSizeCategory(context) == WindowSizeUtils.WindowSizeCategory.MOBILE_PORTRAIT
+            ) {
+                24.adjustedDp
+            } else {
+                // Use more padding on large displays to cluster the text near the middle of the
+                // screen for readability.
+                110.adjustedDp
             }
         }
 
