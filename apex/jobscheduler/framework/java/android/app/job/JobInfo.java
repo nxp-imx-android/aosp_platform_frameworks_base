@@ -1400,6 +1400,8 @@ public class JobInfo implements Parcelable {
             // job.
             mBackoffPolicy = job.getBackoffPolicy();
             mPriority = job.getPriority();
+            mDebugTags.addAll(job.getDebugTags());
+            mTraceTag = job.getTraceTag();
         }
 
         /**
@@ -1431,8 +1433,9 @@ public class JobInfo implements Parcelable {
 
         /** @hide */
         @NonNull
-        public void addDebugTags(@NonNull Set<String> tags) {
+        public Builder addDebugTags(@NonNull Set<String> tags) {
             mDebugTags.addAll(tags);
+            return this;
         }
 
         /**

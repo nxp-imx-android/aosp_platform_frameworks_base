@@ -22,6 +22,7 @@ import static android.app.usage.UsageStatsManager.REASON_MAIN_PREDICTED;
 import static android.app.usage.UsageStatsManager.REASON_MAIN_TIMEOUT;
 import static android.app.usage.UsageStatsManager.REASON_MAIN_USAGE;
 import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_FREQUENT;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -66,6 +67,7 @@ import android.app.job.JobInfo;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
 import android.content.pm.PackageManagerInternal;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
@@ -95,6 +97,7 @@ import org.mockito.quality.Strictness;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
 public class JobStatusTest {
@@ -106,6 +109,10 @@ public class JobStatusTest {
 
     private static final Uri IMAGES_MEDIA_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     private static final Uri VIDEO_MEDIA_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+
+    private static final String TEST_TRACE_TAG = "test_trace_tag";
+    private static final String TEST_DEBUG_TAG1 = "test_debug_tag1";
+    private static final String TEST_DEBUG_TAG2 = "test_debug_tag2";
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -1635,6 +1642,21 @@ public class JobStatusTest {
         assertEquals(standbyBucketToBucketIndex(STANDBY_BUCKET_FREQUENT),
                 jobStatus.getStandbyBucket());
         assertEquals(REASON_MAIN_PREDICTED, jobStatus.getStandbyBucketReason());
+    }
+
+    @Test
+    public void testCreateJobStatus_validateTags() {
+        final NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addCapability(NET_CAPABILITY_INTERNET)
+                .build();
+        final JobInfo jobInfo = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
+                .setRequiredNetwork(networkRequest)
+                .setTraceTag(TEST_TRACE_TAG)
+                .addDebugTags(Set.of(TEST_DEBUG_TAG1, TEST_DEBUG_TAG2))
+                .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        assertEquals(TEST_TRACE_TAG, jobStatus.getJob().getTraceTag());
+        assertEquals(Set.of(TEST_DEBUG_TAG1, TEST_DEBUG_TAG2), jobStatus.getJob().getDebugTags());
     }
 
     private void markExpeditedQuotaApproved(JobStatus job, boolean isApproved) {
