@@ -28,23 +28,35 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.role.RoleManagerLocal
-import com.android.server.LocalManagerRegistry
 import com.android.server.devicepolicy.EnforcingAdmin.ROLE_AUTHORITY_PREFIX
+import com.android.server.testutils.LocalManagerRegistryKeeperRule
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-
 @RunWith(AndroidJUnit4::class)
 class EnforcingAdminTest {
 
     @get:Rule val setFlagsRule = SetFlagsRule()
+
+    @get:Rule
+    val localManagerRegistryKeeperRule = LocalManagerRegistryKeeperRule()
+
+    private val roleManagerLocal = mock<RoleManagerLocal>()
+
+    @Before
+    fun setUp() {
+        localManagerRegistryKeeperRule.overrideLocalManager(
+            RoleManagerLocal::class.java,
+            roleManagerLocal,
+        )
+    }
 
     @Test
     fun createEnforcingAdmin() {
@@ -242,16 +254,5 @@ class EnforcingAdminTest {
             EnforcingAdmin.SYSTEM_AUTHORITY_PREFIX + SYSTEM_ENTITY
         private val SYSTEM_AUTHORITY = SystemAuthority(SYSTEM_ENTITY)
         private const val ROLE_NAME = "role-authority"
-
-        private val roleManagerLocal = mock<RoleManagerLocal>()
-
-        @BeforeClass
-        @JvmStatic
-        fun setUpClass() {
-            // TODO(b/420373209): Remove this once we have a better way to mock RoleManagerLocal.
-            if (LocalManagerRegistry.getManager(RoleManagerLocal::class.java) == null) {
-                LocalManagerRegistry.addManager(RoleManagerLocal::class.java, roleManagerLocal)
-            }
-        }
     }
 }
