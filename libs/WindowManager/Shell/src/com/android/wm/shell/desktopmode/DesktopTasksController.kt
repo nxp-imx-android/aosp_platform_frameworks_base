@@ -2639,7 +2639,13 @@ class DesktopTasksController(
         currentDragBounds: Rect,
         motionEvent: MotionEvent,
     ) {
-        if (isTaskMaximized(taskInfo, displayController)) {
+        val displayId = taskInfo.displayId
+        val displayLayout = displayController.getDisplayLayout(displayId)
+        if (displayLayout == null)  {
+            logW("Display %d is not found, task displayId might be stale", displayId)
+            return
+        }
+        if (isTaskMaximized(taskInfo, displayLayout)) {
             // Handle the case where we attempt to drag-to-maximize when already maximized: the task
             // position won't need to change but we want to animate the surface going back to the
             // maximized position.

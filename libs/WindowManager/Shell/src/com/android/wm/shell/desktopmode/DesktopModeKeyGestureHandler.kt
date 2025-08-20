@@ -144,13 +144,21 @@ class DesktopModeKeyGestureHandler(
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW -> {
                 logV("Key gesture TOGGLE_MAXIMIZE_FREEFORM_WINDOW is handled")
                 getGloballyFocusedDesktopTask()?.let { taskInfo ->
+                    val displayId = taskInfo.displayId
+                    val displayLayout = displayController.getDisplayLayout(displayId)
+                    if (displayLayout == null) {
+                        logW(
+                            "Display %d is not found, task displayId might be stale", displayId
+                        )
+                        return
+                    }
                     mainExecutor.execute {
                         desktopTasksController
                             .get()
                             .toggleDesktopTaskSize(
                                 taskInfo,
                                 ToggleTaskSizeInteraction(
-                                    isMaximized = isTaskMaximized(taskInfo, displayController),
+                                    isMaximized = isTaskMaximized(taskInfo, displayLayout),
                                     source = ToggleTaskSizeInteraction.Source.KEYBOARD_SHORTCUT,
                                     inputMethod =
                                         DesktopModeEventLogger.Companion.InputMethod.KEYBOARD,

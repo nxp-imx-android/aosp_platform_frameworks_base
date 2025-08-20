@@ -603,10 +603,12 @@ class AppHeaderController(
         animatingTaskResizeOrReposition: Boolean = false,
     ) =
         traceSection("AppHeaderController#updateViewHolder") {
+            val displayId = taskInfo.displayId
+            val displayLayout = displayController.getDisplayLayout(displayId) ?: return@traceSection
             viewHolder.bindData(
                 HeaderData(
                     taskInfo,
-                    isTaskMaximized(taskInfo, displayController),
+                    isTaskMaximized(taskInfo, displayLayout),
                     inFullImmersive,
                     hasGlobalFocus,
                     canOpenMaximizeMenu(animatingTaskResizeOrReposition),

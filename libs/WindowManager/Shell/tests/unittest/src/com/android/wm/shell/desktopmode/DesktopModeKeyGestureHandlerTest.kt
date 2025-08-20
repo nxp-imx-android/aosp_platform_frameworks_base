@@ -335,11 +335,12 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
+        val displayLayout = displayController.getDisplayLayout(task.displayId)
         verify(desktopTasksController)
             .toggleDesktopTaskSize(
                 task,
                 ToggleTaskSizeInteraction(
-                    isMaximized = isTaskMaximized(task, displayController),
+                    isMaximized = isTaskMaximized(task, displayLayout!!),
                     source = ToggleTaskSizeInteraction.Source.KEYBOARD_SHORTCUT,
                     inputMethod = DesktopModeEventLogger.Companion.InputMethod.KEYBOARD,
                 ),

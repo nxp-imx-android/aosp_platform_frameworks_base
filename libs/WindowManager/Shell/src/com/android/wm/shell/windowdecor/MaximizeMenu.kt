@@ -243,7 +243,11 @@ class MaximizeMenu(
     }
 
     private fun getSizeToggleDirection(): MaximizeMenuView.SizeToggleDirection {
-        val maximized = isTaskMaximized(taskInfo, displayController)
+        val displayId = taskInfo.displayId
+        val displayLayout =
+            displayController.getDisplayLayout(displayId)
+                ?: error("Could not get display layout for display=$displayId")
+        val maximized = isTaskMaximized(taskInfo, displayLayout)
         return if (maximized) MaximizeMenuView.SizeToggleDirection.RESTORE
         else MaximizeMenuView.SizeToggleDirection.MAXIMIZE
     }
