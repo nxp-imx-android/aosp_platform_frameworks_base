@@ -90,6 +90,7 @@ import android.view.animation.Animation;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IShortcutService;
+import com.android.server.policy.keyguard.KeyguardServiceDelegate;
 import com.android.server.wm.DisplayRotation;
 
 import java.io.PrintWriter;
@@ -181,6 +182,12 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * Does NOT immediately request the device to lock.
      */
     void showDismissibleKeyguard();
+
+    /**
+     * Return the KeyguardServiceDelegate instance. System Server uses this for granular keyguard
+     * logic control.
+     */
+    KeyguardServiceDelegate getKeyguardServiceDelegate();
 
     /**
      * Interface to the Window Manager state associated with a particular
@@ -1245,4 +1252,10 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * @return {@code true} if the key will be handled globally.
      */
     boolean isGlobalKey(int keyCode);
+
+    /**
+     * Inject a {@link SingleKeyGestureDetector.SingleKeyRule} for customized key gesture handling.
+     * @param singleKeyRule The rule to inject.
+     */
+    void addSingleKeyRule(@NonNull SingleKeyGestureDetector.SingleKeyRule singleKeyRule);
 }
