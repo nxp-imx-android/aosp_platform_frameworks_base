@@ -498,21 +498,12 @@ class AppHandleController(
 
     override val occludingElements: List<OccludingElement> = emptyList()
 
-    override fun releaseViews(
-        wct: WindowContainerTransaction,
-        t: SurfaceControl.Transaction,
-    ): Boolean {
-        closeHandleMenu()
-        closeManageWindowsMenu()
-        disposeStatusBarInputLayer()
-        return super.releaseViews(wct, t)
-    }
-
-    override fun close() {
+    override fun close(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean {
         closeHandleMenu()
         closeManageWindowsMenu()
         disposeStatusBarInputLayer()
         viewHolder.close()
         notifyNoCaption()
+        return super.close(wct, t)
     }
 }
