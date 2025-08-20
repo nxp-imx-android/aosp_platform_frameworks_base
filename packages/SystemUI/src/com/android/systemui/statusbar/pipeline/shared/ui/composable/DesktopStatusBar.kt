@@ -48,6 +48,7 @@ import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
@@ -84,6 +85,7 @@ fun DesktopStatusBar(
     statusBarIconController: StatusBarIconController,
     iconManagerFactory: TintedIconManager.Factory,
     mediaHierarchyManager: MediaHierarchyManager,
+    mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
@@ -133,6 +135,7 @@ fun DesktopStatusBar(
             if (StatusBarPopupChips.isEnabled) {
                 StatusBarPopupChipsContainer(
                     chips = viewModel.popupChips,
+                    mediaViewModelFactory = mediaViewModelFactory,
                     mediaHost = mediaHost,
                     onMediaControlPopupVisibilityChanged = { popupShowing ->
                         mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
