@@ -13793,15 +13793,6 @@ public final class Settings {
         public static final String AAPM_USB_DATA_PROTECTION = "aapm_usb_data_protection";
 
         /**
-         * Tracks if the user has enabled Identity Check before Android 16 QPR1 build. This value
-         * is used to show promo card only to pre-existing users who have opted-in to the feature.
-         *
-         * @hide
-         */
-        public static final String IDENTITY_CHECK_ENABLED_V1 =
-                "identity_check_enabled_v1";
-
-        /**
          * Tracks if the user has seen the promo card for Identity Check.
          * The promo card should only appear once per user via Safety Center.
          *
