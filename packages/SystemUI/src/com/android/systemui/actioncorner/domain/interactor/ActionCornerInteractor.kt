@@ -75,7 +75,7 @@ constructor(
             .distinctUntilChanged()
             .flatMapLatest { shouldCheckLockscreenVisibility ->
                 if (shouldCheckLockscreenVisibility) {
-                    lockscreenVisibilityInteractor.lockscreenVisibility.map { !it }
+                    lockscreenVisibilityInteractor.lockscreenVisibility.map { !it.first }
                 } else {
                     flowOf(false)
                 }

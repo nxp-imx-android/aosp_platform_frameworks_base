@@ -121,7 +121,7 @@ constructor(
         combine(
                 wmLockscreenVisibilityInteractor.lockscreenVisibility,
                 surfaceBehindInteractor.isAnimatingSurface,
-            ) { lockscreenVisible, animatingSurface ->
+            ) { (lockscreenVisible, _), animatingSurface ->
                 lockscreenVisible || animatingSurface
             }
             .distinctUntilChanged()

@@ -64,7 +64,7 @@ constructor(
         }
 
         applicationScope.launch {
-            wmLockscreenVisibilityInteractor.lockscreenVisibility.collect { visible ->
+            wmLockscreenVisibilityInteractor.lockscreenVisibility.collect { (visible, _) ->
                 val iterator = callbacks.iterator()
                 withContext(backgroundDispatcher) {
                     while (iterator.hasNext()) {
