@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,11 +68,6 @@ fun BatteryWithChargeStatus(
     val batteryHeight =
         with(LocalDensity.current) {
             BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
-        }
-
-    val textStyle =
-        with(LocalDensity.current) {
-            BatteryViewModel.getStatusBarBatteryTextStyle(LocalContext.current)
         }
 
     var bounds by remember { mutableStateOf(Rect()) }
@@ -124,7 +120,11 @@ fun BatteryWithChargeStatus(
 
             textToShow?.let {
                 Spacer(modifier.width(4.dp))
-                BasicText(text = it, color = colorProducer, style = textStyle)
+                BasicText(
+                    text = it,
+                    color = colorProducer,
+                    style = MaterialTheme.typography.bodyMediumEmphasized,
+                )
             }
         }
     }
