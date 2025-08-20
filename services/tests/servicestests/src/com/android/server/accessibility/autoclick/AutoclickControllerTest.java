@@ -35,6 +35,8 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.hardware.input.InputManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -43,6 +45,7 @@ import android.provider.Settings;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -265,6 +268,73 @@ public class AutoclickControllerTest {
         injectFakeMouseActionHoverMoveEvent();
 
         verify(mMockWindowManager).addView(eq(mController.mAutoclickIndicatorView), any());
+    }
+
+
+    @Test
+    @EnableFlags({com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR,
+            com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_FOR_CONNECTED_DISPLAYS})
+    public void onMotionEvent_onSameDisplay_doesNotRecreateUi() {
+        injectFakeMouseMoveEventOnDisplay(0, 0, MotionEvent.ACTION_HOVER_MOVE,
+                Display.DEFAULT_DISPLAY);
+        injectFakeMouseMoveEventOnDisplay(100, 100, MotionEvent.ACTION_HOVER_MOVE,
+                Display.DEFAULT_DISPLAY);
+
+        verify(mMockWindowManager, Mockito.never()).removeView(any());
+        // Verify that addView was not called again. The total should still be 2.
+        verify(mMockWindowManager, times(2)).addView(any(), any());
+        assertThat(mController.mCurrentDisplayId).isEqualTo(Display.DEFAULT_DISPLAY);
+        assertThat(mController.mAutoclickIndicatorView.getContext().getDisplay().getDisplayId())
+                .isEqualTo(Display.DEFAULT_DISPLAY);
+        assertThat(mController.mAutoclickTypePanel.getContentViewForTesting()
+                .getContext().getDisplay().getDisplayId()).isEqualTo(Display.DEFAULT_DISPLAY);
+        assertThat(mController.mAutoclickScrollPanel.getContentViewForTesting()
+                .getContext().getDisplay().getDisplayId()).isEqualTo(Display.DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags({com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR,
+            com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_FOR_CONNECTED_DISPLAYS})
+    public void onMotionEvent_onDifferentDisplay_recreatesUi() {
+        DisplayManager displayManager = mTestableContext.getSystemService(DisplayManager.class);
+        VirtualDisplay virtualDisplay = null;
+        try {
+            virtualDisplay = displayManager.createVirtualDisplay("TestDisplay",
+                    640, 480, 100, null /* surface */, 0 /* flags */);
+            final int newDisplayId = virtualDisplay.getDisplay().getDisplayId();
+            assertThat(newDisplayId).isNotEqualTo(Display.DEFAULT_DISPLAY);
+
+
+            injectFakeMouseMoveEventOnDisplay(0, 0, MotionEvent.ACTION_HOVER_MOVE,
+                    Display.DEFAULT_DISPLAY);
+            verify(mMockWindowManager, times(2)).addView(any(), any());
+            Mockito.clearInvocations(mMockWindowManager);
+
+            final AutoclickIndicatorView initialIndicatorView = mController.mAutoclickIndicatorView;
+            final AutoclickTypeLinearLayout initialTypePanel = mController.mAutoclickTypePanel
+                    .getContentViewForTesting();
+            injectFakeMouseMoveEventOnDisplay(100, 100, MotionEvent.ACTION_HOVER_MOVE,
+                    newDisplayId);
+            // Verify teardown of old UI
+            verify(mMockWindowManager).removeView(eq(initialIndicatorView));
+            verify(mMockWindowManager)
+                    .removeView(eq(initialTypePanel));
+
+            // Verify addView was called again with the new views.
+            verify(mMockWindowManager, times(2)).addView(any(), any());
+            assertThat(mController.mCurrentDisplayId).isEqualTo(newDisplayId);
+            assertThat(mController.mAutoclickIndicatorView.getContext().getDisplay().getDisplayId())
+                    .isEqualTo(newDisplayId);
+            assertThat(mController.mAutoclickTypePanel.getContentViewForTesting()
+                    .getContext().getDisplay().getDisplayId()).isEqualTo(newDisplayId);
+            assertThat(mController.mAutoclickScrollPanel.getContentViewForTesting()
+                    .getContext().getDisplay().getDisplayId()).isEqualTo(newDisplayId);
+        } finally {
+            // Clean up the virtual display
+            if (virtualDisplay != null) {
+                virtualDisplay.release();
+            }
+        }
     }
 
     @Test
@@ -1812,6 +1882,10 @@ public class AutoclickControllerTest {
     }
 
     private void injectFakeMouseMoveEvent(float x, float y, int action) {
+        injectFakeMouseMoveEventOnDisplay(x, y, action, Display.DEFAULT_DISPLAY);
+    }
+
+    private void injectFakeMouseMoveEventOnDisplay(float x, float y, int action, int displayId) {
         MotionEvent event = MotionEvent.obtain(
                 /* downTime= */ 0,
                 /* eventTime= */ 0,
@@ -1820,6 +1894,7 @@ public class AutoclickControllerTest {
                 /* y= */ y,
                 /* metaState= */ 0);
         event.setSource(InputDevice.SOURCE_MOUSE);
+        event.setDisplayId(displayId);
         mController.onMotionEvent(event, event, /* policyFlags= */ 0);
     }
 
