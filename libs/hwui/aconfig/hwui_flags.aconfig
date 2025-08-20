@@ -202,3 +202,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "image_decoder_gainmap_fail"
+  namespace: "core_graphics"
+  description: "Add API for partial decoding of gainmap images with ImageDecoder"
+  bug: "437807032"
+}

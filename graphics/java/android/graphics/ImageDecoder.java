@@ -22,6 +22,7 @@ import static android.system.OsConstants.SEEK_SET;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.annotation.AnyThread;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -50,6 +51,8 @@ import android.system.Os;
 import android.util.DisplayMetrics;
 import android.util.Size;
 import android.util.TypedValue;
+
+import com.android.graphics.hwui.flags.Flags;
 
 import dalvik.system.CloseGuard;
 
@@ -726,11 +729,24 @@ public final class ImageDecoder implements AutoCloseable {
         /**
          *  The encoded data contained an error.
          */
-        public static final int SOURCE_MALFORMED_DATA      = 3;
+        public static final int SOURCE_MALFORMED_DATA = 3;
+
+        /**
+         * The extraction of the gainmap component of the image failed. If the partially
+         * decoded result is returned by returning true from
+         * {@link OnPartialImageListener#onPartialImage(DecodeException)} there will
+         * still be a complete base image to be viewed. It is thus recommended
+         * to return the partial image and proceed with displaying it. Applications that are
+         * doing this for editing or similar may want to consider warning the user that
+         * data was lost.
+         */
+        @FlaggedApi(Flags.FLAG_IMAGE_DECODER_GAINMAP_FAIL)
+        public static final int GAINMAP_EXTRACTION_FAILED = 4;
 
         /** @hide **/
         @Retention(SOURCE)
-        @IntDef(value = { SOURCE_EXCEPTION, SOURCE_INCOMPLETE, SOURCE_MALFORMED_DATA },
+        @IntDef(value = { SOURCE_EXCEPTION, SOURCE_INCOMPLETE, SOURCE_MALFORMED_DATA,
+                GAINMAP_EXTRACTION_FAILED },
                 prefix = {"SOURCE_"})
         public @interface Error {};
 
@@ -2088,6 +2104,11 @@ public final class ImageDecoder implements AutoCloseable {
     @SuppressWarnings("unused")
     private void onPartialImage(@DecodeException.Error int error, @Nullable Throwable cause)
             throws DecodeException {
+        if (error == DecodeException.GAINMAP_EXTRACTION_FAILED) {
+            if (!Flags.imageDecoderGainmapFail() || Compatibility.getTargetSdkVersion() <= 37) {
+                return;
+            }
+        }
         DecodeException exception = new DecodeException(error, cause, mSource);
         if (mOnPartialImageListener == null
                 || !mOnPartialImageListener.onPartialImage(exception)) {
