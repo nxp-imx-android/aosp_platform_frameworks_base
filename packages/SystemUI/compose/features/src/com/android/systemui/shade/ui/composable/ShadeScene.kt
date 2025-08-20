@@ -19,6 +19,7 @@ package com.android.systemui.shade.ui.composable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -255,10 +256,9 @@ private fun ContentScope.SingleShade(
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
     val shadeMeasurePolicy =
-        remember(mediaInRow, cutout, cutoutInsets) {
+        remember(cutout, cutoutInsets) {
             val cutoutLocation = cutout().location
             SingleShadeMeasurePolicy(
-                isMediaInRow = mediaInRow,
                 onNotificationsTopChanged = { maxNotifScrimTop = it },
                 cutoutInsetsProvider = {
                     if (cutoutLocation == CutoutLocation.CENTER) {
@@ -296,51 +296,47 @@ private fun ContentScope.SingleShade(
                 val qqsLayoutPaddingBottom = 16.dp
                 val qsHorizontalMargin =
                     shadeHorizontalPadding + dimensionResource(id = R.dimen.qs_horizontal_margin)
-                Box(
-                    Modifier.element(QuickSettings.Elements.QuickQuickSettings)
-                        .layoutId(SingleShadeMeasurePolicy.LayoutId.QuickSettings)
-                        .padding(horizontal = qsHorizontalMargin)
-                        .padding(bottom = qqsLayoutPaddingBottom)
-                ) {
-                    val qqsViewModel =
-                        rememberViewModel(traceName = "shade_scene_qqs") {
-                            viewModel.quickQuickSettingsViewModel.create()
-                        }
-                    if (viewModel.isQsEnabled) {
-                        QuickQuickSettings(
-                            qqsViewModel,
-                            listening = { true },
-                            modifier = Modifier.sysuiResTag("quick_qs_panel"),
-                        )
-                    }
-                }
-                if (viewModel.isQsEnabled && viewModel.showMedia) {
-                    Element(
-                        key = Media.Elements.mediaCarousel,
-                        modifier =
-                            Modifier.layoutId(SingleShadeMeasurePolicy.LayoutId.Media)
-                                .padding(
-                                    end = qsHorizontalMargin,
-                                    // Only apply padding at the start if not in row, if in row, we
-                                    // have
-                                    // the end padding of qs.
-                                    start = if (mediaInRow) 0.dp else qsHorizontalMargin,
+                MediaAndQqsLayout(
+                    modifier =
+                        Modifier.element(QuickSettings.Elements.QuickQuickSettingsAndMedia)
+                            .layoutId(SingleShadeMeasurePolicy.LayoutId.MediaAndQqs)
+                            .padding(bottom = qqsLayoutPaddingBottom)
+                            .padding(horizontal = qsHorizontalMargin),
+                    tiles = {
+                        Box {
+                            val qqsViewModel =
+                                rememberViewModel(traceName = "shade_scene_qqs") {
+                                    viewModel.quickQuickSettingsViewModel.create()
+                                }
+                            if (viewModel.isQsEnabled) {
+                                QuickQuickSettings(
+                                    qqsViewModel,
+                                    listening = { true },
+                                    modifier = Modifier.sysuiResTag("quick_qs_panel"),
                                 )
-                                .padding(bottom = qqsLayoutPaddingBottom),
-                    ) {
-                        Media(
-                            viewModelFactory = viewModel.mediaViewModelFactory,
-                            presentationStyle =
-                                if (mediaInRow) {
-                                    MediaPresentationStyle.Compressed
-                                } else {
-                                    MediaPresentationStyle.Default
-                                },
-                            behavior = ShadeSceneContentViewModel.qqsMediaUiBehavior,
-                            onDismissed = viewModel::onMediaSwipeToDismiss,
-                        )
-                    }
-                }
+                            }
+                        }
+                    },
+                    media =
+                        @Composable {
+                            if (viewModel.isQsEnabled && viewModel.showMedia) {
+                                Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
+                                    Media(
+                                        viewModelFactory = viewModel.mediaViewModelFactory,
+                                        presentationStyle =
+                                            if (mediaInRow) {
+                                                MediaPresentationStyle.Compressed
+                                            } else {
+                                                MediaPresentationStyle.Default
+                                            },
+                                        behavior = ShadeSceneContentViewModel.qqsMediaUiBehavior,
+                                        onDismissed = viewModel::onMediaSwipeToDismiss,
+                                    )
+                                }
+                            }
+                        },
+                    mediaInRow = mediaInRow,
+                )
 
                 NotificationScrollingStack(
                     shadeSession = shadeSession,
@@ -368,6 +364,30 @@ private fun ContentScope.SingleShade(
                     // Intercepts touches, prevents the scrollable container behind from scrolling.
                     .clickable(interactionSource = null, indication = null) { /* do nothing */ }
         )
+    }
+}
+
+@Composable
+private fun MediaAndQqsLayout(
+    tiles: @Composable () -> Unit,
+    media: @Composable () -> Unit,
+    mediaInRow: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    if (mediaInRow) {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = spacedBy(dimensionResource(R.dimen.qs_tile_margin_vertical)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(modifier = Modifier.weight(1f)) { tiles() }
+            Box(modifier = Modifier.weight(1f)) { media() }
+        }
+    } else {
+        Column(modifier = modifier, verticalArrangement = spacedBy(16.dp)) {
+            tiles()
+            media()
+        }
     }
 }
 
