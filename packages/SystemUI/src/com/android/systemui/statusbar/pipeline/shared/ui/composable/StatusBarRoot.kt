@@ -214,7 +214,7 @@ fun StatusBarRoot(
         rememberViewModel("AppHandleBounds") {
             statusBarViewModel.appHandlesViewModelFactory.create(displayId)
         }
-    lateinit var touchableExclusionRegionDisposableHandle: DisposableHandle
+    var touchableExclusionRegionDisposableHandle: DisposableHandle? = null
 
     if (StatusBarPopupChips.isEnabled) {
         with(mediaHost) {
@@ -383,7 +383,7 @@ fun StatusBarRoot(
                 phoneStatusBarView
             },
             modifier = modifier,
-            onRelease = { touchableExclusionRegionDisposableHandle.dispose() },
+            onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )
     }
 }
