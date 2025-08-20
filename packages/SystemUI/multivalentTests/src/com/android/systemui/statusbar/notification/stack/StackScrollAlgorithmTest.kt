@@ -1111,6 +1111,21 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @EnableSceneContainer
+    fun resetViewStates_noSpaceForFooterDuringExpansion_footerShown_withSceneContainer() {
+        ambientState.isShadeExpanded = true
+        ambientState.isExpansionChanging = true
+        ambientState.stackTop = 0f
+        ambientState.drawBounds = RectF(0f, 0f, 400f, 100f)
+        val footerView = mockFooterView(height = 200) // no space for the footer in the stack
+        hostView.addView(footerView)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        assertThat((footerView.viewState as FooterViewState).hideContent).isFalse()
+    }
+
+    @Test
     fun resetViewStates_clearAllInProgress_hasNonClearableRow_footerVisible() {
         whenever(notificationRow.canViewBeCleared()).thenReturn(false)
         ambientState.isClearAllInProgress = true
