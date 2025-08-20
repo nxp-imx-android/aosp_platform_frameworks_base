@@ -21,7 +21,6 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static com.android.systemui.Flags.FLAG_CLIPBOARD_OVERLAY_MULTIUSER;
 import static com.android.systemui.Flags.FLAG_SHOW_CLIPBOARD_INDICATION;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
-import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISS_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_EXPANDED_FROM_MINIMIZED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_SHARE_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_SHOWN_EXPANDED;
@@ -324,41 +323,13 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void test_viewCallbacks_onDismissTapped() {
-        initController();
-
-        mCallbacks.onDismissButtonTapped();
-        verify(mEndAnimator).addListener(mAnimatorListenerCaptor.capture());
-        mAnimatorListenerCaptor.getValue().onAnimationEnd(mEndAnimator);
-
-        // package name is null since we haven't actually set a source for this test
-        verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_DISMISS_TAPPED, 0, null);
-        verify(mClipboardOverlayView, times(1)).getExitAnimation();
-    }
-
-    @Test
-    public void test_multipleDismissals_dismissesOnce_sharedTransitionsOff() {
-        initController();
-        mCallbacks.onSwipeDismissInitiated(mAnimator);
-        mCallbacks.onDismissButtonTapped();
-        mCallbacks.onSwipeDismissInitiated(mAnimator);
-        mCallbacks.onDismissButtonTapped();
-
-        verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_SWIPE_DISMISSED, 0, null);
-        verify(mUiEventLogger, never()).log(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
-    }
-
-    @Test
     public void test_multipleDismissals_dismissesOnce() {
         initController();
 
         mCallbacks.onSwipeDismissInitiated(mAnimator);
-        mCallbacks.onDismissButtonTapped();
         mCallbacks.onSwipeDismissInitiated(mAnimator);
-        mCallbacks.onDismissButtonTapped();
 
         verify(mUiEventLogger, times(1)).log(CLIPBOARD_OVERLAY_SWIPE_DISMISSED, 0, null);
-        verify(mUiEventLogger, never()).log(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
     }
 
     @Test
