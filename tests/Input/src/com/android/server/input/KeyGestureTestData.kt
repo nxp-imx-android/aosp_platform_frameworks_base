@@ -166,13 +166,13 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
-                "META + CTRL + W -> Quit focused task",
+                "META + CTRL + W -> Quit focused desktop task",
                 intArrayOf(
                     KeyEvent.KEYCODE_META_LEFT,
                     KeyEvent.KEYCODE_CTRL_LEFT,
                     KeyEvent.KEYCODE_W,
                 ),
-                KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK,
+                KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
                 intArrayOf(KeyEvent.KEYCODE_W),
                 KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),

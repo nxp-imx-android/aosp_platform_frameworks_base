@@ -131,6 +131,10 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
         default void onKeyguardGoingAway() {}
     }
 
+    public interface HandoffEnablementListener {
+        default void onHandoffEnabledChanged(int taskId, boolean isEnabled) {}
+    }
+
     /**
      * Returns home activity for the specified user.
      *
@@ -829,4 +833,15 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
 
     /** Returns the current lock task mode state. */
     public abstract int getLockTaskModeState();
+
+    /** Returns whether handoff is enabled for the given task. */
+    public abstract boolean isHandoffEnabledForTask(int taskId);
+
+    /** Registers a listener for handoff enablement changes. */
+    public abstract void registerHandoffEnablementListener(
+        @NonNull HandoffEnablementListener listener);
+
+    /** Unregisters a listener for handoff enablement changes. */
+    public abstract void unregisterHandoffEnablementListener(
+        @NonNull HandoffEnablementListener listener);
 }

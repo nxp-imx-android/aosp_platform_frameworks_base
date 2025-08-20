@@ -178,6 +178,11 @@ final class PolicyState<V> {
         return policyChanged;
     }
 
+    boolean isPolicyApplied(@NonNull PolicyValue<V> policyValue) {
+        return mPolicyDefinition.getResolutionMechanism().isPolicyApplied(policyValue,
+                mCurrentResolvedPolicy);
+    }
+
     @Nullable
     PolicyValue<V> getCurrentResolvedPolicy() {
         return mCurrentResolvedPolicy;

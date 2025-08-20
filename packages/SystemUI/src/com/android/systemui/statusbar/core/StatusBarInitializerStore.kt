@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.core
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
@@ -44,7 +44,7 @@ constructor(
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val displaySubComponentRepository:
-        PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
+        PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
 ) :
     StatusBarInitializerStore,
     StatusBarPerDisplayStoreImpl<StatusBarInitializer>(

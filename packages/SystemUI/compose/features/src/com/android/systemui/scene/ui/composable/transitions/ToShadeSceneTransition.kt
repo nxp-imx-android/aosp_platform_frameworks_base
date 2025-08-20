@@ -19,7 +19,6 @@ package com.android.systemui.scene.ui.composable.transitions
 import androidx.compose.animation.core.tween
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.shade.ui.composable.Shade
@@ -41,8 +40,7 @@ fun TransitionBuilder.toShadeSceneTransition(durationScale: Double = 1.0) {
     fade(Shade.Elements.BackgroundScrim)
 
     val qsTranslation = -ShadeHeader.Dimensions.CollapsedHeightForTransitions * 0.66f
-    translate(QuickSettings.Elements.QuickQuickSettings, y = qsTranslation)
-    translate(Media.Elements.mediaCarousel, y = qsTranslation)
+    translate(QuickSettings.Elements.QuickQuickSettingsAndMedia, y = qsTranslation)
     translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
 }
 

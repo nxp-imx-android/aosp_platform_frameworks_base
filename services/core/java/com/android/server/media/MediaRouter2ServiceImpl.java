@@ -55,6 +55,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
+import android.media.AppId;
 import android.media.AudioManager;
 import android.media.IMediaRouter2;
 import android.media.IMediaRouter2Manager;
@@ -79,6 +80,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -2408,6 +2410,8 @@ class MediaRouter2ServiceImpl {
         private final ArrayList<RouterRecord> mRouterRecords = new ArrayList<>();
         final ArrayList<ManagerRecord> mManagerRecords = new ArrayList<>();
 
+        private final Set<String> mLastPackagesWithSystemOverridesOnHandler = new ArraySet<>();
+
         // @GuardedBy("mLock")
         private final Map<String, Map<String, List<SuggestedDeviceInfo>>> mDeviceSuggestions =
                 new HashMap<>();
@@ -3029,6 +3033,14 @@ class MediaRouter2ServiceImpl {
                 mManager.notifyDeviceSuggestionRequested();
             } catch (RemoteException ex) {
                 logRemoteException("notifyDeviceSuggestionRequested", ex);
+            }
+        }
+
+        public void notifySystemSessionOverridesChanged(List<AppId> appsWithOverrides) {
+            try {
+                mManager.notifySystemSessionOverridesChanged(appsWithOverrides);
+            } catch (RemoteException ex) {
+                logRemoteException("notifySystemSessionOverridesChanged", ex);
             }
         }
 
@@ -3800,15 +3812,33 @@ class MediaRouter2ServiceImpl {
                 @NonNull RoutingSessionInfo sessionInfo,
                 Set<String> packageNamesWithRoutingSessionOverrides) {
             List<ManagerRecord> managers = getManagerRecords();
+            List<AppId> appsWithOverridesToReport = null;
+
+            boolean isGlobalSession = TextUtils.isEmpty(sessionInfo.getClientPackageName());
+            if (isGlobalSession
+                    && !Objects.equals(
+                            mUserRecord.mLastPackagesWithSystemOverridesOnHandler,
+                            packageNamesWithRoutingSessionOverrides)) {
+                appsWithOverridesToReport =
+                        packageNamesWithRoutingSessionOverrides.stream()
+                                .map(it -> new AppId(it, mUserRecord.mUserHandle))
+                                .toList();
+                mUserRecord.mLastPackagesWithSystemOverridesOnHandler.clear();
+                mUserRecord.mLastPackagesWithSystemOverridesOnHandler.addAll(
+                        packageNamesWithRoutingSessionOverrides);
+            }
             for (ManagerRecord manager : managers) {
                 if (Flags.enableMirroringInMediaRouter2()) {
+                    if (appsWithOverridesToReport != null) {
+                        manager.notifySystemSessionOverridesChanged(appsWithOverridesToReport);
+                    }
                     String targetPackageName = manager.mTargetPackageName;
                     boolean skipDueToOverride =
                             targetPackageName != null
                                     && packageNamesWithRoutingSessionOverrides.contains(
                                             targetPackageName);
                     boolean sessionIsForTargetPackage =
-                            TextUtils.isEmpty(sessionInfo.getClientPackageName()) // is global.
+                            isGlobalSession
                                     || TextUtils.equals(
                                             targetPackageName, sessionInfo.getClientPackageName());
                     if (skipDueToOverride || !sessionIsForTargetPackage) {

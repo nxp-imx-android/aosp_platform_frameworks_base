@@ -1590,13 +1590,6 @@ flag {
 }
 
 flag {
-    name: "keyboard_shortcut_helper_shortcut_customizer"
-    namespace: "systemui"
-    description: "An implementation of shortcut customizations through shortcut helper."
-    bug: "365064144"
-}
-
-flag {
     name: "keyguard_transition_force_finish_on_screen_off"
     namespace: "systemui"
     description: "Forces KTF transitions to finish if the screen turns all the way off."
@@ -2208,4 +2201,14 @@ flag {
    metadata {
         purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "shortcut_helper_multi_display_support"
+    namespace: "systemui"
+    description: "Shortcut helper is triggered on the current display"
+    bug: "406740115"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

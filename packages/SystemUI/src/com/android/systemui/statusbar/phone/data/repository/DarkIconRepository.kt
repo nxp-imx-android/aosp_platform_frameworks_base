@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.phone.data.repository
 import android.util.Log
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher.DarkChange
 import dagger.Binds
 import dagger.Module
@@ -36,7 +36,7 @@ class DarkIconRepositoryImpl
 @Inject
 constructor(
     private val displaySubComponentRepository:
-        PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>
+        PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>
 ) : DarkIconRepository {
     override fun darkState(displayId: Int): StateFlow<DarkChange> {
         val displaySubComponent = displaySubComponentRepository[displayId]

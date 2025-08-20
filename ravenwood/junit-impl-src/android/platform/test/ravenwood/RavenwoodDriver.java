@@ -48,6 +48,7 @@ import android.util.Log_ravenwood;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
+import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
@@ -263,6 +264,13 @@ public class RavenwoodDriver {
         // TODO(b/428775903) Make sure nothing would try to access compat-IDs before this call.
         // We may want to do it within initAppDriver().
         initializeCompatIds();
+
+        // `pkill -USR2 -f tradefed-isolation.jar` will interrupt the test thread.
+        final Thread testThread = Thread.currentThread();
+        OpenJdkWorkaround.registerSignalHandler("USR2", () -> {
+            sRawStdErr.println("-----SIGUSR2 HANDLER-----");
+            testThread.interrupt();
+        });
     }
 
     /**

@@ -25,11 +25,18 @@ import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ResolutionMechanismTest {
+    private class ResolutionMechanismTestImpl : ResolutionMechanism<Int>() {
+        override fun resolve(adminPolicies: java.util.LinkedHashMap<EnforcingAdmin?,
+                PolicyValue<Int?>?>?): ResolvedPolicy<Int?>? = null
+        override fun getParcelableResolutionMechanism(): android.app.admin
+            .ResolutionMechanism<Int?>? = null
+    }
 
     @Test
     fun resolve_flagUnion() {
@@ -39,8 +46,8 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = FlagUnion().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
-        assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_AB)
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue).isEqualTo(INT_POLICY_AB)
         assertThat(resolvedPolicy?.contributingAdmins)
             .containsExactly(SYSTEM_ADMIN, DEVICE_OWNER_ADMIN)
     }
@@ -53,8 +60,8 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = MostRecent<Integer>().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
-        assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_B)
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue).isEqualTo(INT_POLICY_B)
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
     }
 
@@ -68,7 +75,7 @@ class ResolutionMechanismTest {
             MostRestrictive<Boolean>(listOf(BooleanPolicyValue(false), BooleanPolicyValue(true)))
                 .resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         resolvedPolicy?.resolvedPolicyValue?.value?.let { assertFalse(it) }
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(SYSTEM_ADMIN)
     }
@@ -84,7 +91,7 @@ class ResolutionMechanismTest {
             MostRestrictive(listOf(BooleanPolicyValue(false), BooleanPolicyValue(true)))
                 .resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         resolvedPolicy?.resolvedPolicyValue?.value?.let { assertFalse(it) }
         assertThat(resolvedPolicy?.contributingAdmins)
             .containsExactly(SYSTEM_ADMIN, DEVICE_ADMIN)
@@ -104,7 +111,7 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = StringSetIntersection().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         assertThat(resolvedPolicy?.resolvedPolicyValue?.value).containsExactly("package1")
         assertThat(resolvedPolicy?.contributingAdmins)
             .containsExactly(SYSTEM_ADMIN, DEVICE_OWNER_ADMIN)
@@ -124,7 +131,7 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = PackageSetUnion().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         assertThat(resolvedPolicy?.resolvedPolicyValue?.value)
             .containsExactly("package1", "package2", "package3")
         assertThat(resolvedPolicy?.contributingAdmins)
@@ -140,10 +147,182 @@ class ResolutionMechanismTest {
         val resolvedPolicy =
             TopPriority<Integer>(listOf(EnforcingAdmin.DPC_AUTHORITY)).resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
-        assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_B)
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue).isEqualTo(INT_POLICY_B)
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
     }
+
+    @Test
+    fun isPolicyApplied_defaultImplementation_sameValues_returnsTrue() {
+        val resolutionMechanism = ResolutionMechanismTestImpl()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_defaultImplementation_differentValues_returnsFalse() {
+        val resolutionMechanism = ResolutionMechanismTestImpl()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_flagUnion_flagSet_returnTrue() {
+        val resolutionMechanism = FlagUnion()
+
+        assertTrue { resolutionMechanism.isPolicyApplied(INT_POLICY_A,
+            INT_POLICY_AB) }
+    }
+
+    @Test
+    fun isPolicyApplied_flagUnion_flagNotSet_returnFalse() {
+        val resolutionMechanism = FlagUnion()
+
+        assertFalse { resolutionMechanism.isPolicyApplied(INT_POLICY_C,
+            INT_POLICY_AB) }
+    }
+
+    @Test
+    fun isPolicyApplied_flagUnion_someFlagsNotSet_returnFalse() {
+        val resolutionMechanism = FlagUnion()
+
+        assertFalse { resolutionMechanism.isPolicyApplied(INT_POLICY_AB,
+            INT_POLICY_A) }
+    }
+
+    @Test
+    fun isPolicyApplied_packageSetUnion_setIncluded_returnsTrue() {
+        val resolutionMechanism = PackageSetUnion()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(PackageSetPolicyValue(setOf("package1")),
+                PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageSetUnion_setDoesNotIntersect_returnsFalse() {
+        val resolutionMechanism = PackageSetUnion()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(PackageSetPolicyValue(setOf("package3")),
+                PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageSetUnion_setPartiallyIncluded_returnsFalse() {
+        val resolutionMechanism = PackageSetUnion()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(
+                PackageSetPolicyValue(setOf("package1", "package3")),
+                PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_mostRecent_sameValues_returnsTrue() {
+        val resolutionMechanism = MostRecent<Int>()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_mostRecent_differentValues_returnsFalse() {
+        val resolutionMechanism = MostRecent<Int>()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_mostRestrictive_sameValues_returnsTrue() {
+        val resolutionMechanism = MostRestrictive<Int>(listOf())
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_mostRestrictive_differentValues_returnsFalse() {
+        val resolutionMechanism = MostRestrictive<Int>(listOf())
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB )
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_sameValues_returnsTrue() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1", "package2"))
+        val policyB = PackageSetPolicyValue(setOf("package2", "package1"))
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_differentValues_returnsFalse() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1"))
+        val policyB = PackageSetPolicyValue(setOf("package2"))
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_policyIsSubsetOfResolvedPolicy_returnsFalse() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1"))
+        val policyB = PackageSetPolicyValue(setOf("package1", "package2"))
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_resolvedPolicyIsSubsetOfPolicy_returnsFalse() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1", "package2"))
+        val policyB = PackageSetPolicyValue(setOf("package1"))
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_topPriority_sameValues_returnsTrue() {
+        val resolutionMechanism = TopPriority<Int>(listOf())
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_topPriority_differentValues_returnsFalse() {
+        val resolutionMechanism = TopPriority<Int>(listOf())
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB)
+        }
+    }
+
 
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
@@ -159,8 +338,9 @@ class ResolutionMechanismTest {
                 SYSTEM_USER_ID,
             )
 
-        private val INT_POLICY_A = IntegerPolicyValue(1 shl 7)
-        private val INT_POLICY_B = IntegerPolicyValue(1 shl 8)
-        private val INT_POLICY_AB = IntegerPolicyValue(1 shl 7 or 1 shl 8)
+        private val INT_POLICY_A: PolicyValue<Int> = IntegerPolicyValue(1 shl 7)
+        private val INT_POLICY_B: PolicyValue<Int> = IntegerPolicyValue(1 shl 8)
+        private val INT_POLICY_C: PolicyValue<Int> = IntegerPolicyValue(1 shl 9)
+        private val INT_POLICY_AB: PolicyValue<Int> = IntegerPolicyValue((1 shl 7) or (1 shl 8))
     }
 }

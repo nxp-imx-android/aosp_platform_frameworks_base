@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
@@ -34,6 +35,7 @@ import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 @Composable
 fun StatusBarPopupChipsContainer(
     chips: List<PopupChipModel.Shown>,
+    mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
     onMediaControlPopupVisibilityChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -58,7 +60,11 @@ fun StatusBarPopupChipsContainer(
             chips.forEach { chip ->
                 StatusBarPopupChip(chip)
                 if (chip.isPopupShown) {
-                    StatusBarPopup(viewModel = chip, mediaHost = mediaHost)
+                    StatusBarPopup(
+                        viewModel = chip,
+                        mediaViewModelFactory = mediaViewModelFactory,
+                        mediaHost = mediaHost,
+                    )
                 }
             }
         }

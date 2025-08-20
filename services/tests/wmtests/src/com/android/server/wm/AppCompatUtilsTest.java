@@ -441,7 +441,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
 
         void setCameraCompatTreatmentEnabledForActivity(boolean enabled) {
             doReturn(enabled).when(activity().displayContent().mAppCompatCameraPolicy
-                    .mSimReqOrientationPolicy).isTreatmentEnabledForActivity(
+                    .mSimReqOrientationPolicy).isCompatibilityTreatmentEnabledForActivity(
                             eq(activity().top()), anyBoolean());
         }
 

@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public class RavenwoodInternalUtils {
     public static final String TAG = "Ravenwood";
@@ -269,5 +270,33 @@ public class RavenwoodInternalUtils {
     @Nullable
     public static <T> T withDefault(@Nullable T value, @Nullable T def) {
         return value != null ? value : def;
+    }
+
+
+    private static final Pattern sWildcardValidater =
+            Pattern.compile("[^\\w.*$]");
+
+    /**
+     * Convert a wildcard string using "*" and "**" to match Java classnames.
+     *
+     * The input string can only contain alnum, "$", "." and "*".
+     */
+    public static Pattern parseClassNameWildcard(String pattern) {
+        // Convert "**" -> match anything (== .*)
+        // Convert "*" -> match anything except for periods (== [^.]*)
+        // Convert "." -> \.
+
+        if (sWildcardValidater.matcher(pattern).find()) {
+            throw new IllegalArgumentException(
+                    "Invalid character found in wildcard '" + pattern + "'");
+        }
+
+        // Save "**" to something else and convert it back to ".*" at the end.
+        String temp = pattern.replace("**", "@@");
+        temp = temp.replace(".", "\\.");
+        temp = temp.replace("$", "\\$");
+        temp = temp.replace("*", "[^.]*");
+        temp = temp.replace("@@", ".*");
+        return Pattern.compile(temp);
     }
 }

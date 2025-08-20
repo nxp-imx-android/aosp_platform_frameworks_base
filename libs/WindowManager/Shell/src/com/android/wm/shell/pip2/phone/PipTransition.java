@@ -226,11 +226,15 @@ public class PipTransition extends PipTransitionController implements
     //
 
     @Override
-    public void startExpandTransition(WindowContainerTransaction wct, boolean toSplit) {
+    public void startExpandTransition(
+            WindowContainerTransaction wct, boolean toSplit, boolean hasFirstHandler) {
         if (wct == null) return;
         mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+        // If PiP wasn't visible, we don't necessarily want to animate using this handler, so we
+        // only force it if it was visible.
+        Transitions.TransitionHandler handler = hasFirstHandler ? this : null;
         mExitViaExpandTransition = mTransitions.startTransition(toSplit ? TRANSIT_EXIT_PIP_TO_SPLIT
-                : TRANSIT_EXIT_PIP, wct, this);
+                : TRANSIT_EXIT_PIP, wct, handler);
     }
 
     @Override
@@ -961,11 +965,12 @@ public class PipTransition extends PipTransitionController implements
 
             // #getEnterPipTransaction() always attempts to mark PiP activity as config-at-end one.
             // However, the activity will only actually be marked config-at-end by Core if it is
-            // both isVisible and isVisibleRequested, which is when we can't run bounds animation.
+            // both isVisible and isVisibleRequested, which is when we can run bounds animation.
             //
             // So we can use the absence of a config-at-end activity as a signal that we should run
             // a legacy-enter PiP animation instead.
-            return TransitionUtil.isOpeningMode(pipChange.getMode())
+            return (TransitionUtil.isOpeningMode(pipChange.getMode())
+                    || pipChange.getMode() == TRANSIT_CHANGE)
                     && PipTransitionUtils.getDeferConfigActivityChange(
                             info, pipChange.getContainer()) == null;
         }

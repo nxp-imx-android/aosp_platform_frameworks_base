@@ -16,6 +16,8 @@
 
 package com.android.providers.settings;
 
+import static com.android.settings.testutils.DeviceStateAutoRotateSettingTestUtils.setDeviceStateRotationLockEnabled;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertEquals;
@@ -40,6 +42,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.hardware.devicestate.DeviceStateManager;
 import android.media.AudioManager;
 import android.media.Utils;
 import android.net.Uri;
@@ -103,6 +106,7 @@ public class SettingsHelperTest {
     @Mock private Resources mResources;
     @Mock private AudioManager mAudioManager;
     @Mock private TelephonyManager mTelephonyManager;
+    @Mock private DeviceStateManager mDeviceStateManager;
 
     private MockContentResolver mContentResolver;
     private MockSettingsProvider mSettingsProvider;
@@ -112,6 +116,9 @@ public class SettingsHelperTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+
+        when(mContext.getSystemService(eq(DeviceStateManager.class))).thenReturn(
+                mDeviceStateManager);
         when(mContext.getSystemService(eq(Context.AUDIO_SERVICE))).thenReturn(mAudioManager);
         when(mContext.getSystemService(eq(Context.TELEPHONY_SERVICE))).thenReturn(
                 mTelephonyManager);
@@ -951,8 +958,7 @@ public class SettingsHelperTest {
 
     @Test
     public void restoreValue_autoRotation_deviceStateAutoRotationDisabled_restoresValue() {
-        when(mResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
-                .thenReturn(new String[]{});
+        setDeviceStateRotationLockEnabled(/* enable= */ false, mResources, mDeviceStateManager);
         int previousValue = 0;
         int newValue = 1;
         setAutoRotationSettingValue(previousValue);
@@ -964,8 +970,7 @@ public class SettingsHelperTest {
 
     @Test
     public void restoreValue_autoRotation_deviceStateAutoRotationEnabled_doesNotRestoreValue() {
-        when(mResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
-                .thenReturn(new String[]{"0:1", "1:1"});
+        setDeviceStateRotationLockEnabled(/* enable= */ true, mResources, mDeviceStateManager);
         int previousValue = 0;
         int newValue = 1;
         setAutoRotationSettingValue(previousValue);

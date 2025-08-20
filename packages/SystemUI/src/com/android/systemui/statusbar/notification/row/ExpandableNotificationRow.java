@@ -2412,6 +2412,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         requestLayout();
 
         setTargetPoint(null);
+
+        if (isBundle()) {
+            mIsSystemExpanded = false;
+        }
     }
 
     /**

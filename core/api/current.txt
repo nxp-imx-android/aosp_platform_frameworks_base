@@ -38308,6 +38308,7 @@ package android.provider {
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.READ_CONTACTS) public static long getAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @Nullable public static android.accounts.Account getDefaultAccount(@NonNull android.content.ContentResolver);
+    method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void resetAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void setAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String, long);
     field public static final String ACTION_SET_DEFAULT_ACCOUNT = "android.provider.action.SET_DEFAULT_ACCOUNT";
     field public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/setting";
@@ -56438,7 +56439,7 @@ package android.view {
     method @NonNull public default android.view.WindowMetrics getMaximumWindowMetrics();
     method public default boolean isCrossWindowBlurEnabled();
     method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") @NonNull public default android.window.InputTransferToken registerBatchedSurfaceControlInputReceiver(@NonNull android.window.InputTransferToken, @NonNull android.view.SurfaceControl, @NonNull android.view.Choreographer, @NonNull android.view.SurfaceControlInputReceiver);
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") public default void registerTrustedPresentationListener(@NonNull android.os.IBinder, @NonNull android.window.TrustedPresentationThresholds, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method public default void registerTrustedPresentationListener(@NonNull android.os.IBinder, @NonNull android.window.TrustedPresentationThresholds, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") @NonNull public default android.window.InputTransferToken registerUnbatchedSurfaceControlInputReceiver(@NonNull android.window.InputTransferToken, @NonNull android.view.SurfaceControl, @NonNull android.os.Looper, @NonNull android.view.SurfaceControlInputReceiver);
     method public default void removeCrossWindowBlurEnabledListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
     method public default void removeProposedRotationListener(@NonNull java.util.function.IntConsumer);
@@ -56446,7 +56447,7 @@ package android.view {
     method public void removeViewImmediate(android.view.View);
     method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public default boolean transferTouchGesture(@NonNull android.window.InputTransferToken, @NonNull android.window.InputTransferToken);
     method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public default void unregisterSurfaceControlInputReceiver(@NonNull android.view.SurfaceControl);
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") public default void unregisterTrustedPresentationListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method public default void unregisterTrustedPresentationListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
     field @FlaggedApi("com.android.window.flags.cover_display_opt_in") public static final int COMPAT_SMALL_COVER_SCREEN_OPT_IN = 1; // 0x1
     field public static final String PROPERTY_ACTIVITY_EMBEDDING_ALLOW_SYSTEM_OVERRIDE = "android.window.PROPERTY_ACTIVITY_EMBEDDING_ALLOW_SYSTEM_OVERRIDE";
     field public static final String PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED = "android.window.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED";
@@ -63526,8 +63527,8 @@ package android.window {
 
   public final class BackEvent {
     ctor public BackEvent(float, float, float, int);
-    ctor @FlaggedApi("com.android.window.flags.predictive_back_timestamp_api") public BackEvent(float, float, float, int, long);
-    method @FlaggedApi("com.android.window.flags.predictive_back_timestamp_api") public long getFrameTimeMillis();
+    ctor public BackEvent(float, float, float, int, long);
+    method public long getFrameTimeMillis();
     method @FloatRange(from=0, to=1) public float getProgress();
     method public int getSwipeEdge();
     method public float getTouchX();
@@ -63558,7 +63559,7 @@ package android.window {
     method public void unregisterOnBackInvokedCallback(@NonNull android.window.OnBackInvokedCallback);
     field public static final int PRIORITY_DEFAULT = 0; // 0x0
     field public static final int PRIORITY_OVERLAY = 1000000; // 0xf4240
-    field @FlaggedApi("com.android.window.flags.predictive_back_priority_system_navigation_observer") public static final int PRIORITY_SYSTEM_NAVIGATION_OBSERVER = -2; // 0xfffffffe
+    field public static final int PRIORITY_SYSTEM_NAVIGATION_OBSERVER = -2; // 0xfffffffe
   }
 
   public interface SplashScreen {
@@ -63593,14 +63594,14 @@ package android.window {
     method @FlaggedApi("com.android.window.flags.predictive_back_system_override_callback") @NonNull public static android.window.OnBackInvokedCallback moveTaskToBackCallback(@NonNull android.app.Activity);
   }
 
-  @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") public final class TrustedPresentationThresholds implements android.os.Parcelable {
-    ctor @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") public TrustedPresentationThresholds(@FloatRange(from=0.0f, fromInclusive=false, to=1.0f) float, @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) float, @IntRange(from=1) int);
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") public int describeContents();
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) public float getMinAlpha();
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) public float getMinFractionRendered();
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") @IntRange(from=1) public int getStabilityRequirementMillis();
-    method @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @FlaggedApi("com.android.window.flags.trusted_presentation_listener_for_window") @NonNull public static final android.os.Parcelable.Creator<android.window.TrustedPresentationThresholds> CREATOR;
+  public final class TrustedPresentationThresholds implements android.os.Parcelable {
+    ctor public TrustedPresentationThresholds(@FloatRange(from=0.0f, fromInclusive=false, to=1.0f) float, @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) float, @IntRange(from=1) int);
+    method public int describeContents();
+    method @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) public float getMinAlpha();
+    method @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) public float getMinFractionRendered();
+    method @IntRange(from=1) public int getStabilityRequirementMillis();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.window.TrustedPresentationThresholds> CREATOR;
   }
 
 }

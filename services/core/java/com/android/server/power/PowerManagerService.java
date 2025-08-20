@@ -3901,6 +3901,8 @@ public final class PowerManagerService extends SystemService
                 }
             }
 
+            final boolean allAdjacentGroupsAreNonInteractive = doAnyAdjacentGroupsExistLocked()
+                    && !isDefaultAdjacentGroupInteractiveLocked();
             for (int idx = 0; idx < mPowerGroups.size(); idx++) {
                 final PowerGroup powerGroup = mPowerGroups.valueAt(idx);
                 final int groupId = powerGroup.getGroupId();
@@ -3930,7 +3932,7 @@ public final class PowerManagerService extends SystemService
                                 : new PowerSaveState.Builder().build(),
                         sQuiescent, mDozeAfterScreenOff, mBootCompleted,
                         mScreenBrightnessBoostInProgress, mRequestWaitForNegativeProximity,
-                        mBrightWhenDozingConfig);
+                        mBrightWhenDozingConfig, allAdjacentGroupsAreNonInteractive);
                 int wakefulness = powerGroup.getWakefulnessLocked();
                 if (DEBUG_SPEW) {
                     Slog.d(TAG, "updatePowerGroupsLocked: displayReady=" + ready

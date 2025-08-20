@@ -126,4 +126,33 @@ final class ActivityManagerStructured extends IActivityManagerStructured.Stub {
         }
         return appList;
     }
+
+    @Override
+    public void serviceDoneExecuting(IBinder token, int type, int startId, int res)
+            throws RemoteException {
+        mAm.serviceDoneExecuting(token, type, startId, res);
+    }
+
+    @Override
+    public void publishService(IBinder token, IBinder bindToken, android.os.IBinder service)
+            throws RemoteException {
+        mAm.publishService(token, bindToken, service);
+    }
+
+    @Override
+    public void unbindFinished(IBinder token, IBinder bindToken) throws RemoteException {
+        mAm.unbindFinished(token, bindToken);
+    }
+
+    @Override
+    public void attachNativeApplication(IBinder nativeThread, long startSeq)
+            throws RemoteException {
+        mAm.attachNativeApplication(nativeThread, startSeq);
+    }
+
+    @Override
+    public void finishAttachApplication(long startSeq, long timestampApplicationOnCreateNs)
+            throws RemoteException {
+        mAm.finishAttachApplication(startSeq, timestampApplicationOnCreateNs);
+    }
 }

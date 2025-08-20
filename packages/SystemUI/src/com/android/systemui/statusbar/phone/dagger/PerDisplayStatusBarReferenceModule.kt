@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.display.dagger
+package com.android.systemui.statusbar.phone.dagger
 
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
@@ -26,14 +26,8 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import dagger.Binds
 import dagger.Module
 
-/**
- * "Phone" specific module for SysUI classes that should be instantiated once per display.
- *
- * If the classes are common to all SysUI flavors, they should be added to [PerDisplayCommonModule]
- * instead.
- */
 @Module(subcomponents = [HomeStatusBarComponent::class])
-interface PerDisplayPhoneModule {
+interface PerDisplayStatusBarReferenceModule {
 
     @Binds
     @DisplayAware

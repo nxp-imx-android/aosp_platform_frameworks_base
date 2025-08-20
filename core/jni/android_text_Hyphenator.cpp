@@ -70,12 +70,13 @@ static std::pair<const uint8_t*, size_t> mmapPatternFile(const std::string& loca
         return std::make_pair(nullptr, 0);
     }
 #else
-    std::unique_ptr<base::MappedFile> patternFile =
-            base::MappedFile::FromFd(fd, 0, st.st_size, PROT_READ);
+    auto patternFile = base::MappedFile::Create(fd, 0, st.st_size, PROT_READ);
     close(fd);
-    if (patternFile == nullptr) {
+    if (!patternFile) {
         return std::make_pair(nullptr, 0);
     }
+    // Yes, this line leaks the allocated MappedFile object, because it needs to load the file
+    // for the lifetime of the process and MappedFile doesn't have a way to "release" the mapping.
     auto* mappedPtr = new base::MappedFile(std::move(*patternFile));
     char* ptr = mappedPtr->data();
 #endif

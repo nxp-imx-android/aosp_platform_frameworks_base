@@ -2906,25 +2906,33 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             mTransactionPool.release(t);
             return;
         }
-        List<SplitDecorManager> decorManagers = new ArrayList<>();
-        SplitDecorManager mainDecor = null;
-        SplitDecorManager sideDecor = null;
+        final List<SplitDecorManager> decorManagers;
         if (enableFlexibleSplit()) {
             decorManagers = mStageOrderOperator.getActiveStages().stream()
                     .map(StageTaskListener::getSplitDecorManager)
                     .toList();
         } else {
-            mainDecor = mMainStage.getSplitDecorManager();
-            sideDecor = mSideStage.getSplitDecorManager();
+            decorManagers = new ArrayList<>();
+            final SplitDecorManager mainDecor = mMainStage.getSplitDecorManager();
+            final SplitDecorManager sideDecor = mSideStage.getSplitDecorManager();
+            if (mainDecor != null) {
+                decorManagers.add(mainDecor);
+            }
+            if (sideDecor != null) {
+                decorManagers.add(sideDecor);
+            }
         }
         sendOnBoundsChanged();
         mSplitLayout.setDividerInteractive(false, false, "onSplitResizeStart");
-        mSplitTransitions.startResizeTransition(wct, this, (aborted) -> {
+        mSplitTransitions.startResizeTransition(wct, this, (aborted, finishT) -> {
             mSplitLayout.setDividerInteractive(true, false, "onSplitResizeConsumed");
+            for (SplitDecorManager decor : decorManagers) {
+                decor.releaseDecor(finishT);
+            }
         }, (finishWct, t) -> {
             mSplitLayout.setDividerInteractive(true, false, "onSplitResizeFinish");
             mSplitLayout.populateTouchZones();
-        }, mainDecor, sideDecor, decorManagers);
+        }, decorManagers);
 
         if (enableFlexibleTwoAppSplit()) {
             switch (layout.calculateCurrentSnapPosition()) {

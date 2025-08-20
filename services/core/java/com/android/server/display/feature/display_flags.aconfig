@@ -445,3 +445,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_size_override_for_external_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enable size override for external displays without changing the surface flinger mode."
+    bug: "438485020"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

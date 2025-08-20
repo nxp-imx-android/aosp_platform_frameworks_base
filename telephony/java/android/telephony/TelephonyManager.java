@@ -10038,7 +10038,7 @@ public class TelephonyManager {
             if (telephony != null) {
                 return telephony.setAllowedNetworkTypesForReason(subId,
                         TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_USER,
-                        RadioAccessFamily.getRafFromNetworkType(networkType));
+                        RadioAccessFamily.getRafFromNetworkType(networkType), getOpPackageName());
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setPreferredNetworkType RemoteException", ex);
@@ -10080,7 +10080,8 @@ public class TelephonyManager {
             if (telephony != null) {
                 networkTypeBitmask = checkNetworkTypeBitmask(networkTypeBitmask);
                 return telephony.setAllowedNetworkTypesForReason(getSubId(),
-                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_USER, networkTypeBitmask);
+                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_USER, networkTypeBitmask,
+                        getOpPackageName());
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setPreferredNetworkTypeBitmask RemoteException", ex);
@@ -10134,7 +10135,8 @@ public class TelephonyManager {
             if (telephony != null) {
                 allowedNetworkTypes = checkNetworkTypeBitmask(allowedNetworkTypes);
                 return telephony.setAllowedNetworkTypesForReason(getSubId(),
-                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_CARRIER, allowedNetworkTypes);
+                        TelephonyManager.ALLOWED_NETWORK_TYPES_REASON_CARRIER, allowedNetworkTypes,
+                        getOpPackageName());
             }
         } catch (RemoteException ex) {
             Rlog.e(TAG, "setAllowedNetworkTypes RemoteException", ex);
@@ -10240,7 +10242,7 @@ public class TelephonyManager {
             if (telephony != null) {
                 allowedNetworkTypes = checkNetworkTypeBitmask(allowedNetworkTypes);
                 telephony.setAllowedNetworkTypesForReason(getSubId(), reason,
-                        allowedNetworkTypes);
+                        allowedNetworkTypes, getOpPackageName());
             } else {
                 throw new IllegalStateException("telephony service is null.");
             }

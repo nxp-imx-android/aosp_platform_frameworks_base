@@ -52,9 +52,8 @@ data class PhysicsProperty
 
     fun setFinalValue(view: View, finalValue: Float) {
         val propertyData = obtainPropertyData(view, this)
-        val previousValue = propertyData.finalValue
-        if (previousValue != finalValue) {
-            propertyData.finalValue = finalValue
+        propertyData.finalValue = finalValue
+        if (propertyData.finalValue + propertyData.offset != property.get(view)) {
             property.set(view, propertyData.finalValue + propertyData.offset)
         }
     }

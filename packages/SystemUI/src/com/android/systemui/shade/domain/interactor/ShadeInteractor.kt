@@ -47,7 +47,8 @@ interface ShadeInteractor : BaseShadeInteractor {
     /**
      * Whether the user is expanding or collapsing either the shade or quick settings with user
      * input (i.e. dragging a pointer). This will be true even if the user's input gesture had ended
-     * but a transition they initiated is still animating.
+     * but a transition they initiated is still animating. It will also be true if the gesture was
+     * originated by the user but outside of System UI.
      */
     val isUserInteracting: StateFlow<Boolean>
 

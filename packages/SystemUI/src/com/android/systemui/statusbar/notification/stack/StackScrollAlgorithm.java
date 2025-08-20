@@ -714,12 +714,14 @@ public class StackScrollAlgorithm {
         );
         if (view instanceof FooterView) {
             if (SceneContainerFlag.isEnabled()) {
-                final float footerEnd =
-                        stackTop + viewState.getYTranslation() + view.getIntrinsicHeight();
-                final boolean noSpaceForFooter = footerEnd > ambientState.getStackCutoff();
-                ((FooterView.FooterViewState) viewState).hideContent =
-                        noSpaceForFooter || (ambientState.isClearAllInProgress()
-                                && !hasNonClearableNotifs(algorithmState));
+                if (!ambientState.isExpansionChanging()) {
+                    final float footerEnd =
+                            stackTop + viewState.getYTranslation() + view.getIntrinsicHeight();
+                    final boolean noSpaceForFooter = footerEnd > ambientState.getStackCutoff();
+                    ((FooterView.FooterViewState) viewState).hideContent =
+                            noSpaceForFooter || (ambientState.isClearAllInProgress()
+                                    && !hasNonClearableNotifs(algorithmState));
+                }
             } else {
                 // TODO(b/333445519): shouldBeHidden should reflect whether the shade is closed
                 //  already, so we shouldn't need to use ambientState here. However,

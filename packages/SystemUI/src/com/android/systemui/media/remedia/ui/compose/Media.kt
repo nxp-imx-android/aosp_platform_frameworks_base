@@ -1541,7 +1541,8 @@ object Media {
         val mediaCarousel = ElementKey("media_carousel")
 
         fun additionalActionButton(index: Int): ElementKey {
-            return ElementKey("additional_action_$index")
+            val name = "additional_action_$index"
+            return ElementKey(debugName = name, identity = name)
         }
     }
 }

@@ -54,6 +54,13 @@ android_test {
     defaults: [
         "structured_concurrency_perf_tests_defaults",
     ],
+    test_config: "configs/structured-concurrency-perf.xml",
+    test_options: {
+        extra_test_configs: [
+            "configs/structured-concurrency-perf.xml",
+            "configs/structured-concurrency-base.xml",
+        ],
+    },
 }
 
 android_test {
@@ -61,7 +68,13 @@ android_test {
     defaults: [
         "structured_concurrency_perf_tests_defaults",
     ],
-    test_config: "AndroidTest-debug.xml",
+    test_config: "configs/structured-concurrency-debug.xml",
+    test_options: {
+        extra_test_configs: [
+            "configs/structured-concurrency-debug.xml",
+            "configs/structured-concurrency-base.xml",
+        ],
+    },
     srcs: [
         "src-debug/**/*.kt",
     ],

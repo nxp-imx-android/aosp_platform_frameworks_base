@@ -16,8 +16,6 @@
 
 package android.window;
 
-import static com.android.window.flags.Flags.predictiveBackPrioritySystemNavigationObserver;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -125,19 +123,10 @@ public class ProxyOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         }
         for (Pair<OnBackInvokedCallback, Integer> callbackPair : mCallbacks) {
             int priority = callbackPair.second;
-            if (predictiveBackPrioritySystemNavigationObserver()) {
-                if (priority >= PRIORITY_DEFAULT
-                        || priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
-                    mActualDispatcher.registerOnBackInvokedCallback(priority, callbackPair.first);
-                } else {
-                    mActualDispatcher.registerSystemOnBackInvokedCallback(callbackPair.first);
-                }
+            if (priority >= PRIORITY_DEFAULT || priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
+                mActualDispatcher.registerOnBackInvokedCallback(priority, callbackPair.first);
             } else {
-                if (priority >= PRIORITY_DEFAULT) {
-                    mActualDispatcher.registerOnBackInvokedCallback(priority, callbackPair.first);
-                } else {
-                    mActualDispatcher.registerSystemOnBackInvokedCallback(callbackPair.first);
-                }
+                mActualDispatcher.registerSystemOnBackInvokedCallback(callbackPair.first);
             }
         }
         mCallbacks.clear();

@@ -22,6 +22,8 @@ import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
 import static android.app.CameraCompatTaskInfo.CameraCompatMode;
+import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
+import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
@@ -34,6 +36,8 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.view.Display.TYPE_EXTERNAL;
+import static android.view.Display.TYPE_INTERNAL;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
@@ -44,8 +48,10 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX;
+import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT;
+import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -717,6 +723,62 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         });
     }
 
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
+            FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_externalDisplayFixedOrientation_fullTreatment() {
+        runTestScenario((robot) -> {
+            // Setup default display.
+            robot.activity().createNewDisplay();
+            robot.makeCurrentDisplayDefault();
+            // Setup external display and the activity on it.
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_LANDSCAPE,
+                    WINDOWING_MODE_FREEFORM, TYPE_EXTERNAL);
+            // Sensor rotation is continuous, and counted in the opposite direction from display
+            // rotation: 360 - 100 = 260, and 260 is closest to ROTATION_270.
+            robot.setSensorOrientation(100);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Display rotation for fixed-orientation portrait apps should always be 0.
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            // Rotate and crop value should offset the difference between the sandboxed display
+            // rotation and the real display (camera) rotation: (0 - 270) % 360 = 90.
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_90);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
+            FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_externalDisplayResponsive_sandboxDisplayRotationOnly() {
+        runTestScenario((robot) -> {
+            // Setup default display.
+            robot.activity().createNewDisplay();
+            robot.makeCurrentDisplayDefault();
+            // Setup external display and the activity on it.
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_FULL_USER, ORIENTATION_PORTRAIT,
+                    WINDOWING_MODE_FREEFORM, TYPE_EXTERNAL);
+            // Sensor rotation is continuous, and counted in the opposite direction from display
+            // rotation: 360 - 100 = 260, and 260 is closest to ROTATION_270.
+            robot.setSensorOrientation(100);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Display rotation should be the same as the camera rotation (see comment above).
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_270);
+            // The other parts of the treatment are not activated.
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(false);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_UNDEFINED);
+        });
+    }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
@@ -842,9 +904,16 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
         private void configureActivityAndDisplay(@ScreenOrientation int activityOrientation,
                 @Orientation int naturalOrientation, @WindowingMode int windowingMode) {
+            configureActivityAndDisplay(activityOrientation, naturalOrientation, windowingMode,
+                    TYPE_INTERNAL);
+        }
+
+        private void configureActivityAndDisplay(@ScreenOrientation int activityOrientation,
+                @Orientation int naturalOrientation, @WindowingMode int windowingMode,
+                int displayType) {
             applyOnActivity(a -> {
                 dw().allowEnterDesktopMode(true);
-                a.createActivityWithComponentInNewTaskAndDisplay();
+                a.createActivityWithComponentInNewTaskAndDisplay(displayType);
                 a.setIgnoreOrientationRequest(true);
                 a.rotateDisplayForTopActivity(ROTATION_90);
                 a.configureTopActivity(/* minAspect */ -1, /* maxAspect */ -1,
@@ -961,8 +1030,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
         void checkIsCameraCompatTreatmentActiveForTopActivity(boolean active) {
             assertEquals(active,
-                    cameraCompatFreeformPolicy().isTreatmentEnabledForActivity(activity().top(),
-                            /* checkOrientation */ true));
+                    cameraCompatFreeformPolicy().isCompatibilityTreatmentEnabledForActivity(
+                            activity().top(), /* checkOrientation */ true));
         }
 
         void setOverrideMinAspectRatioEnabled(boolean enabled) {
@@ -1016,6 +1085,16 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
         AppCompatCameraSimReqOrientationPolicy cameraCompatFreeformPolicy() {
             return activity().displayContent().mAppCompatCameraPolicy.mSimReqOrientationPolicy;
+        }
+
+        void setSensorOrientation(int orientation) {
+            cameraCompatFreeformPolicy().mCameraDisplayRotationProvider.mOrientationEventListener
+                    .onOrientationChanged(orientation);
+        }
+
+        void makeCurrentDisplayDefault() {
+            doReturn(activity().displayContent()).when(activity().displayContent().mWmService)
+                    .getDefaultDisplayContentLocked();
         }
     }
 }

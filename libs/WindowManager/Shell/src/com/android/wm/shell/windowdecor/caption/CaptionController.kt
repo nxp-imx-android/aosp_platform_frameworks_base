@@ -92,9 +92,6 @@ abstract class CaptionController<T>(
     /** Type of caption. */
     abstract val captionType: CaptionType
 
-    /** Called when [WindowDecoration2] is closing. */
-    abstract fun close()
-
     /**
      * Returns the caption height including any additional padding that will be added to the
      * caption.
@@ -497,13 +494,14 @@ abstract class CaptionController<T>(
     }
 
     /** Releases all caption views. Returns true if caption view host is released. */
-    open fun releaseViews(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean =
+    open fun close(wct: WindowContainerTransaction, t: SurfaceControl.Transaction): Boolean =
         traceSection(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "CaptionController#releaseViews",
         ) {
             captionInsets?.remove(wct)
             captionInsets = null
+            windowDecorationViewHolder = null
 
             val viewHost = captionViewHost ?: return false
             windowDecorViewHostSupplier.release(viewHost, t)
@@ -552,7 +550,9 @@ abstract class CaptionController<T>(
         // The caption height with caption padding included
         val captionHeight: Int,
         val captionWidth: Int,
+        // The caption x position relative to its parent task
         val captionX: Int,
+        // The caption y position relative to its parent task
         val captionY: Int,
         val captionTopPadding: Int,
         val customizableCaptionRegion: Region,

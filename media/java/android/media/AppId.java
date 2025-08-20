@@ -33,8 +33,8 @@ public final class AppId implements Parcelable {
                 @Override
                 public AppId createFromParcel(Parcel in) {
                     return new AppId(
-                            in.readString(),
-                            in.readParcelable(UserHandle.class.getClassLoader(), UserHandle.class));
+                            in.readString8(),
+                            in.readTypedObject(UserHandle.CREATOR));
                 }
 
                 @Override
@@ -56,8 +56,8 @@ public final class AppId implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mPackageName);
-        dest.writeParcelable(mUserHandle, flags);
+        dest.writeString8(mPackageName);
+        dest.writeTypedObject(mUserHandle, flags);
     }
 
     @Override

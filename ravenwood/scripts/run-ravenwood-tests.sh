@@ -188,18 +188,7 @@ fi
 # Build the "enablement" policy by merging all the policy files.
 # But if RAVENWOOD_TEST_ENABLEMENT_POLICY is already set, just use it.
 if [[ "$RAVENWOOD_TEST_ENABLEMENT_POLICY" == "" ]] && (( "${#default_enablement_policy[@]}" > 0 )) ; then
-    # This path must be a full path.
-    combined_enablement_policy=/tmp/ravenwood-enablement-@@@$$@@@.txt
-
-    # Join all the enablement policy files, but we add a newline
-    # after each file. (so that it wouldn't break if any of the files
-    # don't end with a newline.)
-    for file in "${default_enablement_policy[@]}"; do
-        cat "$file"
-        echo
-    done >$combined_enablement_policy
-
-    export RAVENWOOD_TEST_ENABLEMENT_POLICY=$combined_enablement_policy
+    export RAVENWOOD_TEST_ENABLEMENT_POLICY="$(readlink -m ${default_enablement_policy[*]} | tr '\n' ' ')"
 fi
 
 echo "RAVENWOOD_TEST_ENABLEMENT_POLICY=$RAVENWOOD_TEST_ENABLEMENT_POLICY"

@@ -18,11 +18,14 @@ package com.android.systemui.shade.ui.viewmodel
 
 import androidx.annotation.FloatRange
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -75,6 +78,8 @@ constructor(
     disableFlagsInteractor: DisableFlagsInteractor,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
+    keyguardInteractor: KeyguardInteractor,
+    blurConfig: BlurConfig,
     unfoldTransitionInteractor: UnfoldTransitionInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     private val sceneInteractor: SceneInteractor,
@@ -102,6 +107,14 @@ constructor(
 
     val shadeMode: ShadeMode by
         hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
+
+    val isShadeBlurred: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isShadeBlurred",
+            source = keyguardInteractor.primaryBouncerShowing,
+        )
+
+    val shadeBlurRadius: Float by mutableFloatStateOf(blurConfig.maxBlurRadiusPx)
 
     /** Whether clicking on the empty area of the shade should do something. */
     val isEmptySpaceClickable: Boolean by

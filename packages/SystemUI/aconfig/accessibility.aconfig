@@ -4,6 +4,16 @@ container: "system"
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
 
 flag {
+    name: "cleanup_instances_when_display_removed"
+    namespace: "accessibility"
+    description: "When a specific display is removed, cleanup the cached instances related to it."
+    bug: "437868750"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "floating_menu_drag_to_hide"
     namespace: "accessibility"
     description: "Allows users to hide the FAB then use notification to dismiss or bring it back."

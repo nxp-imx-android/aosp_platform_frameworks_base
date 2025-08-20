@@ -255,6 +255,79 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    public void testAddHandoffEnablementListener_doesNotNotifyIfFlagDisabled() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
+        activity.setHandoffEnabled(true, true);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), true);
+        activity.setHandoffEnabled(false, true);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), false);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testRegisterHandoffEnablementListener_notifiesListenerOnChange() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
+        activity.setHandoffEnabled(true, true);
+        verify(handoffEnablementListener)
+            .onHandoffEnabledChanged(anyInt(), anyBoolean());
+        activity.setHandoffEnabled(false, true);
+        verify(handoffEnablementListener)
+            .onHandoffEnabledChanged(activity.getRootTaskId(), false);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testUnregisterHandoffEnablementListener_doesNotNotifyListenerOnChange() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
+        mAtm.getAtmInternal().unregisterHandoffEnablementListener(handoffEnablementListener);
+        activity.setHandoffEnabled(true, true);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), true);
+        activity.setHandoffEnabled(false, true);
+        verify(handoffEnablementListener, never())
+            .onHandoffEnabledChanged(activity.getRootTaskId(), false);
+    }
+
+    @Test
+    public void testIsHandoffEnabledForTask_returnsFalseIfFlagDisabled() {
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(true).when(activity).isHandoffEnabled();
+        assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testIsHandoffEnabledForTask_returnsTrueIfHandoffEnabled() {
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        activity.setHandoffEnabled(true, true);
+        assertTrue(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+        activity.setHandoffEnabled(false, true);
+        assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(task.getRootTaskId()));
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    public void testIsHandoffEnabledForTask_returnsFalseIfNoSuchTask() {
+        assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(1000));
+    }
+
+    @Test
     public void testRequestHandoffTaskData_failsIfFlagDisabled() {
         // Create a test task.
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();

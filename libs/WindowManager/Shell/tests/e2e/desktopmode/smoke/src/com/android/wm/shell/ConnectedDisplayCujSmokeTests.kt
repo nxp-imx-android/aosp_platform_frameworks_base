@@ -20,12 +20,14 @@ import android.app.ActivityOptions
 import android.app.Instrumentation
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
 import android.content.Intent
 import android.graphics.PointF
 import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayTopology
 import android.hardware.input.InputManager
+import android.os.Bundle
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -48,6 +50,7 @@ import android.tools.traces.component.IComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
+import androidx.test.filters.RequiresDevice
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -74,6 +77,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 // e.g., sysui-tapl).
 // TODO(b/416610249) - Support all form-factors
 // TODO(b/418620154) - Use test apps instead of real apps.
+// TODO(b/439962697) - Remove @RequiresDevice once cf phone supports desktop mode.
 /**
  * Tests to verify the smoke test scenario defined in go/cd-smoke.
  */
@@ -146,7 +150,7 @@ class ConnectedDisplayCujSmokeTests {
             Intent(Settings.ACTION_SETTINGS)
                 .addCategory(Intent.CATEGORY_DEFAULT)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-            ActivityOptions.makeBasic().setLaunchDisplayId(DEFAULT_DISPLAY).toBundle()
+            createActivityOptions(DEFAULT_DISPLAY)
         )
 
         // Reset topology.
@@ -207,6 +211,7 @@ class ConnectedDisplayCujSmokeTests {
     // Settings > Connected devices > Connected Display
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj1p() {
         cuj1()
     }
@@ -240,6 +245,7 @@ class ConnectedDisplayCujSmokeTests {
     // the external monitor and they default to Desktop Windowing mode
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj3p() {
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
@@ -255,6 +261,7 @@ class ConnectedDisplayCujSmokeTests {
     // remains unchanged and a blank desktop session starts on the external monitor
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj4p() {
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
 
@@ -274,7 +281,11 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ExtendedOnly
     fun cuj5e() {
-        browserApp.launchViaIntent()
+        // Specify launch windowing mode as desktop-first state is undefined here.
+        context.startActivity(
+            browserApp.openAppIntent,
+            createActivityOptions(DEFAULT_DISPLAY, WINDOWING_MODE_FULLSCREEN)
+        )
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyWindowCount(browserApp, expectedCount = 1)
 
@@ -290,6 +301,7 @@ class ConnectedDisplayCujSmokeTests {
     // on one
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj5p() {
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
@@ -308,7 +320,7 @@ class ConnectedDisplayCujSmokeTests {
         assertTaskbarVisible(externalDisplayId)
         context.startActivity(
             clockApp.openAppIntent,
-            ActivityOptions.makeBasic().setLaunchDisplayId(externalDisplayId).toBundle()
+            createActivityOptions(externalDisplayId)
         )
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
@@ -346,6 +358,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @Ignore("b/428563383")
     @ProjectedOnly
+    @RequiresDevice
     fun cuj6p() {
         cuj6()
     }
@@ -362,6 +375,7 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: The same as CUJ6p but excluding app handle test.
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj6p_skipAppHandle() {
         cuj6(skipAppHandleTest = true)
     }
@@ -372,9 +386,11 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ExtendedOnly
     fun cuj7e() {
-        // TODO(b/416610249) - Remove assumption of touch-first-by-default.
-        // Start an fullscreen app assuming the device is in touch-first mode.
-        clockApp.launchViaIntent()
+        // Specify launch windowing mode as desktop-first state is undefined here.
+        context.startActivity(
+            clockApp.openAppIntent,
+            createActivityOptions(DEFAULT_DISPLAY, WINDOWING_MODE_FULLSCREEN)
+        )
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
         connectedDisplayRule.setupTestDisplay()
@@ -397,6 +413,7 @@ class ConnectedDisplayCujSmokeTests {
     // full screen apps as tiles to the left
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj7p() {
         // Clear all tasks
         RecentTasksUtils.clearAllVisibleRecentTasks(instrumentation)
@@ -405,10 +422,10 @@ class ConnectedDisplayCujSmokeTests {
         assertTaskbarVisible(externalDisplayId)
 
         // Start an app and make it fullscreen.
-        launchAppFromTaskbar(externalDisplayId, browserApp)
-        verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
-        openAppHeaderMenuForTheApp(browserApp)
-        waitForSysUiObjectForTheApp(browserApp, FULLSCREEN_BUTTON_RES_ID).click()
+        context.startActivity(
+            browserApp.openAppIntent,
+            createActivityOptions(externalDisplayId, WINDOWING_MODE_FULLSCREEN)
+        )
         verifyActivityState(
             browserApp,
             WINDOWING_MODE_FULLSCREEN,
@@ -416,10 +433,11 @@ class ConnectedDisplayCujSmokeTests {
             visible = true
         )
 
-        // Start a freeform app.
+        // Start a freeform app. Specify launch windowing mode as by default an app opens in
+        // fullscreen when another fullscreen app is on top even when desktop-first mode.
         context.startActivity(
             clockApp.openAppIntent,
-            ActivityOptions.makeBasic().setLaunchDisplayId(externalDisplayId).toBundle()
+            createActivityOptions(externalDisplayId, WINDOWING_MODE_FREEFORM)
         )
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
         verifyActivityState(
@@ -477,6 +495,7 @@ class ConnectedDisplayCujSmokeTests {
     // it is moved across
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj9p() {
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
@@ -492,7 +511,11 @@ class ConnectedDisplayCujSmokeTests {
     }
 
     fun cuj10() {
-        clockApp.launchViaIntent()
+        // Specify launch windowing mode as desktop-first state is undefined here.
+        context.startActivity(
+            clockApp.openAppIntent,
+            createActivityOptions(DEFAULT_DISPLAY, WINDOWING_MODE_FULLSCREEN)
+        )
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
@@ -518,6 +541,7 @@ class ConnectedDisplayCujSmokeTests {
     // ext.display (i.e. does not crash)
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj10p() {
         cuj10()
     }
@@ -711,6 +735,16 @@ class ConnectedDisplayCujSmokeTests {
     fun disableMouseScaling(displayId: Int) {
         displayIdsWithMouseScalingDisabled += displayId
         inputManager.setMouseScalingEnabled(false, displayId)
+    }
+
+    fun createActivityOptions(
+        launchDisplayId: Int,
+        launchWindowingMode: Int = WINDOWING_MODE_UNDEFINED
+    ): Bundle {
+        val options = ActivityOptions.makeBasic()
+        options.setLaunchDisplayId(launchDisplayId)
+        options.setLaunchWindowingMode(launchWindowingMode)
+        return options.toBundle()
     }
 
     private companion object {

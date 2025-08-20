@@ -30,11 +30,13 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
@@ -52,8 +54,8 @@ public class SliderPreference extends Preference {
     public static final int HAPTIC_FEEDBACK_MODE_ON_TICKS = 1;
     public static final int HAPTIC_FEEDBACK_MODE_ON_ENDS = 2;
 
-    private final int mTextStartId;
-    private final int mTextEndId;
+    private int mTextStartId;
+    private int mTextEndId;
     private final ColorStateList mTrackActiveColor;
     private final ColorStateList mTrackInactiveColor;
     private final ColorStateList mThumbColor;
@@ -317,6 +319,27 @@ public class SliderPreference extends Preference {
         }
     }
 
+
+    /**
+     * Sets the text for the start of the slider.
+     */
+    public void setTextStart(@StringRes int textStartId) {
+        if (mTextStartId != textStartId) {
+            mTextStartId = textStartId;
+            notifyChanged();
+        }
+    }
+
+    /**
+     * Sets the text for the end of the slider.
+     */
+    public void setTextEnd(@StringRes int textEndId) {
+        if (mTextEndId != textEndId) {
+            mTextEndId = textEndId;
+            notifyChanged();
+        }
+    }
+
     @Override
     public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
@@ -409,6 +432,16 @@ public class SliderPreference extends Preference {
 
         ImageView iconEndView = (ImageView) holder.findViewById(R.id.icon_end);
         updateIconEndIfNeeded(iconEndView);
+
+        // Remove the accessibility label of click action
+        holder.itemView.getRootView().setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.removeAction(AccessibilityNodeInfo.ACTION_CLICK);
+                info.setClickable(false);
+            }
+        });
     }
 
     /**

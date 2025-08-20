@@ -39,6 +39,9 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.data.model.sceneStackOf
 import com.android.systemui.scene.data.repository.HideOverlay
@@ -70,6 +73,10 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
+    /** Helper to strip out the logging reason from the lockscreen visibility flow. */
+    private val lockscreenVisibilityBoolean by lazy {
+        underTest.lockscreenVisibility.map { it.first }
+    }
     private val lockscreenSurfaceVisibilityFlow = MutableStateFlow<Boolean?>(false)
     private val primaryBouncerSurfaceVisibilityFlow = MutableStateFlow<Boolean?>(false)
     private val surfaceBehindIsAnimatingFlow = MutableStateFlow(false)
@@ -533,7 +540,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
     @DisableSceneContainer
     fun lockscreenVisibility_visibleWhenGone() =
         kosmos.runTest {
-            val values by collectValues(underTest.lockscreenVisibility)
+            val values by collectValues(lockscreenVisibilityBoolean)
 
             // Start on LOCKSCREEN.
             fakeKeyguardTransitionRepository.sendTransitionStep(
@@ -600,7 +607,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
     @DisableSceneContainer
     fun testLockscreenVisibility_usesFromState_ifCanceled() =
         kosmos.runTest {
-            val values by collectValues(underTest.lockscreenVisibility)
+            val values by collectValues(lockscreenVisibilityBoolean)
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
@@ -695,7 +702,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
     @DisableSceneContainer
     fun testLockscreenVisibility_falseDuringTransitionToGone_fromCanceledGone() =
         kosmos.runTest {
-            val values by collectValues(underTest.lockscreenVisibility)
+            val values by collectValues(lockscreenVisibilityBoolean)
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
@@ -798,7 +805,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
     @DisableSceneContainer
     fun testLockscreenVisibility_trueDuringTransitionToGone_fromNotCanceledGone() =
         kosmos.runTest {
-            val values by collectValues(underTest.lockscreenVisibility)
+            val values by collectValues(lockscreenVisibilityBoolean)
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
@@ -914,7 +921,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
     @DisableSceneContainer
     fun testLockscreenVisibility_falseDuringWakeAndUnlockToGone_fromNotCanceledGone() =
         kosmos.runTest {
-            val values by collectValues(underTest.lockscreenVisibility)
+            val values by collectValues(lockscreenVisibilityBoolean)
 
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
@@ -1042,7 +1049,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
             assertThat(lockscreenVisibility).isTrue()
 
             setSceneTransition(Idle(Scenes.Shade))
@@ -1106,6 +1113,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Gone)
             assertThat(lockscreenVisibility).isFalse()
 
+            powerInteractor.setAsleepForTest()
             setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
             // Lockscreen remains not visible during the transition so that the unlocked app content
             // is visible under the light reveal screen off animation.
@@ -1130,7 +1138,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
             assertThat(lockscreenVisibility).isTrue()
 
             setSceneTransition(Idle(Scenes.Shade))
@@ -1237,7 +1245,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             setSceneTransition(Idle(Scenes.Lockscreen))
 
-            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
             assertThat(lockscreenVisibility).isTrue()
 
             setSceneTransition(Idle(Scenes.Shade))
@@ -1269,7 +1277,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             setSceneTransition(Idle(Scenes.Lockscreen))
 
-            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
             assertThat(lockscreenVisibility).isTrue()
 
             kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
@@ -1292,17 +1300,79 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             setSceneTransition(Idle(Scenes.Gone))
             sceneInteractor.changeScene(Scenes.Gone, "")
 
-            val lockscreenVisibility by collectLastValue(underTest.lockscreenVisibility)
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
             assertThat(lockscreenVisibility).isFalse()
 
             // Lockscreen vis remains false during Gone -> LS so the unlocked app content is visible
             // during the screen off animation.
+            powerInteractor.setAsleepForTest()
             setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
             assertThat(lockscreenVisibility).isFalse()
 
             setSceneTransition(Idle(Scenes.Lockscreen))
             sceneInteractor.changeScene(Scenes.Lockscreen, "")
             assertThat(lockscreenVisibility).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibility_becomesVisible_ifAwakeDuringGoneLs() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            powerInteractor.setAwakeForTest()
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
+            assertThat(lockscreenVisibility).isFalse()
+
+            // Lockscreen vis remains false during Gone -> LS so the unlocked app content is visible
+            // during the screen off animation.
+            powerInteractor.setAsleepForTest()
+            setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
+            assertThat(lockscreenVisibility).isFalse()
+
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+            assertThat(lockscreenVisibility).isTrue()
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+            sceneInteractor.changeScene(Scenes.Lockscreen, "")
+            assertThat(lockscreenVisibility).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibility_remainsNotVisible_ifCameraLaunch() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
+            assertThat(lockscreenVisibility).isFalse()
+
+            // Lockscreen vis remains false during Gone -> LS so the unlocked app content is visible
+            // during the screen off animation.
+            powerInteractor.setAsleepForTest()
+            setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
+            assertThat(lockscreenVisibility).isFalse()
+
+            powerInteractor.onCameraLaunchGestureDetected()
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+            assertThat(lockscreenVisibility).isFalse()
+
+            setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+            assertThat(lockscreenVisibility).isFalse()
         }
 
     companion object {

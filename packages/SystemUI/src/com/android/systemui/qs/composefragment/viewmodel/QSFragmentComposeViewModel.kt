@@ -91,6 +91,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -665,12 +666,20 @@ private fun mediaHostVisible(
     mediaCarouselInteractor: MediaCarouselInteractor,
 ): Flow<Boolean> {
     if (MediaControlsInComposeFlag.isEnabled) {
-        return if (
-            mediaUiBehavior.carouselVisibility == MediaCarouselVisibility.WhenAnyCardIsActive
-        ) {
-            mediaCarouselInteractor.hasActiveMedia
-        } else {
-            mediaCarouselInteractor.hasAnyMedia
+        return combine(
+            mediaCarouselInteractor.hasActiveMedia,
+            mediaCarouselInteractor.hasAnyMedia,
+            mediaCarouselInteractor.isLockedAndHidden,
+        ) { activeMedia, anyMedia, lockedAndHidden ->
+            if (lockedAndHidden) {
+                false
+            } else if (
+                mediaUiBehavior.carouselVisibility == MediaCarouselVisibility.WhenAnyCardIsActive
+            ) {
+                activeMedia
+            } else {
+                anyMedia
+            }
         }
     }
     return callbackFlow {

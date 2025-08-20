@@ -41,6 +41,7 @@ import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 /** Handles screen recorder tile clicks. */
@@ -48,6 +49,7 @@ class ScreenRecordTileUserActionInteractor
 @Inject
 constructor(
     @Main private val mainContext: CoroutineContext,
+    @Main private val mainDispatcher: CoroutineDispatcher,
     @Background private val backgroundContext: CoroutineContext,
     private val screenRecordRepository: ScreenRecordRepository,
     private val screenRecordUxController: ScreenRecordUxController,
@@ -64,17 +66,25 @@ constructor(
             when (action) {
                 is QSTileUserAction.Click -> {
                     if (ScreenCaptureRecordFeaturesInteractor.shouldShowNewToolbar) {
-                        // TODO(b/412723197): pass actual params here.
-                        activityStarter.postQSRunnableDismissingKeyguard {
-                            screenCaptureUiInteractor.show(
-                                ScreenCaptureUiParameters(
-                                    ScreenCaptureType.RECORD,
-                                    isUserConsentRequired = false,
-                                    resultReceiver = null,
-                                    mediaProjection = null,
-                                    hostAppUserHandle = user,
-                                    hostAppUid = 0,
-                                )
+                        withContext(mainDispatcher) {
+                            // TODO(b/412723197): pass actual params here.
+                            activityStarter.executeRunnableDismissingKeyguard(
+                                {
+                                    screenCaptureUiInteractor.show(
+                                        ScreenCaptureUiParameters(
+                                            ScreenCaptureType.RECORD,
+                                            isUserConsentRequired = false,
+                                            resultReceiver = null,
+                                            mediaProjection = null,
+                                            hostAppUserHandle = user,
+                                            hostAppUid = 0,
+                                        )
+                                    )
+                                },
+                                /* cancelAction= */ null,
+                                /* dismissShade= */ true,
+                                /* afterKeyguardGone= */ true,
+                                /* deferred= */ false,
                             )
                         }
                     } else {

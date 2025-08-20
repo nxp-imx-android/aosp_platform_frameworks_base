@@ -29,14 +29,14 @@ import dagger.Subcomponent
 import javax.inject.Provider
 
 /**
- * "Phone" specific subcomponent for SysUI classes that should be instantiated once per display.
+ * AOSP subcomponent for SysUI classes that should be instantiated once per display.
  *
- * If the class is not specific to "Phone" SysUI, it should be added to the parent
+ * If the class is not specific to AOSP SysUI, it should be added to the parent
  * [SystemUIDisplaySubcomponent] instead.
  */
 @PerDisplaySingleton
-@Subcomponent(modules = [PerDisplayCommonModule::class, PerDisplayPhoneModule::class])
-interface SystemUIPhoneDisplaySubcomponent : SystemUIDisplaySubcomponent {
+@Subcomponent(modules = [PerDisplaySystemUIModule::class, PerDisplayReferenceSystemUIModule::class])
+interface ReferenceSysUIDisplaySubcomponent : SystemUIDisplaySubcomponent {
 
     /**
      * A display specific factory that allows to create new instances of [HomeStatusBarComponent],
@@ -66,6 +66,6 @@ interface SystemUIPhoneDisplaySubcomponent : SystemUIDisplaySubcomponent {
     interface Factory : SystemUIDisplaySubcomponent.Factory {
         override fun create(
             @BindsInstance @DisplayId displayId: Int
-        ): SystemUIPhoneDisplaySubcomponent
+        ): ReferenceSysUIDisplaySubcomponent
     }
 }

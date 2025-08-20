@@ -367,6 +367,25 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
+    fun keyGestureQuitFocusedDesktopTask_shouldQuitTask() {
+        val task = setUpDesktopTask()
+        task.isFocused = true
+        whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
+        whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
+
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK)
+                .setKeycodes(intArrayOf(KeyEvent.KEYCODE_Q))
+                .setModifierState(KeyEvent.META_META_ON)
+                .build()
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(desktopModeWindowDecorViewModel).closeTask(task)
+    }
+
+    @Test
     fun keyGestureSwitchToPreviousDesk_activatesDesk() {
         val displayId = 2
         whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)

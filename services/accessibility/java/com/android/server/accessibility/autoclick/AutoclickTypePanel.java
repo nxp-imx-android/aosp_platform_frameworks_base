@@ -1006,7 +1006,7 @@ public class AutoclickTypePanel {
     @NonNull
     private WindowManager.LayoutParams getDefaultLayoutParams() {
         final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-        layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        layoutParams.type = WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
         layoutParams.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;

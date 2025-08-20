@@ -65,6 +65,7 @@ class DesktopModeKeyGestureHandler(
                     KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW,
                     KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
                     KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
                 )
             inputManager.registerKeyGestureEventHandler(supportedGestures, this)
         }
@@ -164,6 +165,21 @@ class DesktopModeKeyGestureHandler(
                     mainExecutor.execute {
                         desktopTasksController.get().minimizeTask(it, MinimizeReason.KEY_GESTURE)
                     }
+                }
+            }
+            KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK -> {
+                logV("Key gesture KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK is handled")
+                val focusedTask = getGloballyFocusedDesktopTask()
+                if (focusedTask == null) {
+                    logV(
+                        "Globally focused desktop task is not found to close. focusedDisplay=%d",
+                        focusTransitionObserver.globallyFocusedDisplayId,
+                    )
+                    return
+                }
+                logV("Found focused desktop task %d to close", focusedTask.taskId)
+                mainExecutor.execute {
+                    desktopModeWindowDecorViewModel.get().closeTask(focusedTask)
                 }
             }
         }

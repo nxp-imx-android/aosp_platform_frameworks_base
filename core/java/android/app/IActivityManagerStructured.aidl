@@ -92,4 +92,28 @@ interface IActivityManagerStructured {
     void unregisterProcessObserver(in IProcessObserver observer);
     @UnsupportedAppUsage
     List<RunningAppProcessInfo> getRunningAppProcesses();
+
+    /** Callback from a service to AMS to indicate it has completed a scheduled operation */
+    @UnsupportedAppUsage
+    oneway void serviceDoneExecuting(in IBinder token, int type, int startId, int res);
+    /** Type for IActivityManager.serviceDoneExecuting: anonymous operation */
+    const int SERVICE_DONE_EXECUTING_ANON = 0;
+    /** Type for IActivityManager.serviceDoneExecuting: done with an onStart call */
+    const int SERVICE_DONE_EXECUTING_START = 1;
+    /** Type for IActivityManager.serviceDoneExecuting: done stopping (destroying) service */
+    const int SERVICE_DONE_EXECUTING_STOP = 2;
+    /** Type for IActivityManager.serviceDoneExecuting: done with an onRebind call */
+    const int SERVICE_DONE_EXECUTING_REBIND = 3;
+    /** Type for IActivityManager.serviceDoneExecuting: done with an onUnbind call */
+    const int SERVICE_DONE_EXECUTING_UNBIND = 4;
+
+    /** A service reporting that it has completed a binding, and returning the IBinder */
+    void publishService(in IBinder token, in IBinder bindToken, in IBinder service);
+
+    /** A service reporting that it has completed an unbind operation */
+    void unbindFinished(in IBinder token, in IBinder bindToken);
+
+    void attachNativeApplication(in IBinder nativeThread, long startSeq);
+
+    void finishAttachApplication(long startSeq, long timestampApplicationOnCreateNs);
 }

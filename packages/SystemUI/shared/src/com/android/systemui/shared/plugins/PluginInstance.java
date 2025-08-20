@@ -19,6 +19,7 @@ package com.android.systemui.shared.plugins;
 import android.app.LoadedApk;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -58,6 +59,14 @@ public class PluginInstance<T extends Plugin>
         implements PluginLifecycleManager, ProtectedPluginListener {
     private static final String TAG = "PluginInstance";
 
+    private static final String FAIL_FILE_FMT = "PluginFailure_%s";
+    private static final String FAIL_TIME = "FailureTime";
+    private static final String FAIL_MESSAGE = "ErrorMessage";
+    private static final String FAIL_STACK_FMT = "Stack[%d]";
+
+    private static final int FAIL_MAX_STACK = 20;
+    private static final long FAIL_TIMEOUT_MILLIS = 24 * 60 * 60 * 1000;
+
     private final Context mHostContext;
     private final PluginListener<T> mListener;
     private final ComponentName mComponentName;
@@ -75,20 +84,16 @@ public class PluginInstance<T extends Plugin>
             Context hostContext,
             PluginListener<T> listener,
             ComponentName componentName,
-            PluginFactory<T> pluginFactory,
-            @Nullable T plugin) {
+            PluginFactory<T> pluginFactory) {
         mHostContext = hostContext;
         mListener = listener;
         mComponentName = componentName;
         mPluginFactory = pluginFactory;
-        mPlugin = plugin;
         mTag = String.format("%s[%s]@%h", TAG, mComponentName.getShortClassName(), hashCode());
         mLogger = new Logger(mListener.getLogBuffer() != null ? mListener.getLogBuffer() :
                 new LogcatOnlyMessageBuffer(LogLevel.WARNING), mTag);
 
-        if (mPlugin != null) {
-            mPluginContext = mPluginFactory.createPluginContext();
-        }
+        loadFailure();
     }
 
     @Override
@@ -105,11 +110,48 @@ public class PluginInstance<T extends Plugin>
     public synchronized boolean onFail(String className, String methodName, Throwable failure) {
         PluginActionManager.logFmt(mLogger, LogLevel.ERROR,
                 "Failure from %s. Disabling Plugin.", mPlugin.toString(), null);
-
+        storeFailure(failure);
         mHasError = true;
         unloadPlugin();
         mListener.onPluginDetached(this);
         return true;
+    }
+
+    /** Persists failure to avoid boot looping if process recovery fails */
+    private synchronized void storeFailure(Throwable failure) {
+        SharedPreferences.Editor sharedPrefs = mHostContext.getSharedPreferences(
+                String.format(FAIL_FILE_FMT, mComponentName.getShortClassName()),
+                Context.MODE_PRIVATE).edit();
+
+        sharedPrefs.clear();
+        sharedPrefs.putLong(FAIL_TIME, System.currentTimeMillis());
+        sharedPrefs.putString(FAIL_MESSAGE, failure.getMessage());
+        for (int i = 0; i < failure.getStackTrace().length && i < FAIL_MAX_STACK; i++) {
+            String methodSignature = failure.getStackTrace()[i].toString();
+            sharedPrefs.putString(String.format(FAIL_STACK_FMT, i), methodSignature);
+        }
+        sharedPrefs.commit();
+    }
+
+    /** Loads a persisted failure if it's still within the timeout. */
+    private synchronized void loadFailure() {
+        SharedPreferences sharedPrefs = mHostContext.getSharedPreferences(
+                String.format(FAIL_FILE_FMT, mComponentName.getShortClassName()),
+                Context.MODE_PRIVATE);
+
+        // TODO(b/438515243): Disable in eng builds
+        // TODO(b/438515243): Check apk checksums for differences (systemui & plugin)
+        // If the failure occurred too long ago, we ignore it to check if it's still happening.
+        if (sharedPrefs.getLong(FAIL_TIME, 0) < System.currentTimeMillis() - FAIL_TIMEOUT_MILLIS) {
+            return;
+        }
+
+        // Log previous the failure so that it appears in debugging data
+        PluginActionManager.logFmt(mLogger, LogLevel.ERROR,
+                "Disabling Plugin: %s", mPlugin.toString(), null);
+        PluginActionManager.logFmt(mLogger, LogLevel.ERROR,
+                "Persisted Failure: %s", sharedPrefs.getString(FAIL_MESSAGE, "Unknown"), null);
+        mHasError = true;
     }
 
     /** Alerts listener and plugin that the plugin has been created. */
@@ -307,7 +349,7 @@ public class PluginInstance<T extends Plugin>
             PluginFactory<T> pluginFactory = new PluginFactory<T>(
                     hostContext, mInstanceFactory, pluginAppInfo, componentName,
                     mVersionChecker, pluginClass, mBaseClassLoader);
-            return new PluginInstance<T>(hostContext, listener, componentName, pluginFactory, null);
+            return new PluginInstance<T>(hostContext, listener, componentName, pluginFactory);
         }
 
         private boolean isPluginPackagePrivileged(String packageName) {

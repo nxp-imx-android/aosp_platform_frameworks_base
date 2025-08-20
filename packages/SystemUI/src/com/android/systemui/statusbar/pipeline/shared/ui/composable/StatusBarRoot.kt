@@ -69,6 +69,7 @@ import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.POPUP
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -131,6 +132,7 @@ constructor(
     private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
     @Named(POPUP) private val mediaHost: MediaHost,
+    private val mediaViewModelFactory: MediaViewModel.Factory,
     @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
     @DisplayAware private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
     @DisplayAware private val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory,
@@ -156,6 +158,7 @@ constructor(
                         eventAnimationInteractor = eventAnimationInteractor,
                         mediaHierarchyManager = mediaHierarchyManager,
                         mediaHost = mediaHost,
+                        mediaViewModelFactory = mediaViewModelFactory,
                         statusBarRegionSamplingViewModelFactory =
                             statusBarRegionSamplingViewModelFactory,
                         onViewCreated = andThen,
@@ -195,6 +198,7 @@ fun StatusBarRoot(
     eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     mediaHierarchyManager: MediaHierarchyManager,
     mediaHost: MediaHost,
+    mediaViewModelFactory: MediaViewModel.Factory,
     statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
     onViewCreated: (ViewGroup) -> Unit,
     modifier: Modifier = Modifier,
@@ -214,7 +218,7 @@ fun StatusBarRoot(
         rememberViewModel("AppHandleBounds") {
             statusBarViewModel.appHandlesViewModelFactory.create(displayId)
         }
-    lateinit var touchableExclusionRegionDisposableHandle: DisposableHandle
+    var touchableExclusionRegionDisposableHandle: DisposableHandle? = null
 
     if (StatusBarPopupChips.isEnabled) {
         with(mediaHost) {
@@ -235,6 +239,7 @@ fun StatusBarRoot(
             statusBarIconController = iconController,
             iconManagerFactory = tintedIconManagerFactory,
             mediaHierarchyManager = mediaHierarchyManager,
+            mediaViewModelFactory = mediaViewModelFactory,
             mediaHost = mediaHost,
             iconViewStore = iconViewStore,
         )
@@ -314,6 +319,7 @@ fun StatusBarRoot(
                             setContent {
                                 StatusBarPopupChipsContainer(
                                     chips = statusBarViewModel.popupChips,
+                                    mediaViewModelFactory = mediaViewModelFactory,
                                     mediaHost = mediaHost,
                                     onMediaControlPopupVisibilityChanged = { popupShowing ->
                                         mediaHierarchyManager.isMediaControlPopupShowing =
@@ -383,7 +389,7 @@ fun StatusBarRoot(
                 phoneStatusBarView
             },
             modifier = modifier,
-            onRelease = { touchableExclusionRegionDisposableHandle.dispose() },
+            onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )
     }
 }

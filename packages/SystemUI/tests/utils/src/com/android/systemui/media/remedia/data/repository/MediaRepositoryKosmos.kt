@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.util.time.systemClock
 
 val Kosmos.mediaRepository by
@@ -29,5 +30,6 @@ val Kosmos.mediaRepository by
             applicationScope = applicationCoroutineScope,
             backgroundDispatcher = testDispatcher,
             systemClock = systemClock,
+            secureSettings = fakeSettings,
         )
     }

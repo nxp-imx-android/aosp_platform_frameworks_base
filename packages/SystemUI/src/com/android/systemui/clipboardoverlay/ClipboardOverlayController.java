@@ -25,7 +25,6 @@ import static com.android.systemui.Flags.showClipboardIndication;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISSED_OTHER;
-import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_DISMISS_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_EDIT_TAPPED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_EXPANDED_FROM_MINIMIZED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_REMOTE_COPY_TAPPED;
@@ -536,11 +535,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         mView.reset();
         mTimeoutHandler.cancelTimeout();
         mClipboardLogger.reset();
-    }
-
-    @Override
-    public void onDismissButtonTapped() {
-        finish(CLIPBOARD_OVERLAY_DISMISS_TAPPED);
     }
 
     @Override
