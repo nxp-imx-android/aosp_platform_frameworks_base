@@ -3117,6 +3117,7 @@ package android.provider {
     field public static final String GLANCEABLE_HUB_ENABLED = "glanceable_hub_enabled";
     field public static final String IMMERSIVE_MODE_CONFIRMATIONS = "immersive_mode_confirmations";
     field public static final String LONG_PRESS_TIMEOUT = "long_press_timeout";
+    field public static final String MIRROR_BUILT_IN_DISPLAY = "mirror_built_in_display";
     field public static final String MULTI_PRESS_TIMEOUT = "multi_press_timeout";
     field public static final String NOTIFICATION_BADGING = "notification_badging";
     field public static final String NOTIFICATION_BUBBLES = "notification_bubbles";
