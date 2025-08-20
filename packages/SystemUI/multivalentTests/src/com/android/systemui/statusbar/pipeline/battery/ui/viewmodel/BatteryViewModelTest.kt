@@ -18,12 +18,8 @@ package com.android.systemui.statusbar.pipeline.battery.ui.viewmodel
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -33,7 +29,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@OptIn(ExperimentalMaterial3ExpressiveApi::class) // Required for bodyMediumEmphasized style
 class BatteryViewModelTest : SysuiTestCase() {
 
     @Test
@@ -74,38 +69,5 @@ class BatteryViewModelTest : SysuiTestCase() {
         val height = BatteryViewModel.getStatusBarBatteryHeight(context)
 
         assertThat(height.value).isEqualTo(26f)
-    }
-
-    @Test
-    @Composable
-    @DisableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_ICON_SIZE)
-    fun getStatusBarBatteryTextStyle_flagOff_scaleIsTwo_returnsDefautFontSize() {
-        overrideResource(R.dimen.status_bar_icon_scale_factor, 2.0f)
-
-        val baseFontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize
-        val actualTextStyle = BatteryViewModel.getStatusBarBatteryTextStyle(context)
-        assertThat(actualTextStyle.fontSize).isEqualTo(baseFontSize)
-    }
-
-    @Test
-    @Composable
-    @EnableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_ICON_SIZE)
-    fun getStatusBarBatteryTextStyle_scaleIsOne_returnsDefaultFontSize() {
-        overrideResource(R.dimen.status_bar_icon_scale_factor, 1.0f)
-
-        val baseFontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize
-        val actualTextStyle = BatteryViewModel.getStatusBarBatteryTextStyle(context)
-        assertThat(actualTextStyle.fontSize).isEqualTo(baseFontSize)
-    }
-
-    @Test
-    @Composable
-    @EnableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_ICON_SIZE)
-    fun getStatusBarBatteryTextStyle_scaleIsTwo_returnsScaledFontSize() {
-        overrideResource(R.dimen.status_bar_icon_scale_factor, 2.0f)
-
-        val baseFontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize
-        val actualTextStyle = BatteryViewModel.getStatusBarBatteryTextStyle(context)
-        assertThat(actualTextStyle.fontSize).isEqualTo(baseFontSize * 2)
     }
 }

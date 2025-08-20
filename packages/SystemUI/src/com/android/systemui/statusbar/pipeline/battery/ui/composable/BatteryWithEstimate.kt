@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -51,11 +52,6 @@ fun BatteryWithEstimate(
             BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
         }
 
-    val textStyle =
-        with(LocalDensity.current) {
-            BatteryViewModel.getStatusBarBatteryTextStyle(LocalContext.current)
-        }
-
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -73,7 +69,7 @@ fun BatteryWithEstimate(
                 Text(
                     text = it,
                     color = textColor,
-                    style = textStyle,
+                    style = MaterialTheme.typography.bodyMediumEmphasized,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee(iterations = 1),
                 )
