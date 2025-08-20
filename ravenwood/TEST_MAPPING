@@ -56,6 +56,18 @@
     }
   ],
   "ravenwood-presubmit": [
+// TODO(b/440069724) these tests didn't get to run on presubmit somehow
+//    {
+//      "name": "CarSystemUIRavenTests",
+//      "keywords": ["automotive_code_coverage"],
+//      "host": true
+//    },
+//   {
+//     "name": "CarLibHostUnitTest",
+//     "keywords": ["automotive_code_coverage"],
+//     "host": true
+//   },
+
     // AUTO-GENERATED-START
     // DO NOT MODIFY MANUALLY
     // Use scripts/update-test-mapping.sh to update it.
@@ -76,17 +88,7 @@
       "host": true
     },
     {
-      "name": "CarLibHostUnitTest",
-      "keywords": ["automotive_code_coverage"],
-      "host": true
-    },
-    {
       "name": "CarServiceHostUnitTest",
-      "keywords": ["automotive_code_coverage"],
-      "host": true
-    },
-    {
-      "name": "CarSystemUIRavenTests",
       "keywords": ["automotive_code_coverage"],
       "host": true
     },
