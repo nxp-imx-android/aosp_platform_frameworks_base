@@ -35,8 +35,6 @@ import android.window.ScreenCapture.ScreenCaptureParams.CaptureMode;
 import android.window.ScreenCapture.ScreenCaptureParams.ProtectedContentPolicy;
 import android.window.ScreenCapture.ScreenCaptureParams.SecureContentPolicy;
 
-import com.android.window.flags.Flags;
-
 import libcore.util.NativeAllocationRegistry;
 
 import java.util.concurrent.CountDownLatch;
@@ -160,7 +158,7 @@ public class ScreenCaptureInternal {
     public static ScreenshotHardwareBuffer captureLayers(LayerCaptureArgs captureArgs) {
         SynchronousScreenCaptureListener syncScreenCapture = createSyncCaptureListener();
         int status = nativeCaptureLayers(captureArgs, syncScreenCapture.mNativeObject,
-                Flags.syncScreenCapture());
+                /* sync */ true);
         if (status != 0) {
             return null;
         }
