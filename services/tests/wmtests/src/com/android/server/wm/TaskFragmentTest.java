@@ -1172,7 +1172,9 @@ public class TaskFragmentTest extends WindowTestsBase {
         final ActivityRecord appLeftBottom = taskFragmentLeft.getBottomMostActivity();
         final ActivityRecord appRightTop = taskFragmentRight.getTopMostActivity();
         appLeftTop.setVisibleRequested(true);
+        appLeftTop.setVisible(true);
         appRightTop.setVisibleRequested(true);
+        appRightTop.setVisible(true);
         final WindowState winLeftTop = createAppWindow(appLeftTop, "winLeftTop");
         final WindowState winLeftBottom = createAppWindow(appLeftBottom, "winLeftBottom");
         final WindowState winRightTop = createAppWindow(appRightTop, "winRightTop");
