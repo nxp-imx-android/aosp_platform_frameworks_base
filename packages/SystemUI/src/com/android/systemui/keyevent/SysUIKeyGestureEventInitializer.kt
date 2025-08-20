@@ -30,6 +30,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.statusbar.CommandQueue
 import com.android.window.flags.Flags.enableKeyGestureHandlerForSysui
@@ -49,6 +50,7 @@ constructor(
     private val inputManager: InputManager,
     private val commandQueue: CommandQueue,
     private val shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy,
+    private val screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor,
 ) : CoreStartable {
     override fun start() {
         registerKeyGestureEventHandlers()
@@ -74,7 +76,7 @@ constructor(
         inputManager.registerKeyGestureEventHandler(supportedGestures) { event, _ ->
             when (event.keyGestureType) {
                 KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT -> {
-                    // TODO(b/420714826) Launch pre-capture UI for partial screenshots.
+                    screenCaptureKeyboardShortcutInteractor.attemptPartialRegionScreenshot()
                 }
                 KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL -> {
                     shadeDisplayPolicy.onNotificationPanelKeyboardShortcut()

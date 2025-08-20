@@ -33,6 +33,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
@@ -57,6 +58,9 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @Mock private lateinit var inputManager: InputManager
     @Mock private lateinit var commandQueue: CommandQueue
     @Mock private lateinit var shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
+    @Mock
+    private lateinit var screenCaptureKeyboardShortcutInteractor:
+        ScreenCaptureKeyboardShortcutInteractor
     @Mock private lateinit var resources: Resources
     @Captor private lateinit var keyGestureEventsCaptor: ArgumentCaptor<List<Int>>
     @Captor
@@ -75,6 +79,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 inputManager,
                 commandQueue,
                 shadeDisplayPolicy,
+                screenCaptureKeyboardShortcutInteractor,
             )
     }
 
@@ -148,7 +153,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
-    fun handleKeyGestureEvent_eventTypeTakePartialScreenshot_opensScreenCaptureUi() {
+    fun handleKeyGestureEvent_eventTypeTakePartialScreenshot_callsScreenCaptureInteractor() {
         underTest.start()
         verify(inputManager)
             .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
@@ -160,7 +165,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
-        // TODO(b/420714826) Verify screen capture UI is launched.
+        verify(screenCaptureKeyboardShortcutInteractor).attemptPartialRegionScreenshot()
     }
 
     @Test
