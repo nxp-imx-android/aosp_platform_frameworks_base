@@ -240,6 +240,7 @@ import android.app.IApplicationStartInfoCompleteListener;
 import android.app.IApplicationThread;
 import android.app.IForegroundServiceObserver;
 import android.app.IInstrumentationWatcher;
+import android.app.INativeApplicationThread;
 import android.app.INotificationManager;
 import android.app.IProcessObserver;
 import android.app.IServiceConnection;
@@ -4911,6 +4912,24 @@ public class ActivityManagerService extends IActivityManager.Stub
             attachApplicationLocked(thread, callingPid, callingUid, startSeq);
             Binder.restoreCallingIdentity(origId);
         }
+    }
+
+    @Override
+    public final void attachNativeApplication(IBinder nativeThread, long startSeq) {
+        if (!android.os.Flags.nativeFrameworkPrototype()) {
+            throw new SecurityException("Unsupported application interface");
+        }
+        if (nativeThread == null) {
+            throw new SecurityException("Null application interface");
+        }
+        final INativeApplicationThread thread =
+                INativeApplicationThread.Stub.asInterface(nativeThread);
+        if (thread == null) {
+            throw new SecurityException("Invalid application interface");
+        }
+        NativeApplicationThreadWrapper wrapper = new NativeApplicationThreadWrapper(
+                thread, this, Binder.getCallingUid(), startSeq);
+        attachApplication(wrapper, startSeq);
     }
 
     private void finishAttachApplicationInner(long startSeq, int uid, int pid) {

@@ -15,10 +15,22 @@
 
 //! The crate providing the functionality to manage the native application process.
 
+use activitymanager_structured_aidl::aidl::android::app::IActivityManagerStructured::IActivityManagerStructured;
+use anyhow::{Context, Result};
+use binder::{BinderFeatures, ProcessState, Strong};
 use log::{info, LevelFilter};
+use native_application_thread_aidl::aidl::android::app::INativeApplicationThread::BnNativeApplicationThread;
 
 mod library_loader;
+mod native_activity_thread;
+mod native_application_thread;
 mod task;
+
+use crate::native_activity_thread::NativeActivityThread;
+use crate::native_application_thread::NativeApplicationThread;
+use crate::task::{run_thread_loop, Handler};
+
+static ACTIVITY_MANAGER_SERVICE_NAME: &str = "activity_structured";
 
 /// Start NativeActivityThread to manage the process.
 pub fn run_native_activity_thread(start_seq: i64) -> ! {
@@ -29,7 +41,33 @@ pub fn run_native_activity_thread(start_seq: i64) -> ! {
     );
     info!("Hello from the native activity thread! start_seq={start_seq}");
 
-    // TODO(b/402614577): Implement the ActivityThread logic.
+    // This must be done before creating any Binder client or server.
+    ProcessState::start_thread_pool();
 
-    panic!("Something wrong happened!");
+    let activity_manager = get_activity_manager_proxy().unwrap();
+
+    // Prepare the handler of INativeApplicationThread requests from the ActivityManager
+    let handler = Handler::new_on_current_thread(NativeActivityThread::new(
+        activity_manager.clone(),
+        start_seq,
+    ))
+    .unwrap();
+
+    let sender = handler.get_sender().unwrap();
+    let binder_node = BnNativeApplicationThread::new_binder(
+        NativeApplicationThread::new(sender),
+        BinderFeatures::default(),
+    );
+
+    // Notify the ActivityManager that this process is ready to be used for application.
+    activity_manager.attachNativeApplication(&binder_node.as_binder(), start_seq).unwrap();
+
+    // Start the main thread loop.
+    run_thread_loop().unwrap();
+
+    panic!("Shouldn't come here!");
+}
+
+fn get_activity_manager_proxy() -> Result<Strong<dyn IActivityManagerStructured>> {
+    binder::check_interface(ACTIVITY_MANAGER_SERVICE_NAME).context("Failed to find ActivityManager")
 }

@@ -184,6 +184,12 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
     int pendingConnectionImportance;   // To be filled in to ProcessRecord once it connects
 
     /**
+     * Proof of concept for native-only isolated processes. This should be using a more real
+     * manifest entry to declare services as such.
+     */
+    boolean mIsNativeIsolated; // is the service a native-only isolated service?
+
+    /**
      * The last time (in uptime timebase) a bind request was made with BIND_ALMOST_PERCEPTIBLE for
      * this service while on TOP.
      */
@@ -1120,6 +1126,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         sdkSandboxClientAppUid = 0;
         sdkSandboxClientAppPackage = null;
         inSharedIsolatedProcess = false;
+        mIsNativeIsolated = false;
     }
 
     public static ServiceRecord newEmptyInstanceForTest(ActivityManagerService ams) {
@@ -1166,6 +1173,13 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         // to post or update a notification, but that doesn't cover the time before the first
         // notification
         updateFgsHasNotificationPermission();
+
+        if (android.os.Flags.nativeFrameworkPrototype()) {
+            // TODO(b/431902161): Add a stable way to distinguish native services.
+            // TODO(b/431901625): Consider supporting non-isolated native services.
+            mIsNativeIsolated = name.getShortClassName().contains(".NativeService")
+                && ((sInfo.flags & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0);
+        }
     }
 
     public ServiceState getTracker() {
