@@ -18,6 +18,7 @@ package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Intent
+import android.window.WindowContainerToken
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.AmbiguousSource
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
@@ -32,6 +33,9 @@ interface WindowDecorationActions {
 
     /** Minimizes the task. */
     fun onMinimize(taskInfo: RunningTaskInfo)
+
+    /** Close the task */
+    fun onClose(taskId: Int, decoration: WindowDecorationWrapper, token: WindowContainerToken)
 
     /**
      * Moves task to immersive mode or exits immersive and restores task to previous size if task is
