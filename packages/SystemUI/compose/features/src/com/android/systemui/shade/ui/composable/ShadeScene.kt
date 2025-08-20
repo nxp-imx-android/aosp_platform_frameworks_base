@@ -46,10 +46,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -152,13 +154,15 @@ constructor(
             rememberViewModel("ShadeScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create()
             }
+        val isShadeBlurred = viewModel.isShadeBlurred
+        val shadeBlurRadius = with(LocalDensity.current) { viewModel.shadeBlurRadius.toDp() }
         ShadeScene(
             notificationStackScrollView.get(),
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
             jankMonitor = jankMonitor,
-            modifier = modifier,
+            modifier = modifier.thenIf(isShadeBlurred) { Modifier.blur(shadeBlurRadius) },
             shadeSession = shadeSession,
         )
     }
