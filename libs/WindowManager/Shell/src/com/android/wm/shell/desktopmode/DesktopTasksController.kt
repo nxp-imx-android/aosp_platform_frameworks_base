@@ -983,6 +983,10 @@ class DesktopTasksController(
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
+        // Preserve focus state on reconnect, regardless if focused task is restored or not.
+        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
+            focusTransitionObserver.globallyFocusedTaskId
+        )
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -1035,6 +1039,9 @@ class DesktopTasksController(
                         )
                     )
                 }
+            }
+            globallyFocusedTask?.let {
+                wct.reorder(it.token, /* onTop= */ true, /* includingParents= */ true)
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
             tilingReconnectHandler.activationBinder = transition
@@ -5800,7 +5807,6 @@ class DesktopTasksController(
                 ) {
                     // Inherit parent's bounds.
                     newWindowBounds.set(taskInfo.configuration.windowConfiguration.bounds)
-
                 } else {
                     newWindowBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
                 }
