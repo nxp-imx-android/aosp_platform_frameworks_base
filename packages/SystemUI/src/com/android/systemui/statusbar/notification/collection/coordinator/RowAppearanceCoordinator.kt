@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 import android.content.Context
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
@@ -42,6 +43,7 @@ constructor(
     private var mAssistantFeedbackController: AssistantFeedbackController,
     private var mSectionStyleProvider: SectionStyleProvider,
     private val notifCollection: NotifCollection,
+    private val notificationSettingsInteractor: NotificationSettingsInteractor,
 ) : Coordinator {
 
     private var entryToExpand: NotificationEntry? = null
@@ -103,6 +105,9 @@ constructor(
     }
 
     private fun onAfterRenderBundleEntry(entry: BundleEntry, controller: NotifRowController) {
-        controller.setSystemExpanded(numActiveBundles == 1 && entry.children.size == 1)
+        controller.setSystemExpanded(
+            (numActiveBundles == 1 && entry.children.size == 1) ||
+                notificationSettingsInteractor.shouldExpandBundles.value
+        )
     }
 }
