@@ -281,13 +281,15 @@ private fun ContentScope.QuickSettingsLayout(
             ),
     ) {
         if (isFullWidthShade()) {
-            VerticalSeparator()
+            VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
             QuickSettingsOverlayHeader(
                 viewModel = qsContainerViewModel.shadeHeaderViewModel,
                 modifier = Modifier.element(QuickSettingsShade.Elements.Header),
             )
 
-            VerticalSeparator()
+            VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
+        } else {
+            VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
         }
 
         val toolbarViewModel =
@@ -299,8 +301,7 @@ private fun ContentScope.QuickSettingsLayout(
             viewModel = toolbarViewModel,
         )
 
-        // TODO(b/428805936): Double check this padding.
-        VerticalSeparator()
+        VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
 
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
             Media(
@@ -312,7 +313,7 @@ private fun ContentScope.QuickSettingsLayout(
             )
 
             if (qsContainerViewModel.showMedia) {
-                VerticalSeparator()
+                VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
             }
 
             Box(
@@ -331,11 +332,10 @@ private fun ContentScope.QuickSettingsLayout(
                 )
             }
 
-            VerticalSeparator()
-
             if (volumeSliderViewModel != null) {
                 val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
 
+                VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
                 Box(
                     Modifier.systemGestureExclusionInShade(
                         enabled = { layoutState.transitionState is TransitionState.Idle }
@@ -380,28 +380,23 @@ private fun ContentScope.QuickSettingsLayout(
                         }
                     }
                 }
-
-                VerticalSeparator()
             }
 
-            GridAnchor()
-
-            // TODO(b/428805936): Double check this padding.
             VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
 
+            GridAnchor()
             TileGrid(
                 viewModel = qsContainerViewModel.tileGridViewModel,
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            // TODO(b/428805936): Double check this padding.
-            VerticalSeparator(QuickSettingsShade.Dimensions.Padding * 2)
+            VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
         }
     }
 }
 
 @Composable
-private fun VerticalSeparator(height: Dp = QuickSettingsShade.Dimensions.Padding) {
+private fun VerticalSeparator(height: Dp) {
     Spacer(Modifier.height(height = height))
 }
 
@@ -413,6 +408,8 @@ object QuickSettingsShade {
     }
 
     object Dimensions {
+        // This is used around the header and toolbar
+        val ShortPadding = 8.dp
         val Padding = 16.dp
         val ToolbarHeight = 48.dp
     }
