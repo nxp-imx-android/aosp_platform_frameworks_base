@@ -19,7 +19,7 @@ package android.companion.datatransfer.continuity;
 import android.companion.datatransfer.continuity.RemoteTask;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface IRemoteTaskListener {
     void onRemoteTasksChanged(in List<RemoteTask> remoteTasks);

@@ -22,7 +22,7 @@ import android.media.RouteDiscoveryPreference;
 import android.os.Bundle;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface IMediaRoute2ProviderService {
     // Note: When changing this file, match the order of methods below with

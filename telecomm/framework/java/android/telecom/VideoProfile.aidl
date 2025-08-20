@@ -18,7 +18,7 @@
 package android.telecom;
 
 /**
- * {@hide}
+ * @hide
  */
 parcelable VideoProfile;
 parcelable VideoProfile.CameraCapabilities;

@@ -28,7 +28,7 @@ import java.util.List;
  */
 @SystemApi
 public class ParcelableCallAnalytics implements Parcelable {
-    /** {@hide} */
+    /** @hide */
     public static final class VideoEvent implements Parcelable {
         public static final int SEND_LOCAL_SESSION_MODIFY_REQUEST = 0;
         public static final int SEND_LOCAL_SESSION_MODIFY_RESPONSE = 1;
@@ -197,7 +197,7 @@ public class ParcelableCallAnalytics implements Parcelable {
         public static final int FILTERING_COMPLETED_TIMING = 10;
         public static final int FILTERING_TIMED_OUT_TIMING = 11;
         public static final int DND_PRE_CALL_PRE_CHECK_TIMING = 12;
-        /** {@hide} */
+        /** @hide */
         public static final int START_CONNECTION_TO_REQUEST_DISCONNECT_TIMING = 12;
 
         public static final int INVALID = 999999;
@@ -388,17 +388,17 @@ public class ParcelableCallAnalytics implements Parcelable {
         out.writeInt(callSource);
     }
 
-    /** {@hide} */
+    /** @hide */
     public void setIsVideoCall(boolean isVideoCall) {
         this.isVideoCall = isVideoCall;
     }
 
-    /** {@hide} */
+    /** @hide */
     public void setVideoEvents(List<VideoEvent> videoEvents) {
         this.videoEvents = videoEvents;
     }
 
-    /** {@hide} */
+    /** @hide */
     public void setCallSource(int callSource) {
         this.callSource = callSource;
     }
@@ -451,17 +451,17 @@ public class ParcelableCallAnalytics implements Parcelable {
         return eventTimings;
     }
 
-    /** {@hide} */
+    /** @hide */
     public boolean isVideoCall() {
         return isVideoCall;
     }
 
-    /** {@hide} */
+    /** @hide */
     public List<VideoEvent> getVideoEvents() {
         return videoEvents;
     }
 
-    /** {@hide} */
+    /** @hide */
     public int getCallSource() {
         return callSource;
     }

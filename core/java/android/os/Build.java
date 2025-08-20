@@ -303,7 +303,7 @@ public class Build {
     public static final String[] SUPPORTED_64_BIT_ABIS =
             getStringList("ro.product.cpu.abilist64", ",");
 
-    /** {@hide} */
+    /** @hide */
     @TestApi
     public static boolean is64BitAbi(String abi) {
         return VMRuntime.is64BitAbi(abi);
@@ -1865,11 +1865,11 @@ public class Build {
         return IS_DEBUGGABLE;
     }
 
-    /** {@hide} */
+    /** @hide */
     public static final boolean IS_ENG = "eng".equals(TYPE);
-    /** {@hide} */
+    /** @hide */
     public static final boolean IS_USERDEBUG = "userdebug".equals(TYPE);
-    /** {@hide} */
+    /** @hide */
     public static final boolean IS_USER = "user".equals(TYPE);
 
     /**

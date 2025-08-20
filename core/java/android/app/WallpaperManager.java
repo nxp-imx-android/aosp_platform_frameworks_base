@@ -159,16 +159,16 @@ public class WallpaperManager {
     private static final @NonNull RectF LOCAL_COLOR_BOUNDS =
             new RectF(0, 0, 1, 1);
 
-    /** {@hide} */
+    /** @hide */
     private static final String PROP_WALLPAPER = "ro.config.wallpaper";
-    /** {@hide} */
+    /** @hide */
     private static final String PROP_LOCK_WALLPAPER = "ro.config.lock_wallpaper";
-    /** {@hide} */
+    /** @hide */
     private static final String PROP_WALLPAPER_COMPONENT = "ro.config.wallpaper_component";
-    /** {@hide} */
+    /** @hide */
     private static final String VALUE_CMF_COLOR =
             android.os.SystemProperties.get("ro.boot.hardware.color");
-    /** {@hide} */
+    /** @hide */
     private static final String WALLPAPER_CMF_PATH = "/wallpaper/image/";
 
     /**

@@ -9022,7 +9022,7 @@ public class AppOpsManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public void startWatchingActive(@NonNull int[] ops,
             @NonNull OnOpActiveChangedListener callback) {
@@ -9384,7 +9384,7 @@ public class AppOpsManager {
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @TestApi

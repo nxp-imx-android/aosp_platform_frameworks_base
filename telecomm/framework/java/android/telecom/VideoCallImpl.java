@@ -39,7 +39,7 @@ import java.util.NoSuchElementException;
  * {@link Connection.VideoProvider}, and direct callbacks from the
  * {@link Connection.VideoProvider} to the appropriate {@link VideoCall.Listener}.
  *
- * {@hide}
+ * @hide
  */
 public class VideoCallImpl extends VideoCall {
 

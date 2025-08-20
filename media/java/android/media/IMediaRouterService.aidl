@@ -31,7 +31,7 @@ import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.UserHandle;
 /**
- * {@hide}
+ * @hide
  */
 interface IMediaRouterService {
     //TODO: Merge or remove methods when media router 2 is done.

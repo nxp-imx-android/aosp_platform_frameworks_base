@@ -102,7 +102,7 @@ import android.telephony.UiccSlotMapping;
  * TelephonyManager class.  A few places are still using this directly.
  * Please clean them up if possible and use TelephonyManager instead.
  *
- * {@hide}
+ * @hide
  */
 interface ITelephony {
 

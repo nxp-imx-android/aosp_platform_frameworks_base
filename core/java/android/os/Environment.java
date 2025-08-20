@@ -75,7 +75,7 @@ public class Environment {
     private static final String ENV_SYSTEM_EXT_ROOT = "SYSTEM_EXT_ROOT";
     private static final String ENV_APEX_ROOT = "APEX_ROOT";
 
-    /** {@hide} */
+    /** @hide */
     public static final String DIR_ANDROID = "Android";
     private static final String DIR_DATA = "data";
     private static final String DIR_MEDIA = "media";
@@ -87,7 +87,7 @@ public class Environment {
      * The folder name prefix for the user credential protected data directory. This is exposed for
      * use in string path caching for {@link ApplicationInfo} objects, and should not be accessed
      * directly otherwise. Prefer {@link #getDataUserCeDirectory(String, int)}.
-     * {@hide}
+     * @hide
      */
     public static final String DIR_USER_CE = "user";
 
@@ -95,11 +95,11 @@ public class Environment {
      * The folder name prefix for the user device protected data directory. This is exposed for use
      * in string path caching for {@link ApplicationInfo} objects, and should not be accessed
      * directly otherwise. Prefer {@link #getDataUserDeDirectory(String, int)}.
-     * {@hide}
+     * @hide
      */
     public static final String DIR_USER_DE = "user_de";
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public static final String DIRECTORY_ANDROID = DIR_ANDROID;
 
@@ -217,14 +217,14 @@ public class Environment {
         initForCurrentUser();
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static void initForCurrentUser() {
         final int userId = UserHandle.myUserId();
         sCurrentUser = new UserEnvironment(userId);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static class UserEnvironment {
         private final int mUserId;
 
@@ -433,7 +433,7 @@ public class Environment {
         return DIR_ANDROID_DATA_PATH;
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataDirectory(String volumeUuid) {
         if (TextUtils.isEmpty(volumeUuid)) {
             return DIR_ANDROID_DATA;
@@ -451,12 +451,12 @@ public class Environment {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getExpandDirectory() {
         return DIR_ANDROID_EXPAND;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static File getDataSystemDirectory() {
         return newFilePrep(getDataDirectory(), "system");
@@ -464,7 +464,7 @@ public class Environment {
 
     /**
      * Returns the base directory for per-user system directory, device encrypted.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     @FlaggedApi(android.crashrecovery.flags.Flags.FLAG_ENABLE_CRASHRECOVERY)
@@ -473,7 +473,7 @@ public class Environment {
     }
 
     /** Use {@link #getDataSystemDeviceProtectedDirectory()} instead.
-     * {@hide}
+     * @hide
      */
     @Deprecated
     public static @NonNull File getDataSystemDeDirectory() {
@@ -482,7 +482,7 @@ public class Environment {
 
     /**
      * Returns the base directory for per-user system directory, credential encrypted.
-     * {@hide}
+     * @hide
      */
     public static File getDataSystemCeDirectory() {
         return buildPathPrep(getDataDirectory(), "system_ce");
@@ -528,44 +528,44 @@ public class Environment {
         return buildPathPrep(getDataDirectory(), "system_de", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataMiscDirectory() {
         return newFilePrep(getDataDirectory(), "misc");
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataMiscCeDirectory() {
         return buildPathPrep(getDataDirectory(), "misc_ce");
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataMiscCeDirectory(int userId) {
         return buildPathPrep(getDataDirectory(), "misc_ce", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     private static File getDataMiscCeDirectory(String volumeUuid, int userId) {
         return buildPathPrep(getDataDirectory(volumeUuid), "misc_ce", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataMiscCeSharedSdkSandboxDirectory(String volumeUuid, int userId,
             String packageName) {
         return buildPathPrep(getDataMiscCeDirectory(volumeUuid, userId), "sdksandbox",
                 packageName, "shared");
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataMiscDeDirectory(int userId) {
         return buildPathPrep(getDataDirectory(), "misc_de", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     private static File getDataMiscDeDirectory(String volumeUuid, int userId) {
         return buildPathPrep(getDataDirectory(volumeUuid), "misc_de", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataMiscDeSharedSdkSandboxDirectory(String volumeUuid, int userId,
             String packageName) {
         return buildPathPrep(getDataMiscDeDirectory(volumeUuid, userId), "sdksandbox",
@@ -576,47 +576,47 @@ public class Environment {
         return buildPathPrep(getDataDirectory(), "misc", "profiles", "cur", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataVendorCeDirectory(int userId) {
         return buildPathPrep(getDataDirectory(), "vendor_ce", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataVendorDeDirectory(int userId) {
         return buildPathPrep(getDataDirectory(), "vendor_de", String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataRefProfilesDePackageDirectory(String packageName) {
         return buildPathPrep(getDataDirectory(), "misc", "profiles", "ref", packageName);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataProfilesDePackageDirectory(int userId, String packageName) {
         return buildPathPrep(getDataProfilesDeDirectory(userId), packageName);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataAppDirectory(String volumeUuid) {
         return newFilePrep(getDataDirectory(volumeUuid), "app");
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataStagingDirectory(String volumeUuid) {
         return newFilePrep(getDataDirectory(volumeUuid), "app-staging");
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataUserCeDirectory(String volumeUuid) {
         return newFilePrep(getDataDirectory(volumeUuid), DIR_USER_CE);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataUserCeDirectory(String volumeUuid, int userId) {
         return newFilePrep(getDataUserCeDirectory(volumeUuid), String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public static File getDataUserCePackageDirectory(@Nullable String volumeUuid, int userId,
             @NonNull String packageName) {
@@ -648,17 +648,17 @@ public class Environment {
         return getDataUserCePackageDirectory(volumeUuid, user.getIdentifier(), packageName);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataUserDeDirectory(String volumeUuid) {
         return newFilePrep(getDataDirectory(volumeUuid), DIR_USER_DE);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static File getDataUserDeDirectory(String volumeUuid, int userId) {
         return newFilePrep(getDataUserDeDirectory(volumeUuid), String.valueOf(userId));
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public static File getDataUserDePackageDirectory(@Nullable String volumeUuid, int userId,
             @NonNull String packageName) {
@@ -695,7 +695,7 @@ public class Environment {
      * <p>This directory may contain pre-loaded content such as
      * {@link #getDataPreloadsDemoDirectory() demo videos} and
      * {@link #getDataPreloadsAppsDirectory() APK files} .
-     * {@hide}
+     * @hide
      */
     public static File getDataPreloadsDirectory() {
         return newFilePrep(getDataDirectory(), "preloads");
@@ -703,7 +703,7 @@ public class Environment {
 
     /**
      * @see #getDataPreloadsDirectory()
-     * {@hide}
+     * @hide
      */
     public static File getDataPreloadsDemoDirectory() {
         return newFilePrep(getDataPreloadsDirectory(), "demo");
@@ -711,7 +711,7 @@ public class Environment {
 
     /**
      * @see #getDataPreloadsDirectory()
-     * {@hide}
+     * @hide
      */
     public static File getDataPreloadsAppsDirectory() {
         return newFilePrep(getDataPreloadsDirectory(), "apps");
@@ -719,7 +719,7 @@ public class Environment {
 
     /**
      * @see #getDataPreloadsDirectory()
-     * {@hide}
+     * @hide
      */
     public static File getDataPreloadsMediaDirectory() {
         return newFilePrep(getDataPreloadsDirectory(), "media");
@@ -728,7 +728,7 @@ public class Environment {
     /**
      * Returns location of preloaded cache directory for package name
      * @see #getDataPreloadsDirectory()
-     * {@hide}
+     * @hide
      */
     public static File getDataPreloadsFileCacheDirectory(String packageName) {
         return newFilePrep(getDataPreloadsFileCacheDirectory(), packageName);
@@ -737,7 +737,7 @@ public class Environment {
     /**
      * Returns location of preloaded cache directory.
      * @see #getDataPreloadsDirectory()
-     * {@hide}
+     * @hide
      */
     public static File getDataPreloadsFileCacheDirectory() {
         return newFilePrep(getDataPreloadsDirectory(), "file_cache");
@@ -745,7 +745,7 @@ public class Environment {
 
     /**
      * Returns location of packages cache directory.
-     * {@hide}
+     * @hide
      */
     public static File getPackageCacheDirectory() {
         return newFilePrep(getDataSystemDirectory(), "package_cache");
@@ -846,14 +846,14 @@ public class Environment {
         return sCurrentUser.getExternalDirs()[0];
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     @RavenwoodThrow(reason = "not supporting env var based API for now")
     public static File getLegacyExternalStorageDirectory() {
         return newFilePrep(getEnvPath(ENV_EXTERNAL_STORAGE));
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     @RavenwoodThrow(reason = "not supporting env var based API for now")
     public static File getLegacyExternalStorageObbDirectory() {
@@ -1045,21 +1045,21 @@ public class Environment {
         return false;
     }
 
-    /** {@hide} */ public static final int HAS_MUSIC = 1 << 0;
-    /** {@hide} */ public static final int HAS_PODCASTS = 1 << 1;
-    /** {@hide} */ public static final int HAS_RINGTONES = 1 << 2;
-    /** {@hide} */ public static final int HAS_ALARMS = 1 << 3;
-    /** {@hide} */ public static final int HAS_NOTIFICATIONS = 1 << 4;
-    /** {@hide} */ public static final int HAS_PICTURES = 1 << 5;
-    /** {@hide} */ public static final int HAS_MOVIES = 1 << 6;
-    /** {@hide} */ public static final int HAS_DOWNLOADS = 1 << 7;
-    /** {@hide} */ public static final int HAS_DCIM = 1 << 8;
-    /** {@hide} */ public static final int HAS_DOCUMENTS = 1 << 9;
-    /** {@hide} */ public static final int HAS_AUDIOBOOKS = 1 << 10;
-    /** {@hide} */ public static final int HAS_RECORDINGS = 1 << 11;
+    /** @hide */ public static final int HAS_MUSIC = 1 << 0;
+    /** @hide */ public static final int HAS_PODCASTS = 1 << 1;
+    /** @hide */ public static final int HAS_RINGTONES = 1 << 2;
+    /** @hide */ public static final int HAS_ALARMS = 1 << 3;
+    /** @hide */ public static final int HAS_NOTIFICATIONS = 1 << 4;
+    /** @hide */ public static final int HAS_PICTURES = 1 << 5;
+    /** @hide */ public static final int HAS_MOVIES = 1 << 6;
+    /** @hide */ public static final int HAS_DOWNLOADS = 1 << 7;
+    /** @hide */ public static final int HAS_DCIM = 1 << 8;
+    /** @hide */ public static final int HAS_DOCUMENTS = 1 << 9;
+    /** @hide */ public static final int HAS_AUDIOBOOKS = 1 << 10;
+    /** @hide */ public static final int HAS_RECORDINGS = 1 << 11;
 
-    /** {@hide} */ public static final int HAS_ANDROID = 1 << 16;
-    /** {@hide} */ public static final int HAS_OTHER = 1 << 17;
+    /** @hide */ public static final int HAS_ANDROID = 1 << 16;
+    /** @hide */ public static final int HAS_OTHER = 1 << 17;
 
     /**
      * Classify the content types present on the given external storage device.
@@ -1620,7 +1620,7 @@ public class Environment {
         return prep(path == null ? defaultPath : path);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void setUserRequired(boolean userRequired) {
         sUserRequired = userRequired;
     }

@@ -17,6 +17,6 @@
 package android.telecom;
 
 /**
- * {@hide}
+ * @hide
   */
 parcelable PhoneAccount;

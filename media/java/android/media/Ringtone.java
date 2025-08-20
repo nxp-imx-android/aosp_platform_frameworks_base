@@ -113,7 +113,7 @@ public class Ringtone {
     private VibrationEffect mVibrationEffect;
     private boolean mIsVibrating;
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public Ringtone(Context context, boolean allowRemote) {
         mContext = context;
@@ -525,7 +525,7 @@ public class Ringtone {
         return mVibrationEffect;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public Uri getUri() {
         return mUri;

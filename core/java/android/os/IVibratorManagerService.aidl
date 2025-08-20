@@ -24,7 +24,7 @@ import android.os.VibratorInfo;
 import android.os.vibrator.IVibrationSession;
 import android.os.vibrator.IVibrationSessionCallback;
 
-/** {@hide} */
+/** @hide */
 interface IVibratorManagerService {
     int[] getVibratorIds();
     int getCapabilities();

@@ -1573,7 +1573,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
      * @param uid The uid of the app
      * @param amt Adjustment value -- lmkd allows -1000 to +1000
      *
-     * {@hide}
+     * @hide
      */
     public static void setOomAdj(int pid, int uid, int amt) {
         // This indicates that the process is not started yet and so no need to proceed further.
@@ -1609,7 +1609,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
      *
      * @param apps App list to adjust their respective oom score.
      *
-     * {@hide}
+     * @hide
      */
     public static void batchSetOomAdj(ArrayList<ProcessRecord> apps) {
         final int totalApps = apps.size();
@@ -1642,7 +1642,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     }
 
     /*
-     * {@hide}
+     * @hide
      */
     public static final void remove(int pid) {
         // This indicates that the process is not started yet and so no need to proceed further.
@@ -1656,7 +1656,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     }
 
     /*
-     * {@hide}
+     * @hide
      */
     public static final Integer getLmkdKillCount(int min_oom_adj, int max_oom_adj) {
         ByteBuffer buf = ByteBuffer.allocate(4 * 3);
@@ -1707,7 +1707,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static void startPsiMonitoringAfterBoot() {
         ByteBuffer buf = ByteBuffer.allocate(4);

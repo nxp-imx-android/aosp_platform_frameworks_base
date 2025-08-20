@@ -57,7 +57,7 @@ public final class ContextParams {
     private final @NonNull Set<String> mRenouncedPermissions;
     private final boolean mShouldRegisterAttributionSource;
 
-    /** {@hide} */
+    /** @hide */
     public static final ContextParams EMPTY = new ContextParams.Builder().build();
 
     private ContextParams(@Nullable String attributionTag,

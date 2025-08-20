@@ -22,7 +22,7 @@ import android.app.supervision.SupervisionRecoveryInfo;
 
 /**
  * Internal IPC interface to the supervision service.
- * {@hide}
+ * @hide
  */
 interface ISupervisionManager {
     Intent createConfirmSupervisionCredentialsIntent(int userId);

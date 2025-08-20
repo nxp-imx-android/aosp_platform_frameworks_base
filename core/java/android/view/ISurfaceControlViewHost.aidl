@@ -25,7 +25,7 @@ import android.window.InputTransferToken;
 
 /**
  * API from content embedder back to embedded content in SurfaceControlViewHost
- * {@hide}
+ * @hide
  */
 interface ISurfaceControlViewHost {
     /**

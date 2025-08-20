@@ -3624,7 +3624,7 @@ public class ApplicationPackageManager extends PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     private static class MoveCallbackDelegate extends IPackageMoveObserver.Stub implements
             Handler.Callback {
         private static final int MSG_CREATED = 1;

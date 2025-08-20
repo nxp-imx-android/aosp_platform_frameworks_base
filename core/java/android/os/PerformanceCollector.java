@@ -56,7 +56,7 @@ import java.util.ArrayList;
  * Structure of results output is up to implementor of
  * {@link PerformanceResultsWriter }.
  *
- * {@hide} Pending approval for public API.
+ * @hide Pending approval for public API.
  */
 public class PerformanceCollector {
 

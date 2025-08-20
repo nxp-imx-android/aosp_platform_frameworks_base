@@ -27,7 +27,7 @@ import android.telecom.DisconnectCause;
 import java.util.List;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface ICallEventCallback {
     // publicly exposed. Client should override

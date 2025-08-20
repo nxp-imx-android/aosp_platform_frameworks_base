@@ -19,7 +19,7 @@ package android.companion.datatransfer.continuity;
 import android.companion.datatransfer.continuity.RemoteTask;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface IHandoffRequestCallback {
     void onHandoffRequestFinished(in int associationId, in int remoteTaskId, in int resultCode);

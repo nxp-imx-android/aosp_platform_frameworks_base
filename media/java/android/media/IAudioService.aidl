@@ -73,7 +73,7 @@ import android.os.UserHandle;
 import android.view.KeyEvent;
 
 /**
- * {@hide}
+ * @hide
  */
 interface IAudioService {
     // C++ and Java methods below.

@@ -138,7 +138,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * Class containing helper methods for the PackageManagerService.
  *
- * {@hide}
+ * @hide
  */
 public class PackageManagerServiceUtils {
     private static final long MAX_CRITICAL_INFO_DUMP_SIZE = 3 * 1000 * 1000; // 3MB

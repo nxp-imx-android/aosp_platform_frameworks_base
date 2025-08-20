@@ -36,7 +36,7 @@ public class SerialManager {
     private final ISerialManager mService;
 
     /**
-     * {@hide}
+     * @hide
      */
     public SerialManager(Context context, ISerialManager service) {
         mContext = context;

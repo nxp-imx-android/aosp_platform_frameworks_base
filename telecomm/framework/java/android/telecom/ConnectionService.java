@@ -3735,12 +3735,12 @@ public abstract class ConnectionService extends Service {
         return mIdByConference.containsKey(conference);
     }
 
-    /** {@hide} */
+    /** @hide */
     void addRemoteConference(RemoteConference remoteConference) {
         onRemoteConferenceAdded(remoteConference);
     }
 
-    /** {@hide} */
+    /** @hide */
     void addRemoteExistingConnection(RemoteConnection remoteConnection) {
         onRemoteExistingConnectionAdded(remoteConnection);
     }
@@ -3791,7 +3791,7 @@ public abstract class ConnectionService extends Service {
         onConnectionAdded(connection);
     }
 
-    /** {@hide} */
+    /** @hide */
     protected void removeConnection(Connection connection) {
         connection.unsetConnectionService(this);
         connection.removeConnectionListener(mConnectionListener);

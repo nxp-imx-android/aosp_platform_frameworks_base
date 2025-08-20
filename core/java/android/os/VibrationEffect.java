@@ -145,17 +145,17 @@ public abstract class VibrationEffect implements Parcelable {
     @TestApi
     public static final int EFFECT_TEXTURE_TICK = 21;
 
-    /** {@hide} */
+    /** @hide */
     // Internally this maps to the HAL constant EffectStrength::LIGHT
     @TestApi
     public static final int EFFECT_STRENGTH_LIGHT = 0;
 
-    /** {@hide} */
+    /** @hide */
     // Internally this maps to the HAL constant EffectStrength::MEDIUM
     @TestApi
     public static final int EFFECT_STRENGTH_MEDIUM = 1;
 
-    /** {@hide} */
+    /** @hide */
     // Internally this maps to the HAL constant EffectStrength::STRONG
     @TestApi
     public static final int EFFECT_STRENGTH_STRONG = 2;

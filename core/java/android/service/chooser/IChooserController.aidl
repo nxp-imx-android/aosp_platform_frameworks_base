@@ -18,7 +18,7 @@ package android.service.chooser;
 
 import android.content.Intent;
 
-/** {@hide} */
+/** @hide */
 interface IChooserController {
     oneway void updateIntent(in Intent intent);
     oneway void setMinimized(in boolean isMinimized);

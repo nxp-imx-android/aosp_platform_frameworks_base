@@ -143,10 +143,10 @@ import java.util.function.Function;
 public abstract class PackageManager {
     private static final String TAG = "PackageManager";
 
-    /** {@hide} */
+    /** @hide */
     public static final boolean APPLY_DEFAULT_TO_DEVICE_PROTECTED_STORAGE = true;
 
-    /** {@hide} */
+    /** @hide */
     public static final boolean ENABLE_SHARED_UID_MIGRATION = true;
 
     /**
@@ -1749,7 +1749,7 @@ public abstract class PackageManager {
      */
     public static final int INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS = 0x00000100;
 
-    /** {@hide} */
+    /** @hide */
     public static final int INSTALL_FORCE_VOLUME_UUID = 0x00000200;
 
     /**
@@ -2529,7 +2529,7 @@ public abstract class PackageManager {
     @UnsupportedAppUsage
     public static final int NO_NATIVE_LIBRARIES = -114;
 
-    /** {@hide} */
+    /** @hide */
     public static final int INSTALL_FAILED_ABORTED = -115;
 
     /**
@@ -2854,7 +2854,7 @@ public abstract class PackageManager {
     @SystemApi
     public static final int DELETE_FAILED_OWNER_BLOCKED = -4;
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     public static final int DELETE_FAILED_ABORTED = -5;
 
@@ -2862,7 +2862,7 @@ public abstract class PackageManager {
      * Deletion failed return code: this is passed to the
      * {@link IPackageDeleteObserver} if the system failed to delete the package
      * because the packge is a shared library used by other installed packages.
-     * {@hide} */
+     * @hide */
     public static final int DELETE_FAILED_USED_SHARED_LIBRARY = -6;
 
     /**
@@ -2977,7 +2977,7 @@ public abstract class PackageManager {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int MOVE_EXTERNAL_MEDIA = 0x00000002;
 
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_MOVE_ID = "android.content.pm.extra.MOVE_ID";
 
     /**
@@ -3341,7 +3341,7 @@ public abstract class PackageManager {
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_CONTEXT_HUB = "android.hardware.context_hub";
 
-    /** {@hide} */
+    /** @hide */
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_CTS = "android.software.cts";
 
@@ -4569,13 +4569,13 @@ public abstract class PackageManager {
     public static final String FEATURE_SECURELY_REMOVES_USERS
             = "android.software.securely_removes_users";
 
-    /** {@hide} */
+    /** @hide */
     @TestApi
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_FILE_BASED_ENCRYPTION
             = "android.software.file_based_encryption";
 
-    /** {@hide} */
+    /** @hide */
     @TestApi
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_ADOPTABLE_STORAGE
@@ -5729,7 +5729,7 @@ public abstract class PackageManager {
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.R)
     public static final long FILTER_APPLICATION_QUERY = 135549675L;
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = {"SYSTEM_APP_STATE_"}, value = {
             SYSTEM_APP_STATE_HIDDEN_UNTIL_INSTALLED_HIDDEN,
             SYSTEM_APP_STATE_HIDDEN_UNTIL_INSTALLED_VISIBLE,
@@ -5851,7 +5851,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public int getUserId() {
         return UserHandle.myUserId();
     }
@@ -6364,7 +6364,7 @@ public abstract class PackageManager {
     /**
      * Use {@link #getApplicationInfoAsUser(String, ApplicationInfoFlags, int)} when long flags are
      * needed.
-     * {@hide}
+     * @hide
      */
     @SuppressWarnings("HiddenAbstractMethod")
     @NonNull
@@ -6372,7 +6372,7 @@ public abstract class PackageManager {
     public abstract ApplicationInfo getApplicationInfoAsUser(@NonNull String packageName,
             int flags, @UserIdInt int userId) throws NameNotFoundException;
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public ApplicationInfo getApplicationInfoAsUser(@NonNull String packageName,
             @NonNull ApplicationInfoFlags flags, @UserIdInt int userId)
@@ -9607,7 +9607,7 @@ public abstract class PackageManager {
         freeStorageAndNotify(null, freeStorageSize, observer);
     }
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
     public abstract void freeStorageAndNotify(@Nullable String volumeUuid, long freeStorageSize,
@@ -9641,7 +9641,7 @@ public abstract class PackageManager {
         freeStorage(null, freeStorageSize, pi);
     }
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
     public abstract void freeStorage(@Nullable String volumeUuid, long freeStorageSize,
@@ -10562,54 +10562,54 @@ public abstract class PackageManager {
     public abstract void setApplicationCategoryHint(@NonNull String packageName,
             @ApplicationInfo.Category int categoryHint);
 
-    /** {@hide} */
+    /** @hide */
     public static boolean isMoveStatusFinished(int status) {
         return (status < 0 || status > 100);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static abstract class MoveCallback {
         public void onCreated(int moveId, Bundle extras) {}
         public abstract void onStatusChanged(int moveId, int status, long estMillis);
     }
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
     public abstract int getMoveStatus(int moveId);
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
     public abstract void registerMoveCallback(@NonNull MoveCallback callback,
             @NonNull Handler handler);
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
     public abstract void unregisterMoveCallback(@NonNull MoveCallback callback);
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public abstract int movePackage(@NonNull String packageName, @NonNull VolumeInfo vol);
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public abstract @Nullable VolumeInfo getPackageCurrentVolume(@NonNull ApplicationInfo app);
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @NonNull
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public abstract List<VolumeInfo> getPackageCandidateVolumes(
             @NonNull ApplicationInfo app);
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     public abstract int movePrimaryStorage(@NonNull VolumeInfo vol);
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     public abstract @Nullable VolumeInfo getPrimaryStorageCurrentVolume();
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     public abstract @NonNull List<VolumeInfo> getPrimaryStorageCandidateVolumes();
 
@@ -10712,12 +10712,12 @@ public abstract class PackageManager {
     public abstract Drawable loadUnbadgedItemIcon(@NonNull PackageItemInfo itemInfo,
             @Nullable ApplicationInfo appInfo);
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
     public abstract boolean isPackageAvailable(@NonNull String packageName);
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static String installStatusToString(int status, @Nullable String msg) {
@@ -10729,7 +10729,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     @UnsupportedAppUsage
     public static String installStatusToString(int status) {
@@ -10790,7 +10790,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static int installStatusToPublicStatus(int status) {
         switch (status) {
             case INSTALL_SUCCEEDED: return PackageInstaller.STATUS_SUCCESS;
@@ -10844,7 +10844,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public static String deleteStatusToString(int status, @Nullable String msg) {
         final String str = deleteStatusToString(status);
@@ -10855,7 +10855,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     @UnsupportedAppUsage
     public static String deleteStatusToString(int status) {
@@ -10872,7 +10872,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static int deleteStatusToPublicStatus(int status) {
         switch (status) {
             case DELETE_SUCCEEDED: return PackageInstaller.STATUS_SUCCESS;
@@ -10887,7 +10887,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public static String permissionFlagToString(int flag) {
         switch (flag) {
@@ -10912,7 +10912,7 @@ public abstract class PackageManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static class LegacyPackageDeleteObserver extends PackageDeleteObserver {
         private final IPackageDeleteObserver mLegacy;
 

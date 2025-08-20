@@ -157,7 +157,7 @@ public class PackageInstaller {
     private static final String ACTION_WAIT_INSTALL_CONSTRAINTS =
             "android.content.pm.action.WAIT_INSTALL_CONSTRAINTS";
 
-    /** {@hide} */
+    /** @hide */
     public static final boolean ENABLE_REVOCABLE_FD =
             SystemProperties.getBoolean("fw.revocable_fd", false);
 
@@ -332,7 +332,7 @@ public class PackageInstaller {
     public static final String EXTRA_INSTALL_CONSTRAINTS_RESULT =
             "android.content.pm.extra.INSTALL_CONSTRAINTS_RESULT";
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public static final String EXTRA_PACKAGE_NAMES = "android.content.pm.extra.PACKAGE_NAMES";
 
@@ -344,7 +344,7 @@ public class PackageInstaller {
      */
     @SystemApi
     public static final String EXTRA_LEGACY_STATUS = "android.content.pm.extra.LEGACY_STATUS";
-    /** {@hide} */
+    /** @hide */
     public static final String EXTRA_LEGACY_BUNDLE = "android.content.pm.extra.LEGACY_BUNDLE";
     /**
      * The callback to execute once an uninstall is completed (used for both successful and
@@ -371,7 +371,7 @@ public class PackageInstaller {
      * See the individual types documentation for details.
      *
      * @see Intent#getIntExtra(String, int)
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final String EXTRA_DATA_LOADER_TYPE = "android.content.pm.extra.DATA_LOADER_TYPE";
@@ -529,7 +529,7 @@ public class PackageInstaller {
      * Caller should make sure DataLoader is able to prepare image and reinitiate the operation.
      *
      * @see #EXTRA_SESSION_ID
-     * {@hide}
+     * @hide
      */
     public static final int STATUS_PENDING_STREAMING = -2;
 
@@ -643,7 +643,7 @@ public class PackageInstaller {
      * Default value, non-streaming installation session.
      *
      * @see #EXTRA_DATA_LOADER_TYPE
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int DATA_LOADER_TYPE_NONE = DataLoaderType.NONE;
@@ -652,7 +652,7 @@ public class PackageInstaller {
      * Streaming installation using data loader.
      *
      * @see #EXTRA_DATA_LOADER_TYPE
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int DATA_LOADER_TYPE_STREAMING = DataLoaderType.STREAMING;
@@ -661,7 +661,7 @@ public class PackageInstaller {
      * Streaming installation using Incremental FileSystem.
      *
      * @see #EXTRA_DATA_LOADER_TYPE
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int DATA_LOADER_TYPE_INCREMENTAL = DataLoaderType.INCREMENTAL;
@@ -670,7 +670,7 @@ public class PackageInstaller {
      * Target location for the file in installation session is /data/app/<packageName>-<id>.
      * This is the intended location for APKs.
      * Requires permission to install packages.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int LOCATION_DATA_APP = InstallationFileLocation.DATA_APP;
@@ -678,7 +678,7 @@ public class PackageInstaller {
     /**
      * Target location for the file in installation session is
      * /data/media/<userid>/Android/obb/<packageName>. This is the intended location for OBBs.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int LOCATION_MEDIA_OBB = InstallationFileLocation.MEDIA_OBB;
@@ -688,7 +688,7 @@ public class PackageInstaller {
      * /data/media/<userid>/Android/data/<packageName>.
      * This is the intended location for application data.
      * Can only be used by an app itself running under specific user.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     public static final int LOCATION_MEDIA_DATA = InstallationFileLocation.MEDIA_DATA;
@@ -1017,7 +1017,7 @@ public class PackageInstaller {
 
     private final ArrayList<SessionCallbackDelegate> mDelegates = new ArrayList<>();
 
-    /** {@hide} */
+    /** @hide */
     public PackageInstaller(IPackageInstaller installer,
             String installerPackageName, String installerAttributionTag, int userId) {
         Objects.requireNonNull(installer, "installer cannot be null");
@@ -1419,7 +1419,7 @@ public class PackageInstaller {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.INSTALL_PACKAGES)
     public void setPermissionsResult(int sessionId, boolean accepted) {
@@ -1653,7 +1653,7 @@ public class PackageInstaller {
         public abstract void onFinished(int sessionId, boolean success);
     }
 
-    /** {@hide} */
+    /** @hide */
     static class SessionCallbackDelegate extends IPackageInstallerCallback.Stub {
         private static final int MSG_SESSION_CREATED = 1;
         private static final int MSG_SESSION_BADGING_CHANGED = 2;
@@ -1700,7 +1700,7 @@ public class PackageInstaller {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public void addSessionCallback(@NonNull SessionCallback callback) {
         registerSessionCallback(callback);
@@ -1714,7 +1714,7 @@ public class PackageInstaller {
         registerSessionCallback(callback, new Handler());
     }
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public void addSessionCallback(@NonNull SessionCallback callback, @NonNull Handler handler) {
         registerSessionCallback(callback, handler);
@@ -1740,7 +1740,7 @@ public class PackageInstaller {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @Deprecated
     public void removeSessionCallback(@NonNull SessionCallback callback) {
         unregisterSessionCallback(callback);
@@ -1888,15 +1888,15 @@ public class PackageInstaller {
      * session will result in all child sessions being committed atomically.
      */
     public static class Session implements Closeable {
-        /** {@hide} */
+        /** @hide */
         protected final IPackageInstallerSession mSession;
 
-        /** {@hide} */
+        /** @hide */
         public Session(IPackageInstallerSession session) {
             mSession = session;
         }
 
-        /** {@hide} */
+        /** @hide */
         @Deprecated
         public void setProgress(float progress) {
             setStagingProgress(progress);
@@ -1919,7 +1919,7 @@ public class PackageInstaller {
             }
         }
 
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage
         public void addProgress(float progress) {
             try {
@@ -1978,7 +1978,7 @@ public class PackageInstaller {
             }
         }
 
-        /** {@hide} */
+        /** @hide */
         public void write(@NonNull String name, long offsetBytes, long lengthBytes,
                 @NonNull ParcelFileDescriptor fd) throws IOException {
             try {
@@ -2106,7 +2106,7 @@ public class PackageInstaller {
 
         /**
          * @return data loader params or null if the session is not using one.
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @RequiresPermission(android.Manifest.permission.USE_INSTALLER_V2)
@@ -2147,7 +2147,7 @@ public class PackageInstaller {
          *
          * @see android.content.pm.InstallationFile
          *
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @RequiresPermission(android.Manifest.permission.USE_INSTALLER_V2)
@@ -2171,7 +2171,7 @@ public class PackageInstaller {
          * @throws SecurityException if called after the session has been
          *             sealed or abandoned
          * @throws IllegalStateException if called for non-DataLoader session
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @RequiresPermission(android.Manifest.permission.USE_INSTALLER_V2)
@@ -2976,7 +2976,7 @@ public class PackageInstaller {
     public static class PackageParsingException extends Exception {
         private final int mErrorCode;
 
-        /** {@hide} */
+        /** @hide */
         public PackageParsingException(int errorCode, @Nullable String detailedMessage) {
             super(detailedMessage);
             mErrorCode = errorCode;
@@ -2992,7 +2992,7 @@ public class PackageInstaller {
      */
     public static class SessionParams implements Parcelable {
 
-        /** {@hide} */
+        /** @hide */
         public static final int MODE_INVALID = -1;
 
         /**
@@ -3017,7 +3017,7 @@ public class PackageInstaller {
          */
         public static final @NonNull Set<String> RESTRICTED_PERMISSIONS_ALL = new ArraySet<>();
 
-        /** {@hide} */
+        /** @hide */
         public static final int UID_UNKNOWN = -1;
 
         /**
@@ -3088,96 +3088,96 @@ public class PackageInstaller {
          */
         public static final int PERMISSION_STATE_DENIED = 2;
 
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public int mode = MODE_INVALID;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage
         public int installFlags = PackageManager.INSTALL_ALL_WHITELIST_RESTRICTED_PERMISSIONS;
-        /** {@hide} */
+        /** @hide */
         public int installLocation = PackageInfo.INSTALL_LOCATION_INTERNAL_ONLY;
-        /** {@hide} */
+        /** @hide */
         public @InstallReason int installReason = PackageManager.INSTALL_REASON_UNKNOWN;
         /**
-         * {@hide}
+         * @hide
          *
          * This flag indicates which installation scenario best describes this session.  The system
          * may use this value when making decisions about how to handle the installation, such as
          * prioritizing system health or user experience.
          */
         public @InstallScenario int installScenario = PackageManager.INSTALL_SCENARIO_DEFAULT;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public long sizeBytes = -1;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public String appPackageName;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public Bitmap appIcon;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public String appLabel;
-        /** {@hide} */
+        /** @hide */
         public long appIconLastModified = -1;
-        /** {@hide} */
+        /** @hide */
         public Uri originatingUri;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public int originatingUid = UID_UNKNOWN;
-        /** {@hide} */
+        /** @hide */
         public Uri referrerUri;
-        /** {@hide} */
+        /** @hide */
         public String abiOverride;
-        /** {@hide} */
+        /** @hide */
         public String volumeUuid;
-        /** {@hide} */
+        /** @hide */
         public List<String> whitelistedRestrictedPermissions;
-        /** {@hide} */
+        /** @hide */
         public int autoRevokePermissionsMode = MODE_DEFAULT;
-        /** {@hide} */
+        /** @hide */
         public String installerPackageName;
-        /** {@hide} */
+        /** @hide */
         public boolean isMultiPackage;
-        /** {@hide} */
+        /** @hide */
         public int packageSource = PACKAGE_SOURCE_UNSPECIFIED;
-        /** {@hide} */
+        /** @hide */
         public boolean isStaged;
-        /** {@hide} */
+        /** @hide */
         public long requiredInstalledVersionCode = PackageManager.VERSION_CODE_HIGHEST;
-        /** {@hide} */
+        /** @hide */
         public DataLoaderParams dataLoaderParams;
-        /** {@hide} */
+        /** @hide */
         public int rollbackDataPolicy = PackageManager.ROLLBACK_DATA_POLICY_RESTORE;
         /** @hide */
         public long rollbackLifetimeMillis = 0;
-        /** {@hide} */
+        /** @hide */
         public int rollbackImpactLevel = PackageManager.ROLLBACK_USER_IMPACT_LOW;
-        /** {@hide} */
+        /** @hide */
         public boolean forceQueryableOverride;
-        /** {@hide} */
+        /** @hide */
         public int requireUserAction = USER_ACTION_UNSPECIFIED;
-        /** {@hide} */
+        /** @hide */
         public boolean applicationEnabledSettingPersistent = false;
-        /** {@hide} */
+        /** @hide */
         public int developmentInstallFlags = 0;
-        /** {@hide} */
+        /** @hide */
         public int unarchiveId = -1;
-        /** {@hide} */
+        /** @hide */
         public @Nullable String dexoptCompilerFilter = null;
-        /** {@hide} */
+        /** @hide */
         public boolean forceVerification;
-        /** {@hide} */
+        /** @hide */
         public boolean isAutoInstallDependenciesEnabled = true;
-        /** {@hide} */
+        /** @hide */
         @Nullable
         public PersistableBundle extensionParams;
 
         private final ArrayMap<String, Integer> mPermissionStates;
 
-        /** {@hide} */
+        /** @hide */
         public static final int MAX_URI_LENGTH = 2048;
-        /** {@hide} */
+        /** @hide */
         public static final int MAX_PERMISSION_STATES_SIZE = 16384;
 
         /**
@@ -3192,7 +3192,7 @@ public class PackageInstaller {
             mPermissionStates = new ArrayMap<>();
         }
 
-        /** {@hide} */
+        /** @hide */
         public SessionParams(Parcel source) {
             mode = source.readInt();
             installFlags = source.readInt();
@@ -3236,7 +3236,7 @@ public class PackageInstaller {
             extensionParams = source.readPersistableBundle();
         }
 
-        /** {@hide} */
+        /** @hide */
         public SessionParams copy() {
             SessionParams ret = new SessionParams(mode);
             ret.installFlags = installFlags;
@@ -3662,7 +3662,7 @@ public class PackageInstaller {
 
         /**
          * @deprecated use {@link #setRequestDowngrade(boolean)}.
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @Deprecated
@@ -3670,7 +3670,7 @@ public class PackageInstaller {
             setRequestDowngrade(allowDowngrade);
         }
 
-        /** {@hide} */
+        /** @hide */
         @SystemApi
         public void setRequestDowngrade(boolean requestDowngrade) {
             if (requestDowngrade) {
@@ -3693,7 +3693,7 @@ public class PackageInstaller {
             requiredInstalledVersionCode = versionCode;
         }
 
-        /** {@hide} */
+        /** @hide */
         public void setInstallFlagsForcePermissionPrompt() {
             installFlags |= PackageManager.INSTALL_FORCE_PERMISSION_PROMPT;
         }
@@ -3717,7 +3717,7 @@ public class PackageInstaller {
             }
         }
 
-        /** {@hide} */
+        /** @hide */
         @SystemApi
         public void setInstallAsInstantApp(boolean isInstantApp) {
             if (isInstantApp) {
@@ -3732,7 +3732,7 @@ public class PackageInstaller {
         /**
          * Sets the install as a virtual preload. Will only have effect when called
          * by the verifier.
-         * {@hide}
+         * @hide
          */
         @SystemApi
         public void setInstallAsVirtualPreload() {
@@ -3755,7 +3755,7 @@ public class PackageInstaller {
             this.installReason = installReason;
         }
 
-        /** {@hide} */
+        /** @hide */
         @SystemApi
         @RequiresPermission(android.Manifest.permission.ALLOCATE_AGGRESSIVE)
         public void setAllocateAggressive(boolean allocateAggressive) {
@@ -3813,7 +3813,7 @@ public class PackageInstaller {
          * <p>If the parent session is staged or has rollback enabled, all children sessions
          * must have the same properties.
          *
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @RequiresPermission(Manifest.permission.INSTALL_PACKAGES)
@@ -3824,7 +3824,7 @@ public class PackageInstaller {
         /**
          * Set this session to be installing an APEX package.
          *
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @RequiresPermission(Manifest.permission.INSTALL_PACKAGES)
@@ -3844,7 +3844,7 @@ public class PackageInstaller {
          *
          * @see android.service.dataloader.DataLoaderService.DataLoader
          *
-         * {@hide}
+         * @hide
          */
         @SystemApi
         @RequiresPermission(allOf = {
@@ -3856,7 +3856,7 @@ public class PackageInstaller {
 
         /**
          *
-         * {@hide}
+         * @hide
          */
         public void setForceQueryable() {
             this.forceQueryableOverride = true;
@@ -4018,7 +4018,7 @@ public class PackageInstaller {
 
         /**
          * Used by adb installations to force enable the verification for this install.
-         * {@hide}
+         * @hide
          */
         public void setForceVerification() {
             this.forceVerification = true;
@@ -4055,7 +4055,7 @@ public class PackageInstaller {
             this.extensionParams = extensionParams;
         }
 
-        /** {@hide} */
+        /** @hide */
         public void dump(IndentingPrintWriter pw) {
             pw.printPair("mode", mode);
             pw.printHexPair("installFlags", installFlags);
@@ -4167,7 +4167,7 @@ public class PackageInstaller {
          * A session ID that does not exist or is invalid.
          */
         public static final int INVALID_ID = -1;
-        /** {@hide} */
+        /** @hide */
         private static final int[] NO_SESSIONS = {};
 
         /**
@@ -4240,113 +4240,113 @@ public class PackageInstaller {
             }
         }
 
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public int sessionId;
-        /** {@hide} */
+        /** @hide */
         public int userId;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public String installerPackageName;
-        /** {@hide} */
+        /** @hide */
         public String installerAttributionTag;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public String resolvedBaseCodePath;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public float progress;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public boolean sealed;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public boolean active;
 
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public int mode;
-        /** {@hide} */
+        /** @hide */
         public @InstallReason int installReason;
-        /** {@hide} */
+        /** @hide */
         public @InstallScenario int installScenario;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public long sizeBytes;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public String appPackageName;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public Bitmap appIcon;
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
         public CharSequence appLabel;
 
-        /** {@hide} */
+        /** @hide */
         public int installLocation;
-        /** {@hide} */
+        /** @hide */
         public Uri originatingUri;
-        /** {@hide} */
+        /** @hide */
         public int originatingUid;
-        /** {@hide} */
+        /** @hide */
         public Uri referrerUri;
-        /** {@hide} */
+        /** @hide */
         public String[] grantedRuntimePermissions;
-        /** {@hide}*/
+        /** @hide*/
         public List<String> whitelistedRestrictedPermissions;
-        /** {@hide}*/
+        /** @hide*/
         public int autoRevokePermissionsMode = MODE_DEFAULT;
-        /** {@hide} */
+        /** @hide */
         public int installFlags;
-        /** {@hide} */
+        /** @hide */
         public boolean isMultiPackage;
-        /** {@hide} */
+        /** @hide */
         public boolean isStaged;
-        /** {@hide} */
+        /** @hide */
         public boolean forceQueryable;
-        /** {@hide} */
+        /** @hide */
         public int parentSessionId = INVALID_ID;
-        /** {@hide} */
+        /** @hide */
         public int[] childSessionIds = NO_SESSIONS;
 
-        /** {@hide} */
+        /** @hide */
         public boolean isSessionApplied;
-        /** {@hide} */
+        /** @hide */
         public boolean isSessionReady;
-        /** {@hide} */
+        /** @hide */
         public boolean isSessionFailed;
         private int mSessionErrorCode;
         private String mSessionErrorMessage;
 
-        /** {@hide} */
+        /** @hide */
         public boolean isAutoInstallingDependenciesEnabled;
 
-        /** {@hide} */
+        /** @hide */
         public boolean isCommitted;
 
-        /** {@hide} */
+        /** @hide */
         public long createdMillis;
 
-        /** {@hide} */
+        /** @hide */
         public long updatedMillis;
 
-        /** {@hide} */
+        /** @hide */
         public int rollbackDataPolicy;
 
         /** @hide */
         public long rollbackLifetimeMillis;
 
-        /** {@hide} */
+        /** @hide */
         public int rollbackImpactLevel;
 
-        /** {@hide} */
+        /** @hide */
         public int requireUserAction;
 
-        /** {@hide} */
+        /** @hide */
         public int packageSource = PACKAGE_SOURCE_UNSPECIFIED;
 
-        /** {@hide} */
+        /** @hide */
         public int installerUid;
 
         /** @hide */
@@ -4358,12 +4358,12 @@ public class PackageInstaller {
         /** @hide */
         public int pendingUserActionReason;
 
-        /** {@hide} */
+        /** @hide */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public SessionInfo() {
         }
 
-        /** {@hide} */
+        /** @hide */
         public SessionInfo(Parcel source) {
             sessionId = source.readInt();
             userId = source.readInt();
@@ -4496,7 +4496,7 @@ public class PackageInstaller {
             return installReason;
         }
 
-        /** {@hide} */
+        /** @hide */
         @Deprecated
         public boolean isOpen() {
             return isActive();
@@ -4756,7 +4756,7 @@ public class PackageInstaller {
         }
 
 
-        /** {@hide} */
+        /** @hide */
         @Deprecated
         public @Nullable Intent getDetailsIntent() {
             return createDetailsIntent();
@@ -4798,7 +4798,7 @@ public class PackageInstaller {
 
         /**
          * Returns true if this session is marked as forceQueryable
-         * {@hide}
+         * @hide
          */
         public boolean isForceQueryable() {
             return forceQueryable;
@@ -4903,7 +4903,7 @@ public class PackageInstaller {
             return mSessionErrorMessage;
         }
 
-        /** {@hide} */
+        /** @hide */
         public void setSessionErrorCode(int errorCode, String errorMessage) {
             mSessionErrorCode = errorCode;
             mSessionErrorMessage = errorMessage;

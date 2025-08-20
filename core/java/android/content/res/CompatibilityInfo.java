@@ -45,7 +45,7 @@ import java.util.Objects;
  * CompatibilityInfo class keeps the information about the screen compatibility mode that the
  * application is running under.
  *
- *  {@hide}
+ * @hide
  */
 @RavenwoodKeepWholeClass
 public class CompatibilityInfo implements Parcelable {

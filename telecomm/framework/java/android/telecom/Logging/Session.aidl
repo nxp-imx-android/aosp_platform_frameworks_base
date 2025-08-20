@@ -17,6 +17,6 @@
 package android.telecom.Logging;
 
 /**
- * {@hide}
+ * @hide
  */
 parcelable Session.Info;

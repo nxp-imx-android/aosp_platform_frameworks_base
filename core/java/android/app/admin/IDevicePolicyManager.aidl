@@ -62,7 +62,7 @@ import java.util.List;
 
 /**
  * Internal IPC interface to the device policy service.
- * {@hide}
+ * @hide
  */
 interface IDevicePolicyManager {
     void setPasswordQuality(in ComponentName who, int quality, boolean parent);

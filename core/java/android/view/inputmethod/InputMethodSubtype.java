@@ -76,7 +76,7 @@ public final class InputMethodSubtype implements Parcelable {
     // TODO: remove this
     private static final String EXTRA_KEY_UNTRANSLATABLE_STRING_IN_SUBTYPE_NAME =
             "UntranslatableReplacementStringInSubtypeName";
-    /** {@hide} */
+    /** @hide */
     public static final int SUBTYPE_ID_NONE = 0;
 
     private static final String SUBTYPE_MODE_KEYBOARD = "keyboard";

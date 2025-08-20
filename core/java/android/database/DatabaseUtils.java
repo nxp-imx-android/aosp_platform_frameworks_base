@@ -202,7 +202,7 @@ public class DatabaseUtils {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static long executeInsert(@NonNull SQLiteDatabase db, @NonNull String sql,
             @Nullable Object[] bindArgs) throws SQLException {
         try (SQLiteStatement st = db.compileStatement(sql)) {
@@ -211,7 +211,7 @@ public class DatabaseUtils {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static int executeUpdateDelete(@NonNull SQLiteDatabase db, @NonNull String sql,
             @Nullable Object[] bindArgs) throws SQLException {
         try (SQLiteStatement st = db.compileStatement(sql)) {
@@ -220,7 +220,7 @@ public class DatabaseUtils {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     private static void bindArgs(@NonNull SQLiteStatement st, @Nullable Object[] bindArgs) {
         if (bindArgs == null) return;
 
@@ -1208,7 +1208,7 @@ public class DatabaseUtils {
         private SQLiteStatement mPreparedStatement = null;
 
         /**
-         * {@hide}
+         * @hide
          *
          * These are the columns returned by sqlite's "PRAGMA
          * table_info(...)" command that we depend on.

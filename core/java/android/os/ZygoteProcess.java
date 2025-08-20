@@ -67,7 +67,7 @@ import java.util.UUID;
  * for the sockets opened to the zygotes and for starting processes on behalf of the
  * {@link android.os.Process} class.
  *
- * {@hide}
+ * @hide
  */
 public class ZygoteProcess {
 

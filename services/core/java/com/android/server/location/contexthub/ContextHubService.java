@@ -117,7 +117,7 @@ public class ContextHubService extends IContextHubService.Stub {
 
     /**
      * Constants describing an async event from the Context Hub.
-     * {@hide}
+     * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = {"CONTEXT_HUB_EVENT_"}, value = {

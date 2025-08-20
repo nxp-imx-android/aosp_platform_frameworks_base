@@ -378,7 +378,7 @@ public abstract class SensorManager {
 
 
     /**
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public SensorManager() {

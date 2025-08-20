@@ -185,7 +185,7 @@ public abstract class DocumentsProvider extends ContentProvider {
         super.attachInfo(context, info);
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     public void attachInfoForTesting(Context context, ProviderInfo info) {
         registerAuthority(info.authority);
@@ -223,14 +223,14 @@ public abstract class DocumentsProvider extends ContentProvider {
         return false;
     }
 
-    /** {@hide} */
+    /** @hide */
     private void enforceTreeForExtraUris(Bundle extras) {
         enforceTree(extras.getParcelable(DocumentsContract.EXTRA_URI, android.net.Uri.class));
         enforceTree(extras.getParcelable(DocumentsContract.EXTRA_PARENT_URI, android.net.Uri.class));
         enforceTree(extras.getParcelable(DocumentsContract.EXTRA_TARGET_URI, android.net.Uri.class));
     }
 
-    /** {@hide} */
+    /** @hide */
     private void enforceTree(@Nullable Uri documentUri) {
         if (documentUri != null && isTreeUri(documentUri)) {
             final String parent = getTreeDocumentId(documentUri);
@@ -685,7 +685,7 @@ public abstract class DocumentsProvider extends ContentProvider {
                 parentDocumentId, projection, getSortClause(queryArgs));
     }
 
-    /** {@hide} */
+    /** @hide */
     @SuppressWarnings("unused")
     public Cursor queryChildDocumentsForManage(
             String parentDocumentId, @Nullable String[] projection, @Nullable String sortOrder)

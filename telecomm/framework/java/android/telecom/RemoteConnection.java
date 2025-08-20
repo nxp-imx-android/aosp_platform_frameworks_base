@@ -1285,12 +1285,12 @@ public final class RemoteConnection {
         return info.ownerInfo;
     }
 
-    /** {@hide} */
+    /** @hide */
     String getId() {
         return mConnectionId;
     }
 
-    /** {@hide} */
+    /** @hide */
     IConnectionService getConnectionService() {
         return mConnectionService;
     }

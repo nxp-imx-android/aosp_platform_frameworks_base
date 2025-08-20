@@ -1103,7 +1103,7 @@ public abstract class Context {
      *
      * @return A ID that is unique in the process
      *
-     * {@hide}
+     * @hide
      */
     public int getNextAutofillId() {
         if (sLastAutofillId == View.LAST_APP_AUTOFILL_ID - 1) {
@@ -5330,9 +5330,9 @@ public abstract class Context {
      * @see android.app.usage.NetworkStatsManager
      */
     public static final String NETWORK_STATS_SERVICE = "netstats";
-    /** {@hide} */
+    /** @hide */
     public static final String NETWORK_POLICY_SERVICE = "netpolicy";
-    /** {@hide} */
+    /** @hide */
     public static final String NETWORK_WATCHLIST_SERVICE = "network_watchlist";
 
     /**

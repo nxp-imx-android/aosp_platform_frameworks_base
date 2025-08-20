@@ -21,7 +21,7 @@ import android.security.talisman.TalismanIdentitySet;
 
 /**
  * Interface for the TalismanManagerService.
- * {@hide}
+ * @hide
  */
 interface ITalismanManager {
     Talisman acquireVerifiedDeviceTalisman();

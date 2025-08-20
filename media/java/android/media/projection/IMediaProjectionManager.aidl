@@ -26,7 +26,7 @@ import android.media.projection.StopReason;
 import android.os.IBinder;
 import android.view.ContentRecordingSession;
 
-/** {@hide} */
+/** @hide */
 interface IMediaProjectionManager {
     /**
      * Intent extra indicating if user must review access to the consent token already granted.

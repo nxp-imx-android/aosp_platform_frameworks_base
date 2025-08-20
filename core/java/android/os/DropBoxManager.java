@@ -301,7 +301,7 @@ public class DropBoxManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public DropBoxManager(Context context, IDropBoxManagerService service) {
         mContext = context;
         mService = service;

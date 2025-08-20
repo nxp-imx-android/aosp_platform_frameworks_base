@@ -928,7 +928,7 @@ public final class Call {
         @FlaggedApi(Flags.FLAG_CALL_DETAILS_ID_CHANGES)
         public @NonNull String getId() { return mTelecomCallId; }
 
-        /** {@hide} */
+        /** @hide */
         @TestApi
         public String getTelecomCallId() {
             return mTelecomCallId;
@@ -1202,7 +1202,7 @@ public final class Call {
                     mAssociatedUser);
         }
 
-        /** {@hide} */
+        /** @hide */
         public Details(
                 @CallState int state,
                 String telecomCallId,
@@ -1250,7 +1250,7 @@ public final class Call {
             mAssociatedUser = originatingUser;
         }
 
-        /** {@hide} */
+        /** @hide */
         public static Details createFromParcelableCall(ParcelableCall parcelableCall) {
             return new Details(
                     parcelableCall.getState(),
@@ -2546,7 +2546,7 @@ public final class Call {
         unregisterCallback(listener);
     }
 
-    /** {@hide} */
+    /** @hide */
     Call(Phone phone, String telecomCallId, InCallAdapter inCallAdapter, String callingPackage,
          int targetSdkVersion) {
         mPhone = phone;
@@ -2560,7 +2560,7 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     Call(Phone phone, String telecomCallId, InCallAdapter inCallAdapter, int state,
             String callingPackage, int targetSdkVersion) {
         mPhone = phone;
@@ -2574,12 +2574,12 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final String internalGetCallId() {
         return mTelecomCallId;
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalUpdate(ParcelableCall parcelableCall, Map<String, Call> callIdMap) {
 
         // First, we update the internal state as far as possible before firing any updates.
@@ -2732,13 +2732,13 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalSetPostDialWait(String remaining) {
         mRemainingPostDialSequence = remaining;
         firePostDialWait(mRemainingPostDialSequence);
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalSetDisconnected() {
         if (mState != Call.STATE_DISCONNECTED) {
             mState = Call.STATE_DISCONNECTED;
@@ -2773,12 +2773,12 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnConnectionEvent(String event, Bundle extras) {
         fireOnConnectionEvent(event, extras);
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnRttUpgradeRequest(final int requestId) {
         for (CallbackRecord<Callback> record : mCallbackRecords) {
             final Call call = this;
@@ -2796,7 +2796,7 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnHandoverFailed(int error) {
         for (CallbackRecord<Callback> record : mCallbackRecords) {
             final Call call = this;
@@ -2805,7 +2805,7 @@ public final class Call {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     final void internalOnHandoverComplete() {
         for (CallbackRecord<Callback> record : mCallbackRecords) {
             final Call call = this;

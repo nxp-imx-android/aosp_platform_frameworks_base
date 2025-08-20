@@ -24,7 +24,7 @@ import com.android.server.pm.Installer.InstallerException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/** {@hide} */
+/** @hide */
 public class PackageManagerException extends Exception {
     public static final int INTERNAL_ERROR_NATIVE_LIBRARY_COPY = -1;
     public static final int INTERNAL_ERROR_MOVE = -2;

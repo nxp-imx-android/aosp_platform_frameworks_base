@@ -33,7 +33,7 @@ import com.android.internal.os.IResultReceiver;
 /**
  * Mediator between apps being auto-filled and auto-fill service implementations.
  *
- * {@hide}
+ * @hide
  */
 oneway interface IAutoFillManager {
     // Returns flags: FLAG_ADD_CLIENT_ENABLED | FLAG_ADD_CLIENT_DEBUG | FLAG_ADD_CLIENT_VERBOSE

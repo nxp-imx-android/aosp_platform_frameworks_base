@@ -1576,12 +1576,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         return mPreapprovalRequested.get();
     }
 
-    /** {@hide} */
+    /** @hide */
     boolean isCommitted() {
         return mCommitted.get();
     }
 
-    /** {@hide} */
+    /** @hide */
     boolean isDestroyed() {
         synchronized (mLock) {
             return mDestroyed;
@@ -6401,35 +6401,35 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         mCallback.onSessionChanged(this);
     }
 
-    /** {@hide} */
+    /** @hide */
     boolean isSessionReady() {
         synchronized (mLock) {
             return mSessionReady;
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     boolean isSessionApplied() {
         synchronized (mLock) {
             return mSessionApplied;
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     boolean isSessionFailed() {
         synchronized (mLock) {
             return mSessionFailed;
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     int getSessionErrorCode() {
         synchronized (mLock) {
             return mSessionErrorCode;
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     String getSessionErrorMessage() {
         synchronized (mLock) {
             return mSessionErrorMessage;

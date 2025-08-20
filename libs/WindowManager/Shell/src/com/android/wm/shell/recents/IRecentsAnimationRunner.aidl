@@ -28,7 +28,7 @@ import com.android.wm.shell.recents.IRecentsAnimationController;
  * Interface that is used to callback from window manager to the process that runs a recents
  * animation to start or cancel it.
  *
- * {@hide}
+ * @hide
  */
 oneway interface IRecentsAnimationRunner {
 

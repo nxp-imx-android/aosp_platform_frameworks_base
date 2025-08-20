@@ -34,7 +34,7 @@ public final class StreamingCallAdapter {
     private final IStreamingCallAdapter mAdapter;
 
     /**
-     * {@hide}
+     * @hide
      */
     public StreamingCallAdapter(IStreamingCallAdapter adapter) {
         mAdapter = adapter;

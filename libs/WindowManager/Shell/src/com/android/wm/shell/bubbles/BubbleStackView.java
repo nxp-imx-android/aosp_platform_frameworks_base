@@ -198,7 +198,7 @@ public class BubbleStackView extends FrameLayout
     /**
      * Interface to synchronize {@link View} state and the screen.
      *
-     * {@hide}
+     * @hide
      */
     public interface SurfaceSynchronizer {
         /**
