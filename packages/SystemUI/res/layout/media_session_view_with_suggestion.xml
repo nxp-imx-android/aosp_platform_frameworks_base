@@ -158,11 +158,11 @@
             android:maxHeight="@dimen/min_clickable_item_size"
             android:background="@drawable/qs_media_bordered_button"
             android:orientation="horizontal"
-            android:visibility="gone"
-            android:contentDescription="@string/quick_settings_media_device_label">
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/device_suggestion_icon"
+                android:importantForAccessibility="no"
                 android:layout_width="@dimen/qs_seamless_icon_size"
                 android:layout_height="@dimen/qs_seamless_icon_size"
                 android:layout_gravity="center_vertical"
