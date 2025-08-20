@@ -84,6 +84,11 @@ public class PowerManagerFlags {
             Flags::partialSleepWakelocks
     );
 
+    private final FlagState mSeparateTimeoutsFlicker = new FlagState(
+            Flags.FLAG_SEPARATE_TIMEOUTS_FLICKER,
+            Flags::separateTimeoutsFlicker
+    );
+
     /** Returns whether early-screen-timeout-detector is enabled on not. */
     public boolean isEarlyScreenTimeoutDetectorEnabled() {
         return mEarlyScreenTimeoutDetectorFlagState.isEnabled();
@@ -121,6 +126,13 @@ public class PowerManagerFlags {
      */
     public boolean isMoveWscLoggingToNotifierEnabled() {
         return mMoveWscLoggingToNotifier.isEnabled();
+    }
+
+    /**
+     * @return {@code true} if the flag for the flicker when timing out bugfix is enabled
+     */
+    public boolean isSeparateTimeoutsFlickerEnabled() {
+        return mSeparateTimeoutsFlicker.isEnabled();
     }
 
     /**
@@ -182,6 +194,7 @@ public class PowerManagerFlags {
         pw.println(" " + mForceDisableWakelocks);
         pw.println(" " + mEnableAppWakelockDataSource);
         pw.println(" " + mPartialSleepWakelocks);
+        pw.println(" " + mSeparateTimeoutsFlicker);
     }
 
     private static class FlagState {
