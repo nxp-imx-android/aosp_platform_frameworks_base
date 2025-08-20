@@ -181,10 +181,6 @@
       "host": true
     },
     {
-      "name": "InternalArrayUtilsTest",
-      "host": true
-    },
-    {
       "name": "InternalTestsRavenwood",
       "host": true
     },
