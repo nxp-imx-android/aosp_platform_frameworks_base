@@ -31,11 +31,6 @@
         <option name="screen-always-on" value="on" />
     </target_preparer>
 
-    <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
-        <option name="cleanup-apks" value="true" />
-        <option name="test-file-name" value="StructuredConcurrencyPerfTests.apk" />
-    </target_preparer>
-
     <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
         <!-- perf-setup.sh is pre-installed on eng and userdebug builds -->
         <option name="run-command" value="perf-setup.sh" />
@@ -69,23 +64,4 @@
         <option name="strict-include-metric-filter" value="(perfetto_mt|time_nanos|allocation_count)_.*" />
     </metric_post_processor>
 
-    <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
-        <option name="package" value="com.android.app.concurrent.benchmark" />
-        <option name="runner" value="androidx.benchmark.junit4.AndroidBenchmarkRunner" />
-        <option name="device-listeners" value="android.device.collectors.ProcLoadListener,com.android.app.concurrent.benchmark.util.CsvMetricCollector" />
-        <!-- ProcLoadListener related arguments -->
-        <!-- Wait for device last minute threshold to reach 1.0 with 180 second timeout before starting the test -->
-        <option name="instrumentation-arg" key="proc-loadavg-threshold" value="1.0" />
-        <option name="instrumentation-arg" key="proc-loadavg-timeout" value="180000" />
-        <option name="instrumentation-arg" key="proc-loadavg-interval" value="5000" />
-        <option name="instrumentation-arg" key="csv-metric-collector:per_run" value="true" />
-        <option name="instrumentation-arg" key="androidx.benchmark.profiling.mode" value="None" />
-        <option name="instrumentation-arg" key="androidx.benchmark.iterations" value="100" />
-        <option name="instrumentation-arg" key="androidx.benchmark.zipTraceWithInMemoryEvents.enable" value="true" />
-    </test>
-
-    <!-- Reboot to undo perf-setup.sh -->
-    <target_preparer class="com.android.tradefed.targetprep.DeviceCleaner">
-        <option name="cleanup-action" value="REBOOT" />
-    </target_preparer>
 </configuration>
