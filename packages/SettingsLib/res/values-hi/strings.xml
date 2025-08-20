@@ -393,7 +393,7 @@
     <string name="debug_monitoring_category" msgid="1597387133765424994">"निगरानी"</string>
     <string name="window_management_category" msgid="2015535427098365170">"विंडो मैनेज करने की अनुमति"</string>
     <string name="strict_mode" msgid="889864762140862437">"स्ट्रिक्ट मोड चालू रखें"</string>
-    <string name="strict_mode_summary" msgid="1838248687233554654">"थ्रेड पर लंबा प्रोसेस होने पर स्‍क्रीन फ़्लैश करें"</string>
+    <string name="strict_mode_summary" msgid="1838248687233554654">"थ्रेड में लंबी प्रोसेस होने पर स्‍क्रीन फ़्लैश करे"</string>
     <string name="pointer_location" msgid="7516929526199520173">"पॉइंटर की जगह"</string>
     <string name="pointer_location_summary" msgid="957120116989798464">"मौजूदा टच डेटा दिखाने वाला स्‍क्रीन ओवरले"</string>
     <string name="show_touches" msgid="8437666942161289025">"टैप दिखाएं"</string>
@@ -409,9 +409,9 @@
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"हार्डवेयर लेयर अपडेट दिखाएं"</string>
     <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"हार्डवेयर लेयर अपडेट होने पर हरा फ़्लैश दिखाएं"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"जीपीयू ओवरड्रॉ डीबग करें"</string>
-    <string name="disable_overlays" msgid="4206590799671557143">"एचडब्ल्यू ओवरले बंद करें"</string>
+    <string name="disable_overlays" msgid="4206590799671557143">"हार्डवेयर ओवरले बंद करें"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"स्‍क्रीन कंपोज़िटिंग के लिए हमेशा जीपीयू का इस्तेमाल करें"</string>
-    <string name="simulate_color_space" msgid="1206503300335835151">"कलर स्पेस सिम्युलेट करें"</string>
+    <string name="simulate_color_space" msgid="1206503300335835151">"कलर ब्लाइंड टेस्टिंग"</string>
     <string name="enable_opengl_traces_title" msgid="4638773318659125196">"OpenGL ट्रेस चालू करें"</string>
     <string name="usb_audio_disable_routing" msgid="3367656923544254975">"यूएसबी ऑडियो रूटिंग बंद करें"</string>
     <string name="usb_audio_disable_routing_summary" msgid="8768242894849534699">"यूएसबी ऑडियो पेरिफ़ेरल पर अपने-आप रूटिंग होना बंद करें"</string>
@@ -422,10 +422,10 @@
     <string name="transparent_navigation_bar" msgid="1933192171384678484">"पारदर्शी बैकग्राउंड वाला नेविगेशन बार"</string>
     <string name="transparent_navigation_bar_summary" msgid="5454359021817330722">"नेविगेशन बार के बैकग्राउंड का रंग, डिफ़ॉल्ट रूप से पारदर्शी सेट करें"</string>
     <string name="window_blurs" msgid="6831008984828425106">"विंडो का बैकग्राउंड धुंधला करने की सुविधा चालू करें"</string>
-    <string name="force_msaa" msgid="4081288296137775550">"4x MSAA को हर हाल में चालू करें"</string>
-    <string name="force_msaa_summary" msgid="9070437493586769500">"OpenGL ES 2.0 ऐप में 4x MSAA को चालू करें"</string>
+    <string name="force_msaa" msgid="4081288296137775550">"4x एमएसएए हमेशा चालू रखें"</string>
+    <string name="force_msaa_summary" msgid="9070437493586769500">"OpenGL ES 2.0 ऐप में 4x एमएसएए को चालू करें"</string>
     <string name="show_non_rect_clip" msgid="7499758654867881817">"उन क्लिप ऑपरेशन को डीबग करें जिनमें रेक्टैंगल नहीं हैं"</string>
-    <string name="track_frame_time" msgid="522674651937771106">"प्रोफ़ाइल HWUI रेंडरिंग"</string>
+    <string name="track_frame_time" msgid="522674651937771106">"हार्डवेयर यूआई रेंडरिंग"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"जीपीयू डीबग लेयर चालू करें"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"डीबग लायक ऐप के लिए जीपीयू डीबग लेयर लोड करने दें"</string>
     <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"वेंडर लॉग में ज़्यादा जानकारी शामिल करने की सुविधा"</string>
@@ -450,9 +450,9 @@
     <string name="show_notification_channel_warnings" msgid="3448282400127597331">"चैनल से जुड़ी चेतावनी दिखाएं"</string>
     <string name="show_notification_channel_warnings_summary" msgid="68031143745094339">"कोई ऐप, मान्य चैनल के बिना सूचना पोस्ट करे, तो स्क्रीन पर चेतावनी दिखाएं"</string>
     <string name="force_allow_on_external" msgid="9187902444231637880">"ऐप्लिकेशन को बाहरी स्टोरेज पर ही चलाएं"</string>
-    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"इससे कोई भी ऐप्लिकेशन बाहरी स्टोरेज में रखने लायक बन जाता है, चाहे उसकी मेनिफ़ेस्ट वैल्यू कुछ भी हो"</string>
-    <string name="force_resizable_activities" msgid="7143612144399959606">"विंडो के हिसाब से गतिविधियों का साइज़ बदल दें"</string>
-    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"सभी गतिविधियों को मल्टी-विंडो (एक से ज़्यादा ऐप्लिकेशन, एक साथ) के लिए साइज़ बदलने लायक बनाएं, चाहे उनकी मेनिफ़ेस्ट वैल्यू कुछ भी हो."</string>
+    <string name="force_allow_on_external_summary" msgid="8525425782530728238">"किसी भी ऐप्लिकेशन को बाहरी स्टोरेज में इंस्टॉल किया जा सकेगा, चाहे उसकी मेनिफ़ेस्ट वैल्यू कुछ भी हो"</string>
+    <string name="force_resizable_activities" msgid="7143612144399959606">"विंडो के विकल्प के हिसाब से ऐप का साइज़ बदलें"</string>
+    <string name="force_resizable_activities_summary" msgid="2490382056981583062">"मल्टी-विंडो मोड के लिए सभी ऐप को साइज़ बदलने लायक बनाएं, चाहे उनकी मेनिफ़ेस्ट वैल्यू कुछ भी हो."</string>
     <string name="enable_freeform_support" msgid="7599125687603914253">"फ़्रीफ़ॉर्म विंडो (एक साथ कई विंडो दिखाना) चालू करें"</string>
     <string name="local_backup_password_title" msgid="4631017948933578709">"डेस्‍कटॉप बैकअप पासवर्ड"</string>
     <string name="local_backup_password_summary_none" msgid="7646898032616361714">"डेस्‍कटॉप का पूरा बैकअप फ़िलहाल सुरक्षित नहीं है"</string>
@@ -491,7 +491,7 @@
     <string name="webview_launch_devtools_no_activity" msgid="4066006313619617140">"DevTools लॉन्च नहीं किया जा सका."</string>
     <string name="picture_color_mode" msgid="1013807330552931903">"चित्र रंग मोड"</string>
     <string name="picture_color_mode_desc" msgid="151780973768136200">"sRGB का उपयोग करें"</string>
-    <string name="daltonizer_mode_disabled" msgid="403424372812399228">"बंद"</string>
+    <string name="daltonizer_mode_disabled" msgid="403424372812399228">"बंद है"</string>
     <string name="daltonizer_mode_monochromacy" msgid="362060873835885014">"पूर्ण वर्णांधता"</string>
     <string name="daltonizer_mode_deuteranomaly" msgid="3507284319584683963">"लाल-हरे रंग की पहचान न कर पाना (लाल-हरा)"</string>
     <string name="daltonizer_mode_protanomaly" msgid="7805583306666608440">"लाल रंग पहचान न पाना (लाल-हरा)"</string>
