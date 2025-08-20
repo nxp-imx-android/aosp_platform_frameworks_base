@@ -926,13 +926,22 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
     public void testSetHandoffEnabled() {
+        ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
+                mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
+        mAtm.getAtmInternal().registerHandoffEnablementListener(handoffEnablementListener);
         final ActivityRecord activity = createActivityWithTask();
         assertFalse(activity.isHandoffEnabled());
         assertFalse(activity.isHandoffFullTaskRecreationAllowed());
         activity.setHandoffEnabled(true, true);
+        verify(handoffEnablementListener).onHandoffEnabledChanged(activity.getRootTaskId(), true);
         assertTrue(activity.isHandoffEnabled());
         assertTrue(activity.isHandoffFullTaskRecreationAllowed());
+        activity.setHandoffEnabled(false, false);
+        verify(handoffEnablementListener).onHandoffEnabledChanged(activity.getRootTaskId(), false);
+        assertFalse(activity.isHandoffEnabled());
+        assertFalse(activity.isHandoffFullTaskRecreationAllowed());
     }
 
     @Test
