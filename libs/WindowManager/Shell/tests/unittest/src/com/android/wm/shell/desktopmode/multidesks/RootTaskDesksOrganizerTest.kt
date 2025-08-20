@@ -296,15 +296,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testOnTaskAppeared_withoutRequest_throws() = runTest {
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-
-        assertThrows(Exception::class.java) {
-            organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-        }
-    }
-
-    @Test
     fun testOnTaskAppeared_duplicateRoot_throws() = runTest {
         val desk = createDeskSuspending()
 

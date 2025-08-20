@@ -497,6 +497,13 @@ class RootTaskDesksOrganizer(
         }
 
         val appearingInDisplayId = taskInfo.displayId
+        logV(
+            "Task #%d appeared in display #%d, deskRootRequests=%s minimizationRootRequests=%s",
+            taskInfo.taskId,
+            appearingInDisplayId,
+            createDeskRootRequests,
+            createDeskMinimizationRootRequests,
+        )
         // Check if there's any pending desk creation requests under this display.
         val deskRequest =
             createDeskRootRequests.firstOrNull { it.displayId == appearingInDisplayId }
@@ -532,7 +539,15 @@ class RootTaskDesksOrganizer(
         }
         // Check if there's any pending minimization container creation requests under this display.
         val deskMinimizationRootRequest =
-            createDeskMinimizationRootRequests.first { it.displayId == appearingInDisplayId }
+            createDeskMinimizationRootRequests.firstOrNull { it.displayId == appearingInDisplayId }
+        if (deskMinimizationRootRequest == null) {
+            logE(
+                "Did not find a matching desk minimization root request for task#%d in display#%d",
+                taskInfo.taskId,
+                taskInfo.displayId,
+            )
+            return
+        }
         val deskId = deskMinimizationRootRequest.deskId
         logV("Minimization container for desk #$deskId appeared with id=${taskInfo.taskId}")
         val deskMinimizationRoot = DeskMinimizationRoot(deskId, taskInfo, leash)
