@@ -137,6 +137,13 @@ abstract public class ManagedServices {
     static final int APPROVAL_BY_PACKAGE = 0;
     static final int APPROVAL_BY_COMPONENT = 1;
 
+    /**
+     * Maximum number of entries allowed in the lists of packages/components contained in
+     * {@link #mApproved} or {@link #mUserSetServices}. For the first, this effectively limits
+     * the number of services (e.g. NLSes) that will be bound per user.
+     */
+    private static final int MAX_SERVICE_ENTRIES = 100;
+
     protected final Context mContext;
     protected final Object mMutex;
     private final UserProfiles mUserProfiles;
@@ -933,16 +940,22 @@ abstract public class ManagedServices {
         }
     }
 
-    protected void setPackageOrComponentEnabled(String pkgOrComponent, int userId,
+    protected boolean setPackageOrComponentEnabled(String pkgOrComponent, int userId,
             boolean isPrimary, boolean enabled) {
-        setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, true);
+        return setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, true);
     }
 
-    protected void setPackageOrComponentEnabled(String pkgOrComponent, int userId,
+    /**
+     * Changes the enabled state of a managed service.
+     *
+     * @return true if the change (enabling or disabling) was applied; false otherwise
+     */
+    protected boolean setPackageOrComponentEnabled(String pkgOrComponent, int userId,
             boolean isPrimary, boolean enabled, boolean userSet) {
         Slog.i(TAG,
                 (enabled ? " Allowing " : "Disallowing ") + mConfig.caption + " "
                         + pkgOrComponent + " (userSet: " + userSet + ")");
+        boolean changed = false;
         synchronized (mApproved) {
             ArrayMap<Boolean, ArraySet<String>> allowedByType = mApproved.get(userId);
             if (allowedByType == null) {
@@ -964,31 +977,49 @@ abstract public class ManagedServices {
             if (approvedItem != null) {
                 int uid = getUidForPackageOrComponent(pkgOrComponent, userId);
                 if (enabled) {
-                    approved.add(approvedItem);
-                    if (uid != Process.INVALID_UID) {
-                        approvedUids.add(uid);
+                    if (!Flags.limitManagedServicesCount()
+                            || approved.size() < MAX_SERVICE_ENTRIES) {
+                        approved.add(approvedItem);
+                        if (uid != Process.INVALID_UID) {
+                            approvedUids.add(uid);
+                        }
+                        changed = true;
+                    } else {
+                        Slog.w(TAG, TextUtils.formatSimple(
+                                "Failed to allow %s %s because there are too many already",
+                                mConfig.caption, pkgOrComponent));
                     }
                 } else {
                     approved.remove(approvedItem);
                     if (uid != Process.INVALID_UID) {
                         approvedUids.remove(uid);
                     }
+                    changed = true;
                 }
             }
-            ArraySet<String> userSetServices = mUserSetServices.get(userId);
-            if (userSetServices == null) {
-                userSetServices = new ArraySet<>();
-                mUserSetServices.put(userId, userSetServices);
-            }
-            if (userSet) {
-                userSetServices.add(pkgOrComponent);
-            } else {
-                userSetServices.remove(pkgOrComponent);
-            }
 
+            if (changed) {
+                ArraySet<String> userSetServices = mUserSetServices.get(userId);
+                if (userSetServices == null) {
+                    userSetServices = new ArraySet<>();
+                    mUserSetServices.put(userId, userSetServices);
+                }
+                if (userSet) {
+                    if (!Flags.limitManagedServicesCount()
+                            || userSetServices.size() < MAX_SERVICE_ENTRIES) {
+                        userSetServices.add(pkgOrComponent);
+                    }
+                } else {
+                    userSetServices.remove(pkgOrComponent);
+                }
+            }
         }
 
-        rebindServices(false, userId);
+        if (!Flags.limitManagedServicesCount() || changed) {
+            rebindServices(false, userId);
+        }
+
+        return changed;
     }
 
     private int getUidForPackageOrComponent(String pkgOrComponent, int userId) {
