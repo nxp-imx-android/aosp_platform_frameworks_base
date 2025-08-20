@@ -16,8 +16,6 @@
 
 package android.view;
 
-import static com.android.window.flags.Flags.surfaceTrustedOverlay;
-
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.graphics.Matrix;
@@ -298,10 +296,6 @@ public final class InputWindowHandle {
 
     public void setTrustedOverlay(SurfaceControl.Transaction t, SurfaceControl sc,
             boolean isTrusted) {
-        if (surfaceTrustedOverlay()) {
-            t.setTrustedOverlay(sc, isTrusted);
-        } else if (isTrusted) {
-            inputConfig |= InputConfig.TRUSTED_OVERLAY;
-        }
+        t.setTrustedOverlay(sc, isTrusted);
     }
 }
