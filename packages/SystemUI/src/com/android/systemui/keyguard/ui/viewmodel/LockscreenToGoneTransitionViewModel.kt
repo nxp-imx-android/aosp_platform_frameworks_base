@@ -119,5 +119,9 @@ constructor(
     }
 
     override val deviceEntryParentViewAlpha: Flow<Float> =
-        transitionAnimation.immediatelyTransitionTo(0f)
+        transitionAnimation.sharedFlowWithShade(
+            duration = 600.milliseconds,
+            onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
+            onFinish = { 0f },
+        )
 }
