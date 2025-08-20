@@ -50,6 +50,7 @@ import android.tools.traces.component.IComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
+import androidx.test.filters.RequiresDevice
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -76,6 +77,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 // e.g., sysui-tapl).
 // TODO(b/416610249) - Support all form-factors
 // TODO(b/418620154) - Use test apps instead of real apps.
+// TODO(b/439962697) - Remove @RequiresDevice once cf phone supports desktop mode.
 /**
  * Tests to verify the smoke test scenario defined in go/cd-smoke.
  */
@@ -209,6 +211,7 @@ class ConnectedDisplayCujSmokeTests {
     // Settings > Connected devices > Connected Display
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj1p() {
         cuj1()
     }
@@ -242,6 +245,7 @@ class ConnectedDisplayCujSmokeTests {
     // the external monitor and they default to Desktop Windowing mode
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj3p() {
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
@@ -257,6 +261,7 @@ class ConnectedDisplayCujSmokeTests {
     // remains unchanged and a blank desktop session starts on the external monitor
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj4p() {
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
 
@@ -296,6 +301,7 @@ class ConnectedDisplayCujSmokeTests {
     // on one
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj5p() {
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
@@ -352,6 +358,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @Ignore("b/428563383")
     @ProjectedOnly
+    @RequiresDevice
     fun cuj6p() {
         cuj6()
     }
@@ -368,6 +375,7 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: The same as CUJ6p but excluding app handle test.
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj6p_skipAppHandle() {
         cuj6(skipAppHandleTest = true)
     }
@@ -405,6 +413,7 @@ class ConnectedDisplayCujSmokeTests {
     // full screen apps as tiles to the left
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj7p() {
         // Clear all tasks
         RecentTasksUtils.clearAllVisibleRecentTasks(instrumentation)
@@ -486,6 +495,7 @@ class ConnectedDisplayCujSmokeTests {
     // it is moved across
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj9p() {
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
@@ -531,6 +541,7 @@ class ConnectedDisplayCujSmokeTests {
     // ext.display (i.e. does not crash)
     @Test
     @ProjectedOnly
+    @RequiresDevice
     fun cuj10p() {
         cuj10()
     }
