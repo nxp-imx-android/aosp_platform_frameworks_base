@@ -236,7 +236,7 @@ interface HomeStatusBarViewModel : Activatable {
     val areaDark: IsAreaDark
 
     /** True if the desktop status bar is enabled. */
-    val isDesktopStatusBarEnabled: Boolean
+    val useDesktopStatusBar: Boolean
 
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
@@ -447,11 +447,11 @@ constructor(
             )
         }
 
-    override val isDesktopStatusBarEnabled: Boolean by
+    override val useDesktopStatusBar: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isDesktopStatusBarEnabled",
+            traceName = "useDesktopStatusBar",
             initialValue = false,
-            source = desktopInteractor.isDesktopFeatureSetEnabled,
+            source = desktopInteractor.useDesktopStatusBar,
         )
 
     override val isQuickSettingsChipHighlighted: Boolean by

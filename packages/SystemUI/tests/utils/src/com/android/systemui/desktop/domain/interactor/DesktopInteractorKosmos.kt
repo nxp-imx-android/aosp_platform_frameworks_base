@@ -33,18 +33,12 @@ val Kosmos.desktopInteractor: DesktopInteractor by
         )
     }
 
-fun Kosmos.enableDesktopFeatureSet() {
-    testableContext.orCreateTestableResources.addOverride(
-        R.bool.config_enableDesktopFeatureSet,
-        true,
-    )
+fun Kosmos.enableUsingDesktopStatusBar() {
+    testableContext.orCreateTestableResources.addOverride(R.bool.config_useDesktopStatusBar, true)
     configurationController.onConfigurationChanged(Configuration())
 }
 
-fun Kosmos.disableDesktopFeatureSet() {
-    testableContext.orCreateTestableResources.addOverride(
-        R.bool.config_enableDesktopFeatureSet,
-        false,
-    )
+fun Kosmos.disableDesktopStatusBar() {
+    testableContext.orCreateTestableResources.addOverride(R.bool.config_useDesktopStatusBar, false)
     configurationController.onConfigurationChanged(Configuration())
 }

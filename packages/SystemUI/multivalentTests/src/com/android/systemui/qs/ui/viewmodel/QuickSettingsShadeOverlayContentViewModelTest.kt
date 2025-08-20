@@ -199,31 +199,31 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun showHeader_desktopFeatureSetDisabled_true() =
+    fun showHeader_desktopStatusBarDisabled_true() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(false)
+            setUseDesktopStatusBar(false)
             assertThat(underTest.showHeader).isTrue()
         }
 
     @Test
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopEnabled_false() =
+    fun showHeader_desktopStatusBarEnabled_statusBarForDesktopEnabled_false() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(true)
+            setUseDesktopStatusBar(true)
             assertThat(underTest.showHeader).isFalse()
         }
 
     @Test
     @DisableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopDisabled_true() =
+    fun showHeader_desktopStatusBarEnabled_statusBarForDesktopDisabled_true() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(true)
+            setUseDesktopStatusBar(true)
             assertThat(underTest.showHeader).isTrue()
         }
 
-    private fun Kosmos.setEnableDesktopFeatureSet(enable: Boolean) {
+    private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {
         testableContext.orCreateTestableResources.addOverride(
-            R.bool.config_enableDesktopFeatureSet,
+            R.bool.config_useDesktopStatusBar,
             enable,
         )
         configurationController.onConfigurationChanged(Configuration())

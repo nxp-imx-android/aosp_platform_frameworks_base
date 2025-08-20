@@ -350,10 +350,10 @@ public class FalsingDataProviderTest extends ClassifierTest {
 
     @Test
     public void test_isDesktop() {
-        when(mDesktopInteractor.isDesktopFeatureSetEnabled()).thenReturn(MutableStateFlow(false));
+        when(mDesktopInteractor.isDesktopForFalsingPurposes()).thenReturn(MutableStateFlow(false));
         assertThat(mDataProvider.isDesktop()).isFalse();
 
-        when(mDesktopInteractor.isDesktopFeatureSetEnabled()).thenReturn(MutableStateFlow(true));
+        when(mDesktopInteractor.isDesktopForFalsingPurposes()).thenReturn(MutableStateFlow(true));
         assertThat(mDataProvider.isDesktop()).isTrue();
     }
 

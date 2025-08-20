@@ -231,8 +231,8 @@ fun StatusBarRoot(
         }
     }
 
-    // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
-    if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
+    // Let the DesktopStatusBar compose all the UI if [useDesktopStatusBar] is true.
+    if (StatusBarForDesktop.isEnabled && statusBarViewModel.useDesktopStatusBar) {
         DesktopStatusBar(
             viewModel = statusBarViewModel,
             clockViewModelFactory = clockViewModelFactory,
@@ -411,7 +411,7 @@ private fun addStartSideComposable(
 
     val composeView =
         ComposeView(context).apply {
-            val showDate = Flags.statusBarDate() && statusBarViewModel.isDesktopStatusBarEnabled
+            val showDate = Flags.statusBarDate() && statusBarViewModel.useDesktopStatusBar
 
             layoutParams =
                 LinearLayout.LayoutParams(
