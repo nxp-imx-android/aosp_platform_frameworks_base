@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -36,6 +37,7 @@ val Kosmos.quickSettingsSceneContentViewModel by Fixture {
         sceneInteractor = sceneInteractor,
         mainDispatcher = testDispatcher,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+        blurConfig = blurConfig,
     )
 }
 

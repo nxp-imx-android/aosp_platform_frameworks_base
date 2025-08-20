@@ -20,9 +20,12 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.lifecycle.LifecycleOwner
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -45,6 +48,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
@@ -84,6 +88,7 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                     sceneInteractor = sceneInteractor,
                     mainDispatcher = testDispatcher,
                     windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+                    blurConfig = blurConfig,
                 )
             underTest.activateIn(testScope)
             testScope.backgroundScope.launch { underTest.detectShadeModeChanges() }
@@ -111,6 +116,52 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
             enableSplitShade()
 
             assertThat(scene).isEqualTo(Scenes.Shade)
+        }
+
+    @Test
+    fun isBlurred_whenBouncerOverlayShowingOverQuickSettingsAndBlurSupported_isTrue() =
+        kosmos.runTest {
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
+
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            runCurrent()
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
+
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.QuickSettings,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(blurConfig.maxBlurRadiusPx)
+
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState = TransitionState.Idle(currentScene = Scenes.QuickSettings)
+                    )
+                )
+                .isEqualTo(0)
         }
 
     @Test
