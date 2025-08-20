@@ -35,6 +35,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
@@ -52,8 +53,8 @@ public class SliderPreference extends Preference {
     public static final int HAPTIC_FEEDBACK_MODE_ON_TICKS = 1;
     public static final int HAPTIC_FEEDBACK_MODE_ON_ENDS = 2;
 
-    private final int mTextStartId;
-    private final int mTextEndId;
+    private int mTextStartId;
+    private int mTextEndId;
     private final ColorStateList mTrackActiveColor;
     private final ColorStateList mTrackInactiveColor;
     private final ColorStateList mThumbColor;
@@ -313,6 +314,27 @@ public class SliderPreference extends Preference {
     public void setIconEndContentDescription(int iconEndContentDescriptionId) {
         if (mIconEndContentDescriptionId != iconEndContentDescriptionId) {
             mIconEndContentDescriptionId = iconEndContentDescriptionId;
+            notifyChanged();
+        }
+    }
+
+
+    /**
+     * Sets the text for the start of the slider.
+     */
+    public void setTextStart(@StringRes int textStartId) {
+        if (mTextStartId != textStartId) {
+            mTextStartId = textStartId;
+            notifyChanged();
+        }
+    }
+
+    /**
+     * Sets the text for the end of the slider.
+     */
+    public void setTextEnd(@StringRes int textEndId) {
+        if (mTextEndId != textEndId) {
+            mTextEndId = textEndId;
             notifyChanged();
         }
     }
