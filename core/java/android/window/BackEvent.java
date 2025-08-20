@@ -16,10 +16,6 @@
 
 package android.window;
 
-import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_TIMESTAMP_API;
-import static com.android.window.flags.Flags.predictiveBackTimestampApi;
-
-import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.IntDef;
 
@@ -62,14 +58,9 @@ public final class BackEvent {
 
     /** @hide */
     public static BackEvent fromBackMotionEvent(BackMotionEvent backMotionEvent) {
-        if (predictiveBackTimestampApi()) {
-            return new BackEvent(backMotionEvent.getTouchX(), backMotionEvent.getTouchY(),
-                    backMotionEvent.getProgress(), backMotionEvent.getSwipeEdge(),
-                    backMotionEvent.getFrameTimeMillis());
-        } else {
-            return new BackEvent(backMotionEvent.getTouchX(), backMotionEvent.getTouchY(),
-                    backMotionEvent.getProgress(), backMotionEvent.getSwipeEdge());
-        }
+        return new BackEvent(backMotionEvent.getTouchX(), backMotionEvent.getTouchY(),
+                backMotionEvent.getProgress(), backMotionEvent.getSwipeEdge(),
+                backMotionEvent.getFrameTimeMillis());
     }
 
     /**
@@ -97,7 +88,6 @@ public final class BackEvent {
      * @param swipeEdge Indicates which edge the swipe starts from.
      * @param frameTimeMillis frame time of the back event.
      */
-    @FlaggedApi(FLAG_PREDICTIVE_BACK_TIMESTAMP_API)
     public BackEvent(float touchX, float touchY, float progress, @SwipeEdge int swipeEdge,
             long frameTimeMillis) {
         mTouchX = touchX;
@@ -156,7 +146,6 @@ public final class BackEvent {
     /**
      * Returns the frameTime of the BackEvent in milliseconds. Useful for calculating velocity.
      */
-    @FlaggedApi(FLAG_PREDICTIVE_BACK_TIMESTAMP_API)
     public long getFrameTimeMillis() {
         return mFrameTimeMillis;
     }

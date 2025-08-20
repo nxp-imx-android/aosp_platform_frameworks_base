@@ -17,7 +17,6 @@
 package android.window;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
-import static com.android.window.flags.Flags.predictiveBackTimestampApi;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -295,13 +294,10 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         @Override
         public void onBackStarted(@NonNull BackEvent backEvent) {
             try {
-                long frameTime = 0;
-                if (predictiveBackTimestampApi()) {
-                    frameTime = backEvent.getFrameTimeMillis();
-                }
                 mIOnBackInvokedCallback.onBackStarted(
-                        new BackMotionEvent(backEvent.getTouchX(), backEvent.getTouchY(), frameTime,
-                                backEvent.getProgress(), false, backEvent.getSwipeEdge()));
+                        new BackMotionEvent(backEvent.getTouchX(), backEvent.getTouchY(),
+                                backEvent.getFrameTimeMillis(), backEvent.getProgress(), false,
+                                backEvent.getSwipeEdge()));
             } catch (RemoteException e) {
                 Log.e(TAG, "Exception when invoking forwarded callback. e: ", e);
             }
@@ -310,13 +306,10 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         @Override
         public void onBackProgressed(@NonNull BackEvent backEvent) {
             try {
-                long frameTime = 0;
-                if (predictiveBackTimestampApi()) {
-                    frameTime = backEvent.getFrameTimeMillis();
-                }
                 mIOnBackInvokedCallback.onBackProgressed(
-                        new BackMotionEvent(backEvent.getTouchX(), backEvent.getTouchY(), frameTime,
-                                backEvent.getProgress(), false, backEvent.getSwipeEdge()));
+                        new BackMotionEvent(backEvent.getTouchX(), backEvent.getTouchY(),
+                                backEvent.getFrameTimeMillis(), backEvent.getProgress(), false,
+                                backEvent.getSwipeEdge()));
             } catch (RemoteException e) {
                 Log.e(TAG, "Exception when invoking forwarded callback. e: ", e);
             }

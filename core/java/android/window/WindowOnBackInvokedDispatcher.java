@@ -21,7 +21,6 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
 import static com.android.window.flags.Flags.predictiveBackCallbackCancellationFix;
 import static com.android.window.flags.Flags.predictiveBackSystemOverrideCallback;
-import static com.android.window.flags.Flags.predictiveBackTimestampApi;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -322,7 +321,6 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 // We should call onBackCancelled() when an active callback is removed from the
                 // dispatcher.
                 mProgressAnimator.removeOnBackCancelledFinishCallback();
-                mProgressAnimator.removeOnBackInvokedFinishCallback();
                 sendCancelledIfInProgress(callback);
                 mHandler.post(mProgressAnimator::reset);
             }
@@ -333,7 +331,6 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             // We should call onBackCancelled() when an active callback is removed from the
             // dispatcher.
             mProgressAnimator.removeOnBackCancelledFinishCallback();
-            mProgressAnimator.removeOnBackInvokedFinishCallback();
             sendCancelledIfInProgress(callback);
             mHandler.post(mProgressAnimator::reset);
         }
@@ -666,23 +663,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                     Log.w(TAG, "ProgressAnimator was not in progress, skip onBackInvoked().");
                     return;
                 }
-                OnBackAnimationCallback animationCallback = getBackAnimationCallback();
-                if (animationCallback != null
-                        && !(callback instanceof ImeBackAnimationController)
-                        && !predictiveBackTimestampApi()) {
-                    mProgressAnimator.onBackInvoked(() -> {
-                        if (mIsSystemCallback) {
-                            mSystemNavigationObserverCallbackRunnable.run();
-                        }
-                        callback.onBackInvoked();
-                    });
-                } else {
-                    mProgressAnimator.reset();
-                    if (mIsSystemCallback) {
-                        mSystemNavigationObserverCallbackRunnable.run();
-                    }
-                    callback.onBackInvoked();
+                mProgressAnimator.reset();
+                if (mIsSystemCallback) {
+                    mSystemNavigationObserverCallbackRunnable.run();
                 }
+                callback.onBackInvoked();
             });
         }
 
