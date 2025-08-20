@@ -169,7 +169,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     /**
      * Schedules exit PiP via expand transition.
      */
-    public void scheduleExitPipViaExpand() {
+    public void scheduleExitPipViaExpand(boolean wasVisible) {
         mMainExecutor.execute(() -> {
             if (!mPipTransitionState.isInPip()) return;
 
@@ -187,7 +187,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             });
             boolean toSplit = !wct.isEmpty();
             wct.merge(expandWct, true /* transfer */);
-            mPipTransitionController.startExpandTransition(wct, toSplit);
+            mPipTransitionController.startExpandTransition(wct, toSplit, wasVisible);
         });
     }
 

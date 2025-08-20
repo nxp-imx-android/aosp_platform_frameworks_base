@@ -290,10 +290,11 @@ public class PipController implements ConfigurationChangeListener,
                 ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                         "onActivityRestartAttempt: topActivity=%s, wasVisible=%b",
                         task.topActivity, wasVisible);
-                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || !wasVisible) {
+                boolean keepPipFromLockscreen = !wasVisible && !Flags.dismissPipFromLockscreen();
+                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || keepPipFromLockscreen) {
                     return;
                 }
-                mPipScheduler.scheduleExitPipViaExpand();
+                mPipScheduler.scheduleExitPipViaExpand(wasVisible);
             }
         });
 
