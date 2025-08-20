@@ -367,4 +367,16 @@ public final class RavenwoodEnvironment {
     public boolean getBoolEnvVar(String keyName) {
         return "1".equals(getEnvVar(keyName, ""));
     }
+
+    /**
+     * Reads a per-module environmental string variable, and split it with whitespace.
+     * Default is an empty array;
+     */
+    public String[] getArrayEnvVar(String keyName) {
+        var val = getEnvVar(keyName, "");
+        if (val.isEmpty()) {
+            return new String[0];
+        }
+        return val.split("\\s+");
+    }
 }

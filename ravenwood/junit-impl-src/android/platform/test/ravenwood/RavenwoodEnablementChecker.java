@@ -15,278 +15,580 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodInternalUtils.log;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.parseClassNameWildcard;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnabledOnRavenwood;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker.PolicyChecker;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunPolicy;
+import android.util.Log;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 
 import org.junit.runner.Description;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Calculates which tests need to be executed on Ravenwood.
+ * Class to check if a class / method should be executed.
+ *
+ * - Normally, it consults @EnabledOnRavenwood and @DisabledOnRavenwood.
+ *
+ * - If $RAVENWOOD_TEST_ENABLEMENT_POLICY is specified, we use it as a list of files
+ *   containing "enablement policies", which changes the default enablement behavior.
+ *   Meaning, if a class/method has the above annotations, we still use them, but
+ *   for method without explicit annotations (which would normally mean "run"),
+ *   we can disable them with the polcy file.
+ *
+ *   This feature is only used locally. On CI server, we never use it.
+ *
  */
-public class RavenwoodEnablementChecker {
+public abstract class RavenwoodEnablementChecker {
     private static final String TAG = RavenwoodInternalUtils.TAG;
 
     /**
-     * When this flag is enabled, all disabled tests will run, and all enabled tests will
-     * be skipped to detect cases where a test is able to pass despite being marked as
-     * {@link DisabledOnRavenwood}.
-     *
-     * This is typically helpful for internal maintainers discovering tests that had previously
-     * been ignored, but now have enough Ravenwood-supported functionality to be enabled.
-     *
-     * RavenwoodCoreTest modifies it, so not final.
+     * How we want to run each test class / method.
      */
-    public static volatile boolean RUN_DISABLED_TESTS = "1".equals(
-            System.getenv("RAVENWOOD_RUN_DISABLED_TESTS"));
+    @VisibleForTesting
+    public enum RunPolicy {
+        /** Run it. */
+        Enabled,
 
-    /**
-     * When using RAVENWOOD_RUN_DISABLED_TESTS, you may still want to skip certain tests,
-     * for example because the test would crash the JVM.
-     *
-     * This regex defines the tests that should still be disabled even if
-     * RAVENWOOD_RUN_DISABLED_TESTS is set.
-     *
-     * Before running each test class and method, we check if this pattern can be found in
-     * the full test name (either [class full name], or [class full name] + "#" + [method name]),
-     * and if so, we skip it.
-     *
-     * For example, if you want to skip an entire test class, use:
-     * RAVENWOOD_REALLY_DISABLE='\.CustomTileDefaultsRepositoryTest$'
-     *
-     * For example, if you want to skip a test method, use:
-     * RAVENWOOD_REALLY_DISABLE='\.CustomTileDefaultsRepositoryTest#testSimple$'
-     *
-     * To ignore multiple classes, use (...|...), for example:
-     * RAVENWOOD_REALLY_DISABLE='\.(ClassA|ClassB)$'
-     *
-     * Because we use a regex-find, setting "." would disable all tests.
-     *
-     * RavenwoodCoreTest modifies it, so not final.
-     */
-    public static volatile Pattern REALLY_DISABLED_PATTERN = Pattern.compile(
-            Objects.requireNonNullElse(System.getenv("RAVENWOOD_REALLY_DISABLED"), ""));
+        /** Don't run it, unless $RAVENWOOD_RUN_DISABLED_TESTS is set to 1. */
+        Disabled,
 
-    /**
-     * When using RAVENWOOD_TEST_ENABLEMENT_POLICY, you can provide an external policy text file
-     * to change whether each test classes or methods are enabled in Ravenwood without the need
-     * to use {@link DisabledOnRavenwood} or {@link EnabledOnRavenwood} annotations.
-     *
-     * The policy file are lines, each with 2 space delimited fields in the following format:
-     *
-     * [signature: string] [enabled: boolean]
-     *
-     * The "signature" field has 2 subcomponents: a class name and method name, separated with the
-     * '#' symbol (e.g. com.example.TestClass#testMethod). Method name can be omitted if the
-     * policy in question applies to the entire class, not a specific method.
-     *
-     * When the "signature" field is the special value "*", the "enable" field sets the
-     * global default enablement status.
-     */
-    private static final String RAVENWOOD_TEST_ENABLEMENT_POLICY
-            = System.getenv("RAVENWOOD_TEST_ENABLEMENT_POLICY");
+        /** Never run it, even if $RAVENWOOD_RUN_DISABLED_TESTS is set to 1. */
+        NeverRun,
 
-    private static final EnablementPolicy sEnablementPolicy = new EnablementPolicy();
+        /** Not explicitly specified, which defaults to "run it". */
+        Unspecified;
 
-    private static class ClassEnablementPolicy {
-        Boolean mEnabled;
-        Map<String, Boolean> mMethods;
-    }
-
-    private static class EnablementPolicy {
-        final Map<String, Boolean> mModules = new HashMap<>();
-        final Map<String, ClassEnablementPolicy> mClasses = new HashMap<>();
-
-        private boolean shouldEnableModule(String testModule) {
-            return mModules.getOrDefault(testModule, true);
-        }
-
-        boolean shouldEnableClass(String testModule, String className) {
-            final boolean moduleEnabled = shouldEnableModule(testModule);
-            if (mClasses.isEmpty()) {
-                return moduleEnabled;
-            }
-            var clazz = mClasses.get(className);
-            if (clazz == null) {
-                return moduleEnabled;
-            }
-            return clazz.mEnabled != null ? clazz.mEnabled : moduleEnabled;
-        }
-
-        Boolean shouldEnableMethod(String className, String methodName) {
-            if (mClasses.isEmpty()) {
-                return null;
-            }
-            var clazz = mClasses.get(className);
-            if (clazz == null) {
-                return null;
-            }
-            if (clazz.mMethods == null) {
-                return null;
-            }
-            return clazz.mMethods.get(methodName);
-        }
-
-        void parseLine(String line) {
-            var columns = line.split("\\s", 2);
-            if (columns.length != 2) return;
-            var signature = columns[0];
-            boolean enable = Boolean.parseBoolean(columns[1]);
-            if (signature.contains("*")) {
-                // Setting the test module default policy
-                parseWildcard(signature, enable);
-            } else {
-                var s = signature.split("\\#");
-                var clazz = s[0];
-                var method = s.length > 1 ? s[1] : null;
-                var policy = mClasses.computeIfAbsent(clazz, k -> new ClassEnablementPolicy());
-                if (method != null) {
-                    if (policy.mMethods == null) policy.mMethods = new HashMap<>();
-                    policy.mMethods.put(method, enable);
-                } else {
-                    policy.mEnabled = enable;
-                }
-            }
-        }
-
-        private void parseWildcard(String signature, boolean enabled) {
-            // Only "[TEST-MODULE]:*" is supported, for now.
-            if (signature.endsWith(":*")) {
-                var module = signature.substring(0, signature.length() - 2);
-                mModules.put(module, enabled);
-                return;
-            }
-            throw new RuntimeException(
-                    "Invalid use of '*' in enablement policy '" + signature + "': "
-                    + " Only '[TEST-MODULE]:*' is supported");
-        }
-
-        void clear() {
-            mModules.clear();
-            mClasses.clear();
+        public static RunPolicy parse(@NonNull String text) {
+            return switch (text) {
+                case "enable", "e", "true" -> Enabled;
+                case "disable", "d", "false" -> Disabled;
+                case "never", "n" -> NeverRun;
+                default -> throw new IllegalArgumentException("Invalid policy '" + text + "'");
+            };
         }
     }
 
-    static {
-        if (RUN_DISABLED_TESTS) {
-            log(TAG, "$RAVENWOOD_RUN_DISABLED_TESTS enabled: running only disabled tests");
-            if (!REALLY_DISABLED_PATTERN.pattern().isEmpty()) {
-                log(TAG, "$RAVENWOOD_REALLY_DISABLED=" + REALLY_DISABLED_PATTERN.pattern());
+    @VisibleForTesting
+    public enum RunMode {
+        /** Run normally. Disabled tests are skipped. */
+        Normal {
+            @Override
+            public boolean shouldRun(@NonNull RunPolicy policy) {
+                return switch (policy) {
+                    case Unspecified, Enabled -> true;
+                    default -> false;
+                };
             }
-        }
+        },
 
-        if (RAVENWOOD_TEST_ENABLEMENT_POLICY != null) {
-            try {
-                var policy = Files.readString(Path.of(RAVENWOOD_TEST_ENABLEMENT_POLICY));
-                setTestEnablementPolicy(policy);
-            } catch (IOException e) {
-                SneakyThrow.sneakyThrow(e);
+        /** Run the disabled tests too, along with the enabled tests. */
+        AlsoDisabledTests {
+            @Override
+            public boolean shouldRun(@NonNull RunPolicy policy) {
+                return switch (policy) {
+                    case Unspecified, Enabled, Disabled -> true;
+                    default -> false;
+                };
             }
-        }
-    }
+        };
 
-    private RavenwoodEnablementChecker() {
-    }
-
-    public static void setTestEnablementPolicy(String policy) {
-        sEnablementPolicy.clear();
-        policy.lines().map(String::strip)
-                // Remove inline comments
-                .map(line -> line.replaceAll("\\s+\\#.*$", "").strip())
-                // Ignore empty lines and full line comments
-                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
-                .forEach(sEnablementPolicy::parseLine);
+        /** @return if a policy means "run" or not. */
+        public abstract boolean shouldRun(@NonNull RunPolicy policy);
     }
 
     /**
-     * Determine if the given {@link Description} should be enabled when running on the
-     * Ravenwood test environment.
-     *
-     * A more specific method-level annotation always takes precedence over any class-level
-     * annotation, and an {@link EnabledOnRavenwood} annotation always takes precedence over
-     * an {@link DisabledOnRavenwood} annotation.
+     * Internal interface for "checkers".
      */
-    public static boolean shouldEnableOnRavenwood(Description description,
-            boolean checkRunDisabledTestsFlag) {
-        // First, consult any method-level annotations
-        if (description.isTest()) {
-            Boolean result = null;
+    @VisibleForTesting
+    public interface PolicyChecker {
+        /** @return run policy for a class */
+        RunPolicy getClassPolicy(@NonNull Class<?> testClass);
 
-            if (description.getAnnotation(EnabledOnRavenwood.class) != null) {
-                result = true;
-            } else if (description.getAnnotation(DisabledOnRavenwood.class) != null) {
-                result = false;
-            } else {
-                result = sEnablementPolicy.shouldEnableMethod(
-                        description.getClassName(), description.getMethodName());
-            }
-            if (result != null) {
-                if (checkRunDisabledTestsFlag && RUN_DISABLED_TESTS) {
-                    // Invert the result + check the really disable pattern
-                    result = !result && !shouldReallyDisableTest(
-                            description.getTestClass(), description.getMethodName());
-                }
-            }
-            if (result != null) {
-                return result;
-            }
-        }
-
-        // Otherwise, consult any class-level annotations
-        return shouldRunClassOnRavenwood(description.getTestClass(),
-                checkRunDisabledTestsFlag);
+        /** @return run policy for a method */
+        RunPolicy getMethodPolicy(@NonNull Description description);
     }
 
-    public static boolean shouldRunClassOnRavenwood(@NonNull Class<?> testClass,
-            boolean checkRunDisabledTestsFlag) {
-        boolean result;
+    /**
+     * Normally, we don't run "disabled" tests, but if it's set to 1, we run the disabled tests
+     * too.
+     *
+     * (But if a policy file says "never", we still won't run it.)
+     */
+    private static RunMode getRunMode() {
+            return RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_RUN_DISABLED_TESTS")
+                ? RunMode.AlsoDisabledTests : RunMode.Normal;
+    }
+
+    /**
+     * Optional, enablement policy files. On CI server, it's always empty.
+     */
+    private static String[] getPolicyFiles() {
+        return RavenwoodEnvironment.getInstance().getArrayEnvVar(
+                "RAVENWOOD_TEST_ENABLEMENT_POLICY");
+    }
+
+    private static volatile RavenwoodEnablementCheckerImpl sInstance;
+
+    /**
+     * @return the singleton instance.
+     */
+    public static RavenwoodEnablementChecker getInstance() {
+        if (sInstance == null) {
+            setDefaultInstance();
+        }
+        return sInstance;
+    }
+
+    /**
+     * Reset to the default checker. Exposed for unit tets.
+     */
+    @VisibleForTesting
+    public static void setDefaultInstance() {
+        sInstance = new RavenwoodEnablementCheckerImpl(getRunMode(), getPolicyFiles());
+    }
+
+    /**
+     * Force set a checker for testing.
+     */
+    @VisibleForTesting
+    public static void overrideInstance(@NonNull RunMode runMode, @Nullable String policyText)  {
+        try {
+            var parser = new EnablementTextPolicyParser();
+            if (policyText != null && !policyText.isEmpty()) {
+                parser.parse("[in-memory]", policyText);
+            }
+            sInstance = new RavenwoodEnablementCheckerImpl(runMode, parser.getResult());
+        } catch (IOException e) {
+            SneakyThrow.sneakyThrow(e); // IOException shouldn't happen, but just in case
+        }
+    }
+
+    /**
+     * @return if a test class should be executed.
+     */
+    public abstract boolean shouldRunClassOnRavenwood(@NonNull Class<?> testClass);
+
+    /**
+     * @return if a test method should be executed.
+     */
+    public abstract boolean shouldEnableOnRavenwood(Description description);
+
+    /**
+     * Actual logic. This combines the annotation policy with the text policy.
+     */
+    @VisibleForTesting
+    public static class RavenwoodEnablementCheckerImpl extends RavenwoodEnablementChecker {
+        private final RunMode mRunMode;
+        private final PolicyChecker mChecker;
+
+        public RavenwoodEnablementCheckerImpl(RunMode runMode, String[] policyFiles) {
+            this(runMode, EnablementTextPolicyParser.parsePolicyFiles(policyFiles));
+        }
+
+        RavenwoodEnablementCheckerImpl(RunMode runMode, PolicyChecker subChecker) {
+            this.mRunMode = runMode;
+            var chain = new PolicyCheckerChain();
+
+            // Annotations always win.
+            chain.add(new AnnotationPolicyChecker());
+
+            // Text policy changes the default behavior.
+            chain.add(subChecker);
+
+            mChecker = chain;
+        }
+
+        @Override
+        public boolean shouldRunClassOnRavenwood(Class<?> testClass) {
+            return mRunMode.shouldRun(mChecker.getClassPolicy(testClass));
+        }
+
+        @Override
+        public boolean shouldEnableOnRavenwood(Description description) {
+            return mRunMode.shouldRun(mChecker.getMethodPolicy(description));
+        }
+    }
+
+    @VisibleForTesting
+    public static PolicyChecker getTextPolicyCheckerForTest(String filename, String text)
+            throws Exception {
+        var parser = new EnablementTextPolicyParser();
+        parser.parse(filename, text);
+        return parser.getResult();
+    }
+}
+
+/**
+ * Combine multiple checkers into one.
+ */
+class PolicyCheckerChain implements PolicyChecker {
+    private final ArrayList<PolicyChecker> mChain = new ArrayList<>();
+
+    public void add(PolicyChecker checker) {
+        mChain.add(checker);
+    }
+
+    @Override
+    public RunPolicy getClassPolicy(Class<?> testClass) {
+        for (PolicyChecker checker : mChain) {
+            var p = checker.getClassPolicy(testClass);
+            if (p != null && p != RunPolicy.Unspecified) {
+                return p;
+            }
+        }
+        return RunPolicy.Unspecified;
+    }
+
+    @Override
+    public RunPolicy getMethodPolicy(Description description) {
+        for (PolicyChecker checker : mChain) {
+            var p = checker.getMethodPolicy(description);
+            if (p != null && p != RunPolicy.Unspecified) {
+                return p;
+            }
+        }
+        return RunPolicy.Unspecified;
+    }
+}
+
+/**
+ * {@link PolicyChecker} based on annotations.
+ */
+class AnnotationPolicyChecker implements PolicyChecker {
+    @Override
+    public RunPolicy getClassPolicy(@NonNull Class<?> testClass) {
         if (testClass.getAnnotation(EnabledOnRavenwood.class) != null) {
-            result = true;
+            return RunPolicy.Enabled;
         } else if (testClass.getAnnotation(DisabledOnRavenwood.class) != null) {
-            result = false;
-        } else {
-            result = sEnablementPolicy.shouldEnableClass(
-                    RavenwoodEnvironment.getInstance().getTestModuleName(), testClass.getName());
+            return RunPolicy.Disabled;
         }
-        if (checkRunDisabledTestsFlag && RUN_DISABLED_TESTS) {
-            // Invert the result + check the really disable pattern
-            result = !result && !shouldReallyDisableTest(testClass, null);
+        return RunPolicy.Unspecified;
+    }
+
+    @Override
+    public RunPolicy getMethodPolicy(Description description) {
+        // If it's a method, then the method annotation will take precedence.
+        if (description.isTest()) {
+            if (description.getAnnotation(EnabledOnRavenwood.class) != null) {
+                return RunPolicy.Enabled;
+            } else if (description.getAnnotation(DisabledOnRavenwood.class) != null) {
+                return RunPolicy.Disabled;
+            }
         }
-        return result;
+        // Otherwise, consult any class-level annotations
+        return getClassPolicy(description.getTestClass());
+    }
+}
+
+/**
+ * Text file based policy checker.
+ */
+class PatternBasedChecker implements PolicyChecker {
+    private static class ClassPolicy {
+        public final Pattern namePattern;
+        public final RunPolicy policy;
+
+        ClassPolicy(Pattern pattern, RunPolicy policy) {
+            this.namePattern = pattern;
+            this.policy = policy;
+        }
     }
 
     /**
-     * Check if a test should _still_ disabled even if {@link #RUN_DISABLED_TESTS}
-     * is true, using {@link #REALLY_DISABLED_PATTERN}.
+     * Class name patterns -> policy. Because we support wildcards, we use a list here,
+     * and search from the top.
      *
-     * This only works on tests, not on classes.
+     * This represents lines without a '#' in the policy file.
      */
-    private static boolean shouldReallyDisableTest(@NonNull Class<?> testClass,
-            @Nullable String methodName) {
-        if (REALLY_DISABLED_PATTERN.pattern().isEmpty()) {
+    private final ArrayList<ClassPolicy> mClassPolicies = new ArrayList<>();
+
+    /**
+     * Class name (no pattern allowed) -> method name minus [...] (for tests with params) -> policy.
+     *
+     * This represents lines with a '#' in the policy file.
+     */
+    private final Map<String, Map<String, RunPolicy>> mMethodPolicies = new HashMap<>();
+
+    /**
+     * When we have a method policy, we need to enable the enclosing class. To make the look-up
+     * faster, we store the "computed" class policy here, which overrides {@link #mClassPolicies}.
+     */
+    private final Map<String, RunPolicy> mClassPolicyFromMethods = new HashMap<>();
+
+    /**
+     * Adda class policy.
+     */
+    public void addClassPolicy(Pattern pattern, RunPolicy policy) {
+        mClassPolicies.add(new ClassPolicy(pattern, policy));
+    }
+
+    /**
+     * Adda method policy.
+     */
+    public void addMethodPolicy(String className, String methodName, RunPolicy policy) {
+        var classPolicy = mMethodPolicies.computeIfAbsent(className,
+                (k) -> new HashMap<>());
+        classPolicy.put(methodName, policy);
+
+        // When a class has any enabled methods, the class needs to be enabled too.
+        // When a class has ay disabled methods, the class needs to be executed in the
+        // RunDisabledToo mode, so we set "disabled", unless it already is "enabled".
+        if (policy == RunPolicy.Enabled) {
+            mClassPolicyFromMethods.put(className, policy);
+        } else if (policy == RunPolicy.Disabled) {
+            if (mClassPolicyFromMethods.get(className) != RunPolicy.Enabled) {
+                mClassPolicyFromMethods.put(className, policy);
+            }
+        }
+    }
+
+    /**
+     * Get the class policy purely from {@link #mClassPolicies}, without taking into account
+     * any method-based policies.
+     */
+    private RunPolicy getPureClassPolicy(Class<?> testClass) {
+        var className = testClass.getName();
+
+        for (ClassPolicy policy : mClassPolicies) {
+            if (policy.namePattern.matcher(className).matches()) {
+                return policy.policy;
+            }
+        }
+        return RunPolicy.Unspecified;
+    }
+
+    private static final Pattern sParamMatcher = Pattern.compile("\\[.*$");
+
+    /**
+     * Get the class policy. Here, unlike {@link #getPureClassPolicy}, we need to
+     * take into account any method-based policies, so that a class with "enabled" method will
+     * actually be executed.
+     */
+    @Override
+    public RunPolicy getClassPolicy(Class<?> testClass) {
+        var className = testClass.getName();
+
+        var policyFromMethods = mClassPolicyFromMethods.get(className);
+        if (policyFromMethods != null) { // We don't have "unspecified" here, so just a null check.
+            return policyFromMethods;
+        }
+        return getPureClassPolicy(testClass);
+    }
+
+    @Override
+    public RunPolicy getMethodPolicy(Description description) {
+        var className = description.getClassName();
+
+        // Method name without [...].
+        var methodName = sParamMatcher.matcher(description.getMethodName()).replaceFirst("");
+
+        // Check if we have an exact policy.
+        var methods = mMethodPolicies.get(className);
+        if (methods != null) {
+            var policy = methods.get(methodName);
+            if (policy != null) { // We don't have "unspecified" here, so just a null check.
+                return policy;
+            }
+        }
+
+        // Method has no explicit policy.
+        // Here, (unlike the annotation based checker) we can't fallback to
+        // getClassPolicy(), because getClassPolicy() consults mClassPolicyFromMethods, which
+        // says "enabled" if the class has any enabled methods.
+        // However, what's wrong -- when a method has no explicit policy, we still don't want
+        // to run it (assuming the class doesn't have "enable" policy set explicitly).
+        //
+        // So instead, we fallback to getPureClassPolicy(), which only uses mClassPolicies.
+        return getPureClassPolicy(description.getTestClass());
+    }
+}
+
+/**
+ * Parse enablement policy files and build {@link PatternBasedChecker}.
+ */
+class EnablementTextPolicyParser {
+    private static final String TAG = "EnablementTextPolicyParser";
+
+    /** Exception for parse errors. */
+    public static class ParseException extends RuntimeException {
+        public ParseException(String message, String filename) {
+            this(message, filename, 0, null);
+        }
+
+        public ParseException(String message, String filename, Throwable cause) {
+            this(message, filename, 0, cause);
+        }
+
+        public ParseException(String message, String filename, int line) {
+            this(message, filename, line, null);
+        }
+
+        public ParseException(String message, String filename, int line, Throwable cause) {
+            super(buildMessage(message, filename, line), cause);
+        }
+
+        private static String buildMessage(String message, String filename, int line) {
+            var sb = new StringBuilder();
+            sb.append(message);
+            sb.append(": file '");
+            sb.append(filename);
+            sb.append("'");
+
+            if (line > 0) {
+                sb.append(" in line ");
+                sb.append(line);
+            }
+
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Parse given files.
+     */
+    public static PatternBasedChecker parsePolicyFiles(@NonNull String[] files) {
+        var parser = new EnablementTextPolicyParser();
+        for (String file : files) {
+            try {
+                parser.parse(file, Files.readString(Path.of(file)));
+            } catch (IOException e) {
+                throw new ParseException("Unabled to read enablement policy", file, e);
+            }
+        }
+        return parser.getResult();
+    }
+
+    private final PatternBasedChecker mResult = new PatternBasedChecker();
+
+    /**
+     * Constructor
+     */
+    EnablementTextPolicyParser() {
+    }
+
+    /**
+     * Return the result.
+     */
+    PatternBasedChecker getResult() {
+        return mResult;
+    }
+
+    static final String[] EMPTY = new String[0];
+    static final Pattern SPACE = Pattern.compile("\\s+");
+    static final Pattern INLINE_COMMENT = Pattern.compile("\\s+#.*$");
+
+    /**
+     * Normalize and split a line.
+     *
+     * - Lines starting with "#" are ignored.
+     * - Inline comments start with " #"
+     * - Leading/trailing whitespace are all ignored.
+     *
+     * Unlike String.split(), it'll return an empty array for an empty line.
+     */
+    private String[] split(String line) {
+        if (line.startsWith("#")) {
+            return EMPTY;
+        }
+        line = INLINE_COMMENT.matcher(line).replaceFirst("");
+        line = line.trim();
+        if (line.isEmpty()) {
+            return EMPTY;
+        }
+        return SPACE.split(line);
+    }
+
+    /**
+     * Parse a whole policy file content.
+     */
+    void parse(String filename, String text) throws IOException {
+        // The first line should be the module name.
+        var rd = new BufferedReader(new StringReader(text));
+
+        // Skip if it's for other test modules.
+        if (!checkHeader(filename, rd)) {
+            return;
+        }
+
+        String line;
+        int n = 0; // line number
+        while ((line = rd.readLine()) != null) {
+            n++;
+            var cols = split(line);
+            if (cols.length == 0) {
+                continue;
+            }
+            if (cols.length > 2) {
+                throw new ParseException("Too many fields", filename, n);
+            }
+
+            var classMethod = cols[0].split("#");
+            var policy = RunPolicy.Enabled; // Default to enabled
+            if (cols.length >= 2) {
+                try {
+                    policy = RunPolicy.parse(cols[1]);
+                } catch (IllegalArgumentException e) {
+                    throw new ParseException(e.getMessage(), filename, n);
+                }
+            }
+            var className = classMethod[0];
+            var isMethod = classMethod.length > 1;
+
+            if (!isMethod) {
+                // It's a package / class policy.
+                var pattern = parseClassNameWildcard(className);
+                mResult.addClassPolicy(pattern, policy);
+                // Log.v(TAG, "class: " + pattern.pattern() + " -> " + policy);
+            } else {
+                // It's a method policy.
+                var methodName = classMethod[1];
+                if (className.contains("*")) {
+                    throw new ParseException(
+                            "Method policy cannot use wildcards: line='" + line + "'", filename, n);
+                }
+                mResult.addMethodPolicy(className, methodName, policy);
+                // Log.v(TAG, "method: " + className + "." + methodName + " -> " + policy);
+            }
+        }
+    }
+
+    /**
+     * Check the first line of a policy file, which should contain "!module ModuleName",
+     * and return true if it's for the currently running test.
+     */
+    private boolean checkHeader(String file, BufferedReader rd) throws IOException {
+        var header = rd.readLine();
+        if (header == null) {
+            throw new ParseException("File is empty", file);
+        }
+        var cols = split(header);
+
+        if (cols.length != 2 || !"!module".equals(cols[0])) {
+            throw new ParseException("File must start with '!module ModuleName'", file);
+        }
+
+        if (!cols[1].equals(RavenwoodEnvironment.getInstance().getTestModuleName())) {
+            Log.i(TAG, "Skip " + file);
             return false;
         }
-
-        final var fullname = testClass.getName() + (methodName != null ? "#" + methodName : "");
-
-        if (REALLY_DISABLED_PATTERN.matcher(fullname).find()) {
-            System.out.println("Still ignoring " + fullname);
-            return true;
-        }
-        return false;
+        Log.i(TAG, "Parsing " + file);
+        return true;
     }
 }

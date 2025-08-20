@@ -118,7 +118,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
          *
          * We need to do it before instantiating TestClass for b/367694651.
          */
-        if (!RavenwoodEnablementChecker.shouldRunClassOnRavenwood(testClass, true)) {
+        if (!RavenwoodEnablementChecker.getInstance().shouldRunClassOnRavenwood(testClass)) {
             mRealRunner = new ClassSkippingTestRunner(testClass);
             return;
         }
@@ -244,7 +244,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         private boolean mFilteredOut;
 
         ClassSkippingTestRunner(Class<?> testClass) {
-            mDescription = Description.createTestDescription(testClass, testClass.getSimpleName());
+            mDescription = Description.createTestDescription(testClass, "<init>");
             mFilteredOut = false;
         }
 
@@ -288,7 +288,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
         // Class-level annotations are checked by the runner already, so we only check
         // method-level annotations here.
         if (scope == Scope.Instance && order == Order.Outer) {
-            if (!RavenwoodEnablementChecker.shouldEnableOnRavenwood(description, true)) {
+            if (!RavenwoodEnablementChecker.getInstance().shouldEnableOnRavenwood(description)) {
                 return false;
             }
         }
