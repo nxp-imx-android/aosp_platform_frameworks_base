@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.notification.row;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
+import static com.android.wm.shell.shared.draganddrop.DragAndDropConstants.IS_FROM_NOTIFICATION;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -52,8 +54,8 @@ import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.statusbar.CommandQueue;
-import com.android.systemui.statusbar.notification.logging.NotificationPanelLogger;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
+import com.android.systemui.statusbar.notification.logging.NotificationPanelLogger;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import javax.inject.Inject;
@@ -138,6 +140,7 @@ public class ExpandableNotificationRowDragController {
         ClipData.Item item = new ClipData.Item(dragIntent);
         InstanceId instanceId = new InstanceIdSequence(Integer.MAX_VALUE).newInstanceId();
         item.getIntent().putExtra(ClipDescription.EXTRA_LOGGING_INSTANCE_ID, instanceId);
+        item.getIntent().putExtra(IS_FROM_NOTIFICATION, true);
         ClipData dragData = new ClipData(clipDescription, item);
         View.DragShadowBuilder myShadow = new View.DragShadowBuilder(snapshot);
         view.setOnDragListener(getDraggedViewDragListener());
