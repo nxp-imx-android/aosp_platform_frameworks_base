@@ -368,14 +368,14 @@ public class UserManagerService extends IUserManager.Stub {
 
     // The boot user strategy for HSUM.
     @VisibleForTesting
-    static final int BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
+    static final int BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
     @VisibleForTesting
-    static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+    static final int BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(flag = false, prefix = { "BOOT_TO_" }, value = {
-            BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER,
-            BOOT_TO_HSU_FOR_PROVISIONED_DEVICE})
+    @IntDef(flag = false, prefix = { "BOOT_STRATEGY_" }, value = {
+            BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER,
+            BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE})
     @VisibleForTesting
     @interface BootStrategy {}
 
@@ -1471,9 +1471,9 @@ public class UserManagerService extends IUserManager.Stub {
             final int bootStrategy = getContextResources()
                     .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
             switch (bootStrategy) {
-                case BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
+                case BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
                     return getPreviousOrFirstSwitchableUser();
-                case BOOT_TO_HSU_FOR_PROVISIONED_DEVICE:
+                case BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE:
                     return getBootUserBasedOnProvisioning();
                 default:
                     Slogf.w(LOG_TAG, "Unknown HSUM boot strategy: %d", bootStrategy);
