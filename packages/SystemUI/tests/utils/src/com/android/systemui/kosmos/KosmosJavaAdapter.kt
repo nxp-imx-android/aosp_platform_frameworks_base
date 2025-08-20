@@ -67,7 +67,6 @@ import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.domain.startable.scrimStartable
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
@@ -211,7 +210,6 @@ class KosmosJavaAdapter() {
     val alternateBouncerInteractor by lazy { kosmos.alternateBouncerInteractor }
 
     val scrimController by lazy { kosmos.scrimController }
-    val scrimStartable by lazy { kosmos.scrimStartable }
     val keyguardOcclusionInteractor by lazy { kosmos.keyguardOcclusionInteractor }
     val msdlPlayer by lazy { kosmos.fakeMSDLPlayer }
 

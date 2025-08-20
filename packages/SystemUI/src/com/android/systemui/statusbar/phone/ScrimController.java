@@ -67,7 +67,6 @@ import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.Edge;
-import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.keyguard.shared.model.ScrimAlpha;
 import com.android.systemui.keyguard.shared.model.TransitionState;
 import com.android.systemui.keyguard.shared.model.TransitionStep;
@@ -93,6 +92,8 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 
 import dagger.Lazy;
 
+import kotlin.Deprecated;
+
 import kotlinx.coroutines.CoroutineDispatcher;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 
@@ -105,11 +106,12 @@ import javax.inject.Inject;
 
 /**
  * Controls both the scrim behind the notifications and in front of the notifications (when a
- * security method gets shown).
+ * security method gets shown). Unused when the scene_container flag is enabled.
  */
 @SuppressLint("DumpableNotRegistered") // CentralSurfaces dumps ScrimController
 @SysUISingleton
 @ExperimentalCoroutinesApi
+@Deprecated(message = "Scrim controller cannot be used when SceneContainerFlag is enabled")
 public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dumpable {
 
     static final String TAG = "ScrimController";
@@ -329,7 +331,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private final Consumer<TransitionStep> mGlanceableHubConsumer = (TransitionStep step) -> {
         final float baseAlpha = ScrimState.KEYGUARD.getBehindAlpha();
         final float transitionProgress = step.getValue();
-        if (step.getTo() == KeyguardState.LOCKSCREEN) {
+        if (step.getTo() == LOCKSCREEN) {
             // Transitioning back to lock screen, fade in behind scrim again.
             mBehindAlpha = baseAlpha * transitionProgress;
         } else if (step.getTo() == GLANCEABLE_HUB) {
@@ -400,6 +402,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             BlurConfig blurConfig,
             @Main Context context,
             Lazy<WindowRootViewBlurInteractor> windowRootViewBlurInteractor) {
+        SceneContainerFlag.assertInLegacyMode();
         mContext = context;
         mScrimStateListener = lightBarController::setScrimState;
         mLargeScreenShadeInterpolator = largeScreenShadeInterpolator;
@@ -486,10 +489,6 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     }
 
     private void hydrateStateInternally(ScrimView behindScrim) {
-        if (SceneContainerFlag.isEnabled()) {
-            return;
-        }
-
         // Directly control transition to UNLOCKED scrim state from PRIMARY_BOUNCER, and make sure
         // to report back that keyguard has faded away. This fixes cases where the scrim state was
         // rapidly switching on unlock, due to shifts in state in CentralSurfacesImpl
@@ -618,22 +617,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         mScrimVisibleListener = listener;
     }
 
-    public void transitionTo(ScrimState state) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode() || !mViewsAttached) {
-            return;
-        }
-
-        internalTransitionTo(state, null);
-    }
-
     /**
      * Transitions to the given {@link ScrimState}.
      *
      * @deprecated Legacy codepath only. Do not call directly.
      */
-    @Deprecated
     public void legacyTransitionTo(ScrimState state) {
-        SceneContainerFlag.assertInLegacyMode();
         internalTransitionTo(state, null);
     }
 
@@ -642,9 +631,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
      *
      * @deprecated Legacy codepath only. Do not call directly.
      */
-    @Deprecated
     public void legacyTransitionTo(ScrimState state, Callback callback) {
-        SceneContainerFlag.assertInLegacyMode();
         internalTransitionTo(state, callback);
     }
 

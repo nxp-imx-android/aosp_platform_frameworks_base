@@ -47,7 +47,7 @@ val Kosmos.dozeServiceHost: DozeServiceHost by
             deviceProvisionedController,
             mockHeadsUpManager,
             batteryController,
-            scrimController,
+            { scrimController },
             { biometricUnlockController },
             { assistManager },
             dozeScrimController,
