@@ -63,7 +63,6 @@ import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFI
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__SINGLE_TAP;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__UNKNOWN_CLASSIFICATION;
-import static com.android.window.flags.Flags.FLAG_SUPPORTS_DRAG_ASSISTANT_TO_MULTIWINDOW;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 
 import static java.lang.Math.max;
@@ -5638,7 +5637,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * the current drag gesture. Only the current
      * {@link android.service.voice.VoiceInteractionService} may use this flag.
      */
-    @FlaggedApi(FLAG_SUPPORTS_DRAG_ASSISTANT_TO_MULTIWINDOW)
     public static final int DRAG_FLAG_HIDE_CALLING_TASK_ON_DRAG_START = 1 << 14;
 
     /**
