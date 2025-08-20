@@ -5910,7 +5910,6 @@ class DesktopTasksController(
         pw.println("${prefix}DesktopTasksController")
         desktopConfig.dump(pw, innerPrefix)
         userRepositories.dump(pw, innerPrefix)
-        focusTransitionObserver.dump(pw, innerPrefix)
         if (Flags.showDesktopExperienceDevOption()) {
             dumpFlags(pw, prefix)
         }
