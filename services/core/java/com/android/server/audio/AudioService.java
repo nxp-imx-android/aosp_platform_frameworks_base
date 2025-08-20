@@ -2244,7 +2244,7 @@ public class AudioService extends IAudioService.Stub
         }
         synchronized (mHdmiClientLock) {
             if (mHdmiManager != null && mHdmiTvClient != null) {
-                setHdmiSystemAudioSupported(mHdmiSystemAudioSupported);
+                setHdmiSystemAudioSupported(mHdmiSystemAudioSupported, true);
             }
         }
 
@@ -13272,6 +13272,10 @@ public class AudioService extends IAudioService.Stub
 
     @Override
     public int setHdmiSystemAudioSupported(boolean on) {
+        return setHdmiSystemAudioSupported(on, false);
+    }
+
+    private int setHdmiSystemAudioSupported(boolean on, boolean force) {
         int device = AudioSystem.DEVICE_NONE;
         synchronized (mHdmiClientLock) {
             if (mHdmiManager != null) {
@@ -13280,7 +13284,7 @@ public class AudioService extends IAudioService.Stub
                             + "system audio mode.");
                     return device;
                 }
-                if (mHdmiSystemAudioSupported != on) {
+                if (force || mHdmiSystemAudioSupported != on) {
                     mHdmiSystemAudioSupported = on;
                     final int config = on ? AudioSystem.FORCE_HDMI_SYSTEM_AUDIO_ENFORCED :
                         AudioSystem.FORCE_NONE;

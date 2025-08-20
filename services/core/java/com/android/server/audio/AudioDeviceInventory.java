@@ -904,9 +904,14 @@ public class AudioDeviceInventory {
                 }
                 // device disconnected: call setDeviceConnectionState(AVAILABLE)
                 res = mAudioSystem.setDeviceConnectionState(new AudioDeviceAttributes(
-                            di.mDeviceType,
+                            AudioSystem.isInputDevice(di.mDeviceType)
+                                ? AudioDeviceAttributes.ROLE_INPUT
+                                : AudioDeviceAttributes.ROLE_OUTPUT,
+                            AudioDeviceInfo.convertInternalDeviceToDeviceType(di.mDeviceType),
                             di.mDeviceAddress,
-                            di.mDeviceName),
+                            di.mDeviceName,
+                            di.mAudioProfiles,
+                            di.mAudioDescriptors),
                         AudioSystem.DEVICE_STATE_AVAILABLE,
                         di.mDeviceCodecFormat, false /*deviceSwitch*/);
                 if (res == AudioSystem.AUDIO_STATUS_SERVER_DIED) {
