@@ -70,7 +70,7 @@ public class DisplayFrameworkStatsLoggerTest {
                 .write(
                         FrameworkStatsLog.DISPLAY_EVENT_CALLBACK_OCCURRED,
                         expectedProtoType,
-                        uidMap.copyKeys());
+                        uidMap.copyKeys(), 2);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class DisplayFrameworkStatsLoggerTest {
                 .write(
                         FrameworkStatsLog.DISPLAY_EVENT_CALLBACK_OCCURRED,
                         expectedProtoType,
-                        uidMap.copyKeys());
+                        uidMap.copyKeys(), 1);
     }
 
     @Test
@@ -113,6 +113,6 @@ public class DisplayFrameworkStatsLoggerTest {
                 .write(
                         FrameworkStatsLog.DISPLAY_EVENT_CALLBACK_OCCURRED,
                         expectedProtoType,
-                        uidMap.copyKeys());
+                        uidMap.copyKeys(), 1);
     }
 }

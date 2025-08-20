@@ -30,7 +30,8 @@ public final class DisplayFrameworkStatsLogger {
         FrameworkStatsLog.write(
                 FrameworkStatsLog.DISPLAY_EVENT_CALLBACK_OCCURRED,
                 toProtoEventType(event),
-                notifiedUids.copyKeys());
+                notifiedUids.copyKeys(),
+                notifiedUids.size());
     }
 
     /**
