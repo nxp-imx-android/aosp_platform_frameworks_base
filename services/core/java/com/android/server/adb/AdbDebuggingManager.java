@@ -84,33 +84,16 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Provides communication to the Android Debug Bridge daemon to allow, deny, or clear public keys
- * that are authorized to connect to the ADB service itself.
- *
- * <p>The AdbDebuggingManager controls two files:
- *
- * <ol>
- *   <li>adb_keys
- *   <li>adb_temp_keys.xml
- * </ol>
- *
- * <p>The ADB Daemon (adbd) reads <em>only</em> the adb_keys file for authorization. Public keys
- * from registered hosts are stored in adb_keys, one entry per line.
- *
- * <p>AdbDebuggingManager also keeps adb_temp_keys.xml, which is used for two things
- *
- * <ol>
- *   <li>Removing unused keys from the adb_keys file
- *   <li>Managing authorized WiFi access points for ADB over WiFi
- * </ol>
+ * Manages communication with the Android Debug Bridge (ADB) daemon to allow, deny, or clear public
+ * keys that are authorized to connect to the ADB service itself. The storage of authorized public
+ * keys is done through {@link AdbKeyStore}.
  */
 public class AdbDebuggingManager {
     private static final String TAG = AdbDebuggingManager.class.getSimpleName();
@@ -144,8 +127,19 @@ public class AdbDebuggingManager {
     private static final long ADBD_STATE_CHANGE_TIMEOUT = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 
     private AdbPairingThread mAdbPairingThread = null;
-    // A list of keys connected via wifi
-    private final Set<String> mWifiConnectedKeys = new HashSet<>();
+
+    /**
+     * The set of public keys for devices currently connected over Wi-Fi ADB.
+     *
+     * <p>This collection is thread-safe for reads from any thread but MUST only be modified on the
+     * {@link AdbDebuggingHandler} thread to avoid dead locks.
+     *
+     * <p>{@link CopyOnWriteArraySet} is used because reads (for updating the UI) are expected to be
+     * much more frequent than writes (device connections and disconnections), making lock-free
+     * reads highly efficient.
+     */
+    private final Set<String> mWifiConnectedKeys = new CopyOnWriteArraySet<>();
+
     // The current info of the adbwifi connection.
     private final AdbConnectionInfo mAdbConnectionInfo = new AdbConnectionInfo();
 
@@ -610,7 +604,13 @@ public class AdbDebuggingManager {
         @VisibleForTesting
         void initKeyStore() {
             if (mAdbKeyStore == null) {
-                mAdbKeyStore = new AdbKeyStore();
+                mAdbKeyStore =
+                        new AdbKeyStore(
+                                mContext,
+                                mTempKeysFile,
+                                mUserKeyFile,
+                                mTicker,
+                                () -> sendPersistKeyStoreMessage());
             }
         }
 
@@ -899,13 +899,13 @@ public class AdbDebuggingManager {
                     mThread.sendResponse(cmdStr);
                     mAdbKeyStore.removeKey(publicKey);
                     // Send the updated paired devices list to the UI.
-                    sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
+                    sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
                 }
                 case MSG_RESPONSE_PAIRING_RESULT -> {
                     String publicKey = (String) msg.obj;
                     onPairingResult(publicKey);
                     // Send the updated paired devices list to the UI.
-                    sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
+                    sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
                 }
                 case MSG_RESPONSE_PAIRING_PORT -> {
                     int port = (int) msg.obj;
@@ -939,14 +939,14 @@ public class AdbDebuggingManager {
                 case MSG_WIFI_DEVICE_CONNECTED -> {
                     String key = (String) msg.obj;
                     if (mWifiConnectedKeys.add(key)) {
-                        sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
+                        sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
                         showAdbConnectedNotification(true);
                     }
                 }
                 case MSG_WIFI_DEVICE_DISCONNECTED -> {
                     String key = (String) msg.obj;
                     if (mWifiConnectedKeys.remove(key)) {
-                        sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
+                        sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
                         if (mWifiConnectedKeys.isEmpty()) {
                             showAdbConnectedNotification(false);
                         }
@@ -1082,7 +1082,7 @@ public class AdbDebuggingManager {
 
         private void onAdbdWifiServerConnected(int port) {
             // Send the paired devices list to the UI
-            sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
+            sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
             sendServerConnectionState(true, port);
         }
 
@@ -1198,7 +1198,22 @@ public class AdbDebuggingManager {
         }
     }
 
-    private String getFingerprints(String key) {
+    /**
+     * Calculates and returns the MD5 fingerprint of a given key string. The key string is expected
+     * to be a Base64 encoded string, optionally followed by whitespace and other content. Only the
+     * first part (before any whitespace) is used for the fingerprint calculation.
+     *
+     * <p>The MD5 fingerprint is returned as a colon-separated hexadecimal string. For example:
+     * "A1:B2:C3:D4:E5:F6:A7:B8:C9:D0:E1:F2:A3:B4:C5:D6"
+     *
+     * @param key The key string from which to generate the fingerprint. Expected to contain a
+     *     Base64 encoded string as its first part.
+     * @return The MD5 fingerprint of the decoded Base64 key, or an empty string if the input key is
+     *     null, if the MD5 algorithm is not available, or if there's an error during Base64
+     *     decoding.
+     */
+    // TODO(b/420613813) move to AdbKey object.
+    static String getFingerprints(String key) {
         String hex = "0123456789ABCDEF";
         StringBuilder sb = new StringBuilder();
         MessageDigest digester;
@@ -1434,8 +1449,32 @@ public class AdbDebuggingManager {
 
     /** Returns the list of paired devices. */
     public Map<String, PairDevice> getPairedDevices() {
-        AdbKeyStore keystore = new AdbKeyStore();
-        return keystore.getPairedDevices();
+        AdbKeyStore keystore =
+                new AdbKeyStore(
+                        mContext,
+                        mTempKeysFile,
+                        mUserKeyFile,
+                        mTicker,
+                        () -> sendPersistKeyStoreMessage());
+        return getPairedDevicesForKeys(keystore.getKeys());
+    }
+
+    private Map<String, PairDevice> getPairedDevicesForKeys(Set<String> keys) {
+        Map<String, PairDevice> pairedDevices = new HashMap();
+        for (String key : keys) {
+            String fingerprints = getFingerprints(key);
+            String hostname = "nouser@nohostname";
+            String[] args = key.split("\\s+");
+            if (args.length > 1) {
+                hostname = args[1];
+            }
+            PairDevice pairDevice = new PairDevice();
+            pairDevice.name = hostname;
+            pairDevice.guid = fingerprints;
+            pairDevice.connected = mWifiConnectedKeys.contains(key);
+            pairedDevices.put(key, pairDevice);
+        }
+        return pairedDevices;
     }
 
     /** Unpair with device */
@@ -1526,293 +1565,6 @@ public class AdbDebuggingManager {
         }
 
         dump.end(token);
-    }
-
-    /**
-     * Handles adb keys for which the user has granted the 'always allow' option. This class ensures
-     * these grants are revoked after a period of inactivity as specified in the
-     * ADB_ALLOWED_CONNECTION_TIME setting.
-     */
-    class AdbKeyStore {
-        private final Set<String> mSystemKeys;
-        private AdbAuthorizationStore.Entries mAuthEntries;
-
-        /**
-         * Manages the list of keys that adbd always allows to connect, regardless of last
-         * connection-time.
-         *
-         * <p>This list of keys along with #{mSystemKeys} represents the source of truth for adbd.
-         */
-        private final AdbdKeyStoreStorage mAdbKeyUser;
-
-        /**
-         * Manages the list of temporary keys, including their last connection time, and the list of
-         * trusted networks.
-         */
-        private final AdbAuthorizationStore mAuthStore;
-
-        private static final String SYSTEM_KEY_FILE = "/adb_keys";
-
-        /**
-         * Value returned by {@code getLastConnectionTime} when there is no previously saved
-         * connection time for the specified key.
-         */
-        public static final long NO_PREVIOUS_CONNECTION = 0;
-
-        /**
-         * Create an AdbKeyStore instance.
-         *
-         * <p>Upon creation, we parse {@link #mTempKeysFile} to determine authorized WiFi APs and
-         * retrieve the map of stored ADB keys and their last connected times. After that, we read
-         * the {@link #mUserKeyFile}, and any keys that exist in that file that do not exist in the
-         * map are added to the map (for backwards compatibility).
-         */
-        AdbKeyStore() {
-            mAdbKeyUser = new AdbdKeyStoreStorage(mUserKeyFile);
-            mAuthStore = new AdbAuthorizationStore(mTempKeysFile);
-            mAuthEntries = mAuthStore.load();
-
-            // The system keystore handles keys pre-loaded into the read-only system partition at
-            // /adb_keys. Unlike the user keystore (/data/misc/adb/adb_keys), these
-            // system keys are considered permanently trusted, are not subject to expiration, and
-            // cannot be modified by the user.
-            AdbdKeyStoreStorage systemKeyStore = new AdbdKeyStoreStorage(
-                    new File(SYSTEM_KEY_FILE));
-            mSystemKeys = systemKeyStore.loadKeys();
-            copyUserKeysToTempAuthorizationStore();
-        }
-
-        public void reloadKeyMap() {
-            mAuthEntries = mAuthStore.load();
-        }
-
-        public void addTrustedNetwork(String bssid) {
-            mAuthEntries.trustedNetworks().add(bssid);
-            sendPersistKeyStoreMessage();
-        }
-
-        public Map<String, PairDevice> getPairedDevices() {
-            Map<String, PairDevice> pairedDevices = new HashMap<String, PairDevice>();
-            for (Map.Entry<String, Long> keyEntry : mAuthEntries.keys().entrySet()) {
-                String fingerprints = getFingerprints(keyEntry.getKey());
-                String hostname = "nouser@nohostname";
-                String[] args = keyEntry.getKey().split("\\s+");
-                if (args.length > 1) {
-                    hostname = args[1];
-                }
-                PairDevice pairDevice = new PairDevice();
-                pairDevice.name = hostname;
-                pairDevice.guid = fingerprints;
-                pairDevice.connected = mWifiConnectedKeys.contains(keyEntry.getKey());
-                pairedDevices.put(keyEntry.getKey(), pairDevice);
-            }
-            return pairedDevices;
-        }
-
-        public String findKeyFromFingerprint(String fingerprint) {
-            for (Map.Entry<String, Long> entry : mAuthEntries.keys().entrySet()) {
-                String f = getFingerprints(entry.getKey());
-                if (fingerprint.equals(f)) {
-                    return entry.getKey();
-                }
-            }
-            return null;
-        }
-
-        public void removeKey(String key) {
-            if (mAuthEntries.keys().containsKey(key)) {
-                mAuthEntries.keys().remove(key);
-                sendPersistKeyStoreMessage();
-            }
-        }
-
-        /**
-         * Returns whether there are any 'always allowed' keys in the keystore.
-         */
-        public boolean isEmpty() {
-            return mAuthEntries.keys().isEmpty();
-        }
-
-        /**
-         * Iterates through the keys in the keystore and removes any that are beyond the window
-         * within which connections are automatically allowed without user interaction.
-         */
-        public void updateKeyStore() {
-            if (filterOutOldKeys()) {
-                sendPersistKeyStoreMessage();
-            }
-        }
-
-        /**
-         * Copies keys from the user key file to the temp authorization store. This ensures that
-         * keys that were previously authorized before the introduction of the keystore are still
-         * authorized.
-         */
-        private void copyUserKeysToTempAuthorizationStore() {
-            Set<String> keys = mAdbKeyUser.loadKeys();
-            boolean mapUpdated = false;
-            for (String key : keys) {
-                if (!mAuthEntries.keys().containsKey(key)) {
-                    // if the keystore does not contain the key from the user key file then add
-                    // it to the Map with the current system time to prevent it from expiring
-                    // immediately if the user is actively using this key.
-                    mAuthEntries.keys().put(key, mTicker.currentTimeMillis());
-                    mapUpdated = true;
-                }
-            }
-            if (mapUpdated) {
-                sendPersistKeyStoreMessage();
-            }
-        }
-
-        /** Writes the key map to the key file. */
-        public void persistKeyStore() {
-            // if there is nothing in the key map then ensure any keys left in the keystore files
-            // are deleted as well.
-            filterOutOldKeys();
-            if (mAuthEntries.isEmpty()) {
-                deleteKeyStore();
-                return;
-            }
-            mAuthStore.save(mAuthEntries);
-            mAdbKeyUser.saveKeys(mAuthEntries.keys().keySet());
-        }
-
-        private boolean filterOutOldKeys() {
-            long allowedTime = getAllowedConnectionTime();
-            if (allowedTime == 0) {
-                return false;
-            }
-            boolean keysDeleted = false;
-            long systemTime = mTicker.currentTimeMillis();
-            Iterator<Map.Entry<String, Long>> keyMapIterator =
-                    mAuthEntries.keys().entrySet().iterator();
-            while (keyMapIterator.hasNext()) {
-                Map.Entry<String, Long> keyEntry = keyMapIterator.next();
-                long connectionTime = keyEntry.getValue();
-                if (systemTime > (connectionTime + allowedTime)) {
-                    keyMapIterator.remove();
-                    keysDeleted = true;
-                }
-            }
-            // if any keys were deleted then the key file should be rewritten with the active keys
-            // to prevent authorizing a key that is now beyond the allowed window.
-            if (keysDeleted) {
-                mAdbKeyUser.saveKeys(mAuthEntries.keys().keySet());
-            }
-            return keysDeleted;
-        }
-
-        /**
-         * Returns the time in ms that the next key will expire or -1 if there are no keys or the
-         * keys will not expire.
-         */
-        public long getNextExpirationTime() {
-            long minExpiration = -1;
-            long allowedTime = getAllowedConnectionTime();
-            // if the allowedTime is 0 then keys never expire; return -1 to indicate this
-            if (allowedTime == 0) {
-                return minExpiration;
-            }
-            long systemTime = mTicker.currentTimeMillis();
-            Iterator<Map.Entry<String, Long>> keyMapIterator =
-                    mAuthEntries.keys().entrySet().iterator();
-            while (keyMapIterator.hasNext()) {
-                Map.Entry<String, Long> keyEntry = keyMapIterator.next();
-                long connectionTime = keyEntry.getValue();
-                // if the key has already expired then ensure that the result is set to 0 so that
-                // any scheduled jobs to clean up the keystore can run right away.
-                long keyExpiration = Math.max(0, (connectionTime + allowedTime) - systemTime);
-                if (minExpiration == -1 || keyExpiration < minExpiration) {
-                    minExpiration = keyExpiration;
-                }
-            }
-            return minExpiration;
-        }
-
-        /** Removes all of the entries in the key map and deletes the key file. */
-        public void deleteKeyStore() {
-            mAuthEntries.clear();
-            mAuthStore.delete();
-            mAdbKeyUser.delete();
-        }
-
-        /**
-         * Returns the time of the last connection from the specified key, or {@code
-         * NO_PREVIOUS_CONNECTION} if the specified key does not have an active adb grant.
-         */
-        public long getLastConnectionTime(String key) {
-            return mAuthEntries.keys().getOrDefault(key, NO_PREVIOUS_CONNECTION);
-        }
-
-        /** Sets the time of the last connection for the specified key to the provided time. */
-        public void setLastConnectionTime(String key, long connectionTime) {
-            setLastConnectionTime(key, connectionTime, false);
-        }
-
-        /**
-         * Sets the time of the last connection for the specified key to the provided time. If force
-         * is set to true the time will be set even if it is older than the previously written
-         * connection time.
-         */
-        @VisibleForTesting
-        void setLastConnectionTime(String key, long connectionTime, boolean force) {
-            // Do not set the connection time to a value that is earlier than what was previously
-            // stored as the last connection time unless force is set.
-            if (mAuthEntries.keys().containsKey(key)
-                    && mAuthEntries.keys().get(key) >= connectionTime
-                    && !force) {
-                return;
-            }
-            // System keys are always allowed so there's no need to keep track of their connection
-            // time.
-            if (mSystemKeys.contains(key)) {
-                return;
-            }
-            mAuthEntries.keys().put(key, connectionTime);
-        }
-
-        /**
-         * Returns the connection time within which a connection from an allowed key is
-         * automatically allowed without user interaction.
-         */
-        public long getAllowedConnectionTime() {
-            return Settings.Global.getLong(
-                    mContext.getContentResolver(),
-                    Settings.Global.ADB_ALLOWED_CONNECTION_TIME,
-                    Settings.Global.DEFAULT_ADB_ALLOWED_CONNECTION_TIME);
-        }
-
-        /**
-         * Returns whether the specified key should be authroized to connect without user
-         * interaction. This requires that the user previously connected this device and selected
-         * the option to 'Always allow', and the time since the last connection is within the
-         * allowed window.
-         */
-        public boolean isKeyAuthorized(String key) {
-            // A system key is always authorized to connect.
-            if (mSystemKeys.contains(key)) {
-                return true;
-            }
-            long lastConnectionTime = getLastConnectionTime(key);
-            if (lastConnectionTime == NO_PREVIOUS_CONNECTION) {
-                return false;
-            }
-            long allowedConnectionTime = getAllowedConnectionTime();
-            // if the allowed connection time is 0 then revert to the previous behavior of always
-            // allowing previously granted adb grants.
-            return allowedConnectionTime == 0
-                    || (mTicker.currentTimeMillis() < (lastConnectionTime + allowedConnectionTime));
-        }
-
-        /**
-         * Returns whether the specified bssid is in the list of trusted networks. This requires
-         * that the user previously allowed wireless debugging on this network and selected the
-         * option to 'Always allow'.
-         */
-        public boolean isTrustedNetwork(String bssid) {
-            return mAuthEntries.trustedNetworks().contains(bssid);
-        }
     }
 
     /**
