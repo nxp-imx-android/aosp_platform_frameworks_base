@@ -89,6 +89,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions.LaunchCookie;
 import android.app.PropertyInvalidatedCache;
+import android.app.TaskStackListener;
 import android.app.job.JobScheduler;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
@@ -4107,6 +4108,30 @@ public class DisplayManagerServiceTest {
         Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
         final ContentObserver observer = displayManager.getSettingsObserver();
         observer.onChange(false, Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY));
+        assertThat(displayManager.shouldMirrorBuiltInDisplay()).isFalse();
+    }
+
+    @Test
+    public void testMirrorBuiltInDisplay_onLockTaskModeChanged() {
+        when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
+        when(mMockFlags.isDisplayMirrorInLockTaskModeEnabled()).thenReturn(true);
+        when(mMockActivityTaskManagerInternal.getLockTaskModeState())
+                .thenReturn(ActivityManager.LOCK_TASK_MODE_NONE);
+
+        DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
+        displayManager.windowManagerAndInputReady();
+        displayManager.systemReady(/* safeMode= */ false);
+        assertThat(displayManager.shouldMirrorBuiltInDisplay()).isFalse();
+
+        when(mMockActivityTaskManagerInternal.getLockTaskModeState())
+                .thenReturn(ActivityManager.LOCK_TASK_MODE_LOCKED);
+        final TaskStackListener taskStackListener = displayManager.getTaskStackListener();
+        taskStackListener.onLockTaskModeChanged(ActivityManager.LOCK_TASK_MODE_LOCKED);
+        assertThat(displayManager.shouldMirrorBuiltInDisplay()).isTrue();
+
+        when(mMockActivityTaskManagerInternal.getLockTaskModeState())
+                .thenReturn(ActivityManager.LOCK_TASK_MODE_NONE);
+        taskStackListener.onLockTaskModeChanged(ActivityManager.LOCK_TASK_MODE_NONE);
         assertThat(displayManager.shouldMirrorBuiltInDisplay()).isFalse();
     }
 
