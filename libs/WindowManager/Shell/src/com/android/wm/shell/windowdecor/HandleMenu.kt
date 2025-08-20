@@ -983,6 +983,7 @@ private constructor(
                     SplitScreenUtils.isLeftRightSplit(
                         SplitScreenUtils.allowLeftRightSplitInPortrait(context.resources),
                         configuration,
+                        taskInfo.displayId,
                     )
                 ) {
                     0f

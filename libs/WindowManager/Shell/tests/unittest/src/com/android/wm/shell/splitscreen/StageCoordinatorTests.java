@@ -326,7 +326,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         mStageCoordinator.onTaskInfoChanged(mSplitMultiDisplayHelper.getDisplayRootTaskInfo(
                 DEFAULT_DISPLAY));
 
-        verify(mSplitLayout).updateConfiguration(any(Configuration.class));
+        verify(mSplitLayout).updateConfiguration(any(Configuration.class), eq(DEFAULT_DISPLAY));
     }
 
     @Test
