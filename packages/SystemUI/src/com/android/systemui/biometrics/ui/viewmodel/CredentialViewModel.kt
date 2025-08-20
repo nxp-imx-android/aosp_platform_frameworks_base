@@ -18,6 +18,8 @@ import com.android.systemui.biometrics.shared.model.WatchRangingState
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.google.android.msdl.data.model.MSDLToken
+import com.google.android.msdl.domain.MSDLPlayer
 import javax.inject.Inject
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +39,7 @@ constructor(
     private val promptCredentialInteractor: PromptCredentialInteractor,
     shadeInteractor: ShadeInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
+    private val msdlPlayer: MSDLPlayer,
 ) {
     /**
      * Whether credential is allowed in the prompt True if bp caller requested credential and
@@ -243,6 +246,8 @@ constructor(
                 )
         context.startActivity(intent)
     }
+
+    fun performPatternDotFeedback() = msdlPlayer.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE)
 }
 
 private fun Context.asBadCredentialErrorMessage(prompt: BiometricPromptRequest?): String =
