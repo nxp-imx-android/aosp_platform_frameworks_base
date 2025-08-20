@@ -47,8 +47,10 @@ import com.android.systemui.InstanceIdSequenceFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.data.repository.mediaDataRepository
@@ -202,6 +204,8 @@ class MediaDataProcessorTest() : SysuiTestCase() {
                 mediaDataCombineLatest = mediaDataCombineLatest,
                 mediaDataFilter = mediaDataFilter,
                 mediaPipelineRepository = mediaFilterRepository,
+                keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
+                deviceEntryInteractor = kosmos.deviceEntryInteractor,
             )
         mediaCarouselInteractor.start()
         verify(mediaTimeoutListener).stateCallback = capture(stateCallbackCaptor)

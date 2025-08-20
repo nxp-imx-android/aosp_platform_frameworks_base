@@ -48,6 +48,7 @@ import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
 import com.android.systemui.res.R
+import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.time.SystemClock
 import java.util.TreeMap
 import javax.inject.Inject
@@ -92,7 +93,15 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     @Background val backgroundDispatcher: CoroutineDispatcher,
     private val systemClock: SystemClock,
-) : MediaRepository, MediaPipelineRepository(applicationContext) {
+    secureSettings: SecureSettings,
+) :
+    MediaRepository,
+    MediaPipelineRepository(
+        applicationContext,
+        applicationScope,
+        backgroundDispatcher,
+        secureSettings,
+    ) {
 
     override val currentMedia: SnapshotStateList<MediaDataModel> = mutableStateListOf()
 
