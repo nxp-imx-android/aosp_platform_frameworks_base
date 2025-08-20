@@ -24,6 +24,7 @@ import com.android.systemui.deviceentry.domain.interactor.biometricMessageIntera
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
+import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -41,6 +42,7 @@ var Kosmos.secureLockDeviceBiometricAuthContentViewModel by Fixture {
         deviceEntryFingerprintAuthInteractor = deviceEntryFingerprintAuthInteractor,
         secureLockDeviceInteractor = secureLockDeviceInteractor,
         udfpsAccessibilityOverlayViewModel = alternateBouncerUdfpsAccessibilityOverlayViewModel,
+        interactionJankMonitor = interactionJankMonitor,
     )
 }
 

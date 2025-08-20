@@ -516,8 +516,21 @@ public class Cuj {
      */
     public static final int CUJ_AMBIENT_CUE_COLLAPSE = 148;
 
+    /**
+     * Tracking transition from primary auth (PIN/pattern/password bouncer) to the biometric auth
+     * bouncer during secure lock device two-factor authentication.
+     */
+    public static final int CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR = 149;
+
+    /**
+     * Tracking bouncer dismissal following two-factor authentication completion in secure
+     * lock device.
+     */
+    public static final int CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR = 150;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_AMBIENT_CUE_COLLAPSE;
+    @VisibleForTesting static final int LAST_CUJ =
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR;
 
     /** @hide */
     @IntDef({
@@ -658,6 +671,8 @@ public class Cuj {
             CUJ_AMBIENT_CUE_HIDE,
             CUJ_AMBIENT_CUE_EXPAND,
             CUJ_AMBIENT_CUE_COLLAPSE,
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR,
+            CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -808,6 +823,8 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_HIDE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_HIDE;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_EXPAND;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_AMBIENT_CUE_COLLAPSE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__AMBIENT_CUE_COLLAPSE;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR;
     }
 
     private Cuj() {
@@ -1100,6 +1117,10 @@ public class Cuj {
                 return "AMBIENT_CUE_EXPAND";
             case CUJ_AMBIENT_CUE_COLLAPSE:
                 return "AMBIENT_CUE_COLLAPSE";
+            case CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR:
+                return "BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR";
+            case CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR:
+                return "BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR";
         }
         return "UNKNOWN";
     }

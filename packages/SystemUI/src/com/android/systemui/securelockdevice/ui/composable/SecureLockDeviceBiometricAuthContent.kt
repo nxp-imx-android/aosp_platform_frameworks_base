@@ -15,6 +15,8 @@
  */
 package com.android.systemui.securelockdevice.ui.composable
 
+import android.view.View
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
@@ -43,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -61,6 +64,8 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.android.compose.animation.Easings
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.width
+import com.android.internal.jank.Cuj
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.BiometricAuthIconAssets
 import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionButtonModel
@@ -87,7 +92,13 @@ fun SecureLockDeviceContent(
             secureLockDeviceViewModelFactory.create()
         }
 
+    val view = LocalView.current
+
+    val interactionJankMonitor: InteractionJankMonitor =
+        secureLockDeviceViewModel.interactionJankMonitor
+
     val isVisible = secureLockDeviceViewModel.isVisible
+    val isReadyToDismissBiometricAuth = secureLockDeviceViewModel.isReadyToDismissBiometricAuth
     val visibleState = remember { MutableTransitionState(isVisible) }
 
     /** This effect is run when the composable enters the composition */
@@ -110,7 +121,17 @@ fun SecureLockDeviceContent(
      * the UI have finished playing on the UI.
      */
     LaunchedEffect(visibleState.currentState, visibleState.targetState, visibleState.isIdle) {
-        // TODO(b/436359935) report interaction jank metrics
+        handleJankMonitoring(
+            currentState = visibleState.currentState,
+            isCurrentStateIdle = visibleState.isIdle,
+            targetState = visibleState.targetState,
+            isReadyToDismissBiometricAuth = isReadyToDismissBiometricAuth,
+            interactionJankMonitor = interactionJankMonitor,
+            view = view,
+            onDisappearAnimationFinished = {
+                secureLockDeviceViewModel.onDisappearAnimationFinished()
+            },
+        )
     }
 
     /** Animates the biometric auth content in and out of view. */
@@ -150,6 +171,44 @@ fun SecureLockDeviceContent(
                 viewModel = secureLockDeviceViewModel.udfpsAccessibilityOverlayViewModel,
                 modifier = Modifier.fillMaxHeight(),
             )
+        }
+    }
+}
+
+/** Handles InteractionJankMonitor tracking for the appear and disappear animations. */
+@VisibleForTesting
+fun handleJankMonitoring(
+    currentState: Boolean,
+    isCurrentStateIdle: Boolean,
+    targetState: Boolean,
+    isReadyToDismissBiometricAuth: Boolean,
+    interactionJankMonitor: InteractionJankMonitor,
+    view: View,
+    onDisappearAnimationFinished: () -> Unit,
+) {
+    if (!currentState && targetState) { // Start appear animation
+        // Start appear animation
+        interactionJankMonitor.begin(
+            /* v = */ view,
+            /* cujType = */ Cuj.CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR,
+        )
+    } else if (currentState && isCurrentStateIdle) { // Appear animation complete
+        interactionJankMonitor.end(
+            /* cujType = */ Cuj.CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR
+        )
+    } else if (currentState && !targetState) { // Disappear animation started
+        if (isReadyToDismissBiometricAuth) {
+            interactionJankMonitor.begin(
+                /* v = */ view,
+                /* cujType = */ Cuj.CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR,
+            )
+        }
+    } else if (!currentState && isCurrentStateIdle) { // Disappear animation complete
+        if (isReadyToDismissBiometricAuth) {
+            interactionJankMonitor.end(
+                /* cujType = */ Cuj.CUJ_BOUNCER_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR
+            )
+            onDisappearAnimationFinished()
         }
     }
 }
