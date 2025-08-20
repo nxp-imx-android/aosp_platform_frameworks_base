@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.android.mechanics.DistanceGestureContext
 import com.android.mechanics.MotionValue
-import com.android.mechanics.debug.findMotionValueDebugger
+import com.android.mechanics.debug.DebugMotionValueNode
 import com.android.mechanics.effects.MagneticDetach
 import com.android.mechanics.effects.MagneticDetach.Defaults.AttachDetachState
 import com.android.mechanics.spec.InputDirection
@@ -140,6 +140,10 @@ private class OverscrollToDismissNode(
             spec = spec::value,
         )
 
+    init {
+        delegate(DebugMotionValueNode(motionValue))
+    }
+
     private var delegateNode =
         delegate(NestedDraggableRootNode(this, orientation, null, enabled, true))
 
@@ -220,16 +224,11 @@ private class OverscrollToDismissNode(
     }
 
     private suspend fun keepRunningUntilDismissed() {
-        val debuggerHandle = findMotionValueDebugger()?.register(motionValue)
-        try {
-            motionValue.keepRunningWhile {
-                val isDismissed = get(isDismissedState) ?: false
-                !(isDismissed && isStable)
-            }
-            onDismissed()
-        } finally {
-            debuggerHandle?.dispose()
+        motionValue.keepRunningWhile {
+            val isDismissed = get(isDismissedState) ?: false
+            !(isDismissed && isStable)
         }
+        onDismissed()
     }
 
     companion object {
