@@ -47,6 +47,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Process;
+import android.os.ResultReceiver;
+import android.os.ShellCallback;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -74,6 +77,7 @@ import com.android.server.locksettings.LockSettingsStateListener;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.io.FileDescriptor;
 import java.util.Objects;
 
 /**
@@ -577,6 +581,22 @@ public class AuthenticationPolicyService extends SystemService {
             isWatchRangingAvailable_enforcePermission();
 
             mWatchRangingService.isWatchRangingAvailable(proximityResultCallback);
+        }
+
+        @Override
+        public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
+                @NonNull String[] args, ShellCallback callback,
+                @NonNull ResultReceiver resultReceiver) {
+            if (Build.IS_DEBUGGABLE) {
+                if (Binder.getCallingUid() != Process.SHELL_UID) {
+                    Slog.e(TAG, "Shell command called from non-shell UID: "
+                            + Binder.getCallingUid());
+                    resultReceiver.send(-1, null);
+                    return;
+                }
+                (new AuthenticationPolicyServiceShellCommand(this, getContext()))
+                        .exec(this, in, out, err, args, callback, resultReceiver);
+            }
         }
     };
 }
