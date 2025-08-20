@@ -41,6 +41,11 @@ class PolicyProcessorTest {
         const val POLICY_IDENTIFIER_JAVA = "$POLICY_IDENTIFIER.java"
         const val POLICY_IDENTIFIER_JSON = "$POLICY_IDENTIFIER.json"
 
+        const val OTHER_CLASS_JAVA = "android/processor/devicepolicy/test/OtherClass.java"
+        const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "android/processor/devicepolicy/test/invalidtype/PolicyIdentifier.java"
+        const val POLICY_IDENTIFIER_MISSING_METADATA_JAVA = "android/processor/devicepolicy/test/missingmetadata/PolicyIdentifier.java"
+
+
         fun loadTextResource(path: String): String {
             try {
                 val url = Resources.getResource(path)
@@ -69,10 +74,47 @@ class PolicyProcessorTest {
     fun test_other_class_failsToCompile() {
         val compilation: Compilation =
             mCompiler.compile(
-                JavaFileObjects.forResource("android/processor/devicepolicy/test/OtherClass.java"),
+                JavaFileObjects.forResource(OTHER_CLASS_JAVA),
                 JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA)
             )
         assertThat(compilation).failed()
         assertThat(compilation).hadErrorContaining("@PolicyDefinition can only be applied to fields in android.app.admin.PolicyIdentifier")
+    }
+
+    @Test
+    fun test_invalidType_failsToCompile() {
+        val compilation: Compilation = mCompiler.compile(
+            JavaFileObjects.forResource(POLICY_IDENTIFIER_INVALID_TYPE_JAVA)
+        )
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("booleanValue in @PolicyDefinition can only be applied to policies of type java.lang.Boolean")
+    }
+
+    @Test
+    fun test_missingMetadata_failsToCompile() {
+        val compilation: Compilation = mCompiler.compile(
+            JavaFileObjects.forResource(POLICY_IDENTIFIER_MISSING_METADATA_JAVA)
+        )
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("@PolicyDefinition has no type specific definition")
+    }
+
+    /**
+     * Errors should only come from our processor.
+     */
+    @Test
+    fun test_invalidTestData_compilesWithoutProcessor() {
+        val plainCompiler = Compiler.javac()
+
+        fun checkCompileSucceeds(vararg files: String) {
+            val resources = files.map { JavaFileObjects.forResource(it) }
+
+            val compilation = plainCompiler.compile(*resources.toTypedArray())
+            assertThat(compilation).succeeded()
+        }
+
+        checkCompileSucceeds(OTHER_CLASS_JAVA, POLICY_IDENTIFIER_JAVA)
+        checkCompileSucceeds(POLICY_IDENTIFIER_INVALID_TYPE_JAVA)
+        checkCompileSucceeds(POLICY_IDENTIFIER_MISSING_METADATA_JAVA)
     }
 }
