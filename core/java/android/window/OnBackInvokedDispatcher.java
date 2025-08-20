@@ -16,13 +16,10 @@
 
 package android.window;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
-
-import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -91,7 +88,6 @@ public interface OnBackInvokedDispatcher {
      * {@link #PRIORITY_SYSTEM_NAVIGATION_OBSERVER} can be registered at a time. On API level 37 and
      * higher, the number of registered observer callbacks is unrestricted.
      */
-    @FlaggedApi(Flags.FLAG_PREDICTIVE_BACK_PRIORITY_SYSTEM_NAVIGATION_OBSERVER)
     int PRIORITY_SYSTEM_NAVIGATION_OBSERVER = -2;
 
     /**

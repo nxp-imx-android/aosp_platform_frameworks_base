@@ -21,7 +21,6 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
 import static com.android.window.flags.Flags.predictiveBackCallbackCancellationFix;
 import static com.android.window.flags.Flags.predictiveBackSystemOverrideCallback;
-import static com.android.window.flags.Flags.predictiveBackPrioritySystemNavigationObserver;
 import static com.android.window.flags.Flags.predictiveBackTimestampApi;
 
 import android.annotation.NonNull;
@@ -214,8 +213,7 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 mImeDispatcher.registerOnBackInvokedCallback(priority, callback);
                 return;
             }
-            if (predictiveBackPrioritySystemNavigationObserver()
-                    && predictiveBackSystemOverrideCallback()) {
+            if (predictiveBackSystemOverrideCallback()) {
                 if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER
                         && callback instanceof SystemOverrideOnBackInvokedCallback) {
                     Log.e(TAG, "System override callbacks cannot be registered to "
@@ -223,11 +221,9 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                     return;
                 }
             }
-            if (predictiveBackPrioritySystemNavigationObserver()) {
-                if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
-                    registerSystemNavigationObserverCallback(callback);
-                    return;
-                }
+            if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
+                registerSystemNavigationObserverCallback(callback);
+                return;
             }
             if (callback instanceof ImeOnBackInvokedDispatcher.ImeOnBackInvokedCallback) {
                 if (callback instanceof ImeOnBackInvokedDispatcher.DefaultImeOnBackAnimationCallback
@@ -790,18 +786,10 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                                 + " application manifest.");
                 return false;
             }
-            if (predictiveBackPrioritySystemNavigationObserver()) {
-                if (priority < 0 && priority != PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
-                    throw new IllegalArgumentException("Application registered "
-                            + "OnBackInvokedCallback cannot have negative priority. Priority: "
-                            + priority);
-                }
-            } else {
-                if (priority < 0) {
-                    throw new IllegalArgumentException("Application registered "
-                            + "OnBackInvokedCallback cannot have negative priority. Priority: "
-                            + priority);
-                }
+            if (priority < 0 && priority != PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
+                throw new IllegalArgumentException("Application registered "
+                        + "OnBackInvokedCallback cannot have negative priority. Priority: "
+                        + priority);
             }
             Objects.requireNonNull(callback);
             return true;
