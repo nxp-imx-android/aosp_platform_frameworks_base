@@ -816,13 +816,13 @@ public class BubbleTransitions {
 
                 final ActivityOptions opts = ActivityOptions.makeBasic();
                 opts.setLaunchCookie(mLaunchCookie);
-                opts.setTaskAlwaysOnTop(true);
                 opts.setReparentLeafTaskToTda(true);
-                final ActivityManager.RunningTaskInfo rootInfo =
-                        mBubbleController.getAppBubbleRootTaskInfo();
-                if (rootInfo != null) {
-                    opts.setLaunchRootTask(rootInfo.token);
+                final WindowContainerToken rootTaskToken =
+                        mBubbleController.getAppBubbleRootTaskToken();
+                if (rootTaskToken != null) {
+                    opts.setLaunchRootTask(rootTaskToken);
                 } else {
+                    opts.setTaskAlwaysOnTop(true);
                     opts.setLaunchNextToBubble(true);
                 }
                 opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
@@ -1155,9 +1155,9 @@ public class BubbleTransitions {
             final boolean reparentToTda =
                     mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                             && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
-
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                    mTaskInfo.token, true /* isAppBubble */, reparentToTda);
+                    mTaskInfo.token, mBubbleController.getAppBubbleRootTaskToken(),
+                    true /* isAppBubble */, reparentToTda);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 

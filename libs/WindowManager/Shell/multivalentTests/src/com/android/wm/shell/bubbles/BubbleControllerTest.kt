@@ -391,6 +391,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 true, /* reorder */
                 false, /* syncHiddenWithVisibilityOnReorder */
                 false, /* nonBlockingIfPossible */
+                null, /* overrideTransaction */
             )
         } else {
             verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
@@ -413,6 +414,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             any(), /* reorder */
             any(), /* syncHiddenWithVisibilityOnReorder */
             any(), /* nonBlockingIfPossible */
+            any(), /* overrideTransaction */
         )
     }
 
@@ -460,7 +462,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
     }
 
-    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
     @Test
     fun shouldBeAppBubble_parentTaskMatchesBubbleRootTask_returnsTrue() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 777)
@@ -469,7 +471,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isTrue()
     }
 
-    @EnableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
     @Test
     fun shouldBeAppBubble_parentTaskDoesNotMatchesBubbleRootTask_returnsFalse() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 123)
@@ -979,7 +981,10 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             captor.lastValue
         }
 
-        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply { taskId = bubbleRootTaskId }
+        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply {
+            taskId = bubbleRootTaskId
+            token = mock<WindowContainerToken>()
+        }
         rootTaskListener.onTaskAppeared(bubbleRootTask, null /* leash */)
 
         return bubbleController

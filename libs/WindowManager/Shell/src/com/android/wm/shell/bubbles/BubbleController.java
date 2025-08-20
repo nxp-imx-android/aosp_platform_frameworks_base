@@ -641,6 +641,12 @@ public class BubbleController implements ConfigurationChangeListener,
                                 return;
                             }
                             mAppBubbleRootTaskInfo = taskInfo;
+
+                            final WindowContainerTransaction wct = new WindowContainerTransaction();
+                            wct.reorder(taskInfo.token, false /* onTop */);
+                            wct.setInterceptBackPressedOnTaskRoot(taskInfo.token,
+                                    true /* interceptBackPressed */);
+                            mTaskOrganizer.applyTransaction(wct);
                         }
                     });
         }
@@ -1469,7 +1475,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
     /** Returns whether the given task should be an App Bubble */
     public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        if (com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             return mAppBubbleRootTaskInfo != null
                     && taskInfo.parentTaskId == mAppBubbleRootTaskInfo.taskId;
         }
@@ -2919,6 +2925,16 @@ public class BubbleController implements ConfigurationChangeListener,
         return mAppBubbleRootTaskInfo;
     }
 
+    @Nullable
+    public WindowContainerToken getAppBubbleRootTaskToken() {
+        return mAppBubbleRootTaskInfo != null ? mAppBubbleRootTaskInfo.token : null;
+    }
+
+    @Nullable
+    public boolean isAppBubbleRootTask(int taskId) {
+        return mAppBubbleRootTaskInfo != null && mAppBubbleRootTaskInfo.taskId == taskId;
+    }
+
     /**
      * Returns the id of the display to which the current Bubble view is attached if it is currently
      * showing, {@link INVALID_DISPLAY} otherwise.
@@ -3758,12 +3774,28 @@ public class BubbleController implements ConfigurationChangeListener,
                 if (!visible && !mBubbleData.hasBubbleInStackWithTaskView(taskView)) {
                     return;
                 }
+
+                final WindowContainerTransaction wct;
+                if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && shouldBeAppBubble(
+                        taskView.getTaskInfo())) {
+                    wct = new WindowContainerTransaction();
+                    if (visible) {
+                        wct.reorder(taskView.getTaskInfo().token, true /* onTop */);
+                        wct.setAlwaysOnTop(mAppBubbleRootTaskInfo.token, true /* alwaysOnTop */);
+                    } else if (!mBubbleData.isExpanded()) {
+                        wct.setAlwaysOnTop(mAppBubbleRootTaskInfo.token, false /* alwaysOnTop */);
+                        wct.reorder(mAppBubbleRootTaskInfo.token, false /* onTop */);
+                    }
+                } else {
+                    wct = null;
+                }
+
                 // The transaction to hide the TaskView can be executed on the executor to avoid
                 // blocking the calling thread.
                 final boolean nonBlocking = !visible;
                 // Use reorder instead of always-on-top with hidden.
                 mBaseTransitions.setTaskViewVisible(taskView, visible, true /* reorder */,
-                        false /* toggleHiddenOnReorder */, nonBlocking);
+                        false /* toggleHiddenOnReorder */, nonBlocking, wct);
             } else {
                 mBaseTransitions.setTaskViewVisible(taskView, visible);
             }
