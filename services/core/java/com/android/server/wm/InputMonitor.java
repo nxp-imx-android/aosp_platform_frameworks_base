@@ -235,7 +235,7 @@ final class InputMonitor {
                 consumer.mWindowHandle.inputConfig |= InputConfig.DUPLICATE_TOUCH_TO_WALLPAPER;
                 break;
             case INPUT_CONSUMER_PIP:
-                // This is a valid consumer type, but we don't need any additional configurations.
+                consumer.mWindowHandle.inputConfig |= InputConfig.DISPLAY_TOPOLOGY_AWARE;
                 break;
             case INPUT_CONSUMER_RECENTS_ANIMATION:
                 consumer.mWindowHandle.inputConfig &= ~InputConfig.NOT_FOCUSABLE;
