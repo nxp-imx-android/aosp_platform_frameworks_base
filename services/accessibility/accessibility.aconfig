@@ -125,16 +125,6 @@ flag {
 }
 
 flag {
-    name: "pointer_up_motion_event_in_touch_exploration"
-    namespace: "accessibility"
-    description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
-    bug: "374930391"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "send_a11y_events_based_on_state"
     namespace: "accessibility"
     description: "Sends accessibility events in TouchExplorer#onAccessibilityEvent based on internal state to keep it consistent. This reduces test flakiness."
