@@ -34,7 +34,7 @@ import com.android.systemui.battery.BatterySaverModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayOverrideModule;
 import com.android.systemui.communal.posturing.dagger.NoopPosturingModule;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent;
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent;
 import com.android.systemui.display.data.repository.DisplayPhoneModule;
 import com.android.systemui.display.ui.viewmodel.ConnectingDisplayViewModel;
 import com.android.systemui.dock.DockManager;
@@ -189,13 +189,13 @@ import javax.inject.Provider;
         ContextualEducationModule.class,
         ActionCornerModule.class,
 }, subcomponents = {
-        SystemUIPhoneDisplaySubcomponent.class
+        ReferenceSysUIDisplaySubcomponent.class
 })
 public abstract class ReferenceSystemUIModule {
 
     @Binds
     abstract SystemUIDisplaySubcomponent.Factory systemUIDisplaySubcomponentFactory(
-            SystemUIPhoneDisplaySubcomponent.Factory factory);
+            ReferenceSysUIDisplaySubcomponent.Factory factory);
 
     @SysUISingleton
     @Provides

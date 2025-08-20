@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.dagger
 import android.content.Context
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
@@ -38,7 +37,7 @@ import dagger.Provides
  * Contains bindings that are [SystemUIDisplaySubcomponent.DisplayAware] related to the statusbar.
  */
 @Module
-interface StatusBarPerDisplayModule {
+interface PerDisplayStatusBarModule {
 
     @Binds
     @PerDisplaySingleton

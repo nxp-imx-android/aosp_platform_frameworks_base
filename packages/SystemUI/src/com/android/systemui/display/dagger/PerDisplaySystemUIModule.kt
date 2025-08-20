@@ -34,7 +34,7 @@ import com.android.systemui.display.data.repository.DisplayStateRepositoryImpl
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
 import com.android.systemui.plugins.DarkIconDispatcher
-import com.android.systemui.statusbar.dagger.StatusBarPerDisplayModule
+import com.android.systemui.statusbar.dagger.PerDisplayStatusBarModule
 import com.android.systemui.statusbar.phone.DarkIconDispatcherImpl
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
@@ -53,8 +53,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
 /** Module providing common dependencies for per-display singletons. */
-@Module(includes = [StatusBarPerDisplayModule::class, PerDisplayConfigurationModule::class])
-interface PerDisplayCommonModule {
+@Module(includes = [PerDisplayStatusBarModule::class, PerDisplayConfigurationModule::class])
+interface PerDisplaySystemUIModule {
 
     @Multibinds
     @DisplayAware

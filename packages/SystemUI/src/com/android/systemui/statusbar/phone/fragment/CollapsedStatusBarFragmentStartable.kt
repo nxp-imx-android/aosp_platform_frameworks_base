@@ -20,7 +20,7 @@ import android.view.Display
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.fragments.FragmentService
 import com.android.systemui.qs.QSFragmentStartable
 import dagger.Binds
@@ -39,7 +39,7 @@ class CollapsedStatusBarFragmentStartable
 constructor(
     private val fragmentService: FragmentService,
     private val displaySubComponentRepository:
-        PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
+        PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
 ) : CoreStartable {
     override fun start() {
         fragmentService.addFragmentInstantiationProvider(
