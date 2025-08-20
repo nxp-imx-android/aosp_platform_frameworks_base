@@ -56,6 +56,12 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             )
         }
 
+        val iconResourceId =
+            when (viewModel.captureType) {
+                ScreenCaptureType.SCREENSHOT -> R.drawable.ic_screen_capture_camera
+                ScreenCaptureType.SCREEN_RECORD -> R.drawable.ic_screenrecord
+            }
+
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
                 // Dim the entire screen with a scrim before taking a fullscreen screenshot.
@@ -70,7 +76,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         icon =
                             loadIcon(
                                     viewModel = viewModel,
-                                    resId = R.drawable.ic_screen_capture_camera,
+                                    resId = iconResourceId,
                                     contentDescription = null,
                                 )
                                 .value,
@@ -94,7 +100,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 val icon by
                     loadIcon(
                         viewModel = viewModel,
-                        resId = R.drawable.ic_screen_capture_camera,
+                        resId = iconResourceId,
                         contentDescription = null,
                     )
                 RegionBox(
