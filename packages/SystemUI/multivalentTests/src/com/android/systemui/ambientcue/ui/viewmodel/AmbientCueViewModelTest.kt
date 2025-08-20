@@ -27,8 +27,6 @@ import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
 import com.android.systemui.ambientcue.shared.logger.ambientCueLogger
-import com.android.systemui.ambientcue.shared.model.ActionModel
-import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
@@ -36,6 +34,8 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.plugins.cuebar.ActionModel
+import com.android.systemui.plugins.cuebar.IconModel
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock

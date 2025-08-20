@@ -2222,3 +2222,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "ambient_cue_plugin"
+    namespace: "ailabs"
+    description: "Enable plugin for ambient cue project"
+    bug: "439907833"
+}

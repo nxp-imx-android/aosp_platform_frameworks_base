@@ -36,15 +36,21 @@ import androidx.tracing.trace
 import com.android.systemui.Dumpable
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
+import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
 import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
-import com.android.systemui.ambientcue.shared.model.ActionModel
-import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.plugins.PluginLifecycleManager
+import com.android.systemui.plugins.PluginListener
+import com.android.systemui.plugins.PluginManager
+import com.android.systemui.plugins.cuebar.ActionModel
+import com.android.systemui.plugins.cuebar.CuebarPlugin
+import com.android.systemui.plugins.cuebar.CuebarPlugin.OnNewActionsListener
+import com.android.systemui.plugins.cuebar.IconModel
 import com.android.systemui.res.R
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.shared.system.QuickStepContract
@@ -120,6 +126,7 @@ constructor(
     @Background backgroundDispatcher: CoroutineDispatcher,
     secureSettingsRepository: SecureSettingsRepository,
     private val ambientCueLogger: AmbientCueLogger,
+    private val pluginManager: PluginManager,
 ) : AmbientCueRepository, Dumpable {
 
     init {
@@ -150,6 +157,35 @@ constructor(
                     )
                 Log.i(TAG, "SmartSpace session created")
 
+                val cuebarPluginListener = OnNewActionsListener { actions -> trySend(actions) }
+                var cuebarPlugin: CuebarPlugin? = null
+
+                if (AmbientCueFlag.isAmbientCuePluginEnabled) {
+                    pluginManager.addPluginListener(
+                        object : PluginListener<CuebarPlugin> {
+                            override fun onPluginLoaded(
+                                plugin: CuebarPlugin,
+                                pluginContext: Context,
+                                manager: PluginLifecycleManager<CuebarPlugin>,
+                            ) {
+                                cuebarPlugin = plugin
+                                plugin.addOnNewActionsListener(cuebarPluginListener)
+                                Log.i(TAG, "CuebarPlugin loaded")
+                            }
+
+                            override fun onPluginUnloaded(
+                                plugin: CuebarPlugin,
+                                manager: PluginLifecycleManager<CuebarPlugin>,
+                            ) {
+                                cuebarPlugin = null
+                                Log.i(TAG, "CuebarPlugin unloaded")
+                            }
+                        },
+                        CuebarPlugin::class.java,
+                        false, /* allowMultiple */
+                    )
+                }
+
                 val smartSpaceListener = OnTargetsAvailableListener { targets ->
                     Log.i(TAG, "Receiving SmartSpace targets # ${targets.size}")
                     if (targets.none { it.smartspaceTargetId == AMBIENT_CUE_SURFACE }) {
@@ -174,15 +210,13 @@ constructor(
                                     icon =
                                         IconModel(
                                             small =
-                                                (chip.icon
-                                                        ?.loadDrawable(applicationContext)
+                                                (chip.icon?.loadDrawable(applicationContext)
                                                         ?: applicationContext.getDrawable(
                                                             R.drawable.ic_paste_spark
                                                         )!!)
                                                     .mutate(),
                                             large =
-                                                (chip.icon
-                                                        ?.loadDrawable(applicationContext)
+                                                (chip.icon?.loadDrawable(applicationContext)
                                                         ?: applicationContext.getDrawable(
                                                             R.drawable.ic_paste_spark
                                                         )!!)
@@ -249,6 +283,7 @@ constructor(
                                     oneTapDelayMs = oneTapDelayMs ?: DEFAULT_ONE_TAP_DELAY_MS,
                                 )
                             }
+                            .let { actions -> cuebarPlugin?.filterActions(actions) ?: actions }
                     if (DEBUG) {
                         Log.d(TAG, "SmartSpace OnTargetsAvailableListener $targets")
                     }
