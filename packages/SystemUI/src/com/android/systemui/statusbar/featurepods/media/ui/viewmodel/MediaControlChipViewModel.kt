@@ -72,13 +72,19 @@ constructor(
         val contentDescription = model.appName?.let { ContentDescription.Loaded(description = it) }
 
         val defaultIcon =
-            model.appIcon?.loadDrawable(applicationContext)?.let {
-                Icon.Loaded(drawable = it, contentDescription = contentDescription)
+            when (model) {
+                is MediaControlChipModel.Legacy -> {
+                    model.appIcon?.loadDrawable(applicationContext)?.let {
+                        Icon.Loaded(drawable = it, contentDescription = contentDescription)
+                    }
+                        ?: Icon.Resource(
+                            res = com.android.internal.R.drawable.ic_audio_media,
+                            contentDescription = contentDescription,
+                        )
+                }
+                is MediaControlChipModel.Compose -> model.appIcon
             }
-                ?: Icon.Resource(
-                    res = com.android.internal.R.drawable.ic_audio_media,
-                    contentDescription = contentDescription,
-                )
+
         return PopupChipModel.Shown(
             chipId = PopupChipId.MediaControl,
             icons = listOf(ChipIcon(icon = defaultIcon)),

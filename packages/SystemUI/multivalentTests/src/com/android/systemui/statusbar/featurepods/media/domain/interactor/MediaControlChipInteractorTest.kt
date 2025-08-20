@@ -25,11 +25,11 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -47,7 +47,7 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val mediaFilterRepository = kosmos.mediaFilterRepository
+    private val mediaRepository = kosmos.mediaRepository
     private val Kosmos.underTest by Kosmos.Fixture { kosmos.mediaControlChipInteractor }
     @Captor lateinit var listener: ArgumentCaptor<MediaDataManager.Listener>
 
@@ -189,8 +189,7 @@ class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCa
 
     private fun updateMedia(mediaData: MediaData) {
         if (SceneContainerFlag.isEnabled) {
-            val instanceId = mediaData.instanceId
-            mediaFilterRepository.addCurrentUserMediaEntry(mediaData)
+            mediaRepository.addCurrentUserMediaEntry(mediaData)
         } else {
             kosmos.underTest.updateMediaControlChipModelLegacy(mediaData)
         }
@@ -199,7 +198,7 @@ class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCa
     private fun removeMedia(mediaData: MediaData) {
         if (SceneContainerFlag.isEnabled) {
             val instanceId = mediaData.instanceId
-            mediaFilterRepository.removeCurrentUserMediaEntry(instanceId, mediaData)
+            mediaRepository.removeCurrentUserMediaEntry(instanceId, mediaData)
         } else {
             kosmos.underTest.updateMediaControlChipModelLegacy(null)
         }
