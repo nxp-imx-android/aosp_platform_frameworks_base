@@ -27,6 +27,8 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier
 import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,13 +44,7 @@ class WindowDecorCaptionRepositoryTest {
     }
 
     @Test
-    fun initialState_noAction_returnsNoCaption() {
-        // Check the initial value of `captionStateFlow`.
-        assertThat(captionRepository.captionStateFlow.value).isEqualTo(CaptionState.NoCaption())
-    }
-
-    @Test
-    fun notifyCaptionChange_toAppHandleVisible_updatesStateWithCorrectData() {
+    fun notifyCaptionChange_toAppHandleVisible_updatesStateWithCorrectData() = runTest {
         val taskInfo = createTaskInfo(WINDOWING_MODE_FULLSCREEN, GMAIL_PACKAGE_NAME)
         val appHandleCaptionState =
             CaptionState.AppHandle(
@@ -63,11 +59,11 @@ class WindowDecorCaptionRepositoryTest {
 
         captionRepository.notifyCaptionChanged(appHandleCaptionState)
 
-        assertThat(captionRepository.captionStateFlow.value).isEqualTo(appHandleCaptionState)
+        assertThat(captionRepository.captionStateFlow.first()).isEqualTo(appHandleCaptionState)
     }
 
     @Test
-    fun notifyCaptionChange_toAppChipVisible_updatesStateWithCorrectData() {
+    fun notifyCaptionChange_toAppChipVisible_updatesStateWithCorrectData() = runTest {
         val taskInfo = createTaskInfo(WINDOWING_MODE_FREEFORM, GMAIL_PACKAGE_NAME)
         val appHeaderCaptionState =
             CaptionState.AppHeader(
@@ -81,14 +77,14 @@ class WindowDecorCaptionRepositoryTest {
 
         captionRepository.notifyCaptionChanged(appHeaderCaptionState)
 
-        assertThat(captionRepository.captionStateFlow.value).isEqualTo(appHeaderCaptionState)
+        assertThat(captionRepository.captionStateFlow.first()).isEqualTo(appHeaderCaptionState)
     }
 
     @Test
-    fun notifyCaptionChange_toNoCaption_updatesState() {
+    fun notifyCaptionChange_toNoCaption_updatesState() = runTest {
         captionRepository.notifyCaptionChanged(CaptionState.NoCaption())
 
-        assertThat(captionRepository.captionStateFlow.value).isEqualTo(CaptionState.NoCaption())
+        assertThat(captionRepository.captionStateFlow.first()).isEqualTo(CaptionState.NoCaption())
     }
 
     private fun createTaskInfo(
