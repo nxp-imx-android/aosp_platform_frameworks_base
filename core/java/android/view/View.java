@@ -63,7 +63,6 @@ import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFI
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__SINGLE_TAP;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__UNKNOWN_CLASSIFICATION;
-import static com.android.window.flags.Flags.FLAG_DELEGATE_UNHANDLED_DRAGS;
 import static com.android.window.flags.Flags.FLAG_SUPPORTS_DRAG_ASSISTANT_TO_MULTIWINDOW;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 
@@ -5618,7 +5617,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * DRAG_FLAG_GLOBAL_SAME_APPLICATION takes precedence and the drag will only go to visible
      * windows from the same application.
      */
-    @FlaggedApi(FLAG_DELEGATE_UNHANDLED_DRAGS)
     public static final int DRAG_FLAG_GLOBAL_SAME_APPLICATION = 1 << 12;
 
     /**
@@ -5632,7 +5630,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * size or windowing mode. If the system does not launch the intent, it will be canceled via the
      * normal drag and drop flow.
      */
-    @FlaggedApi(FLAG_DELEGATE_UNHANDLED_DRAGS)
     public static final int DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG = 1 << 13;
 
     /**
@@ -29590,20 +29587,16 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         if (data != null) {
-            if (com.android.window.flags.Flags.delegateUnhandledDrags()) {
-                data.prepareToLeaveProcess(
-                        (flags & (DRAG_FLAG_GLOBAL_SAME_APPLICATION | DRAG_FLAG_GLOBAL)) != 0);
-                if ((flags & DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG) != 0) {
-                    if (!hasActivityPendingIntents(data)) {
-                        // Reset the flag if there is no launchable activity intent
-                        flags &= ~DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG;
-                        Log.w(VIEW_LOG_TAG, "startDragAndDrop called with "
-                                + "DRAG_FLAG_START_INTENT_ON_UNHANDLED_DRAG but the clip data "
-                                + "contains non-activity PendingIntents");
-                    }
+            data.prepareToLeaveProcess(
+                    (flags & (DRAG_FLAG_GLOBAL_SAME_APPLICATION | DRAG_FLAG_GLOBAL)) != 0);
+            if ((flags & DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG) != 0) {
+                if (!hasActivityPendingIntents(data)) {
+                    // Reset the flag if there is no launchable activity intent
+                    flags &= ~DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG;
+                    Log.w(VIEW_LOG_TAG, "startDragAndDrop called with "
+                            + "DRAG_FLAG_START_INTENT_ON_UNHANDLED_DRAG but the clip data "
+                            + "contains non-activity PendingIntents");
                 }
-            } else {
-                data.prepareToLeaveProcess((flags & DRAG_FLAG_GLOBAL) != 0);
             }
         }
 
