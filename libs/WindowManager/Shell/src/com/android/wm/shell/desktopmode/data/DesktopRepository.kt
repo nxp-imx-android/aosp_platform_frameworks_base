@@ -278,15 +278,19 @@ class DesktopRepository(
 
     /** Update the data to reflect a desk changing displays. */
     fun onDeskDisplayChanged(deskId: Int, newDisplayId: Int, newUniqueDisplayId: String?) {
+        logD(
+            "onDeskDisplayChanged for deskId=%d, newDisplayId=%d, and newUniqueDisplayId=%s",
+            deskId,
+            newDisplayId,
+            newUniqueDisplayId,
+        )
         val couldCreateDesk = canCreateDesks()
         val desk =
             desktopData.getDesk(deskId)?.deepCopy()
                 ?: error("Expected to find desk with id: $deskId")
         desk.displayId = newDisplayId
         desk.uniqueDisplayId = newUniqueDisplayId
-        // TODO: b/412484513 - consider de-duping unnecessary updates to listeners, such as the one
-        //  made here by |removeDesk| that will be reverted at the end of this method.
-        removeDesk(deskId)
+        removeDesk(deskId = deskId, checkCanCreateDesksChanged = false)
         desktopData.addDesk(newDisplayId, desk)
         val canCreateDesk = canCreateDesks()
         deskChangeListeners.forEach { (listener, executor) ->
@@ -1084,7 +1088,7 @@ class DesktopRepository(
     }
 
     /** Removes the given desk and returns the active tasks in that desk. */
-    fun removeDesk(deskId: Int): Set<Int> {
+    fun removeDesk(deskId: Int, checkCanCreateDesksChanged: Boolean = true): Set<Int> {
         logD("removeDesk %d", deskId)
         val couldCreateDesks = canCreateDesks()
         val desk =
@@ -1107,7 +1111,7 @@ class DesktopRepository(
                     )
                 }
                 listener.onDeskRemoved(displayId = desk.displayId, deskId = desk.deskId)
-                if (couldCreateDesks != canCreateDesks) {
+                if (checkCanCreateDesksChanged && couldCreateDesks != canCreateDesks) {
                     listener.onCanCreateDesksChanged(canCreateDesks)
                 }
             }

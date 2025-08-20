@@ -197,7 +197,7 @@ class DesksTransitionObserver(
                 deskTransition.runOnTransitEnd?.invoke()
             }
             is DeskTransition.DeactivateDesk -> handleDeactivateDeskTransition(info, deskTransition)
-            is DeskTransition.ChangeDeskDisplay -> handleChangeDeskDisplay(info, deskTransition)
+            is DeskTransition.ChangeDeskDisplay -> handleChangeDeskDisplay(deskTransition)
             is DeskTransition.RemoveDisplay -> handleRemoveDisplay(deskTransition)
             is DeskTransition.AddTaskToDesk -> handleAddTaskToDesk(deskTransition)
         }
@@ -234,21 +234,15 @@ class DesksTransitionObserver(
         desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
     }
 
-    private fun handleChangeDeskDisplay(
-        info: TransitionInfo,
-        deskTransition: DeskTransition.ChangeDeskDisplay,
-    ) {
+    private fun handleChangeDeskDisplay(deskTransition: DeskTransition.ChangeDeskDisplay) {
         logD("handleChangeDeskDisplay: %s", deskTransition)
         val deskId = deskTransition.deskId
-        val deskChange = info.changes.find { change -> desksOrganizer.isDeskChange(change, deskId) }
-        if (deskChange != null) {
-            desktopUserRepositories.getRepositoriesWithDeskId(deskId).forEach { desktopRepository ->
-                desktopRepository.onDeskDisplayChanged(
-                    deskId,
-                    deskTransition.displayId,
-                    deskTransition.uniqueDisplayId,
-                )
-            }
+        desktopUserRepositories.getRepositoriesWithDeskId(deskId).forEach { desktopRepository ->
+            desktopRepository.onDeskDisplayChanged(
+                deskId,
+                deskTransition.displayId,
+                deskTransition.uniqueDisplayId,
+            )
         }
     }
 
@@ -498,6 +492,20 @@ class DesksTransitionObserver(
                     }
                 }
                 change.isToTop() -> {
+                    // Do not handle independent desk activations when a desk is pending a move to
+                    // this display. The activation will be handled when that transition is
+                    // processed.
+                    if (
+                        deskTransitions.values.any { transitionsForBinder ->
+                            transitionsForBinder.any { transition ->
+                                transition is DeskTransition.ChangeDeskDisplay &&
+                                    transition.displayId == displayId
+                            }
+                        }
+                    ) {
+                        logD("Pending display change found; skipping.")
+                        continue
+                    }
                     val repository = desktopUserRepositories.getProfile(changeUserId)
                     logD(
                         "desk=%d of user=%d moved to front, " +
