@@ -19504,8 +19504,36 @@ public class ActivityManagerService extends IActivityManager.Stub
                         forceUpdatePssTime);
             }
         }
+
+        @Override
+        public void onProcessGroupUpdated(ProcessRecordInternal app, int group) {
+            setProcessGroup(app.getPid(), group, app.processName);
+            mPhantomProcessList.setProcessGroupForPhantomProcessOfApp((ProcessRecord) app, group);
+        }
     }
 
+    static void setProcessGroup(int pid, int group, String processName) {
+        if (pid == ActivityManagerService.MY_PID) {
+            // Skip setting the process group for system_server, keep it as default.
+            return;
+        }
+        final boolean traceEnabled = Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+        if (traceEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "setProcessGroup "
+                    + processName + " to " + group);
+        }
+        try {
+            android.os.Process.setProcessGroup(pid, group);
+        } catch (Exception e) {
+            if (DEBUG_ALL) {
+                Slog.w(TAG, "Failed setting process group of " + pid + " to " + group, e);
+            }
+        } finally {
+            if (traceEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
+        }
+    }
 
     CachedAppOptimizer getCachedAppOptimizer() {
         return mCachedAppOptimizer;

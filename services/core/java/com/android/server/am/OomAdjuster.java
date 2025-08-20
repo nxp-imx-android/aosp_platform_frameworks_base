@@ -131,7 +131,6 @@ import android.os.Handler;
 import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.SystemClock;
-import android.os.Trace;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
@@ -309,8 +308,8 @@ public abstract class OomAdjuster {
     ActiveUids mActiveUids;
 
     /**
-     * The handler to execute {@link #setProcessGroup} (it may be heavy if the process has many
-     * threads) for reducing the time spent in {@link #applyOomAdjLSP}.
+     * The handler to execute {@link Callback#onProcessGroupUpdated} (it may be heavy if the process
+     * has many threads) for reducing the time spent in {@link #applyOomAdjLSP}.
      */
     private final Handler mProcessGroupHandler;
 
@@ -412,6 +411,9 @@ public abstract class OomAdjuster {
         /** Notifies the client component when a process's process state is updated. */
         void onProcStateUpdated(ProcessRecordInternal app, long now,
                 boolean forceUpdatePssTime);
+
+        /** Notifies when the process group for an application process has been updated. */
+        void onProcessGroupUpdated(ProcessRecordInternal app, int group);
     }
 
     @VisibleForTesting
@@ -461,7 +463,7 @@ public abstract class OomAdjuster {
         boolean isAwake();
 
         /** What process is running a backup for a given userId. */
-        ProcessRecord getBackupTarget(@UserIdInt int userId);
+        ProcessRecordInternal getBackupTarget(@UserIdInt int userId);
 
         /** Is memory level normal since last evaluation. */
         boolean isLastMemoryLevelNormal();
@@ -523,38 +525,15 @@ public abstract class OomAdjuster {
 
         mProcessGroupHandler = new Handler(adjusterThread.getLooper(), msg -> {
             final int group = msg.what;
-            final ProcessRecord app = (ProcessRecord) msg.obj;
-            setProcessGroup(app.getPid(), group, app.processName);
-            mService.mPhantomProcessList.setProcessGroupForPhantomProcessOfApp(app, group);
+            final ProcessRecordInternal app = (ProcessRecordInternal) msg.obj;
+
+            mCallback.onProcessGroupUpdated(app, group);
             return true;
         });
         mTmpUidRecords = new ActiveUids(null);
         mTmpQueue = new ArrayDeque<>(mConstants.CUR_MAX_CACHED_PROCESSES << 1);
         mNumSlots = ((CACHED_APP_MAX_ADJ - CACHED_APP_MIN_ADJ + 1) >> 1)
                 / CACHED_APP_IMPORTANCE_LEVELS;
-    }
-
-    void setProcessGroup(int pid, int group, String processName) {
-        if (pid == ActivityManagerService.MY_PID) {
-            // Skip setting the process group for system_server, keep it as default.
-            return;
-        }
-        final boolean traceEnabled = Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-        if (traceEnabled) {
-            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "setProcessGroup "
-                    + processName + " to " + group);
-        }
-        try {
-            android.os.Process.setProcessGroup(pid, group);
-        } catch (Exception e) {
-            if (DEBUG_ALL) {
-                Slog.w(TAG, "Failed setting process group of " + pid + " to " + group, e);
-            }
-        } finally {
-            if (traceEnabled) {
-                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
-            }
-        }
     }
 
     void setAppAndChildProcessGroup(ProcessRecordInternal app, int group) {
@@ -623,14 +602,14 @@ public abstract class OomAdjuster {
      * @param oomAdjReason
      */
     @GuardedBy("mService")
-    boolean updateOomAdjLocked(ProcessRecord app, @OomAdjReason int oomAdjReason) {
+    boolean updateOomAdjLocked(ProcessRecordInternal app, @OomAdjReason int oomAdjReason) {
         synchronized (mProcLock) {
             return updateOomAdjLSP(app, oomAdjReason);
         }
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    private boolean updateOomAdjLSP(ProcessRecord app, @OomAdjReason int oomAdjReason) {
+    private boolean updateOomAdjLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason) {
         if (app == null || !mConstants.OOMADJ_UPDATE_QUICK) {
             updateOomAdjLSP(oomAdjReason);
             return true;
@@ -652,7 +631,7 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected abstract boolean performUpdateOomAdjLSP(ProcessRecord app,
+    protected abstract boolean performUpdateOomAdjLSP(ProcessRecordInternal app,
             @OomAdjReason int oomAdjReason);
 
     @GuardedBy({"mService", "mProcLock"})
@@ -767,9 +746,8 @@ public abstract class OomAdjuster {
                         ArrayList<? extends ConnectionRecordInternal> clist =
                                 s.getConnectionAt(conni);
                         for (int i = clist.size() - 1; i >= 0; i--) {
-                            // TODO(b/425766486): Switch to use ConnectionRecordInternal.
-                            ConnectionRecord cr = (ConnectionRecord) clist.get(i);
-                            ProcessRecord attributedApp = cr.binding.attributedClient;
+                            final ConnectionRecordInternal cr = clist.get(i);
+                            final ProcessRecordInternal attributedApp = cr.getAttributedClient();
                             if (attributedApp == null || attributedApp == pr
                                     || ((attributedApp.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
                                     && (attributedApp.getMaxAdj() < FOREGROUND_APP_ADJ))) {
@@ -806,18 +784,18 @@ public abstract class OomAdjuster {
      * Enqueue the given process for a later oom adj update
      */
     @GuardedBy("mService")
-    void enqueueOomAdjTargetLocked(ProcessRecord app) {
+    void enqueueOomAdjTargetLocked(ProcessRecordInternal app) {
         if (app != null && app.getMaxAdj() > FOREGROUND_APP_ADJ) {
             mPendingProcessSet.add(app);
         }
     }
 
     @GuardedBy("mService")
-    void removeOomAdjTargetLocked(ProcessRecord app, boolean procDied) {
+    void removeOomAdjTargetLocked(ProcessRecordInternal app, boolean procDied) {
         if (app != null) {
             mPendingProcessSet.remove(app);
             if (procDied) {
-                PlatformCompatCache.getInstance().invalidate(app.info);
+                PlatformCompatCache.getInstance().invalidate(app.getPackageName());
             }
         }
     }
@@ -830,7 +808,7 @@ public abstract class OomAdjuster {
      * @return {@code true} if there is an ongoing oomAdjUpdate.
      */
     @GuardedBy("mService")
-    private boolean checkAndEnqueueOomAdjTargetLocked(@Nullable ProcessRecord app) {
+    private boolean checkAndEnqueueOomAdjTargetLocked(@Nullable ProcessRecordInternal app) {
         if (!mOomAdjUpdateOngoing) {
             return false;
         }
@@ -1277,7 +1255,7 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    protected void updateAppUidRecIfNecessaryLSP(final ProcessRecord app) {
+    protected void updateAppUidRecIfNecessaryLSP(final ProcessRecordInternal app) {
         if (!app.isKilledByAm() && app.isProcessRunning()) {
             if (app.isolated && app.getServices().numberOfRunningServices() <= 0
                     && app.getIsolatedEntryPoint() == null) {
@@ -2387,7 +2365,7 @@ public abstract class OomAdjuster {
 
     // ONLY used for unit testing in OomAdjusterTests.java
     @VisibleForTesting
-    void maybeUpdateUsageStats(ProcessRecord app, long nowElapsed) {
+    void maybeUpdateUsageStats(ProcessRecordInternal app, long nowElapsed) {
         synchronized (mService) {
             synchronized (mProcLock) {
                 maybeUpdateUsageStatsLSP(app, nowElapsed);
@@ -2505,7 +2483,8 @@ public abstract class OomAdjuster {
         // if so, kill it if it's been there long enough, or kick off a msg to check
         // it later.
         if (mService.mConstants.mKillBgRestrictedAndCachedIdle) {
-            final ArraySet<ProcessRecord> apps = mProcessList.mAppsInBackgroundRestricted;
+            final ArraySet<? extends ProcessRecordInternal> apps =
+                    mProcessList.mAppsInBackgroundRestricted;
             for (int i = 0, size = apps.size(); i < size; i++) {
                 // Check to see if needs to be killed.
                 final long bgTime = mProcessList.killAppIfBgRestrictedAndCachedIdleLocked(
@@ -2650,7 +2629,7 @@ public abstract class OomAdjuster {
      */
     @GuardedBy("mService")
     boolean evaluateServiceConnectionAdd(ProcessRecordInternal client, ProcessRecordInternal app,
-            ConnectionRecord cr) {
+            ConnectionRecordInternal cr) {
         if (evaluateConnectionPrelude(client, app)) {
             return true;
         }
@@ -2692,7 +2671,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy("mService")
     boolean evaluateServiceConnectionRemoval(ProcessRecordInternal client,
-            ProcessRecordInternal app, ConnectionRecord cr) {
+            ProcessRecordInternal app, ConnectionRecordInternal cr) {
         if (evaluateConnectionPrelude(client, app)) {
             return true;
         }

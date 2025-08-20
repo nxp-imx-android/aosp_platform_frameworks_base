@@ -5663,11 +5663,11 @@ public final class ProcessList implements ProcessListInternal,
      * be killed or it has been killed.
      */
     @GuardedBy("mService")
-    long killAppIfBgRestrictedAndCachedIdleLocked(ProcessRecord app, long nowElapsed) {
+    long killAppIfBgRestrictedAndCachedIdleLocked(ProcessRecordInternal app, long nowElapsed) {
         final UidRecordInternal uidRec = app.getUidRecord();
         final long lastCachedTime = app.getLastCachedTime();
         if (!mService.mConstants.mKillBgRestrictedAndCachedIdle
-                || app.isKilled() || app.getThread() == null || uidRec == null || !uidRec.isIdle()
+                || app.isKilled() || !app.isProcessRunning() || uidRec == null || !uidRec.isIdle()
                 || !app.isCached() || !app.isBackgroundRestricted()
                 || lastCachedTime == 0) {
             return 0;

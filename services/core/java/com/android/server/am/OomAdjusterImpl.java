@@ -243,7 +243,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     /**
      * A container node in the {@link LinkedProcessRecordList},
-     * holding the references to {@link ProcessRecord}.
+     * holding the references to {@link ProcessRecordInternal}.
      * TODO(b/425766486): Change to package-private after moving the class to the psc package.
      */
     public static class ProcessRecordNode {
@@ -261,9 +261,9 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         @Nullable ProcessRecordNode mPrev;
         @Nullable ProcessRecordNode mNext;
-        final @Nullable ProcessRecord mApp;
+        final @Nullable ProcessRecordInternal mApp;
 
-        ProcessRecordNode(@Nullable ProcessRecord app) {
+        ProcessRecordNode(@Nullable ProcessRecordInternal app) {
             mApp = app;
         }
 
@@ -342,7 +342,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        ProcessRecord poll() {
+        ProcessRecordInternal poll() {
             ProcessRecordNode node = null;
             final int size = mProcessRecordNodes.length;
             // Find the next node.
@@ -679,7 +679,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     @Override
-    protected boolean performUpdateOomAdjLSP(ProcessRecord app, @OomAdjReason int oomAdjReason) {
+    protected boolean performUpdateOomAdjLSP(ProcessRecordInternal app,
+            @OomAdjReason int oomAdjReason) {
         mPendingProcessSet.add(app);
         performUpdateOomAdjPendingTargetsLocked(oomAdjReason);
         return true;
@@ -755,7 +756,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     private void computeConnectionsLSP() {
         // 1st pass, iterate all nodes in order of procState importance.
-        ProcessRecord proc = mProcessRecordProcStateNodes.poll();
+        ProcessRecordInternal proc = mProcessRecordProcStateNodes.poll();
         while (proc != null) {
             mTmpOomAdjusterArgs.mApp = proc;
             mComputeConnectionsConsumer.accept(mTmpOomAdjusterArgs);
@@ -844,7 +845,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             final UidRecord ur = activeUids.valueAt(i);
             ur.reset();
             for (int j = ur.getNumOfProcs() - 1; j >= 0; j--) {
-                final ProcessRecord proc = ur.getProcessRecordByIndex(j);
+                final ProcessRecordInternal proc = ur.getProcessRecordByIndex(j);
                 updateAppUidRecIfNecessaryLSP(proc);
             }
         }
