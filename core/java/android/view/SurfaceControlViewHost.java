@@ -16,7 +16,6 @@
 
 package android.view;
 
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
@@ -318,7 +317,6 @@ public class SurfaceControlViewHost {
          * @see WindowManager#transferTouchGesture(InputTransferToken, InputTransferToken)
          */
         @Nullable
-        @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
         public InputTransferToken getInputTransferToken() {
             return mInputTransferToken;
         }
@@ -386,7 +384,6 @@ public class SurfaceControlViewHost {
      * @param display                The Display the hierarchy will be placed on.
      * @param hostInputTransferToken The host input transfer token, as discussed above.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     public SurfaceControlViewHost(@NonNull Context context, @NonNull Display display,
             @Nullable InputTransferToken hostInputTransferToken) {
         this(context, display, hostInputTransferToken, "untracked");

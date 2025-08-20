@@ -96,7 +96,6 @@ import com.android.compatibility.common.util.ShellIdentityUtils;
 import com.android.compatibility.common.util.TestUtils;
 import com.android.cts.input.BlockingQueueEventVerifier;
 import com.android.frameworks.coretests.R;
-import com.android.window.flags.Flags;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -411,7 +410,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     public void whenViewIsAttachedToWindow_getHostToken() {
         mView = new View(sContext);
         attachViewToWindow(mView);

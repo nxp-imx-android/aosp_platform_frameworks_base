@@ -52479,7 +52479,7 @@ package android.view {
     method public boolean applyTransactionOnDraw(@NonNull android.view.SurfaceControl.Transaction);
     method @Nullable public android.view.SurfaceControl.Transaction buildReparentTransaction(@NonNull android.view.SurfaceControl);
     method public default int getBufferTransformHint();
-    method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") @NonNull public default android.window.InputTransferToken getInputTransferToken();
+    method @NonNull public default android.window.InputTransferToken getInputTransferToken();
     method @FlaggedApi("com.android.window.flags.jank_api") @NonNull public default android.view.SurfaceControl.OnJankDataListenerRegistration registerOnJankDataListener(@NonNull java.util.concurrent.Executor, @NonNull android.view.SurfaceControl.OnJankDataListener);
     method public default void removeOnBufferTransformHintChangedListener(@NonNull android.view.AttachedSurfaceControl.OnBufferTransformHintChangedListener);
     method public default void setChildBoundingInsets(@NonNull android.graphics.Rect);
@@ -54253,13 +54253,13 @@ package android.view {
     ctor @Deprecated public SurfaceControl.TrustedPresentationThresholds(@FloatRange(from=0.0f, fromInclusive=false, to=1.0f) float, @FloatRange(from=0.0f, fromInclusive=false, to=1.0f) float, @IntRange(from=1) int);
   }
 
-  @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public interface SurfaceControlInputReceiver {
+  public interface SurfaceControlInputReceiver {
     method public boolean onInputEvent(@NonNull android.view.InputEvent);
   }
 
   public class SurfaceControlViewHost {
     ctor public SurfaceControlViewHost(@NonNull android.content.Context, @NonNull android.view.Display, @Nullable android.os.IBinder);
-    ctor @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public SurfaceControlViewHost(@NonNull android.content.Context, @NonNull android.view.Display, @Nullable android.window.InputTransferToken);
+    ctor public SurfaceControlViewHost(@NonNull android.content.Context, @NonNull android.view.Display, @Nullable android.window.InputTransferToken);
     method @Nullable public android.view.SurfaceControlViewHost.SurfacePackage getSurfacePackage();
     method @Nullable public android.view.View getView();
     method public void relayout(int, int);
@@ -54271,7 +54271,7 @@ package android.view {
   public static final class SurfaceControlViewHost.SurfacePackage implements android.os.Parcelable {
     ctor public SurfaceControlViewHost.SurfacePackage(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
     method public int describeContents();
-    method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") @Nullable public android.window.InputTransferToken getInputTransferToken();
+    method @Nullable public android.window.InputTransferToken getInputTransferToken();
     method @NonNull public android.view.SurfaceControl getSurfaceControl();
     method public void notifyConfigurationChanged(@NonNull android.content.res.Configuration);
     method public void notifyDetachedFromWindow();
@@ -56438,15 +56438,15 @@ package android.view {
     method @Deprecated public android.view.Display getDefaultDisplay();
     method @NonNull public default android.view.WindowMetrics getMaximumWindowMetrics();
     method public default boolean isCrossWindowBlurEnabled();
-    method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") @NonNull public default android.window.InputTransferToken registerBatchedSurfaceControlInputReceiver(@NonNull android.window.InputTransferToken, @NonNull android.view.SurfaceControl, @NonNull android.view.Choreographer, @NonNull android.view.SurfaceControlInputReceiver);
+    method @NonNull public default android.window.InputTransferToken registerBatchedSurfaceControlInputReceiver(@NonNull android.window.InputTransferToken, @NonNull android.view.SurfaceControl, @NonNull android.view.Choreographer, @NonNull android.view.SurfaceControlInputReceiver);
     method public default void registerTrustedPresentationListener(@NonNull android.os.IBinder, @NonNull android.window.TrustedPresentationThresholds, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
-    method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") @NonNull public default android.window.InputTransferToken registerUnbatchedSurfaceControlInputReceiver(@NonNull android.window.InputTransferToken, @NonNull android.view.SurfaceControl, @NonNull android.os.Looper, @NonNull android.view.SurfaceControlInputReceiver);
+    method @NonNull public default android.window.InputTransferToken registerUnbatchedSurfaceControlInputReceiver(@NonNull android.window.InputTransferToken, @NonNull android.view.SurfaceControl, @NonNull android.os.Looper, @NonNull android.view.SurfaceControlInputReceiver);
     method public default void removeCrossWindowBlurEnabledListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
     method public default void removeProposedRotationListener(@NonNull java.util.function.IntConsumer);
     method @FlaggedApi("com.android.window.flags.screen_recording_callbacks") @RequiresPermission(android.Manifest.permission.DETECT_SCREEN_RECORDING) public default void removeScreenRecordingCallback(@NonNull java.util.function.Consumer<java.lang.Integer>);
     method public void removeViewImmediate(android.view.View);
-    method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public default boolean transferTouchGesture(@NonNull android.window.InputTransferToken, @NonNull android.window.InputTransferToken);
-    method @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public default void unregisterSurfaceControlInputReceiver(@NonNull android.view.SurfaceControl);
+    method public default boolean transferTouchGesture(@NonNull android.window.InputTransferToken, @NonNull android.window.InputTransferToken);
+    method public default void unregisterSurfaceControlInputReceiver(@NonNull android.view.SurfaceControl);
     method public default void unregisterTrustedPresentationListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
     field @FlaggedApi("com.android.window.flags.cover_display_opt_in") public static final int COMPAT_SMALL_COVER_SCREEN_OPT_IN = 1; // 0x1
     field public static final String PROPERTY_ACTIVITY_EMBEDDING_ALLOW_SYSTEM_OVERRIDE = "android.window.PROPERTY_ACTIVITY_EMBEDDING_ALLOW_SYSTEM_OVERRIDE";
@@ -63538,7 +63538,7 @@ package android.window {
     field public static final int EDGE_RIGHT = 1; // 0x1
   }
 
-  @FlaggedApi("com.android.window.flags.surface_control_input_receiver") public final class InputTransferToken implements android.os.Parcelable {
+  public final class InputTransferToken implements android.os.Parcelable {
     method public int describeContents();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.window.InputTransferToken> CREATOR;
