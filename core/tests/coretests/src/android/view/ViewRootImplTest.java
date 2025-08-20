@@ -41,7 +41,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR;
-import static android.view.flags.Flags.FLAG_ADD_SCHANDLE_TO_VRI_SURFACE;
 import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
@@ -1610,7 +1609,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({FLAG_ADD_SCHANDLE_TO_VRI_SURFACE})
     public void testASurfaceControl_createFromWindow() throws Throwable {
         mView = new View(sContext);
         attachViewToWindow(mView);

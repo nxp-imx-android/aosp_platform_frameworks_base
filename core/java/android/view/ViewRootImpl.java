@@ -117,7 +117,6 @@ import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
-import static android.view.flags.Flags.addSchandleToVriSurface;
 import static android.view.flags.Flags.disableDrawWakeLock;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.sensitiveContentPrematureProtectionRemovedFix;
@@ -2855,11 +2854,7 @@ public final class ViewRootImpl implements ViewParent,
         mBlastBufferQueue.setWaitForBufferReleaseCallback(mChoreographer::onWaitForBufferRelease);
         mBlastBufferQueue.setCornerRadiiCallback(mCornerRadiiCallback);
         Surface blastSurface;
-        if (addSchandleToVriSurface()) {
-            blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
-        } else {
-            blastSurface = mBlastBufferQueue.createSurface();
-        }
+        blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
         // Only call transferFrom if the surface has changed to prevent inc the generation ID and
         // causing EGL resources to be recreated.
         mSurface.transferFrom(blastSurface);
