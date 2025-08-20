@@ -2920,11 +2920,9 @@
     <!-- Text for the dialog title. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_title">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
     <!-- Text for showing inside the dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>. <xliff:g name="feature_intro" example="Voice Access intro">^4</xliff:g></string>
+    <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^3</xliff:g>. <xliff:g name="feature_intro" example="TalkBack intro">^4</xliff:g></string>
     <!-- The text for the TalkBack introduction. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_talkback_intro"><xliff:g name="feature_name" example="TalkBack">%1$s</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen.</string>
-    <!-- The text for the Voice Access introduction. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_key_gesture_dialog_va_intro"><xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> lets you control your device hands-free.</string>
     <!-- Positive button text for the dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_positive_button_text">Turn on</string>
 
@@ -2936,6 +2934,15 @@
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text">Turn off shortcut</string>
     <!-- Positive button text for the Magnification dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text">Keep on</string>
+
+    <!-- Text for the Voice Access dialog title. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_voice_access_dialog_title">Turn on <xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> keyboard shortcut?</string>
+    <!-- Text for showing inside the Voice Access dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>
+    <!-- Negative button text for the Voice Access dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text">Don\'t turn on</string>
+    <!-- Positive button text for the Voice Access dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text">Turn on shortcut</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
