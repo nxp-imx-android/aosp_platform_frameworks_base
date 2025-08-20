@@ -37,7 +37,6 @@ import com.android.systemui.screencapture.data.repository.screenCaptureUiReposit
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -59,7 +58,10 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
 
     @Mock private lateinit var mockBitmap: Bitmap
-    private val viewModel: PreCaptureViewModel by lazy { kosmos.preCaptureViewModel }
+    private val displayId = 1234
+    private val viewModel: PreCaptureViewModel by lazy {
+        kosmos.preCaptureViewModelFactory.create(displayId)
+    }
 
     @Before
     fun setUp() {
@@ -71,7 +73,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     fun initialState() =
         testScope.runTest {
             // Assert that the initial values are as expected upon creation and activation.
-            assertThat(viewModel.isShowingUI).isTrue()
+            assertThat(viewModel.isShowingUi).isTrue()
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
         }
@@ -162,48 +164,25 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun takeFullscreenScreenshot_callsScreenshotInteractor_withCorrectRequest() =
+    fun beginCapture_forFullscreenScreenshot_makesCorrectRequest() =
         testScope.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
 
-            viewModel.takeFullscreenScreenshot()
+            viewModel.beginCapture()
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
-
             val capturedRequest = screenshotRequestCaptor.lastValue
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
             assertThat(capturedRequest.source)
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
-            assertThat(capturedRequest.displayId).isEqualTo(123)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
         }
 
     @Test
-    fun takeFullscreenScreenshot_validatesCaptureType() =
-        testScope.runTest {
-            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
-
-            assertFailsWith(IllegalArgumentException::class) {
-                viewModel.takeFullscreenScreenshot()
-            }
-        }
-
-    @Test
-    fun takeFullscreenScreenshot_validatesCaptureRegion() =
-        testScope.runTest {
-            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
-
-            assertFailsWith(IllegalArgumentException::class) {
-                viewModel.takeFullscreenScreenshot()
-            }
-        }
-
-    @Test
-    fun takePartialScreenshot_callsScreenshotInteractor_withCorrectRequest() =
+    fun beginCapture_forPartialScreenshot_makesCorrectRequest() =
         testScope.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
@@ -214,47 +193,18 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             whenever(kosmos.mockImageCapture.captureDisplay(any(), eq(regionBox)))
                 .thenReturn(mockBitmap)
 
-            viewModel.takePartialScreenshot()
+            viewModel.beginCapture()
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
-
             val capturedRequest = screenshotRequestCaptor.lastValue
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
             assertThat(capturedRequest.source)
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(regionBox)
-            assertThat(capturedRequest.displayId).isEqualTo(123)
-        }
-
-    @Test
-    fun takePartialScreenshot_validatesCaptureType() =
-        testScope.runTest {
-            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
-
-            assertFailsWith(IllegalArgumentException::class) { viewModel.takePartialScreenshot() }
-        }
-
-    @Test
-    fun takePartialScreenshot_validatesCaptureRegion() =
-        testScope.runTest {
-            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
-
-            assertFailsWith(IllegalArgumentException::class) { viewModel.takePartialScreenshot() }
-        }
-
-    @Test
-    fun takePartialScreenshot_validatesRegionBoxIsNotNull() =
-        testScope.runTest {
-            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
-
-            // viewModel.regionBox is null by default
-            assertFailsWith(IllegalArgumentException::class) { viewModel.takePartialScreenshot() }
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
         }
 
     @Test
@@ -326,15 +276,15 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun hideUI_stopsShowingUI() =
+    fun hideUi_updatesState() =
         testScope.runTest {
-            viewModel.hideUI()
+            viewModel.hideUi()
 
-            assertThat(viewModel.isShowingUI).isFalse()
+            assertThat(viewModel.isShowingUi).isFalse()
         }
 
     @Test
-    fun closeUI_finishesActivity() =
+    fun closeUi_dismissesWindow() =
         testScope.runTest {
             val uiState by
                 collectLastValue(
@@ -344,7 +294,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
                     )
                 )
 
-            viewModel.closeUI()
+            viewModel.closeUi()
 
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
         }

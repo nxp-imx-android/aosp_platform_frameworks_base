@@ -25,13 +25,14 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
-import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -56,19 +57,19 @@ constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
-    private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
+    private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
-    private val isShowingUIFlow = MutableStateFlow(true)
+    private val isShowingUiFlow = MutableStateFlow(true)
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
-    val isShowingUI: Boolean by isShowingUIFlow.hydratedStateOf()
+    val isShowingUi: Boolean by isShowingUiFlow.hydratedStateOf()
 
     // TODO(b/423697394) Init default value to be user's previously selected option
     val captureType: ScreenCaptureType by captureTypeSource.hydratedStateOf()
@@ -116,44 +117,55 @@ constructor(
         regionBoxSource.value = bounds
     }
 
-    fun takeFullscreenScreenshot() {
-        require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
-        require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
-
-        // Finishing the activity is not guaranteed to complete before the screenshot is taken.
-        // Since the pre-capture UI should not be included in the screenshot, hide the UI first.
-        hideUI()
-        closeUI()
-
-        backgroundScope.launch { screenshotInteractor.takeFullscreenScreenshot(displayId) }
-    }
-
-    fun takePartialScreenshot() {
-        require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
-        require(captureRegionSource.value == ScreenCaptureRegion.PARTIAL)
-
-        val regionBoxRect = requireNotNull(regionBoxSource.value)
-
-        // Finishing the activity is not guaranteed to complete before the screenshot is taken.
-        // Since the pre-capture UI should not be included in the screenshot, hide the UI first.
-        hideUI()
-        closeUI()
-
-        backgroundScope.launch {
-            screenshotInteractor.takePartialScreenshot(regionBoxRect, displayId)
+    /** Initiates capture of the screen depending on the currently chosen capture type. */
+    fun beginCapture() {
+        when (captureTypeSource.value) {
+            ScreenCaptureType.SCREENSHOT -> takeScreenshot()
+            ScreenCaptureType.SCREEN_RECORD -> {}
         }
     }
 
-    /**
-     * Simply hides all Composables from being visible in the [ScreenCaptureActivity], but does NOT
-     * close the activity. See [closeUI] for closing the activity.
-     */
-    fun hideUI() {
-        isShowingUIFlow.value = false
+    private fun takeScreenshot() {
+        when (captureRegionSource.value) {
+            ScreenCaptureRegion.FULLSCREEN -> beginFullscreenScreenshot()
+            ScreenCaptureRegion.PARTIAL -> beginPartialScreenshot()
+            ScreenCaptureRegion.APP_WINDOW -> {}
+        }
     }
 
-    /** Closes the UI by finishing the parent [ScreenCaptureActivity]. */
-    fun closeUI() {
+    private fun beginFullscreenScreenshot() {
+        // Hide the UI to avoid the parent window closing animation.
+        hideUi()
+        backgroundScope.launch { screenshotInteractor.requestFullscreenScreenshot(displayId) }
+        closeUi()
+    }
+
+    private fun beginPartialScreenshot() {
+        val regionBoxRect = requireNotNull(regionBoxSource.value)
+
+        // Hide the UI to avoid the parent window closing animation.
+        hideUi()
+        backgroundScope.launch {
+            // Temporary fix to allow enough time for the pre-capture UI to dismiss.
+            // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
+            // taking the screenshot.
+            delay(100)
+            screenshotInteractor.requestPartialScreenshot(regionBoxRect, displayId)
+        }
+        closeUi()
+    }
+
+    /**
+     * Simply hides all Composables from being visible, which avoids the parent window close
+     * animation. This is useful to ensure the UI is not visible before a screenshot is taken. Note:
+     * this does NOT close the parent window. See [closeUi] for closing the window.
+     */
+    fun hideUi() {
+        isShowingUiFlow.value = false
+    }
+
+    /** Closes the UI by hiding the parent window. */
+    fun closeUi() {
         screenCaptureUiInteractor.hide(
             com.android.systemui.screencapture.common.shared.model.ScreenCaptureType.RECORD
         )

@@ -25,7 +25,7 @@ import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCap
 import javax.inject.Inject
 
 @ScreenCaptureScope
-class LargeScreenCaptureRecordContent
+class LargeScreenCaptureContent
 @Inject
 constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenCaptureContent {
 
@@ -35,7 +35,7 @@ constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenC
         val viewModel: PreCaptureViewModel =
             rememberViewModel("PreCaptureViewModel") { viewModelFactory.create(displayId) }
 
-        if (viewModel.isShowingUI) {
+        if (viewModel.isShowingUi) {
             PreCaptureUI(viewModel = viewModel)
         }
     }
