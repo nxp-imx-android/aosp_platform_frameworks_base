@@ -31,6 +31,14 @@ message SystemSettingsProto {
 
     optional SettingProto advanced_settings = 2 [ (android.privacy).dest = DEST_AUTOMATIC ];
 
+    message Accessibility {
+        option (android.msg_privacy).dest = DEST_AUTOMATIC;
+
+        optional SettingProto accessibility_force_invert_color_override_packages_to_enable = 1 [ (android.privacy).dest = DEST_EXPLICIT ];
+        optional SettingProto accessibility_force_invert_color_override_packages_to_disable = 2 [ (android.privacy).dest = DEST_EXPLICIT ];
+    }
+    optional Accessibility accessibility = 40;
+
     message Alarm {
         option (android.msg_privacy).dest = DEST_EXPLICIT;
 
@@ -305,5 +313,5 @@ message SystemSettingsProto {
 
     // Please insert fields in alphabetical order and group them into messages
     // if possible (to avoid reaching the method limit).
-    // Next tag = 40;
+    // Next tag = 41;
 }

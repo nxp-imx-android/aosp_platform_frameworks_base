@@ -54,7 +54,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -424,6 +423,41 @@ public class UiModeManager {
      */
     public static final int FORCE_INVERT_TYPE_LIGHT = 2;
 
+    /** @hide */
+    @IntDef(prefix = {"FORCE_INVERT_PACKAGE_"}, value = {
+            FORCE_INVERT_PACKAGE_ALLOWED,
+            FORCE_INVERT_PACKAGE_ALWAYS_ENABLE,
+            FORCE_INVERT_PACKAGE_ALWAYS_DISABLE,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ForceInvertPackageOverrideState {}
+
+    /**
+     * Constant for {@link #getForceInvertOverrideState()}: Force invert is allowed
+     * for the package, and will be applied if the global setting is on.
+     *
+     * @hide
+     */
+    public static final int FORCE_INVERT_PACKAGE_ALLOWED = 0;
+
+    /**
+     * Constant for {@link #getForceInvertOverrideState()}: Force invert is always
+     * enabled for the package, regardless of other overrides or criteria (as long as the {@link
+     * #getForceInvertState()} global setting is on.
+     *
+     * @hide
+     */
+    public static final int FORCE_INVERT_PACKAGE_ALWAYS_ENABLE = 1;
+
+    /**
+     * Constant for {@link #getForceInvertOverrideState()}: Force invert is always
+     * disabled for the package, regardless of other overrides or criteria (as long as the {@link
+     * #getForceInvertState()} global setting is on.
+     *
+     * @hide
+     */
+    public static final int FORCE_INVERT_PACKAGE_ALWAYS_DISABLE = 2;
+
     private static Globals sGlobals;
 
     /**
@@ -492,11 +526,17 @@ public class UiModeManager {
         }
 
         @Override
-        public void notifyForceInvertStateChanged(@ForceInvertType int forceInvertState) {
+        public void notifyForceInvertStateChanged(@ForceInvertType int forceInvertState)
+                throws RemoteException {
+            notifyForceInvertStateChanged(forceInvertState, /* forceUpdate= */ false);
+        }
+
+        private void notifyForceInvertStateChanged(@ForceInvertType int forceInvertState,
+                boolean forceUpdate) {
             final Map<ForceInvertStateChangeListener, Executor> listeners = new ArrayMap<>();
             synchronized (mGlobalsLock) {
                 // if value changed in the settings, update the cached value and notify listeners
-                if (mForceInvertState == forceInvertState) {
+                if (mForceInvertState == forceInvertState && !forceUpdate) {
                     return;
                 }
 
@@ -541,6 +581,18 @@ public class UiModeManager {
                 mContrastChangeListeners.forEach((listener, executor) -> executor.execute(
                         () -> listener.onContrastChanged(contrast)));
             }
+        }
+
+        @Override
+        public void notifyForceInvertOverrideStateChanged() throws RemoteException {
+            final int forceInvertState;
+            synchronized (sGlobals.mGlobalsLock) {
+                forceInvertState = mForceInvertState;
+            }
+
+            // We just re-use the main state listener. End clients don't need the granularity of
+            // listening to the blocklist changes separately.
+            notifyForceInvertStateChanged(forceInvertState, /* forceUpdate= */ true);
         }
 
         // ============= End legacy values and methods ============= //
@@ -657,6 +709,18 @@ public class UiModeManager {
                 }
             }
         }
+
+        @ForceInvertPackageOverrideState
+        private int getForceInvertOverrideState(int userId, String packageName) {
+            synchronized (mGlobalsLock) {
+                // This is such an infrequent operation, we don't worry about caching.
+                try {
+                    return mService.getForceInvertOverrideState(userId, packageName);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            }
+        }
     }
 
     /** Global class storing all listeners and cached values for a specific user id. */
@@ -698,6 +762,8 @@ public class UiModeManager {
                     return;
                 }
                 mContrast = contrast;
+
+                // TODO(b/438028125): why doesn't this clear calling identity like the others?
                 mContrastChangeListeners.forEach((listener, executor) ->
                         executor.execute(() -> listener.onContrastChanged(contrast)));
             }
@@ -706,10 +772,16 @@ public class UiModeManager {
         @Override
         public void notifyForceInvertStateChanged(@ForceInvertType int forceInvertState)
                 throws RemoteException {
+            notifyForceInvertStateChanged(forceInvertState, /* forceUpdate= */ false);
+        }
+
+        private void notifyForceInvertStateChanged(
+                @ForceInvertType int forceInvertState, boolean forceUpdate)
+                throws RemoteException {
             final Map<ForceInvertStateChangeListener, Executor> listeners = new ArrayMap<>();
             synchronized (sGlobals.mGlobalsLock) {
                 // if value changed in the settings, update the cached value and notify listeners
-                if (mForceInvertState == forceInvertState) {
+                if (mForceInvertState == forceInvertState && !forceUpdate) {
                     return;
                 }
 
@@ -725,6 +797,18 @@ public class UiModeManager {
                     Binder.restoreCallingIdentity(token);
                 }
             });
+        }
+
+        @Override
+        public void notifyForceInvertOverrideStateChanged() throws RemoteException {
+            final int forceInvertState;
+            synchronized (sGlobals.mGlobalsLock) {
+                forceInvertState = mForceInvertState;
+            }
+
+            // We just re-use the main state listener. End clients don't need the granularity of
+            // listening to the blocklist changes separately.
+            notifyForceInvertStateChanged(forceInvertState, /* forceUpdate= */ true);
         }
     }
 
@@ -1753,22 +1837,6 @@ public class UiModeManager {
     }
 
     /**
-     * Returns {@code true} if the provided context allows applying force invert, otherwise
-     * {@code false}.
-     *
-     * @hide
-     */
-    public static boolean isForceInvertAllowed(Context context) {
-        final String packageName = context.getPackageName();
-        final String[] packageBlocklist = context.getResources().getStringArray(
-                com.android.internal.R.array.config_forceInvertPackageBlocklist);
-        if (packageName != null && Arrays.asList(packageBlocklist).contains(packageName)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Registers a {@link ForceInvertStateChangeListener} for the user.
      *
      * @param executor The executor on which the listener should be called back.
@@ -1804,6 +1872,21 @@ public class UiModeManager {
             return;
         }
         sGlobals.removeForceInvertStateChangeListener(listener);
+    }
+
+    /**
+     * Returns the force invert override state for the current package.
+     *
+     * @hide
+     */
+    @ForceInvertPackageOverrideState
+    public int getForceInvertOverrideState() {
+        if (mContext == null) {
+            // This shouldn't really happen in practice because ViewRootImpl uses the
+            // proper constructor that fills out the context.
+            return FORCE_INVERT_PACKAGE_ALLOWED;
+        }
+        return sGlobals.getForceInvertOverrideState(getUserId(), mContext.getOpPackageName());
     }
 
     /**

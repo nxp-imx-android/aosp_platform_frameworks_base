@@ -6590,6 +6590,27 @@ public final class Settings {
         public static final String EGG_MODE = "egg_mode";
 
         /**
+         * Comma-separated string of package names will have force invert applied no matter what,
+         * overriding any device-level config blocklists or other criteria, for debugging.
+         *
+         * Note: HWUI may still determine that the app already appears to be dark theme and may not
+         * obey this setting.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE =
+                "accessibility_force_invert_color_override_packages_to_enable";
+
+        /**
+         * Comma-separated string of package names will *never* have force invert applied,
+         * overriding any device-level config blocklists or other criteria, for debugging.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE =
+                "accessibility_force_invert_color_override_packages_to_disable";
+
+        /**
          * Setting to determine whether or not to show the battery percentage in the status bar.
          *    0 - Don't show percentage
          *    1 - Show percentage
@@ -6770,6 +6791,8 @@ public final class Settings {
             PRIVATE_SETTINGS.add(WIFI_USE_STATIC_IP);
             PRIVATE_SETTINGS.add(END_BUTTON_BEHAVIOR);
             PRIVATE_SETTINGS.add(ADVANCED_SETTINGS);
+            PRIVATE_SETTINGS.add(ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE);
+            PRIVATE_SETTINGS.add(ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE);
             PRIVATE_SETTINGS.add(WEAR_ACCESSIBILITY_GESTURE_ENABLED);
             PRIVATE_SETTINGS.add(WEAR_ACCESSIBILITY_GESTURE_ENABLED_DURING_OOBE);
             PRIVATE_SETTINGS.add(WEAR_TTS_PREWARM_ENABLED);

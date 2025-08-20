@@ -64,6 +64,7 @@ import android.app.PendingIntent;
 import android.app.StatusBarManager;
 import android.app.UiModeManager;
 import android.app.UiModeManager.AttentionModeThemeOverlayType;
+import android.app.UiModeManager.ForceInvertPackageOverrideState;
 import android.app.UiModeManager.ForceInvertType;
 import android.app.UiModeManager.NightModeCustomReturnType;
 import android.app.UiModeManager.NightModeCustomType;
@@ -113,6 +114,7 @@ import com.android.internal.app.DisableCarModeActivity;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.util.DumpUtils;
+import com.android.server.accessibility.ForceInvertOverrideState;
 import com.android.server.twilight.TwilightListener;
 import com.android.server.twilight.TwilightManager;
 import com.android.server.twilight.TwilightState;
@@ -143,6 +145,12 @@ final class UiModeManagerService extends SystemService {
     @VisibleForTesting
     public static final Set<Integer> SUPPORTED_NIGHT_MODE_CUSTOM_TYPES = new ArraySet(
             new Integer[]{MODE_NIGHT_CUSTOM_TYPE_SCHEDULE, MODE_NIGHT_CUSTOM_TYPE_BEDTIME});
+
+    /**
+     * Approximate maximum number of User Ids (accounts) we expect to exist on the device, used for
+     * initial capacity allocations.
+     */
+    private static final int EXPECTED_NUM_USER_IDS = 3;
 
     private final Injector mInjector;
     private final Object mLock = new Object();
@@ -274,10 +282,14 @@ final class UiModeManagerService extends SystemService {
     private SparseArray<RemoteCallbackList<IOnProjectionStateChangedListener>> mProjectionListeners;
 
     @GuardedBy("mLock")
-    private final SparseArray<Float> mContrasts = new SparseArray<>();
+    private final SparseArray<Float> mContrasts = new SparseArray<>(EXPECTED_NUM_USER_IDS);
 
     @GuardedBy("mLock")
-    private final SparseIntArray mForceInvertStates = new SparseIntArray();
+    private final SparseIntArray mForceInvertStates = new SparseIntArray(EXPECTED_NUM_USER_IDS);
+
+    @GuardedBy("mLock")
+    private final SparseArray<ForceInvertOverrideState> mForceInvertOverrideStates =
+            new SparseArray<>(EXPECTED_NUM_USER_IDS);
 
     public UiModeManagerService(Context context) {
         this(context, /* setupWizardComplete= */ false, /* tm= */ null, new Injector());
@@ -440,6 +452,13 @@ final class UiModeManagerService extends SystemService {
         }
     };
 
+    private final ContentObserver mForceInvertOverrideObserver = new ContentObserver(mHandler) {
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            updateForceInvertOverrideStates();
+        }
+    };
+
     private void updateForceInvertStates() {
         if (!android.view.accessibility.Flags.forceInvertColor()) {
             return;
@@ -464,6 +483,24 @@ final class UiModeManagerService extends SystemService {
                         .broadcast(ignoreRemoteException(
                                 callback ->
                                         callback.notifyForceInvertStateChanged(forceInvertState)));
+            }
+        }
+    }
+
+    private void updateForceInvertOverrideStates() {
+        if (!android.view.accessibility.Flags.forceInvertColor()) {
+            return;
+        }
+
+        synchronized (mLock) {
+            for (var i = 0; i < mUiModeManagerCallbacks.size(); i++) {
+                var userId = mUiModeManagerCallbacks.keyAt(i);
+                if (updateForceInvertOverrideStateLocked(userId)) {
+                    mUiModeManagerCallbacks.valueAt(i).broadcast(ignoreRemoteException(
+                            callback -> callback
+                                    .notifyForceInvertOverrideStateChanged()
+                    ));
+                }
             }
         }
     }
@@ -564,6 +601,14 @@ final class UiModeManagerService extends SystemService {
                             .registerContentObserver(
                                     Secure.getUriFor(ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED),
                                     false, mForceInvertStateObserver, UserHandle.USER_ALL);
+                    context.getContentResolver().registerContentObserver(
+                            Settings.System.getUriFor(
+                                    Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE),
+                            false, mForceInvertOverrideObserver, UserHandle.USER_ALL);
+                    context.getContentResolver().registerContentObserver(
+                            Settings.System.getUriFor(
+                                    Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE),
+                            false, mForceInvertOverrideObserver, UserHandle.USER_ALL);
                 }
                 context.getContentResolver().registerContentObserver(
                         Secure.getUriFor(Secure.CONTRAST_LEVEL), false,
@@ -1409,6 +1454,19 @@ final class UiModeManagerService extends SystemService {
                 return getForceInvertStateLocked();
             }
         }
+
+        @Override
+        @ForceInvertPackageOverrideState
+        public int getForceInvertOverrideState(int userId, String packageName) {
+            assertLegit(packageName);
+            userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                    Binder.getCallingUid(), userId, false, true,
+                    "getForceInvertOverrideState", packageName);
+            synchronized (mLock) {
+                var state = getForceInvertOverrideStateLocked(userId);
+                return state.getStateForPackage(packageName);
+            }
+        }
     };
 
     private void enforceProjectionTypePermissions(@UiModeManager.ProjectionType int p) {
@@ -1600,6 +1658,30 @@ final class UiModeManagerService extends SystemService {
                 getContext().getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
                 /* def= */ 0, userId) == 1;
+    }
+
+    @GuardedBy("mLock")
+    private boolean updateForceInvertOverrideStateLocked(int userId) {
+        var state = ForceInvertOverrideState.loadFrom(getContext(), userId);
+        if (!state.equals(mForceInvertOverrideStates.get(userId))) {
+            mForceInvertOverrideStates.put(userId, state);
+            return true;
+        }
+        return false;
+    }
+
+    @GuardedBy("mLock")
+    @NonNull
+    private ForceInvertOverrideState getForceInvertOverrideStateLocked(int userId) {
+        var states = mForceInvertOverrideStates.get(userId);
+        if (states == null && mSystemReady) {
+            updateForceInvertOverrideStateLocked(userId);
+            states = mForceInvertOverrideStates.get(userId);
+        }
+        if (states == null) {
+            return ForceInvertOverrideState.EMPTY;
+        }
+        return states;
     }
 
     /** Legacy method, TODO(b/362682063) remove */
