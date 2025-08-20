@@ -2227,6 +2227,22 @@ public class WindowOrganizerTests extends WindowTestsBase {
         assertFalse(WindowOrganizerController.configurationsAreEqualForOrganizer(config1, config3));
     }
 
+    @Test
+    public void testSuppressRecentsUpdatesWhileApplyingWCT() {
+        final TaskChangeNotificationController notifier =
+                mWm.mAtmService.getTaskChangeNotificationController();
+        clearInvocations(notifier);
+
+        // Create & apply a WCT
+        final WindowContainerTransaction t = new WindowContainerTransaction();
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
+
+        // Verify that we've set and restored suppressing the recent task updates while applying
+        verify(notifier, times(1)).setSuppressRecentsUpdates(true);
+        verify(notifier, times(1)).setSuppressRecentsUpdates(false);
+        assertFalse(notifier.areRecentsUpdatesSuppressed());
+    }
+
     private void testSetAlwaysOnTop(WindowContainer wc) {
         final WindowContainerTransaction t = new WindowContainerTransaction();
         t.setAlwaysOnTop(wc.mRemoteToken.toWindowContainerToken(), true);

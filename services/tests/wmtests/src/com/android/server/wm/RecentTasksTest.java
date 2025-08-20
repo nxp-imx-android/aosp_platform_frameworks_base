@@ -54,6 +54,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -1385,6 +1386,29 @@ public class RecentTasksTest extends WindowTestsBase {
         TaskChangeNotificationController controller =
                 mAtm.getTaskChangeNotificationController();
         verify(controller, times(4)).notifyTaskListUpdated();
+    }
+
+    @Test
+    public void suppressRecentsUpdates() {
+        final Task task1 = createTaskBuilder(".Task").build();
+        final TaskChangeNotificationController notifier =
+                mAtm.getTaskChangeNotificationController();
+        clearInvocations(notifier);
+
+        // Enable suppressing recents updates
+        notifier.setSuppressRecentsUpdates(true);
+
+        // Add and remove some tasks
+        mRecentTasks.add(task1);
+        mRecentTasks.removeAllVisibleTasks(TEST_USER_0_ID);
+
+        // Verify nothing was notified
+        verify(notifier, never()).queueTaskListUpdated();
+
+        // Disable suppressing recents updates & verify that we update since there were
+        // notifications while suppressed
+        notifier.setSuppressRecentsUpdates(false);
+        verify(notifier, times(1)).queueTaskListUpdated();
     }
 
     @Test
