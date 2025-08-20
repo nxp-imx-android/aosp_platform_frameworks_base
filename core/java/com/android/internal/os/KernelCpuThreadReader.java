@@ -219,12 +219,12 @@ public class KernelCpuThreadReader {
      * ThreadCpuUsage#usageTimesMillis}
      */
     @Nullable
-    public int[] getCpuFrequenciesKhz() {
+    public final int[] getCpuFrequenciesKhz() {
         return mFrequenciesKhz;
     }
 
     /** Set the number of frequency buckets to use */
-    void setNumBuckets(int numBuckets) {
+    final void setNumBuckets(int numBuckets) {
         // If `numBuckets` hasn't changed since the last set, do nothing
         if (mFrequenciesKhz != null && mFrequenciesKhz.length == numBuckets) {
             return;
@@ -245,7 +245,7 @@ public class KernelCpuThreadReader {
 
     /** Set the UID predicate for {@link #getProcessCpuUsage} */
     @VisibleForTesting
-    public void setUidPredicate(Predicate<Integer> uidPredicate) {
+    public final void setUidPredicate(Predicate<Integer> uidPredicate) {
         mUidPredicate = uidPredicate;
     }
 
@@ -401,7 +401,7 @@ public class KernelCpuThreadReader {
      * </ul>
      */
     @VisibleForTesting
-    public static class FrequencyBucketCreator {
+    public static final class FrequencyBucketCreator {
         private final int mNumFrequencies;
         private final int mNumBuckets;
         private final int[] mBucketStartIndices;
@@ -527,7 +527,7 @@ public class KernelCpuThreadReader {
     }
 
     /** CPU usage of a process */
-    public static class ProcessCpuUsage {
+    public static final class ProcessCpuUsage {
         public final int processId;
         public final String processName;
         public final int uid;
@@ -547,7 +547,7 @@ public class KernelCpuThreadReader {
     }
 
     /** CPU usage of a thread */
-    public static class ThreadCpuUsage {
+    public static final class ThreadCpuUsage {
         public final int threadId;
         public final String threadName;
         public int[] usageTimesMillis;
