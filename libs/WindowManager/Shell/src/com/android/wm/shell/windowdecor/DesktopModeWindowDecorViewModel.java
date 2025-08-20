@@ -559,7 +559,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     });
         }
         mFocusTransitionObserver.setLocalFocusTransitionListener(this, mMainExecutor);
-        mDesksOrganizer.setOnDesktopTaskInfoChangedListener((taskInfo) -> {
+        mDesksOrganizer.addOnDesktopTaskInfoChangedListener((taskInfo) -> {
             onTaskInfoChanged(taskInfo);
             return Unit.INSTANCE;
         });

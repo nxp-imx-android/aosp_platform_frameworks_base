@@ -7178,7 +7178,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_CLOSE))
 
-        verifyNoInteractions(desksOrganizer)
+        verify(desksOrganizer, never())
+            .deactivateDesk(wct = any(), deskId = any(), skipReorder = any())
     }
 
     @Test
@@ -10056,7 +10057,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-        )
+    )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
     fun onUnhandledDrag_newWindowFromTabIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(

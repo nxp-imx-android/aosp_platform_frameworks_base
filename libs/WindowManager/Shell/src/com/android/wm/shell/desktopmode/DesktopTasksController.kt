@@ -357,6 +357,9 @@ class DesktopTasksController(
         )
         dragAndDropController.addListener(this)
         shellController.addKeyguardChangeListener(this)
+        desksOrganizer.addOnDesktopTaskInfoChangedListener { taskInfo ->
+            onTaskInfoChanged(taskInfo)
+        }
     }
 
     @VisibleForTesting
@@ -5859,6 +5862,11 @@ class DesktopTasksController(
                 !requestingImmersive &&
                 !RecentsTransitionStateListener.isRunning(recentsTransitionState)
         ) {
+            logV(
+                "onTaskInfoChanged taskId=%d stopped requesting immersive," +
+                    " breaking out of desktop-immersive mode",
+                taskInfo.taskId,
+            )
             // Exit immersive if the app is no longer requesting it.
             desktopImmersiveController.moveTaskToNonImmersive(
                 taskInfo,
