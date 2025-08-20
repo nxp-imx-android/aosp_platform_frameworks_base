@@ -54,7 +54,6 @@ import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.classifier.falsingCollector
 import com.android.systemui.classifier.falsingManager
 import com.android.systemui.concurrency.fakeExecutor
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRepository
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryHapticsInteractor
@@ -135,8 +134,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -427,16 +424,17 @@ class SceneContainerStartableTest : SysuiTestCase() {
         kosmos.runTest {
             val isVisible by collectLastValue(sceneInteractor.isVisible)
 
-            val transitionState = prepareState(
-                isDeviceUnlocked = true,
-                initialSceneKey = Scenes.Lockscreen,
-            )
+            val transitionState =
+                prepareState(isDeviceUnlocked = true, initialSceneKey = Scenes.Lockscreen)
             underTest.start()
             assertThat(isVisible).isTrue()
 
             // Unlock, leaving the surface behind animation running even after the transition ends.
             sceneInteractor.changeScene(
-                Scenes.Gone, "unlocking for test", forceSettleToTargetScene = true)
+                Scenes.Gone,
+                "unlocking for test",
+                forceSettleToTargetScene = true,
+            )
             transitionState.value = ObservableTransitionState.Idle(Scenes.Gone)
             keyguardSurfaceBehindInteractor.setAnimatingSurface(true)
             runCurrent()
@@ -556,41 +554,112 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade() =
+    fun switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade_singleShade() =
         kosmos.runTest {
             enableSingleShade()
-            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            val backStack by collectLastValue(sceneBackInteractor.backStack)
-            sysuiStatusBarStateController.leaveOpen = true // leave shade open
-
-            val transitionState =
-                prepareState(
-                    authenticationMethod = AuthenticationMethodModel.Pin,
-                    isDeviceUnlocked = false,
-                    initialSceneKey = Scenes.Lockscreen,
-                )
-            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
-            underTest.start()
-            runCurrent()
-
-            sceneInteractor.changeScene(Scenes.QuickSettings, "switching to qs for test")
-            transitionState.value = ObservableTransitionState.Idle(Scenes.QuickSettings)
-            runCurrent()
-            assertThat(currentSceneKey).isEqualTo(Scenes.QuickSettings)
-
-            sceneInteractor.showOverlay(Overlays.Bouncer, "showing bouncer for test")
-            transitionState.value =
-                ObservableTransitionState.Idle(Scenes.QuickSettings, setOf(Overlays.Bouncer))
-            runCurrent()
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-            assertThat(backStack?.asIterable()?.last()).isEqualTo(Scenes.Lockscreen)
-
-            updateFingerprintAuthStatus(isSuccess = true)
-            assertThat(currentSceneKey).isEqualTo(Scenes.QuickSettings)
-            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
-            assertThat(backStack?.asIterable()?.last()).isEqualTo(Scenes.Gone)
+            switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade(
+                switchToQs = {
+                    sceneInteractor.changeScene(Scenes.QuickSettings, "switching to qs for test")
+                    ObservableTransitionState.Idle(currentScene = Scenes.QuickSettings)
+                },
+                expectedSceneWhileBouncerIsShowing = Scenes.QuickSettings,
+                expectedLastBackStackSceneWhileBouncerIsShowing = Scenes.Lockscreen,
+                expectedSceneAfterUnlock = Scenes.QuickSettings,
+                expectedOverlaysAfterUnlock = emptySet(),
+                expectedLastBackStackSceneAfterUnlock = Scenes.Gone,
+            )
         }
+
+    @Test
+    fun switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade_dualShade() =
+        kosmos.runTest {
+            enableDualShade()
+            switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade(
+                switchToQs = {
+                    sceneInteractor.showOverlay(
+                        Overlays.QuickSettingsShade,
+                        "switching to qs for test",
+                    )
+                    ObservableTransitionState.Idle(
+                        currentScene = Scenes.Lockscreen,
+                        currentOverlays = setOf(Overlays.QuickSettingsShade),
+                    )
+                },
+                expectedSceneWhileBouncerIsShowing = Scenes.Lockscreen,
+                expectedLastBackStackSceneWhileBouncerIsShowing = null,
+                expectedSceneAfterUnlock = Scenes.Gone,
+                expectedOverlaysAfterUnlock = setOf(Overlays.QuickSettingsShade),
+                expectedLastBackStackSceneAfterUnlock = null,
+            )
+        }
+
+    /**
+     * Runs through the scenario where the bouncer is accessed while QS is being shown and the
+     * device gets unlocked. This is a helper that can help multiple scenarios.
+     *
+     * @param switchToQs A function that switches to the QS scene or overlay and returns the `Idle`
+     *   representation of the expected current scene and overlays
+     * @param expectedSceneWhileBouncerIsShowing The expected scene while the bouncer is showing.
+     *   The helper function will check that the current _scene_ is this while the bouncer is
+     *   showing
+     * @param expectedLastBackStackSceneWhileBouncerIsShowing The expected last back stack scene
+     *   while the bouncer is showing. The helper function will check that this is the last scene on
+     *   the back stack while the bouncer is showing
+     * @param expectedSceneAfterUnlock The expected scene once the device is unlocked. The helper
+     *   function will check that this is the current _scene_ once the device is unlocked
+     * @param expectedOverlaysAfterUnlock The expected overlays once the device is unlocked. The
+     *   helper function will check that these are the current _overlays_ once the device is
+     *   unlocked
+     * @param expectedLastBackStackSceneAfterUnlock The expected last back stack scene after the
+     *   device is unlocked. The helper function will check that this is the last scene on the back
+     *   stack once the device is unlocked
+     */
+    private fun Kosmos.switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade(
+        switchToQs: Kosmos.() -> ObservableTransitionState.Idle,
+        expectedSceneWhileBouncerIsShowing: SceneKey,
+        expectedLastBackStackSceneWhileBouncerIsShowing: SceneKey?,
+        expectedSceneAfterUnlock: SceneKey,
+        expectedOverlaysAfterUnlock: Set<OverlayKey>,
+        expectedLastBackStackSceneAfterUnlock: SceneKey?,
+    ) {
+        val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+        val backStack by collectLastValue(sceneBackInteractor.backStack)
+        sysuiStatusBarStateController.leaveOpen = true // leave shade open
+
+        val transitionState =
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Lockscreen,
+            )
+        assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+        underTest.start()
+        runCurrent()
+
+        val idleOnQs = switchToQs()
+        transitionState.value = idleOnQs
+        runCurrent()
+        assertThat(currentSceneKey).isEqualTo(idleOnQs.currentScene)
+        assertThat(currentOverlays).isEqualTo(idleOnQs.currentOverlays)
+
+        sceneInteractor.showOverlay(Overlays.Bouncer, "showing bouncer for test")
+        transitionState.value =
+            ObservableTransitionState.Idle(
+                expectedSceneWhileBouncerIsShowing,
+                setOf(Overlays.Bouncer),
+            )
+        runCurrent()
+        assertThat(currentOverlays).contains(Overlays.Bouncer)
+        assertThat(backStack?.asIterable()?.lastOrNull())
+            .isEqualTo(expectedLastBackStackSceneWhileBouncerIsShowing)
+
+        updateFingerprintAuthStatus(isSuccess = true)
+        assertThat(currentSceneKey).isEqualTo(expectedSceneAfterUnlock)
+        assertThat(currentOverlays).isEqualTo(expectedOverlaysAfterUnlock)
+        assertThat(backStack?.asIterable()?.lastOrNull())
+            .isEqualTo(expectedLastBackStackSceneAfterUnlock)
+    }
 
     @Test
     fun switchFromBouncerToGoneWhenDeviceUnlocked_whenDoNotLeaveOpenShade() =
