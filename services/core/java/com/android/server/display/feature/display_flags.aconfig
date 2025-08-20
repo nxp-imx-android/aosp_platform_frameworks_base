@@ -462,3 +462,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "native_rr_callbacks_outside_lock"
+    namespace: "display_manager"
+    description: "Makes the native refresh rate changed callbacks outside the lock"
+    bug: "342607960"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
