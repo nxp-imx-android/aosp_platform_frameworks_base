@@ -916,7 +916,7 @@ bool FMQWrapper::isSupported() {
     if (gForceFMQEnabled.has_value()) {
         return *gForceFMQEnabled;
     }
-    return android::os::adpf_use_fmq_channel_fixed();
+    return true;
 }
 
 bool FMQWrapper::startChannel(IHintManager* manager) {
