@@ -40,6 +40,7 @@ constructor(
     configurationController: ConfigurationController,
 ) {
 
+    // TODO(441100057): This StateFlow should support Connected Displays.
     /** Whether the desktop feature set is enabled. */
     val isDesktopFeatureSetEnabled: StateFlow<Boolean> =
         configurationController.onConfigChanged
