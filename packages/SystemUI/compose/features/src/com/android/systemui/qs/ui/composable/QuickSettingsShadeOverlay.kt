@@ -61,6 +61,7 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.animation.scene.mechanics.TileRevealFlag
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
@@ -392,6 +393,7 @@ private fun ContentScope.QuickSettingsLayout(
             TileGrid(
                 viewModel = qsContainerViewModel.tileGridViewModel,
                 modifier = Modifier.fillMaxWidth(),
+                enableRevealEffect = TileRevealFlag.isEnabled,
             )
 
             // TODO(b/428805936): Double check this padding.
