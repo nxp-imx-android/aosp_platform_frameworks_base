@@ -146,27 +146,30 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ថតឡើងវិញ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"កែ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"លុប"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ថតរូបអេក្រង់ទាំងមូល"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ថតរូបអេក្រង់នៃតំបន់ដែលបានជ្រើសរើស"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"រូបថតអេក្រង់"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ថត"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ចែករំលែក"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ថតរូបអេក្រង់វិនដូ"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ថត​វិនដូ"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ថតរូបអេក្រង់នៃតំបន់ដែលបានជ្រើសរើស"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"ថតតំបន់ដែលបានជ្រើសរើស"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ថតរូបអេក្រង់ទាំងមូល"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ថតអេក្រង់ទាំងមូល"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ការកំណត់​ការថតអេក្រង់"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"កំពុងបង្ហាញអេក្រង់"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"កំពុងចែករំលែកខ្លឹមសារ"</string>
@@ -411,8 +414,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"ឧបករណ៍​​ដែល​មិន​មាន​ឈ្មោះ"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"មិន​មាន​ឧបករណ៍​ដែល​អាច​ប្រើ​បាន"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"គ្មានការតភ្ជាប់​អ៊ីសឺរណិត ឬ Wi‑Fi ទេ"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ផ្ដាច់"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ពន្លឺ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"ការបញ្ច្រាស​ពណ៌"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ការ​កែតម្រូវ​ពណ៌"</string>
@@ -422,8 +424,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"បិទ"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"បាន​ភ្ជាប់"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"កំពុង​តភ្ជាប់..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"កំពុងស្កេនរកមើល Wi‑Fi..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"ហតស្ប៉ត"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"កំពុង​បើក..."</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"កម្មវិធីសន្សំសំចៃទិន្នន័យបានបើក"</string>
@@ -1138,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> គឺជាកម្មវិធី​អាន​អេក្រង់ដែលអនុញ្ញាតឱ្យអ្នកស្ដាប់ឮធាតុដែលត្រូវបានអានឮៗ។ វាអាច​មានប្រយោជន៍​ចំពោះអ្នក​ដែល​មាន​ភាពលំបាក​ក្នុងការ​មើល​អេក្រង់។"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> អនុញ្ញាតឱ្យអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នកដោយមិនប្រើដៃ។"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"បើក"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"ផ្លូវកាត់​ក្ដារ​ចុចនៃ<xliff:g id="ID_1">%1$s</xliff:g>ត្រូវបានបើក"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379"><annotation id="action_key_icon">"រូប"</annotation>"សកម្មភាព + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើ<xliff:g id="ID_3">^3</xliff:g>។ វាអនុញ្ញាតឱ្យអ្នកពង្រីកនៅលើអេក្រង់យ៉ាងរហ័ស ដើម្បីធ្វើឱ្យខ្លឹមសារកាន់តែធំ។ ចុច"<annotation id="action_key_icon">"រូប"</annotation>"សកម្មភាព + <xliff:g id="ID_4">^1</xliff:g> ហើយ \"+\" ឬ \"-\" ដើម្បីកែតម្រូវការពង្រីកបង្រួម។"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"បិទ​ផ្លូវកាត់"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"បន្តបើក"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"អេក្រង់​ចាក់សោ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"កំពុង​បិទ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"មើលជំហាន​ថែទាំ"</string>
@@ -1194,12 +1191,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"កម្មវិធីដែលកំពុងដំណើរការនៅផ្ទៃខាងក្រោយ"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"ចុចដើម្បីមើលព័ត៌មានលម្អិតអំពីការប្រើប្រាស់ទិន្នន័យ និងថ្ម"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"បិទទិន្នន័យទូរសព្ទចល័ត?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"បើកទិន្នន័យទូរសព្ទចល័តឬ?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"ការប្រើប្រាស់ទិន្នន័យទូរសព្ទចល័តអាចនឹងត្រូវបានគិតថ្លៃផ្អែកលើគម្រោងសេវាទូរសព្ទរបស់អ្នក។"</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"បើក"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"អ្នកនឹង​មិន​មាន​សិទ្ធិ​ចូល​ប្រើទិន្នន័យ​ ឬអ៊ីនធឺណិត​តាមរយៈ <xliff:g id="CARRIER">%s</xliff:g> បានឡើយ។ អ៊ីនធឺណិត​នឹងអាច​ប្រើបាន​តាមរយៈ Wi-Fi តែប៉ុណ្ណោះ។"</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"ក្រុមហ៊ុន​​សេវាទូរសព្ទរបស់អ្នក"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"ប្ដូរទៅ <xliff:g id="CARRIER">%s</xliff:g> វិញឬ?"</string>
@@ -1479,7 +1473,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"រួចរាល់"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"បានចម្លង"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"ពី <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"ច្រានចោលអត្ថបទដែលបានចម្លង"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"កែអត្ថបទ​ដែលបានចម្លង"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"កែរូបភាព​ដែលបានចម្លង"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"ផ្ញើទៅ​ឧបករណ៍​នៅជិត"</string>
