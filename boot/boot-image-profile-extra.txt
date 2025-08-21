@@ -74,6 +74,11 @@ HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner;->*
 HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$FreeNativeMemoryRunnable;->*
 HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$AllocationStats;->*
 
+# DeliQueue MessageQueue classes
+HSPLandroid/os/MessageHeap;->*
+HSPLandroid/os/MessageStack;->*
+HSPLandroid/os/WaitState;->*
+
 # While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
 # pre-initialized in the boot image to avoid redundant per-process overhead.
 # TODO(b/326623529): Consider removing this after the feature has fully ramped
