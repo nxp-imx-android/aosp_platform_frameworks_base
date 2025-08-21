@@ -151,6 +151,8 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX(
             Flags::enableDesktopWindowingPipInOverviewBugfix, false,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP_IN_OVERVIEW_BUGFIX),
+    ENABLE_DIALOG_DISPLAY_FIXES(Flags::enableDialogDisplayFixes, true,
+            Flags.FLAG_ENABLE_DIALOG_DISPLAY_FIXES),
     ENABLE_DISPLAY_COMPAT_MODE(Flags::enableDisplayCompatMode, false,
             Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(

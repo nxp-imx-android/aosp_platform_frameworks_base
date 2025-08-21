@@ -816,6 +816,16 @@ flag {
 }
 
 flag {
+    name: "enable_dialog_display_fixes"
+    namespace: "lse_desktop_experience"
+    description: "Enables fixes that ensure external display dialogs are shown on the correct display"
+    bug: "438457648"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_compat_mode"
     namespace: "lse_desktop_experience"
     description: "Enables display compat mode for connected displays."
