@@ -7054,8 +7054,7 @@ package android.app {
     method public boolean isStopwatch();
     method public boolean isTimer();
     field public static final int FORMAT_ADAPTIVE = 1; // 0x1
-    field public static final int FORMAT_AUTOMATIC = 0; // 0x0
-    field public static final int FORMAT_CHRONOMETER = 3; // 0x3
+    field public static final int FORMAT_CHRONOMETER = 2; // 0x2
   }
 
   @FlaggedApi("android.app.api_metric_style") public static final class Notification.MetricStyle extends android.app.Notification.Style {
