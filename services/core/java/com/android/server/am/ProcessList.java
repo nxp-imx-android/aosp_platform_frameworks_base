@@ -66,7 +66,6 @@ import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.wm.WindowProcessController.STOPPED_STATE_FIRST_LAUNCH;
 import static com.android.server.wm.WindowProcessController.STOPPED_STATE_FORCE_STOPPED;
 
-import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeALL;
@@ -1926,13 +1925,6 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                             app.info.packageName);
                     externalStorageAccess = storageManagerInternal.hasExternalStorageAccess(uid,
                             app.info.packageName);
-                    if (mService.isAppFreezerExemptInstPkg()
-                            && pm.checkPermission(Manifest.permission.INSTALL_PACKAGES,
-                            app.info.packageName, userId)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        Slog.i(TAG, app.info.packageName + " is exempt from freezer");
-                        app.mOptRecord.setFreezeExempt(true);
-                    }
                 } catch (RemoteException e) {
                     throw e.rethrowAsRuntimeException();
                 }

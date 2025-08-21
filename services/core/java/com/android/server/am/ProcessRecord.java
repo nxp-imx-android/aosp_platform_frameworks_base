@@ -1200,11 +1200,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
-    public boolean isFreezeExempt() {
-        return mOptRecord.isFreezeExempt();
-    }
-
-    @Override
     public boolean shouldNotFreeze() {
         return mOptRecord.shouldNotFreeze();
     }

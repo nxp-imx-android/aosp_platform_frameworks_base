@@ -222,9 +222,6 @@ public abstract class ProcessRecordInternal {
     /** Returns whether this process has been scheduled for freezing. */
     public abstract boolean isPendingFreeze();
 
-    /** Returns whether this process is exempt from being frozen by the system's app freezer. */
-    public abstract boolean isFreezeExempt();
-
     /**
      * Returns the OOM adjustment sequence number when this process's
      * {@link #shouldNotFreeze()} state was last updated.
