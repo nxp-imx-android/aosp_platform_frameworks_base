@@ -146,7 +146,17 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ပြန်ရိုက်ရန်"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ပြင်ရန်"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ဖျက်ရန်"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ဖန်သားပြင်တစ်ခုလုံးကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ရွေးထားသောနေရာကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
@@ -411,8 +421,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"အမည်မတပ် ကိရိယာ"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"ကိရိယာများ မရှိ"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi-Fi (သို့) အီသာနက်ချိတ်ဆက်မှု မရှိပါ"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"ချိတ်ဆက်မှုဖြုတ်ရန်"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"အလင်းတောက်ပမှု"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"အရောင်ပြောင်းပြန်ပြုလုပ်ရန်"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"အရောင် အမှန်ပြင်ခြင်း"</string>
@@ -422,8 +431,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"ပိတ်ရန်"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"ချိတ်ဆက်ထား"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"ဆက်သွယ်နေ..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Wi-Fi ချိတ်ရန် ရှာနေသည်…"</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"ဟော့စပေါ့"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ဖွင့်နေသည်…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"\'ဒေတာချွေတာမှု\' ဖွင့်ထားသည်"</string>
@@ -1194,12 +1202,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"နောက်ခံတွင် ပွင့်နေသော အက်ပ်များ"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"ဘက်ထရီနှင့် ဒေတာအသုံးပြုမှု အသေးစိတ်ကို ကြည့်ရန် တို့ပါ"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"မိုဘိုင်းဒေတာ ပိတ်မလား။"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"မိုဘိုင်းဒေတာ ဖွင့်မလား။"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"မိုဘိုင်းဒေတာ အသုံးပြုခြင်းက သင့်မိုဘိုင်းဝန်ဆောင်မှု အစီအစဉ်ပေါ် အခြေခံ၍ ကျသင့်ငွေ ပေးရနိုင်သည်။"</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ဖွင့်ရန်"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"<xliff:g id="CARRIER">%s</xliff:g> မှတစ်ဆင့် ဒေတာ သို့မဟုတ် အင်တာနက်ကို မသုံးနိုင်ပါ။ Wi-Fi ဖြင့်သာ အင်တာနက် သုံးနိုင်သည်။"</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"သင်၏ ဝန်ဆောင်မှုပေးသူ"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"<xliff:g id="CARRIER">%s</xliff:g> သို့ ပြန်ပြောင်းမလား။"</string>
@@ -1479,7 +1484,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"ပြီးပြီ"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"ကူးပြီးပါပြီ"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"<xliff:g id="APPNAME">%1$s</xliff:g> ထံမှ"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"မိတ္တူကူးထားသောစာသားကို ပယ်ရန်"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"ကူးထားသည့်စာသားကို တည်းဖြတ်ရန်"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"ကူးထားသည့်ပုံကို ပြင်ဆင်ရန်"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"အနီးတစ်ဝိုက်ရှိ စက်များသို့ ပို့ရန်"</string>

@@ -146,27 +146,29 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Repetir"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eliminar"</string>
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Facer captura de toda a pantalla"</string>
-    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Facer captura da área seleccionada da pantalla"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
     <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Facer captura de toda a pantalla"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Facer captura da área seleccionada da pantalla"</string>
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Gravar área seleccionada"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de pantalla"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Gravación"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Compartir"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Facer unha captura de pantalla da ventá"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ventá de gravación"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Facer unha captura da área seleccionada da pantalla"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Gravar a área seleccionada"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Facer unha captura de toda a pantalla"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Gravar toda a pantalla"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Configuración da captura de pantalla"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Compartindo pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Compartindo contido"</string>
@@ -1136,14 +1138,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> é un lector de pantalla que fai que se lean os elementos en alto para que os oias. Esta función pode ser útil para as persoas que teñan dificultades para ver a pantalla."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> permíteche controlar o dispositivo sen usar as mans."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activar"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"O atallo do teclado para <xliff:g id="ID_1">%1$s</xliff:g> está activado"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"O atallo de teclado para usar <xliff:g id="ID_3">^3</xliff:g> é "<annotation id="action_key_icon">"icona"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. Isto permíteche achegar a pantalla rapidamente para ver o contido a maior tamaño. Preme a "<annotation id="action_key_icon">"icona"</annotation>" de acción + <xliff:g id="ID_4">^1</xliff:g> e as teclas + ou - para axustar o zoom."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar atallo"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Deixar opción activada"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Apagando…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Ver pasos de mantemento"</string>
@@ -1474,7 +1472,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"Feito"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"Copiouse"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"De <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"Ignorar texto copiado"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"Editar texto copiado"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"Editar imaxe copiada"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"Enviar a dispositivo próximo"</string>

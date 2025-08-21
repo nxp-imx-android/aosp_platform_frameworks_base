@@ -146,27 +146,29 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
-    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
     <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ವಿಂಡೋದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ವಿಂಡೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ಇಡೀ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ಕಂಟೆಂಟ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
@@ -775,7 +777,7 @@
     <string name="screen_pinning_negative" msgid="6882816864569211666">"ಬೇಡ"</string>
     <string name="screen_pinning_start" msgid="7483998671383371313">"ಆ್ಯಪ್ ಪಿನ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="screen_pinning_exit" msgid="4553787518387346893">"ಆ್ಯಪ್ ಅನ್‌ಪಿನ್ ಮಾಡಲಾಗಿದೆ"</string>
-    <string name="stream_voice_call" msgid="7468348170702375660">"ಕರೆ ಮಾಡಿ"</string>
+    <string name="stream_voice_call" msgid="7468348170702375660">"ಕರೆ"</string>
     <string name="stream_system" msgid="7663148785370565134">"ಸಿಸ್ಟಂ"</string>
     <string name="stream_ring" msgid="7550670036738697526">"ರಿಂಗ್"</string>
     <string name="stream_music" msgid="2188224742361847580">"ಮಾಧ್ಯಮ"</string>
@@ -1136,14 +1138,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ಎಂಬುದು ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಆಗಿದ್ದು ಅದು ಸ್ಕ್ರೀನ್ ಮೇಲಿರುವುದನ್ನು ಗಟ್ಟಿಯಾಗಿ ಓದಲು ನಿಮಗೆ ಅನುವು ಮಾಡಿಕೊಡುತ್ತದೆ. ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೋಡಲು ಕಷ್ಟಪಡುವ ಜನರಿಗೆ ಇದು ಸಹಾಯಕವಾಗಬಹುದು."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹ್ಯಾಂಡ್ಸ್-ಫ್ರೀ ಆಗಿ ನಿಯಂತ್ರಿಸಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ಆನ್ ಮಾಡಿ"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆನ್ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g> ಅನ್ನು ಬಳಸಲು ಆ್ಯಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಆಗಿದೆ. ಕಂಟೆಂಟ್ ಅನ್ನು ದೊಡ್ಡದಾಗಿಸಲು ಸ್ಕ್ರೀನ್ ಮೇಲೆ ತ್ವರಿತವಾಗಿ ಝೂಮ್ ಇನ್ ಮಾಡಲು ಇದು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ. ಝೂಮ್ ಅನ್ನು ಅಡ್ಜಸ್ಟ್ ಮಾಡಲು ಆ್ಯಕ್ಷನ್ "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ಮತ್ತು \"+\" ಅಥವಾ \"-\" ಒತ್ತಿರಿ."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ಆನ್‌ನಲ್ಲಿ ಇರಿಸಿ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ಶಟ್ ಡೌನ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ಕಾಳಜಿಯ ಹಂತಗಳನ್ನು ವೀಕ್ಷಿಸಿ"</string>
@@ -1474,7 +1472,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"ಮುಗಿದಿದೆ"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"ಕಾಪಿ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"<xliff:g id="APPNAME">%1$s</xliff:g> ನಿಂದ"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"ನಕಲಿಸಿದ ಪಠ್ಯವನ್ನು ವಜಾಗೊಳಿಸಿ"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"ನಕಲಿಸಿದ ಪಠ್ಯವನ್ನು ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"ನಕಲಿಸಿದ ಚಿತ್ರವನ್ನು ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"ಸಮೀಪದಲ್ಲಿರುವ ಸಾಧನಕ್ಕೆ ಕಳುಹಿಸಿ"</string>

@@ -146,27 +146,29 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Ponovo snimi"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Izmeni"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Izbriši"</string>
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Napravi snimak celog ekrana"</string>
-    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Napravi snimak ekrana izabrane oblasti"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
     <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Napravi snimak celog ekrana"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Napravi snimak ekrana izabrane oblasti"</string>
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Snimi izabranu oblast"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Snimak ekrana"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Snimanje ekrana"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deli"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Napravi snimak ekrana prozora aplikacije"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Snimi prozor aplikacije"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Napravi snimak ekrana izabrane oblasti"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Snimi izabranu oblast"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Napravi snimak celog ekrana"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Snimi ceo ekran"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Podešavanja snimanja ekrana"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>×<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran se deli"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Deljenje sadržaja"</string>
@@ -421,7 +423,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Zatvori"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Povezan"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Povezuje se..."</string>
-    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Skenira se WiFi..."</string>
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Pretraga Wi-Fi mreža..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Hotspot"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Uključuje se..."</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Ušteda podataka je uključena"</string>
@@ -1136,14 +1138,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> je čitač ekrana koji vam omogućava da čujete naglas izgovorene nazive stavki. Može da bude koristan ljudima koji imaju poteškoća sa vidom."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> vam omogućava da kontrolišete uređaj hendsfri."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Uključi"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Tasterska prečica za <xliff:g id="ID_1">%1$s</xliff:g> je uključena"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379"><annotation id="action_key_icon">"Ikona"</annotation>" Radnja + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je tasterska prečica za korišćenje funkcije <xliff:g id="ID_3">^3</xliff:g>. To vam omogućava da brzo zumirate ekran da bi sadržaj bio veći. Pritisnite "<annotation id="action_key_icon">"ikonu"</annotation>" Radnja + <xliff:g id="ID_4">^1</xliff:g> i „+“ ili „–“ da biste prilagodili zumiranje."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečicu"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ne isključuj"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključan ekran"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključuje se…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Pogledajte upozorenja"</string>
@@ -1474,7 +1472,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"Gotovo"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"Kopirano je"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"Od: <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"Odbaci kopirani tekst"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"Izmenite kopirani tekst"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"Izmenite kopiranu sliku"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"Pošalji na uređaj u blizini"</string>

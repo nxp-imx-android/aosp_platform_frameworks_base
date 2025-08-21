@@ -146,27 +146,30 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"మళ్లీ తీయండి"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ఎడిట్ చేయండి"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"తొలగించండి"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ఫుల్-స్క్రీన్ తాలూకు స్క్రీన్‌షాట్ తీయండి"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ఎంచుకున్న ప్రాంతానికి స్క్రీన్‌షాట్ తీయండి"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"స్క్రీన్‌షాట్"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"రికార్డ్ చేయండి"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"షేర్ చేయండి"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"విండో స్క్రీన్‌షాట్‌ను తీయండి"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"విండోను రికార్డ్ చేయండి"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ఎంచుకున్న ఏరియా తాలూకు స్క్రీన్‌షాట్‌ను తీయండి"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"ఎంచుకున్న ఏరియాను రికార్డ్ చేయండి"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ఫుల్ స్క్రీన్ తాలూకు స్క్రీన్‌షాట్‌ను తీయండి"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"స్క్రీన్ క్యాప్చర్ సెట్టింగ్‌లు"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"స్క్రీన్‌ను షేర్ చేస్తోంది"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"కంటెంట్‌ను షేర్ చేస్తోంది"</string>
@@ -411,8 +414,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"పేరులేని పరికరం"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"పరికరాలు ఏవీ అందుబాటులో లేవు"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi లేదా ఈథర్‌నెట్ కనెక్షన్ లేదు"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"డిస్‌కనెక్ట్ చేయండి"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"ప్రకాశం"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"కలర్ మార్పిడి"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"కలర్ కరెక్షన్"</string>
@@ -422,8 +424,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"మూసివేయండి"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"కనెక్ట్ చేయబడినది"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"కనెక్ట్ అవుతోంది..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Wi‑Fi కోసం స్కాన్ చేస్తోంది..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"హాట్‌స్పాట్"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ఆన్ చేస్తోంది…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"డేటా సేవర్ ఆన్‌లో ఉంది"</string>
@@ -1138,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> అనేది, స్క్రీన్‌పై ఉన్న ఐటెమ్‌ల గురించి మీకు బిగ్గరగా చదివి వినిపించే స్క్రీన్ రీడర్. స్క్రీన్‌ను చూడటంలో ఇబ్బంది ఉన్న వారికి ఇది ఉపయోగకరం కాగలదు."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"మీ డివైజ్‌ను హ్యాండ్స్-ఫ్రీగా కంట్రోల్ చేసే వీలును <xliff:g id="ID_1">%1$s</xliff:g> మీకు కల్పిస్తుంది."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ఆన్ చేయండి"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్ ఆన్ అయింది"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్: యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. కంటెంట్‌ను మరింత పెద్దగా డిస్‌ప్లే చేయడానికి, స్క్రీన్‌ను క్విక్‌గా జూమ్ - ఇన్ చేసే వీలును ఇది మీకు కల్పిస్తుంది. జూమ్‌ను సర్దుబాటు చేయడానికి, యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>‌ను నొక్కి, ఆ తర్వాత \"+\"ను కానీ, \"-\"ను కానీ నొక్కండి."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"షార్ట్‌కట్‌ను ఆఫ్ చేయండి"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ఆన్‌లోనే ఉంచండి"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"తీసుకోవాల్సిన జాగ్రత్తలు ఏమిటో చూడండి"</string>
@@ -1194,12 +1191,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"బ్యాక్‌గ్రౌండ్‌లో అమలు అవుతున్న ఆప్‌లు"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"బ్యాటరీ మరియు డేటా వినియోగ వివరాల కోసం నొక్కండి"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"మొబైల్ డేటాను ఆఫ్ చేయాలా?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"మొబైల్ డేటాను ఆన్ చేయాలా?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"మీ మొబైల్ సర్వీస్ ప్లాన్ ఆధారంగా మొబైల్ డేటాను ఉపయోగించడం వల్ల ఛార్జీలు విధించవచ్చు."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ఆన్ చేయండి"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"\"<xliff:g id="CARRIER">%s</xliff:g>\" ద్వారా మీకు డేటా లేదా ఇంటర్నెట్‌కు యాక్సెస్ ఉండదు. Wi-Fi ద్వారా మాత్రమే ఇంటర్నెట్ అందుబాటులో ఉంటుంది."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"మీ క్యారియర్"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"<xliff:g id="CARRIER">%s</xliff:g>కి తిరిగి మారాలా?"</string>
@@ -1479,7 +1473,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"పూర్తయింది"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"కాపీ అయింది"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"<xliff:g id="APPNAME">%1$s</xliff:g> నుండి"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"కాపీ చేసిన టెక్స్ట్‌ను విస్మరించండి"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"కాపీ చేసిన టెక్స్ట్‌ను ఎడిట్ చేయండి"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"కాపీ చేసిన ఇమేజ్‌లను ఎడిట్ చేయండి"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"సమీపంలోని పరికరానికి పంపండి"</string>

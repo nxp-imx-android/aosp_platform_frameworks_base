@@ -146,7 +146,17 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"다시 촬영"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"수정"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"삭제"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"선택한 영역의 스크린샷 찍기"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
@@ -377,7 +387,7 @@
     <string name="turn_on_bluetooth_auto_info_disabled" msgid="682984290339848844">"Quick Share, 내 기기 찾기 등의 기능에서 블루투스를 사용합니다."</string>
     <string name="turn_on_bluetooth_auto_info_enabled" msgid="7440944034584560279">"블루투스가 내일 아침에 켜집니다."</string>
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"오디오 공유"</string>
-    <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"오디오 공유 중"</string>
+    <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"오디오 공유"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_accessibility" msgid="7604615019302091708">"오디오 공유 설정으로 이동"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_message" msgid="4251807313264307426">"이 기기의 음악 및 동영상이 헤드폰 양쪽에서 재생됩니다."</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"오디오 공유"</string>
@@ -1474,7 +1484,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"완료"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"복사됨"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"복사한 위치: <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"복사된 텍스트 닫기"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"복사된 텍스트 편집"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"복사된 이미지 편집"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"근처 기기에 전송"</string>

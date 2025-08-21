@@ -146,7 +146,17 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Ambil semula"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Edit"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Padam"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ambil tangkapan skrin seluruh skrin"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Ambil tangkapan skrin kawasan yang dipilih"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
@@ -1463,7 +1473,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"Selesai"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"Disalin"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"Daripada <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"Ketepikan teks yang disalin"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"Edit teks yang disalin"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"Edit imej yang disalin"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"Hantar ke peranti berdekatan"</string>
