@@ -126,6 +126,21 @@ public final class VirtualDeviceManager {
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface PendingIntentLaunchStatus {}
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, prefix = "UI_MODE_", value = {
+            Configuration.UI_MODE_TYPE_NORMAL,
+            Configuration.UI_MODE_TYPE_DESK,
+            Configuration.UI_MODE_TYPE_CAR,
+            Configuration.UI_MODE_TYPE_TELEVISION,
+            Configuration.UI_MODE_TYPE_APPLIANCE,
+            Configuration.UI_MODE_TYPE_WATCH,
+            Configuration.UI_MODE_TYPE_VR_HEADSET,
+            Configuration.UI_MODE_NIGHT_NO,
+            Configuration.UI_MODE_NIGHT_YES})
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface DisplayUiMode {}
+
     /**
      * Status for {@link VirtualDevice#launchPendingIntent}, indicating that the launch was
      * successful.
@@ -1197,7 +1212,7 @@ public final class VirtualDeviceManager {
          * @see Configuration#uiMode
          */
         @FlaggedApi(Flags.FLAG_DEVICE_AWARE_UI_MODE)
-        public void setDisplayUiMode(int displayId, int uiMode) {
+        public void setDisplayUiMode(int displayId, @DisplayUiMode int uiMode) {
             if (!Flags.deviceAwareUiMode()) {
                 throw new UnsupportedOperationException("Required flag is not enabled");
             }
