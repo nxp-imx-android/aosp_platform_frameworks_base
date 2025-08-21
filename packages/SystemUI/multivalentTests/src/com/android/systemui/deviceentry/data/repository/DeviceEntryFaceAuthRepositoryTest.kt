@@ -43,6 +43,8 @@ import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
+import com.android.systemui.bouncer.domain.interactor.bouncerIsNotShowing
+import com.android.systemui.bouncer.domain.interactor.bouncerIsShowing
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.FlowValue
 import com.android.systemui.coroutines.collectLastValue
@@ -679,6 +681,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             allPreconditionsToRunFaceAuthAreTrue()
             bouncerRepository.setAlternateVisible(false)
             bouncerRepository.setPrimaryShow(false)
+            kosmos.bouncerIsNotShowing()
 
             assertThat(canFaceAuthRun()).isTrue()
 
@@ -693,6 +696,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
 
             // but bouncer is shown after that.
             bouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
             assertThat(canFaceAuthRun()).isTrue()
         }
 

@@ -47,6 +47,7 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.data.repository.ShadeRepository
@@ -278,11 +279,17 @@ constructor(
     /** Whether the primary bouncer is showing or about to show soon. */
     @JvmField
     val primaryBouncerShowing: StateFlow<Boolean> =
-        combine(
-                bouncerRepository.primaryBouncerShow,
-                bouncerRepository.primaryBouncerShowingSoon,
-            ) { showing, showingSoon ->
-                showing || showingSoon
+        if (SceneContainerFlag.isEnabled) {
+                sceneInteractorProvider.get().transitionState.map {
+                    it.isIdle(Overlays.Bouncer) || it.isTransitioning(to = Overlays.Bouncer)
+                }
+            } else {
+                combine(
+                    bouncerRepository.primaryBouncerShow,
+                    bouncerRepository.primaryBouncerShowingSoon,
+                ) { showing, showingSoon ->
+                    showing || showingSoon
+                }
             }
             .stateIn(
                 scope = applicationScope,

@@ -97,6 +97,7 @@ import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -947,11 +948,32 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         kosmos.runTest {
             val viewModel = createViewModel()
             val isUiBlurred by collectLastValue(viewModel.isUiBlurred)
-
+            kosmos.sceneInteractor.changeScene(
+                Scenes.Lockscreen,
+                "go to lockscreen",
+                hideAllOverlays = false,
+            )
+            kosmos.sceneInteractor.instantlyShowOverlay(Overlays.Bouncer, "go to bouncer")
+            kosmos.sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Idle(
+                        sceneInteractor.currentScene.value,
+                        setOf(Overlays.Bouncer),
+                    )
+                )
+            )
             fakeKeyguardBouncerRepository.setPrimaryShow(true)
+            runCurrent()
+
             assertThat(isUiBlurred).isTrue()
 
             fakeKeyguardBouncerRepository.setPrimaryShow(false)
+            kosmos.sceneInteractor.instantlyHideOverlay(Overlays.Bouncer, "go to bouncer")
+            kosmos.sceneInteractor.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(sceneInteractor.currentScene.value))
+            )
+            runCurrent()
+
             assertThat(isUiBlurred).isFalse()
         }
 
