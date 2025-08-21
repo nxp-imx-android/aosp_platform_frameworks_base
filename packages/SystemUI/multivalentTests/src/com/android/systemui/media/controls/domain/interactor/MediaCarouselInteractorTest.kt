@@ -25,6 +25,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -120,6 +121,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
     fun hasActiveMedia_noMediaSet_returnsFalse() =
         testScope.runTest { assertThat(underTest.hasActiveMedia()).isFalse() }
 
+    @DisableSceneContainer
     @Test
     fun onLockscreen_mediaAllowed_lockedAndHidden_returnsFalse() =
         testScope.runTest {
@@ -134,6 +136,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
             assertThat(isLockedAndHidden).isFalse()
         }
 
+    @DisableSceneContainer
     @Test
     fun onLockscreen_mediaNotAllowed_lockedAndHidden_returnsTrue() =
         testScope.runTest {
@@ -153,6 +156,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
             assertThat(isLockedAndHidden).isTrue()
         }
 
+    @DisableSceneContainer
     @Test
     fun onKeyguardGone_mediaAllowed_lockedAndHidden_returnsFalse() =
         testScope.runTest {
@@ -167,6 +171,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
             assertThat(isLockedAndHidden).isFalse()
         }
 
+    @DisableSceneContainer
     @Test
     fun onKeyguardGone_mediaNotAllowed_lockedAndHidden_returnsFalse() =
         testScope.runTest {
@@ -186,6 +191,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
             assertThat(isLockedAndHidden).isFalse()
         }
 
+    @DisableSceneContainer
     @Test
     fun goingToDozing_mediaAllowed_lockedAndHidden_returnsFalse() =
         testScope.runTest {
@@ -200,6 +206,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
             assertThat(isLockedAndHidden).isFalse()
         }
 
+    @DisableSceneContainer
     @Test
     fun goingToDozing_mediaNotAllowed_lockedAndHidden_returnsTrue() =
         testScope.runTest {
