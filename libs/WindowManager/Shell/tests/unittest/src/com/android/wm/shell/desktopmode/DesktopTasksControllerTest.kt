@@ -4412,6 +4412,58 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         wct.assertPendingIntentActivityOptionsLaunchDisplayId(SECOND_DISPLAY)
     }
 
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
+    )
+    fun moveToNextDesktopDisplay_projectedMode_movesToDesktopOnConnectedDisplay() {
+        // Setup state where a desktop task is running on a secondary display while the device is in
+        // projected mode
+        desktopState.isProjected = true
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        doReturn(false).whenever(desktopModeCompatPolicy).shouldDisableDesktopEntryPoints(task)
+
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
+
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(SECOND_DISPLAY), eq(task), eq(false))
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
+    )
+    fun moveToNextDesktopDisplay_projectedMode_movesToDesktopOnConnectedDisplay_skipTasksWithDisabledEntryPoints() {
+        // Setup state where a desktop task is running on a secondary display while the device is in
+        // projected mode
+        desktopState.isProjected = true
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+
+        // The task should not have desktop entry points
+        doReturn(true).whenever(desktopModeCompatPolicy).shouldDisableDesktopEntryPoints(task)
+
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
+
+        verify(desksOrganizer, never()).moveTaskToDesk(any(), any(), eq(task), any())
+    }
+
     private fun moveToNextDesktopDisplay_moveIifDesktopModeSupportedOnDestination(
         isDesktopModeSupportedOnDestination: Boolean
     ) {
@@ -10056,7 +10108,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-        )
+    )
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
     fun onUnhandledDrag_newWindowFromTabIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
         testOnUnhandledDrag(

@@ -2432,6 +2432,13 @@ class DesktopTasksController(
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
             if (!task.isFreeform) {
+                if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) {
+                    logW(
+                        "moveToDisplay: do nothing because the desktop entry points should be " +
+                            "disabled for the focused task"
+                    )
+                    return
+                }
                 addMoveToDeskTaskChanges(wct = wct, task = task, deskId = destinationDeskId)
             } else {
                 if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
