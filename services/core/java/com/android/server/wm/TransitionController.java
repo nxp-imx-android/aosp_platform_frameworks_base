@@ -1188,6 +1188,7 @@ class TransitionController {
     }
 
     void tryStartCollectFromQueue() {
+        if (!isShellTransitionsEnabled()) return;
         if (mQueuedTransitions.isEmpty()) return;
         // Only need to try the next one since, even when transition can collect in parallel,
         // they still need to serialize on readiness.
