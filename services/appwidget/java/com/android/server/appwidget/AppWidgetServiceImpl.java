@@ -888,40 +888,52 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                         || !packageName.equals(provider.id.componentName.getPackageName())) {
                     continue;
                 }
-                if (provider.setMaskedByStoppedPackageLocked(isStopped)) {
-                    if (provider.isMaskedLocked()) {
-                        maskWidgetsViewsLocked(provider, null);
-                        cancelBroadcastsLocked(provider);
-                    } else {
+                boolean changed = provider.setMaskedByStoppedPackageLocked(isStopped);
+                boolean masked = provider.isMaskedLocked();
+                if (masked && changed) {
+                    maskWidgetsViewsLocked(provider, null);
+                    cancelBroadcastsLocked(provider);
+                } else if (!masked) {
+                    if (changed) {
                         unmaskWidgetsViewsLocked(provider);
-                        final int widgetCount = provider.widgets.size();
-                        if (widgetCount > 0) {
-                            final int[] widgetIds = new int[widgetCount];
-                            for (int j = 0; j < widgetCount; j++) {
-                                widgetIds[j] = provider.widgets.get(j).appWidgetId;
-                            }
-                            registerForBroadcastsLocked(provider, widgetIds);
-                            sendUpdateIntentLocked(provider, widgetIds, /* interactive= */ false);
+                    }
+                    // Re-register AlarmManager broadcast and send APPWIDGET_UPDATE even if we have
+                    // not observed a change in masked state.
+                    // We may have received a PACKAGE_RESTARTED, but did not mask the widget
+                    // (masked == false) because the package was already unstopped by the time we
+                    // queried PackageManager.isPackageStoppedForUser. In that case, the
+                    // PendingIntents for this widget will have still been cancelled, and we need
+                    // to trigger a widget update so that the provider can create new PendingIntents
+                    // for their widget. Also, the broadcast has been cleared from AlarmManager and
+                    // must be re-registered.
+                    final int widgetCount = provider.widgets.size();
+                    if (widgetCount > 0) {
+                        final int[] widgetIds = new int[widgetCount];
+                        for (int j = 0; j < widgetCount; j++) {
+                            widgetIds[j] = provider.widgets.get(j).appWidgetId;
                         }
+                        cancelBroadcastsLocked(provider);
+                        registerForBroadcastsLocked(provider, widgetIds);
+                        sendUpdateIntentLocked(provider, widgetIds, /* interactive= */ false);
+                    }
 
-                        final int pendingIdsCount = provider.pendingDeletedWidgetIds.size();
-                        if (pendingIdsCount > 0) {
-                            if (DEBUG) {
-                                Slog.i(TAG, "Sending missed deleted broadcasts for "
-                                        + provider.id.componentName + " "
-                                        + provider.pendingDeletedWidgetIds);
-                            }
-                            for (int j = 0; j < pendingIdsCount; j++) {
-                                sendDeletedIntentLocked(provider.id.componentName,
-                                        provider.id.getProfile(),
-                                        provider.pendingDeletedWidgetIds.get(j));
-                            }
-                            provider.pendingDeletedWidgetIds.clear();
-                            if (widgetCount == 0) {
-                                sendDisabledIntentLocked(provider);
-                            }
-                            saveGroupStateAsync(provider.id.getProfile().getIdentifier());
+                    final int pendingIdsCount = provider.pendingDeletedWidgetIds.size();
+                    if (pendingIdsCount > 0) {
+                        if (DEBUG) {
+                            Slog.i(TAG, "Sending missed deleted broadcasts for "
+                                + provider.id.componentName + " "
+                                + provider.pendingDeletedWidgetIds);
                         }
+                        for (int j = 0; j < pendingIdsCount; j++) {
+                            sendDeletedIntentLocked(provider.id.componentName,
+                                provider.id.getProfile(),
+                                provider.pendingDeletedWidgetIds.get(j));
+                        }
+                        provider.pendingDeletedWidgetIds.clear();
+                        if (widgetCount == 0) {
+                            sendDisabledIntentLocked(provider);
+                        }
+                        saveGroupStateAsync(provider.id.getProfile().getIdentifier());
                     }
                 }
             }
