@@ -34,13 +34,13 @@ import kotlinx.coroutines.withContext
 class ScreenshotInteractor
 @Inject
 constructor(
-    @Background private val backgroundContext: CoroutineContext,
-    @Background private val backgroundHandler: Handler,
     private val imageCapture: ImageCapture,
     private val screenshotHelper: ScreenshotHelper,
+    @Background private val backgroundContext: CoroutineContext,
+    @Background private val backgroundHandler: Handler,
     private val userRepository: UserRepository,
 ) {
-    suspend fun requestFullscreenScreenshot(displayId: Int) {
+    suspend fun takeFullscreenScreenshot(displayId: Int) {
         val request =
             ScreenshotRequest.Builder(
                     WindowManager.TAKE_SCREENSHOT_FULLSCREEN,
@@ -52,7 +52,7 @@ constructor(
         takeScreenshot(request)
     }
 
-    suspend fun requestPartialScreenshot(regionBounds: Rect, displayId: Int) {
+    suspend fun takePartialScreenshot(regionBounds: Rect, displayId: Int) {
         val bitmap =
             withContext(backgroundContext) {
                 requireNotNull(imageCapture.captureDisplay(displayId, regionBounds))

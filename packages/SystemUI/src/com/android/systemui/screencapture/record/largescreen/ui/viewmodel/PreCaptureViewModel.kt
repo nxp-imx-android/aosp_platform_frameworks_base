@@ -32,7 +32,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -127,32 +126,32 @@ constructor(
 
     private fun takeScreenshot() {
         when (captureRegionSource.value) {
-            ScreenCaptureRegion.FULLSCREEN -> beginFullscreenScreenshot()
-            ScreenCaptureRegion.PARTIAL -> beginPartialScreenshot()
+            ScreenCaptureRegion.FULLSCREEN -> takeFullscreenScreenshot()
+            ScreenCaptureRegion.PARTIAL -> takePartialScreenshot()
             ScreenCaptureRegion.APP_WINDOW -> {}
         }
     }
 
-    private fun beginFullscreenScreenshot() {
-        // Hide the UI to avoid the parent window closing animation.
+    private fun takeFullscreenScreenshot() {
+        // Finishing the activity is not guaranteed to complete before the screenshot is taken.
+        // Since the pre-capture UI should not be included in the screenshot, hide the UI first.
         hideUi()
-        backgroundScope.launch { screenshotInteractor.requestFullscreenScreenshot(displayId) }
         closeUi()
+
+        backgroundScope.launch { screenshotInteractor.takeFullscreenScreenshot(displayId) }
     }
 
-    private fun beginPartialScreenshot() {
+    private fun takePartialScreenshot() {
         val regionBoxRect = requireNotNull(regionBoxSource.value)
 
-        // Hide the UI to avoid the parent window closing animation.
+        // Finishing the activity is not guaranteed to complete before the screenshot is taken.
+        // Since the pre-capture UI should not be included in the screenshot, hide the UI first.
         hideUi()
-        backgroundScope.launch {
-            // Temporary fix to allow enough time for the pre-capture UI to dismiss.
-            // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
-            // taking the screenshot.
-            delay(100)
-            screenshotInteractor.requestPartialScreenshot(regionBoxRect, displayId)
-        }
         closeUi()
+
+        backgroundScope.launch {
+            screenshotInteractor.takePartialScreenshot(regionBoxRect, displayId)
+        }
     }
 
     /**

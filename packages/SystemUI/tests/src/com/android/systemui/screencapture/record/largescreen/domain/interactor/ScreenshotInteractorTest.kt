@@ -61,10 +61,10 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun requestFullscreenScreenshot_callsScreenshotHelper_withCorrectRequest() {
+    fun takeFullscreenScreenshot_callsScreenshotHelper_withCorrectRequest() {
         testScope.runTest {
             val displayId = 3
-            interactor.requestFullscreenScreenshot(displayId)
+            interactor.takeFullscreenScreenshot(displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockScreenshotHelper, times(1))
@@ -79,7 +79,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun requestPartialScreenshot_callsScreenshotHelper_withCorrectRequest() {
+    fun takePartialScreenshot_callsScreenshotHelper_withCorrectRequest() {
         testScope.runTest {
             val bounds = Rect(0, 0, 100, 100)
             val displayId = 3
@@ -91,7 +91,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             kosmos.fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
             kosmos.fakeUserRepository.setSelectedUserInfo(secondaryUser)
 
-            interactor.requestPartialScreenshot(bounds, displayId)
+            interactor.takePartialScreenshot(bounds, displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockImageCapture, times(1)).captureDisplay(any(), eq(bounds))
