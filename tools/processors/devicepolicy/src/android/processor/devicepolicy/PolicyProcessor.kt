@@ -17,11 +17,18 @@
 package android.processor.devicepolicy
 
 import com.android.json.stream.JsonWriter
+import com.sun.source.tree.IdentifierTree
+import com.sun.source.tree.MemberSelectTree
+import com.sun.source.tree.NewArrayTree
+import com.sun.source.util.SimpleTreeVisitor
+import com.sun.source.util.Trees
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.FilerException
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
+import javax.lang.model.element.AnnotationMirror
+import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
@@ -29,6 +36,9 @@ import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 import javax.tools.Diagnostic
 import javax.tools.StandardLocation
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.first
 
 /**
  * PolicyProcessor processes all {@link PolicyDefinition} instances:
@@ -42,6 +52,7 @@ import javax.tools.StandardLocation
  *     <li> The name of the field. </li>
  *     <li> The type of the policy. </li>
  *     <li> The JavaDoc for the policy. </li>
+ *     <li> For enums: all options and their documentation. </li>
  * </ul>
  *
  * Data is exported to `policies.json`.
@@ -50,6 +61,14 @@ class PolicyProcessor : AbstractProcessor() {
     companion object {
         const val POLICY_IDENTIFIER = "android.app.admin.PolicyIdentifier"
         const val SIMPLE_TYPE_BOOLEAN = "java.lang.Boolean"
+        const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
+
+        /**
+         * Find the first value matching a predicate on the key.
+         */
+        private fun <K, V> Map<K, V>.firstValue(filter: (K) -> Boolean): V {
+            return entries.first { (key, _) -> filter(key) }.value
+        }
     }
 
     /** Represents a android.app.admin.PolicyIdentifier<T> */
@@ -61,6 +80,9 @@ class PolicyProcessor : AbstractProcessor() {
     /** Represents a built-in Boolean */
     lateinit var booleanType: TypeMirror
 
+    /** Represents a built-in Integer */
+    lateinit var integerType: TypeMirror
+
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
 
     // Define what the annotation we care about are for compiler optimization
@@ -71,19 +93,18 @@ class PolicyProcessor : AbstractProcessor() {
     override fun init(processingEnv: ProcessingEnvironment) {
         super.init(processingEnv)
 
-        val policyIdentifierElem =
-            processingEnv.elementUtils.getTypeElement(POLICY_IDENTIFIER)
-                ?: throw IllegalStateException("Could not find $POLICY_IDENTIFIER")
+        val policyIdentifierElem = processingEnv.elementUtils.getTypeElement(POLICY_IDENTIFIER)
+            ?: throw IllegalStateException("Could not find $POLICY_IDENTIFIER")
 
-        policyIdentifierType =
-            policyIdentifierElem.asType()
-                ?: throw IllegalStateException("Could not get type of $POLICY_IDENTIFIER")
+        policyIdentifierType = policyIdentifierElem.asType()
+            ?: throw IllegalStateException("Could not get type of $POLICY_IDENTIFIER")
 
         genericPolicyIdentifierType = processingEnv.typeUtils.getDeclaredType(
             policyIdentifierElem, processingEnv.typeUtils.getWildcardType(null, null)
         )
 
         booleanType = processingEnv.elementUtils.getTypeElement(SIMPLE_TYPE_BOOLEAN).asType()
+        integerType = processingEnv.elementUtils.getTypeElement(SIMPLE_TYPE_INTEGER).asType()
     }
 
     override fun process(
@@ -147,8 +168,7 @@ class PolicyProcessor : AbstractProcessor() {
 
         if (elementType.typeArguments.size != 1) {
             printError(
-                element,
-                "Only expected 1 type parameter in $elementType"
+                element, "Only expected 1 type parameter in $elementType"
             )
             return null
         }
@@ -163,26 +183,22 @@ class PolicyProcessor : AbstractProcessor() {
             )
         }
 
-        val annotation = element.getAnnotation(PolicyDefinition::class.java)
+        element.getAnnotation(PolicyDefinition::class.java)
 
-        var metadata: PolicyMetadata? = null
+        val allMetadata = listOfNotNull(
+            extractBooleanMetadata(element, policyType), extractEnumMetadata(element, policyType)
+        )
 
-        val booleanPolicyMetadata = element.getAnnotation(BooleanPolicyDefinition::class.java)
-        if (booleanPolicyMetadata != null) {
-            if (!processingEnv.typeUtils.isSameType(policyType, booleanType)) {
-                printError(
-                    element,
-                    "booleanValue in @PolicyDefinition can only be applied to policies of type $booleanType."
-                )
-            }
-
-            metadata = BooleanPolicyMetadata()
+        if (allMetadata.isEmpty()) {
+            printError(
+                element, "@PolicyDefinition has no type specific definition."
+            )
+            return null
         }
 
-        if (metadata == null) {
+        if (allMetadata.size > 1) {
             printError(
-                element,
-                "@PolicyDefinition has no type specific definition."
+                element, "@PolicyDefinition must only have one type specific annotation."
             )
             return null
         }
@@ -190,8 +206,136 @@ class PolicyProcessor : AbstractProcessor() {
         val name = "$enclosingType.$element"
         val documentation = processingEnv.elementUtils.getDocComment(element)
         val type = policyType.toString()
+        val metadata = allMetadata.first()
 
         return Policy(name, type, documentation, metadata)
+    }
+
+    private fun extractBooleanMetadata(
+        element: Element, policyType: TypeMirror
+    ): BooleanPolicyMetadata? {
+        element.getAnnotation(BooleanPolicyDefinition::class.java) ?: return null
+
+        if (!processingEnv.typeUtils.isSameType(policyType, booleanType)) {
+            printError(
+                element,
+                "booleanValue in @PolicyDefinition can only be applied to policies of type $booleanType."
+            )
+        }
+
+        return BooleanPolicyMetadata()
+    }
+
+    private fun extractEnumMetadata(element: Element, policyType: TypeMirror): EnumPolicyMetadata? {
+        val enumPolicyAnnotation =
+            element.getAnnotation(EnumPolicyDefinition::class.java) ?: return null
+
+        if (!processingEnv.typeUtils.isSameType(policyType, integerType)) {
+            printError(
+                element,
+                "@EnumPolicyDefinition can only be applied to policies of type $integerType."
+            )
+        }
+
+        val intDefElement = getIntDefElement(element)
+
+        val intDefClass = processingEnv.elementUtils.getTypeElement("android.annotation.IntDef")
+        val annotationMirror =
+            intDefElement.annotationMirrors.firstOrNull { it.annotationType.asElement() == intDefClass }
+
+        if (annotationMirror == null) {
+            printError(
+                element, "@EnumPolicyDefinition.intDef must be the interface marked with @IntDef."
+            )
+
+            return null
+        }
+
+        val enumName = intDefElement.qualifiedName.toString()
+        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement)
+
+        val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
+
+        return EnumPolicyMetadata(
+            enumPolicyAnnotation.defaultValue, enumName, enumDoc, entries
+        )
+    }
+
+    /**
+     * Given a policy definition element finds the type element representing the IntDef definition
+     * Same as `processingEnv.elementUtils.getTypeElement(enumPolicyMetadata.intDef.qualifiedName)`,
+     * but we have to use type mirrors.
+     */
+    private fun getIntDefElement(element: Element): TypeElement {
+        val am = element.annotationMirrors.first {
+            it.annotationType.toString() == EnumPolicyDefinition::class.java.name
+        }
+        val av = am.elementValues.firstValue { key ->
+            key.simpleName.toString() == "intDef"
+        }
+        val mirror = av.value as TypeMirror
+        return processingEnv.typeUtils.asElement(mirror) as TypeElement
+    }
+
+    private fun getIntDefIdentifiers(
+        annotationMirror: AnnotationMirror, intDefElement: TypeElement
+    ): List<EnumEntryMetadata> {
+        val annotationValue: AnnotationValue =
+            annotationMirror.elementValues.firstValue { key ->
+                key.simpleName.contentEquals("value")
+            }
+
+        // Walk the AST as we want the actual identifiers passed to @IntDef.
+        val trees = Trees.instance(processingEnv)
+        val tree = trees.getTree(intDefElement, annotationMirror, annotationValue)
+
+        val identifiers = ArrayList<String>()
+        tree.accept(IdentifierVisitor(), identifiers)
+
+        @Suppress("UNCHECKED_CAST") val values = annotationValue.value as List<AnnotationValue>
+
+        val documentations = identifiers.map { identifier ->
+            val identifierElement = intDefElement.enclosingElement.enclosedElements.find {
+                it.simpleName.toString() == identifier
+            }
+
+            processingEnv.elementUtils.getDocComment(identifierElement)
+        }
+
+        return identifiers.mapIndexed { i, identifier ->
+            EnumEntryMetadata(identifier, values[i].value as Int, documentations[i])
+        }
+    }
+
+    private class IdentifierVisitor : SimpleTreeVisitor<Void, ArrayList<String>>() {
+        override fun visitNewArray(node: NewArrayTree, identifiers: ArrayList<String>): Void? {
+            for (initializer in node.initializers) {
+                initializer.accept(this, identifiers)
+            }
+
+            return null
+        }
+
+        /**
+         * Called when the identifier used in IntDef is a member of the class.
+         */
+        override fun visitMemberSelect(
+            node: MemberSelectTree, identifiers: ArrayList<String>
+        ): Void? {
+            identifiers.add(node.identifier.toString())
+
+            return null
+        }
+
+        /**
+         * Called when the identifier in IntDef is an arbitrary identifier pointing outside the
+         * current class.
+         */
+        override fun visitIdentifier(node: IdentifierTree, identifiers: ArrayList<String>): Void? {
+            identifiers.add(node.name.toString())
+
+            return null
+        }
     }
 
     /**
