@@ -71,4 +71,7 @@ public interface DesktopMode {
      * Unregister a registered desktop-first listener
      */
     void unregisterDesktopFirstListener(@NonNull DesktopFirstListener listener);
+
+    /** Check is a specific displayId is in DesktopMode. */
+    boolean isDisplayInDesktopMode(int displayId);
 }
