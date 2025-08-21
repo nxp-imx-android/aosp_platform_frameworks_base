@@ -28,6 +28,7 @@ import android.app.ApplicationThreadConstants;
 import android.app.IBackupAgent;
 import android.app.backup.BackupAgent;
 import android.app.backup.BackupAnnotations;
+import android.app.backup.BackupAnnotations.BackupDestination;
 import android.app.backup.BackupManagerMonitor;
 import android.app.backup.FullBackup;
 import android.app.backup.IBackupManagerMonitor;
@@ -800,11 +801,16 @@ public class FullRestoreEngine extends RestoreEngine {
     }
 
     private boolean isRestorableFile(FileMetadata info) {
-        if (mBackupEligibilityRules.getBackupDestination()
-                == BackupAnnotations.BackupDestination.DEVICE_TRANSFER) {
+        if (mBackupEligibilityRules.getBackupDestination() == BackupDestination.DEVICE_TRANSFER) {
             // Everything is eligible for device-to-device migration.
             return true;
+        } else if (Flags.enableCrossPlatformTransfer()
+                && mBackupEligibilityRules.getBackupDestination()
+                        == BackupDestination.CROSS_PLATFORM_TRANSFER) {
+            // Everything is eligible for cross platform transfers.
+            return true;
         }
+
         if (FullBackup.CACHE_TREE_TOKEN.equals(info.domain)) {
             if (DEBUG) {
                 Slog.i(TAG, "Dropping cache file path " + info.path);
