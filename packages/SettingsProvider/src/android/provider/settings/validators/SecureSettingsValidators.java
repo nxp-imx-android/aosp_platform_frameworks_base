@@ -516,7 +516,6 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.SUGGESTED_THEME_FEATURE_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.HDR_BRIGHTNESS_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.HDR_BRIGHTNESS_BOOST_LEVEL, new InclusiveFloatRangeValidator(0, 1));
-        VALIDATORS.put(Secure.IDENTITY_CHECK_ENABLED_V1, new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.IDENTITY_CHECK_PROMO_CARD_SHOWN,
                 new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.IDENTITY_CHECK_NOTIFICATION_VIEW_DETAILS_CLICKED,
