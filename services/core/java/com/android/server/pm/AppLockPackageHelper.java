@@ -97,7 +97,7 @@ public final class AppLockPackageHelper {
      * @param activities A list of activities associated with the package
      * @return {@code true} if App Lock is supported for this package, {@code false} otherwise
      */
-    private static boolean isAppLockSupported(String pkgName, int userId,
+    public static boolean isAppLockSupported(String pkgName, int userId,
             List<ParsedActivity> activities) {
         // App Lock is not supported on certain form factors (e.g. watches, cars, TVs).
         if (!isSupportedDeviceForAppLock()) {

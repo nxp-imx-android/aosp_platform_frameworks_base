@@ -468,6 +468,93 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         )
     }
 
+    @Test
+    fun isAppLockSupported_true() {
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, activities
+            )
+        ).isTrue()
+    }
+
+    @Test
+    fun isAppLockSupported_onWatch_false() {
+        addSystemConfigFeature(PackageManager.FEATURE_WATCH)
+
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, activities
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun isAppLockSupported_onAutomotive_false() {
+        addSystemConfigFeature(PackageManager.FEATURE_AUTOMOTIVE)
+
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, activities
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun isAppLockSupported_onTV_false() {
+        addSystemConfigFeature(PackageManager.FEATURE_LEANBACK)
+
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, activities
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun isAppLockSupported_appLockExempt_false() {
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                EXEMPT_PACKAGE_NAME, TEST_USER_ID, activities
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun isAppLockSupported_headlessApp_false() {
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, ArrayList<ParsedActivity?>()
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun isAppLockSupported_profileUser_false() {
+        whenever(userInfo.isFull).thenReturn(false)
+
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, ArrayList<ParsedActivity?>()
+            )
+        ).isFalse()
+    }
+
+    @Test
+    fun isAppLockSupported_isSupervisedUser_false() {
+        whenever(smInternal.isSupervisionEnabledForUser(eq(TEST_USER_ID))).thenReturn(true)
+
+        assertThat(
+            AppLockPackageHelper.isAppLockSupported(
+                TEST_PACKAGE_NAME, TEST_USER_ID, ArrayList<ParsedActivity?>()
+            )
+        ).isFalse()
+    }
+
+    private fun addSystemConfigFeature(feature: String) {
+        availableFeatures.put(feature, FeatureInfo())
+    }
+
+
     private fun setupTestForSetPackageAppLockEnabled(
         deviceSecure: Boolean,
         currentEnabledState: Boolean,
