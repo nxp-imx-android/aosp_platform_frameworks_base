@@ -23,3 +23,5 @@ internal fun backgroundFromScheme(scheme: ColorScheme) = scheme.materialScheme.g
 internal fun primaryFromScheme(scheme: ColorScheme) = scheme.materialScheme.getPrimaryFixed()
 
 internal fun onPrimaryFromScheme(scheme: ColorScheme) = scheme.materialScheme.getOnPrimaryFixed()
+
+internal fun outlineFromScheme(scheme: ColorScheme) = scheme.materialScheme.getOutline()
