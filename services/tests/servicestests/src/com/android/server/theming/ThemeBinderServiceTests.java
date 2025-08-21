@@ -25,7 +25,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManagerInternal;
+import android.content.theming.IThemeChangedCallback;
 import android.content.theming.IThemeSettingsCallback;
+import android.content.theming.ThemeInfo;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
@@ -46,6 +49,8 @@ import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,10 +73,18 @@ public class ThemeBinderServiceTests {
         }
     };
 
+    private final IThemeChangedCallback mThemeChangedCallback = new IThemeChangedCallback.Stub() {
+        @Override
+        public void onThemeChanged(ThemeInfo newTheme) {
+        }
+    };
+
     private int mUserId;
     private ThemeBinderService mUnderTest;
     private ThemeManagerInternal mInternal;
     private ThemeSettings mDefaultSettings;
+    private ThemeStateManager mThemeStateManager;
+    private FakeScheduledExecutorService mSchedulerExecutor;
 
     @Mock
     private WallpaperManagerInternal mMockWmi;
@@ -79,6 +92,8 @@ public class ThemeBinderServiceTests {
     private UserManagerInternal mUserManager;
     @Mock
     private OverlayManagerInternal mOverlayManager;
+    @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
 
     @Before
     public void setup() {
@@ -87,10 +102,12 @@ public class ThemeBinderServiceTests {
         LocalServices.removeServiceForTest(OverlayManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
+        LocalServices.removeServiceForTest(ActivityManagerInternal.class);
 
         LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
         LocalServices.addService(UserManagerInternal.class, mUserManager);
         LocalServices.addService(WallpaperManagerInternal.class, mMockWmi);
+        LocalServices.addService(ActivityManagerInternal.class, mActivityManagerInternal);
 
         TestableContext context = new TestableContext(InstrumentationRegistry.getTargetContext(),
                 null);
@@ -107,6 +124,7 @@ public class ThemeBinderServiceTests {
         perms.setPermission(android.Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
 
         when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
+        when(mActivityManagerInternal.getCurrentUserId()).thenReturn(mUserId);
 
         ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager(mMockWmi);
         SystemPropertiesReader systemPropertiesReader = new SystemPropertiesReader() {
@@ -116,10 +134,11 @@ public class ThemeBinderServiceTests {
                 return mHardwareColorRule.color;
             }
         };
-        ThemeStateManager stateManager = new ThemeStateManager(context,
-                new FakeScheduledExecutorService());
+        mSchedulerExecutor = new FakeScheduledExecutorService();
+        mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor);
+        mThemeStateManager.onServicesReady();
         mInternal = new ThemeManagerInternal(context, themeSettingsManager,
-                systemPropertiesReader, stateManager);
+                systemPropertiesReader, mThemeStateManager);
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(context.getResources(),
                 systemPropertiesReader, mUserId);
@@ -219,6 +238,37 @@ public class ThemeBinderServiceTests {
                 oldPayload.timeStamp().toEpochMilli());
         assertThat(returnedOldPreset.themeStyle()).isEqualTo(oldPayload.themeStyle());
         assertThat(returnedOldPreset.systemPalette()).isEqualTo(oldPayload.systemPalette());
+    }
+
+    @Test
+    public void testUnregisterThemeChangedCallback_success() {
+        mUnderTest.registerThemeChangedCallback(mThemeChangedCallback);
+        mUnderTest.unregisterThemeChangedCallback(mThemeChangedCallback);
+    }
+
+    @Test
+    public void testThemeChangedCallback_receivesNewValue() {
+        mThemeStateManager.onUserStart(UserHandle.of(mUserId), true, Color.BLUE, 0.5f,
+                ThemeStyle.VIBRANT);
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
+
+        final ThemeInfo[] returnedValue = {null};
+        mUnderTest.registerThemeChangedCallback(new IThemeChangedCallback.Stub() {
+            @Override
+            public void onThemeChanged(ThemeInfo newTheme) {
+                returnedValue[0] = newTheme;
+            }
+        });
+
+        mInternal.notifyThemeChanged(mUserId);
+
+        assertThat(returnedValue[0]).isNotNull();
+        assertThat(returnedValue[0].seedColor.toArgb()).isEqualTo(Color.BLUE);
+        assertThat(returnedValue[0].style).isEqualTo(ThemeStyle.VIBRANT);
+        assertThat(returnedValue[0].contrast).isEqualTo(0.5f);
+        assertThat(returnedValue[0].specVersion).isEqualTo(
+                DynamicScheme.DEFAULT_SPEC_VERSION.name());
+        assertThat(returnedValue[0].platform).isEqualTo(DynamicScheme.DEFAULT_PLATFORM.name());
     }
 
     @Test
