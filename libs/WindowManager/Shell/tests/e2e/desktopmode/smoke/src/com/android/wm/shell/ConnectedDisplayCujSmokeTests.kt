@@ -16,6 +16,7 @@
 
 package com.android.wm.shell
 
+import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.Instrumentation
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
@@ -95,6 +96,7 @@ class ConnectedDisplayCujSmokeTests {
     private val desktopState = DesktopState.fromContext(context)
     private val canEnterExtended = desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
     private val displayManager = context.getSystemService(DisplayManager::class.java)
+    private val activityManager = context.getSystemService(ActivityManager::class.java)
 
     // TODO(b/419392000) - Remove once [DesktopMouseTestRule] supports dynamic display changes.
     private val inputManager = context.getSystemService(InputManager::class.java)
@@ -530,7 +532,9 @@ class ConnectedDisplayCujSmokeTests {
         }
         displayIdsWithMouseScalingDisabled.clear()
 
-        closeAllDesktopApps()
+        activityManager.forceStopPackage(SETTINGS_PACKAGE)
+        browserApp.exit(wmHelper)
+        clockApp.exit(wmHelper)
         connectedDisplayRule.setupTestDisplays(0)
     }
 
@@ -688,14 +692,6 @@ class ConnectedDisplayCujSmokeTests {
         }
     }
 
-    fun closeAllDesktopApps() {
-        val closeButtonSelector = By.res(SYSTEMUI_PACKAGE, CLOSE_BUTTON)
-        DeviceHelpers.waitForPossibleEmpty(closeButtonSelector).forEach {
-            it.click()
-        }
-        closeButtonSelector.assertInvisible()
-    }
-
     fun clickRecentsButton(displayId: Int) {
         val selector = By.res(device.launcherPackageName, RECENTS_BUTTON_RES_ID)
             .displayId(displayId)
@@ -734,7 +730,6 @@ class ConnectedDisplayCujSmokeTests {
         const val TASK_VIEW_DESKTOP_RES_ID = "task_view_desktop"
         const val APPS_LIST_VIEW_RES_ID = "apps_list_view"
         const val RECENTS_BUTTON_RES_ID = "recent_apps"
-        const val CLOSE_BUTTON = "close_window"
         const val DISPLAY_TOPOLOGY_PANE_CONTENT_RES_ID = "display_topology_pane_content"
         const val EXTERNAL_DISPLAY_TEXT = "External displays"
         const val CONNECTED_DEVICES_TEXT = "Connected devices"
