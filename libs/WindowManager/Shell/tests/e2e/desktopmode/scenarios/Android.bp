@@ -43,6 +43,9 @@ java_library {
         "wm-flicker-common-app-helpers",
         "launcher-helper-lib",
         "launcher-aosp-tapl",
+        "systemui-tapl",
+        "sysui-helper",
+        "systemui-helper",
         "desktop-test-lib",
     ],
 }
