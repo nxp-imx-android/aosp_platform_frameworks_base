@@ -465,6 +465,11 @@
     <!-- the padding on the top of the statusbar (usually 0) -->
     <dimen name="status_bar_padding_top">0dp</dimen>
 
+    <!-- The padding used in case there are no rounded corners. -->
+    <dimen name="status_bar_padding_without_rounded_corners">
+        @dimen/ongoing_appops_dot_min_padding
+    </dimen>
+
     <!-- the radius of the overflow dot in the status bar -->
     <dimen name="overflow_dot_radius">2sp</dimen>
 
