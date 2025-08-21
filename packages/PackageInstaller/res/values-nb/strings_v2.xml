@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Vil du avinstallere appoppdateringer?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Vil du avinstallere appoppdateringer for alle brukere?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Vil du avinstallere denne appen for alle brukere?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Vil du avinstallere denne appen for brukeren «<xliff:g id="USER_NAME">%1$s</xliff:g>»?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Fant ikke appen"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Kan ikke avinstallere denne appen"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Appen er ikke avinstallert"</string>
     <string name="title_archive" msgid="2876455228073419830">"Vil du arkivere denne appen?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Vil du arkivere denne appen for alle brukere?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Vil du arkivere denne appen for brukeren «<xliff:g id="USER_NAME">%1$s</xliff:g>»?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Vil du gjenopprette denne appen?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Handling påkrevd"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Ikke nok lagringsplass"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> er en del av følgende app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Denne appen er blokkert. For å bidra til å holde enheten og dataene dine trygge kan bare apper fra bekreftede utviklere installeres.&lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Denne appen ble ikke oppdatert. For å bidra til å holde enheten og dataene dine trygge kan bare oppdateringer fra bekreftede utviklere installeres.&lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Denne appen ble ikke installert. Apper fra ubekreftede utviklere kan være usikre.&lt;/p&gt; &lt;p&gt;Du må ha internettilkobling for å bekrefte apputvikleren. Sjekk tilkoblingen, og prøv å installere appen på nytt. &lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Denne appen ble ikke oppdatert. Oppdateringer fra ubekreftede utviklere kan være usikre.&lt;/p&gt; &lt;p&gt;Du må ha internettilkobling for å bekrefte apputvikleren. Sjekk tilkoblingen, og prøv å oppdatere appen på nytt. &lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Det oppsto et problem med å bekrefte utvikleren av denne appen. Apper fra ubekreftede utviklere kan være usikre, så appen ble ikke installert.&lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Det oppsto et problem med å bekrefte utvikleren av denne appen. Oppdateringer fra ubekreftede utviklere kan være usikre, så appen ble ikke oppdatert.&lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Denne appen ble blokkert fordi det oppsto et problem med å bekrefte utvikleren. For å bidra til å holde enheten og dataene dine trygge kan bare apper fra bekreftede utviklere installeres.&lt;/p&gt; &lt;a href=&gt;Finn ut mer om utviklerbekreftelse&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Gjenopprett"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Avinstaller oppdateringer"</string>
     <string name="button_settings" msgid="3837571366246132287">"Innstillinger"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Prøv igjen"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>-klone"</string>
 </resources>

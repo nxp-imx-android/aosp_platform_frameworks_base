@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ଆପ ଅପଡେଟଗୁଡ଼ିକୁ ଅନଇନଷ୍ଟଲ କରିବେ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ସମସ୍ତ ୟୁଜରଙ୍କ ପାଇଁ ଆପ ଅପଡେଟଗୁଡ଼ିକୁ ଅନଇନଷ୍ଟଲ କରିବେ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ସମସ୍ତ ୟୁଜରଙ୍କ ପାଇଁ ଏହି ଆପକୁ ଅନଇନଷ୍ଟଲ କରିବେ?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"ୟୁଜର \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"ଙ୍କ ପାଇଁ ଏହି ଆପକୁ ଅନଇନଷ୍ଟଲ କରିବେ?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ଆପ ମିଳିଲା ନାହିଁ"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ଏହି ଆପକୁ ଅନଇନଷ୍ଟଲ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ଆପକୁ ଅନଇନଷ୍ଟଲ କରାଯାଇନାହିଁ"</string>
     <string name="title_archive" msgid="2876455228073419830">"ଏହି ଆପକୁ ଆର୍କାଇଭ କରିବେ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ସମସ୍ତ ୟୁଜରଙ୍କ ପାଇଁ ଏହି ଆପକୁ ଆର୍କାଇଭ କରିବେ?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"ୟୁଜର \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"ଙ୍କ ପାଇଁ ଏହି ଆପକୁ ଆର୍କାଇଭ କରିବେ?"</string>
     <string name="title_restore" msgid="8934911753892124574">"ଏହି ଆପକୁ ରିଷ୍ଟୋର କରିବେ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ପଦକ୍ଷେପ ନେବା ଆବଶ୍ୟକ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"ଯଥେଷ୍ଟ ଷ୍ଟୋରେଜ ନାହିଁ"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ହେଉଛି ନିମ୍ନୋକ୍ତ ଆପର ଏକ ଅଂଶ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;ଏହି ଆପକୁ ବ୍ଲକ କରାଯାଇଛି। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ, କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଆପ୍ସକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;ଏହି ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ, କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଅପଡେଟଗୁଡ଼ିକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;ଏହି ଆପକୁ ଇନଷ୍ଟଲ କରାଯାଇନାହିଁ। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରଙ୍କର ଆପ୍ସ ଅସୁରକ୍ଷିତ ହୋଇପାରେ।&lt;/p&gt; &lt;p&gt;ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବା ପାଇଁ ଏକ ଇଣ୍ଟର୍ନେଟ କନେକ୍ସନ ଆବଶ୍ୟକ। ଆପଣଙ୍କ କନେକ୍ସନ ଯାଞ୍ଚ କରନ୍ତୁ ତା\'ପରେ ପୁଣି ଆପ ଇନଷ୍ଟଲ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ। &lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;ଏହି ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଅପଡେଟଗୁଡ଼ିକ ଅସୁରକ୍ଷିତ ହୋଇପାରେ।&lt;/p&gt; &lt;p&gt;ଆପ ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବା ପାଇଁ ଏକ ଇଣ୍ଟର୍ନେଟ କନେକ୍ସନ ଆବଶ୍ୟକ। ଆପଣଙ୍କ କନେକ୍ସନ ଯାଞ୍ଚ କରନ୍ତୁ ତା\'ପରେ ପୁଣି ଆପ ଅପଡେଟ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ। &lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;ଏହି ଆପର ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଛି। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରଙ୍କର ଆପ୍ସ ଅସୁରକ୍ଷିତ ହୋଇପାରେ, ତେଣୁ ଆପକୁ ଇନଷ୍ଟଲ କରାଯାଇନାହିଁ।&lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;ଏହି ଆପର ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଛି। ଯାଞ୍ଚ ହୋଇନଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଅପଡେଟଗୁଡ଼ିକ ଅସୁରକ୍ଷିତ ହୋଇପାରେ, ତେଣୁ ଆପକୁ ଅପଡେଟ କରାଯାଇନାହିଁ।&lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;ଡେଭେଲପରଙ୍କୁ ଯାଞ୍ଚ କରିବାରେ ଏକ ସମସ୍ୟା ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଆପକୁ ବ୍ଲକ କରାଯାଇଛି। ଆପଣଙ୍କ ଡିଭାଇସ ଏବଂ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ, କେବଳ ଯାଞ୍ଚ ହୋଇଥିବା ଡେଭେଲପରମାନଙ୍କଠାରୁ ଆପ୍ସକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ।&lt;/p&gt; &lt;a href=&gt;ଡେଭେଲପର ଯାଞ୍ଚକରଣ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"ରିଷ୍ଟୋର କରନ୍ତୁ"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"ଅପଡେଟଗୁଡ଼ିକୁ ଅନଇନଷ୍ଟଲ କରନ୍ତୁ"</string>
     <string name="button_settings" msgid="3837571366246132287">"ସେଟିଂସ"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> କ୍ଲୋନ"</string>
 </resources>

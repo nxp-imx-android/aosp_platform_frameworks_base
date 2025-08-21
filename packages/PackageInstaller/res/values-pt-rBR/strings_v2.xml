@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Desinstalar atualizações desse app?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Desinstalar atualizações desse app para todos os usuários?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Desinstalar esse app para todos os usuários?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Desinstalar esse app para o usuário \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App não encontrado"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Não é possível desinstalar esse app"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"O app não foi desinstalado"</string>
     <string name="title_archive" msgid="2876455228073419830">"Arquivar esse app?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Arquivar esse app para todos os usuários?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Arquivar esse app para o usuário \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Restaurar esse app?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Ação necessária"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Armazenamento insuficiente"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> é parte desse app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Este app foi bloqueado. Para proteger seu dispositivo e seus dados, só é possível instalar apps de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Este app não foi atualizado. Para proteger seu dispositivo e seus dados, só é possível instalar atualizações de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Este app não foi instalado. Apps de desenvolvedores não verificados podem não ser seguros.&lt;/p&gt; &lt;p&gt;É necessário ter uma conexão de Internet para verificar o desenvolvedor. Verifique sua conexão e tente instalar o app de novo. &lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Este app não foi atualizado. As atualizações de desenvolvedores não verificados podem não ser seguras.&lt;/p&gt; &lt;p&gt;É necessário ter uma conexão de Internet para verificar o desenvolvedor do app. Verifique sua conexão e tente atualizar o app de novo. &lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Ocorreu um problema ao verificar o desenvolvedor do app. Os apps de desenvolvedores não verificados podem ser perigosos. Por isso, a instalação não foi feita.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Ocorreu um problema ao verificar o desenvolvedor do app. As atualizações de desenvolvedores não verificados podem ser perigosas. Por isso, a atualização não foi feita.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Este app foi bloqueado porque houve um problema ao verificar o desenvolvedor. Para proteger seu dispositivo e seus dados, só é possível instalar apps de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Restaurar"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalar atualizações"</string>
     <string name="button_settings" msgid="3837571366246132287">"Configurações"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Tentar de novo"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clone de <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

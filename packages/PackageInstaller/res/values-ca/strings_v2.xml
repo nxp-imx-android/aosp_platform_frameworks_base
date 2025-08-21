@@ -22,7 +22,7 @@
     <string name="title_install_staging" msgid="6207460764383813714">"S\'està preparant l\'aplicació…"</string>
     <string name="title_install" msgid="6806728682404990326">"Vols instal·lar aquesta aplicació?"</string>
     <string name="title_installing" msgid="3738380766257176010">"S\'està instal·lant…"</string>
-    <string name="title_installed" msgid="6551855346109302601">"L\'aplicació està instal·lada"</string>
+    <string name="title_installed" msgid="6551855346109302601">"Aplicació instal·lada"</string>
     <string name="title_reinstall" msgid="1750856338036455388">"Vols tornar a instal·lar aquesta aplicació?"</string>
     <string name="title_reinstalling" msgid="8194821341725321638">"S\'està tornant a instal·lar…"</string>
     <string name="title_reinstalled" msgid="4805694558041089418">"S\'ha tornat a instal·lar l\'aplicació"</string>
@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Vols desinstal·lar les actualitzacions de l\'aplicació?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Vols desinstal·lar les actualitzacions de l\'aplicació per a tots els usuaris?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Vols desinstal·lar aquesta aplicació per a tots els usuaris?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Vols desinstal·lar aquesta aplicació per a l\'usuari <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"No s\'ha trobat l\'aplicació"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"No es pot desinstal·lar aquesta aplicació"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"No s\'ha pogut desinstal·lar l\'aplicació"</string>
     <string name="title_archive" msgid="2876455228073419830">"Vols arxivar aquesta aplicació?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Vols arxivar aquesta aplicació per a tots els usuaris?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Vols arxivar aquesta aplicació per a l\'usuari <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Vols restaurar aquesta aplicació?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Acció necessària"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"No hi ha prou emmagatzematge"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma part de l\'aplicació següent: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Aquesta aplicació s\'ha bloquejat. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar aplicacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar actualitzacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Aquesta aplicació no s\'ha instal·lat. És possible que les aplicacions de desenvolupadors no verificats no siguin segures.&lt;/p&gt; &lt;p&gt;Cal una connexió a Internet per verificar el desenvolupador de l\'aplicació. Comprova la connexió i, a continuació, torna a provar d\'instal·lar l\'aplicació. &lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Aquesta aplicació no s\'ha actualitzat. És possible que les actualitzacions de desenvolupadors no verificats no siguin segures.&lt;/p&gt; &lt;p&gt;Cal una connexió a Internet per verificar el desenvolupador de l\'aplicació. Comprova la connexió i torna a provar d\'actualitzar l\'aplicació. &lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Hi ha hagut un problema en verificar el desenvolupador d\'aquesta aplicació. És possible que les aplicacions de desenvolupadors no verificats no siguin segures, de manera que l\'aplicació no s\'ha instal·lat.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Hi ha hagut un problema en verificar el desenvolupador d\'aquesta aplicació. És possible que les actualitzacions de desenvolupadors no verificats no siguin segures, de manera que l\'aplicació no s\'ha actualitzat.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Aquesta aplicació s\'ha bloquejat perquè hi ha hagut un problema en verificar el desenvolupador. Per ajudar-te a protegir el dispositiu i les dades, només es poden instal·lar aplicacions de desenvolupadors verificats.&lt;/p&gt; &lt;a href=&gt;Més informació sobre la verificació de desenvolupadors&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Restaura"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstal·la les actualitzacions"</string>
     <string name="button_settings" msgid="3837571366246132287">"Configuració"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Torna-ho a provar"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clon de <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

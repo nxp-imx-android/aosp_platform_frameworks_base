@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"លុបកំណែថ្មីរបស់កម្មវិធីឬ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"លុបកំណែថ្មីរបស់កម្មវិធីសម្រាប់អ្នកប្រើប្រាស់ទាំងអស់ឬ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"លុបកម្មវិធីនេះសម្រាប់អ្នកប្រើប្រាស់ទាំងអស់ឬ?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"លុបកម្មវិធីនេះសម្រាប់អ្នកប្រើប្រាស់ \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ឬ?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"រក​មិន​ឃើញ​កម្មវិធីទេ"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"មិនអាចលុបកម្មវិធីនេះបានទេ"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"មិនបានលុបកម្មវិធីទេ"</string>
     <string name="title_archive" msgid="2876455228073419830">"ទុក​កម្មវិធីនេះក្នុង​បណ្ណសារឬ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ទុកកម្មវិធីនេះក្នុងបណ្ណសារសម្រាប់អ្នកប្រើប្រាស់ទាំងអស់ឬ?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"ទុកកម្មវិធីនេះក្នុងបណ្ណសារសម្រាប់អ្នកប្រើប្រាស់ \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ឬ?"</string>
     <string name="title_restore" msgid="8934911753892124574">"ស្ដារកម្មវិធីនេះឬ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"សកម្មភាព​ដែលតម្រូវឱ្យធ្វើ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"ទំហំផ្ទុក​មិន​គ្រប់គ្រាន់"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> គឺជាផ្នែកមួយនៃកម្មវិធីខាងក្រោម៖ <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;កម្មវិធីនេះត្រូវបានទប់ស្កាត់។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងទេ។ កម្មវិធីពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព។&lt;/p&gt; &lt;p&gt;តម្រូវឱ្យមានការតភ្ជាប់អ៊ីនធឺណិត ដើម្បីផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍កម្មវិធី។ ពិនិត្យមើលការតភ្ជាប់របស់អ្នក បន្ទាប់មកសាកល្បងដំឡើងកម្មវិធីម្ដងទៀត។ &lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;កម្មវិធីនេះមិនត្រូវបានដំឡើងកំណែទេ។ កំណែថ្មីៗពីអ្នកអភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព។&lt;/p&gt; &lt;p&gt;តម្រូវឱ្យមានការតភ្ជាប់អ៊ីនធឺណិត ដើម្បីផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍កម្មវិធី។ ពិនិត្យមើលការតភ្ជាប់របស់អ្នក រួចព្យាយាមដំឡើងកំណែកម្មវិធីម្ដងទៀត។ &lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នកអភិវឌ្ឍន៍&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីនេះ។ កម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព ដូច្នេះកម្មវិធីមិនត្រូវបានដំឡើងទេ។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍កម្មវិធីនេះ។ កំណែថ្មីៗពីអ្នក​អភិវឌ្ឍន៍ដែលមិនបានផ្ទៀងផ្ទាត់អាចមិនមានសុវត្ថិភាព ដូច្នេះកម្មវិធីមិនត្រូវបានដំឡើងកំណែទេ។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;កម្មវិធីនេះត្រូវបានទប់ស្កាត់ ដោយសារមានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍។ ដើម្បីជួយរក្សាឧបករណ៍ និងទិន្នន័យរបស់អ្នកឱ្យមានសុវត្ថិភាព មានតែកម្មវិធីពីអ្នក​អភិវឌ្ឍន៍ដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះទើបអាចដំឡើងបាន។&lt;/p&gt; &lt;a href=&gt;ស្វែងយល់បន្ថែមអំពីការផ្ទៀងផ្ទាត់អ្នក​អភិវឌ្ឍន៍&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"ស្ដារ"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"លុប​កំណែថ្មី"</string>
     <string name="button_settings" msgid="3837571366246132287">"ការកំណត់"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"ព្យាយាមម្ដងទៀត"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"ក្លូន <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

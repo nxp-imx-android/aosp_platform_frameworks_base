@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ಆ್ಯಪ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಆ್ಯಪ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"ಬಳಕೆದಾರರಾದ \'<xliff:g id="USER_NAME">%1$s</xliff:g>\' ಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ಆ್ಯಪ್ ಕಂಡುಬಂದಿಲ್ಲ"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ಈ ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ಆ್ಯಪ್ ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿಲ್ಲ"</string>
     <string name="title_archive" msgid="2876455228073419830">"ಈ ಆ್ಯಪ್ ಅನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"ಬಳಕೆದಾರರಾದ \'<xliff:g id="USER_NAME">%1$s</xliff:g>\' ಗಾಗಿ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆರ್ಕೈವ್ ಮಾಡಬೇಕೇ?"</string>
     <string name="title_restore" msgid="8934911753892124574">"ಈ ಆ್ಯಪ್ ಅನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ಕ್ರಮ ಕೈಗೊಳ್ಳುವ ಅಗತ್ಯವಿದೆ"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"ಸಾಕಷ್ಟು ಸಂಗ್ರಹಣೆ ಇಲ್ಲ"</string>

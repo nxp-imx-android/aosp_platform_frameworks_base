@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Désinstaller les mises à jour de l\'appli?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Désinstaller les mises à jour de l\'appli pour tous les utilisateurs?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Désinstaller cette appli pour tous les utilisateurs?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Désinstaller cette appli pour l\'utilisateur « <xliff:g id="USER_NAME">%1$s</xliff:g> »?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Appli non trouvée"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Impossible de désinstaller cette appli"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Appli non désinstallée"</string>
     <string name="title_archive" msgid="2876455228073419830">"Archiver cette appli?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Archiver cette appli pour tous les utilisateurs?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Archiver cette appli pour l\'utilisateur « <xliff:g id="USER_NAME">%1$s</xliff:g> »?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Restaurer cette appli?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Action requise"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Espace de stockage insuffisant"</string>
@@ -64,7 +62,7 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"À des fins de sécurité, l\'installation d\'applis inconnues provenant de cette source n\'est pas autorisée sur ce téléviseur. Vous pouvez modifier cette option dans les paramètres."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"À des fins de sécurité, l\'installation d\'applis inconnues provenant de cette source n\'est pas autorisée sur cette montre. Vous pouvez modifier cette option dans les paramètres."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"À des fins de sécurité, l\'installation d\'applis inconnues provenant de cette source n\'est pas autorisée sur ce téléphone. Vous pouvez modifier cette option dans les paramètres."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Votre téléphone et vos données personnelles sont plus vulnérables aux attaques provenant d\'applis inconnues. En installant cette appli, vous acceptez d\'être l\'unique responsable de tout dommage causé à votre téléphone ou de toute perte de données pouvant découler de l\'utilisation de telles applis."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Votre téléphone et vos données personnelles sont plus vulnérables aux attaques provenant d\'applis inconnues. En installant cette appli, vous acceptez d\'être responsable de tout dommage causé à votre téléphone ou de toute perte de données pouvant découler de l\'utilisation de cette appli."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Votre tablette et vos données personnelles sont plus vulnérables aux attaques provenant d\'applis inconnues. En installant cette appli, vous acceptez d\'être l\'unique responsable de tout dommage causé à votre tablette ou de toute perte de données pouvant découler de l\'utilisation de telles applis."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Votre téléviseur et vos données personnelles sont plus vulnérables aux attaques d\'applis inconnues. En installant cette appli, vous acceptez d\'être l\'unique responsable de tout dommage causé à votre téléviseur ou de toute perte de données pouvant découler de son utilisation."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"L\'installation de cette appli a été bloquée"</string>
@@ -101,10 +99,9 @@
     <!-- syntax error in translation for cannot_install_app_blocked_summary (2712509801474290273) org.xmlpull.v1.XmlPullParserException: attr value delimiter missing! (position:START_TAG <a href='cannot_install_app_blocked_summary'>@1:270 in     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Cette appli a été bloquée. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt; <a href=&gt;En savoir plus sur la vérification des développeurs</a&gt;"</string>
 )  -->
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Cette appli n\'a pas été installée. Les applis provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur de l\'appli. Vérifiez votre connexion, puis réessayez d\'installer l\'appli. &lt;/p&gt; &lt;a href=&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+    <!-- syntax error in translation for cannot_update_verification_no_internet_summary (1204784740944424893) org.xmlpull.v1.XmlPullParserException: expected: /p read: string (position:END_TAG </string>@1:465 in     <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"<p>Cette appli n\'a pas été mise à jour. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses.</p> <p>Une connexion Internet est requise pour vérifier le développeur d\'applis. Vérifiez votre connexion, puis réessayez de mettre à jour l\'appli. &lt;/p&gt; &lt;a href=&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
+)  -->
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les applis provenant de développeurs non vérifiés peuvent être dangereuses. L\'appli n\'a donc pas été installée.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
     <!-- syntax error in translation for cannot_update_verification_unavailable_summary (314354415455227761) org.xmlpull.v1.XmlPullParserException: expected: /p read: string (position:END_TAG </string>@1:394 in     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"<p>Un problème est survenu lors de la vérification du développeur de cette appli. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses. L\'appli n\'a donc pas été mise à jour.&lt;/p&gt; &lt;a href=&gt;En savoir plus sur la vérification des développeurs&lt;/a&gt;"</string>
 )  -->
@@ -134,7 +131,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Restaurer"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Désinstaller les mises à jour"</string>
     <string name="button_settings" msgid="3837571366246132287">"Paramètres"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Réessayer"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clone <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Dezinstalezi actualizările aplicației?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Dezinstalezi actualizările aplicației pentru toți utilizatorii?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Dezinstalezi această aplicație pentru toți utilizatorii?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Dezinstalezi aplicația pentru utilizatorul <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplicația nu a fost găsită"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Nu se poate dezinstala această aplicație"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplicația nu a fost dezinstalată"</string>
     <string name="title_archive" msgid="2876455228073419830">"Arhivezi aplicația?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Arhivezi aplicația pentru toți utilizatorii?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Arhivezi aplicația pentru utilizatorul <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Restabilești aplicația?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Acțiune necesară"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nu există suficient spațiu de stocare"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> face parte din următoarea aplicație: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Aplicația a fost blocată. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai aplicații de la dezvoltatori verificați.&lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Aplicația nu a fost actualizată. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai actualizări de la dezvoltatori verificați.&lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Aplicația nu a fost instalată. Aplicațiile de la dezvoltatori neverificați pot fi nesigure.&lt;/p&gt; &lt;p&gt;Este necesară o conexiune la internet pentru a verifica dezvoltatorul aplicației. Verifică-ți conexiunea, apoi încearcă din nou să instalezi aplicația. &lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Aplicația nu a fost actualizată. Actualizările de la dezvoltatori neverificați pot fi nesigure.&lt;/p&gt; &lt;p&gt;Este necesară o conexiune la internet pentru a verifica dezvoltatorul aplicației. Verifică-ți conexiunea, apoi încearcă din nou să actualizezi aplicația. &lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;A apărut o problemă la verificarea dezvoltatorului aplicației. Aplicațiile de la dezvoltatori neverificați pot fi nesigure, așa că aplicația nu a fost instalată.&lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;A apărut o problemă la verificarea dezvoltatorului aplicației. Actualizările de la dezvoltatori neverificați pot fi nesigure, așadar aplicația nu a fost actualizată.&lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Aplicația a fost blocată deoarece a apărut o problemă la verificarea dezvoltatorului. Pentru a-ți păstra dispozitivul și datele în siguranță, poți instala numai aplicații de la dezvoltatori verificați.&lt;/p&gt; &lt;a href=&gt;Află mai multe despre verificarea dezvoltatorilor&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Restabilește"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Dezinstalează actualizările"</string>
     <string name="button_settings" msgid="3837571366246132287">"Setări"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Încearcă din nou"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clonează <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

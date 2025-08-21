@@ -61,7 +61,7 @@
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"Untuk keselamatan, tablet anda kini tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Untuk keselamatan, TV anda tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Untuk keselamatan anda, jam tangan anda tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
-    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"Untuk keselamatan anda, telefon anda kini tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
+    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"Untuk keselamatan anda, telefon anda tidak dibenarkan memasang apl yang tidak diketahui daripada sumber ini pada masa ini. Anda boleh menukar pilihan ini dalam Tetapan."</string>
     <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Telefon dan data peribadi anda lebih mudah diserang oleh apl yang tidak diketahui. Dengan memasang apl ini, anda bersetuju bahawa anda bertanggungjawab atas sebarang kerosakan pada telefon anda atau kehilangan data yang mungkin disebabkan oleh penggunaan apl tersebut."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Tablet dan data peribadi anda lebih mudah diserang oleh apl yang tidak diketahui. Dengan memasang apl ini, anda bersetuju bahawa anda bertanggungjawab atas sebarang kerosakan pada tablet anda atau kehilangan data yang mungkin disebabkan oleh penggunaan apl tersebut."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"TV dan data peribadi anda lebih mudah diserang oleh apl yang tidak diketahui. Dengan memasang apl ini, anda bersetuju bahawa anda bertanggungjawab atas sebarang kerosakan pada TV anda atau kehilangan data yang mungkin disebabkan oleh penggunaan apl tersebut."</string>
@@ -112,7 +112,7 @@
     <string name="install_without_verifying" msgid="5359680595440741626">"Pasang tanpa pengesahan"</string>
     <string name="update_without_verifying" msgid="2841466981431484179">"Kemas kinikan tanpa membuat pengesahan"</string>
     <string name="button_install" msgid="7434013176505680162">"Pasang"</string>
-    <string name="button_update" msgid="3046719350226327526">"Kemaskinian"</string>
+    <string name="button_update" msgid="3046719350226327526">"Kemas kinikan"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"Kemas kinikan juga"</string>
     <string name="button_done" msgid="3408025390982260629">"Selesai"</string>
     <string name="button_open" msgid="6892684987374117955">"Buka"</string>

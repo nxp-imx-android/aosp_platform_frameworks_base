@@ -21,14 +21,14 @@
     <string name="title_install_blocked" msgid="8292546042865448054">"Instalace byla zablokována"</string>
     <string name="title_install_staging" msgid="6207460764383813714">"Příprava aplikace…"</string>
     <string name="title_install" msgid="6806728682404990326">"Nainstalovat tuto aplikaci?"</string>
-    <string name="title_installing" msgid="3738380766257176010">"Instalace…"</string>
+    <string name="title_installing" msgid="3738380766257176010">"Probíhá instalace…"</string>
     <string name="title_installed" msgid="6551855346109302601">"Aplikace byla nainstalována"</string>
     <string name="title_reinstall" msgid="1750856338036455388">"Přeinstalovat tuto aplikaci?"</string>
     <string name="title_reinstalling" msgid="8194821341725321638">"Přeinstalace…"</string>
     <string name="title_reinstalled" msgid="4805694558041089418">"Aplikace se přeinstalovala"</string>
     <string name="title_update" msgid="1747328630716712391">"Aktualizovat tuto aplikaci?"</string>
     <string name="title_update_ownership_change" msgid="6628818356381453406">"Aktualizovat tuto aplikaci pomocí: <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
-    <string name="title_updating" msgid="5449073288264173554">"Aktualizace…"</string>
+    <string name="title_updating" msgid="5449073288264173554">"Probíhá aktualizace…"</string>
     <string name="title_updated" msgid="3286125118804971449">"Aplikace byla aktualizována"</string>
     <string name="title_cant_install_app" msgid="8683361719005005686">"Aplikaci nelze nainstalovat"</string>
     <string name="title_install_failed_blocked" msgid="4864724257000850526">"Instalace byla zablokována"</string>
@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Odinstalovat aktualizace aplikace?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Odinstalovat aktualizace aplikace pro všechny uživatele?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Odinstalovat tuto aplikaci pro všechny uživatele?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Odinstalovat tuto aplikaci pro uživatele <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplikace nebyla nalezena"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Tuto aplikaci nelze odinstalovat"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplikace se neodinstalovala"</string>
     <string name="title_archive" msgid="2876455228073419830">"Archivovat tuto aplikaci?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Archivovat tuto aplikaci pro všechny uživatele?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Archivovat tuto aplikaci pro uživatele <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Obnovit tuto aplikaci?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Je vyžadována akce"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nedostatek úložného prostoru"</string>
@@ -64,9 +62,9 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Z bezpečnostních důvodů momentálně není dovoleno do televize instalovat neznámé aplikace z tohoto zdroje. Změnit to můžete v Nastavení."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Z bezpečnostních důvodů momentálně není dovoleno do hodinek instalovat neznámé aplikace z tohoto zdroje. Změnit to můžete v Nastavení."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"Z bezpečnostních důvodů momentálně není dovoleno do telefonu instalovat neznámé aplikace z tohoto zdroje. Změnit to můžete v Nastavení."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Telefon a osobní údaje jsou zranitelnější vůči útoku ze strany neznámých aplikací. Instalací této aplikace přijímáte odpovědnost za případné škody na telefonu nebo ztrátu dat, která může být používáním aplikace způsobena."</string>
-    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Tablet a osobní údaje jsou zranitelnější vůči útoku ze strany neznámých aplikací. Instalací této aplikace přijímáte odpovědnost za případné škody na tabletu nebo ztrátu dat, která může být používáním aplikace způsobena."</string>
-    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Televize a osobní údaje jsou zranitelnější vůči útoku ze strany neznámých aplikací. Instalací této aplikace přijímáte odpovědnost za případné škody na televizi nebo ztrátu dat, která může být používáním aplikace způsobena."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Telefon a osobní údaje jsou zranitelnější v případě útoku ze strany neznámých aplikací. Instalací této aplikace přijímáte odpovědnost za případné škody na telefonu nebo ztrátu dat, která může být používáním aplikace způsobena."</string>
+    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Tablet a osobní údaje jsou zranitelnější v případě útoku ze strany neznámých aplikací. Instalací této aplikace přijímáte odpovědnost za případné škody na tabletu nebo ztrátu dat, která může být používáním aplikace způsobena."</string>
+    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Televize a osobní údaje jsou zranitelnější v případě útoku ze strany neznámých aplikací. Instalací této aplikace přijímáte odpovědnost za případné škody na televizi nebo ztrátu dat, která může být používáním aplikace způsobena."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"Instalace této aplikace byla zablokována"</string>
     <string name="message_install_failed_conflict" msgid="1707670432024473123">"Tato aplikace je v konfliktu s aplikací, kterou už v zařízení máte."</string>
     <string name="message_install_failed_incompatible" msgid="184079710727317076">"Tato aplikace není kompatibilní s vaším zařízením."</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"Aktivita <xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je součástí následující aplikace: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Tato aplikace byla zablokována. Kvůli zajištění bezpečí vašeho zařízení a dat lze instalovat jen aplikace od ověřených vývojářů.&lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Tato aplikace nebyla aktualizována. Kvůli zajištění bezpečí vašeho zařízení a dat lze instalovat jen aktualizace od ověřených vývojářů.&lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Tato aplikace se nenainstalovala. Aplikace od neověřených vývojářů mohou být nebezpečné.&lt;/p&gt; &lt;p&gt;K ověření vývojáře aplikace je potřeba připojení k internetu. Zkontrolujte připojení a poté zkuste aplikaci nainstalovat znovu. &lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Tato aplikace se neaktualizovala. Aktualizace od neověřených vývojářů mohou být nebezpečné.&lt;/p&gt; &lt;p&gt;K ověření vývojáře aplikace je potřeba připojení k internetu. Zkontrolujte připojení a pak zkuste aplikaci aktualizovat znovu. &lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Při ověřování vývojáře této aplikace došlo k problému. Aplikace od neověřených vývojářů mohou být nebezpečné, proto nebyly nainstalovány.&lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Při ověřování vývojáře této aplikace došlo k problému. Aktualizace od neověřených vývojářů mohou být nebezpečné, proto aplikace nebyla aktualizována.&lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Tato aplikace byla zablokována, protože došlo k problému s ověřením vývojáře. Kvůli zajištění bezpečí vašeho zařízení a dat lze instalovat jen aplikace od ověřených vývojářů.&lt;/p&gt; &lt;a href=&gt;Další informace o ověřování vývojářů&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Obnovit"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Odinstalovat aktualizace"</string>
     <string name="button_settings" msgid="3837571366246132287">"Nastavení"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Zkusit znovu"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Klon <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ઍપ સંબંધિત અપડેટને અનઇન્સ્ટૉલ કરીએ?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"ઍપ સંબંધિત અપડેટને બધા વપરાશકર્તાઓ માટે અનઇન્સ્ટૉલ કરીએ?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"આ ઍપને બધા વપરાશકર્તાઓ માટે અનઇન્સ્ટૉલ કરીએ?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"આ ઍપને વપરાશકર્તા \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" માટે અનઇન્સ્ટૉલ કરીએ?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ઍપ મળી નથી"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"આ ઍપ અનઇન્સ્ટૉલ કરી શકાતી નથી"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ઍપ અનઇન્સ્ટૉલ થઈ નથી"</string>
     <string name="title_archive" msgid="2876455228073419830">"આ ઍપને આર્કાઇવ કરીએ?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"આ ઍપને બધા વપરાશકર્તાઓ માટે આર્કાઇવ કરીએ?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"આ ઍપને વપરાશકર્તા \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" માટે આર્કાઇવ કરીએ?"</string>
     <string name="title_restore" msgid="8934911753892124574">"આ ઍપને રિસ્ટોર કરીએ?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"આવશ્યક પગલું"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"પર્યાપ્ત સ્ટોરેજ નથી"</string>
@@ -57,9 +55,9 @@
     <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> બંધ છે"</string>
     <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ઇન્સ્ટૉલ કરેલું નથી"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"કંઈક ખોટું થયું"</string>
-    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"આ ઍપ સામાન્ય રીતે &lt;b&amp;gt<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>;&lt;/b&gt; પરથી અપડેટ મેળવે છે. કોઈ અલગ સૉર્સ વડે અપડેટ કરીને, તમે તમારા ટૅબ્લેટ પર કોઈપણ સૉર્સ પરથી ભાવિ અપડેટ મેળવી શકો છો. ઍપની કાર્યક્ષમતા બદલાઈ શકે છે."</string>
-    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"આ ઍપ સામાન્ય રીતે &lt;b&amp;gt<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>;&lt;/b&gt; પરથી અપડેટ મેળવે છે. કોઈ અલગ સૉર્સ વડે અપડેટ કરીને, તમે તમારા ટીવી પર કોઈપણ સૉર્સ પરથી ભાવિ અપડેટ મેળવી શકો છો. ઍપની કાર્યક્ષમતા બદલાઈ શકે છે."</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"આ ઍપ સામાન્ય રીતે &lt;b&amp;gt<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>;&lt;/b&gt; પરથી અપડેટ મેળવે છે. કોઈ અલગ સૉર્સ વડે અપડેટ કરીને, તમે તમારા ફોન પર કોઈપણ સૉર્સ પરથી ભાવિ અપડેટ મેળવી શકો છો. ઍપની કાર્યક્ષમતા બદલાઈ શકે છે."</string>
+    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"આ ઍપ સામાન્ય રીતે &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; પરથી અપડેટ મેળવે છે. કોઈ અલગ સૉર્સ વડે અપડેટ કરીને, તમે તમારા ટૅબ્લેટ પર કોઈપણ સૉર્સ પરથી ભાવિ અપડેટ મેળવી શકો છો. ઍપની કાર્યક્ષમતા બદલાઈ શકે છે."</string>
+    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"આ ઍપ સામાન્ય રીતે &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; પરથી અપડેટ મેળવે છે. કોઈ અલગ સૉર્સ વડે અપડેટ કરીને, તમે તમારા ટીવી પર કોઈપણ સૉર્સ પરથી ભાવિ અપડેટ મેળવી શકો છો. ઍપની કાર્યક્ષમતા બદલાઈ શકે છે."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"આ ઍપ સામાન્ય રીતે &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; પરથી અપડેટ મેળવે છે. કોઈ અલગ સૉર્સ વડે અપડેટ કરીને, તમે તમારા ફોન પર કોઈપણ સૉર્સ પરથી ભાવિ અપડેટ મેળવી શકો છો. ઍપની કાર્યક્ષમતા બદલાઈ શકે છે."</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"તમારી સુરક્ષા માટે, હાલમાં તમારા ટૅબ્લેટને આ સૉર્સ પરથી અજાણી ઍપ ઇન્સ્ટૉલ કરવાની મંજૂરી નથી. તમે સેટિંગમાં જઈને આને બદલી શકો છો."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"તમારી સુરક્ષા માટે, હાલમાં તમારા ટીવીને આ સૉર્સ પરથી અજાણી ઍપ ઇન્સ્ટૉલ કરવાની મંજૂરી નથી. તમે સેટિંગમાં જઈને આને બદલી શકો છો."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"તમારી સુરક્ષા માટે, હાલમાં તમારી વૉચને આ સૉર્સ પરથી અજાણી ઍપ ઇન્સ્ટૉલ કરવાની મંજૂરી નથી. તમે સેટિંગમાં જઈને આને બદલી શકો છો."</string>

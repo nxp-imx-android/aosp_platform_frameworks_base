@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Аппын шинэчлэлтийг устгах уу?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Аппын шинэчлэлтийг бүх хэрэглэгчийн хувьд устгах уу?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Энэ аппыг бүх хэрэглэгчийн хувьд устгах уу?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Энэ аппыг \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" хэрэглэгчийн хувьд устгах уу?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Апп олдсонгүй"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Энэ аппыг устгах боломжгүй"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Аппыг устгаагүй"</string>
     <string name="title_archive" msgid="2876455228073419830">"Энэ аппыг архивлах уу?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Энэ аппыг бүх хэрэглэгчийн хувьд архивлах уу?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Энэ аппыг \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" хэрэглэгчийн хувьд архивлах уу?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Энэ аппыг сэргээх үү?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Арга хэмжээ авах шаардлагатай"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Хангалттай хадгалах сан байхгүй"</string>

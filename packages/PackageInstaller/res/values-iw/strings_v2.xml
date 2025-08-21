@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"להסיר את העדכונים לאפליקציה?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"להסיר את העדכונים לאפליקציה אצל כל המשתמשים?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"להסיר את האפליקציה הזו אצל כל המשתמשים?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"להסיר את האפליקציה הזו אצל המשתמש \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"האפליקציה לא נמצאה"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"אי אפשר להסיר את האפליקציה הזו"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"האפליקציה לא הוסרה"</string>
     <string name="title_archive" msgid="2876455228073419830">"להעביר את האפליקציה הזו לארכיון?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"להעביר את האפליקציה הזו לארכיון אצל כל המשתמשים?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"להעביר את האפליקציה הזו לארכיון אצל המשתמש \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_restore" msgid="8934911753892124574">"לשחזר את האפליקציה הזו?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"נדרשת פעולה"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"אין מספיק נפח אחסון פנוי"</string>
@@ -59,12 +57,12 @@
     <string name="title_restore_error_generic" msgid="3675732737839176301">"משהו השתבש"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"‏האפליקציה הזו בדרך כלל מקבלת עדכונים דרך &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. אם מתקינים עדכון ממקור אחר, זה פותח את האפשרות שבעתיד הטאבלט יקבל עדכונים מעוד מקורות אחרים. בנוסף, יכול להיות שתכונות האפליקציה ישתנו."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"‏האפליקציה הזו בדרך כלל מקבלת עדכונים דרך &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. אם מתקינים עדכון ממקור אחר, זה פותח את האפשרות שבעתיד הטלוויזיה תקבל עדכונים מעוד מקורות אחרים. בנוסף, יכול להיות שתכונות האפליקציה ישתנו."</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"‏האפליקציה הזו בדרך כלל מקבלת עדכונים דרך &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. אם מתקינים עדכון ממקור אחר, זה פותח את האפשרות שבעתיד הטלפון יקבל עדכונים מעוד מקורות אחרים. בנוסף, יכול להיות שתכונות האפליקציה ישתנו."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"‏האפליקציה הזו בדרך כלל מקבלת עדכונים דרך &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. אם מתקינים עדכון ממקור אחר, זה פותח את האפשרות שבעתיד העדכונים יגיעו ממקורות אחרים בטלפון. בנוסף, יכול להיות שזה ישפיע על התפקוד של האפליקציה."</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"לצורכי אבטחה, נחסמה בטאבלט שלך האפשרות להתקין אפליקציות לא מוכרות מהמקור הזה. אפשר לבטל את החסימה ב\"הגדרות\"."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"לצורכי אבטחה, נחסמה בטלוויזיה שלך האפשרות להתקין אפליקציות לא מוכרות מהמקור הזה. אפשר לבטל את החסימה ב\"הגדרות\"."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"לצורכי אבטחה, נחסמה בשעון שלך האפשרות להתקין אפליקציות לא מוכרות מהמקור הזה. אפשר לבטל את החסימה ב\"הגדרות\"."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"לצורכי אבטחה, נחסמה בטלפון שלך האפשרות להתקין אפליקציות לא מוכרות מהמקור הזה. אפשר לבטל את החסימה ב\"הגדרות\"."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"אפליקציות לא מוכרות מסכנות את הטלפון והמידע האישי שלך וחושפות אותם להתקפות. התקנת האפליקציה הזו מבטאת את הסכמתך לכך שכל שימוש באפליקציה שיזיק לטלפון או יגרום לאובדן נתונים הוא באחריותך בלבד."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"אפליקציות לא מוכרות מסכנות את הטלפון ואת המידע האישי שלך וחושפות אותם להתקפות. התקנת האפליקציה הזו מבטאת את הסכמתך לכך שכל שימוש באפליקציה שיזיק לטלפון או יגרום לאובדן נתונים הוא באחריותך בלבד."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"אפליקציות לא מוכרות מסכנות את הטאבלט והמידע האישי שלך וחושפות אותם להתקפות. התקנת האפליקציה הזו מבטאת את הסכמתך לכך שכל שימוש באפליקציה שיזיק לטאבלט או יגרום לאובדן נתונים הוא באחריותך בלבד."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"אפליקציות לא מוכרות מסכנות את הטלוויזיה והמידע האישי שלך וחושפות אותם להתקפות. התקנת האפליקציה הזו מבטאת את הסכמתך לכך שכל שימוש באפליקציה שיזיק לטלוויזיה או יגרום לאובדן נתונים הוא באחריותך בלבד."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"התקנת האפליקציה הזו נחסמה."</string>
@@ -75,7 +73,7 @@
     <string name="message_parse_failed" msgid="205300138438352785">"יש בעיה בקובץ האפליקציה"</string>
     <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"הוגבלה האפשרות להתקין אפליקציות"</string>
     <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"הוגבלה האפשרות להתקין אפליקציות לא מוכרות"</string>
-    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"יש גם גרסה משוכפלת של האפליקציה הזו והיא יימחק"</string>
+    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"יש גם עותק של האפליקציה הזו והוא יימחק"</string>
     <string name="message_delete_clone_app" msgid="6632017049227330363">"האפליקציה הזו היא עותק של <xliff:g id="APP_LABEL">%1$s</xliff:g>"</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"האפליקציה הזו תוחלף בגרסת היצרן. כל נתוני האפליקציה יוסרו."</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"האפליקציה הזו תוחלף בגרסת היצרן אצל כל המשתמשים במכשיר. כל נתוני האפליקציה יוסרו."</string>
@@ -84,7 +82,7 @@
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"האפליקציה הזו לא נמצאה ברשימת האפליקציות המותקנות, או שהיא כבר הוסרה"</string>
     <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"המשתמש הנוכחי לא מורשה להסיר את האפליקציה הזו."</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"הסרת האפליקציה נכשלה"</string>
-    <string name="message_uninstall_keep_data" msgid="3955153594868206983">"שמירת נתוני האפליקציה"</string>
+    <string name="message_uninstall_keep_data" msgid="3955153594868206983">"אני רוצה לשמור את נתוני האפליקציה"</string>
     <string name="message_archive" msgid="943853731737315850">"נתוני האפליקציה שלך יישמרו"</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"כל נתוני האפליקציה יישמרו"</string>
     <string name="message_archive_other_user" msgid="6465828676043191175">"נתוני האפליקציה יישמרו"</string>
@@ -101,7 +99,7 @@
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"‏‫&lt;p&gt;האפליקציה הזו נחסמה. כדי לשמור על אבטחת המכשיר והנתונים, אפשר להתקין רק אפליקציות של מפתחים מאומתים.&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"‏‫&lt;p&gt;האפליקציה הזו לא עודכנה. כדי לשמור על אבטחת המכשיר והנתונים שלך, אפשר להתקין רק עדכונים של מפתחים מאומתים.&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"‏‫&lt;p&gt;האפליקציה הזו לא הותקנה. אפליקציות ממפתחים לא מאומתים עלולות להיות לא בטוחות.&lt;/p&gt; &lt;p&gt;כדי לאמת את מפתח האפליקציה, נדרש חיבור לאינטרנט. צריך לבדוק את החיבור ואז לנסות להתקין את האפליקציה שוב. ‫&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"‏‫&lt;p&gt;האפליקציה הזו לא עודכנה. יכול להיות שעדכונים ממפתחים לא מאומתים לא יהיו בטוחים.&lt;/p&gt; &lt;p&gt;כדי לאמת את מפתח האפליקציה, נדרש חיבור לאינטרנט. צריך לבדוק את החיבור ואז לנסות לעדכן את האפליקציה שוב. ‫&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"‏‫&lt;p&gt;האפליקציה הזו לא עודכנה. עדכונים לאפליקציות ממפתחים לא מאומתים עלולים להיות לא בטוחים.&lt;/p&gt; &lt;p&gt;כדי לאמת את מפתח האפליקציה, נדרש חיבור לאינטרנט. צריך לבדוק את החיבור ואז לנסות לעדכן את האפליקציה שוב. ‫&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"‏‫&lt;p&gt;הייתה בעיה באימות המפתח של האפליקציה הזו. אפליקציות של מפתחים לא מאומתים עלולות להיות לא בטוחות, ולכן האפליקציה לא הותקנה.&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"‏‫&lt;p&gt;הייתה בעיה באימות המפתח של האפליקציה הזו. עדכונים ממפתחים לא מאומתים עלולים להיות לא בטוחים, ולכן האפליקציה לא עודכנה.&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"‏‫&lt;p&gt;האפליקציה הזו נחסמה כי הייתה בעיה באימות המפתח. כדי לשמור על אבטחת המכשיר והנתונים, אפשר להתקין רק אפליקציות של מפתחים מאומתים.&lt;/p&gt; &lt;a href=&gt;מידע נוסף על אימות מפתחים&lt;/a&gt;"</string>
@@ -130,5 +128,5 @@
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"הסרת עדכונים"</string>
     <string name="button_settings" msgid="3837571366246132287">"הגדרות"</string>
     <string name="button_retry" msgid="6736082260813816198">"ניסיון חוזר"</string>
-    <string name="string_cloned_app_label" msgid="3596634458716024562">"גרסה משוכפלת של <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
+    <string name="string_cloned_app_label" msgid="3596634458716024562">"עותק של <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>
