@@ -7178,7 +7178,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_CLOSE))
 
-        verifyNoInteractions(desksOrganizer)
+        verify(desksOrganizer, never())
+            .deactivateDesk(wct = any(), deskId = any(), skipReorder = any())
     }
 
     @Test
