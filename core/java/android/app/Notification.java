@@ -12096,18 +12096,14 @@ public class Notification implements Parcelable
          */
         public static final class TimeDifference extends MetricValue {
 
-            /** Formatting option: automatically chosen by the system. */
-            public static final int FORMAT_AUTOMATIC = 0;
-
             /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m; now). */
             public static final int FORMAT_ADAPTIVE = 1;
 
             /** Formatting option: chronometer-style, (e.g. two hours = "2:00:00"). */
-            public static final int FORMAT_CHRONOMETER = 3;
+            public static final int FORMAT_CHRONOMETER = 2;
 
             /** @hide */
             @IntDef(prefix = { "FORMAT_" }, value = {
-                    FORMAT_AUTOMATIC,
                     FORMAT_ADAPTIVE,
                     FORMAT_CHRONOMETER
             })
@@ -12208,7 +12204,7 @@ public class Notification implements Parcelable
                         "Exactly one of zeroTime, zeroElapsedRealtime, or pausedDuration must be "
                                 + "present; received %s,%s,%s",
                         zeroTime, zeroElapsedRealtime, pausedDuration);
-                checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_CHRONOMETER,
+                checkArgument(format >= FORMAT_ADAPTIVE && format <= FORMAT_CHRONOMETER,
                         "Invalid format: %s", format);
                 mZeroTime = zeroTime;
                 mZeroElapsedRealtime = zeroElapsedRealtime;
@@ -12228,7 +12224,7 @@ public class Notification implements Parcelable
                 if (zeroTime != null || zeroElapsedRealtime != null || pausedDuration != null) {
                     return new TimeDifference(zeroTime, zeroElapsedRealtime, pausedDuration,
                             bundle.getBoolean(KEY_COUNT_DOWN),
-                            bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC));
+                            bundle.getInt(KEY_FORMAT));
                 } else {
                     return null;
                 }
