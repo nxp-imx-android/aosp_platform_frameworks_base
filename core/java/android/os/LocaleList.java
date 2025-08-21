@@ -155,7 +155,7 @@ public final class LocaleList implements Parcelable {
     /**
      * Find the intersection between this LocaleList and another
      * @return an array of the Locales in both LocaleLists
-     * {@hide}
+     * @hide
      */
     @NonNull
     public Locale[] getIntersection(@NonNull LocaleList other) {
@@ -229,7 +229,7 @@ public final class LocaleList implements Parcelable {
      * Constructs a locale list, with the topLocale moved to the front if it already is
      * in otherLocales, or added to the front if it isn't.
      *
-     * {@hide}
+     * @hide
      */
     public LocaleList(@NonNull Locale topLocale, LocaleList otherLocales) {
         if (topLocale == null) {
@@ -337,7 +337,7 @@ public final class LocaleList implements Parcelable {
 
     /**
      * Returns true if locale is a pseudo-locale, false otherwise.
-     * {@hide}
+     * @hide
      */
     public static boolean isPseudoLocale(Locale locale) {
         return LOCALE_EN_XA.equals(locale) || LOCALE_AR_XB.equals(locale);
@@ -458,7 +458,7 @@ public final class LocaleList implements Parcelable {
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public int getFirstMatchIndex(String[] supportedLocales) {
         return computeFirstMatchIndex(Arrays.asList(supportedLocales),
@@ -467,7 +467,7 @@ public final class LocaleList implements Parcelable {
 
     /**
      * Same as getFirstMatch(), but with English assumed to be supported, even if it's not.
-     * {@hide}
+     * @hide
      */
     @Nullable
     public Locale getFirstMatchWithEnglishSupported(String[] supportedLocales) {
@@ -476,14 +476,14 @@ public final class LocaleList implements Parcelable {
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public int getFirstMatchIndexWithEnglishSupported(Collection<String> supportedLocales) {
         return computeFirstMatchIndex(supportedLocales, true /* assume English is supported */);
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public int getFirstMatchIndexWithEnglishSupported(String[] supportedLocales) {
         return getFirstMatchIndexWithEnglishSupported(Arrays.asList(supportedLocales));
@@ -492,7 +492,7 @@ public final class LocaleList implements Parcelable {
     /**
      * Returns true if the collection of locale tags only contains empty locales and pseudolocales.
      * Assumes that there is no repetition in the input.
-     * {@hide}
+     * @hide
      */
     public static boolean isPseudoLocalesOnly(@Nullable String[] supportedLocales) {
         if (supportedLocales == null) {
@@ -591,7 +591,7 @@ public final class LocaleList implements Parcelable {
      * default locale may have been chosen to be a locale other than the first locale in the locale
      * list (based on the locales the app supports).
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static void setDefault(@NonNull @Size(min=1) LocaleList locales, int localeIndex) {

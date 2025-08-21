@@ -281,7 +281,7 @@ public class Process {
      */
     public static final int INET_GID = 3003;
 
-    /** {@hide} */
+    /** @hide */
     public static final int NOBODY_UID = 9999;
 
     /**
@@ -374,9 +374,9 @@ public class Process {
      */
     public static final int LAST_SHARED_APPLICATION_GID = 59999;
 
-    /** {@hide} */
+    /** @hide */
     public static final int FIRST_APPLICATION_CACHE_GID = 20000;
-    /** {@hide} */
+    /** @hide */
     public static final int LAST_APPLICATION_CACHE_GID = 29999;
 
     /**
@@ -728,7 +728,7 @@ public class Process {
      * @return An object that describes the result of the attempt to start the process.
      * @throws RuntimeException on fatal start failure
      *
-     * {@hide}
+     * @hide
      */
     public static ProcessStartResult start(@NonNull final String processClass,
                                            @Nullable final String niceName,
@@ -934,7 +934,7 @@ public class Process {
 
     /**
      * @deprecated Use {@link #isIsolatedUid(int)} instead.
-     * {@hide}
+     * @hide
      */
     @Deprecated
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.TIRAMISU,
@@ -1301,7 +1301,7 @@ public class Process {
      * not have permission to modify the given thread, or to use the given
      * scheduling policy or priority.
      *
-     * {@hide}
+     * @hide
      */
 
     @TestApi
@@ -1321,7 +1321,7 @@ public class Process {
      * not have permission to modify the given thread, or to use the given
      * scheduling policy or priority.
      *
-     * {@hide}
+     * @hide
      */
 
     public static final native void setThreadScheduler(int tid, int policy, int priority)
@@ -1346,7 +1346,7 @@ public class Process {
      *
      * @param text The new name of this process.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = VERSION_CODES.S, publicAlternatives = "Do not try to "
             + "change the process name. (If you must, you could use {@code pthread_setname_np(3)}, "

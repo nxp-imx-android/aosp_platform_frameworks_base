@@ -86,7 +86,7 @@ import java.util.List;
  * System private API for talking with the activity task manager that handles how activities are
  * managed on screen.
  *
- * {@hide}
+ * @hide
  */
 // TODO(b/174040395): Make this interface private to ActivityTaskManager.java and have external
 // caller go through that call instead. This would help us better separate and control the API

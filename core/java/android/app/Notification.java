@@ -4210,7 +4210,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static String visibilityToString(int vis) {
         switch (vis) {
@@ -4226,7 +4226,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static String priorityToString(@Priority int pri) {
         switch (pri) {
@@ -4246,7 +4246,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static String flagsToString(@NotificationFlags int flags) {
         final List<String> flagStrings = new ArrayList<String>();

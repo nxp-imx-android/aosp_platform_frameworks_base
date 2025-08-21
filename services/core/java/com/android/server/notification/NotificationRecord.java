@@ -103,7 +103,7 @@ import java.util.Objects;
  *
  * <p>Is sortable by {@link NotificationComparator}.</p>
  *
- * {@hide}
+ * @hide
  */
 public final class NotificationRecord {
     static final String TAG = "NotificationRecord";

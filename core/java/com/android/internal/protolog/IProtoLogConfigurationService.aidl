@@ -38,7 +38,7 @@ import com.android.internal.protolog.IProtoLogClient;
  * data, so this service allows us to orchestrate which config gets dumped so we don't duplicate
  * this information in the trace and waste valuable trace space.
  *
- * {@hide}
+ * @hide
  */
 interface IProtoLogConfigurationService {
     parcelable RegisterClientArgs {

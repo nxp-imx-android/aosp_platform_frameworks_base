@@ -22,7 +22,7 @@ import android.sysprop.TelephonyProperties;
 import java.util.Optional;
 
 /**
- * {@hide}
+ * @hide
  */
 public interface RILConstants {
     // From the top of ril.cpp

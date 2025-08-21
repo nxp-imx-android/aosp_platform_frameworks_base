@@ -6797,7 +6797,7 @@ public class PackageParser {
         /**
          * Private flags of any split APKs; ordered by parsed splitName.
          *
-         * {@hide}
+         * @hide
          */
         public int[] splitPrivateFlags;
 

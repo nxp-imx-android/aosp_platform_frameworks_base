@@ -36,7 +36,7 @@ import java.util.List;
  * not. Running privileged operations by the shell user on behalf of an
  * instrumentation is needed for running UiTestCases.
  *
- * {@hide}
+ * @hide
  */
 interface IUiAutomationConnection {
     void connect(IAccessibilityServiceClient client, int flags);

@@ -26,7 +26,7 @@ import android.app.RunningAppProcessInfo;
  * At this moment this interface provides a minimum level of support for native processes.
  * TODO(b/419409018): Migrate the entire interface to the structured AIDL.
  *
- * {@hide}
+ * @hide
  */
 interface IActivityManagerStructured {
     ParcelFileDescriptor openContentUri(in String uriString);

@@ -21,7 +21,7 @@ import android.media.projection.StopReason;
 import android.os.IBinder;
 import android.app.ActivityOptions.LaunchCookie;
 
-/** {@hide} */
+/** @hide */
 interface IMediaProjection {
     void start(IMediaProjectionCallback callback);
     void stop(StopReason stopReason);

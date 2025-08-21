@@ -943,7 +943,7 @@ public abstract class ContentProvider implements ContentInterface, ComponentCall
                         attributionSource), /*message*/ null);
     }
 
-    /** {@hide} */
+    /** @hide */
     @PermissionCheckerManager.PermissionResult
     protected int enforceReadPermissionInner(Uri uri,
             @NonNull AttributionSource attributionSource) throws SecurityException {
@@ -1029,7 +1029,7 @@ public abstract class ContentProvider implements ContentInterface, ComponentCall
                 + ", uid=" + uid + suffix);
     }
 
-    /** {@hide} */
+    /** @hide */
     @PermissionCheckerManager.PermissionResult
     protected int enforceWritePermissionInner(Uri uri,
             @NonNull AttributionSource attributionSource) throws SecurityException {
@@ -1269,12 +1269,12 @@ public abstract class ContentProvider implements ContentInterface, ComponentCall
      * Opaque token representing the identity of an incoming IPC.
      */
     public final class CallingIdentity {
-        /** {@hide} */
+        /** @hide */
         public final long binderToken;
-        /** {@hide} */
+        /** @hide */
         public final @Nullable AttributionSource callingAttributionSource;
 
-        /** {@hide} */
+        /** @hide */
         public CallingIdentity(long binderToken, @Nullable AttributionSource attributionSource) {
             this.binderToken = binderToken;
             this.callingAttributionSource = attributionSource;

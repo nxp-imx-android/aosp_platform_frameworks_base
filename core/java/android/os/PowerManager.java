@@ -173,7 +173,7 @@ public final class PowerManager {
      * Requires the {@link android.Manifest.permission#DEVICE_POWER} permission.
      * </p>
      *
-     * {@hide}
+     * @hide
      */
     public static final int DOZE_WAKE_LOCK = OsProtoEnums.DOZE_WAKE_LOCK; // 0x00000040
 
@@ -187,7 +187,7 @@ public final class PowerManager {
      * Requires the {@link android.Manifest.permission#DEVICE_POWER} permission.
      * </p>
      *
-     * {@hide}
+     * @hide
      */
     public static final int DRAW_WAKE_LOCK = OsProtoEnums.DRAW_WAKE_LOCK; // 0x00000080
 
@@ -1320,7 +1320,7 @@ public final class PowerManager {
             mScreenTimeoutPolicyListeners = new ArrayMap<>();
 
     /**
-     * {@hide}
+     * @hide
      */
     public PowerManager(Context context, IPowerManager service, IThermalService thermalService,
             Handler handler) {

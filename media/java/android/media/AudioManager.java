@@ -6229,7 +6229,7 @@ public class AudioManager {
     }
 
      /**
-      * {@hide}
+      * @hide
       */
      private final IBinder mICallBack = new Binder();
 
@@ -6928,7 +6928,7 @@ public class AudioManager {
      * @param device type of device connected/disconnected (AudioManager.DEVICE_OUT_xxx)
      * @param state  new connection state: 1 connected, 0 disconnected
      * @param name   device name
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
@@ -6961,7 +6961,7 @@ public class AudioManager {
      * Indicate wired accessory connection state change.
      * @param device {@link AudioDeviceAttributes} of the device to "fake-connect"
      * @param connected true for connected, false for disconnected
-     * {@hide}
+     * @hide
      */
     @TestApi
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
@@ -6984,7 +6984,7 @@ public class AudioManager {
      * @param previousDevice Bluetooth device disconnected or null if there is no disconnected
      * devices
      * @param info contain all info related to the device. {@link BluetoothProfileConnectionInfo}
-     * {@hide}
+     * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     @RequiresPermission(Manifest.permission.BLUETOOTH_STACK)
@@ -6999,7 +6999,7 @@ public class AudioManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public IRingtonePlayer getRingtonePlayer() {
         try {
             return getService().getRingtonePlayer();

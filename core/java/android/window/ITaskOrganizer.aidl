@@ -27,7 +27,7 @@ import android.window.WindowContainerToken;
 
 /**
  * Interface for ActivityTaskManager/WindowManager to delegate control of tasks.
- * {@hide}
+ * @hide
  */
 oneway interface ITaskOrganizer {
     /**

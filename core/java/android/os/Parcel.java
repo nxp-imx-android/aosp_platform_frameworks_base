@@ -1320,12 +1320,12 @@ public final class Parcel {
         writeString16(val);
     }
 
-    /** {@hide} */
+    /** @hide */
     public final void writeString8(@Nullable String val) {
         mReadWriteHelper.writeString8(this, val);
     }
 
-    /** {@hide} */
+    /** @hide */
     public final void writeString16(@Nullable String val) {
         mReadWriteHelper.writeString16(this, val);
     }
@@ -1341,12 +1341,12 @@ public final class Parcel {
         writeString16NoHelper(val);
     }
 
-    /** {@hide} */
+    /** @hide */
     public void writeString8NoHelper(@Nullable String val) {
         nativeWriteString8(mNativePtr, val);
     }
 
-    /** {@hide} */
+    /** @hide */
     public void writeString16NoHelper(@Nullable String val) {
         nativeWriteString16(mNativePtr, val);
     }
@@ -1404,7 +1404,7 @@ public final class Parcel {
     }
 
     /**
-     * {@hide}
+     * @hide
      * This will be the new name for writeFileDescriptor, for consistency.
      **/
     public final void writeRawFileDescriptor(@NonNull FileDescriptor val) {
@@ -1412,7 +1412,7 @@ public final class Parcel {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Write an array of FileDescriptor objects into the Parcel.
      *
      * @param value The array of objects to be written.
@@ -2045,7 +2045,7 @@ public final class Parcel {
         readString16Array(val);
     }
 
-    /** {@hide} */
+    /** @hide */
     public final void writeString8Array(@Nullable String[] val) {
         if (val != null) {
             int N = val.length;
@@ -2058,7 +2058,7 @@ public final class Parcel {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @Nullable
     public final String[] createString8Array() {
         int N = readInt();
@@ -2074,7 +2074,7 @@ public final class Parcel {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public final void readString8Array(@NonNull String[] val) {
         int N = readInt();
         if (N == val.length) {
@@ -2086,7 +2086,7 @@ public final class Parcel {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public final void writeString16Array(@Nullable String[] val) {
         if (val != null) {
             int N = val.length;
@@ -2117,7 +2117,7 @@ public final class Parcel {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @Nullable
     public final String[] createString16Array() {
         int N = readInt();
@@ -2133,7 +2133,7 @@ public final class Parcel {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public final void readString16Array(@NonNull String[] val) {
         int N = readInt();
         if (N == val.length) {
@@ -3427,12 +3427,12 @@ public final class Parcel {
         return readString16();
     }
 
-    /** {@hide} */
+    /** @hide */
     public final @Nullable String readString8() {
         return mReadWriteHelper.readString8(this);
     }
 
-    /** {@hide} */
+    /** @hide */
     public final @Nullable String readString16() {
         return mReadWriteHelper.readString16(this);
     }
@@ -3448,12 +3448,12 @@ public final class Parcel {
         return readString16NoHelper();
     }
 
-    /** {@hide} */
+    /** @hide */
     public @Nullable String readString8NoHelper() {
         return nativeReadString8(mNativePtr);
     }
 
-    /** {@hide} */
+    /** @hide */
     public @Nullable String readString16NoHelper() {
         return nativeReadString16(mNativePtr);
     }
@@ -3498,14 +3498,14 @@ public final class Parcel {
         return fd != null ? new ParcelFileDescriptor(fd) : null;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public final FileDescriptor readRawFileDescriptor() {
         return nativeReadFileDescriptor(mNativePtr);
     }
 
     /**
-     * {@hide}
+     * @hide
      * Read and return a new array of FileDescriptors from the parcel.
      * @return the FileDescriptor array, or null if the array is null.
      **/
@@ -3524,7 +3524,7 @@ public final class Parcel {
     }
 
     /**
-     * {@hide}
+     * @hide
      * Read an array of FileDescriptors from a parcel.
      * The passed array must be exactly the length of the array in the parcel.
      * @return the FileDescriptor array, or null if the array is null.
@@ -3760,7 +3760,7 @@ public final class Parcel {
 
     /**
      * Read and return a String[] object from the parcel.
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @Nullable
@@ -3770,7 +3770,7 @@ public final class Parcel {
 
     /**
      * Read and return a CharSequence[] object from the parcel.
-     * {@hide}
+     * @hide
      */
     @Nullable
     public final CharSequence[] readCharSequenceArray() {
@@ -3793,7 +3793,7 @@ public final class Parcel {
 
     /**
      * Read and return an ArrayList&lt;CharSequence&gt; object from the parcel.
-     * {@hide}
+     * @hide
      */
     @Nullable
     public final ArrayList<CharSequence> readCharSequenceList() {

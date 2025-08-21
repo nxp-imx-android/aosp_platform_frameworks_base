@@ -5784,7 +5784,7 @@ public final class ContactsContract {
          * @param contactId Contact ID, which can potentially be a managed profile contact ID.
          * @return A map from a mimetype to a list of the entity content values.
          *
-         * {@hide}
+         * @hide
          */
         @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
         @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)

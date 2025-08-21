@@ -1047,12 +1047,12 @@ public class RingtoneManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static Uri getCacheForType(int type) {
         return getCacheForType(type, UserHandle.getCallingUserId());
     }
 
-    /** {@hide} */
+    /** @hide */
     public static Uri getCacheForType(int type, int userId) {
         if ((type & TYPE_RINGTONE) != 0) {
             return ContentProvider.maybeAddUserId(Settings.System.RINGTONE_CACHE_URI, userId);

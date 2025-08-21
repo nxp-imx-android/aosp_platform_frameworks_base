@@ -735,7 +735,7 @@ public final class SmsManager {
      *  Any Other values included Negative considered as Invalid Validity Period of the message.
      *
      * @throws IllegalArgumentException if destinationAddress or text are empty
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public void sendTextMessage(
@@ -1382,7 +1382,7 @@ public final class SmsManager {
      *  Any Other values included Negative considered as Invalid Validity Period of the message.
      *
      * @throws IllegalArgumentException if destinationAddress or data are empty
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public void sendMultipartTextMessage(
@@ -1942,7 +1942,7 @@ public final class SmsManager {
      * @return true for success, false if the operation fails. Failure can be due to IPC failure,
      * RIL/modem error which results in SMS failed to be deleted on SIM
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @RequiresPermission(Manifest.permission.ACCESS_MESSAGES_ON_ICC)
@@ -1985,7 +1985,7 @@ public final class SmsManager {
      * @param pdu the raw PDU to store
      * @return true for success
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @RequiresPermission(Manifest.permission.ACCESS_MESSAGES_ON_ICC)
@@ -2023,7 +2023,7 @@ public final class SmsManager {
      *
      * @return <code>List</code> of <code>SmsMessage</code> objects for valid records only.
      *
-     * {@hide}
+     * @hide
      */
     @RequiresPermission(Manifest.permission.ACCESS_MESSAGES_ON_ICC)
     public @NonNull List<SmsMessage> getMessagesFromIcc() {
@@ -2036,7 +2036,7 @@ public final class SmsManager {
      * This is similar to {@link #getMessagesFromIcc} except that it will return ArrayList.
      * Suggested to use {@link #getMessagesFromIcc} instead.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public ArrayList<SmsMessage> getAllMessagesFromIcc() {
@@ -2093,7 +2093,7 @@ public final class SmsManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
-     * {@hide}
+     * @hide
      */
     @Deprecated
     @SystemApi
@@ -2159,7 +2159,7 @@ public final class SmsManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      *
      * @deprecated Use {@link TelephonyManager#setCellBroadcastIdRanges} instead.
-     * {@hide}
+     * @hide
      */
     @Deprecated
     @SystemApi

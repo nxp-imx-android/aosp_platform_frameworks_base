@@ -643,7 +643,7 @@ public class TelephonyManager {
      *   <li>Returns UNKNOWN for others.</li>
      * </ul>
      */
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public MultiSimVariants getMultiSimConfiguration() {
         String mSimConfig =
@@ -737,7 +737,7 @@ public class TelephonyManager {
         return 1;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public static TelephonyManager from(Context context) {
         return (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -769,7 +769,7 @@ public class TelephonyManager {
         return new TelephonyManager(mContext, subId);
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public boolean isMultiSimEnabled() {
         return getPhoneCount() > 1;
@@ -2749,7 +2749,7 @@ public class TelephonyManager {
      * @see #PHONE_TYPE_CDMA
      * @see #PHONE_TYPE_SIP
      *
-     * {@hide}
+     * @hide
      */
     @SystemApi
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
@@ -3069,7 +3069,10 @@ public class TelephonyManager {
             TelephonyProtoEnums.NETWORK_TYPE_TD_SCDMA; // = 17.
     /** Current network is IWLAN */
     public static final int NETWORK_TYPE_IWLAN = TelephonyProtoEnums.NETWORK_TYPE_IWLAN; // = 18.
-    /** Current network is LTE_CA {@hide} */
+    /**
+     * Current network is LTE_CA
+     * @hide
+     */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int NETWORK_TYPE_LTE_CA = TelephonyProtoEnums.NETWORK_TYPE_LTE_CA; // = 19.
     /**
@@ -3319,7 +3322,7 @@ public class TelephonyManager {
      * @return the name of the radio technology
      *
      */
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static String getNetworkTypeName(@NetworkType int type) {
         switch (type) {
@@ -3374,7 +3377,7 @@ public class TelephonyManager {
      * Returns the bitmask for a given technology (network type)
      * @param networkType for which bitmask is returned
      * @return the network type bitmask
-     * {@hide}
+     * @hide
      */
     public static @NetworkTypeBitMask long getBitMaskForNetworkType(@NetworkType int networkType) {
         switch(networkType) {
@@ -3631,7 +3634,7 @@ public class TelephonyManager {
      *
      * @param slotIndex for which icc card presence is checked
      */
-    /** {@hide} */
+    /** @hide */
     // FIXME Input argument slotIndex should be of type int
     @UnsupportedAppUsage
     public boolean hasIccCard(int slotIndex) {
@@ -8388,7 +8391,7 @@ public class TelephonyManager {
      * with the default subId.
      * If SIM is not inserted, return default SIM slot index.
      *
-     * {@hide}
+     * @hide
      */
     @VisibleForTesting
     @UnsupportedAppUsage
@@ -11749,7 +11752,7 @@ public class TelephonyManager {
      * TODO: The legacy design only supports single sim design. Ideally, this should support
      * multi-sim design in current world.
      *
-     * {@hide}
+     * @hide
      */
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public @Nullable String getMobileProvisioningUrl() {
@@ -12528,7 +12531,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @Deprecated
@@ -12557,7 +12560,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @Deprecated
@@ -12597,7 +12600,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
@@ -12629,7 +12632,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      **/
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
@@ -16435,7 +16438,7 @@ public class TelephonyManager {
      *
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
-     * {@hide}
+     * @hide
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)

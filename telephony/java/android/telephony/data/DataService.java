@@ -76,7 +76,7 @@ public abstract class DataService extends Service {
     @SdkConstant(SdkConstant.SdkConstantType.SERVICE_ACTION)
     public static final String SERVICE_INTERFACE = "android.telephony.data.DataService";
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = "REQUEST_REASON_", value = {
             REQUEST_REASON_UNKNOWN,
             REQUEST_REASON_NORMAL,
@@ -85,7 +85,7 @@ public abstract class DataService extends Service {
     @Retention(RetentionPolicy.SOURCE)
     public @interface SetupDataReason {}
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = "REQUEST_REASON_", value = {
             REQUEST_REASON_UNKNOWN,
             REQUEST_REASON_NORMAL,

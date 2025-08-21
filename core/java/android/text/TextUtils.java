@@ -139,7 +139,7 @@ public class TextUtils {
      */
     public static final int SAFE_STRING_FLAG_FIRST_LINE = 0x4;
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public static String getEllipsisString(@NonNull TextUtils.TruncateAt method) {
         return (method == TextUtils.TruncateAt.END_SMALL) ? ELLIPSIS_TWO_DOTS : ELLIPSIS_NORMAL;
@@ -596,22 +596,22 @@ public class TextUtils {
         return str == null || str.length() == 0;
     }
 
-    /** {@hide} */
+    /** @hide */
     public static String nullIfEmpty(@Nullable String str) {
         return isEmpty(str) ? null : str;
     }
 
-    /** {@hide} */
+    /** @hide */
     public static String emptyIfNull(@Nullable String str) {
         return str == null ? "" : str;
     }
 
-    /** {@hide} */
+    /** @hide */
     public static String firstNotEmpty(@Nullable String a, @NonNull String b) {
         return !isEmpty(a) ? a : Preconditions.checkStringNotEmpty(b);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static int length(@Nullable String s) {
         return s != null ? s.length() : 0;
     }
@@ -1255,7 +1255,7 @@ public class TextUtils {
      *
      * If copySpans is set, source must be an instance of Spanned.
      *
-     * {@hide}
+     * @hide
      */
     @NonNull
     public static CharSequence toUpperCase(@Nullable Locale locale, @NonNull CharSequence source,

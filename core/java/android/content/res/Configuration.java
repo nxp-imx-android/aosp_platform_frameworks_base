@@ -620,7 +620,10 @@ public final class Configuration implements Parcelable, Comparable<Configuration
      * <a href="{@docRoot}guide/topics/resources/providing-resources.html#KeyboardAvailQualifier">keyshidden</a>
      * resource qualifier. */
     public static final int KEYBOARDHIDDEN_YES = 2;
-    /** Constant matching actual resource implementation. {@hide} */
+    /**
+     * Constant matching actual resource implementation.
+     * @hide
+     */
     public static final int KEYBOARDHIDDEN_SOFT = 3;
 
     /**
@@ -930,13 +933,13 @@ public final class Configuration implements Parcelable, Comparable<Configuration
 
     /**
      * Value for {@link #densityDpi} for resources that scale to any density (vector drawables).
-     * {@hide}
+     * @hide
      */
     public static final int DENSITY_DPI_ANY = 0xfffe;
 
     /**
      * Value for {@link #densityDpi} for resources that are not meant to be scaled.
-     * {@hide}
+     * @hide
      */
     public static final int DENSITY_DPI_NONE = 0xffff;
 
@@ -1619,7 +1622,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
         fontScale = 0;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     @Deprecated public void makeDefault() {
         setToDefaults();
@@ -1919,7 +1922,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
      * @param delta {@link Configuration} to compare to.
      *
      * TODO(b/36812336): Remove once appBounds has been moved out of Configuration.
-     * {@hide}
+     * @hide
      */
     public int diffPublicOnly(Configuration delta) {
         return diff(delta, false /* compareUndefined */, true /* publicOnly */);
@@ -2982,7 +2985,7 @@ public final class Configuration implements Parcelable, Comparable<Configuration
      *
      * @param parser The Xml parser from which to read attributes.
      * @param configOut The Configuration to populate from the Xml attributes.
-     * {@hide}
+     * @hide
      */
     public static void readXmlAttrs(XmlPullParser parser, Configuration configOut)
             throws XmlPullParserException, IOException {

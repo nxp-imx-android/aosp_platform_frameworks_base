@@ -187,13 +187,13 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         mClosed = true;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public ParcelFileDescriptor(FileDescriptor fd) {
         this(fd, null);
     }
 
-    /** {@hide} */
+    /** @hide */
     public ParcelFileDescriptor(FileDescriptor fd, FileDescriptor commChannel) {
         if (fd == null) {
             throw new NullPointerException("FileDescriptor must not be null");
@@ -296,7 +296,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         return fromFd(original, handler, listener);
     }
 
-    /** {@hide} */
+    /** @hide */
     @RavenwoodThrow(blockedBy = MessageQueue.class)
     public static ParcelFileDescriptor fromFd(FileDescriptor fd, Handler handler,
             final OnCloseListener listener) throws IOException {

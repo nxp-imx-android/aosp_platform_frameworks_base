@@ -27,7 +27,7 @@ import android.telephony.ims.SipDetails;
 /**
  * See {@link ImsManager#RegistrationCallback} for more information.
  *
- * {@hide}
+ * @hide
  */
 oneway interface IImsRegistrationCallback {
    void onRegistered(in ImsRegistrationAttributes attr);

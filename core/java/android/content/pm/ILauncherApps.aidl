@@ -46,7 +46,7 @@ import com.android.internal.infra.AndroidFuture;
 import java.util.List;
 
 /**
- * {@hide}
+ * @hide
  */
 interface ILauncherApps {
     void addOnAppsChangedListener(String callingPackage, in IOnAppsChangedListener listener);

@@ -22,7 +22,7 @@ import com.android.internal.infra.AndroidFuture;
 
 /**
  * Interface to the global IME tracker service, used by all client applications.
- * {@hide}
+ * @hide
  */
 interface IImeTracker {
 

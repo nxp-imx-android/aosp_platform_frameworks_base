@@ -21,7 +21,7 @@ package com.android.internal.telecom;
  *
  * @see android.telecom.StreamingCallAdapter
  *
- * {@hide}
+ * @hide
  */
 oneway interface IStreamingCallAdapter {
     void setStreamingState(int state);

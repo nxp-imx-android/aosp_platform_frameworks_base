@@ -27,7 +27,7 @@ package android.app;
  * co-exist. The Java class continues to provide a public API, and internally
  * uses this AIDL struct for parceling / unparceling.
  *
- * {@hide}
+ * @hide
  */
 parcelable RunningAppProcessInfo {
     /**

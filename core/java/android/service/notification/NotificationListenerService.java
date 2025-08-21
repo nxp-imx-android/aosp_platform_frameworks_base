@@ -2351,7 +2351,7 @@ public abstract class NotificationListenerService extends Service {
         }
 
         /**
-         * {@hide}
+         * @hide
          */
         public static String importanceToString(int importance) {
             switch (importance) {

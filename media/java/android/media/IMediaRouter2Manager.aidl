@@ -25,7 +25,7 @@ import android.media.SuggestedDeviceInfo;
 import android.media.AppId;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface IMediaRouter2Manager {
     void notifySessionCreated(int requestId, in RoutingSessionInfo session);

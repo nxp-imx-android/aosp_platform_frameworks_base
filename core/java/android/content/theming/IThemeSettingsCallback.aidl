@@ -18,7 +18,7 @@ package android.content.theming;
 
 import android.content.theming.ThemeSettings;
 
-/** {@hide} */
+/** @hide */
 interface IThemeSettingsCallback{
     void onSettingsChanged(in ThemeSettings oldSettings, in ThemeSettings newSettings);
 }

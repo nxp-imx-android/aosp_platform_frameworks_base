@@ -327,7 +327,7 @@ import java.util.function.Predicate;
  * and the WindowManager.  This is for the most part an internal implementation
  * detail of {@link WindowManagerGlobal}.
  *
- * {@hide}
+ * @hide
  */
 @SuppressWarnings({"EmptyCatchBlock", "PointlessBooleanExpression"})
 public final class ViewRootImpl implements ViewParent,
@@ -4906,7 +4906,7 @@ public final class ViewRootImpl implements ViewParent,
      * get focus before drawing the content of the app. This will be used so that apps do not get
      * blacked out when they are resumed and do not have focus yet.
      *
-     * {@hide}
+     * @hide
      */
     // TODO(b/263094829): Investigate dispatching this for onPause as well
     public void dispatchCompatFakeFocus() {

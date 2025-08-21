@@ -35,7 +35,7 @@ import com.android.internal.policy.IKeyguardDismissCallback;
 /**
  * Interface for the callback and request from an activity to system.
  *
- * {@hide}
+ * @hide
  */
 interface IActivityClientController {
     oneway void activityIdle(in IBinder token, in Configuration config, in boolean stopProfiling);

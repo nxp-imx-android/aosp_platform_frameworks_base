@@ -37,7 +37,7 @@ import com.android.internal.os.IResultReceiver;
  * API back to a client window that the Window Manager uses to inform it of
  * interesting things happening.
  *
- * {@hide}
+ * @hide
  */
 oneway interface IWindow {
     /**

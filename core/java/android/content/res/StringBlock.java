@@ -59,7 +59,7 @@ import java.util.Arrays;
 /**
  * Conveniences for retrieving data out of a compiled string resource.
  *
- * {@hide}
+ * @hide
  */
 @RavenwoodKeepWholeClass
 public final class StringBlock implements Closeable {

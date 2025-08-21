@@ -1320,7 +1320,7 @@ public class ContextWrapper extends Context {
         return mBase.createDeviceProtectedStorageContext();
     }
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     @Override
     public Context createCredentialProtectedStorageContext() {
@@ -1340,14 +1340,14 @@ public class ContextWrapper extends Context {
         return mBase.isDeviceProtectedStorage();
     }
 
-    /** {@hide} */
+    /** @hide */
     @SystemApi
     @Override
     public boolean isCredentialProtectedStorage() {
         return mBase.isCredentialProtectedStorage();
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     public boolean canLoadUnsafeResources() {
         return mBase.canLoadUnsafeResources();

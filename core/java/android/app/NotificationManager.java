@@ -714,20 +714,20 @@ public class NotificationManager {
         return getService();
     }
 
-    /** {@hide} */
+    /** @hide */
     public NotificationManager(Context context)
     {
         this(context, SystemClock.elapsedRealtimeClock());
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public NotificationManager(Context context, InstantSource clock) {
         mContext = context;
         mClock = clock;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public static NotificationManager from(Context context) {
         return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -496,7 +496,7 @@ public final class Looper {
         mLogging = printer;
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public void setTraceTag(long traceTag) {
         mTraceTag = traceTag;
@@ -504,7 +504,7 @@ public final class Looper {
 
     /**
      * Set a thresholds for slow dispatch/delivery log.
-     * {@hide}
+     * @hide
      */
     public void setSlowLogThresholdMs(long slowDispatchThresholdMs, long slowDeliveryThresholdMs) {
         mSlowDispatchThresholdMs = slowDispatchThresholdMs;
@@ -612,7 +612,7 @@ public final class Looper {
                 + ") {" + Integer.toHexString(System.identityHashCode(this)) + "}";
     }
 
-    /** {@hide} */
+    /** @hide */
     public interface Observer {
         /**
          * Called right before a message is dispatched.

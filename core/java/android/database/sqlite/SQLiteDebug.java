@@ -29,7 +29,7 @@ import java.util.ArrayList;
 /**
  * Provides debugging info about all SQLite databases running in the current process.
  *
- * {@hide}
+ * @hide
  */
 @TestApi
 public final class SQLiteDebug {
@@ -38,7 +38,7 @@ public final class SQLiteDebug {
     /**
      * Inner class to avoid getting the value frozen in zygote.
      *
-     * {@hide}
+     * @hide
      */
     public static final class NoPreloadHolder {
         /**

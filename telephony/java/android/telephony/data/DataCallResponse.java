@@ -54,7 +54,7 @@ import java.util.Set;
 @SystemApi
 public final class DataCallResponse implements Parcelable {
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = "LINK_STATUS_", value = {
             LINK_STATUS_UNKNOWN,
             LINK_STATUS_INACTIVE,
@@ -76,7 +76,7 @@ public final class DataCallResponse implements Parcelable {
     /** Indicates the data connection is active with physical link up. */
     public static final int LINK_STATUS_ACTIVE = 2;
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = "HANDOVER_FAILURE_MODE_", value = {
             HANDOVER_FAILURE_MODE_UNKNOWN,
             HANDOVER_FAILURE_MODE_LEGACY,

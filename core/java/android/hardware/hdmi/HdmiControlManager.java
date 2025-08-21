@@ -1219,7 +1219,7 @@ public final class HdmiControlManager {
     private final boolean mIsSwitchDevice;
 
     /**
-     * {@hide} - hide this constructor because it has a parameter of type IHdmiControlService,
+     * @hide - hide this constructor because it has a parameter of type IHdmiControlService,
      * which is a system private class. The right way to create an instance of this class is
      * using the factory Context.getSystemService.
      */
