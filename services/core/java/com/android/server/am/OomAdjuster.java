@@ -982,10 +982,7 @@ public abstract class OomAdjuster {
                     final ProcessServiceRecord psr = app.mServices;
                     int targetAdj = CACHED_APP_MIN_ADJ;
 
-                    if (app.isFreezeExempt()) {
-                        // BIND_WAIVE_PRIORITY and the like get oom_adj 900
-                        targetAdj += 0;
-                    } else if (state.getHasShownUi() && uiTargetAdj < uiTierMaxAdj) {
+                    if (state.getHasShownUi() && uiTargetAdj < uiTierMaxAdj) {
                         // The most recent UI-showing apps get [910, 910 + ui tier size).
                         targetAdj += uiTargetAdj++;
                     } else if ((state.getSetAdj() >= CACHED_APP_MIN_ADJ)
@@ -2641,20 +2638,12 @@ public abstract class OomAdjuster {
                 return false;
             }
 
-            if (proc.isFreezeExempt()) {
-                return false;
-            }
-
             // Default, freeze a process.
             return true;
         } else {
             // The CPU capability handling covers all setShouldNotFreeze paths. Must check
             // shouldNotFreeze, if the CPU capability is not being used.
             if (proc.shouldNotFreeze()) {
-                return false;
-            }
-
-            if (proc.isFreezeExempt()) {
                 return false;
             }
 
@@ -2705,7 +2694,7 @@ public abstract class OomAdjuster {
                         "FreezeLite",
                         (app.isFrozen() ? "F" : "-")
                         + (app.isPendingFreeze() ? "P" : "-")
-                        + (app.isFreezeExempt() ? "E" : "-")
+                        + (/* Keeping for app.isFreezeExempt() */ "-")
                         + (app.shouldNotFreeze() ? "N" : "-")
                         + (hasCpuCapability ? "T" : "-")
                         + (hasImplicitCpuCapability ? "X" : "-")
@@ -2723,7 +2712,7 @@ public abstract class OomAdjuster {
                         CachedAppOptimizer.ATRACE_FREEZER_TRACK,
                         "updateAppFreezeStateLSP " + app.processName
                         + " pid: " + app.getPid()
-                        + " isFreezeExempt: " + app.isFreezeExempt()
+                        + " isFreezeExempt: " + false
                         + " isFrozen: " + app.isFrozen()
                         + " shouldNotFreeze: " + app.shouldNotFreeze()
                         + " shouldNotFreezeReason: " + app.shouldNotFreezeReason()
