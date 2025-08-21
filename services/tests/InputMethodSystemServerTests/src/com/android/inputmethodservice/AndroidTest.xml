@@ -41,7 +41,6 @@
         <option name="device-listeners" value="android.device.collectors.ScreenshotOnFailureCollector"/>
         <!-- DefaultUITraceListener args -->
         <option name="instrumentation-arg" key="skip_test_success_metrics" value="true"/>
-        <option name="instrumentation-arg" key="per_class" value="true"/>
     </test>
 
     <!-- Collect output of DumpOnFailure -->
