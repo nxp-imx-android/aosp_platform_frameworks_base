@@ -47,7 +47,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
-@android.platform.test.annotations.EnabledOnRavenwood
 class ManagedProfileInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

@@ -38,7 +38,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(SystemStatusIconsInCompose.FLAG_NAME)
-@android.platform.test.annotations.EnabledOnRavenwood
 class DataSaverIconViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
