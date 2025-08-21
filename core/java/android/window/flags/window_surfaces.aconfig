@@ -112,3 +112,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "system_content_priority"
+    namespace: "window_surfaces"
+    description: "Enable prioritization for windows based on the importance of the content, from the system perspective."
+    bug: "431285755"
+}
