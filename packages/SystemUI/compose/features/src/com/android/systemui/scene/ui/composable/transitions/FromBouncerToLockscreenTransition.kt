@@ -17,6 +17,7 @@
 package com.android.systemui.scene.ui.composable.transitions
 
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.time.Duration.Companion.milliseconds
@@ -28,6 +29,8 @@ fun TransitionBuilder.bouncerToLockscreenTransition(durationScale: Double = 1.0)
 
     fractionRange(start = 0.95f) { fade(LockscreenElementKeys.StatusBar) }
     fractionRange(start = 0.8f) { fade(LockscreenElementKeys.Root) }
+
+    translate(LockscreenElementKeys.Notifications.Stack, y = 0.dp)
 }
 
 private val DefaultDuration = 500.milliseconds
