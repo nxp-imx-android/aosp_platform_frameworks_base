@@ -276,14 +276,14 @@ class ConnectedDisplayCujSmokeTests {
     fun cuj5e() {
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
-        verifyWindowCount(browserApp, expectedCount = 1)
+        verifyTaskCount(browserApp, expectedCount = 1)
 
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         // TODO(b/418620963) - Check the display id of the app window here.
-        verifyWindowCount(browserApp, expectedCount = 1)
+        verifyTaskCount(browserApp, expectedCount = 1)
     }
 
     // Projected: All apps can be invoked on either display at any time, but will only ever be shown
@@ -293,14 +293,14 @@ class ConnectedDisplayCujSmokeTests {
     fun cuj5p() {
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
-        verifyWindowCount(browserApp, expectedCount = 1)
+        verifyTaskCount(browserApp, expectedCount = 1)
 
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
-        verifyWindowCount(browserApp, expectedCount = 1)
+        verifyTaskCount(browserApp, expectedCount = 1)
     }
 
     fun cuj6(skipAppHandleTest: Boolean = false) {
@@ -659,12 +659,13 @@ class ConnectedDisplayCujSmokeTests {
             .waitForAndVerify()
     }
 
-    fun verifyWindowCount(componentMatcher: IComponentNameMatcher, expectedCount: Int) {
+    fun verifyTaskCount(componentMatcher: IComponentNameMatcher, expectedCount: Int) {
         wmHelper.StateSyncBuilder()
             .withAppTransitionIdle()
-            .add("${componentMatcher.packageName} has $expectedCount windows") { dump ->
-                val appWindows = dump.wmState.appWindows
-                appWindows.count { componentMatcher.windowMatchesAnyOf(it) } == expectedCount
+            .add("${componentMatcher.packageName} has $expectedCount tasks") { dump ->
+                dump.wmState.rootTasks.count {
+                    it.containsActivity(componentMatcher)
+                } == expectedCount
             }
             .waitForAndVerify()
     }
