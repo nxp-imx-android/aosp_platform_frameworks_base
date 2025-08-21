@@ -457,7 +457,7 @@ public class PackageInstaller {
      *      {@link android.Manifest.permission#INSTALL_PACKAGES INSTALL_PACKAGES} permission
      *      but with the
      *      {@link android.Manifest.permission#REQUEST_INSTALL_PACKAGES REQUEST_INSTALL_PACKAGES}
-     *      permission and targeting {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
+     *      permission and targeting {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
      *      or less will first receive the
      *      {@link #STATUS_PENDING_USER_ACTION} status code without this reason code. They will be
      *      forced through the user action flow to allow the OS to inform the user of such
@@ -469,7 +469,7 @@ public class PackageInstaller {
      * <li>
      *     Installers with the
      *     {@link android.Manifest.permission#INSTALL_PACKAGES INSTALL_PACKAGES} permission and
-     *     targeting {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
+     *     targeting {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
      *     or less will directly receive the
      *     {@link #STATUS_FAILURE_ABORTED} status code. This is because they are not expected to
      *     have the capability of handling the {@link #STATUS_PENDING_USER_ACTION} flow, so the
@@ -477,8 +477,8 @@ public class PackageInstaller {
      *     providing additional information.
      * </li>
      * <li>
-     *     For all installers targeting {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
-     *     or higher:
+     *     For all installers targeting higher than
+     *     {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
      *     <ul>
      *     <li>For situations that require user input, such as when the developer verification
      *     policy allows the user to bypass a verification failure caused by network issues,
