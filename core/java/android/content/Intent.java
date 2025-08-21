@@ -4700,6 +4700,18 @@ public class Intent implements Parcelable, Cloneable {
             ACTION_DYNAMIC_SENSOR_CHANGED = "android.intent.action.DYNAMIC_SENSOR_CHANGED";
 
     /**
+     * Activity Action: Launch an eye dropper. It allows the user to pick a pixel on the display.
+     * The color of the selected pixel is returned to the requesting activity as an activity result.
+     * Pixels from secure windows and protected buffers are blacked out.
+     * <p>
+     * Output: {@link #EXTRA_COLOR getIntExtra(EXTRA_COLOR)} is the color of the selected pixel in
+     * ARGB format (0xFFRRGGBB).
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    @FlaggedApi(com.android.eyedropper.Flags.FLAG_ENABLE_EYE_DROPPER_API)
+    public static final String ACTION_OPEN_EYE_DROPPER = "android.intent.action.OPEN_EYE_DROPPER";
+
+    /**
      * Deprecated - use ACTION_FACTORY_RESET instead.
      * @hide
      * @removed
@@ -7138,6 +7150,13 @@ public class Intent implements Parcelable, Cloneable {
      */
     public static final String EXTRA_IS_RESTORE =
             "android.intent.extra.IS_RESTORE";
+
+    /**
+     * Used as an int extra in {@link #ACTION_OPEN_EYE_DROPPER} results to hold the color picked in
+     * ARGB format (0xFFRRGGBB).
+     */
+    @FlaggedApi(com.android.eyedropper.Flags.FLAG_ENABLE_EYE_DROPPER_API)
+    public static final String EXTRA_COLOR = "android.intent.extra.COLOR";
 
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
