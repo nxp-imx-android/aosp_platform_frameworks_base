@@ -39,6 +39,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.PowerInteractorFactory
 import com.android.systemui.shared.system.SysUiStatsLog
+import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.FOLDABLE_DEVICE_STATE_CLOSED
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.Companion.FOLDABLE_DEVICE_STATE_HALF_OPEN
@@ -83,6 +84,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     private val displaySwitchLatencyLogger = mock<DisplaySwitchLatencyLogger>()
     private val screenTimeoutPolicyRepository = mock<ScreenTimeoutPolicyRepository>()
     private val latencyTracker = mock<LatencyTracker>()
+    private val activeNotificationsInteractor = mock<ActiveNotificationsInteractor>()
 
     private val isAodAvailable = MutableStateFlow(false)
     private val screenTimeoutActive = MutableStateFlow(true)
@@ -110,6 +112,7 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
                 powerInteractor,
                 screenTimeoutPolicyRepository,
                 keyguardInteractor,
+                activeNotificationsInteractor,
                 testScope.backgroundScope,
                 displaySwitchLatencyLogger,
                 systemClock,
@@ -489,6 +492,24 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    fun displaySwitch_withNotifications_logsNotificationCount() {
+        testScope.runTest {
+            // Arrange: Set a specific notification count
+            val expectedCount = 5
+            whenever(activeNotificationsInteractor.allNotificationsCountValue)
+                .thenReturn(expectedCount)
+
+            // Act: Perform a display switch
+            setDisplaySwitchState(Switching(HALF_FOLDED))
+            setDisplaySwitchState(Idle(UNFOLDED))
+
+            // Assert: Check that the logged event contains the correct count
+            val event = capturedLogEvent()
+            assertThat(event.notificationCount).isEqualTo(expectedCount)
+        }
+    }
+
     private fun capturedLogEvent(): DisplaySwitchLatencyEvent {
         verify(displaySwitchLatencyLogger).log(capture(loggerArgumentCaptor))
         return loggerArgumentCaptor.value
@@ -499,12 +520,14 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
         fromFoldableDeviceState: Int,
         toFoldableDeviceState: Int,
         toState: Int = SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__FROM_STATE__UNKNOWN,
+        notificationCount: Int = 0,
     ): DisplaySwitchLatencyEvent {
         return DisplaySwitchLatencyEvent(
             latencyMs = latencyMs,
             fromFoldableDeviceState = fromFoldableDeviceState,
             toFoldableDeviceState = toFoldableDeviceState,
             toState = toState,
+            notificationCount = notificationCount,
             screenWakelockStatus =
                 SysUiStatsLog
                     .DISPLAY_SWITCH_LATENCY_TRACKED__SCREEN_WAKELOCK_STATUS__SCREEN_WAKELOCK_STATUS_NO_WAKELOCKS,
