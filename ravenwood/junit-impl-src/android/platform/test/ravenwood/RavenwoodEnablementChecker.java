@@ -15,7 +15,9 @@
  */
 package android.platform.test.ravenwood;
 
+import static com.android.ravenwood.common.RavenwoodInternalUtils.isTestMethod;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.parseClassNameWildcard;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.toCanonicalTestName;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -54,6 +56,11 @@ import java.util.regex.Pattern;
  *
  *   This feature is only used locally. On CI server, we never use it.
  *
+ * - You can override the above logic and run exact test classes / test methods by
+ *   setting a case-insensitive regex to $RAVENWOOD_FORCE_FILTER_REGEX. If it's set,
+ *   only the tests that are mathing it would be executed. For example,
+ *   running with RAVENWOOD_FORCE_FILTER_REGEX='(MyTestClass1|MyTestClass2#testFoo)' would
+ *   execute all tests in MyTestClass1, and only testFoo() in MyTestClass2.
  */
 public abstract class RavenwoodEnablementChecker {
     private static final String TAG = RavenwoodInternalUtils.TAG;
@@ -161,20 +168,26 @@ public abstract class RavenwoodEnablementChecker {
      */
     @VisibleForTesting
     public static void setDefaultInstance() {
-        sInstance = new RavenwoodEnablementCheckerImpl(getRunMode(), getPolicyFiles());
+        sInstance = new RavenwoodEnablementCheckerImpl(getRunMode(), getPolicyFiles(),
+                RavenwoodEnvironment.getInstance().getEnvVar("RAVENWOOD_FORCE_FILTER_REGEX", null));
     }
 
     /**
      * Force set a checker for testing.
      */
     @VisibleForTesting
-    public static void overrideInstance(@NonNull RunMode runMode, @Nullable String policyText)  {
+    public static void overrideInstance(
+            @NonNull RunMode runMode,
+            @Nullable String policyText,
+            @Nullable String overridingPattern
+            )  {
         try {
             var parser = new EnablementTextPolicyParser();
             if (policyText != null && !policyText.isEmpty()) {
                 parser.parse("[in-memory]", policyText);
             }
-            sInstance = new RavenwoodEnablementCheckerImpl(runMode, parser.getResult());
+            sInstance = new RavenwoodEnablementCheckerImpl(
+                    runMode, parser.getResult(), overridingPattern);
         } catch (IOException e) {
             SneakyThrow.sneakyThrow(e); // IOException shouldn't happen, but just in case
         }
@@ -193,24 +206,39 @@ public abstract class RavenwoodEnablementChecker {
     /**
      * Actual logic. This combines the annotation policy with the text policy.
      */
-    @VisibleForTesting
-    public static class RavenwoodEnablementCheckerImpl extends RavenwoodEnablementChecker {
+    static class RavenwoodEnablementCheckerImpl extends RavenwoodEnablementChecker {
         private final RunMode mRunMode;
         private final PolicyChecker mChecker;
 
-        public RavenwoodEnablementCheckerImpl(RunMode runMode, String[] policyFiles) {
-            this(runMode, EnablementTextPolicyParser.parsePolicyFiles(policyFiles));
+        RavenwoodEnablementCheckerImpl(
+                @NonNull RunMode runMode,
+                @NonNull String[] policyFiles,
+                @Nullable String overridingPattern) {
+            this(runMode, EnablementTextPolicyParser.parsePolicyFiles(policyFiles),
+                    overridingPattern);
         }
 
-        RavenwoodEnablementCheckerImpl(RunMode runMode, PolicyChecker subChecker) {
+        RavenwoodEnablementCheckerImpl(
+                @NonNull RunMode runMode,
+                @NonNull PolicyChecker subChecker,
+                @Nullable String overridingPattern) {
             this.mRunMode = runMode;
             var chain = new PolicyCheckerChain();
 
-            // Annotations always win.
-            chain.add(new AnnotationPolicyChecker());
+            if (overridingPattern == null || overridingPattern.isEmpty()) {
+                // Annotations always win.
+                chain.add(new AnnotationPolicyChecker());
 
-            // Text policy changes the default behavior.
-            chain.add(subChecker);
+                // Text policy changes the default behavior.
+                chain.add(subChecker);
+            } else {
+                // Use a regex-based filter, and only run the exact matching tests.
+                chain.add(new RegexRunFilter(
+                        Pattern.compile(overridingPattern, Pattern.CASE_INSENSITIVE),
+                        RunPolicy.Enabled,
+                        RunPolicy.NeverRun
+                ));
+            }
 
             mChecker = chain;
         }
@@ -590,5 +618,61 @@ class EnablementTextPolicyParser {
         }
         Log.i(TAG, "Parsing " + file);
         return true;
+    }
+}
+
+/**
+ * {@link PolicyChecker} based on a {@link Pattern}.
+ */
+class RegexRunFilter implements PolicyChecker {
+    private static final String TAG = "RegexRunFilter";
+    private final Pattern mRegex;
+    private final RunPolicy mMatchingPolicy;
+    private final RunPolicy mNonMatchingPolicy;
+
+    /**
+     * Constructor.
+     *
+     * @param regex regex to match. We apply it on both classes and methods.
+     * @param matchingPolicy policy for matching items
+     * @param nonMatchingPolicy  policy for non-matching items
+     */
+    public RegexRunFilter(
+            @NonNull Pattern regex,
+            @NonNull RunPolicy matchingPolicy,
+            @NonNull RunPolicy nonMatchingPolicy) {
+        mRegex = regex;
+        mMatchingPolicy = matchingPolicy;
+        mNonMatchingPolicy = nonMatchingPolicy;
+    }
+
+    private boolean classMatches(Class<?> testClass) {
+        return mRegex.matcher(testClass.getName()).find();
+    }
+
+    @Override
+    public RunPolicy getClassPolicy(Class<?> testClass) {
+        if (classMatches(testClass)) {
+            return mMatchingPolicy;
+        }
+        // If the class has any test matching test method, still return "enabled".
+        // (but unmatched methods would be "unspecified".)
+        for (var m : testClass.getMethods()) {
+            if (!isTestMethod(testClass, m)) {
+                continue;
+            }
+            if (mRegex.matcher(toCanonicalTestName(testClass, m)).find()) {
+                return mMatchingPolicy;
+            }
+        }
+        return mNonMatchingPolicy;
+    }
+
+    @Override
+    public RunPolicy getMethodPolicy(Description description) {
+        if (mRegex.matcher(toCanonicalTestName(description)).find()) {
+            return mMatchingPolicy;
+        }
+        return classMatches(description.getTestClass()) ? mMatchingPolicy : mNonMatchingPolicy;
     }
 }
