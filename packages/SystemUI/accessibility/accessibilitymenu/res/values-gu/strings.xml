@@ -25,7 +25,7 @@
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"ઍક્સેસિબિલિટી મેનૂ સેટિંગ"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"મોટા બટન"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"ઍક્સેસિબિલિટી મેનૂ બટનનું કદ વધારો"</string>
-    <string name="pref_help_title" msgid="6871558837025010641">"સહાય"</string>
+    <string name="pref_help_title" msgid="6871558837025010641">"મદદ"</string>
     <string name="brightness_percentage_label" msgid="7391554573977867369">"બ્રાઇટનેસ <xliff:g id="PERCENTAGE">%1$s</xliff:g> %%"</string>
     <string name="music_volume_percentage_label" msgid="398635599662604706">"મ્યુઝિકનું વૉલ્યૂમ <xliff:g id="PERCENTAGE">%1$s</xliff:g> %%"</string>
 </resources>
