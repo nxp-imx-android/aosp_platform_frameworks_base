@@ -519,6 +519,10 @@ public class AuthContainerView extends LinearLayout
 
     @Override
     public void onAttachedToWindow() {
+        if (Flags.bpFallbackOptions() || (mIsWatch && Flags.bpInitializeComposeWatch())) {
+            ComposeInitializer.INSTANCE.onAttachedToWindow(this);
+        }
+
         super.onAttachedToWindow();
 
         final WindowInsetsController insetsController = getWindowInsetsController();
@@ -532,10 +536,6 @@ public class AuthContainerView extends LinearLayout
 
         if (mContainerState == STATE_ANIMATING_OUT) {
             return;
-        }
-
-        if (Flags.bpFallbackOptions() || (mIsWatch && Flags.bpInitializeComposeWatch())) {
-            ComposeInitializer.INSTANCE.onAttachedToWindow(this);
         }
 
         mWakefulnessLifecycle.addObserver(this);
