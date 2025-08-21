@@ -23,6 +23,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRA
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
+import static com.android.window.flags.Flags.ensureWallpaperDrawnOnDisplaySwitch;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -38,9 +39,12 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.protolog.ProtoLog;
+import com.android.server.wm.Transition.ReadyCondition;
 import com.android.server.wm.utils.DisplayInfoOverrides.DisplayInfoFieldsUpdater;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -76,6 +80,8 @@ class DeferredDisplayUpdater {
             "Screen unblock: wait for transition";
     private static final int WAIT_FOR_TRANSITION_TIMEOUT = 1000;
 
+    private static final String READY_CONDITION_KEYGUARD_DRAWN = "keyguard_drawn";
+
     private final DisplayContent mDisplayContent;
 
     @NonNull
@@ -103,6 +109,12 @@ class DeferredDisplayUpdater {
     private boolean mShouldWaitForTransitionWhenScreenOn;
 
     private boolean mInPhysicalDisplayChangeTransition;
+
+    /** True if we are waiting for the IKeyguardDrawnCallback which will eventually invoke
+     *  {@link DeferredDisplayUpdater#waitForTransition(Message)}}
+     */
+    private boolean mPendingKeyguardDrawing;
+    private final List<ReadyCondition> mWaitingForKeyguardDrawnConditions = new ArrayList<>();
 
     /** The message to notify PhoneWindowManager#finishWindowsDrawn. */
     @Nullable
@@ -298,6 +310,14 @@ class DeferredDisplayUpdater {
         mDisplayContent.mTransitionController.requestStartTransition(transition,
                 /* startTask= */ null, /* remoteTransition= */ null, displayChange);
 
+        if (mPendingKeyguardDrawing && ensureWallpaperDrawnOnDisplaySwitch()) {
+            // Keyguard hasn't reported that it has drawn yet, defer readiness until it draws
+            final ReadyCondition condition = new ReadyCondition(READY_CONDITION_KEYGUARD_DRAWN,
+                    /* newTrackerOnly= */ false);
+            transition.mReadyTracker.add(condition);
+            mWaitingForKeyguardDrawnConditions.add(condition);
+        }
+
         final DisplayAreaInfo newDisplayAreaInfo = mDisplayContent.getDisplayAreaInfo();
 
         final boolean startedRemoteChange = mDisplayContent.mRemoteDisplayChangeController
@@ -315,7 +335,11 @@ class DeferredDisplayUpdater {
             mDisplayContent.mAtmService.mWindowOrganizerController.applyTransaction(
                     wct);
         }
-        transition.setAllReady();
+        if (ensureWallpaperDrawnOnDisplaySwitch()) {
+            transition.setReady(mDisplayContent, /* ready= */ true);
+        } else {
+            transition.setAllReady();
+        }
     }
 
     private boolean isPhysicalDisplayUpdated(@Nullable DisplayInfo first,
@@ -346,6 +370,13 @@ class DeferredDisplayUpdater {
      */
     void onDisplaySwitching(boolean switching) {
         mShouldWaitForTransitionWhenScreenOn = switching;
+        mPendingKeyguardDrawing = switching;
+
+        if (!switching) {
+            // Reset keyguard drawn in case for some reason we haven't received the callback
+            // and the screen is already fully switched on here
+            onKeyguardDrawn();
+        }
     }
 
     /**
@@ -359,6 +390,10 @@ class DeferredDisplayUpdater {
 
     /** Returns {@code true} if the transition will control when to turn on the screen. */
     boolean waitForTransition(@NonNull Message screenUnblocker) {
+        // waitForTransition() is called by PhoneWindowManager after receiving keyguard
+        // drawn callback, so mark keyguard as drawn
+        onKeyguardDrawn();
+
         if (!mShouldWaitForTransitionWhenScreenOn) {
             return false;
         }
@@ -371,6 +406,14 @@ class DeferredDisplayUpdater {
         mDisplayContent.mWmService.mH.postDelayed(mScreenUnblockTimeoutRunnable,
                 WAIT_FOR_TRANSITION_TIMEOUT);
         return true;
+    }
+
+    private void onKeyguardDrawn() {
+        mPendingKeyguardDrawing = false;
+        for (int i = 0; i < mWaitingForKeyguardDrawnConditions.size(); i++) {
+            mWaitingForKeyguardDrawnConditions.get(i).meet();
+        }
+        mWaitingForKeyguardDrawnConditions.clear();
     }
 
     /**
