@@ -308,8 +308,6 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
         }
     }
 
-    //--
-
     @RunWith(BlockJUnit4ClassRunner.class)
     // CHECKSTYLE:OFF Generated code
     @Expected(value = """
@@ -489,6 +487,118 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     // CHECKSTYLE:ON
     public static class TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod {
         public TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod() {
+        }
+
+        @Test
+        public void test1() {
+        }
+
+        @Test
+        public void test2() {
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void test3() {
+        }
+    }
+
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
+    testAssumptionFailure: got: <false>, expected: is <true>
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
+    testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
+    testAssumptionFailure: got: <false>, expected: is <true>
+    testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
+    testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
+    testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel
+    testSuiteFinished: classes
+    testRunFinished: 3,0,2,0
+    """,runMode = RunMode.AlsoDisabledTests, enablementPolicy = """
+    !module RavenwoodCoreTest
+    ** false # disable all classes
+    """, overridingRegex="testwith.*#test3"
+    )
+    // CHECKSTYLE:ON
+    public static class TestWithPolicyWithForceRegex_methodLevel {
+        public TestWithPolicyWithForceRegex_methodLevel() {
+        }
+
+        @Test
+        public void test1() {
+        }
+
+        @Test
+        public void test2() {
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void test3() {
+        }
+    }
+
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled)
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled)
+    testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled)
+    testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled)
+    testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled)
+    testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelEnabled
+    testSuiteFinished: classes
+    testRunFinished: 3,0,0,0
+    """,runMode = RunMode.AlsoDisabledTests, enablementPolicy = """
+    !module RavenwoodCoreTest
+    ** false # disable all classes
+    """, overridingRegex="TestWithPolicy" // Should run all the tests
+    )
+    // CHECKSTYLE:ON
+    public static class TestWithPolicyWithForceRegex_classLevelEnabled {
+        public TestWithPolicyWithForceRegex_classLevelEnabled() {
+        }
+
+        @Test
+        public void test1() {
+        }
+
+        @Test
+        public void test2() {
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void test3() {
+        }
+    }
+
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelDisabled)
+    testIgnored: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelDisabled)
+    testSuiteFinished: <init>(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_classLevelDisabled)
+    testSuiteFinished: classes
+    testRunFinished: 0,0,0,1
+    """,runMode = RunMode.AlsoDisabledTests, enablementPolicy = """
+    """, overridingRegex="NotMatchingAnyTests" // no tests should be executed
+    )
+    // CHECKSTYLE:ON
+    public static class TestWithPolicyWithForceRegex_classLevelDisabled {
+        public TestWithPolicyWithForceRegex_classLevelDisabled() {
         }
 
         @Test
