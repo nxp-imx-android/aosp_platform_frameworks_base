@@ -975,7 +975,7 @@ class AppHeaderViewHolder(
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String {
-        return "AppHandleViewHolder(rootView=${rootView.identityHashCode.toHexString()})"
+        return "AppHeaderViewHolder(rootView=${rootView.identityHashCode.toHexString()})"
     }
 
     companion object {
