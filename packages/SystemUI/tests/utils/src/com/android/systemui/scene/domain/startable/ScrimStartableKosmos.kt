@@ -20,11 +20,11 @@ import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.power.domain.interactor.powerInteractor
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.statusbar.phone.dozeServiceHost
@@ -38,7 +38,7 @@ val Kosmos.scrimStartable by Fixture {
         sceneInteractor = sceneInteractor,
         deviceEntryInteractor = deviceEntryInteractor,
         keyguardInteractor = keyguardInteractor,
-        occlusionInteractor = sceneContainerOcclusionInteractor,
+        occlusionInteractor = keyguardOcclusionInteractor,
         biometricUnlockInteractor = biometricUnlockInteractor,
         statusBarKeyguardViewManager = statusBarKeyguardViewManager,
         alternateBouncerInteractor = alternateBouncerInteractor,

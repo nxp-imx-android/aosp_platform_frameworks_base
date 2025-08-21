@@ -311,6 +311,7 @@ constructor(
     }
 
     private fun listenForLockscreenToOccludedOrDreaming() {
+        if (SceneContainerFlag.isEnabled) return
         if (KeyguardWmStateRefactor.isEnabled) {
             scope.launch("$TAG#listenForLockscreenToOccludedOrDreaming") {
                 keyguardOcclusionInteractor.showWhenLockedActivityInfo

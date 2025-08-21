@@ -31,6 +31,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToCommunal
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToDreamTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToNotificationsShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.lockscreenToOccludedTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSettingsOverlayTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSettingsSceneTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToShadeSceneTransition
@@ -114,6 +115,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
 
             from(Scenes.Lockscreen, to = Scenes.Communal) { lockscreenToCommunalTransition() }
             from(Scenes.Lockscreen, to = Scenes.Dream) { lockscreenToDreamTransition() }
+            from(Scenes.Lockscreen, to = Scenes.Occluded) { lockscreenToOccludedTransition() }
             from(
                 Scenes.Lockscreen,
                 to = Scenes.Shade,

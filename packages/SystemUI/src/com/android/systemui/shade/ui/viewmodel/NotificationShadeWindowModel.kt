@@ -54,21 +54,29 @@ constructor(
     val isKeyguardOccluded: Flow<Boolean> =
         listOf(
                 // Finished in state...
-                keyguardTransitionInteractor.transitionValue(OCCLUDED).map { it == 1f },
+                keyguardTransitionInteractor.transitionValue(Scenes.Occluded, OCCLUDED).map {
+                    it == 1f
+                },
                 keyguardTransitionInteractor.transitionValue(DREAMING).map { it == 1f },
                 keyguardTransitionInteractor.transitionValue(Scenes.Communal, GLANCEABLE_HUB).map {
                     it == 1f
                 },
 
                 // ... or transitions between those states
-                keyguardTransitionInteractor.isInTransition(Edge.create(OCCLUDED, DREAMING)),
-                keyguardTransitionInteractor.isInTransition(Edge.create(DREAMING, OCCLUDED)),
                 keyguardTransitionInteractor.isInTransition(
-                    edge = Edge.create(from = OCCLUDED, to = Scenes.Communal),
+                    edge = Edge.INVALID,
+                    edgeWithoutSceneContainer = Edge.create(OCCLUDED, DREAMING),
+                ),
+                keyguardTransitionInteractor.isInTransition(
+                    edge = Edge.INVALID,
+                    edgeWithoutSceneContainer = Edge.create(DREAMING, OCCLUDED),
+                ),
+                keyguardTransitionInteractor.isInTransition(
+                    edge = Edge.INVALID,
                     edgeWithoutSceneContainer = Edge.create(from = OCCLUDED, to = GLANCEABLE_HUB),
                 ),
                 keyguardTransitionInteractor.isInTransition(
-                    edge = Edge.create(from = Scenes.Communal, to = OCCLUDED),
+                    edge = Edge.INVALID,
                     edgeWithoutSceneContainer = Edge.create(from = GLANCEABLE_HUB, to = OCCLUDED),
                 ),
                 keyguardTransitionInteractor.isInTransition(

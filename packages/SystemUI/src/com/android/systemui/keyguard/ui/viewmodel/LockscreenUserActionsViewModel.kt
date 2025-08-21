@@ -20,7 +20,6 @@ import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
@@ -45,7 +44,6 @@ constructor(
     private val deviceEntryInteractor: DeviceEntryInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
-    private val occlusionInteractor: SceneContainerOcclusionInteractor,
 ) : UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
@@ -55,11 +53,9 @@ constructor(
                     return@flatMapLatest flowOf(emptyMap())
                 }
 
-                combine(
-                    deviceEntryInteractor.isUnlocked,
-                    shadeModeInteractor.shadeMode,
-                    occlusionInteractor.isOccludingActivityShown,
-                ) { isDeviceUnlocked, shadeMode, isOccluded ->
+                combine(deviceEntryInteractor.isUnlocked, shadeModeInteractor.shadeMode) {
+                    isDeviceUnlocked,
+                    shadeMode ->
                     buildList {
                             if (isDeviceUnlocked) {
                                 add(Swipe.Up to Scenes.Gone)
@@ -69,8 +65,7 @@ constructor(
 
                             addAll(
                                 when (shadeMode) {
-                                    ShadeMode.Single ->
-                                        singleShadeActions(isDownFromTopEdgeEnabled = !isOccluded)
+                                    ShadeMode.Single -> singleShadeActions()
                                     ShadeMode.Split -> splitShadeActions()
                                     ShadeMode.Dual -> dualShadeActions()
                                 }

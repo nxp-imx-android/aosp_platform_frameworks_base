@@ -21,8 +21,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
-import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -45,7 +43,6 @@ constructor(
     shadeModeInteractor: ShadeModeInteractor,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
-    transitionInteractor: KeyguardTransitionInteractor,
     private val keyguardTransitionAnimationCallbackDelegator:
         KeyguardTransitionAnimationCallbackDelegator,
     @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
@@ -53,17 +50,6 @@ constructor(
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("LockscreenContentViewModel.hydrator")
-
-    /** Whether the content of the scene UI should be shown. */
-    val isContentVisible: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isContentVisible",
-            initialValue = true,
-            // Content is visible unless we're OCCLUDED. Currently, we don't have nice animations
-            // into and out of OCCLUDED, so the lockscreen/AOD content is hidden immediately upon
-            // entering/exiting OCCLUDED.
-            source = transitionInteractor.transitionValue(KeyguardState.OCCLUDED).map { it == 0f },
-        )
 
     /** @see ShadeModeInteractor.isFullWidthShade */
     val isFullWidthShade: Boolean by

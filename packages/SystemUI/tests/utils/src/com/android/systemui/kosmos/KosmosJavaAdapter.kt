@@ -53,6 +53,7 @@ import com.android.systemui.keyguard.domain.interactor.fromLockscreenTransitionI
 import com.android.systemui.keyguard.domain.interactor.fromPrimaryBouncerTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
@@ -65,7 +66,6 @@ import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.scrimStartable
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
@@ -212,7 +212,7 @@ class KosmosJavaAdapter() {
 
     val scrimController by lazy { kosmos.scrimController }
     val scrimStartable by lazy { kosmos.scrimStartable }
-    val sceneContainerOcclusionInteractor by lazy { kosmos.sceneContainerOcclusionInteractor }
+    val keyguardOcclusionInteractor by lazy { kosmos.keyguardOcclusionInteractor }
     val msdlPlayer by lazy { kosmos.fakeMSDLPlayer }
 
     val shadeModeInteractor by lazy { kosmos.shadeModeInteractor }

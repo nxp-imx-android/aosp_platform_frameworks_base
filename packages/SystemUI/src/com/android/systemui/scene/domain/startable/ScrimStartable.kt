@@ -29,11 +29,11 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.BiometricUnlockModel
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.ScreenPowerState
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -62,7 +62,7 @@ constructor(
     sceneInteractor: SceneInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     keyguardInteractor: KeyguardInteractor,
-    occlusionInteractor: SceneContainerOcclusionInteractor,
+    occlusionInteractor: KeyguardOcclusionInteractor,
     biometricUnlockInteractor: BiometricUnlockInteractor,
     private val statusBarKeyguardViewManager: StatusBarKeyguardViewManager,
     private val alternateBouncerInteractor: AlternateBouncerInteractor,
@@ -75,7 +75,7 @@ constructor(
     val scrimState: Flow<ScrimState?> =
         combine(
                 deviceEntryInteractor.isDeviceEntered,
-                occlusionInteractor.invisibleDueToOcclusion,
+                occlusionInteractor.isKeyguardOccluded,
                 sceneInteractor.currentScene,
                 sceneInteractor.currentOverlays,
                 sceneInteractor.transitionState,

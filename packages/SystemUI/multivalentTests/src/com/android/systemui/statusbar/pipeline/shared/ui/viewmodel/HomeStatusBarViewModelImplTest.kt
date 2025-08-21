@@ -184,6 +184,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun isTransitioningFromLockscreenToOccluded_started_isTrue() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isTransitioningFromLockscreenToOccluded)
@@ -201,6 +202,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun isTransitioningFromLockscreenToOccluded_running_isTrue() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isTransitioningFromLockscreenToOccluded)
@@ -218,6 +220,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun isTransitioningFromLockscreenToOccluded_finished_isFalse() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isTransitioningFromLockscreenToOccluded)
@@ -266,6 +269,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @DisableSceneContainer
     fun isTransitioningFromLockscreenToOccluded_followsRepoUpdates() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isTransitioningFromLockscreenToOccluded)

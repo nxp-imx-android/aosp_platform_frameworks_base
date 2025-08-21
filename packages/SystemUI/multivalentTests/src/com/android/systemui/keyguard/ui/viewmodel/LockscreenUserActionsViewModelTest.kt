@@ -34,7 +34,6 @@ import com.android.systemui.authentication.data.repository.fakeAuthenticationRep
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -69,12 +68,12 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenUserActionsViewModelTest : SysuiTestCase() {
 
     companion object {
-        private const val parameterCount = 6
+        private const val parameterCount = 5
 
         @Parameters(
             name =
                 "canSwipeToEnter={0}, downWithTwoPointers={1}, downFromEdge={2}," +
-                    " isSingleShade={3}, isShadeTouchable={4}, isOccluded={5}"
+                    " isSingleShade={3}, isShadeTouchable={4}"
         )
         @JvmStatic
         fun combinations() = buildList {
@@ -86,7 +85,6 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                             /* downFromEdge= */ combination and 4 != 0,
                             /* isSingleShade= */ combination and 8 != 0,
                             /* isShadeTouchable= */ combination and 16 != 0,
-                            /* isOccluded= */ combination and 32 != 0,
                         )
                         .also { check(it.size == parameterCount) }
                 )
@@ -116,12 +114,10 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             downFromEdge: Boolean,
             isNarrowScreen: Boolean,
             isShadeTouchable: Boolean,
-            isOccluded: Boolean,
         ): SceneKey? {
             return when {
                 !isShadeTouchable -> null
-                downFromEdge && isNarrowScreen && !isOccluded -> Scenes.QuickSettings
-                downFromEdge && isNarrowScreen && isOccluded -> null
+                downFromEdge && isNarrowScreen -> Scenes.QuickSettings
                 else -> Scenes.Shade
             }
         }
@@ -156,7 +152,6 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
     @JvmField @Parameter(2) var downFromEdge: Boolean = false
     @JvmField @Parameter(3) var isNarrowScreen: Boolean = true
     @JvmField @Parameter(4) var isShadeTouchable: Boolean = false
-    @JvmField @Parameter(5) var isOccluded: Boolean = false
 
     private val underTest by lazy { kosmos.lockscreenUserActionsViewModel }
 
@@ -183,7 +178,6 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = isOccluded)
 
             val userActions by collectLastValue(underTest.actions)
             val downDestination =
@@ -205,7 +199,6 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                         downFromEdge = downFromEdge,
                         isNarrowScreen = isNarrowScreen,
                         isShadeTouchable = isShadeTouchable,
-                        isOccluded = isOccluded,
                     )
                 )
 
@@ -253,7 +246,6 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = isOccluded)
 
             val userActions by collectLastValue(underTest.actions)
 
