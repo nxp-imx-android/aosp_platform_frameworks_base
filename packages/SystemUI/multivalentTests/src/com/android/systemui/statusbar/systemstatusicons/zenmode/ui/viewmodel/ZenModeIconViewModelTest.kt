@@ -207,8 +207,8 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
 
             assertThat(loadedIcon.contentDescription)
                 .isEqualTo(ContentDescription.Loaded(lowPriModeName))
-            // Resource ID should be null, but the drawable should be present.
-            assertThat(loadedIcon.resId).isNull()
+            assertThat(loadedIcon.resId).isEqualTo(CUSTOM_ICON_RES_ID)
+            assertThat(loadedIcon.packageName).isEqualTo(CUSTOM_PACKAGE_NAME)
             assertThat(loadedIcon.drawable).isEqualTo(CUSTOM_DRAWABLE)
         }
 

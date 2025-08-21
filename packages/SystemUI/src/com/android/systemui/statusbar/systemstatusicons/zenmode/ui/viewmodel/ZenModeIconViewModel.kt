@@ -17,9 +17,7 @@
 package com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import androidx.compose.runtime.getValue
-import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -54,30 +52,10 @@ constructor(@Assisted private val context: Context, interactor: ZenModeInteracto
         get() = zenModeState != null
 
     override val icon: Icon?
-        get() = zenModeState?.toUiState()
+        get() = zenModeState?.icon
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
-    }
-
-    private fun ZenModeInfo.toUiState(): Icon.Loaded {
-        // Make a copy of the drawable to ensure we can style it separately from the cached state.
-        val cached: Drawable.ConstantState? = this.icon.drawable.constantState
-        val drawable =
-            cached?.newDrawable(context.resources)?.mutate() ?: this.icon.drawable.mutate()
-
-        // ZenIconKey.resPackage is null if its resId is a system icon.
-        val res =
-            if (this.icon.key.resPackage == null) {
-                this.icon.key.resId
-            } else {
-                null
-            }
-        return Icon.Loaded(
-            drawable = drawable,
-            contentDescription = ContentDescription.Loaded(this.name),
-            resId = res,
-        )
     }
 
     @AssistedFactory

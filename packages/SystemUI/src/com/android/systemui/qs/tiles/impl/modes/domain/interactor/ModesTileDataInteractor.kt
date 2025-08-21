@@ -20,7 +20,6 @@ import android.app.Flags
 import android.content.Context
 import android.os.UserHandle
 import com.android.app.tracing.coroutines.flow.flowName
-import com.android.settingslib.notification.modes.ZenIcon
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.SysUISingleton
@@ -112,10 +111,10 @@ constructor(
 
         val icon =
             if (mainActiveMode != null) {
-                zenModeInteractor.getModeIcon(mainActiveMode).toTileIcon()
+                zenModeInteractor.getModeIcon(mainActiveMode)
             } else {
                 if (QsInCompose.isEnabled && quickMode != null) {
-                    zenModeInteractor.getModeIcon(quickMode).toTileIcon()
+                    zenModeInteractor.getModeIcon(quickMode)
                 } else {
                     getDefaultTileIcon()
                 }
@@ -185,24 +184,8 @@ constructor(
         return ModesTileModel(
             isActivated = activeModes.isAnyActive(),
             activeModes = activeModes.names.map { ModesTileModel.ActiveMode(null, it) },
-            icon =
-                if (activeModes.main != null) activeModes.main.icon.toTileIcon()
-                else getDefaultTileIcon(),
+            icon = if (activeModes.main != null) activeModes.main.icon else getDefaultTileIcon(),
             quickMode = null,
-        )
-    }
-
-    private fun ZenIcon.toTileIcon(): Icon.Loaded {
-        // ZenIconKey.resPackage is null if its resId is a system icon.
-        return Icon.Loaded(
-            drawable,
-            contentDescription = null,
-            resId =
-                if (key.resPackage == null) {
-                    key.resId
-                } else {
-                    null
-                },
         )
     }
 
