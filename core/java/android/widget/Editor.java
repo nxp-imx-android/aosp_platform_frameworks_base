@@ -7510,6 +7510,11 @@ public class Editor {
     static class InputMethodState {
         ExtractedTextRequest mExtractedTextRequest;
         final ExtractedText mExtractedText = new ExtractedText();
+        // Whether the IME is committing a composing text to be finalized.
+        boolean mIsCommittingText;
+        // Whether the IME has a conversion suggestion being selected right now, which possibly is
+        // causing/caused a text change.
+        boolean mIsConversionSuggestionSelected;
         int mBatchEditNesting;
         boolean mCursorChanged;
         boolean mSelectionModeChanged;
