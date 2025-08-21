@@ -30,11 +30,13 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
@@ -65,6 +67,7 @@ public class ComputerControlSessionTest {
 
     @Rule public VirtualDeviceRule mVirtualDeviceRule = VirtualDeviceRule.createDefault();
 
+    @Mock IVirtualDisplayCallback mVirtualDisplayCallback;
     @Mock IComputerControlSession mIComputerControlSession;
     private ComputerControlSession mSession;
     private int mVirtualDisplayId;
@@ -96,7 +99,7 @@ public class ComputerControlSessionTest {
                 mContext, mContext.getMainThreadHandler(), mIAccessibilityManager, 0, true);
         mSession = new ComputerControlSession(
                 new android.companion.virtual.computercontrol.ComputerControlSession(
-                        mIComputerControlSession),
+                        Display.INVALID_DISPLAY, mVirtualDisplayCallback, mIComputerControlSession),
                 params, accessibilityManager);
         verify(mIAccessibilityManager).registerProxyForDisplay(any(), eq(mVirtualDisplayId));
         mSession.addStabilityHintCallback(TIMEOUT_MS / 2, mStabilityHintCallback);

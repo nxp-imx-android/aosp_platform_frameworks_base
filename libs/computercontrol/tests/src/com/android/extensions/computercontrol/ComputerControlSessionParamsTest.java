@@ -90,25 +90,7 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void builder_withMissingArguments_throwsException() {
-        assertThrows(RuntimeException.class,
-                () -> new ComputerControlSession.Params.Builder(mContext).build());
-    }
-
-    @Test
-    public void builder_withMissingSurfaceArg_throwsException() {
-        assertThrows(NullPointerException.class,
-                ()
-                        -> new ComputerControlSession.Params.Builder(mContext)
-                                .setName(NAME)
-                                .setDisplayWidthPx(WIDTH)
-                                .setDisplayHeightPx(HEIGHT)
-                                .setDisplayDpi(DPI)
-                                .build());
-    }
-
-    @Test
-    public void builder_withMissingDisplayWidthArg_throwsException() {
+    public void builder_withSurface_withMissingDisplayWidthArg_throwsException() {
         assertThrows(IllegalArgumentException.class,
                 ()
                         -> new ComputerControlSession.Params.Builder(mContext)
@@ -120,7 +102,7 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void builder_withMissingDisplayHeightArg_throwsException() {
+    public void builder_withSurface__withMissingDisplayHeightArg_throwsException() {
         assertThrows(IllegalArgumentException.class,
                 ()
                         -> new ComputerControlSession.Params.Builder(mContext)
@@ -132,7 +114,7 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void builder_withMissingDisplayDpiArg_throwsException() {
+    public void builder_withSurface__withMissingDisplayDpiArg_throwsException() {
         assertThrows(IllegalArgumentException.class,
                 ()
                         -> new ComputerControlSession.Params.Builder(mContext)

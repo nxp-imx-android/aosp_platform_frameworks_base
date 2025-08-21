@@ -25,11 +25,20 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.PixelFormat;
+import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Binder;
 import android.os.RemoteException;
+import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.Surface;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -85,11 +94,53 @@ public final class ComputerControlSession implements AutoCloseable {
     public @interface SessionCreationError {
     }
 
+    @NonNull
     private final IComputerControlSession mSession;
+    // TODO(b/439774796): Make this non-nullable.
+    @Nullable
+    private final ImageReader mImageReader;
 
     /** @hide */
-    public ComputerControlSession(@NonNull IComputerControlSession session) {
+    public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
+            @NonNull IComputerControlSession session) {
+        this(displayId, displayToken, session, DisplayManagerGlobal.getInstance());
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
+            @NonNull IComputerControlSession session,
+            @NonNull DisplayManagerGlobal displayManagerGlobal) {
         mSession = Objects.requireNonNull(session);
+
+        // TODO(b/439774796): Require a valid display id.
+        if (displayId != Display.INVALID_DISPLAY) {
+            final Display display = displayManagerGlobal.getRealDisplay(displayId);
+            Objects.requireNonNull(display);
+            final DisplayInfo displayInfo = new DisplayInfo();
+            display.getDisplayInfo(displayInfo);
+
+            mImageReader = ImageReader.newInstance(displayInfo.logicalWidth,
+                    displayInfo.logicalHeight,
+                    PixelFormat.RGBA_8888, /* maxImages= */ 2);
+            displayManagerGlobal.setVirtualDisplaySurface(displayToken, mImageReader.getSurface());
+        } else {
+            mImageReader = null;
+        }
+    }
+
+    /**
+     * Screenshot the current display content.
+     *
+     * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any
+     * previously acquired images should be released before attempting to acquire new ones.</p>
+     *
+     * @return A screenshot of the current display content, or {@code null} if no screenshot is
+     *   currently available.
+     */
+    @Nullable
+    public Image getScreenshot() {
+        return mImageReader == null ? null : mImageReader.acquireLatestImage();
     }
 
     /** Returns the ID of the single trusted virtual display for this session. */
@@ -201,10 +252,11 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         @Override
-        public void onSessionCreated(IComputerControlSession session) {
+        public void onSessionCreated(int displayId, IVirtualDisplayCallback displayToken,
+                IComputerControlSession session) {
             Binder.withCleanCallingIdentity(() ->
-                    mExecutor.execute(() ->
-                            mCallback.onSessionCreated(new ComputerControlSession(session))));
+                    mExecutor.execute(() -> mCallback.onSessionCreated(
+                            new ComputerControlSession(displayId, displayToken, session))));
         }
 
         @Override

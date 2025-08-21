@@ -34,6 +34,7 @@ import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.content.AttributionSource;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
+import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -41,7 +42,8 @@ import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
 import android.platform.test.annotations.Presubmit;
-import android.view.Surface;
+import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -92,11 +94,6 @@ public class ComputerControlSessionTest {
     private final IBinder mAppToken = new Binder();
     private final ComputerControlSessionParams mParams = new ComputerControlSessionParams.Builder()
             .setName(ComputerControlSessionTest.class.getSimpleName())
-            .setDisplayDpi(100)
-            .setDisplayHeightPx(200)
-            .setDisplayWidthPx(300)
-            .setDisplaySurface(new Surface())
-            .setDisplayAlwaysUnlocked(true)
             .build();
     private ComputerControlSessionImpl mSession;
 
@@ -120,7 +117,7 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void createSession_appliesCorrectParams() throws Exception {
+    public void createSessionWithoutDisplaySurface_appliesCorrectParams() throws Exception {
         verify(mVirtualDeviceFactory).createVirtualDevice(
                 eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture(), any());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue().getName())
@@ -138,10 +135,16 @@ public class ComputerControlSessionTest {
                 mVirtualDisplayConfigArgumentCaptor.capture(), any());
         VirtualDisplayConfig virtualDisplayConfig = mVirtualDisplayConfigArgumentCaptor.getValue();
         assertThat(virtualDisplayConfig.getName()).contains(mParams.getName());
-        assertThat(virtualDisplayConfig.getDensityDpi()).isEqualTo(mParams.getDisplayDpi());
-        assertThat(virtualDisplayConfig.getHeight()).isEqualTo(mParams.getDisplayHeightPx());
-        assertThat(virtualDisplayConfig.getWidth()).isEqualTo(mParams.getDisplayWidthPx());
-        assertThat(virtualDisplayConfig.getSurface()).isEqualTo(mParams.getDisplaySurface());
+
+        Display display =
+                DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
+        DisplayInfo displayInfo = new DisplayInfo();
+        display.getDisplayInfo(displayInfo);
+        assertThat(virtualDisplayConfig.getDensityDpi()).isEqualTo(displayInfo.logicalDensityDpi);
+        assertThat(virtualDisplayConfig.getHeight()).isEqualTo(displayInfo.logicalHeight);
+        assertThat(virtualDisplayConfig.getWidth()).isEqualTo(displayInfo.logicalWidth);
+        assertThat(virtualDisplayConfig.getSurface()).isNull();
+
         int expectedDisplayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
@@ -168,8 +171,8 @@ public class ComputerControlSessionTest {
         VirtualTouchscreenConfig virtualTouchscreenConfig =
                 mVirtualTouchscreenConfigArgumentCaptor.getValue();
         assertThat(virtualTouchscreenConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
-        assertThat(virtualTouchscreenConfig.getWidth()).isEqualTo(mParams.getDisplayWidthPx());
-        assertThat(virtualTouchscreenConfig.getHeight()).isEqualTo(mParams.getDisplayHeightPx());
+        assertThat(virtualTouchscreenConfig.getWidth()).isEqualTo(displayInfo.logicalWidth);
+        assertThat(virtualTouchscreenConfig.getHeight()).isEqualTo(displayInfo.logicalHeight);
         assertThat(virtualTouchscreenConfig.getInputDeviceName()).contains(mParams.getName());
     }
 

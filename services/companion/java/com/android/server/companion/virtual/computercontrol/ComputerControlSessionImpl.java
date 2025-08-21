@@ -71,6 +71,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
+    private final IVirtualDisplayCallback mVirtualDisplayToken;
     private final IVirtualInputDevice mVirtualTouchscreen;
     private final IVirtualInputDevice mVirtualDpad;
     private final IVirtualInputDevice mVirtualKeyboard;
@@ -83,12 +84,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAppToken = appToken;
         mParams = params;
         mOnClosedListener = onClosedListener;
-        VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
+        final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
                 .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
                 .build();
-        String permissionControllerPackage = packageManager.getPermissionControllerPackageName();
-        ActivityPolicyExemption permissionController =
+        final String permissionControllerPackage =
+                packageManager.getPermissionControllerPackageName();
+        final ActivityPolicyExemption permissionController =
                 new ActivityPolicyExemption.Builder()
                         .setPackageName(permissionControllerPackage)
                         .build();
@@ -105,15 +107,29 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // the display.
         // The same applies to the input devices. We can't reuse the app token there because it's
         // used as a map key for the virtual input devices.
-        IVirtualDisplayCallback virtualDisplayCallback =
-                new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
+        mVirtualDisplayToken = new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
 
-        VirtualDisplayConfig virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                mParams.getName() + "-display", mParams.getDisplayWidthPx(),
-                mParams.getDisplayHeightPx(), mParams.getDisplayDpi())
-                .setSurface(mParams.getDisplaySurface())
-                .setFlags(displayFlags)
-                .build();
+        // If the client didn't provide a surface, use the default display dimensions and enable
+        // the screenshot API.
+        // TODO(b/439774796): Do not allow client-provided surface and dimensions.
+        final DisplayInfo defaultDisplayInfo =
+                params.getDisplaySurface() == null ? getDisplayInfo(Display.DEFAULT_DISPLAY) : null;
+        final VirtualDisplayConfig virtualDisplayConfig;
+        if (defaultDisplayInfo != null) {
+            displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
+            virtualDisplayConfig = new VirtualDisplayConfig.Builder(
+                    mParams.getName() + "-display", defaultDisplayInfo.logicalWidth,
+                    defaultDisplayInfo.logicalHeight, defaultDisplayInfo.logicalDensityDpi)
+                    .setFlags(displayFlags)
+                    .build();
+        } else {
+            virtualDisplayConfig = new VirtualDisplayConfig.Builder(
+                    mParams.getName() + "-display", mParams.getDisplayWidthPx(),
+                    mParams.getDisplayHeightPx(), mParams.getDisplayDpi())
+                    .setSurface(mParams.getDisplaySurface())
+                    .setFlags(displayFlags)
+                    .build();
+        }
 
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
@@ -123,7 +139,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             // Create the display with a clean identity so it can be trusted.
             mVirtualDisplayId = Binder.withCleanCallingIdentity(() -> {
                 int displayId = mVirtualDevice.createVirtualDisplay(virtualDisplayConfig,
-                        virtualDisplayCallback);
+                        mVirtualDisplayToken);
                 windowManagerInternal.setAnimationsDisabledForDisplay(displayId,
                         true /* disabled */);
                 return displayId;
@@ -132,8 +148,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
-            String dpadName = mParams.getName() + "-dpad";
-            VirtualDpadConfig virtualDpadConfig =
+            final String dpadName = mParams.getName() + "-dpad";
+            final VirtualDpadConfig virtualDpadConfig =
                     new VirtualDpadConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(dpadName)
@@ -141,8 +157,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDpad = mVirtualDevice.createVirtualDpad(
                     virtualDpadConfig, new Binder(dpadName));
 
-            String keyboardName = mParams.getName()  + "-keyboard";
-            VirtualKeyboardConfig virtualKeyboardConfig =
+            final String keyboardName = mParams.getName()  + "-keyboard";
+            final VirtualKeyboardConfig virtualKeyboardConfig =
                     new VirtualKeyboardConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(keyboardName)
@@ -150,13 +166,23 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(
                     virtualKeyboardConfig, new Binder(keyboardName));
 
-            String touchscreenName = mParams.getName() + "-touchscreen";
-            VirtualTouchscreenConfig virtualTouchscreenConfig =
-                    new VirtualTouchscreenConfig.Builder(
-                            mParams.getDisplayWidthPx(), mParams.getDisplayHeightPx())
-                            .setAssociatedDisplayId(mVirtualDisplayId)
-                            .setInputDeviceName(touchscreenName)
-                            .build();
+            final String touchscreenName = mParams.getName() + "-touchscreen";
+            final VirtualTouchscreenConfig virtualTouchscreenConfig;
+            if (defaultDisplayInfo != null) {
+                virtualTouchscreenConfig =
+                        new VirtualTouchscreenConfig.Builder(
+                                defaultDisplayInfo.logicalWidth, defaultDisplayInfo.logicalHeight)
+                                .setAssociatedDisplayId(mVirtualDisplayId)
+                                .setInputDeviceName(touchscreenName)
+                                .build();
+            } else {
+                virtualTouchscreenConfig =
+                        new VirtualTouchscreenConfig.Builder(
+                                mParams.getDisplayWidthPx(), mParams.getDisplayHeightPx())
+                                .setAssociatedDisplayId(mVirtualDisplayId)
+                                .setInputDeviceName(touchscreenName)
+                                .build();
+            }
             mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(
                     virtualTouchscreenConfig, new Binder(touchscreenName));
 
@@ -169,6 +195,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public int getVirtualDisplayId() {
         return mVirtualDisplayId;
+    }
+
+    IVirtualDisplayCallback getVirtualDisplayToken() {
+        return mVirtualDisplayToken;
     }
 
     @Override
@@ -190,13 +220,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
             int width, int height, @NonNull Surface surface) throws RemoteException {
         Objects.requireNonNull(surface);
-        Display display = DisplayManagerGlobal.getInstance().getRealDisplay(mVirtualDisplayId);
-        if (display == null) {
+        DisplayInfo displayInfo = getDisplayInfo(mVirtualDisplayId);
+        if (displayInfo == null) {
             // The display we're trying to mirror is gone; likely the session is already closed.
             return null;
         }
-        DisplayInfo displayInfo = new DisplayInfo();
-        display.getDisplayInfo(displayInfo);
         String name =
                 mParams.getName() + "-display-mirror-" + mMirrorDisplayCounter.getAndIncrement();
         VirtualDisplayConfig virtualDisplayConfig =
@@ -223,6 +251,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    private DisplayInfo getDisplayInfo(int displayId) {
+        final Display display = DisplayManagerGlobal.getInstance().getRealDisplay(displayId);
+        if (display == null) {
+            return null;
+        }
+        final DisplayInfo displayInfo = new DisplayInfo();
+        display.getDisplayInfo(displayInfo);
+        return displayInfo;
     }
 
     private static class ComputerControlActivityListener
