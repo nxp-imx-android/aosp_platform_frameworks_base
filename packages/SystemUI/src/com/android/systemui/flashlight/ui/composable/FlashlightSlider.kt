@@ -16,15 +16,14 @@
 
 package com.android.systemui.flashlight.ui.composable
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.flashlight.ui.viewmodel.FlashlightSliderViewModel
-import com.android.systemui.util.ui.compose.DualIconSlider
-import com.android.systemui.util.ui.compose.defaultColors
 
 @Composable
 fun FlashlightSliderContainer(viewModel: FlashlightSliderViewModel, modifier: Modifier = Modifier) {
@@ -36,17 +35,18 @@ fun FlashlightSliderContainer(viewModel: FlashlightSliderViewModel, modifier: Mo
             0 // even if the "level" has been reset to "default" on the backend
         }
 
-    Box(modifier = modifier.fillMaxWidth().sysuiResTag("flashlight_slider")) {
-        DualIconSlider(
+    Column(modifier = modifier.fillMaxWidth().sysuiResTag("flashlight_slider")) {
+        VerticalFlashlightSlider(
             levelValue = levelValue,
             valueRange = 0..currentState.max,
-            iconResProvider = FlashlightSliderViewModel::getIconForPercentage,
-            imageLoader = viewModel::loadImage,
+            onValueChange = viewModel::setFlashlightLevel,
+            isEnabled = viewModel.isFlashlightAdjustable,
             hapticsViewModelFactory = viewModel.hapticsViewModelFactory,
             colors =
-                defaultColors().copy(inactiveTrackColor = MaterialTheme.colorScheme.surfaceDim),
-            onDrag = viewModel::setFlashlightLevel,
-            isEnabled = viewModel.isFlashlightAdjustable,
+                SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                ),
         )
     }
 }
