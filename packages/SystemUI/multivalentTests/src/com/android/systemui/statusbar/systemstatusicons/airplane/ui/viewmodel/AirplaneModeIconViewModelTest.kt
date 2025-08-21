@@ -45,7 +45,7 @@ class AirplaneModeIconViewModelTest : SysuiTestCase() {
     private val fakeConnectivityRepository = kosmos.connectivityRepository.fake
     private val expectedAirplaneIcon =
         Icon.Resource(
-            res = com.android.internal.R.drawable.ic_qs_airplane,
+            resId = com.android.internal.R.drawable.ic_qs_airplane,
             contentDescription = ContentDescription.Resource(R.string.accessibility_airplane_mode),
         )
 

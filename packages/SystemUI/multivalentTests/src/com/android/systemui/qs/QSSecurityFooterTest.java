@@ -148,12 +148,12 @@ public class QSSecurityFooterTest extends SysuiTestCase {
 
     private void assertIsIconResource(Icon icon, @IdRes int res) {
         assertThat(icon).isInstanceOf(Icon.Resource.class);
-        assertEquals(res, ((Icon.Resource) icon).getRes());
+        assertThat(res).isEqualTo(icon.getResId());
     }
 
     private void assertIsIconDrawable(Icon icon, Drawable drawable) {
         assertThat(icon).isInstanceOf(Icon.Loaded.class);
-        assertEquals(drawable, ((Icon.Loaded) icon).getDrawable());
+        assertThat(drawable).isEqualTo(((Icon.Loaded) icon).getDrawable());
     }
 
     @Test

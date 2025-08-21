@@ -88,7 +88,7 @@ constructor(
                                     is SignalIconModel.Satellite -> {
                                         MobileDataTileIcon.ResourceIcon(
                                             Icon.Resource(
-                                                signalLevelIcon.icon.res,
+                                                signalLevelIcon.icon.resId,
                                                 signalLevelIcon.icon.contentDescription,
                                             )
                                         )

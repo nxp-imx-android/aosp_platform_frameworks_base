@@ -76,7 +76,7 @@ constructor(@Assisted private val context: Context, interactor: ZenModeInteracto
         return Icon.Loaded(
             drawable = drawable,
             contentDescription = ContentDescription.Loaded(this.name),
-            res = res,
+            resId = res,
         )
     }
 

@@ -493,8 +493,8 @@ class ModesDialogViewModelTest : SysuiTestCase() {
             assertThat(bedtimeIcon2.drawable).isSameInstanceAs(bedtimeIcon.drawable)
 
             // ... but the tiles get COPIES of the icons
-            assertThat(tileIcon1.res).isEqualTo(bedtimeIcon.key.resId)
-            assertThat(tileIcon2.res).isEqualTo(bedtimeIcon.key.resId)
+            assertThat(tileIcon1.resId).isEqualTo(bedtimeIcon.key.resId)
+            assertThat(tileIcon2.resId).isEqualTo(bedtimeIcon.key.resId)
             assertThat(tileIcon1.drawable).isNotSameInstanceAs(bedtimeIcon.drawable)
             assertThat(tileIcon2.drawable).isNotSameInstanceAs(bedtimeIcon.drawable)
             assertThat(tileIcon2.drawable).isNotSameInstanceAs(tileIcon1.drawable)

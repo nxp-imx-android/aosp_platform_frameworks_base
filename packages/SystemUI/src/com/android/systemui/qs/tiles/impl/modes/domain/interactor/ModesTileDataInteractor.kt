@@ -197,7 +197,7 @@ constructor(
         return Icon.Loaded(
             drawable,
             contentDescription = null,
-            res =
+            resId =
                 if (key.resPackage == null) {
                     key.resId
                 } else {
@@ -210,7 +210,7 @@ constructor(
         Icon.Loaded(
             context.getDrawable(ModesTile.ICON_RES_ID)!!,
             contentDescription = null,
-            res = ModesTile.ICON_RES_ID,
+            resId = ModesTile.ICON_RES_ID,
         )
 
     override fun availability(user: UserHandle): Flow<Boolean> = flowOf(true)

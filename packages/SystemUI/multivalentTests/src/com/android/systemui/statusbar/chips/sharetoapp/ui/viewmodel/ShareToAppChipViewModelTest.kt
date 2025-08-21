@@ -404,7 +404,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_present_to_all)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_present_to_all)
             // This content description is just generic "Sharing content", not "Sharing screen"
             assertThat((icon.contentDescription as ContentDescription.Resource).res)
                 .isEqualTo(R.string.share_to_app_chip_accessibility_label_generic)
@@ -431,7 +431,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_present_to_all)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_present_to_all)
             assertThat(icon.contentDescription).isNotNull()
         }
 
@@ -452,7 +452,7 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_present_to_all)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_present_to_all)
             assertThat(icon.contentDescription).isNotNull()
         }
 

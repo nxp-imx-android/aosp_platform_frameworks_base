@@ -291,7 +291,7 @@ constructor(
         return Icon.Loaded(
             drawable = context.getDrawable(iconResource)!!,
             contentDescription = null,
-            res = iconResource,
+            resId = iconResource,
         )
     }
 

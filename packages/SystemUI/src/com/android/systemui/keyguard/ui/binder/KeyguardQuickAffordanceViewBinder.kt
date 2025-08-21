@@ -153,7 +153,7 @@ constructor(
         IconViewBinder.bind(viewModel.icon, view)
 
         (view.drawable as? Animatable2)?.let { animatable ->
-            (viewModel.icon as? Icon.Resource)?.res?.let { iconResourceId ->
+            (viewModel.icon as? Icon.Resource)?.resId?.let { iconResourceId ->
                 // Always start the animation (we do call stop() below, if we need to skip it).
                 animatable.start()
 

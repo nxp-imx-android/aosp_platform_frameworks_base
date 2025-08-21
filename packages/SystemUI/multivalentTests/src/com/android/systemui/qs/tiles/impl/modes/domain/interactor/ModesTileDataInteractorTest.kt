@@ -162,13 +162,13 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             // Tile starts with the generic Modes icon.
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(MODES_DRAWABLE_ID)
 
             // Add an inactive mode -> Still modes icon
             zenModeRepository.addMode(id = "Mode", active = false)
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(MODES_DRAWABLE_ID)
 
             // Add an active mode with a default icon: icon should be the mode icon, and the
             // iconResId is also populated, because we know it's a system icon.
@@ -179,7 +179,7 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             )
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(BEDTIME_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(BEDTIME_DRAWABLE_ID)
 
             // Add another, less-prioritized mode that has a *custom* icon: for now, icon should
             // remain the first mode icon
@@ -194,20 +194,20 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             )
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(BEDTIME_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(BEDTIME_DRAWABLE_ID)
 
             // Deactivate more important mode: icon should be the less important, still active mode
             // And because it's a package-provided icon, iconResId is not populated.
             zenModeRepository.deactivateMode("Bedtime with default icon")
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(CUSTOM_ICON)
-            assertThat(tileData?.icon!!.res).isNull()
+            assertThat(tileData?.icon!!.resId).isNull()
 
             // Deactivate remaining mode: back to the default modes icon
             zenModeRepository.deactivateMode("Driving with custom icon")
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(MODES_DRAWABLE_ID)
         }
 
     @Test

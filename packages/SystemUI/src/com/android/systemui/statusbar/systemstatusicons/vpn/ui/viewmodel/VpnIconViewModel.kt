@@ -71,7 +71,7 @@ constructor(@Assisted private val context: Context, interactor: VpnInteractor) :
             }
 
         return Icon.Resource(
-            res = res,
+            resId = res,
             contentDescription = ContentDescription.Resource(R.string.accessibility_vpn_on),
         )
     }

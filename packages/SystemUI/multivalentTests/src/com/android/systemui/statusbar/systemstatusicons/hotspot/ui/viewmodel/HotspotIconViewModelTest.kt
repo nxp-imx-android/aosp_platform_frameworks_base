@@ -83,7 +83,7 @@ class HotspotIconViewModelTest : SysuiTestCase() {
     companion object {
         private val EXPECTED_HOTSPOT_ICON =
             Icon.Resource(
-                res = R.drawable.ic_hotspot,
+                resId = R.drawable.ic_hotspot,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_status_bar_hotspot),
             )

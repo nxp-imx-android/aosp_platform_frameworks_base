@@ -141,7 +141,7 @@ private fun PopupChipModel.Shown.verifyHasNoText() {
 }
 
 private fun PopupChipModel.Shown.verifyHasIcon(res: Int) {
-    assertThat(this.icons).contains(ChipIcon(Icon.Resource(res = res, contentDescription = null)))
+    assertThat(this.icons).contains(ChipIcon(Icon.Resource(resId = res, contentDescription = null)))
 }
 
 private fun PopupChipModel.Shown.verifyNumberOfIcons(num: Int) {

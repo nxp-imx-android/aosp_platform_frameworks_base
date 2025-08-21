@@ -135,7 +135,7 @@ constructor(
             cachedIcon.drawable.constantState?.newDrawable(context.resources)
                 ?: cachedIcon.drawable.mutate()
         return iconDrawable.asIcon(
-            res =
+            resId =
                 if (cachedIcon.key.resPackage == null) {
                     cachedIcon.key.resId
                 } else {

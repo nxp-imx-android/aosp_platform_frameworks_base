@@ -249,7 +249,7 @@ fun SmallTileContent(
         remember(icon, context) {
             when (icon) {
                 is Icon.Loaded -> icon.drawable
-                is Icon.Resource -> context.getDrawable(icon.res)
+                is Icon.Resource -> context.getDrawable(icon.resId)
             }
         }
     if (loadedDrawable is Animatable) {
@@ -261,10 +261,10 @@ fun SmallTileContent(
         val painter =
             when (icon) {
                 is Icon.Resource -> {
-                    val image = AnimatedImageVector.animatedVectorResource(id = icon.res)
+                    val image = AnimatedImageVector.animatedVectorResource(id = icon.resId)
                     key(icon) {
                         var atEnd by remember(icon) { mutableStateOf(shouldSkipInitialAnimation) }
-                        LaunchedEffect(key1 = icon.res) { atEnd = true }
+                        LaunchedEffect(key1 = icon.resId) { atEnd = true }
 
                         rememberAnimatedVectorPainter(animatedImageVector = image, atEnd = atEnd)
                     }

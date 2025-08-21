@@ -39,6 +39,6 @@ fun loadIcon(
     ) {
         val drawable = viewModel.loadDrawable(context = context, resId = resId)
         value =
-            Icon.Loaded(drawable = drawable, res = resId, contentDescription = contentDescription)
+            Icon.Loaded(drawable = drawable, resId = resId, contentDescription = contentDescription)
     }
 }

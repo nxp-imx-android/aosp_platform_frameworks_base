@@ -560,7 +560,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(com.android.internal.R.drawable.ic_phone)
+            assertThat(icon.resId).isEqualTo(com.android.internal.R.drawable.ic_phone)
             assertThat(icon.contentDescription).isNotNull()
         }
 

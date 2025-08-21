@@ -207,7 +207,7 @@ constructor(
                                 MediaGutsSettingsButtonViewModel(
                                     icon =
                                         Icon.Resource(
-                                            res = R.drawable.ic_settings,
+                                            resId = R.drawable.ic_settings,
                                             contentDescription =
                                                 ContentDescription.Resource(
                                                     res = R.string.controls_media_settings_button
@@ -288,7 +288,7 @@ constructor(
         MediaSettingsButtonViewModel(
             icon =
                 Icon.Resource(
-                    res = R.drawable.ic_settings,
+                    resId = R.drawable.ic_settings,
                     contentDescription =
                         ContentDescription.Resource(res = R.string.controls_media_settings_button),
                 ),
