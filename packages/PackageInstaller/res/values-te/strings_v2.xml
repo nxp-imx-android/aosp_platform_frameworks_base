@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"యాప్ అప్‌డేట్‌లను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"యూజర్‌లందరికీ యాప్ అప్‌డేట్‌లను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"యూజర్‌లందరికీ ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" యూజర్‌కు ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయాలా?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"యాప్ దొరకలేదు"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయడం సాధ్యపడదు"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"యాప్ అన్ఇన్‌స్టాల్ కాలేదు"</string>
     <string name="title_archive" msgid="2876455228073419830">"ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"యూజర్‌లందరికీ ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" యూజర్‌కు ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
     <string name="title_restore" msgid="8934911753892124574">"ఈ యాప్‌ను రీస్టోర్ చేయాలా?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"మీరు పూర్తి చేయాల్సిన చర్య"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"తగినంత స్టోరేజ్ స్పేస్ లేదు"</string>
@@ -59,12 +57,12 @@
     <string name="title_restore_error_generic" msgid="3675732737839176301">"ఏదో పొరపాటు జరిగింది"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"ఈ యాప్ సాధారణంగా &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; నుండి అప్‌డేట్‌లు అందుకుంటుంది. వేరే సోర్స్‌ను ఉపయోగించి అప్‌డేట్ చేయడం ద్వారా, భవిష్యత్తులో మీ టాబ్లెట్‌లోని ఏ సోర్స్ నుండి అయినా మీరు అప్‌డేట్‌లను పొందవచ్చు. యాప్ ఫంక్షనాలిటీ మారవచ్చు."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"ఈ యాప్ సాధారణంగా &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; నుండి అప్‌డేట్‌లు అందుకుంటుంది. వేరే సోర్స్‌ను ఉపయోగించి అప్‌డేట్ చేయడం ద్వారా, భవిష్యత్తులో మీ TVలోని ఏ సోర్స్ నుండి అయినా మీరు అప్‌డేట్‌లను పొందవచ్చు. యాప్ ఫంక్షనాలిటీ మారవచ్చు."</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"ఈ యాప్ సాధారణంగా &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; నుండి అప్‌డేట్‌లు అందుకుంటుంది. వేరే సోర్స్‌ను ఉపయోగించి అప్‌డేట్ చేయడం ద్వారా, భవిష్యత్తులో మీ ఫోన్‌లోని ఏ సోర్స్ నుండి అయినా మీరు అప్‌డేట్‌లను పొందవచ్చు. యాప్ ఫంక్షనాలిటీ మారవచ్చు."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"ఈ యాప్‌కు సాధారణంగా &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; ద్వారా అప్‌డేట్లు వస్తాయి. వేరే సోర్స్‌ను ఉపయోగించి అప్‌డేట్ చేస్తే, భవిష్యత్తులో మీ ఫోన్‌కు ఏ సోర్స్ నుండి అయినా అప్‌డేట్లు వచ్చే అవకాశం ఉంది. యాప్ ఫంక్షనాలిటీ మారే చాన్స్ ఉంది."</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"మీ సెక్యూరిటీ కోసం, ఈ సోర్స్ నుండి తెలియని యాప్‌లను ఇన్‌స్టాల్ చేయడానికి మీ టాబ్లెట్‌కు ప్రస్తుతం అనుమతి లేదని గమనించండి. మీరు దీన్ని సెట్టింగ్‌లలో మార్చవచ్చు."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"మీ సెక్యూరిటీ కోసం, ఈ సోర్స్ నుండి తెలియని యాప్‌లను ఇన్‌స్టాల్ చేయడానికి మీ టీవీకి ప్రస్తుతం అనుమతి లేదని గమనించండి. మీరు దీన్ని సెట్టింగ్‌లలో మార్చవచ్చు."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"మీ సెక్యూరిటీ కోసం, ఈ సోర్స్ నుండి తెలియని యాప్‌లను ఇన్‌స్టాల్ చేయడానికి మీ వాచ్‌కు ప్రస్తుతం అనుమతి లేదని గమనించండి. మీరు దీన్ని సెట్టింగ్‌లలో మార్చవచ్చు."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"మీ సెక్యూరిటీ కోసం, ఈ సోర్స్ నుండి తెలియని యాప్‌లను ఇన్‌స్టాల్ చేయడానికి మీ ఫోన్‌కు ప్రస్తుతం అనుమతి లేదని గమనించండి. మీరు దీన్ని సెట్టింగ్‌లలో మార్చవచ్చు."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"తెలియని యాప్‌ల వల్ల మీ ఫోన్‌పై, వ్యక్తిగత డేటాపై అటాక్ జరిగే అవకాశం ఎక్కువ ఉంటుంది. ఈ యాప్‌ను ఇన్‌స్టాల్ చేయడం ద్వారా, దాని వినియోగం కారణంగా మీ ఫోన్‌కు ఏమైనా నష్టం జరిగినా కానీ, డేటా ఏమైనా పోయినా కానీ, మీదే బాధ్యత అని మీరు అంగీకరిస్తున్నారు."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"తెలియని యాప్‌ల వల్ల మీ ఫోన్‌కు, వ్యక్తిగత (పర్సనల్) డేటాకు హాని కలిగే అవకాశం ఎక్కువగా ఉంటుంది. ఈ యాప్‌ను ఇన్‌స్టాల్ చేయడం ద్వారా మీరు దీనికి అంగీకరిస్తున్నారు: ఈ యాప్ వినియోగం వల్ల మీ ఫోన్‌కు ఏదైనా నష్టం జరిగినా లేదా ఏదైనా డేటా పోయినా మీదే బాధ్యత."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"తెలియని యాప్‌ల వల్ల మీ టాబ్లెట్‌పై, వ్యక్తిగత డేటాపై అటాక్ జరిగే అవకాశం ఎక్కువ ఉంటుంది. ఈ యాప్‌ను ఇన్‌స్టాల్ చేయడం ద్వారా, దాని వినియోగం కారణంగా మీ టాబ్లెట్‌కు ఏమైనా నష్టం జరిగినా కానీ, డేటా ఏమైనా పోయినా కానీ, మీదే బాధ్యత అని మీరు అంగీకరిస్తున్నారు."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"తెలియని యాప్‌ల వల్ల మీ TVపై, వ్యక్తిగత డేటాపై అటాక్ జరిగే అవకాశం ఎక్కువ ఉంటుంది. ఈ యాప్‌ను ఇన్‌స్టాల్ చేయడం ద్వారా, దాని వినియోగం కారణంగా మీ TVకి ఏమైనా నష్టం జరిగినా కానీ, డేటా ఏమైనా పోయినా కానీ, మీదే బాధ్యత అని మీరు అంగీకరిస్తున్నారు."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"ఇన్‌స్టాల్ కాకుండా ఈ యాప్‌ను సిస్టమ్ బ్లాక్ చేసింది"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ఈ కింది యాప్‌లో భాగం: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;ఈ యాప్‌ను బ్లాక్ చేశారు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన యాప్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;ఈ యాప్‌ను అప్‌డేట్ చేయలేదు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన అప్‌డేట్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;ఈ యాప్‌ను ఇన్‌స్టాల్ చేయలేదు. వెరిఫై చేయని డెవలపర్‌లకు చెందిన యాప్‌లు సురక్షితం కాకపోవచ్చు.&lt;/p&gt; &lt;p&gt;యాప్ డెవలపర్‌ను వెరిఫై చేయడానికి ఇంటర్నెట్ కనెక్షన్ కావాలి. మీ కనెక్షన్‌ను చెక్ చేసి, ఆపై యాప్‌ను మళ్లీ ఇన్‌స్టాల్ చేయడానికి ట్రై చేయండి. &lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;ఈ యాప్‌ను అప్‌డేట్ చేయలేదు. వెరిఫై చేయని డెవలపర్‌లకు చెందిన అప్‌డేట్‌లు సురక్షితం కాకపోవచ్చు.&lt;/p&gt; &lt;p&gt;యాప్ డెవలపర్‌ను వెరిఫై చేయడానికి ఇంటర్నెట్ కనెక్షన్ కావాలి. మీ కనెక్షన్‌ను చెక్ చేసి, ఆపై యాప్‌ను మళ్లీ అప్‌డేట్ చేసి చూడండి. &lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;ఈ యాప్ డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైంది. వెరిఫై చేయని డెవలపర్‌లకు చెందిన యాప్‌లు సురక్షితం కాకపోవచ్చు, కాబట్టి యాప్‌ను ఇన్‌స్టాల్ చేయలేదు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;ఈ యాప్ డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైంది. వెరిఫై చేయని డెవలపర్‌లకు చెందిన అప్‌డేట్‌లు సురక్షితం కాకపోవచ్చు, కాబట్టి యాప్‌ను అప్‌డేట్ చేయలేదు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఎదురైన కారణంగా ఈ యాప్‌ను బ్లాక్ చేశారు. మీ డివైజ్‌ను, డేటాను సురక్షితంగా ఉంచడానికి, వెరిఫై చేసిన డెవలపర్‌లకు చెందిన యాప్‌లను మాత్రమే ఇన్‌స్టాల్ చేయగలరు.&lt;/p&gt; &lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"రీస్టోర్ చేయండి"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"అప్‌డేట్‌లను అన్‌ఇన్‌స్టాల్ చేయండి"</string>
     <string name="button_settings" msgid="3837571366246132287">"సెట్టింగ్‌లు"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"మళ్లీ ట్రై చేయండి"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> క్లోన్"</string>
 </resources>

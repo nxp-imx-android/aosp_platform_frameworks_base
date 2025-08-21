@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"要卸载应用更新吗？"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"要为所有用户卸载应用更新吗？"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"要为所有用户卸载此应用吗？"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"要为用户“<xliff:g id="USER_NAME">%1$s</xliff:g>”卸载此应用吗？"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"未找到应用"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"无法卸载此应用"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"未卸载应用"</string>
     <string name="title_archive" msgid="2876455228073419830">"要归档此应用吗？"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"要为所有用户归档此应用吗？"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"要为用户“<xliff:g id="USER_NAME">%1$s</xliff:g>”归档此应用吗？"</string>
     <string name="title_restore" msgid="8934911753892124574">"要恢复此应用吗？"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"需要采取行动"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"存储空间不足"</string>
@@ -59,12 +57,12 @@
     <string name="title_restore_error_generic" msgid="3675732737839176301">"出了点问题"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"此应用通常从&lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;接收更新。如果通过其他来源进行更新，平板电脑未来可能会收到来自任何来源的更新。应用功能可能会变化。"</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"此应用通常从&lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;接收更新。如果通过其他来源进行更新，电视未来可能会收到来自任何来源的更新。应用功能可能会变化。"</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"此应用通常从&lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;接收更新。如果通过其他来源进行更新，手机未来可能会收到来自任何来源的更新。应用功能可能会变化。"</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"此应用通常从&lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;接收更新。如果通过其他来源进行更新，手机未来可能会从任意来源接收更新。应用功能也可能发生变化。"</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"出于安全考虑，目前已禁止您的平板电脑安装来自此来源的未知应用。您可以在“设置”中对此进行更改。"</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"出于安全考虑，目前已禁止您的电视安装来自此来源的未知应用。您可以在“设置”中对此进行更改。"</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"出于安全考虑，目前已禁止您的手表安装来自此来源的未知应用。您可以在“设置”中对此进行更改。"</string>
-    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"出于安全考虑，目前已禁止您的手机安装来自此来源的未知应用。您可以在“设置”中对此进行更改。"</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"您的手机和个人数据更容易受到未知应用的攻击。安装此应用即表示，对于可能因使用此应用而导致的任何手机损坏或数据丢失情况，您同意自行负责。"</string>
+    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"出于安全考虑，目前已禁止您的手机安装来自此来源的未知应用。您可以在“设置”中进行更改。"</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"您的手机和个人数据更容易受到未知应用的攻击。安装此应用即表示您同意，对于因使用此应用可能导致的任何手机损坏或数据丢失，均由您自行承担责任。"</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"您的平板电脑和个人数据更容易受到未知应用的攻击。安装此应用即表示，对于可能因使用此应用而导致的任何平板电脑损坏或数据丢失情况，您同意自行负责。"</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"您的电视和个人数据更容易受到未知应用的攻击。安装此应用即表示，对于可能因使用此应用而导致的任何电视损坏或数据丢失情况，您同意自行负责。"</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"此应用已被禁止安装"</string>

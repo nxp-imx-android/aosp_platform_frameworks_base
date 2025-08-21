@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"অ্যাপের আপডেট আনইনস্টল করতে চান?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"সব ব্যবহারকারীর জন্য অ্যাপের আপডেট আনইনস্টল করতে চান?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"সব ব্যবহারকারীর জন্য এই অ্যাপ আনইনস্টল করতে চান?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ব্যবহারকারীর জন্য এই অ্যাপ আনইনস্টল করতে চান?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"অ্যাপ খুঁজে পাওয়া যায়নি"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"এই অ্যাপ আনইনস্টল করা যায়নি"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"অ্যাপ আনইনস্টল করা হয়নি"</string>
     <string name="title_archive" msgid="2876455228073419830">"এই অ্যাপ আর্কাইভ করতে চান?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"সব ব্যবহারকারীর জন্য এই অ্যাপ আর্কাইভ করতে চান?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" ব্যবহারকারীর জন্য এই অ্যাপ আর্কাইভ করতে চান?"</string>
     <string name="title_restore" msgid="8934911753892124574">"এই অ্যাপ ফিরিয়ে আনতে চান?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ব্যবস্থা নিতে হবে"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"পর্যাপ্ত স্টোরেজ নেই"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> হল নিচে উল্লেখ করা অ্যাপের অংশ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;এই অ্যাপ ব্লক করা হয়েছে। আপনার ডিভাইস ও ডেটা সুরক্ষিত রাখতে, শুধুমাত্র যাচাই করা ডেভেলপারদের অ্যাপ ইনস্টল করা যাবে।&lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;এই অ্যাপ আপডেট করা হয়নি। আপনার ডিভাইস ও ডেটা সুরক্ষিত রাখতে, শুধুমাত্র যাচাই করা ডেভেলপারদের আপডেট ইনস্টল করা যাবে।&lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;এই অ্যাপ ইনস্টল করা হয়নি। যাচাই করা হয়নি এমন ডেভেলপারদের অ্যাপ সুরক্ষিত নাও হতে পারে।&lt;/p&gt; &lt;p&gt;অ্যাপ ডেভেলপারকে যাচাই করার জন্য ইন্টারনেট কানেকশন থাকতে হবে। আপনার কানেকশন চেক করে, তারপর আবার অ্যাপ ইনস্টল করার চেষ্টা করুন। &lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;এই অ্যাপ আপডেট করা হয়নি। যাচাই না করা ডেভেলপারদের আপডেট সুরক্ষিত নাও হতে পারে।&lt;/p&gt; &lt;p&gt;অ্যাপ ডেভেলপারকে যাচাই করে দেখতে ইন্টারনেট কানেকশন থাকতে হবে। আপনার কানেকশন চেক করে, তারপর আবার অ্যাপ আপডেট করার চেষ্টা করুন। &lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;এই অ্যাপের ডেভেলপারকে যাচাই করে দেখার সময় কোনও সমস্যা হয়েছে। যাচাই করা হয়নি এমন ডেভেলপারদের অ্যাপ সুরক্ষিত নাও হতে পারে, তাই অ্যাপটি ইনস্টল করা হয়নি।&lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;এই অ্যাপের ডেভেলপারকে যাচাই করে দেখার সময় কোনও সমস্যা হয়েছে। যাচাই করা হয়নি এমন ডেভেলপারদের আপডেট সুরক্ষিত নাও হতে পারে, তাই অ্যাপটি আপডেট করা হয়নি।&lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;ডেভেলপারকে যাচাই করার সময় কোনও সমস্যা হওয়ার কারণে এই অ্যাপ ব্লক করা হয়েছে। আপনার ডিভাইস ও ডেটা সুরক্ষিত রাখতে, শুধুমাত্র যাচাই করা ডেভেলপারদের অ্যাপ ইনস্টল করা যাবে।&lt;/p&gt; &lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"ফিরিয়ে আনুন"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"আপডেট আনইনস্টল করুন"</string>
     <string name="button_settings" msgid="3837571366246132287">"সেটিংস"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"আবার চেষ্টা করুন"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ক্লোন"</string>
 </resources>

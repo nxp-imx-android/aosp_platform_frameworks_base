@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ایپ کی اپ ڈیٹس اَن انسٹال کریں؟"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"تمام صارفین کے لیے ایپ کی اپ ڈیٹس اَن انسٹال کریں؟"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"تمام صارفین کے لیے اس ایپ کو ان انسٹال کریں؟"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"اس ایپ کو صارف \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" کے لیے اَن انسٹال کریں؟"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ایپ نہیں ملی"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"اس ایپ کو اَن انسٹال نہیں کیا جا سکتا"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ایپ ان انسٹال نہیں ہوئی"</string>
     <string name="title_archive" msgid="2876455228073419830">"اس ایپ کو آرکائیو کریں؟"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"اس ایپ کو تمام صارفین کے لیے آرکائیو کریں؟"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"اس ایپ کو صارف \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" کے لیے آرکائیو کریں؟"</string>
     <string name="title_restore" msgid="8934911753892124574">"اس ایپ کو بحال کریں؟"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"کارروائی درکار ہے"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"کافی اسٹوریج نہیں ہے"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"‫<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> درج ذیل ایپ کا حصہ ہے:<xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"‏&lt;p&gt;یہ ایپ بلاک کر دی گئی ہے۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی ایپس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"‏&lt;p&gt;یہ ایپ اپ ڈیٹ نہیں ہوئی۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی اپ ڈیٹس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں‎&lt;/a&gt;‎"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"‏‫‎&lt;p&gt;‎اس ایپ کو انسٹال نہیں کیا گیا ہے۔ غیر توثیق شدہ ڈویلپرز کی ایپس غیر محفوظ ہو سکتی ہیں۔‎&lt;/p&gt; &lt;p&gt;‎ایپ ڈویلپر کی توثیق کرنے کیلئے انٹرنیٹ کنکشن کی ضرورت ہے۔ اپنا کنکشن چیک کریں، پھر ایپ کو دوبارہ انسٹال کرنے کی کوشش کریں۔ ‎&lt;/p&gt; &lt;a href=&gt;‎ڈویلپر کی توثیق کے بارے میں مزید جانیں‎&lt;/a&gt;‎"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"‏‫‎&lt;p&gt;‎یہ ایپ اپ ڈیٹ نہیں ہوئی۔ غیر توثیق شدہ ڈویلپرز کی اپ ڈیٹس غیر محفوظ ہو سکتی ہیں۔‎&lt;/p&gt; &lt;p&gt;‎ایپ ڈویلپر کی توثیق کرنے کیلئے انٹرنیٹ کنکشن کی ضرورت ہے۔ اپنا کنکشن چیک کریں، پھر ایپ کو دوبارہ اپ ڈیٹ کرنے کی کوشش کریں۔ ‎&lt;/p&gt; &lt;a href=&gt;‎ڈویلپر کی توثیق کے بارے میں مزید جانیں‎&lt;/a&gt;‎"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"‏&lt;p&gt;اس ایپ کے ڈویلپر کی توثیق کرنے میں ایک مسئلہ پیش آ گیا۔ غیر توثیق شدہ ڈویلپرز کی ایپس غیر محفوظ ہو سکتی ہیں، اس لیے ایپ انسٹال نہیں کی گئی۔&lt;/p&gt; &lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں‎&lt;/a&gt;‎"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"‏&lt;p&gt;اس ایپ کے ڈویلپر کی توثیق کرنے میں ایک مسئلہ پیش آ گیا۔ غیر توثیق شدہ ڈویلپرز کی اپ ڈیٹس غیر محفوظ ہو سکتی ہیں، اس لیے ایپ اپ ڈیٹ نہیں کی گئی۔&lt;/p&gt; &lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں‎&lt;/a&gt;‎"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"‏&lt;p&gt;یہ ایپ بلاک کر دی گئی کیونکہ ڈویلپر کی توثیق کرنے میں ایک مسئلہ تھا۔ اپنے آلے اور ڈیٹا کو محفوظ رکھنے میں مدد کے لیے، صرف توثیق شدہ ڈویلپرز کی ایپس ہی انسٹال کی جا سکتی ہیں۔&lt;/p&gt; &lt;a href=&gt;ڈویلپر کی توثیق کے بارے میں مزید جانیں&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"بحال کریں"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"اپ ڈیٹس اَن انسٹال کریں"</string>
     <string name="button_settings" msgid="3837571366246132287">"ترتیبات"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"دوبارہ کوشش کریں"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"‫<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> کلون"</string>
 </resources>

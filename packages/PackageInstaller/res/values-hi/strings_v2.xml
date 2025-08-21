@@ -19,7 +19,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="title_unknown_source_blocked" msgid="50770689337399043">"इसके लिए अनुमति चाहिए"</string>
     <string name="title_install_blocked" msgid="8292546042865448054">"इंस्टॉलेशन पर रोक लगाई गई"</string>
-    <string name="title_install_staging" msgid="6207460764383813714">"ऐप्लिकेशन इंस्टॉल किया जा रहा है…"</string>
+    <string name="title_install_staging" msgid="6207460764383813714">"ऐप्लिकेशन तैयार किया जा रहा है…"</string>
     <string name="title_install" msgid="6806728682404990326">"क्या आपको यह ऐप्लिकेशन इंस्टॉल करना है?"</string>
     <string name="title_installing" msgid="3738380766257176010">"इंस्टॉल हो रहा है…"</string>
     <string name="title_installed" msgid="6551855346109302601">"ऐप्लिकेशन इंस्टॉल किया गया"</string>
@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"क्या आपको ऐप्लिकेशन के अपडेट अनइंस्टॉल करने हैं?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"क्या आपको ऐप्लिकेशन के अपडेट, सभी उपयोगकर्ताओं के लिए अनइंस्टॉल करने हैं?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"क्या आपको यह ऐप्लिकेशन सभी उपयोगकर्ताओं के लिए अनइंस्टॉल करना है?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"क्या आपको \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" के लिए इस ऐप्लिकेशन को अनइंस्टॉल करना है?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ऐप्लिकेशन नहीं मिला"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"इस ऐप्लिकेशन को अनइंस्टॉल नहीं किया जा सकता"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ऐप्लिकेशन अनइंस्टॉल नहीं हुआ"</string>
     <string name="title_archive" msgid="2876455228073419830">"क्या आपको यह ऐप्लिकेशन संग्रहित करना है?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"क्या आपको यह ऐप्लिकेशन सभी उपयोगकर्ताओं के लिए संग्रहित करना है?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"क्या आपको \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" के लिए इस ऐप्लिकेशन को संग्रहित करना है?"</string>
     <string name="title_restore" msgid="8934911753892124574">"क्या आपको यह ऐप्लिकेशन वापस लाना है?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"कार्रवाई ज़रूरी है"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"डिवाइस में स्टोरेज कम है"</string>
@@ -64,7 +62,7 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"आपकी सुरक्षा के लिए, फ़िलहाल आपके टीवी के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"आपकी सुरक्षा के लिए, फ़िलहाल आपकी स्मार्टवॉच के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"आपकी सुरक्षा के लिए, फ़िलहाल आपके फ़ोन के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"आपके टीवी और निजी डेटा को, अनजान ऐप्लिकेशन से नुकसान पहुंचने की काफ़ी आशंका रहती है. इस ऐप्लिकेशन को इंस्टॉल करने का मतलब है कि अगर इससे फ़ोन को कोई नुकसान होता है या आपका डेटा चोरी होता है, तो इसकी पूरी ज़िम्मेदारी आपकी होगी."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"आपके फ़ोन और निजी डेटा को अनजान ऐप्लिकेशन से नुकसान होने का जोखिम ज़्यादा होता है. इस सोर्स से ऐप्लिकेशन इंस्टॉल करने का मतलब, आप इस बात से सहमत हैं कि उनके इस्तेमाल की वजह से अपने फ़ोन या डेटा को होने वाले किसी भी नुकसान की ज़िम्मेदारी आपकी होगी."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"आपके टीवी और निजी डेटा को, अनजान ऐप्लिकेशन से नुकसान पहुंचने की काफ़ी आशंका रहती है. इस ऐप्लिकेशन को इंस्टॉल करने का मतलब है कि अगर इससे टैबलेट को कोई नुकसान होता है या आपका डेटा चोरी होता है, तो इसकी पूरी ज़िम्मेदारी आपकी होगी."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"आपके टीवी और निजी डेटा को, अनजान ऐप्लिकेशन से नुकसान पहुंचने की काफ़ी आशंका रहती है. इस ऐप्लिकेशन को इंस्टॉल करने का मतलब है कि अगर इससे टीवी को कोई नुकसान होता है या आपका डेटा चोरी होता है, तो इसकी पूरी ज़िम्मेदारी आपकी होगी."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"इस ऐप्लिकेशन को इंस्टॉल होने से रोका गया था"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, इस ऐप्लिकेशन का एक हिस्सा है: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे अपडेट इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;यह ऐप्लिकेशन इंस्टॉल नहीं किया गया. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. अपने इंटरनेट कनेक्शन की जांच करें. इसके बाद, ऐप्लिकेशन को दोबारा इंस्टॉल करने की कोशिश करें. &lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने की प्रक्रिया के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;इस ऐप्लिकेशन को अपडेट नहीं किया गया. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं.&lt;/p&gt; &lt;p&gt;ऐप्लिकेशन डेवलपर की पुष्टि करने के लिए, इंटरनेट कनेक्शन होना ज़रूरी है. अपने इंटरनेट कनेक्शन की जांच करें. इसके बाद, फिर से ऐप्लिकेशन को अपडेट करने की कोशिश करें. &lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने की प्रक्रिया के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को इंस्टॉल नहीं किया गया.&lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;इस ऐप्लिकेशन के डेवलपर की पुष्टि करने में कोई समस्या हुई. जिन डेवलपर की पुष्टि नहीं हुई है उनके ऐप्लिकेशन के अपडेट असुरक्षित हो सकते हैं. इसलिए, ऐप्लिकेशन को अपडेट नहीं किया गया.&lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;इस ऐप्लिकेशन को ब्लॉक कर दिया गया है, क्योंकि डेवलपर की पुष्टि करने में कोई समस्या हुई. आपके डिवाइस और डेटा को सुरक्षित रखने के लिए, सिर्फ़ ऐसे ऐप्लिकेशन इंस्टॉल किए जा सकते हैं जिनके डेवलपर की पुष्टि हो चुकी है.&lt;/p&gt; &lt;a href=&gt;डेवलपर की पुष्टि करने के बारे में ज़्यादा जानें&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"वापस लाएं"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"अपडेट अनइंस्टॉल करें"</string>
     <string name="button_settings" msgid="3837571366246132287">"सेटिंग"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"दोबारा कोशिश करें"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> का क्लोन"</string>
 </resources>

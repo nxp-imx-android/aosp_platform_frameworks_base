@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"ஆப்ஸ் புதுப்பிப்புகளை நிறுவல் நீக்கவா?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"அனைத்துப் பயனர்களுக்கும் ஆப்ஸ் புதுப்பிப்புகளை நிறுவல் நீக்கவா?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"அனைத்துப் பயனர்களுக்கும் இந்த ஆப்ஸை நிறுவல் நீக்கவா?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" என்ற பயனருக்கு இந்த ஆப்ஸை நிறுவல் நீக்கவா?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ஆப்ஸ் இல்லை"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"இந்த ஆப்ஸை நிறுவல் நீக்க முடியவில்லை"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"ஆப்ஸ் நிறுவல் நீக்கப்படவில்லை"</string>
     <string name="title_archive" msgid="2876455228073419830">"இந்த ஆப்ஸைக் காப்பிடவா?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"அனைத்துப் பயனர்களுக்கும் இந்த ஆப்ஸைக் காப்பிடவா?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" என்ற பயனருக்கு இந்த ஆப்ஸைக் காப்பிடவா?"</string>
     <string name="title_restore" msgid="8934911753892124574">"இந்த ஆப்ஸை மீட்டெடுக்கவா?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"நடவடிக்கை தேவை"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"போதுமான சேமிப்பகம் இல்லை"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> பின்வரும் ஆப்ஸின் பகுதியாகும்: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;இந்த ஆப்ஸ் தடுக்கப்பட்டது. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் ஆப்ஸை மட்டுமே நிறுவ முடியும்.&lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;இந்த ஆப்ஸ் புதுப்பிக்கப்படவில்லை. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகளை மட்டுமே நிறுவ முடியும்.&lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;இந்த ஆப்ஸ் நிறுவப்படவில்லை. சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் ஆப்ஸ் பாதுகாப்பற்றதாக இருக்கக்கூடும்.&lt;/p&gt; &lt;p&gt;ஆப்ஸ் டெவெலப்பரைச் சரிபார்க்க இணைய இணைப்பு தேவை. இணைய இணைப்பைச் சரிபார்த்து, ஆப்ஸை மீண்டும் நிறுவிப் பாருங்கள். &lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;இந்த ஆப்ஸ் புதுப்பிக்கப்படவில்லை. சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகள் பாதுகாப்பற்றவையாக இருக்கக்கூடும்.&lt;/p&gt; &lt;p&gt;ஆப்ஸ் டெவெலப்பரைச் சரிபார்க்க இணைய இணைப்பு தேவை. இணைய இணைப்பைச் சரிபார்த்து, ஆப்ஸை மீண்டும் புதுப்பித்துப் பாருங்கள். &lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;இந்த ஆப்ஸின் டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டது. சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் ஆப்ஸ் பாதுகாப்பற்றதாக இருக்கக்கூடும் என்பதால் ஆப்ஸ் நிறுவப்படவில்லை.&lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;இந்த ஆப்ஸின் டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டது. சரிபார்க்கப்படாத டெவெலப்பர்கள் வழங்கும் புதுப்பிப்புகள் பாதுகாப்பற்றவையாக இருக்கக்கூடும் என்பதால் ஆப்ஸ் புதுப்பிக்கப்படவில்லை.&lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;டெவெலப்பரைச் சரிபார்ப்பதில் சிக்கல் ஏற்பட்டதால் இந்த ஆப்ஸ் தடுக்கப்பட்டது. உங்கள் சாதனத்தையும் தரவையும் பாதுகாப்பாக வைத்திருக்க உதவ, சரிபார்க்கப்பட்ட டெவெலப்பர்கள் வழங்கும் ஆப்ஸை மட்டுமே நிறுவ முடியும்.&lt;/p&gt; &lt;a href=&gt;டெவெலப்பர் சரிபார்ப்பு குறித்து மேலும் தெரிந்துகொள்ளுங்கள்&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"மீட்டெடு"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"புதுப்பிப்புகளை நிறுவல் நீக்கு"</string>
     <string name="button_settings" msgid="3837571366246132287">"அமைப்புகள்"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"மீண்டும் முயல்க"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> குளோன்"</string>
 </resources>

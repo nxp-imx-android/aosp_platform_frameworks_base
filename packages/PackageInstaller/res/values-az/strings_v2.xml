@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Tətbiq güncəllənmələri sistemdən silinsin?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Tətbiq güncəllənmələri bütün istifadəçilər üçün silinsin?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Bu tətbiq bütün istifadəçilər üçün sistemdən silinsin?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Bu tətbiq \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" adlı istifadəçi üçün sistemdən silinsin?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Tətbiq tapılmadı"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Bu tətbiqi sistemdən silmək olmur"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Tətbiq sistemdən silinməyib"</string>
     <string name="title_archive" msgid="2876455228073419830">"Bu tətbiq arxivlənsin?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Bu tətbiq bütün istifadəçilər üçün arxivlənsin?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Bu tətbiq \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" adlı istifadəçi üçün arxivlənsin?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Bu tətbiq bərpa edilsin?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Tədbir görmək tələb edilir"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Kifayət qədər yaddaş yoxdur"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> aşağıdakı tətbiqin bir hissəsidir: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Bu tətbiq bloklanıb. Cihazınızı və datanızı qorumaq üçün yalnız doğrulanmış tərtibatçılardan olan tətbiqlərin quraşdırılmasına icazə verilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Bu tətbiq güncəllənməyib. Cihazınızı və datanızı qorumaq üçün yalnız doğrulanmış tərtibatçılardan olan güncəllənmələrin quraşdırılmasına icazə verilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Bu tətbiq quraşdırılmayıb. Doğrulanmamış tərtibatçılardan olan tətbiqlər təhlükəli ola bilər.&lt;/p&gt; &lt;p&gt;Tətbiq tərtibatçısını doğrulamaq üçün internet bağlantısı tələb olunur. Bağlantını yoxlayın, sonra tətbiqi yenidən quraşdırmağa cəhd edin. &lt;/p&gt; &lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Bu tətbiq güncəllənməyib. Doğrulanmamış tərtibatçılardan olan güncəllənmələr təhlükəli ola bilər.&lt;/p&gt; &lt;p&gt;Tətbiq tərtibatçısını doğrulamaq üçün internet bağlantısı tələb olunur. Bağlantını yoxlayın, sonra tətbiqi yenidən güncəlləməyə cəhd edin. &lt;/p&gt; &lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Bu tətbiqin tərtibatçısını doğrulayarkən problem baş verdi. Doğrulanmamış tərtibatçıların tətbiqləri təhlükəli ola biləcəyi üçün tətbiq quraşdırılmayıb.&lt;/p&gt; &lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Bu tətbiqin tərtibatçısını doğrulayarkən problem baş verdi. Doğrulanmamış tərtibatçıların güncəllənmələri təhlükəli ola biləcəyi üçün tətbiq güncəllənmədi.&lt;/p&gt; &lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Tərtibatçının doğrulanması zamanı problem olduğu üçün bu tətbiq bloklandı. Cihazınızı və datanızı qorumaq üçün yalnız doğrulanmış tərtibatçılardan olan tətbiqlərin quraşdırılmasına icazə verilir.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Tərtibatçı doğrulaması haqqında ətraflı məlumat&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Bərpa edin"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Güncəllənmələri sistemdən silin"</string>
     <string name="button_settings" msgid="3837571366246132287">"Ayarlar"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Yenidən cəhd edin"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> klonu"</string>
 </resources>
