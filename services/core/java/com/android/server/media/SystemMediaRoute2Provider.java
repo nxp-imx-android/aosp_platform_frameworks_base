@@ -657,7 +657,10 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         }
 
         mCallback.onSessionUpdated(
-                this, sessionInfo, /* packageNamesWithRoutingSessionOverrides= */ Set.of());
+                this,
+                sessionInfo,
+                /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
+                /* shouldShowVolumeUi= */ false);
     }
 
     @Override

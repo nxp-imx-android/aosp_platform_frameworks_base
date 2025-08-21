@@ -697,7 +697,8 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
                         mCallback::onSessionUpdated,
                         this,
                         session,
-                        /* packageNamesWithRoutingSessionOverrides= */ Set.of()));
+                        /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
+                        /* shouldShowVolumeUi= */ false));
     }
 
     private void dispatchSessionReleased(RoutingSessionInfo session) {

@@ -1116,9 +1116,14 @@ public final class MediaRouter2Manager {
         }
 
         @Override
-        public void notifySessionUpdated(RoutingSessionInfo session) {
-            mHandler.sendMessage(obtainMessage(MediaRouter2Manager::handleSessionsUpdatedOnHandler,
-                    MediaRouter2Manager.this, session));
+        public void notifySessionUpdated(
+                RoutingSessionInfo session, boolean ignoredShouldShowVolumeUi) {
+            // This class doesn't support shouldShowVolumeUi. MediaRouter2 does.
+            mHandler.sendMessage(
+                    obtainMessage(
+                            MediaRouter2Manager::handleSessionsUpdatedOnHandler,
+                            MediaRouter2Manager.this,
+                            session));
         }
 
         @Override

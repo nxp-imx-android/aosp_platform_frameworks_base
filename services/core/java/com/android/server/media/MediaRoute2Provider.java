@@ -198,11 +198,16 @@ abstract class MediaRoute2Provider {
          *     affected by global session changes. This set may only be non-empty when the {@code
          *     sessionInfo} is for the global session, and therefore has no {@link
          *     RoutingSessionInfo#getClientPackageName()}.
+         * @param shouldShowVolumeSystemUi Whether a volume UI affordance should be presented as a
+         *     result of this session update. For example, this session update may be the result of
+         *     a volume change in response to a volume hardware key press, in which case a volume
+         *     slider should be presented.
          */
         void onSessionUpdated(
                 @NonNull MediaRoute2Provider provider,
                 @NonNull RoutingSessionInfo sessionInfo,
-                Set<String> packageNamesWithRoutingSessionOverrides);
+                Set<String> packageNamesWithRoutingSessionOverrides,
+                boolean shouldShowVolumeSystemUi);
 
         void onSessionReleased(@NonNull MediaRoute2Provider provider,
                 @NonNull RoutingSessionInfo sessionInfo);
