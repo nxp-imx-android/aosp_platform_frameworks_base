@@ -833,7 +833,9 @@ private fun shouldUseLockscreenStackBounds(state: TransitionState): Boolean {
     return when (state) {
         is TransitionState.Idle -> state.isOnLockscreen()
         is TransitionState.Transition ->
-            state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone)
+            // Keep using the lockscreen stack bounds when transitioning from lockscreen
+            // to other states for visual consistency, eg. the smart space should be visible.
+            state.isTransitioning(from = Scenes.Lockscreen)
     }
 }
 
