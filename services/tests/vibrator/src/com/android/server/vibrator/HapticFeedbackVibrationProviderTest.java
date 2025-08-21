@@ -402,13 +402,13 @@ public class HapticFeedbackVibrationProviderTest {
     }
 
     @Test
-    public void testVibrationAttribute_biometricConstants_defaultsToCommunicationRequestUsage() {
+    public void testVibrationAttribute_biometricConstants_defaultsToHardwareUsage() {
         HapticFeedbackVibrationProvider provider = createProviderWithoutCustomizations();
 
         for (int effectId : BIOMETRIC_FEEDBACK_CONSTANTS) {
             VibrationAttributes attrs = provider.getVibrationAttributes(
                     effectId, USAGE_UNKNOWN, /* flags */ 0, /* privFlags */ 0);
-            assertThat(attrs.getUsage()).isEqualTo(VibrationAttributes.USAGE_COMMUNICATION_REQUEST);
+            assertThat(attrs.getUsage()).isEqualTo(VibrationAttributes.USAGE_HARDWARE_FEEDBACK);
         }
     }
 
