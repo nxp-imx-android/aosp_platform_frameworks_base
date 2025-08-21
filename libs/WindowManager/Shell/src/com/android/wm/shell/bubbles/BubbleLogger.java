@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
@@ -206,6 +207,11 @@ public class BubbleLogger {
      */
     public void log(Bubble b, UiEventLogger.UiEventEnum e) {
         mUiEventLogger.logWithInstanceId(e, b.getAppUid(), b.getPackageName(), b.getInstanceId());
+    }
+
+    /** Log a UiEvent for the specified {@code sessionId}. */
+    public void logWithSessionId(UiEventLogger.UiEventEnum e, InstanceId sessionId) {
+        mUiEventLogger.log(e, sessionId);
     }
 
     /**

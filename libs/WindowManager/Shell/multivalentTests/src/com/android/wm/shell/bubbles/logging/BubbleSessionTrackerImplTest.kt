@@ -20,7 +20,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
 import com.android.internal.logging.InstanceIdSequence
+import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.bubbles.BubbleLogger
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_ENDED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_STARTED
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -32,7 +38,9 @@ import org.junit.runner.RunWith
 class BubbleSessionTrackerImplTest {
 
     private val instanceIdSequence = FakeInstanceIdSequence()
-    private val bubbleSessionTracker = BubbleSessionTrackerImpl(instanceIdSequence)
+    private val uiEventLoggerFake = UiEventLoggerFake()
+    private val bubbleLogger = BubbleLogger(uiEventLoggerFake)
+    private val bubbleSessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
 
     @Before
     fun setUp() {
@@ -41,24 +49,55 @@ class BubbleSessionTrackerImplTest {
     }
 
     @Test
-    fun startSession_generatesNewSessionId() {
-        bubbleSessionTracker.start()
-        val firstSessionId = instanceIdSequence.id
-        bubbleSessionTracker.stop()
+    fun startSession_logsNewSessionId() {
+        bubbleSessionTracker.startBubbleBar()
+        bubbleSessionTracker.stopBubbleBar()
+        bubbleSessionTracker.startBubbleBar()
 
-        bubbleSessionTracker.start()
-        val secondSessionId = instanceIdSequence.id
-
-        assertThat(firstSessionId).isNotEqualTo(secondSessionId)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(3)
+        val firstSessionStart = uiEventLoggerFake.logs.first()
+        val secondSessionStart = uiEventLoggerFake.logs.last()
+        assertThat(firstSessionStart.eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
+        assertThat(secondSessionStart.eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
+        assertThat(firstSessionStart.instanceId).isNotEqualTo(secondSessionStart.instanceId)
     }
 
     @Test
-    fun endSession_shouldNotGenerateNewId() {
-        bubbleSessionTracker.start()
-        val currentId = instanceIdSequence.id
-        bubbleSessionTracker.stop()
+    fun endSession_logsSameSessionId() {
+        bubbleSessionTracker.startBubbleBar()
+        bubbleSessionTracker.stopBubbleBar()
 
-        assertThat(currentId).isEqualTo(instanceIdSequence.id)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+        val sessionStart = uiEventLoggerFake.logs.first()
+        val sessionEnd = uiEventLoggerFake.logs.last()
+        assertThat(sessionStart.eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
+        assertThat(sessionEnd.eventId).isEqualTo(BUBBLE_BAR_SESSION_ENDED.id)
+        assertThat(sessionStart.instanceId).isEqualTo(sessionEnd.instanceId)
+    }
+
+    @Test
+    fun logCorrectEventId() {
+        bubbleSessionTracker.startBubbleBar()
+        bubbleSessionTracker.stopBubbleBar()
+        bubbleSessionTracker.startFloating()
+        bubbleSessionTracker.stopFloating()
+
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
+        assertThat(uiEventLoggerFake.logs.map { it.eventId })
+            .containsExactly(
+                BUBBLE_BAR_SESSION_STARTED.id,
+                BUBBLE_BAR_SESSION_ENDED.id,
+                BUBBLE_SESSION_STARTED.id,
+                BUBBLE_SESSION_ENDED.id
+            )
+            .inOrder()
+    }
+
+    @Test
+    fun stopSession_noActiveSession_shouldNotLog() {
+        bubbleSessionTracker.stopBubbleBar()
+
+        assertThat(uiEventLoggerFake.logs).isEmpty()
     }
 
     class FakeInstanceIdSequence : InstanceIdSequence(/* instanceIdMax= */ 10) {

@@ -19,6 +19,12 @@ package com.android.wm.shell.bubbles.logging
 import com.android.internal.logging.InstanceId
 import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.bubbles.BubbleLogger
+import com.android.wm.shell.bubbles.BubbleLogger.Event
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_ENDED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_STARTED
 import com.android.wm.shell.dagger.Bubbles
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup
@@ -30,30 +36,54 @@ import javax.inject.Inject
  * Sessions are identified using an [InstanceId].
  */
 @WMSingleton
-class BubbleSessionTrackerImpl @Inject constructor(
-    @Bubbles private val instanceIdSequence: InstanceIdSequence
+class BubbleSessionTrackerImpl
+@Inject
+constructor(
+    @param:Bubbles private val instanceIdSequence: InstanceIdSequence,
+    private val logger: BubbleLogger
 ) : BubbleSessionTracker {
 
     private var currentSession: InstanceId? = null
 
-    override fun start() {
+    override fun startBubbleBar() {
+        start(BUBBLE_BAR_SESSION_STARTED)
+    }
+
+    override fun startFloating() {
+        start(BUBBLE_SESSION_STARTED)
+    }
+
+    private fun start(event: Event) {
         if (currentSession != null) {
             ProtoLog.d(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
-                "BubbleSessionTracker: starting to track a new session. "
-                        + "previous session still active"
+                "BubbleSessionTracker: starting to track a new session. " +
+                    "previous session still active"
             )
         }
-        currentSession = instanceIdSequence.newInstanceId()
+        val sessionId = instanceIdSequence.newInstanceId()
+        logger.logWithSessionId(event, sessionId)
+        currentSession = sessionId
     }
 
-    override fun stop() {
-        if (currentSession == null) {
+    override fun stopBubbleBar() {
+        stop(BUBBLE_BAR_SESSION_ENDED)
+    }
+
+    override fun stopFloating() {
+        stop(BUBBLE_SESSION_ENDED)
+    }
+
+    fun stop(event: Event) {
+        val sessionId = currentSession
+        if (sessionId == null) {
             ProtoLog.d(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
                 "BubbleSessionTracker: session tracking stopped but current session is null"
             )
+            return
         }
+        logger.logWithSessionId(event, sessionId)
         currentSession = null
     }
 }

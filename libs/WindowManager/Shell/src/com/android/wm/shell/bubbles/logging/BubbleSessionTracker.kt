@@ -23,9 +23,15 @@ package com.android.wm.shell.bubbles.logging
  */
 interface BubbleSessionTracker {
 
-    /** Starts tracking a new session. */
-    fun start()
+    /** Starts tracking a new bubble bar session. */
+    fun startBubbleBar()
 
-    /** Stops tracking the current session. */
-    fun stop()
+    /** Stops tracking the current bubble bar session. */
+    fun stopBubbleBar()
+
+    /** Starts tracking a new floating bubble session. */
+    fun startFloating()
+
+    /** Stops tracking the current floating bubble session. */
+    fun stopFloating()
 }
