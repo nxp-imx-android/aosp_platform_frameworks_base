@@ -17,11 +17,17 @@
 package com.android.server.display.mode
 
 import android.content.Context
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
+import android.testing.TestableContext
 import android.util.SparseArray
 import android.view.Display
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
+import androidx.test.platform.app.InstrumentationRegistry
+import com.android.internal.R
 import com.android.server.display.feature.DisplayManagerFlags
+import com.android.server.display.feature.flags.Flags
 import com.android.server.display.mode.DisplayModeDirector.DisplayDeviceConfigProvider
 import com.android.server.display.mode.RefreshRateVote.RenderVote
 import com.android.server.testutils.TestHandler
@@ -29,6 +35,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
@@ -37,11 +44,18 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class AppRequestObserverTest {
+    @get:Rule
+    val setFlagRule = SetFlagsRule()
 
     private lateinit var context: Context
     private val mockInjector = mock<DisplayModeDirector.Injector>()
     private val mockFlags = mock<DisplayManagerFlags>()
     private val mockDisplayDeviceConfigProvider = mock<DisplayDeviceConfigProvider>()
+
+    @get:Rule
+    val mContext: TestableContext = TestableContext(
+        InstrumentationRegistry.getInstrumentation().getContext()
+    )
     private val testHandler = TestHandler(null)
 
     @Before
@@ -50,11 +64,16 @@ class AppRequestObserverTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_CONFIGURE_APP_RESOLUTION_CHANGE)
     fun testAppRequestVotes(@TestParameter testCase: AppRequestTestCase) {
         whenever(mockFlags.ignoreAppPreferredRefreshRateRequest())
-                .thenReturn(testCase.ignoreRefreshRateRequest)
+            .thenReturn(testCase.ignoreRefreshRateRequest)
+        mContext.getOrCreateTestableResources().addOverride(
+            R.bool.config_appResolutionSwitchVoteDisabled,
+            false
+        )
         val displayModeDirector = DisplayModeDirector(
-            context, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
         val modes = arrayOf(
             Display.Mode(1, 1000, 1000, 60f),
             Display.Mode(2, 1000, 1000, 90f),
@@ -121,6 +140,61 @@ class AppRequestObserverTest {
         val renderRateVote = displayModeDirector.getVote(Display.DEFAULT_DISPLAY,
             Vote.PRIORITY_APP_REQUEST_RENDER_FRAME_RATE_RANGE)
         assertThat(renderRateVote).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CONFIGURE_APP_RESOLUTION_CHANGE)
+    fun testAppResolutionSwitch_voteSizeAcknowledged_picksCorrectResolution() {
+        mContext.getOrCreateTestableResources().addOverride(
+            R.bool.config_appResolutionSwitchVoteDisabled,
+            false)
+        val displayModeDirector = DisplayModeDirector(
+            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+        val modes = arrayOf(
+            Display.Mode(1, 1000, 1000, 60f),
+            Display.Mode(2, 2000, 2000, 90f),
+        )
+
+        displayModeDirector.injectAppSupportedModesByDisplay(
+            SparseArray<Array<Display.Mode>>().apply {
+                append(Display.DEFAULT_DISPLAY, modes)
+            })
+        displayModeDirector.injectDefaultModeByDisplay(SparseArray<Display.Mode>().apply {
+            append(Display.DEFAULT_DISPLAY, modes[0])
+        })
+
+        displayModeDirector.appRequestObserver.setAppRequest(Display.DEFAULT_DISPLAY, 2, 0f, 0f, 0f)
+        val sizeVote = displayModeDirector.getVote(Display.DEFAULT_DISPLAY,
+            Vote.PRIORITY_APP_REQUEST_SIZE)
+        assertThat(sizeVote).isNotNull()
+        assertThat(sizeVote).isEqualTo(SizeVote(2000, 2000, 2000, 2000))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_CONFIGURE_APP_RESOLUTION_CHANGE)
+    fun testAppResolutionSwitch_voteSizeNotAcknowledged_appRequestIgnored() {
+        mContext.getOrCreateTestableResources().addOverride(
+            R.bool.config_appResolutionSwitchVoteDisabled,
+            true)
+        val displayModeDirector = DisplayModeDirector(
+            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+        val modes = arrayOf(
+            Display.Mode(1, 1000, 1000, 60f),
+            Display.Mode(2, 2000, 2000, 90f),
+        )
+
+        displayModeDirector.injectAppSupportedModesByDisplay(
+            SparseArray<Array<Display.Mode>>().apply {
+                append(Display.DEFAULT_DISPLAY, modes)
+            })
+        displayModeDirector.injectDefaultModeByDisplay(SparseArray<Display.Mode>().apply {
+            append(Display.DEFAULT_DISPLAY, modes[0])
+        })
+
+        displayModeDirector.appRequestObserver.setAppRequest(Display.DEFAULT_DISPLAY, 2, 0f, 0f, 0f)
+        val sizeVote = displayModeDirector.getVote(Display.DEFAULT_DISPLAY,
+            Vote.PRIORITY_APP_REQUEST_SIZE)
+        assertThat(sizeVote).isNull()
     }
 
     enum class AppRequestTestCase(

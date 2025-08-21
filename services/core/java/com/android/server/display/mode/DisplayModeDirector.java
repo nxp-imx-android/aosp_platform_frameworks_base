@@ -82,6 +82,7 @@ import com.android.server.display.config.RefreshRateData;
 import com.android.server.display.config.SupportedModeData;
 import com.android.server.display.feature.DeviceConfigParameterProvider;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.utils.AmbientFilter;
 import com.android.server.display.utils.AmbientFilterFactory;
 import com.android.server.display.utils.DeviceConfigParsingUtils;
@@ -1278,9 +1279,16 @@ public class DisplayModeDirector {
      */
     public final class AppRequestObserver {
         private final boolean mIgnorePreferredRefreshRate;
+        private final boolean mEnableSizeVote;
+
 
         AppRequestObserver(DisplayManagerFlags flags) {
             mIgnorePreferredRefreshRate = flags.ignoreAppPreferredRefreshRateRequest();
+
+            // Enable size vote if the app resolution change feature is off, or if the feature is on
+            // but not disabled by the config.
+            mEnableSizeVote = !Flags.configureAppResolutionChange() || !mContext.getResources()
+                    .getBoolean(com.android.internal.R.bool.config_appResolutionSwitchVoteDisabled);
         }
 
         /**
@@ -1304,7 +1312,7 @@ public class DisplayModeDirector {
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_APP_REQUEST_BASE_MODE_REFRESH_RATE,
                     baseModeRefreshRateVote);
 
-            if (!isExternalDisplay) {
+            if (!isExternalDisplay && mEnableSizeVote) {
                 Vote sizeVote = getSizeVote(requestedMode);
                 mVotesStorage.updateVote(displayId, Vote.PRIORITY_APP_REQUEST_SIZE, sizeVote);
             }
