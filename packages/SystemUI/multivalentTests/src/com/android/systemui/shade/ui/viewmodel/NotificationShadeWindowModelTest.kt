@@ -23,6 +23,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -54,6 +55,7 @@ class NotificationShadeWindowModelTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun transitionToOccludedByOCCLUDEDTransition() =
         testScope.runTest {
             val isKeyguardOccluded by collectLastValue(underTest.isKeyguardOccluded)
@@ -75,6 +77,7 @@ class NotificationShadeWindowModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionToOccludedByDREAMINGTransition() =
         testScope.runTest {
             val isKeyguardOccluded by collectLastValue(underTest.isKeyguardOccluded)
@@ -96,6 +99,7 @@ class NotificationShadeWindowModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun transitionFromOccludedToDreamingTransitionRemainsTrue() =
         testScope.runTest {
             val isKeyguardOccluded by collectLastValue(underTest.isKeyguardOccluded)

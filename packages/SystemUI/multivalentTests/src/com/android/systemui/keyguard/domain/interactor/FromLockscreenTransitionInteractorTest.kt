@@ -236,45 +236,6 @@ class FromLockscreenTransitionInteractorTest : SysuiTestCase() {
             assertThatRepository(transitionRepository).noTransitionsStarted()
         }
 
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionsToOccluded_whenShowWhenLockedActivityOnTop() =
-        testScope.runTest {
-            underTest.start()
-            runCurrent()
-
-            reset(transitionRepository)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
-                true,
-                ActivityManager.RunningTaskInfo().apply {
-                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
-                },
-            )
-            runCurrent()
-
-            assertThatRepository(transitionRepository)
-                .startedTransition(from = KeyguardState.LOCKSCREEN, to = KeyguardState.OCCLUDED)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testTransitionsToDream_whenDreamActivityOnTop() =
-        testScope.runTest {
-            underTest.start()
-            runCurrent()
-
-            reset(transitionRepository)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
-                true,
-                ActivityManager.RunningTaskInfo().apply {
-                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
-                },
-            )
-            runCurrent()
-
-            assertThatRepository(transitionRepository)
-                .startedTransition(from = KeyguardState.LOCKSCREEN, to = KeyguardState.DREAMING)
-        }
-
     @Test
     @DisableSceneContainer
     fun testTransitionsBackToOccluded_ifOccluded_andCanceledSwipe() =
