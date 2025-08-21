@@ -378,6 +378,31 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * Returns the device policy for the display with the given ID and the given policy type.
+     *
+     * <p>In case the display does not exist or is not owned by a virtual device,
+     * {@link VirtualDeviceParams#DEVICE_POLICY_DEFAULT} is returned.
+     *
+     * @hide
+     */
+    public @VirtualDeviceParams.DevicePolicy int getDevicePolicyForDisplayId(
+            int displayId, @VirtualDeviceParams.PolicyType int policyType) {
+        if (displayId == Context.DEVICE_ID_DEFAULT) {
+            // Avoid unnecessary binder call, for default display, policy will be always default.
+            return VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+        }
+        if (mService == null) {
+            Log.w(TAG, "Failed to retrieve device policy; no virtual device manager service.");
+            return VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+        }
+        try {
+            return mService.getDevicePolicyForDisplayId(displayId, policyType);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns the ID of the device which owns the display with the given ID.
      *
      * @hide

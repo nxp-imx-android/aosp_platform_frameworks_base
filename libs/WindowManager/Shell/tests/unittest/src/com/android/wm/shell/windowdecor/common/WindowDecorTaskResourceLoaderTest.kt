@@ -41,7 +41,7 @@ import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
-import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader.AppResources
+import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoaderImpl.AppResources
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
 import kotlin.test.assertFailsWith
@@ -73,7 +73,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /**
- * Tests for [WindowDecorTaskResourceLoader].
+ * Tests for [WindowDecorTaskResourceLoaderImpl].
  *
  * Build/Install/Run: atest WindowDecorTaskResourceLoaderTest
  */
@@ -95,7 +95,7 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
     private val testScope = TestScope(testDispatcher)
 
     private lateinit var spyContext: TestableContext
-    private lateinit var loader: WindowDecorTaskResourceLoader
+    private lateinit var loader: WindowDecorTaskResourceLoaderImpl
 
     private val userChangeListenerCaptor = argumentCaptor<UserChangeListener>()
     private val userChangeListener: UserChangeListener by lazy {
@@ -114,7 +114,7 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
         doReturn(spyContext).whenever(mMockUserProfileContexts)[anyInt()]
         doReturn(spyContext).whenever(mMockUserProfileContexts).getOrCreate(anyInt())
         loader =
-            WindowDecorTaskResourceLoader(
+            WindowDecorTaskResourceLoaderImpl(
                 shellInit = shellInit,
                 shellController = mockShellController,
                 mainHandler = mockHandler,

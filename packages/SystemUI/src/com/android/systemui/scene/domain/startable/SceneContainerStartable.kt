@@ -45,6 +45,7 @@ import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
@@ -61,7 +62,6 @@ import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
-import com.android.systemui.scene.domain.interactor.SceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -136,7 +136,7 @@ constructor(
     private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
     private val centralSurfacesOptLazy: Lazy<Optional<CentralSurfaces>>,
     private val headsUpInteractor: HeadsUpNotificationInteractor,
-    private val occlusionInteractor: SceneContainerOcclusionInteractor,
+    private val occlusionInteractor: KeyguardOcclusionInteractor,
     private val faceUnlockInteractor: DeviceEntryFaceAuthInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val uiEventLogger: UiEventLogger,
@@ -180,6 +180,7 @@ constructor(
             respondToFalsingDetections()
             hydrateInteractionState()
             handleBouncerOverscroll()
+            handleOcclusion()
             handleDeviceEntryHapticsWhileDeviceLocked()
             hydrateWindowController()
             hydrateBackStack()
@@ -285,13 +286,11 @@ constructor(
                         combine(
                                 sceneInteractor.transitionState,
                                 headsUpInteractor.isHeadsUpOrAnimatingAway,
-                                occlusionInteractor.invisibleDueToOcclusion,
                                 alternateBouncerInteractor.isVisible,
                                 surfaceBehindInteractor.isAnimatingSurface,
                             ) {
                                 transitionState,
                                 isHeadsUpOrAnimatingAway,
-                                invisibleDueToOcclusion,
                                 isAlternateBouncerVisible,
                                 isAnimatingSurface ->
                                 val isCommunalShowing =
@@ -306,13 +305,18 @@ constructor(
                                             if (transitionState.currentScene == Scenes.Dream) {
                                                 false to "dream is showing"
                                             } else if (
-                                                transitionState.currentScene != Scenes.Gone
+                                                transitionState.currentScene != Scenes.Gone &&
+                                                    transitionState.currentScene != Scenes.Occluded
                                             ) {
-                                                true to "scene is not Gone"
+                                                true to "scene is not Gone and not Occluded"
                                             } else if (
                                                 transitionState.currentOverlays.isNotEmpty()
                                             ) {
                                                 true to "overlay is shown"
+                                            } else if (
+                                                transitionState.currentScene == Scenes.Occluded
+                                            ) {
+                                                false to "occluded"
                                             } else {
                                                 false to "scene is Gone and no overlays are shown"
                                             }
@@ -333,7 +337,6 @@ constructor(
                                     // transitions get a chance to complete.
                                     inTransition && visibilityForTransitionState.first ->
                                         true to visibilityForTransitionState.second
-                                    invisibleDueToOcclusion -> false to "invisible due to occlusion"
                                     else -> visibilityForTransitionState
                                 }
                             }
@@ -757,14 +760,12 @@ constructor(
                         .mapNotNull { it as? ObservableTransitionState.Idle }
                         .distinctUntilChanged(),
                     sceneInteractor.isVisible,
-                    occlusionInteractor.invisibleDueToOcclusion,
                     shadePendingDisplayId,
-                ) { idleState, isVisible, invisibleDueToOcclusion, displayId ->
+                ) { idleState, isVisible, displayId ->
                     displayId to
                         SceneContainerPlugin.SceneContainerPluginState(
                             scene = idleState.currentScene,
                             overlays = idleState.currentOverlays,
-                            invisibleDueToOcclusion = invisibleDueToOcclusion,
                             isVisible = isVisible,
                         )
                 }
@@ -803,8 +804,8 @@ constructor(
         }
 
         applicationScope.launch {
-            occlusionInteractor.invisibleDueToOcclusion.collect { invisibleDueToOcclusion ->
-                windowController.setKeyguardOccluded(invisibleDueToOcclusion)
+            occlusionInteractor.isKeyguardOccluded.collect { isKeyguardOccluded ->
+                windowController.setKeyguardOccluded(isKeyguardOccluded)
             }
         }
     }
@@ -932,6 +933,24 @@ constructor(
                 // Only consider negative scrolling, AKA overscroll.
                 .filter { it == -1 }
                 .collect { faceUnlockInteractor.onSwipeUpOnBouncer() }
+        }
+    }
+
+    private fun handleOcclusion() {
+        applicationScope.launch {
+            occlusionInteractor.isKeyguardOccluded.collect { occluded ->
+                // This does not use the scene family to resolve, as there is a race condition when
+                // they both update state based off of the isKeyguardOccluded value.
+                if (occluded) {
+                    switchToScene(Scenes.Occluded, "isKeyguardOccluded == true")
+                } else if (sceneInteractor.currentScene.value == Scenes.Occluded) {
+                    if (deviceEntryInteractor.isDeviceEntered.value) {
+                        switchToScene(Scenes.Gone, "unoccluded and device entered")
+                    } else {
+                        switchToScene(Scenes.Lockscreen, "unoccluded and device not entered")
+                    }
+                }
+            }
         }
     }
 

@@ -71,6 +71,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
             r.invokeShellInit()
             r.checkTaskAppearedListenerIsRegistered(expected = true)
             r.checkTaskVanishedListenerIsRegistered(expected = true)
+            r.checkTaskInfoChangedListenerIsRegistered(expected = true)
         }
     }
 
@@ -81,18 +82,6 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
             r.invokeShellInit()
             r.checkTaskAppearedListenerIsRegistered(expected = false)
             r.checkTaskVanishedListenerIsRegistered(expected = false)
-            r.checkTaskInfoChangedListenerIsRegistered(expected = false)
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
-    fun `When just the hierarchy flag is DISABLED the listener is NOT registered`() {
-        runTestScenario { r ->
-            r.invokeShellInit()
-            r.checkTaskAppearedListenerIsRegistered(expected = true)
-            r.checkTaskVanishedListenerIsRegistered(expected = true)
             r.checkTaskInfoChangedListenerIsRegistered(expected = false)
         }
     }

@@ -43,6 +43,8 @@ import java.util.Set;
  *   <li>Removing unused keys from the adb_keys file
  *   <li>Managing authorized WiFi access points for ADB over WiFi
  * </ol>
+ *
+ * This class is thread safe. All of the API methods are synchronized.
  */
 class AdbKeyStore {
     private static final String TAG = AdbKeyStore.class.getSimpleName();
@@ -115,20 +117,20 @@ class AdbKeyStore {
         copyUserKeysToTempAuthorizationStore();
     }
 
-    void reloadKeyMap() {
+    synchronized void reloadKeyMap() {
         mAuthEntries = mAuthStore.load();
     }
 
-    void addTrustedNetwork(String bssid) {
+    synchronized void addTrustedNetwork(String bssid) {
         mAuthEntries.trustedNetworks().add(bssid);
         mKeyStorePersistAction.requestPersist();
     }
 
-    Set<String> getKeys() {
+    synchronized Set<String> getKeys() {
         return new HashSet<>(mAuthEntries.keys().keySet());
     }
 
-    String findKeyFromFingerprint(String fingerprint) {
+    synchronized String findKeyFromFingerprint(String fingerprint) {
         for (Map.Entry<String, Long> entry : mAuthEntries.keys().entrySet()) {
             String f = AdbDebuggingManager.getFingerprints(entry.getKey());
             if (fingerprint.equals(f)) {
@@ -138,7 +140,7 @@ class AdbKeyStore {
         return null;
     }
 
-    void removeKey(String key) {
+    synchronized void removeKey(String key) {
         if (mAuthEntries.keys().containsKey(key)) {
             mAuthEntries.keys().remove(key);
             mKeyStorePersistAction.requestPersist();
@@ -146,7 +148,7 @@ class AdbKeyStore {
     }
 
     /** Returns whether there are any 'always allowed' keys in the keystore. */
-    boolean isEmpty() {
+    synchronized boolean isEmpty() {
         return mAuthEntries.keys().isEmpty();
     }
 
@@ -154,7 +156,7 @@ class AdbKeyStore {
      * Iterates through the keys in the keystore and removes any that are beyond the window within
      * which connections are automatically allowed without user interaction.
      */
-    void updateKeyStore() {
+    synchronized void updateKeyStore() {
         if (filterOutOldKeys()) {
             mKeyStorePersistAction.requestPersist();
         }
@@ -182,7 +184,7 @@ class AdbKeyStore {
     }
 
     /** Writes the key map to the key file. */
-    void persistKeyStore() {
+    synchronized void persistKeyStore() {
         // if there is nothing in the key map then ensure any keys left in the keystore files
         // are deleted as well.
         filterOutOldKeys();
@@ -223,7 +225,7 @@ class AdbKeyStore {
      * Returns the time in ms that the next key will expire or -1 if there are no keys or the keys
      * will not expire.
      */
-    long getNextExpirationTime() {
+    synchronized long getNextExpirationTime() {
         long minExpiration = -1;
         long allowedTime = getAllowedConnectionTime();
         // if the allowedTime is 0 then keys never expire; return -1 to indicate this
@@ -247,7 +249,7 @@ class AdbKeyStore {
     }
 
     /** Removes all of the entries in the key map and deletes the key file. */
-    void deleteKeyStore() {
+    synchronized void deleteKeyStore() {
         mAuthEntries.clear();
         mAuthStore.delete();
         mAdbKeyUser.delete();
@@ -257,12 +259,12 @@ class AdbKeyStore {
      * Returns the time of the last connection from the specified key, or {@code
      * NO_PREVIOUS_CONNECTION} if the specified key does not have an active adb grant.
      */
-    long getLastConnectionTime(String key) {
+    synchronized long getLastConnectionTime(String key) {
         return mAuthEntries.keys().getOrDefault(key, NO_PREVIOUS_CONNECTION);
     }
 
     /** Sets the time of the last connection for the specified key to the provided time. */
-    void setLastConnectionTime(String key, long connectionTime) {
+    synchronized void setLastConnectionTime(String key, long connectionTime) {
         setLastConnectionTime(key, connectionTime, false);
     }
 
@@ -272,7 +274,7 @@ class AdbKeyStore {
      * time.
      */
     @VisibleForTesting
-    void setLastConnectionTime(String key, long connectionTime, boolean force) {
+    synchronized void setLastConnectionTime(String key, long connectionTime, boolean force) {
         // Do not set the connection time to a value that is earlier than what was previously
         // stored as the last connection time unless force is set.
         if (mAuthEntries.keys().containsKey(key)
@@ -292,7 +294,7 @@ class AdbKeyStore {
      * Returns the connection time within which a connection from an allowed key is automatically
      * allowed without user interaction.
      */
-    long getAllowedConnectionTime() {
+    synchronized long getAllowedConnectionTime() {
         return Settings.Global.getLong(
                 mContext.getContentResolver(),
                 Settings.Global.ADB_ALLOWED_CONNECTION_TIME,
@@ -304,7 +306,7 @@ class AdbKeyStore {
      * This requires that the user previously connected this device and selected the option to
      * 'Always allow', and the time since the last connection is within the allowed window.
      */
-    boolean isKeyAuthorized(String key) {
+    synchronized boolean isKeyAuthorized(String key) {
         // A system key is always authorized to connect.
         if (mSystemKeys.contains(key)) {
             return true;
@@ -325,7 +327,7 @@ class AdbKeyStore {
      * the user previously allowed wireless debugging on this network and selected the option to
      * 'Always allow'.
      */
-    boolean isTrustedNetwork(String bssid) {
+    synchronized boolean isTrustedNetwork(String bssid) {
         return mAuthEntries.trustedNetworks().contains(bssid);
     }
 

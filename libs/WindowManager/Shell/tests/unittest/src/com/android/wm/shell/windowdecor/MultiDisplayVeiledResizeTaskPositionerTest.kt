@@ -53,6 +53,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN
 import java.util.function.Supplier
 import junit.framework.Assert
 import org.junit.Before
@@ -184,6 +185,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
         verify(mockWindowDecoration, never()).showResizeVeil(STARTING_BOUNDS)
 
@@ -218,6 +220,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -252,6 +255,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -284,6 +288,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningEnd(
@@ -305,6 +310,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 1900f)
@@ -329,6 +335,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 1900f)
@@ -357,6 +364,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Move to the display 1
@@ -387,6 +395,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 DISPLAY_ID_0,
                 STARTING_BOUNDS.left.toFloat(),
                 STARTING_BOUNDS.top.toFloat(),
+                INPUT_METHOD_TYPE_UNKNOWN,
             )
 
             // Move to the display 1
@@ -419,6 +428,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -475,6 +485,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             CTRL_TYPE_TOP or CTRL_TYPE_RIGHT,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -522,6 +533,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         val newX = STARTING_BOUNDS.left.toFloat() + 5
@@ -550,6 +562,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is reordered to top
@@ -571,6 +584,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is not reordered to top
@@ -592,6 +606,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is not reordered to top since task is already brought to top before dragging
@@ -687,6 +702,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // First drag; we should fetch stable bounds for display 0.
@@ -709,6 +725,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.bottom.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -732,6 +749,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.bottom.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -770,6 +788,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID_0,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -856,7 +875,13 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     private fun performDrag(startX: Float, startY: Float, endX: Float, endY: Float, ctrlType: Int) {
-        taskPositioner.onDragPositioningStart(ctrlType, DISPLAY_ID_0, startX, startY)
+        taskPositioner.onDragPositioningStart(
+            ctrlType,
+            DISPLAY_ID_0,
+            startX,
+            startY,
+            INPUT_METHOD_TYPE_UNKNOWN,
+        )
         taskPositioner.onDragPositioningMove(DISPLAY_ID_0, endX, endY)
 
         taskPositioner.onDragPositioningEnd(DISPLAY_ID_0, endX, endY)

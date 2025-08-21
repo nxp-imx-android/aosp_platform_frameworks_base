@@ -16,6 +16,8 @@
 
 package android.view;
 
+import static android.app.UiModeManager.FORCE_INVERT_TYPE_DARK;
+import static android.app.UiModeManager.MODE_NIGHT_YES;
 import static android.util.SequenceUtils.getInitSeq;
 import static android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING;
 import static android.view.InputDevice.SOURCE_ROTARY_ENCODER;
@@ -41,7 +43,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR;
-import static android.view.flags.Flags.FLAG_ADD_SCHANDLE_TO_VRI_SURFACE;
 import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
@@ -58,6 +59,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
 import android.app.Instrumentation;
@@ -172,6 +175,7 @@ public class ViewRootImplTest {
     public void teardown() {
         ShellIdentityUtils.invokeWithShellPermissions(() -> {
             Settings.Secure.resetToDefaults(sContext.getContentResolver(), TAG);
+            Settings.System.resetToDefaults(sContext.getContentResolver(), TAG);
 
             var uiModeManager = sContext.getSystemService(UiModeManager.class);
             uiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
@@ -1532,19 +1536,121 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void determineForceDarkType_isBlocklistedPackage_returnsNone() throws Exception {
+    public void determineForceDarkType_isOverrideDefault_lightTheme_forceInverted()
+            throws Exception {
         TestableContext testableContext = new TestableContext(sContext);
+        final UiModeManager mockUiModeManager = mock(UiModeManager.class);
+        when(mockUiModeManager.getForceInvertOverrideState()).thenReturn(
+                UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED);
+        testableContext.addMockSystemService(Context.UI_MODE_SERVICE, mockUiModeManager);
         sInstrumentation.runOnMainSync(() -> mViewRootImpl =
                 new ViewRootImpl(testableContext, testableContext.getDisplayNoVerify()));
-        // Set up configurations for force invert color, but with this context belonging to a
-        // blocklisted package.
+
+        when(mockUiModeManager.getForceInvertState()).thenReturn(FORCE_INVERT_TYPE_DARK);
+        when(mockUiModeManager.getNightMode()).thenReturn(MODE_NIGHT_YES);
+
         waitForSystemNightModeActivated(testableContext, true);
-        enableForceInvertColor(testableContext, true);
-        testableContext.getOrCreateTestableResources().addOverride(
-                com.android.internal.R.array.config_forceInvertPackageBlocklist,
-                new String[]{testableContext.getPackageName()});
 
         setUpViewAttributes(testableContext, /* isLightTheme= */ true, /* isForceDarkAllowed= */
+                false);
+
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType()
+                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
+    }
+
+    @Test
+    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
+    public void determineForceDarkType_isOverrideEnabled_lightTheme_forceInverted()
+            throws Exception {
+        TestableContext testableContext = new TestableContext(sContext);
+        final UiModeManager mockUiModeManager = mock(UiModeManager.class);
+        when(mockUiModeManager.getForceInvertOverrideState()).thenReturn(
+                UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE);
+        testableContext.addMockSystemService(Context.UI_MODE_SERVICE, mockUiModeManager);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl =
+                new ViewRootImpl(testableContext, testableContext.getDisplayNoVerify()));
+
+        when(mockUiModeManager.getForceInvertState()).thenReturn(FORCE_INVERT_TYPE_DARK);
+        when(mockUiModeManager.getNightMode()).thenReturn(MODE_NIGHT_YES);
+
+        waitForSystemNightModeActivated(testableContext, true);
+
+        setUpViewAttributes(testableContext, /* isLightTheme= */ true, /* isForceDarkAllowed= */
+                false);
+
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType()
+                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
+    }
+
+    @Test
+    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
+    public void determineForceDarkType_isOverrideEnabled_darkTheme_forceInverted()
+            throws Exception {
+        TestableContext testableContext = new TestableContext(sContext);
+        final UiModeManager mockUiModeManager = mock(UiModeManager.class);
+        when(mockUiModeManager.getForceInvertOverrideState()).thenReturn(
+                UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE);
+        testableContext.addMockSystemService(Context.UI_MODE_SERVICE, mockUiModeManager);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl =
+                new ViewRootImpl(testableContext, testableContext.getDisplayNoVerify()));
+
+        when(mockUiModeManager.getForceInvertState()).thenReturn(FORCE_INVERT_TYPE_DARK);
+        when(mockUiModeManager.getNightMode()).thenReturn(MODE_NIGHT_YES);
+
+        waitForSystemNightModeActivated(testableContext, true);
+
+        setUpViewAttributes(testableContext, /* isLightTheme= */ false, /* isForceDarkAllowed= */
+                false);
+
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType()
+                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
+    }
+
+    @Test
+    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
+    public void determineForceDarkType_isOverrideDisabled_lightTheme_returnsNone()
+            throws Exception {
+        TestableContext testableContext = new TestableContext(sContext);
+        final UiModeManager mockUiModeManager = mock(UiModeManager.class);
+        when(mockUiModeManager.getForceInvertOverrideState()).thenReturn(
+                UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
+        testableContext.addMockSystemService(Context.UI_MODE_SERVICE, mockUiModeManager);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl =
+                new ViewRootImpl(testableContext, testableContext.getDisplayNoVerify()));
+
+        when(mockUiModeManager.getForceInvertState()).thenReturn(FORCE_INVERT_TYPE_DARK);
+        when(mockUiModeManager.getNightMode()).thenReturn(MODE_NIGHT_YES);
+
+        waitForSystemNightModeActivated(testableContext, true);
+
+        setUpViewAttributes(testableContext, /* isLightTheme= */ true, /* isForceDarkAllowed= */
+                false);
+
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
+    }
+
+    @Test
+    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
+    public void determineForceDarkType_isOverrideDisabled_darkTheme_returnsNone()
+            throws Exception {
+        TestableContext testableContext = new TestableContext(sContext);
+        final UiModeManager mockUiModeManager = mock(UiModeManager.class);
+        when(mockUiModeManager.getForceInvertOverrideState()).thenReturn(
+                UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
+        testableContext.addMockSystemService(Context.UI_MODE_SERVICE, mockUiModeManager);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl =
+                new ViewRootImpl(testableContext, testableContext.getDisplayNoVerify()));
+
+        when(mockUiModeManager.getForceInvertState()).thenReturn(FORCE_INVERT_TYPE_DARK);
+        when(mockUiModeManager.getNightMode()).thenReturn(MODE_NIGHT_YES);
+
+        waitForSystemNightModeActivated(testableContext, true);
+
+        setUpViewAttributes(testableContext, /* isLightTheme= */ false, /* isForceDarkAllowed= */
                 false);
 
         TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
@@ -1610,7 +1716,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({FLAG_ADD_SCHANDLE_TO_VRI_SURFACE})
     public void testASurfaceControl_createFromWindow() throws Throwable {
         mView = new View(sContext);
         attachViewToWindow(mView);

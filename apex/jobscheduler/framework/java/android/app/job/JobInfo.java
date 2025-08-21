@@ -464,46 +464,6 @@ public class JobInfo implements Parcelable {
     /** @hide */
     public static final int MAX_TRACE_TAG_LENGTH = Trace.MAX_SECTION_NAME_LEN;
 
-    /** @hide */
-    @IntDef(prefix = {"CATEGORY_"}, value = {
-            CATEGORY_UNKNOWN,
-            CATEGORY_BACKUP,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Category {
-    }
-
-    /**
-     * Category: Default or unspecified job category.
-     */
-    @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
-    public static final int CATEGORY_UNKNOWN = 0;
-
-    /**
-     * Category: The job is used for backing up user-generated data.
-     * <p>
-     * This is a hint to the system. Jobs marked with this use case
-     * <i>may</i> receive additional quota or be subject to different
-     * scheduling heuristics, but this is not guaranteed.
-     * <p>
-     * Since backup operations are inherently network dependent, jobs of this
-     * category must have network constraint set using
-     * {@link Builder#setRequiredNetworkType(int)}. If it is not set,
-     * {@link Builder#build()} will throw an {@link IllegalArgumentException}.
-     */
-    // TODO: b/419047126 - Expand the javadoc to be more specific about the backup use case and
-    // in what conditions this category will be respected.
-    @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
-    public static final int CATEGORY_BACKUP = 1;
-
-    /**
-     * Maximum value for {@link Category}.
-     *
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
-    public static final int CATEGORY_MAX = CATEGORY_BACKUP;
-
     @UnsupportedAppUsage
     private final int jobId;
     private final PersistableBundle extras;
@@ -538,8 +498,6 @@ public class JobInfo implements Parcelable {
     private final ArraySet<String> mDebugTags;
     @Nullable
     private final String mTraceTag;
-    @Category
-    private final int mCategory;
 
     /**
      * Unique job id associated with this application (uid).  This is the same job ID
@@ -837,21 +795,6 @@ public class JobInfo implements Parcelable {
     }
 
     /**
-     * Gets the category of this job, which was previously defined using
-     * {@link JobInfo.Builder#setCategory(int)}. If no category has been set, then
-     * {@link JobInfo#CATEGORY_UNKNOWN} will be returned.
-     *
-     * @return The category of this job, or {@link JobInfo#CATEGORY_UNKNOWN} if no category has
-     *         been set using {@link JobInfo.Builder#setCategory(int)}.
-     * @see JobInfo.Builder#setCategory(int)
-     */
-    @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
-    @Category
-    public int getCategory() {
-        return mCategory;
-    }
-
-    /**
      * @see JobInfo.Builder#setExpedited(boolean)
      */
     public boolean isExpedited() {
@@ -1002,9 +945,6 @@ public class JobInfo implements Parcelable {
         if (!Objects.equals(mTraceTag, j.mTraceTag)) {
             return false;
         }
-        if (mCategory != j.mCategory) {
-            return false;
-        }
         return true;
     }
 
@@ -1055,7 +995,6 @@ public class JobInfo implements Parcelable {
         if (mTraceTag != null) {
             hashCode = 31 * hashCode + mTraceTag.hashCode();
         }
-        hashCode = 31 * hashCode + mCategory;
         return hashCode;
     }
 
@@ -1109,7 +1048,6 @@ public class JobInfo implements Parcelable {
         }
         final String traceTag = in.readString();
         mTraceTag = traceTag == null ? null : traceTag.intern();
-        mCategory = in.readInt();
     }
 
     private JobInfo(JobInfo.Builder b) {
@@ -1144,7 +1082,6 @@ public class JobInfo implements Parcelable {
         flags = b.mFlags;
         mDebugTags = b.mDebugTags;
         mTraceTag = b.mTraceTag;
-        mCategory = b.mCategory;
     }
 
     @Override
@@ -1199,7 +1136,6 @@ public class JobInfo implements Parcelable {
             out.writeString(mDebugTags.valueAt(i));
         }
         out.writeString(mTraceTag);
-        out.writeInt(mCategory);
     }
 
     public static final @android.annotation.NonNull Creator<JobInfo> CREATOR = new Creator<JobInfo>() {
@@ -1346,8 +1282,6 @@ public class JobInfo implements Parcelable {
         private boolean mBackoffPolicySet = false;
         private final ArraySet<String> mDebugTags = new ArraySet<>();
         private String mTraceTag;
-        @Category
-        private int mCategory;
 
         /**
          * Initialize a new Builder to construct a {@link JobInfo}.
@@ -1400,6 +1334,8 @@ public class JobInfo implements Parcelable {
             // job.
             mBackoffPolicy = job.getBackoffPolicy();
             mPriority = job.getPriority();
+            mDebugTags.addAll(job.getDebugTags());
+            mTraceTag = job.getTraceTag();
         }
 
         /**
@@ -1431,8 +1367,9 @@ public class JobInfo implements Parcelable {
 
         /** @hide */
         @NonNull
-        public void addDebugTags(@NonNull Set<String> tags) {
+        public Builder addDebugTags(@NonNull Set<String> tags) {
             mDebugTags.addAll(tags);
+            return this;
         }
 
         /**
@@ -2276,28 +2213,6 @@ public class JobInfo implements Parcelable {
         }
 
         /**
-         * Sets the category for this job.
-         * <p>
-         * The category provides a hint to the system about the purpose
-         * of the job, which <i>may</i> influence scheduling and system resource allocation.
-         *
-         * <p>
-         * Each category can have specific requirements. For instance, jobs of category
-         * {@link JobInfo#CATEGORY_BACKUP} must have network constraint set. If
-         * these requirements are not met, {@link Builder#build()} will throw an
-         * {@link IllegalArgumentException}.
-         *
-         * @param category The category for this job, e.g., {@link #CATEGORY_BACKUP}.
-         * @return This Builder object to allow method chaining.
-         */
-        @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
-        @NonNull
-        public Builder setCategory(@Category int category) {
-            mCategory = validateCategory(category);
-            return this;
-        }
-
-        /**
          * @return The job object to hand to the JobScheduler. This object is immutable.
          */
         public JobInfo build() {
@@ -2618,16 +2533,6 @@ public class JobInfo implements Parcelable {
             throw new IllegalArgumentException("Trace tag cannot contain |, \\n, or \\0");
         }
         return traceTag.intern();
-    }
-
-    /**
-     * Returns the {@code category} if valid, or throws an exception if not.
-     */
-    private static int validateCategory(@Category int category) {
-        if (category < CATEGORY_UNKNOWN || category > CATEGORY_MAX) {
-            throw new IllegalArgumentException("Not a valid category: " + category);
-        }
-        return category;
     }
 
     /**

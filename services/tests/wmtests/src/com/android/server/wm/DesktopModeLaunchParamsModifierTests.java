@@ -1291,6 +1291,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 .setActivity(activity).calculate());
         assertEquals(desiredWidth, mResult.mBounds.width());
         assertEquals(desiredHeight, mResult.mBounds.height());
+        assertEquals(desiredHeight - captionHeight, mResult.mAppBounds.height());
     }
 
     @Test
@@ -1318,6 +1319,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 .setActivity(activity).calculate());
         assertEquals(desiredWidth, mResult.mBounds.width());
         assertEquals(desiredHeight, mResult.mBounds.height());
+        assertEquals(desiredHeight - captionHeight, mResult.mAppBounds.height());
     }
 
     @Test
@@ -1473,6 +1475,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 .setActivity(activity).calculate());
         assertEquals(desiredWidth, mResult.mBounds.width());
         assertEquals(desiredHeight, mResult.mBounds.height());
+        assertEquals(desiredHeight - captionHeight, mResult.mAppBounds.height());
     }
 
     @Test
@@ -1500,6 +1503,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 .setActivity(activity).calculate());
         assertEquals(desiredWidth, mResult.mBounds.width());
         assertEquals(desiredHeight, mResult.mBounds.height());
+        assertEquals(desiredHeight - captionHeight, mResult.mAppBounds.height());
     }
 
     @Test

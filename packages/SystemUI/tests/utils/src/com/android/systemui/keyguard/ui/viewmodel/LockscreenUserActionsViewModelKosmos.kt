@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 
@@ -28,6 +27,5 @@ val Kosmos.lockscreenUserActionsViewModel by Fixture {
         deviceEntryInteractor = deviceEntryInteractor,
         shadeInteractor = shadeInteractor,
         shadeModeInteractor = shadeModeInteractor,
-        occlusionInteractor = sceneContainerOcclusionInteractor,
     )
 }

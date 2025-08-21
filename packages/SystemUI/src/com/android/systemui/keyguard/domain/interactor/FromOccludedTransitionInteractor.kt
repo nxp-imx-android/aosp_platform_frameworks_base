@@ -140,8 +140,9 @@ constructor(
     ) {
         if (restartDreamOnUnocclude() && dreamFromOccluded) {
             startTransitionTo(KeyguardState.DREAMING)
+        } else if (SceneContainerFlag.isEnabled) {
+            return
         } else if (isIdleOnCommunal || showCommunalFromOccluded) {
-            if (SceneContainerFlag.isEnabled) return
             communalSceneInteractor.changeScene(
                 newScene = CommunalScenes.Communal,
                 loggingReason = "occluded to hub",

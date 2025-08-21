@@ -47,9 +47,7 @@ constructor(
                 {
                     shellTaskOrganizer.addTaskAppearedListener(this)
                     shellTaskOrganizer.addTaskVanishedListener(this)
-                    if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
-                        shellTaskOrganizer.addTaskInfoChangedListener(this)
-                    }
+                    shellTaskOrganizer.addTaskInfoChangedListener(this)
                 },
                 this,
             )
@@ -63,15 +61,27 @@ constructor(
             letterboxTaskInfoRepository.insert(
                 key = taskInfo.taskId,
                 item =
-                    LetterboxTaskInfoState(containerToken = taskInfo.token, containerLeash = leash),
+                    LetterboxTaskInfoState(
+                        containerToken = taskInfo.token,
+                        containerLeash = leash,
+                        configuration = taskInfo.configuration,
+                    ),
                 overrideIfPresent = true,
             )
         }
     }
 
     override fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
-        if (!taskInfo.isALeafTask) {
-            letterboxTaskInfoRepository.delete(taskInfo.taskId)
+        if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
+            if (!taskInfo.isALeafTask) {
+                letterboxTaskInfoRepository.delete(taskInfo.taskId)
+            }
+        }
+        if (Flags.appCompatRefactoringRoundedCorners()) {
+            letterboxTaskInfoRepository.update(
+                key = taskInfo.taskId,
+                updateItem = { item -> item.copy(configuration = taskInfo.configuration) },
+            )
         }
     }
 

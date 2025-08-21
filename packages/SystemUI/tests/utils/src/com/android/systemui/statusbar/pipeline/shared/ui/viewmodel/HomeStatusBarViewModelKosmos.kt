@@ -19,12 +19,12 @@ package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 import android.content.testableContext
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.table.tableLogBufferFactory
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -89,7 +89,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 keyguardInteractor,
                 statusBarOperatorNameViewModel,
                 sceneInteractor,
-                sceneContainerOcclusionInteractor,
+                keyguardOcclusionInteractor,
                 shadeInteractor,
                 shareToAppChipViewModel,
                 ongoingActivityChipsViewModel,

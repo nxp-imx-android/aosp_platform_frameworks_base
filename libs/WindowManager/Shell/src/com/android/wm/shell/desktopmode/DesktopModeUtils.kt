@@ -38,6 +38,8 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.SystemProperties
 import android.util.Size
+import android.view.DragEvent
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_ICON
 import com.android.internal.policy.DesktopModeCompatUtils
@@ -201,6 +203,41 @@ fun calculateMaximizeBounds(displayLayout: DisplayLayout, taskInfo: RunningTaskI
                 captionInsets,
             )
         return centerInArea(newSize, stableBounds, stableBounds.left, stableBounds.top)
+    }
+}
+
+/**
+ * Position the new window based on the drag event.
+ * It uses the drag shadow to maintain the relative position on the new window.
+ * If shadow has anomaly, the new window is created from the top-center at the drop point.
+ */
+fun positionDragAndDropBounds(
+    newBounds : Rect,
+    dragEvent : DragEvent
+) {
+    val shadowSurface = dragEvent.dragSurface
+    if (DesktopExperienceFlags.ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS.isTrue() &&
+        shadowSurface != null &&
+        shadowSurface.isValid &&
+        shadowSurface.width != 0) {
+        // Calculate the horizontal offset to maintain the touch point's relative
+        // position on the new window.
+        val dropOffset = calculateDropPositionOffset(
+            dragEvent.offsetX,
+            shadowSurface.width,
+            newBounds.width()
+        )
+        // Position the new window based on the drop point and its relative offset.
+        newBounds.offsetTo(
+            dragEvent.x.toInt() - dropOffset,
+            dragEvent.y.toInt())
+
+    } else {
+        // Position the new window to the top-center at the drop point.
+        newBounds.offsetTo(
+            dragEvent.x.toInt() - (newBounds.width() / 2),
+            dragEvent.y.toInt(),
+        )
     }
 }
 
@@ -477,6 +514,20 @@ fun createActivityOptionsForStartTask(
         desksOrganizer.addLaunchDeskToActivityOptions(activityOptions, deskId)
     }
     return activityOptions
+}
+
+/**
+ * Calculates the horizontal offset from the left edge of a new window to the user's touch point.
+ * This preserves the same relative position of the touch point as it was on the dragShadow,
+ * which allows a better positioning based on user's finger.
+ */
+private fun calculateDropPositionOffset(
+    dragOffsetX: Float,
+    shadowWidth: Int,
+    windowWidth: Int
+): Int {
+    val touchPointHorizontalRatio = dragOffsetX / shadowWidth.toFloat()
+    return (windowWidth * touchPointHorizontalRatio).toInt()
 }
 
 /**

@@ -26,8 +26,15 @@ import static android.media.RoutingSessionInfo.TRANSFER_REASON_APP;
 import static android.media.RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
 import static android.media.RoutingSessionInfo.TRANSFER_REASON_SYSTEM_REQUEST;
 
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE;
+import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_UNSPECIFIED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_FAILED_TO_REROUTE_SYSTEM_MEDIA;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_INVALID_COMMAND;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_NETWORK_ERROR;
@@ -47,6 +54,7 @@ import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORT
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST;
 import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_UNSPECIFIED;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.media.MediaRoute2ProviderService;
@@ -64,6 +72,8 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Logs metrics for MediaRouter2.
@@ -71,6 +81,32 @@ import java.io.PrintWriter;
  * @hide
  */
 final class MediaRouterMetricLogger {
+    public static final int EVENT_TYPE_UNSPECIFIED = 0;
+    public static final int EVENT_TYPE_CREATE_SESSION = 1;
+    public static final int EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION = 2;
+    public static final int EVENT_TYPE_RELEASE_SESSION = 3;
+    public static final int EVENT_TYPE_SELECT_ROUTE = 4;
+    public static final int EVENT_TYPE_DESELECT_ROUTE = 5;
+    public static final int EVENT_TYPE_TRANSFER_TO_ROUTE = 6;
+    public static final int EVENT_TYPE_SCANNING_STARTED = 7;
+    public static final int EVENT_TYPE_SCANNING_STOPPED = 8;
+
+    @IntDef(
+            prefix = "EVENT_TYPE",
+            value = {
+                    EVENT_TYPE_UNSPECIFIED,
+                    EVENT_TYPE_CREATE_SESSION,
+                    EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION,
+                    EVENT_TYPE_RELEASE_SESSION,
+                    EVENT_TYPE_SELECT_ROUTE,
+                    EVENT_TYPE_DESELECT_ROUTE,
+                    EVENT_TYPE_TRANSFER_TO_ROUTE,
+                    EVENT_TYPE_SCANNING_STARTED,
+                    EVENT_TYPE_SCANNING_STOPPED
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface EventType {}
+
     private static final String TAG = "MediaRouterMetricLogger";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final int REQUEST_INFO_CACHE_CAPACITY = 100;
@@ -138,10 +174,11 @@ final class MediaRouterMetricLogger {
      * Adds a new request info to the cache.
      *
      * @param uniqueRequestId The unique request id.
-     * @param eventType The event type.
+     * @param eventType The routing event type.
+     * @param routingChangeInfo The routing change request information.
      */
     public void addRequestInfo(
-            long uniqueRequestId, int eventType, RoutingChangeInfo routingChangeInfo) {
+            long uniqueRequestId, @EventType int eventType, RoutingChangeInfo routingChangeInfo) {
         RequestInfo requestInfo = new RequestInfo(uniqueRequestId, eventType, routingChangeInfo);
         mRequestInfoCache.put(requestInfo.mUniqueRequestId, requestInfo);
     }
@@ -159,21 +196,24 @@ final class MediaRouterMetricLogger {
     /**
      * Logs an operation failure.
      *
-     * @param eventType The event type.
+     * @param eventType The routing event type.
      * @param result The result of the operation.
+     * @param routingChangeInfo The routing change request information.
      */
     public void logOperationFailure(
-            int eventType, int result, RoutingChangeInfo routingChangeInfo) {
+            @EventType int eventType, int result, RoutingChangeInfo routingChangeInfo) {
         logMediaRouterEvent(eventType, result, routingChangeInfo);
     }
 
     /**
      * Logs an operation triggered.
      *
-     * @param eventType The event type.
+     * @param eventType The routing event type.
+     * @param result The result of the operation.
+     * @param routingChangeInfo The routing change request information.
      */
     public void logOperationTriggered(
-            int eventType, int result, RoutingChangeInfo routingChangeInfo) {
+            @EventType int eventType, int result, RoutingChangeInfo routingChangeInfo) {
         logMediaRouterEvent(eventType, result, routingChangeInfo);
     }
 
@@ -193,7 +233,7 @@ final class MediaRouterMetricLogger {
             return;
         }
 
-        int eventType = requestInfo.mEventType;
+        @EventType int eventType = requestInfo.mEventType;
         logMediaRouterEvent(eventType, result, requestInfo.mRoutingChangeInfo);
 
         removeRequestInfo(uniqueRequestId);
@@ -384,6 +424,39 @@ final class MediaRouterMetricLogger {
         };
     }
 
+    /**
+     * Converts {@link EventType} to the enum defined for logging.
+     *
+     * @param eventType the routing event type.
+     * @return the event type as per the enum defined for logging.
+     */
+    @VisibleForTesting
+    /* package */ static int convertEventTypeForLogging(@EventType int eventType) {
+        return switch (eventType) {
+            case EVENT_TYPE_UNSPECIFIED ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_UNSPECIFIED;
+            case EVENT_TYPE_CREATE_SESSION ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
+            case EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SYSTEM_ROUTING_SESSION;
+            case EVENT_TYPE_RELEASE_SESSION ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_RELEASE_SESSION;
+            case EVENT_TYPE_SELECT_ROUTE ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SELECT_ROUTE;
+            case EVENT_TYPE_DESELECT_ROUTE ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
+            case EVENT_TYPE_TRANSFER_TO_ROUTE ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_TRANSFER_TO_ROUTE;
+            case EVENT_TYPE_SCANNING_STARTED ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED;
+            case EVENT_TYPE_SCANNING_STOPPED ->
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED;
+            default ->
+                    throw new IllegalArgumentException(
+                            "No mapping found for the given event type: " + eventType);
+        };
+    }
+
     @VisibleForTesting
     /* package */ int getRequestInfoCacheCapacity() {
         return mRequestInfoCache.maxSize();
@@ -415,7 +488,7 @@ final class MediaRouterMetricLogger {
     }
 
     private void logMediaRouterEvent(
-            int eventType, int result, RoutingChangeInfo routingChangeInfo) {
+            @EventType int eventType, int result, RoutingChangeInfo routingChangeInfo) {
         int entryPoint =
                 routingChangeInfo != null
                         ? convertEntryPointForLogging(routingChangeInfo.getEntryPoint())
@@ -423,7 +496,7 @@ final class MediaRouterMetricLogger {
         boolean isSuggested = routingChangeInfo != null && routingChangeInfo.isSuggested();
         MediaRouterStatsLog.write(
                 MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED,
-                eventType,
+                convertEventTypeForLogging(eventType),
                 result,
                 entryPoint,
                 isSuggested);
@@ -436,7 +509,7 @@ final class MediaRouterMetricLogger {
     /** Logs the scanning started event. */
     private void logScanningStarted() {
         logMediaRouterEvent(
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STARTED,
+                EVENT_TYPE_SCANNING_STARTED,
                 MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
                 /* routingChangeInfo= */ null);
     }
@@ -444,7 +517,7 @@ final class MediaRouterMetricLogger {
     /** Logs the scanning stopped event. */
     private void logScanningStopped() {
         logMediaRouterEvent(
-                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_SCANNING_STOPPED,
+                EVENT_TYPE_SCANNING_STOPPED,
                 MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED,
                 /* routingChangeInfo= */ null);
     }
@@ -460,16 +533,20 @@ final class MediaRouterMetricLogger {
     /** Class to store request info. */
     static class RequestInfo {
         public final long mUniqueRequestId;
-        public final int mEventType;
+        public final @EventType int mEventType;
         public final RoutingChangeInfo mRoutingChangeInfo;
 
         /**
          * Constructor for {@link RequestInfo}.
          *
          * @param uniqueRequestId The unique request id.
-         * @param eventType The event type.
+         * @param eventType The routing event type.
+         * @param routingChangeInfo The routing change request information.
          */
-        RequestInfo(long uniqueRequestId, int eventType, RoutingChangeInfo routingChangeInfo) {
+        RequestInfo(
+                long uniqueRequestId,
+                @EventType int eventType,
+                RoutingChangeInfo routingChangeInfo) {
             mUniqueRequestId = uniqueRequestId;
             mEventType = eventType;
             mRoutingChangeInfo = routingChangeInfo;

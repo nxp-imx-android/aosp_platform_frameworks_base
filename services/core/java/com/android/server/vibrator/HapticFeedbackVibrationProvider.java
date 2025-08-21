@@ -160,7 +160,7 @@ public final class HapticFeedbackVibrationProvider {
                 break;
             case HapticFeedbackConstants.BIOMETRIC_CONFIRM:
             case HapticFeedbackConstants.BIOMETRIC_REJECT:
-                attrs = COMMUNICATION_REQUEST_VIBRATION_ATTRIBUTES;
+                attrs = HARDWARE_FEEDBACK_VIBRATION_ATTRIBUTES;
                 break;
             default:
                 attrs = TOUCH_VIBRATION_ATTRIBUTES;

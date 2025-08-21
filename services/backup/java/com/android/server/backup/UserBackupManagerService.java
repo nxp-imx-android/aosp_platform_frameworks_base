@@ -91,7 +91,6 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.EventLog;
-import android.util.FeatureFlagUtils;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -3977,11 +3976,6 @@ public class UserBackupManagerService {
     @BackupDestination
     int getBackupDestinationFromTransport(TransportConnection transportConnection)
             throws TransportNotAvailableException, RemoteException {
-        if (!shouldUseNewBackupEligibilityRules()) {
-            // Return the default to stick to the legacy behaviour.
-            return BackupDestination.CLOUD;
-        }
-
         final long oldCallingId = Binder.clearCallingIdentity();
         try {
             BackupTransportClient transport =
@@ -3989,18 +3983,17 @@ public class UserBackupManagerService {
                             /* caller */ "BMS.getBackupDestinationFromTransport");
             if ((transport.getTransportFlags() & BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER) != 0) {
                 return BackupDestination.DEVICE_TRANSFER;
+            } else if (Flags.enableCrossPlatformTransfer()
+                    && (transport.getTransportFlags()
+                                    & BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS)
+                            != 0) {
+                return BackupDestination.CROSS_PLATFORM_TRANSFER;
             } else {
                 return BackupDestination.CLOUD;
             }
         } finally {
             Binder.restoreCallingIdentity(oldCallingId);
         }
-    }
-
-    @VisibleForTesting
-    boolean shouldUseNewBackupEligibilityRules() {
-        return FeatureFlagUtils.isEnabled(
-                mContext, FeatureFlagUtils.SETTINGS_USE_NEW_BACKUP_ELIGIBILITY_RULES);
     }
 
     public IBackupManager getBackupManagerBinder() {

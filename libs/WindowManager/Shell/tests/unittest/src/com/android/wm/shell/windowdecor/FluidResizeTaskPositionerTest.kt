@@ -30,6 +30,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN
 import java.util.function.Supplier
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
@@ -146,6 +147,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningEnd(
@@ -175,6 +177,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -222,6 +225,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -273,6 +277,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Move the task 10px to the right.
@@ -313,6 +318,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Resize the task by 10px to the right.
@@ -353,6 +359,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Resize to width of 95px and height of 5px with min height of 10px
@@ -385,6 +392,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Resize to height of 95px and width of 5px with min width of 10px
@@ -417,6 +425,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Resize to height of -5px and width of 95px
@@ -449,6 +458,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Resize to width of -5px and height of 95px
@@ -481,6 +491,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Shrink to height 20px and width 20px with both min height/width equal to 10px
@@ -509,6 +520,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Shrink to height 5px and width 5px with both min height/width equal to 10px
@@ -539,6 +551,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Shrink to width and height of 3px with invalid minWidth = -1 and defaultMinSize = 5px
@@ -567,6 +580,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Shrink to width and height of 7px with valid minWidth = 10px and defaultMinSize = 5px
@@ -594,6 +608,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.bottom.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Resize the task by 10px to the right and bottom, a valid destination
@@ -706,6 +721,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is reordered to top
@@ -727,6 +743,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is not reordered to top
@@ -748,6 +765,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is not reordered to top since task is already brought to top before dragging
@@ -839,6 +857,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -901,7 +920,13 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
     }
 
     private fun performDrag(startX: Float, startY: Float, endX: Float, endY: Float, ctrlType: Int) {
-        taskPositioner.onDragPositioningStart(ctrlType, DISPLAY_ID, startX, startY)
+        taskPositioner.onDragPositioningStart(
+            ctrlType,
+            DISPLAY_ID,
+            startX,
+            startY,
+            INPUT_METHOD_TYPE_UNKNOWN,
+        )
         taskPositioner.onDragPositioningMove(DISPLAY_ID, endX, endY)
 
         taskPositioner.onDragPositioningEnd(DISPLAY_ID, endX, endY)

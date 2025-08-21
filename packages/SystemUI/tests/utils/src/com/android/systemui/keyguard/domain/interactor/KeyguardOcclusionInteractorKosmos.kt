@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.domain.interactor
+package com.android.systemui.keyguard.domain.interactor
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
-import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
-import com.android.systemui.keyguard.domain.interactor.internalKeyguardTransitionInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -34,6 +31,7 @@ val Kosmos.keyguardOcclusionInteractor by
             powerInteractor = powerInteractor,
             transitionInteractor = keyguardTransitionInteractor,
             keyguardInteractor = keyguardInteractor,
+            deviceEntryInteractor = deviceEntryInteractor,
             deviceUnlockedInteractor = { deviceUnlockedInteractor },
             internalTransitionInteractor = internalKeyguardTransitionInteractor,
         )

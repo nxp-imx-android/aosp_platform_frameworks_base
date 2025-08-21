@@ -20,9 +20,12 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.backup.BackupAnnotations.BackupDestination;
@@ -37,10 +40,13 @@ import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
 import android.content.pm.UserInfo;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
+import android.util.Xml;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -60,6 +66,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.quality.Strictness;
+import org.xmlpull.v1.XmlPullParser;
+
+import java.io.StringReader;
 
 @SmallTest
 @Presubmit
@@ -75,6 +84,15 @@ public class BackupEligibilityRulesTest {
 
     private static final int NON_SYSTEM_USER_ID = 10;
     private static final UserHandle NON_SYSTEM_USER = UserHandle.of(NON_SYSTEM_USER_ID);
+
+    private static final String DATA_EXTRACTION_RULES_XML =
+            "<data-extraction-rules><cloud-backup /></data-extraction-rules>";
+
+    private static final String CROSS_PLATFORM_CONFIGURATION_XML =
+            "<data-extraction-rules><cloud-backup></cloud-backup><cross-platform-transfer"
+                    + " platform=\"ios\"><platform-specific-params bundleId=\"com.example.bundle\""
+                    + " teamId=\"example.team\" contentVersion=\"1.0\" /></cross-platform-transfer>"
+                    + "</data-extraction-rules>";
 
     @Rule public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
@@ -452,6 +470,45 @@ public class BackupEligibilityRulesTest {
         boolean isEligible = eligibilityRules.appIsEligibleForBackup(applicationInfo);
 
         assertThat(isEligible).isFalse();
+    }
+
+    @Test
+    public void appIsEligibleForBackup_crossPlatformTransfer_appNotOptedIn_returnsFalse()
+            throws Exception {
+        Resources mockResources = getMockResourcesWithXmlResource(DATA_EXTRACTION_RULES_XML);
+        when(mPackageManager.getResourcesForApplication(TEST_PACKAGE_NAME))
+                .thenReturn(mockResources);
+        ApplicationInfo applicationInfo =
+                getApplicationInfo(
+                        Process.FIRST_APPLICATION_UID, ApplicationInfo.FLAG_ALLOW_BACKUP);
+        when(mMockPackageManagerInternal.getApplicationEnabledState(TEST_PACKAGE_NAME, mUserId))
+                .thenReturn(PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        BackupEligibilityRules eligibilityRules =
+                getBackupEligibilityRules(BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        boolean isEligible = eligibilityRules.appIsEligibleForBackup(applicationInfo);
+
+        assertThat(isEligible).isFalse();
+    }
+
+    @Test
+    public void appIsEligibleForBackup_crossPlatformTransfer_appOptedIn_returnsTrue()
+            throws Exception {
+        Resources mockResources = getMockResourcesWithXmlResource(CROSS_PLATFORM_CONFIGURATION_XML);
+        when(mPackageManager.getResourcesForApplication(TEST_PACKAGE_NAME))
+                .thenReturn(mockResources);
+        ApplicationInfo applicationInfo =
+                getApplicationInfo(
+                        Process.FIRST_APPLICATION_UID, ApplicationInfo.FLAG_ALLOW_BACKUP);
+        applicationInfo.dataExtractionRulesRes = 1; // Must be non-zero
+        when(mMockPackageManagerInternal.getApplicationEnabledState(TEST_PACKAGE_NAME, mUserId))
+                .thenReturn(PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        BackupEligibilityRules eligibilityRules =
+                getBackupEligibilityRules(BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        boolean isEligible = eligibilityRules.appIsEligibleForBackup(applicationInfo);
+
+        assertThat(isEligible).isTrue();
     }
 
     @Test
@@ -1052,5 +1109,25 @@ public class BackupEligibilityRulesTest {
 
     private void mockContextForFullUser() {
         when(mUserInfo.isProfile()).thenReturn(false);
+    }
+
+    private Resources getMockResourcesWithXmlResource(String xmlContent) throws Exception {
+        XmlPullParser parser = Xml.newPullParser();
+        parser.setInput(new StringReader(xmlContent));
+
+        XmlResourceParser resourceParser = mock(XmlResourceParser.class);
+        when(resourceParser.next()).thenAnswer(i -> parser.next());
+        when(resourceParser.nextTag()).thenAnswer(i -> parser.nextTag());
+        when(resourceParser.getEventType()).thenAnswer(i -> parser.getEventType());
+        when(resourceParser.getName()).thenAnswer(i -> parser.getName());
+        when(resourceParser.getText()).thenAnswer(i -> parser.getText());
+        when(resourceParser.getAttributeCount()).thenAnswer(i -> parser.getAttributeCount());
+        doAnswer(i -> parser.getAttributeValue(null, (String) i.getArguments()[1]))
+                .when(resourceParser)
+                .getAttributeValue(isNull(), anyString());
+
+        Resources resources = mock(Resources.class);
+        when(resources.getXml(anyInt())).thenReturn(resourceParser);
+        return resources;
     }
 }

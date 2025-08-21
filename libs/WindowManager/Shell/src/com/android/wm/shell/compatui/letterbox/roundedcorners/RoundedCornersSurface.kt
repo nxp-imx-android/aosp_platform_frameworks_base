@@ -36,7 +36,6 @@ import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 import android.view.WindowlessWindowManager
 import android.widget.FrameLayout
 import android.window.TaskConstants
-import android.window.TaskConstants.TASK_CHILD_SHELL_LAYER_LETTERBOX_ROUNDED_CORNERS
 import com.android.wm.shell.R
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
@@ -56,7 +55,7 @@ class RoundedCornersSurface(
     private val cornersFactory: LetterboxRoundedCornersDrawableFactory,
     private val letterboxConfiguration: LetterboxConfiguration,
     private val surfaceBuilderSupplier: SurfaceBuilderSupplier,
-) : WindowlessWindowManager(config, parentSurface, /* hostInputToken */ null) {
+) : WindowlessWindowManager(config, parentSurface, null) {
 
     private var viewHost: SurfaceControlViewHost? = null
 
@@ -90,7 +89,7 @@ class RoundedCornersSurface(
             surfaceBuilderSupplier
                 .get()
                 .setContainerLayer()
-                .setName(className + "Leash")
+                .setName("LetterboxRoundedCornersParentSurface")
                 .setHidden(false)
                 .setParent(parentSurface)
                 .setCallsite("$className#attachToParentSurface")

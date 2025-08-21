@@ -32,6 +32,10 @@ import com.android.wm.shell.EventLogTags
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_MOUSE
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_STYLUS
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_TOUCH
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_TOUCHPAD
 import java.security.SecureRandom
 import java.util.Random
 import java.util.concurrent.atomic.AtomicInteger
@@ -461,6 +465,20 @@ class DesktopModeEventLogger {
                 else -> InputMethod.UNKNOWN_INPUT_METHOD
             }
         }
+
+        /**
+         * Returns corresponding [InputMethod] for a given input method type defined in
+         * [com.android.wm.shell.windowdecor.DragPositioningCallback.InputMethodType].
+         */
+        @JvmStatic
+        fun getInputMethodType(inputMethodType: Int): InputMethod =
+            when (inputMethodType) {
+                INPUT_METHOD_TYPE_STYLUS -> InputMethod.STYLUS
+                INPUT_METHOD_TYPE_MOUSE -> InputMethod.MOUSE
+                INPUT_METHOD_TYPE_TOUCHPAD -> InputMethod.TOUCHPAD
+                INPUT_METHOD_TYPE_TOUCH -> InputMethod.TOUCH
+                else -> InputMethod.UNKNOWN_INPUT_METHOD
+            }
 
         /**
          * Returns corresponding desktop mode enter [EnterReason] for a

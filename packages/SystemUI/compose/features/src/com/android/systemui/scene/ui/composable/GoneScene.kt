@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.layout.boundsInWindow
@@ -32,7 +30,6 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
@@ -75,12 +72,12 @@ constructor(
     @Composable
     override fun ContentScope.Content(modifier: Modifier) {
 
-        val isIdleAndNotOccluded by remember {
-            derivedStateOf {
-                layoutState.transitionState is TransitionState.Idle &&
-                    Overlays.NotificationsShade !in layoutState.transitionState.currentOverlays
+        val isIdleAndNotOccluded =
+            with(layoutState.transitionState) {
+                isIdle(key) &&
+                    !isIdle(Overlays.NotificationsShade) &&
+                    !isIdle(Overlays.QuickSettingsShade)
             }
-        }
 
         val headsUpInset = with(LocalDensity.current) { headsUpTopInset().toPx() }
 

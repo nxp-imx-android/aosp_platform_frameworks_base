@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.largescreen.domain.interactor
+package com.android.systemui.scene
 
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.occluded.ui.composable.OccludedScene
+import com.android.systemui.scene.ui.composable.Scene
+import dagger.Binds
+import dagger.Module
+import dagger.multibindings.IntoSet
 
-val Kosmos.screenCaptureRecordLargeScreenFeaturesInteractor by Fixture {
-    ScreenCaptureRecordLargeScreenFeaturesInteractor()
+@Module
+interface OccludedSceneModule {
+
+    @Binds @IntoSet fun occludedScene(scene: OccludedScene): Scene
 }

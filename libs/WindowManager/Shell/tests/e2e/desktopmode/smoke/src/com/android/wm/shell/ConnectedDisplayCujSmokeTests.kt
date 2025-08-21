@@ -64,7 +64,6 @@ import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Assume
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -315,7 +314,7 @@ class ConnectedDisplayCujSmokeTests {
         verifyWindowCount(browserApp, expectedCount = 1)
     }
 
-    fun cuj6(skipAppHandleTest: Boolean = false) {
+    fun cuj6() {
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
         context.startActivity(
@@ -334,10 +333,6 @@ class ConnectedDisplayCujSmokeTests {
             visible = true
         )
 
-        if (skipAppHandleTest) {
-            return
-        }
-
         // Enter desktop via app handle.
         openAppHandleMenuForFullscreenApp(externalDisplayId)
         waitForSysUiObjectForTheApp(clockApp, DESKTOP_BUTTON_RES_ID).click()
@@ -348,7 +343,6 @@ class ConnectedDisplayCujSmokeTests {
 
     // Extended: All window modes are supported on the connected display, including split screen
     @Test
-    @Ignore("b/428563383")
     @ExtendedOnly
     fun cuj6e() {
         cuj6()
@@ -356,28 +350,10 @@ class ConnectedDisplayCujSmokeTests {
 
     // Projected: All window modes are supported on the connected display, including split screen
     @Test
-    @Ignore("b/428563383")
     @ProjectedOnly
     @RequiresDevice
     fun cuj6p() {
         cuj6()
-    }
-
-    // TODO(b/428563383) - Remove [cuj6e_skipAppHandle].
-    // Extended: The same as CUJ6e but excluding app handle test.
-    @Test
-    @ExtendedOnly
-    fun cuj6e_skipAppHandle() {
-        cuj6(skipAppHandleTest = true)
-    }
-
-    // TODO(b/428563383) - Remove [cuj6p_skipAppHandle].
-    // Extended: The same as CUJ6p but excluding app handle test.
-    @Test
-    @ProjectedOnly
-    @RequiresDevice
-    fun cuj6p_skipAppHandle() {
-        cuj6(skipAppHandleTest = true)
     }
 
     // Extended: Opening an app from a full screen view will switch back to the desktop session,

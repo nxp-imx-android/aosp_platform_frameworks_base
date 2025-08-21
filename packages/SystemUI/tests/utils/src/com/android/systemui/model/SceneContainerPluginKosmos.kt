@@ -18,7 +18,6 @@ package com.android.systemui.model
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 
@@ -27,7 +26,6 @@ val Kosmos.fakeSceneContainerPlugin by Fixture { FakeSceneContainerPlugin() }
 val Kosmos.sceneContainerPluginImpl: SceneContainerPlugin by Fixture {
     SceneContainerPluginImpl(
         sceneInteractor = { sceneInteractor },
-        occlusionInteractor = { sceneContainerOcclusionInteractor },
         shadeDisplaysRepository = { fakeShadeDisplaysRepository },
     )
 }

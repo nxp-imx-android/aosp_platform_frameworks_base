@@ -254,10 +254,6 @@ public class UserBackupManagerServiceTest {
     @Test
     public void testGetBackupDestinationFromTransport_returnsDeviceTransferForD2dTransport()
             throws Exception {
-        // This is a temporary flag to control the new behaviour until it's ready to be fully
-        // rolled out.
-        mService.shouldUseNewBackupEligibilityRules = true;
-
         when(mTransportConnection.connectOrThrow(any())).thenReturn(mBackupTransport);
         when(mBackupTransport.getTransportFlags()).thenReturn(
                 BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER);
@@ -295,7 +291,6 @@ public class UserBackupManagerServiceTest {
 
     private class TestBackupService extends UserBackupManagerService {
         boolean isEnabledStatePersisted = false;
-        boolean shouldUseNewBackupEligibilityRules = false;
 
         TestBackupService() {
             super(mUserId, mContext, mPackageManager, mOperationStorage, mTransportManager,
@@ -325,11 +320,6 @@ public class UserBackupManagerServiceTest {
 
         @Override
         void updateStateOnBackupEnabled(boolean wasEnabled, boolean enable) {}
-
-        @Override
-        boolean shouldUseNewBackupEligibilityRules() {
-            return shouldUseNewBackupEligibilityRules;
-        }
 
         @Override
         BackupManagerMonitorEventSender getBMMEventSender(IBackupManagerMonitor monitor) {

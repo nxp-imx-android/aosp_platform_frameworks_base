@@ -16,13 +16,9 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
-import com.android.systemui.Flags
-import com.android.systemui.dagger.SysUISingleton
-import javax.inject.Inject
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
 
-@SysUISingleton
-class ScreenCaptureRecordLargeScreenFeaturesInteractor @Inject constructor() {
-    val appWindowRegionSupported = Flags.largeScreenScreenshotAppWindow()
-
-    val screenRecordingSupported = Flags.largeScreenRecording()
+val Kosmos.largeScreenCaptureFeaturesInteractor by Fixture {
+    LargeScreenCaptureFeaturesInteractor()
 }

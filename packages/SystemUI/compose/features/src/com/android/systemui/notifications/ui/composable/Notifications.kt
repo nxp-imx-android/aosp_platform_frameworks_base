@@ -830,7 +830,11 @@ private fun TransitionState.isOnLockscreen(): Boolean {
 }
 
 private fun shouldUseLockscreenStackBounds(state: TransitionState): Boolean {
-    return state is TransitionState.Idle && state.isOnLockscreen()
+    return when (state) {
+        is TransitionState.Idle -> state.isOnLockscreen()
+        is TransitionState.Transition ->
+            state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone)
+    }
 }
 
 private fun shouldUseLockscreenHunBounds(

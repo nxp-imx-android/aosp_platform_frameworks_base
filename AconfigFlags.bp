@@ -31,6 +31,7 @@ aconfig_declarations_group {
         "android.app.flags-aconfig-java",
         "android.app.jank.flags-aconfig-java",
         "android.app.ondeviceintelligence-aconfig-java",
+        "android.app.privatecompute.flags-aconfig-java",
         "android.app.userrecovery.flags-aconfig-java",
         "android.app.smartspace.flags-aconfig-java",
         "android.app.supervision.flags-aconfig-java",
@@ -2200,4 +2201,19 @@ rust_aconfig_library {
     name: "libandroid_hardware_serial_flags_rust",
     crate_name: "android_hardware_serial_flags",
     aconfig_declarations: "android.hardware.serial.flags-aconfig",
+}
+
+// Private Compute Core (PCC)
+aconfig_declarations {
+    name: "android.app.privatecompute.flags-aconfig",
+    exportable: true,
+    package: "android.app.privatecompute.flags",
+    container: "system",
+    srcs: ["core/java/android/app/privatecompute/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.app.privatecompute.flags-aconfig-java",
+    aconfig_declarations: "android.app.privatecompute.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }

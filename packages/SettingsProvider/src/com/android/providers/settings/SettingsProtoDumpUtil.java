@@ -2847,6 +2847,17 @@ class SettingsProtoDumpUtil {
                 Settings.System.ADVANCED_SETTINGS,
                 SystemSettingsProto.ADVANCED_SETTINGS);
 
+        final long a11yToken = p.start(SystemSettingsProto.ACCESSIBILITY);
+        dumpSetting(s, p,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
+                SystemSettingsProto.Accessibility
+                        .ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE);
+        dumpSetting(s, p,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
+                SystemSettingsProto.Accessibility
+                        .ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE);
+        p.end(a11yToken);
+
         final long alarmToken = p.start(SystemSettingsProto.ALARM);
         dumpSetting(s, p,
                 Settings.System.ALARM_ALERT,

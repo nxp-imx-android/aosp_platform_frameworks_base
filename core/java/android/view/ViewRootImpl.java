@@ -117,7 +117,6 @@ import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
-import static android.view.flags.Flags.addSchandleToVriSurface;
 import static android.view.flags.Flags.disableDrawWakeLock;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.sensitiveContentPrematureProtectionRemovedFix;
@@ -2069,19 +2068,15 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
 
-            if (shouldApplyForceInvertDark()) {
-                // Do not apply force invert dark theme to an app that already declares itself as
-                // supporting dark theme (isLightTheme=false). This gives the developer a way to
-                // opt out of allowing this behavior, while also guaranteeing that apps with a
-                // properly configured dark theme are unaffected by force invert dark theme. For
-                // self-declared light theme apps HWUI then performs its own "color area"
-                // calculation to determine if the app actually renders with light colors.
-                if (!isInputWindow() && a.getBoolean(R.styleable.Theme_isLightTheme, false)) {
-                    return ForceDarkType.FORCE_INVERT_COLOR_DARK;
-                }
-            }
-
-            return ForceDarkType.NONE;
+            // Don't apply force invert dark theme to an app that already declares itself as
+            // supporting dark theme (isLightTheme=false). This gives the developer a way to
+            // opt out of allowing this behavior, while also guaranteeing that apps with a
+            // properly configured dark theme are unaffected by force invert dark theme. For
+            // self-declared light theme apps HWUI then performs its own "color area"
+            // calculation to determine if the app actually renders with light colors.
+            boolean shouldForceInvertDark = !isInputWindow()
+                    && a.getBoolean(R.styleable.Theme_isLightTheme, false);
+            return determineForceInvertDarkOverride(shouldForceInvertDark);
         } finally {
             a.recycle();
         }
@@ -2091,16 +2086,27 @@ public final class ViewRootImpl implements ViewParent,
         return mOrigWindowType == TYPE_INPUT_METHOD || mOrigWindowType == TYPE_INPUT_METHOD_DIALOG;
     }
 
-    private boolean shouldApplyForceInvertDark() {
+    private @ForceDarkType.ForceDarkTypeDef int determineForceInvertDarkOverride(
+            boolean shouldForceInvertDark) {
         if (!forceInvertColor()) {
-            return false;
+            return ForceDarkType.NONE;
         }
         final UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
         if (uiModeManager == null) {
-            return false;
+            return ForceDarkType.NONE;
         }
-        return uiModeManager.getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK
-                && UiModeManager.isForceInvertAllowed(mContext);
+        if (uiModeManager.getForceInvertState() != UiModeManager.FORCE_INVERT_TYPE_DARK) {
+            return ForceDarkType.NONE;
+        }
+        var overrideState = uiModeManager.getForceInvertOverrideState();
+        return switch (overrideState) {
+            case UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED -> shouldForceInvertDark
+                    ? ForceDarkType.FORCE_INVERT_COLOR_DARK : ForceDarkType.NONE;
+            case UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE -> ForceDarkType.NONE;
+            case UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE ->
+                    ForceDarkType.FORCE_INVERT_COLOR_DARK;
+            default -> throw new IllegalStateException("Invalid override state");
+        };
     }
 
     private void updateForceDarkMode() {
@@ -2855,11 +2861,7 @@ public final class ViewRootImpl implements ViewParent,
         mBlastBufferQueue.setWaitForBufferReleaseCallback(mChoreographer::onWaitForBufferRelease);
         mBlastBufferQueue.setCornerRadiiCallback(mCornerRadiiCallback);
         Surface blastSurface;
-        if (addSchandleToVriSurface()) {
-            blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
-        } else {
-            blastSurface = mBlastBufferQueue.createSurface();
-        }
+        blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
         // Only call transferFrom if the surface has changed to prevent inc the generation ID and
         // causing EGL resources to be recreated.
         mSurface.transferFrom(blastSurface);

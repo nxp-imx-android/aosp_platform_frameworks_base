@@ -39,6 +39,7 @@ var Kosmos.sceneKeys by Fixture {
         Scenes.Gone,
         Scenes.Communal,
         Scenes.Dream,
+        Scenes.Occluded,
     )
 }
 
@@ -61,6 +62,7 @@ var Kosmos.sceneContainerConfig by Fixture {
         mapOf(
             Scenes.Gone to 0,
             Scenes.Lockscreen to 0,
+            Scenes.Occluded to 1,
             Scenes.Communal to 1,
             Scenes.Dream to 2,
             Scenes.Shade to 3,

@@ -168,7 +168,7 @@ constructor(
     /** Is the player currently visible (at the end of the transformation */
     private var playersVisible: Boolean = false
 
-    /** Are we currently disabling scolling, only allowing the first media session to show */
+    /** Are we currently disabling scrolling, only allowing the first media session to show */
     private var currentlyDisableScrolling: Boolean = false
 
     /**
@@ -957,7 +957,7 @@ constructor(
 
         val nPlayers = MediaPlayerData.players().size
         MediaPlayerData.players().forEachIndexed { index, mediaPlayer ->
-            if (nPlayers == 1) {
+            if (nPlayers == 1 || currentlyDisableScrolling) {
                 mediaPlayer.setPageArrowsVisible(false)
             } else {
                 mediaPlayer.setPageArrowsVisible(true)

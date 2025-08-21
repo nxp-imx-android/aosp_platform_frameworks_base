@@ -394,7 +394,7 @@ stubs_defaults {
     arg_files: [":frameworks-base-core-AndroidManifest.xml"],
     aidl: {
         include_dirs: [
-            "frameworks/av/aidl",
+            "frameworks/av/media/aidl",
             "frameworks/base/media/aidl",
             "frameworks/base/telephony/java",
             "frameworks/native/libs/permission/aidl",

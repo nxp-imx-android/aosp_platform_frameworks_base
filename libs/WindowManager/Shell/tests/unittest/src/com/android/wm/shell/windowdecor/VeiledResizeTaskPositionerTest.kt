@@ -48,6 +48,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_UNDEFINED
+import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN
 import java.util.function.Supplier
 import junit.framework.Assert
 import org.junit.Before
@@ -160,6 +161,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
         verify(mockWindowDecoration, never()).showResizeVeil(STARTING_BOUNDS)
 
@@ -192,6 +194,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -231,6 +234,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -286,6 +290,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             CTRL_TYPE_TOP or CTRL_TYPE_RIGHT,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -333,6 +338,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         val newX = STARTING_BOUNDS.left.toFloat() + 5
@@ -361,6 +367,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is reordered to top
@@ -382,6 +389,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is not reordered to top
@@ -403,6 +411,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         // Verify task is not reordered to top since task is already brought to top before dragging
@@ -499,6 +508,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
             DISPLAY_ID,
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
         )
 
         taskPositioner.onDragPositioningMove(
@@ -572,7 +582,13 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     private fun performDrag(startX: Float, startY: Float, endX: Float, endY: Float, ctrlType: Int) {
-        taskPositioner.onDragPositioningStart(ctrlType, DISPLAY_ID, startX, startY)
+        taskPositioner.onDragPositioningStart(
+            ctrlType,
+            DISPLAY_ID,
+            startX,
+            startY,
+            INPUT_METHOD_TYPE_UNKNOWN,
+        )
         taskPositioner.onDragPositioningMove(DISPLAY_ID, endX, endY)
 
         taskPositioner.onDragPositioningEnd(DISPLAY_ID, endX, endY)
