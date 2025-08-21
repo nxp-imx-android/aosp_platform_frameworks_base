@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.Easings
 import com.android.compose.grid.VerticalGrid
 import com.android.compose.modifiers.thenIf
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.bouncer.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel
 import com.android.systemui.common.shared.model.ContentDescription
@@ -121,7 +123,12 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         ActionButton(
             icon =
                 Icon.Resource(
-                    res = R.drawable.ic_backspace_24dp,
+                    res =
+                        if (backspaceButtonAppearance == ActionButtonAppearance.Shown) {
+                            R.drawable.pin_bouncer_delete_outline
+                        } else {
+                            R.drawable.pin_bouncer_delete_filled
+                        },
                     contentDescription =
                         ContentDescription.Resource(R.string.keyboardview_keycode_delete),
                 ),
@@ -146,7 +153,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         ActionButton(
             icon =
                 Icon.Resource(
-                    res = R.drawable.ic_keyboard_tab_36dp,
+                    res = R.drawable.pin_bouncer_confirm,
                     contentDescription =
                         ContentDescription.Resource(R.string.keyboardview_keycode_enter),
                 ),
@@ -160,6 +167,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun DigitButton(
     digit: Int,
     isInputEnabled: Boolean,
@@ -171,8 +179,8 @@ private fun DigitButton(
     PinPadButton(
         onClicked = { onClicked(digit) },
         isEnabled = isInputEnabled,
-        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-        foregroundColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        backgroundColor = LocalAndroidColorScheme.current.surfaceEffect1,
+        foregroundColor = MaterialTheme.colorScheme.onSurface,
         isAnimationEnabled = isAnimationEnabled,
         onPointerDown = onPointerDown,
         modifier =
@@ -186,7 +194,7 @@ private fun DigitButton(
         // it into Text, use that here, to animate more efficiently.
         Text(
             text = digit.toString(),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.displaySmallEmphasized,
             color = contentColor(),
         )
     }
@@ -206,15 +214,12 @@ private fun ActionButton(
     val isHidden = appearance == ActionButtonAppearance.Hidden
     val hiddenAlpha by animateFloatAsState(if (isHidden) 0f else 1f, label = "Action button alpha")
 
-    val foregroundColor =
-        when (appearance) {
-            ActionButtonAppearance.Shown -> MaterialTheme.colorScheme.onSecondaryContainer
-            else -> MaterialTheme.colorScheme.onSurface
-        }
+    val foregroundColor = MaterialTheme.colorScheme.onSurface
+
     val backgroundColor =
         when (appearance) {
-            ActionButtonAppearance.Shown -> MaterialTheme.colorScheme.secondaryContainer
-            else -> MaterialTheme.colorScheme.surface
+            ActionButtonAppearance.Shown -> LocalAndroidColorScheme.current.surfaceEffect0
+            else -> Color.Transparent
         }
 
     PinPadButton(
@@ -360,7 +365,7 @@ private fun calculateHorizontalSpacingBetweenColumns(gridWidth: Dp): Dp {
 /** Number of columns in the PIN pad grid. */
 private const val columns = 3
 /** Maximum size (width and height) of each PIN pad button. */
-private val pinButtonMaxSize = 84.dp
+private val pinButtonMaxSize = 96.dp
 /** Scale factor to apply to buttons when animating the "error" animation on them. */
 private val pinButtonErrorShrinkFactor = 67.dp / pinButtonMaxSize
 /** Animation duration of the "shrink" phase of the error animation, on each PIN pad button. */
