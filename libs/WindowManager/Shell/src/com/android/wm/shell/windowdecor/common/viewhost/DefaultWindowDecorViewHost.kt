@@ -99,6 +99,7 @@ class DefaultWindowDecorViewHost(
         onDrawTransaction: SurfaceControl.Transaction?,
     ) {
         Trace.beginSection("DefaultWindowDecorViewHost#updateViewHost")
+        view.layoutDirection = configuration.layoutDirection
         viewHostAdapter.prepareViewHost(configuration, touchableRegion)
         onDrawTransaction?.let { viewHostAdapter.applyTransactionOnDraw(it) }
         viewHostAdapter.updateView(view, attrs)
