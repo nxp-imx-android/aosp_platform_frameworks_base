@@ -25,6 +25,7 @@ import static org.mockito.Mockito.never;
 import static java.io.File.createTempFile;
 import static java.nio.file.Files.createTempDirectory;
 
+import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
@@ -337,5 +338,33 @@ public class ProtoLogConfigurationServiceTest {
 
         Mockito.verify(mMockClient).toggleLogcat(eq(true),
                 Mockito.argThat(it -> it.length == 1 && it[0].equals(TEST_GROUP)));
+    }
+
+    @Test
+    public void doesNotThrowWhenClientDiesDuringToggle() throws RemoteException {
+        // Verifies that a DeadObjectException is caught and handled gracefully.
+        final var service = new ProtoLogConfigurationServiceImpl();
+        final var mockPrintWriter = Mockito.mock(PrintWriter.class);
+
+        // Register a client.
+        final RegisterClientArgs args = new RegisterClientArgs();
+        args.groups = new String[] { TEST_GROUP };
+        args.groupsDefaultLogcatStatus = new boolean[] { false };
+        service.registerClient(mMockClient, args);
+
+        // Configure the mock client to throw DeadObjectException when toggleLogcat is called,
+        // simulating a client process that has died.
+        Mockito.doThrow(new DeadObjectException("Client died"))
+                .when(mMockClient).toggleLogcat(anyBoolean(), any());
+
+        // Call the method under test. This should not throw an exception.
+        service.enableProtoLogToLogcat(mockPrintWriter, TEST_GROUP);
+
+        // Verify that the service attempted to call the client.
+        Mockito.verify(mMockClient).toggleLogcat(eq(true),
+                Mockito.argThat(it -> it.length == 1 && it[0].equals(TEST_GROUP)));
+
+        // Verify that the failure was reported to the PrintWriter.
+        Mockito.verify(mockPrintWriter).println("- Failed (client may have died)");
     }
 }
