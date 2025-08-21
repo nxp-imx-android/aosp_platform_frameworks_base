@@ -20,8 +20,6 @@ import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
 import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
-import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -177,6 +175,8 @@ public class MediaControlPanel {
     // Time in millis for playing turbulence noise that is played after a touch ripple.
     @VisibleForTesting
     static final long TURBULENCE_NOISE_PLAY_DURATION = 7500L;
+    public static final float MEDIA_PLAYER_SCRIM_START_ALPHA = 0.65f;
+    public static final float MEDIA_PLAYER_SCRIM_END_ALPHA = 0.75f;
 
     private final SeekBarViewModel mSeekBarViewModel;
     private final CommunalSceneInteractor mCommunalSceneInteractor;
