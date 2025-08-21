@@ -3010,6 +3010,19 @@ class MediaRouter2ServiceImpl {
         }
 
         /**
+         * Notifies the corresponding manager that the discovery preference has changed for the
+         * given {@code packageName}.
+         */
+        public void notifyDiscoveryPreferenceChanged(
+                String packageName, RouteDiscoveryPreference preference) {
+            try {
+                mManager.notifyDiscoveryPreferenceChanged(packageName, preference);
+            } catch (RemoteException ex) {
+                logRemoteException("notifyDiscoveryPreferenceChanged", ex);
+            }
+        }
+
+        /**
          * Notifies the corresponding manager that {@link RouteListingPreference} has changed for
          * the given {@code packageName}.
          */
@@ -4078,19 +4091,10 @@ class MediaRouter2ServiceImpl {
 
         private void notifyDiscoveryPreferenceChangedToManagers(@NonNull String routerPackageName,
                 @Nullable RouteDiscoveryPreference discoveryPreference) {
-            List<IMediaRouter2Manager> managers = new ArrayList<>();
             synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
-                    managers.add(managerRecord.mManager);
-                }
-            }
-            for (IMediaRouter2Manager manager : managers) {
-                try {
-                    manager.notifyDiscoveryPreferenceChanged(routerPackageName,
-                            discoveryPreference);
-                } catch (RemoteException ex) {
-                    Slog.w(TAG, "Failed to notify preferred features changed."
-                            + " Manager probably died.", ex);
+                    managerRecord.notifyDiscoveryPreferenceChanged(
+                            routerPackageName, discoveryPreference);
                 }
             }
         }
