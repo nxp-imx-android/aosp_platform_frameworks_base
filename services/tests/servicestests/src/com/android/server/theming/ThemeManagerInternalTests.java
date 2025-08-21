@@ -47,6 +47,8 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,6 +76,8 @@ public class ThemeManagerInternalTests {
     private static final int TEST_SEED_COLOR = Color.BLUE;
     private static final float TEST_CONTRAST = 0.5f;
     private static final int TEST_STYLE = ThemeStyle.VIBRANT;
+    private static final String TEST_SPEC_VERSION = DynamicScheme.DEFAULT_SPEC_VERSION.name();
+    private static final String TEST_PLATFORM = DynamicScheme.DEFAULT_PLATFORM.name();
 
     @Mock
     private UserManagerInternal mUserManager;
@@ -308,15 +312,21 @@ public class ThemeManagerInternalTests {
         ThemeInfo info = mUnderTest.getUserThemeInfo(mUserId);
 
         assertThat(info).isNotNull();
-        assertThat(info.seedColor).isEqualTo(TEST_SEED_COLOR);
+        assertThat(info.seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(info.style).isEqualTo(TEST_STYLE);
         assertThat(info.contrast).isEqualTo(TEST_CONTRAST);
+        assertThat(info.specVersion).isEqualTo(TEST_SPEC_VERSION);
+        assertThat(info.platform).isEqualTo(TEST_PLATFORM);
     }
 
     @Test
     public void generateDynamicColorOverlay_withAllOptions_isNotNull() {
         startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
-        ThemeInfo options = ThemeInfo.build(Color.valueOf(Color.GREEN), ThemeStyle.VIBRANT, 0.8f);
+        ThemeInfo options = new ThemeInfo.Builder()
+                .setSeedColor(Color.valueOf(Color.GREEN))
+                .setStyle(ThemeStyle.VIBRANT)
+                .setContrast(0.8f)
+                .build();
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
@@ -327,7 +337,7 @@ public class ThemeManagerInternalTests {
     @Test
     public void generateDynamicColorOverlay_withNullOptions_isNotNull() {
         startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
-        ThemeInfo options = ThemeInfo.build(null, null, null);
+        ThemeInfo options = new ThemeInfo.Builder().build();
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
@@ -338,7 +348,10 @@ public class ThemeManagerInternalTests {
     @Test
     public void generateDynamicColorOverlay_withMixedOptions_isNotNull() {
         startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
-        ThemeInfo options = ThemeInfo.build(Color.valueOf(Color.GREEN), null, 0.8f);
+        ThemeInfo options = new ThemeInfo.Builder()
+                .setSeedColor(Color.valueOf(Color.GREEN))
+                .setContrast(0.8f)
+                .build();
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);

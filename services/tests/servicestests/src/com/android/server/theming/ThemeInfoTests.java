@@ -37,26 +37,41 @@ public class ThemeInfoTests {
 
     private static final Color SEED_COLOR_VALID = Color.valueOf(Color.BLUE);
     private static final int STYLE_VALID = ThemeStyle.TONAL_SPOT;
+    private static final String SPEC_VERSION = "1.0";
+    private static final String PLATFORM = "android";
 
     @Test
     public void testBuildWithAllParameters() {
-        ThemeInfo themeInfo = ThemeInfo.build(SEED_COLOR_VALID, STYLE_VALID, CONTRAST_MEDIUM);
-        assertThat(themeInfo.seedColor).isEqualTo(SEED_COLOR_VALID.toArgb());
+        ThemeInfo themeInfo = new ThemeInfo.Builder()
+                .setSeedColor(SEED_COLOR_VALID)
+                .setStyle(STYLE_VALID)
+                .setContrast(CONTRAST_MEDIUM)
+                .build();
+        assertThat(themeInfo.seedColor).isEqualTo(SEED_COLOR_VALID);
         assertThat(themeInfo.style).isEqualTo(STYLE_VALID);
         assertThat(themeInfo.contrast).isEqualTo(CONTRAST_MEDIUM);
+        assertThat(themeInfo.specVersion).isNull();
+        assertThat(themeInfo.platform).isNull();
     }
 
     @Test
     public void testBuildWithNullParameters() {
-        ThemeInfo themeInfo = ThemeInfo.build(null, null, null);
+        ThemeInfo themeInfo = new ThemeInfo.Builder().build();
         assertThat(themeInfo.seedColor).isNull();
         assertThat(themeInfo.style).isNull();
         assertThat(themeInfo.contrast).isNull();
+        assertThat(themeInfo.specVersion).isNull();
+        assertThat(themeInfo.platform).isNull();
     }
 
     @Test
     public void testParcelability_allValues() {
-        ThemeInfo themeInfo = ThemeInfo.build(SEED_COLOR_VALID, STYLE_VALID, CONTRAST_HIGH);
+        ThemeInfo themeInfo = new ThemeInfo(
+                SEED_COLOR_VALID,
+                STYLE_VALID,
+                CONTRAST_HIGH,
+                SPEC_VERSION,
+                PLATFORM);
 
         Parcel parcel = Parcel.obtain();
         themeInfo.writeToParcel(parcel, 0);
@@ -68,11 +83,13 @@ public class ThemeInfoTests {
         assertThat(unparceledThemeInfo.seedColor).isEqualTo(themeInfo.seedColor);
         assertThat(unparceledThemeInfo.style).isEqualTo(themeInfo.style);
         assertThat(unparceledThemeInfo.contrast).isEqualTo(themeInfo.contrast);
+        assertThat(unparceledThemeInfo.specVersion).isEqualTo(themeInfo.specVersion);
+        assertThat(unparceledThemeInfo.platform).isEqualTo(themeInfo.platform);
     }
 
     @Test
     public void testParcelability_nullValues() {
-        ThemeInfo themeInfo = ThemeInfo.build(null, null, null);
+        ThemeInfo themeInfo = new ThemeInfo.Builder().build();
 
         Parcel parcel = Parcel.obtain();
         themeInfo.writeToParcel(parcel, 0);
@@ -84,11 +101,17 @@ public class ThemeInfoTests {
         assertThat(unparceledThemeInfo.seedColor).isNull();
         assertThat(unparceledThemeInfo.style).isNull();
         assertThat(unparceledThemeInfo.contrast).isNull();
+        assertThat(unparceledThemeInfo.specVersion).isNull();
+        assertThat(unparceledThemeInfo.platform).isNull();
     }
 
     @Test
     public void testParcelability_mixedValues() {
-        ThemeInfo themeInfo = ThemeInfo.build(SEED_COLOR_VALID, null, CONTRAST_HIGH);
+        ThemeInfo themeInfo = new ThemeInfo.Builder()
+                .setSeedColor(SEED_COLOR_VALID)
+                .setContrast(CONTRAST_HIGH)
+                .build();
+
 
         Parcel parcel = Parcel.obtain();
         themeInfo.writeToParcel(parcel, 0);
@@ -100,11 +123,13 @@ public class ThemeInfoTests {
         assertThat(unparceledThemeInfo.seedColor).isEqualTo(themeInfo.seedColor);
         assertThat(unparceledThemeInfo.style).isNull();
         assertThat(unparceledThemeInfo.contrast).isEqualTo(themeInfo.contrast);
+        assertThat(unparceledThemeInfo.specVersion).isNull();
+        assertThat(unparceledThemeInfo.platform).isNull();
     }
 
     @Test
     public void testDescribeContents() {
-        ThemeInfo themeInfo = ThemeInfo.build(SEED_COLOR_VALID, STYLE_VALID, CONTRAST_MEDIUM);
+        ThemeInfo themeInfo = new ThemeInfo.Builder().build();
         assertThat(themeInfo.describeContents()).isEqualTo(0);
     }
 }
