@@ -1419,13 +1419,7 @@ public class UserManagerService extends IUserManager.Stub {
         if (dpmi == null) {
             return UserHandle.USER_NULL;
         }
-        // TODO(b/435271558): change dpmi.getDeviceOwnerUserId() so it doesn't check for permissions
-        long ident = Binder.clearCallingIdentity();
-        try {
-            return dpmi.getDeviceOwnerUserId();
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return dpmi.getDeviceOwnerUserId();
     }
 
     @Override
