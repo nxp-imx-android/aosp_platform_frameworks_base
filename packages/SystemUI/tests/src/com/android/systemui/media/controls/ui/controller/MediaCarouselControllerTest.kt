@@ -1025,6 +1025,48 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         }
     }
 
+    @EnableFlags(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
+    @DisableSceneContainer
+    @Test
+    fun multipleMediaPlayers_disableScrolling_noPageArrows() {
+        verify(mediaDataManager).addListener(capture(listener))
+
+        // Set carousel host to disable scrolling
+        whenever(mediaHostStatesManager.mediaHostStates)
+            .thenReturn(mutableMapOf(LOCATION_QS to mediaHostState))
+        whenever(mediaHostState.disableScrolling).thenReturn(true)
+        mediaCarouselController.currentEndLocation = LOCATION_QS
+        mediaCarouselController.setCurrentState(LOCATION_QS, LOCATION_QS, 1.0f, true)
+
+        listener.value.onMediaDataLoaded(
+            PLAYING_LOCAL,
+            null,
+            DATA.copy(
+                active = true,
+                isPlaying = true,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = false,
+            ),
+        )
+        listener.value.onMediaDataLoaded(
+            PAUSED_LOCAL,
+            null,
+            DATA.copy(
+                active = true,
+                isPlaying = false,
+                playbackLocation = MediaData.PLAYBACK_LOCAL,
+                resumption = false,
+            ),
+        )
+        runAllReady()
+
+        assertEquals(2, MediaPlayerData.players().size)
+        MediaPlayerData.players().forEachIndexed { index, mediaPlayer ->
+            verify(mediaPlayer, atLeast(1)).setPageArrowsVisible(eq(false))
+            verify(mediaPlayer, never()).setPageArrowsVisible(eq(true))
+        }
+    }
+
     /**
      * Helper method when a configuration change occurs.
      *
