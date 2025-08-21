@@ -163,4 +163,10 @@ interface IVirtualDeviceManager {
      * exists, as long as one may have existed or can be created.
      */
     List<String> getAllPersistentDeviceIds();
+
+    /**
+     * Returns the audio focus environment IBinder token for a virtual device or null if there is
+     * no separate audio focus environment for the device.
+     */
+    @nullable IBinder getAudioFocusEnvironment(int deviceId);
 }

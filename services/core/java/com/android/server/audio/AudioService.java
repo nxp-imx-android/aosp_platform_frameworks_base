@@ -1275,7 +1275,31 @@ public class AudioService extends IAudioService.Stub
 
     private PowerManager.WakeLock mAudioEventWakeLock;
 
+    // The main default MediaFocusControl. Associated to the null focus environment token.
     private final MediaFocusControl mMediaFocusControl;
+
+    // Lock for synchronizing access to the focus environments map
+    private final Object mFocusEnvironmentsLock = new Object();
+
+    // A map of additional MediaFocusControl objects, each controlling focus on a separate
+    // environment independently of the main media focus control and keyed by an audio focus
+    // environment IBinder token
+    @GuardedBy("mFocusEnvironmentsLock")
+    private final ArrayMap<IBinder, MediaFocusControl> mFocusEnvironmentsMap = new ArrayMap<>();
+
+    // DeathRecipient for all owners of audio focus environments
+    private final IBinder.DeathRecipient mFocusEnvironmentDeathRecipient =
+            new IBinder.DeathRecipient() {
+                @Override
+                public void binderDied(IBinder who) {
+                    destroyAudioFocusEnvironmentInternal(who);
+                }
+
+                @Override
+                public void binderDied() {
+                    // binderDied(IBinder) is preferred.
+                }
+            };
 
     // Pre-scale for Bluetooth Absolute Volume
     private float[] mPrescaleAbsoluteVolume = new float[] {
@@ -1756,21 +1780,9 @@ public class AudioService extends IAudioService.Stub
                         device -> onMuteAwaitConnectionTimeout(device),
                         stream -> isStreamMute(stream));
 
-        final ContentResolver cr = mContext.getContentResolver();
-        boolean multiAudioFocusEnabledDefault =
-                audioFocusDesktop()
-                        && mContext.getResources()
-                                .getBoolean(
-                                        com.android.internal.R.bool
-                                                .config_multi_audio_focus_enabled_default);
-        boolean isMultiFocus = Settings.System.getIntForUser(cr,
-                Settings.System.MULTI_AUDIO_FOCUS_ENABLED,
-                multiAudioFocusEnabledDefault ? 1 : 0, cr.getUserId()) != 0;
+        mPlaybackMonitor.registerPlaybackCallback(mPlaybackActivityMonitor, true);
 
-
-       mPlaybackMonitor.registerPlaybackCallback(mPlaybackActivityMonitor, true);
-
-        mMediaFocusControl = new MediaFocusControl( mPlaybackMonitor, isMultiFocus);
+        mMediaFocusControl = new MediaFocusControl(mPlaybackMonitor, isMultiFocus());
 
         readAndSetLowRamDevice();
 
@@ -1820,6 +1832,15 @@ public class AudioService extends IAudioService.Stub
                 mAppOps,
                 context.getPackageManager(),
                 mHardeningLogger);
+    }
+
+    private boolean isMultiFocus() {
+        ContentResolver cr = mContext.getContentResolver();
+        boolean multiAudioFocusEnabledDefault =
+                audioFocusDesktop() && mContext.getResources().getBoolean(
+                        com.android.internal.R.bool.config_multi_audio_focus_enabled_default);
+        return Settings.System.getIntForUser(cr, Settings.System.MULTI_AUDIO_FOCUS_ENABLED,
+                multiAudioFocusEnabledDefault ? 1 : 0, cr.getUserId()) != 0;
     }
 
     private void initVolumeStreamStates() {
@@ -5818,6 +5839,19 @@ public class AudioService extends IAudioService.Stub
             }
         }
         pw.println();
+    }
+
+    private void dumpAdditionalFocusEnvironments(PrintWriter pw) {
+        synchronized (mFocusEnvironmentsLock) {
+            if (mFocusEnvironmentsMap.isEmpty()) {
+                pw.println("\nNo additional audio focus environments.");
+            } else {
+                pw.println("\nAdditional audio focus environments:");
+                for (int i = 0; i < mFocusEnvironmentsMap.size(); i++) {
+                    mFocusEnvironmentsMap.valueAt(i).dump(pw);
+                }
+            }
+        }
     }
 
 
@@ -12657,7 +12691,8 @@ public class AudioService extends IAudioService.Stub
 
     public int requestAudioFocus(AudioAttributes aa, int focusReqType, IBinder cb,
             IAudioFocusDispatcher fd, String clientId, String callingPackageName,
-            String attributionTag, int flags, IAudioPolicyCallback pcb, int sdk) {
+            String attributionTag, int flags, IAudioPolicyCallback pcb, int sdk,
+            @Nullable IBinder focusEnvToken) {
         if ((flags & AudioManager.AUDIOFOCUS_FLAG_TEST) != 0) {
             throw new IllegalArgumentException("Invalid test flag");
         }
@@ -12744,8 +12779,8 @@ public class AudioService extends IAudioService.Stub
         }
 
         mmi.record();
-        return mMediaFocusControl.requestAudioFocus(uid, aa, focusReqType, cb, fd,
-                clientId, callingPackageName, flags, sdk,
+        return getMediaFocusControlForEnvironment(focusEnvToken).requestAudioFocus(uid, aa,
+                focusReqType, cb, fd, clientId, callingPackageName, flags, sdk,
                 forceFocusDuckingForAccessibility(aa, focusReqType, uid), -1 /*testUid, ignored*/,
                 permissionOverridesCheck);
     }
@@ -12753,7 +12788,7 @@ public class AudioService extends IAudioService.Stub
     /** see {@link AudioManager#requestAudioFocusForTest(AudioFocusRequest, String, int, int)} */
     public int requestAudioFocusForTest(AudioAttributes aa, int focusReqType, IBinder cb,
             IAudioFocusDispatcher fd, String clientId, String callingPackageName,
-            int flags, int fakeUid, int sdk) {
+            int flags, int fakeUid, int sdk, @Nullable IBinder focusEnvToken) {
         if (!enforceQueryAudioStateForTest("focus request")) {
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
@@ -12762,14 +12797,14 @@ public class AudioService extends IAudioService.Stub
             Log.e(TAG, reason);
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
-        return mMediaFocusControl.requestAudioFocus(Binder.getCallingUid(),
-                aa, focusReqType, cb, fd,
-                clientId, callingPackageName, flags,
-                sdk, false /*forceDuck*/, fakeUid, true /*permissionOverridesCheck*/);
+        return getMediaFocusControlForEnvironment(focusEnvToken)
+                .requestAudioFocus(Binder.getCallingUid(), aa, focusReqType, cb, fd, clientId,
+                        callingPackageName, flags, sdk, false /*forceDuck*/, fakeUid,
+                        true /*permissionOverridesCheck*/);
     }
 
     public int abandonAudioFocus(IAudioFocusDispatcher fd, String clientId, AudioAttributes aa,
-            String callingPackageName) {
+            String callingPackageName, @Nullable IBinder focusEnvToken) {
         MediaMetrics.Item mmi = new MediaMetrics.Item(mMetricsId + "focus")
                 .set(MediaMetrics.Property.CALLING_PACKAGE, callingPackageName)
                 .set(MediaMetrics.Property.CLIENT_NAME, clientId)
@@ -12815,7 +12850,40 @@ public class AudioService extends IAudioService.Stub
                 }
             }
         }
-        return mMediaFocusControl.abandonAudioFocus(fd, clientId, aa, callingPackageName);
+
+        return getMediaFocusControlForEnvironment(focusEnvToken)
+                .abandonAudioFocus(fd, clientId, aa, callingPackageName);
+    }
+
+    /**
+     * Only used for internal testing, not exposed to clients.
+     * Gets the MediaFocusControl for the passed token from the existing environments map if it
+     * exists.
+     * @param focusEnvToken the token for the focus environment
+     * @return the MediaFocusControl for the focus token, null otherwise
+     */
+    @VisibleForTesting(visibility = PACKAGE)
+    public @Nullable MediaFocusControl getMediaFocusControlForEnvironmentFromMap(
+            @NonNull IBinder focusEnvToken) {
+        synchronized (mFocusEnvironmentsLock) {
+            return mFocusEnvironmentsMap.get(focusEnvToken);
+        }
+    }
+
+    private @NonNull MediaFocusControl getMediaFocusControlForEnvironment(
+            @Nullable IBinder focusEnvToken) {
+        if (focusEnvToken == null) {
+            return mMediaFocusControl;
+        }
+
+        MediaFocusControl mediaFocusControl =
+                getMediaFocusControlForEnvironmentFromMap(focusEnvToken);
+        if (mediaFocusControl == null) {
+            // focus requests on non-existent environments fallback to the default one
+            return mMediaFocusControl;
+        }
+
+        return mediaFocusControl;
     }
 
     /** synchronization between setMode(NORMAL) and abandonAudioFocus() from Telecom */
@@ -12846,11 +12914,93 @@ public class AudioService extends IAudioService.Stub
 
     /** see {@link AudioManager#abandonAudioFocusForTest(AudioFocusRequest, String)} */
     public int abandonAudioFocusForTest(IAudioFocusDispatcher fd, String clientId,
-            AudioAttributes aa, String callingPackageName) {
+            AudioAttributes aa, String callingPackageName, @Nullable IBinder focusEnvToken) {
         if (!enforceQueryAudioStateForTest("focus abandon")) {
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
-        return mMediaFocusControl.abandonAudioFocus(fd, clientId, aa, callingPackageName);
+        return getMediaFocusControlForEnvironment(focusEnvToken)
+                .abandonAudioFocus(fd, clientId, aa, callingPackageName);
+    }
+
+    /**
+     * Creates a new, isolated audio focus environment for the passed IBinder token that will
+     * identify it.
+     * <p>
+     * This method requires either the MODIFY_AUDIO_ROUTING or MODIFY_AUDIO_SETTINGS_PRIVILEGED
+     * permission.
+     * The caller is responsible for the lifecycle of this environment and should call
+     * destroyFocusEnvironment when it's no longer needed.
+     *
+     * @param focusEnvToken the non-null IBinder token to identify the new audio focus environment.
+     *                     It is also used to clean up the focus environment when the client dies.
+     * @return true if the separate audio focus environment was created successfully, false if it
+     * already exists.
+     */
+    @EnforcePermission(anyOf = { MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
+    public boolean createFocusEnvironment(@NonNull IBinder focusEnvToken) {
+        super.createFocusEnvironment_enforcePermission();
+        Objects.requireNonNull(focusEnvToken, "Focus Environment token must not be null");
+
+        synchronized (mFocusEnvironmentsLock) {
+            if (mFocusEnvironmentsMap.containsKey(focusEnvToken)) {
+                Log.w(TAG, "Audio focus environment already exists for token: " + focusEnvToken);
+                return false;
+            }
+            MediaFocusControl mfc = new MediaFocusControl(mPlaybackMonitor, isMultiFocus());
+            mFocusEnvironmentsMap.put(focusEnvToken, mfc);
+            try {
+                focusEnvToken.linkToDeath(mFocusEnvironmentDeathRecipient, 0);
+            } catch (RemoteException e) {
+                // The process is already gone, so clean up immediately.
+                mFocusEnvironmentsMap.remove(focusEnvToken);
+                return false;
+            }
+        }
+
+        if (DEBUG_AP) {
+            Log.d(TAG, "createFocusEnvironment for focusEnvToken: " + focusEnvToken + " success.");
+        }
+        return true;
+    }
+
+    /**
+     * Destroys an audio focus environment, abandoning all active focus requests within it
+     * <p>
+     * This method requires either the MODIFY_AUDIO_ROUTING or MODIFY_AUDIO_SETTINGS_PRIVILEGED
+     * permission.
+     *
+     * @param focusEnvToken the IBinder token to identify the audio focus environment to be
+     *                     destroyed.
+     * @return true if the audio focus environment was successfully destroyed, false otherwise.
+     */
+    @EnforcePermission(anyOf = { MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
+    public boolean destroyFocusEnvironment(@NonNull IBinder focusEnvToken) {
+        super.destroyFocusEnvironment_enforcePermission();
+        Objects.requireNonNull(focusEnvToken, "Focus Environment token must not be null");
+        return destroyAudioFocusEnvironmentInternal(focusEnvToken);
+    }
+
+    /** Internal helper to prevent deadlock and handle cleanup logic. */
+    private boolean destroyAudioFocusEnvironmentInternal(@NonNull IBinder focusEnvToken) {
+        if (DEBUG_AP) {
+            Log.d(TAG, "destroyFocusEnvironment with token: " + focusEnvToken);
+        }
+
+        focusEnvToken.unlinkToDeath(mFocusEnvironmentDeathRecipient, 0);
+
+        MediaFocusControl mfc;
+        synchronized (mFocusEnvironmentsLock) {
+            mfc = mFocusEnvironmentsMap.remove(focusEnvToken);
+        }
+
+        if (mfc != null) {
+            // Discard the entire focus stack and release associated resources.
+            mfc.maybeDiscardAudioFocusOwner();
+            return true;
+        }
+
+        Log.w(TAG, "Focus environment with token: " + focusEnvToken + " not found to destroy!");
+        return false;
     }
 
     /** see {@link AudioManager#enterFocusIsolation(int)} */
@@ -12889,8 +13039,13 @@ public class AudioService extends IAudioService.Stub
         mMediaFocusControl.unregisterAudioFocusClient(clientId);
     }
 
-    public int getCurrentAudioFocus() {
-        return mMediaFocusControl.getCurrentAudioFocus();
+    /**
+     * Gets the AudioFocus on the specified audio focus environment.
+     * @param focusEnvToken the audio focus environment token
+     * @return the current AudioFocus
+     */
+    public int getCurrentAudioFocus(@Nullable IBinder focusEnvToken) {
+        return getMediaFocusControlForEnvironment(focusEnvToken).getCurrentAudioFocus();
     }
 
     public int getFocusRampTimeMs(int focusGain, AudioAttributes attr) {
@@ -14268,6 +14423,7 @@ public class AudioService extends IAudioService.Stub
         mHardeningLogger.dump(pw);
         pw.println();
         mMediaFocusControl.dump(pw);
+        dumpAdditionalFocusEnvironments(pw);
 
         pw.println("\n# Routing");
         pw.println("## AudioDeviceBroker");
@@ -14277,7 +14433,6 @@ public class AudioService extends IAudioService.Stub
         mModeLogger.dump(pw); pw.println();
         sDeviceLogger.dump(pw); pw.println();
         sForceUseLogger.dump(pw); pw.println();
-
 
         pw.println("\n# Volume state");
         dumpStreamStates(pw);
@@ -15444,7 +15599,23 @@ public class AudioService extends IAudioService.Stub
     public boolean hasAudioFocus(String packageName) {
         super.hasAudioFocus_enforcePermission();
 
-        return mMediaFocusControl.hasAudioFocus(packageName);
+        return mMediaFocusControl.hasAudioFocus(packageName)
+                || hasFocusOnAnyEnvironment(packageName);
+    }
+
+    /** Checks for audio focus on any focus environment */
+    private boolean hasFocusOnAnyEnvironment(String packageName) {
+        synchronized (mFocusEnvironmentsLock) {
+            if (mFocusEnvironmentsMap.isEmpty()) {
+                return false;
+            }
+            for (int i = 0; i < mFocusEnvironmentsMap.size(); i++) {
+                if (mFocusEnvironmentsMap.valueAt(i).hasAudioFocus(packageName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
