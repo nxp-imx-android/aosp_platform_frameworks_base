@@ -57,6 +57,7 @@ import android.telephony.data.ApnSetting;
 import com.android.internal.infra.AndroidFuture;
 import android.app.admin.DevicePolicyState;
 import android.app.admin.EnforcingAdmin;
+import android.app.admin.PolicyValueTransport;
 
 import java.util.List;
 
@@ -654,4 +655,6 @@ interface IDevicePolicyManager {
 
     void setAppFunctionsPolicy(String callerPackageName, int policy);
     int getAppFunctionsPolicy(String callerPackageName, int userId);
+
+    void setPolicy(in String callerPackageName, in String policy, in int scope, in PolicyValueTransport value);
 }

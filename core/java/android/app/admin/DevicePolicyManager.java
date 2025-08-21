@@ -18595,16 +18595,25 @@ public class DevicePolicyManager {
             @Nullable T value) {
         throwIfParentInstance("setPolicy");
         if (mService != null) {
-            // TODO(b/434655549): Implement as a generic handler.
-            if (id.equals(PolicyIdentifier.SCREEN_CAPTURE_DISABLED)) {
-                if (value == null) return; // No way to clear the policy.
-
-                // TODO(b/434615264): Actually use the scope here.
-                setScreenCaptureDisabled(null, (Boolean) value);
-            } else {
-                throw new IllegalArgumentException("Unhandled policy " + id);
+            try {
+                mService.setPolicy(mContext.getPackageName(), id.getId(), scope,
+                        policyValueToTransport(value));
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
             }
         }
+    }
+
+    @Nullable
+    private static PolicyValueTransport policyValueToTransport(@Nullable Object value) {
+        return switch (value) {
+            case null -> null;
+            case Integer i -> PolicyValueTransport.integerField(i);
+            case Boolean b -> PolicyValueTransport.booleanField(b);
+            default -> throw new IllegalArgumentException(
+                    "Type of policy is not supported: " + value + "(" + value.getClass().getName()
+                            + ")");
+        };
     }
 
     /**

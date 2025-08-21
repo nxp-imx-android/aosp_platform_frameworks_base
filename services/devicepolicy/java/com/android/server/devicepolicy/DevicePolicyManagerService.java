@@ -146,6 +146,8 @@ import static android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANT
 import static android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED;
 import static android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_EXPLICITLY;
 import static android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT;
+import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
+import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
@@ -328,9 +330,11 @@ import android.app.admin.ParcelableGranteeMap;
 import android.app.admin.ParcelableResource;
 import android.app.admin.PasswordMetrics;
 import android.app.admin.PasswordPolicy;
+import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyKey;
 import android.app.admin.PolicySizeVerifier;
 import android.app.admin.PolicyValue;
+import android.app.admin.PolicyValueTransport;
 import android.app.admin.PreferentialNetworkServiceConfig;
 import android.app.admin.SecurityLog;
 import android.app.admin.SecurityLog.SecurityEvent;
@@ -24761,5 +24765,76 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mPermissions.enforce(MANAGE_PROFILE_AND_DEVICE_OWNERS, caller);
 
         return Binder.withCleanCallingIdentity(() -> getHeadlessDeviceOwnerModeForDeviceOwner());
+    }
+
+    private void setScreenCaptureDisabled(CallerIdentity caller, int scope, Boolean disabled) {
+        if (scope != POLICY_SCOPE_DEVICE && scope != POLICY_SCOPE_USER) {
+            throw new IllegalArgumentException("Invalid scope " + scope);
+        }
+
+        mPermissions.enforce(MANAGE_DEVICE_POLICY_SCREEN_CAPTURE, caller);
+        EnforcingAdmin admin = getEnforcingAdmin(caller);
+        if (scope == POLICY_SCOPE_DEVICE && !isDefaultDeviceOwner(caller)
+                && !isProfileOwnerOfOrganizationOwnedDevice(caller)) {
+            throw new SecurityException(
+                    "Caller must be a device owner or profile owner of an organization-owned "
+                            + "managed profile to be able to set the policy with "
+                            + "POLICY_SCOPE_DEVICE.");
+        }
+
+        // Clearing is done by false.
+        if (disabled == null) {
+            disabled = false;
+        }
+
+        switch (scope) {
+            case POLICY_SCOPE_DEVICE:
+                if (disabled) {
+                    mDevicePolicyEngine.setGlobalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
+                            admin,
+                            new BooleanPolicyValue(disabled));
+                } else {
+                    mDevicePolicyEngine.removeGlobalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
+                            admin);
+                }
+                break;
+            case POLICY_SCOPE_USER:
+                int userId = caller.getUserId();
+                if (disabled) {
+                    mDevicePolicyEngine.setLocalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
+                            admin,
+                            new BooleanPolicyValue(disabled), userId);
+                } else {
+                    mDevicePolicyEngine.removeLocalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
+                            admin, userId);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "SCREEN_CAPTURE_DISABLED only supports POLICY_SCOPE_DEVICE and "
+                        + "POLICY_SCOPE_USER");
+        }
+    }
+
+    @Override
+    public void setPolicy(String callerPackageName, String id, int scope,
+            PolicyValueTransport value) {
+        if (!mHasFeature) {
+            return;
+        }
+
+        CallerIdentity caller = getCallerIdentity(callerPackageName);
+
+        Binder.withCleanCallingIdentity(() -> {
+            if (id.equals(PolicyIdentifier.SCREEN_CAPTURE_DISABLED.getId())) {
+                if (value.getTag() != PolicyValueTransport.Tag.booleanField) {
+                    throw new IllegalArgumentException(
+                            "SCREEN_CAPTURE_DISABLED requires a Boolean value");
+                }
+                setScreenCaptureDisabled(caller, scope, value.getBooleanField());
+            } else {
+                throw new IllegalArgumentException("Unhandled policy " + id);
+            }
+        });
     }
 }
