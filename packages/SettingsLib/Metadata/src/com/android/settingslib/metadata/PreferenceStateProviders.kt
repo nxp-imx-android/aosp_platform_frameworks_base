@@ -28,30 +28,12 @@ import androidx.lifecycle.LifecycleOwner
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.CoroutineScope
 
-
-// A standard pattern in this file is an Async* interface which has a suspend function suffixed with
-// Async and then a synchronous subinterface with no prefixes or suffixes. Ideally the async version
-// would be unprefixed/suffixed and we would have Synchronous* subinterfaces - but as we are quite
-// deep into migrations with the current structure, and changes now would slow things now - this
-// structure will be used. We should later rename these classes.
-
 /**
  * Interface to provide dynamic preference title.
  *
  * Implement this interface implies that the preference title should not be cached for indexing.
  */
-interface AsyncPreferenceTitleProvider {
-
-    /** Provides preference title. */
-    suspend fun getTitleAsync(context: Context): CharSequence?
-}
-
-/**
- * Interface to provide dynamic preference title synchronously
- */
-interface PreferenceTitleProvider : AsyncPreferenceTitleProvider {
-
-    override suspend fun getTitleAsync(context: Context) = getTitle(context)
+interface PreferenceTitleProvider {
 
     /** Provides preference title. */
     fun getTitle(context: Context): CharSequence?
@@ -63,22 +45,7 @@ interface PreferenceTitleProvider : AsyncPreferenceTitleProvider {
  * This is used to add more context to the title, and it is effective only when building indexable
  * data in [PreferenceSearchIndexablesProvider].
  */
-interface AsyncPreferenceIndexableTitleProvider {
-
-    /** Provides preference indexable title. */
-    suspend fun getIndexableTitleAsync(context: Context): CharSequence?
-}
-
-
-/**
- * Provides preference title to be shown in search result.
- *
- * This is used to add more context to the title, and it is effective only when building indexable
- * data in [PreferenceSearchIndexablesProvider].
- */
-interface PreferenceIndexableTitleProvider : AsyncPreferenceIndexableTitleProvider {
-
-    override suspend fun getIndexableTitleAsync(context: Context) = getIndexableTitle(context)
+interface PreferenceIndexableTitleProvider {
 
     /** Provides preference indexable title. */
     fun getIndexableTitle(context: Context): CharSequence?
@@ -89,19 +56,7 @@ interface PreferenceIndexableTitleProvider : AsyncPreferenceIndexableTitleProvid
  *
  * Implement this interface implies that the preference summary should not be cached for indexing.
  */
-interface AsyncPreferenceSummaryProvider {
-    /** Provides preference summary. */
-    suspend fun getSummaryAsync(context: Context): CharSequence?
-}
-
-/**
- * Interface to provide dynamic preference summary synchronously.
- *
- * Implement this interface implies that the preference summary should not be cached for indexing.
- */
-interface PreferenceSummaryProvider : AsyncPreferenceSummaryProvider {
-
-    override suspend fun getSummaryAsync(context: Context) = getSummary(context)
+interface PreferenceSummaryProvider {
 
     /** Provides preference summary. */
     fun getSummary(context: Context): CharSequence?
@@ -112,41 +67,14 @@ interface PreferenceSummaryProvider : AsyncPreferenceSummaryProvider {
  *
  * Implement this interface implies that the preference icon should not be cached for indexing.
  */
-interface AsyncPreferenceIconProvider {
-    /** Provides preference icon. */
-    suspend fun getIconAsync(context: Context): Int
-}
-
-/**
- * Interface to provide dynamic preference icon synchronously.
- *
- * Implement this interface implies that the preference icon should not be cached for indexing.
- */
-interface PreferenceIconProvider : AsyncPreferenceIconProvider {
-
-    override suspend fun getIconAsync(context: Context) = getIcon(context)
+interface PreferenceIconProvider {
 
     /** Provides preference icon. */
     fun getIcon(context: Context): Int
 }
 
 /** Interface to provide the state of preference availability. */
-interface AsyncPreferenceAvailabilityProvider {
-    /**
-     * Provides preference availability.
-     *
-     * When unavailable (i.e. `false` returned),
-     * - UI framework normally does not show the preference widget.
-     * - If it is a preference screen, all children may be disabled (depends on UI framework
-     *   implementation).
-     */
-    suspend fun isAvailableAsync(context: Context): Boolean
-}
-
-/** Interface to provide the state of preference availability synchronously. */
-interface PreferenceAvailabilityProvider : AsyncPreferenceAvailabilityProvider {
-
-    override suspend fun isAvailableAsync(context: Context) = isAvailable(context)
+interface PreferenceAvailabilityProvider {
 
     /**
      * Returns if the preference is available.
@@ -165,21 +93,7 @@ interface PreferenceAvailabilityProvider : AsyncPreferenceAvailabilityProvider {
  * See [Managed configurations](https://developer.android.com/work/managed-configurations) for the
  * Android Enterprise support.
  */
-interface AsyncPreferenceRestrictionProvider {
-
-    /** Returns if preference is restricted by managed configs. */
-    suspend fun isRestrictedAsync(context: Context): Boolean
-}
-
-/**
- * Interface to provide the managed configuration state of the preference.
- *
- * See [Managed configurations](https://developer.android.com/work/managed-configurations) for the
- * Android Enterprise support.
- */
-interface PreferenceRestrictionProvider : AsyncPreferenceRestrictionProvider {
-
-    override suspend fun isRestrictedAsync(context: Context) = isRestricted(context)
+interface PreferenceRestrictionProvider {
 
     /** Returns if preference is restricted by managed configs. */
     fun isRestricted(context: Context): Boolean
