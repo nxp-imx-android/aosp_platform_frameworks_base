@@ -2580,10 +2580,10 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Bezbednost i privatnost"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Otključajte ekran i ponovo povežite USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Otključajte ekran da biste povezali USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"Napredna zaštita zahteva da ekran bude otključan da bi se pokrenula USB veza"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"Napredna zaštita zahteva da ekran bude otključan da bi se pokrenula USB veza"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"Napredna zaštita zahteva da ekran bude otključan da bi se pokrenulo USB povezivanje"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"Napredna zaštita zahteva da ekran bude otključan da bi se pokrenulo USB povezivanje"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Napredna zaštita zahteva da ekran bude otključan radi bržeg punjenja"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Radi bržeg punjenja ili pokretanja USB veze, Napredna zaštita zahteva da ekran bude otključan"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Za brže punjenje ili pokretanje USB povezivanja, Napredna zaštita zahteva da ekran bude otključan"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Isključi zvuk"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Isključen je zvuk obaveštenja"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Nećete dobijati obaveštenja o Naprednoj zaštiti za USB dok ne restartujete uređaj"</string>
@@ -2593,10 +2593,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Dodirnite da biste videli savete za poboljšanje doživljaja otključavanja"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Bez treptanja"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Dugo pritisnite dugme za uključivanje i isključite TV"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozorenja o resursima sistema"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Prekomerno korišćenje resursa"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> koristi previše resursa."</string>
 </resources>

@@ -2047,12 +2047,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"ਵੱਡਾ ਕਰੋ"</string>
     <string name="close_button_text" msgid="10603510034455258">"ਬੰਦ ਕਰੋ"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"ਜਵਾਬ ਦਿਓ"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"ਵੀਡੀਓ"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"ਅਸਵੀਕਾਰ ਕਰੋ"</string>
@@ -2580,25 +2577,17 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ਐਪਲੀਕੇਸ਼ਨਾਂ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ਤੁਹਾਡੇ ਫਿੰਗਰਪ੍ਰਿੰਟਾਂ ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"ਸੁਰੱਖਿਆ ਅਤੇ ਪਰਦੇਦਾਰੀ"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰੋ ਅਤੇ USB ਨੂੰ ਮੁੜ-ਕਨੈਕਟ ਕਰੋ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USB ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰੋ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, USB ਕਨੈਕਟੀਵਿਟੀ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, USB ਕਨੈਕਟੀਵਿਟੀ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, ਤੇਜ਼ ਚਾਰਜਿੰਗ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ ਦੀ ਵਰਤੋਂ ਕਰਨ ਵੇਲੇ, ਤੇਜ਼ ਚਾਰਜਿੰਗ ਜਾਂ USB ਕਨੈਕਟੀਵਿਟੀ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ਖਮੋਸ਼ੀ"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"ਸੂਚਨਾਵਾਂ ਨੂੰ ਖਮੋਸ਼ ਕੀਤਾ ਗਿਆ"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਆਪਣਾ ਡੀਵਾਈਸ ਮੁੜ-ਸ਼ੁਰੂ ਨਹੀਂ ਕਰਦੇ, ਉਦੋਂ ਤੱਕ ਤੁਹਾਨੂੰ ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ USB ਸੂਚਨਾਵਾਂ ਪ੍ਰਾਪਤ ਨਹੀਂ ਹੋਣਗੀਆਂ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ਸ਼ੱਕੀ USB ਸਰਗਰਮੀ"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB ਡਾਟਾ ਸਿਗਨਲ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ਕੀ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਸੰਬੰਧੀ ਕੋਈ ਸਮੱਸਿਆ ਆ ਰਹੀ ਹੈ?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ਆਪਣੇ ਅਣਲਾਕ ਕਰਨ ਸੰਬੰਧੀ ਅਨੁਭਵ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਾਸਤੇ ਸੁਝਾਵਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ਪਲਕਾਂ ਨਾ ਝਪਕੋ"</string>

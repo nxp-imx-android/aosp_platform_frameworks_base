@@ -1979,7 +1979,7 @@
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clon de <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privado"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Solicitar PIN para quitar fijación"</string>
-    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicitar desbloqueo para quitar fijación"</string>
+    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicitar patrón de desbloqueo para quitar fijación"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Solicitar contraseña para quitar fijación"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Tu administrador realizó la instalación.\nVe a la configuración para ver los permisos otorgados"</string>
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Tu administrador realizó la actualización.\nVe a la configuración para ver los permisos otorgados"</string>
@@ -2048,12 +2048,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"Maximizar"</string>
     <string name="close_button_text" msgid="10603510034455258">"Cerrar"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Responder"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Rechazar"</string>
@@ -2581,33 +2578,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplicaciones"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Ya no se pueden reconocer tus huellas dactilares. Vuelve a configurar el Desbloqueo con huellas dactilares."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Seguridad y privacidad"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Desbloquea la pantalla y vuelve a conectar el USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Desbloquea la pantalla para conectar el USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"La Protección avanzada requiere que desbloquees la pantalla para iniciar la conectividad USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"La Protección avanzada requiere que desbloquees la pantalla para iniciar la conectividad USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"La Protección avanzada requiere que desbloquees la pantalla para una carga más rápida"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Para una carga más rápida o para iniciar la conectividad USB, la Protección avanzada requiere que desbloquees la pantalla"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Silenciar"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Notificaciones silenciadas"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"No recibirás notificaciones relacionadas con la Protección avanzada para USB hasta que reinicies el dispositivo"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Actividad de USB sospechosa"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"Se inhabilitó la señal de datos por USB"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"¿Tienes problemas con el Desbloqueo con huellas dactilares?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Presiona para revisar las sugerencias para mejorar la experiencia de desbloqueo"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Sin parpadeo"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Mantén presionado el botón de encendido para apagar la TV"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertas de recursos del sistema"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Uso excesivo de recursos"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"La app “<xliff:g id="APP_NAME">%1$s</xliff:g>” está usando demasiados recursos."</string>
 </resources>

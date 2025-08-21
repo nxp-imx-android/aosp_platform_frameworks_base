@@ -2578,25 +2578,22 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"אפליקציות"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"טביעות האצבע שלך נשחקו ואי אפשר לזהות אותן. צריך להגדיר \'פתיחה בטביעת אצבע\' מחדש."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"אבטחה ופרטיות"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"‏צריך לבטל את נעילת המסך ולחבר מחדש את ה-USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"‏צריך לבטל את נעילת המסך כדי להתחבר ל-USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"‏כש\"הגנה מתקדמת\" מופעלת, צריך לבטל את נעילת המסך כדי להתחיל חיבור USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"‏כש\"הגנה מתקדמת\" מופעלת, צריך לבטל את נעילת המסך כדי להתחיל חיבור USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"כש\"הגנה מתקדמת\" מופעלת, צריך לבטל את נעילת המסך כדי שתתבצע טעינה מהירה יותר"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"‏צריך לפתוח את נעילת המסך ולחבר מחדש את ה-USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"‏כדי להתחבר ל-USB צריך לפתוח את נעילת המסך"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"‏כדי להתחיל חיבור USB כש\"הגנה מתקדמת\" מופעלת, צריך לפתוח את נעילת המסך"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"‏כדי להתחיל חיבור USB כש\"הגנה מתקדמת\" מופעלת, צריך לפתוח את נעילת המסך"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"כדי שתתבצע טעינה מהירה יותר כש\"הגנה מתקדמת\" מופעלת, צריך לפתוח את נעילת המסך"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"‏כדי להשתמש בטעינה מהירה או להתחיל חיבור USB, כש\"הגנה מתקדמת\" מופעלת, צריך לפתוח את נעילת המסך"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"השתקה"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"ההתראות מושתקות"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"‏לא יתקבלו התראות USB של \"הגנה מתקדמת\" עד שהמכשיר יופעל מחדש"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"‏התראות USB של \"הגנה מתקדמת\" יתקבלו רק אחרי שהמכשיר יופעל מחדש"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏זוהתה פעילות חשודה בהתקן USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"‏האות עם הנתונים מה-USB הושבת"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"נתקלת בבעיה בפתיחה בטביעת אצבע?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"אפשר ללחוץ כאן כדי לקבל טיפים לפתיחה נוחה יותר של המכשיר"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ללא הבהוב"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"כדי לכבות את הטלוויזיה, צריך ללחוץ לחיצה ארוכה על כפתור ההפעלה"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"התראות על משאבי מערכת"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"שימוש יתר במשאבים"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> משתמשת ביותר מדי משאבים."</string>
 </resources>
