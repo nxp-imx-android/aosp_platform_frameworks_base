@@ -22,11 +22,13 @@ import static com.android.server.backup.UserBackupManagerService.SETTINGS_PACKAG
 import static com.android.server.backup.UserBackupManagerService.SHARED_BACKUP_AGENT_PACKAGE;
 import static com.android.server.backup.UserBackupManagerService.TELEPHONY_PROVIDER_PACKAGE;
 import static com.android.server.backup.UserBackupManagerService.WALLPAPER_PACKAGE;
+import static com.android.server.backup.crossplatform.PlatformConfigParser.PLATFORM_IOS;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
 import android.annotation.Nullable;
 import android.app.backup.BackupAnnotations.BackupDestination;
 import android.app.backup.BackupTransport;
+import android.app.backup.FullBackup;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
@@ -48,13 +50,18 @@ import com.android.internal.util.ArrayUtils;
 import com.android.server.LocalServices;
 import com.android.server.backup.BackupManagerService;
 import com.android.server.backup.SetUtils;
+import com.android.server.backup.crossplatform.PlatformConfigParser;
 import com.android.server.backup.transport.BackupTransportClient;
 import com.android.server.backup.transport.TransportConnection;
 import com.android.server.pm.UserManagerInternal;
 
 import com.google.android.collect.Sets;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Utility methods wrapping operations on ApplicationInfo and PackageInfo. */
@@ -90,6 +97,9 @@ public class BackupEligibilityRules {
     private final int mUserId;
     @BackupDestination private final int mBackupDestination;
     private final boolean mSkipRestoreForLaunchedApps;
+
+    private Map<String, List<FullBackup.BackupScheme.PlatformSpecificParams>>
+            mPlatformSpecificParams;
 
     /**
      * When this change is enabled, {@code adb backup} is automatically turned on for apps running
@@ -147,6 +157,7 @@ public class BackupEligibilityRules {
         mBackupDestination = backupDestination;
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mSkipRestoreForLaunchedApps = skipRestoreForLaunchedApps;
+        mPlatformSpecificParams = Collections.emptyMap();
     }
 
     /**
@@ -296,6 +307,10 @@ public class BackupEligibilityRules {
                 }
             case BackupDestination.CLOUD:
                 return allowBackup;
+            case BackupDestination.CROSS_PLATFORM_TRANSFER:
+                return allowBackup
+                        && (app.packageName.equals(PACKAGE_MANAGER_SENTINEL)
+                                || appSupportsCrossPlatformTransfer(app, PLATFORM_IOS));
             default:
                 Slog.w(TAG, "Unknown operation type:" + mBackupDestination);
                 return false;
@@ -341,6 +356,30 @@ public class BackupEligibilityRules {
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
+    }
+
+    /**
+     * Returns whether an app has opted-in to cross-platform transfer in its data extraction rules.
+     */
+    public boolean appSupportsCrossPlatformTransfer(
+            ApplicationInfo applicationInfo, String platform) {
+        try {
+            mPlatformSpecificParams =
+                    PlatformConfigParser.parsePlatformSpecificConfig(
+                            mPackageManager, applicationInfo);
+        } catch (IOException e) {
+            Slog.e(
+                    TAG,
+                    "Unable to parse cross-platform configuration from data-extraction-rules",
+                    e);
+            return false;
+        }
+        Slog.d(
+                TAG,
+                "Found cross-platform configuration for "
+                        + mPlatformSpecificParams.size()
+                        + " platforms.");
+        return !mPlatformSpecificParams.getOrDefault(platform, Collections.emptyList()).isEmpty();
     }
 
     /**

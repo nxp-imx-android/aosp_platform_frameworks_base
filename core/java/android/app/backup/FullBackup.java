@@ -298,7 +298,6 @@ public class FullBackup {
         }
     }
 
-    @VisibleForTesting
     public static class BackupScheme {
         private final File FILES_DIR;
         private final File DATABASE_DIR;
@@ -451,6 +450,22 @@ public class FullBackup {
             public String getContentVersion() {
                 return mContentVersion;
             }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof PlatformSpecificParams) {
+                    PlatformSpecificParams other = (PlatformSpecificParams) obj;
+                    return TextUtils.equals(mBundleId, other.mBundleId)
+                            && TextUtils.equals(mTeamId, other.mTeamId)
+                            && TextUtils.equals(mContentVersion, other.mContentVersion);
+                }
+                return false;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mBundleId, mTeamId, mContentVersion);
+            }
         }
 
         /**
@@ -598,6 +613,7 @@ public class FullBackup {
             // This not being null is how we know that we've tried to parse the xml already.
             mIncludes = new ArrayMap<String, Set<PathWithRequiredFlags>>();
             mExcludes = new ArraySet<PathWithRequiredFlags>();
+            mPlatformSpecificParams = new ArrayMap<>();
             mRequiredTransportFlags = 0;
             mIsUsingNewScheme = false;
 
@@ -680,6 +696,8 @@ public class FullBackup {
                     return ConfigSection.CLOUD_BACKUP;
                 case BackupDestination.DEVICE_TRANSFER:
                     return ConfigSection.DEVICE_TRANSFER;
+                case BackupDestination.CROSS_PLATFORM_TRANSFER:
+                    return ConfigSection.CROSS_PLATFORM_TRANSFER;
                 default:
                     return null;
             }
