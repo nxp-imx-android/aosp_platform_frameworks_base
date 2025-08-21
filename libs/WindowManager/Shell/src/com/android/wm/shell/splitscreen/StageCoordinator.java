@@ -490,7 +490,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     this /*stageListenerCallbacks*/,
                     mSyncQueue,
                     iconProvider,
-                    mWindowDecorViewModel);
+                    mWindowDecorViewModel,
+                    mBubbleController);
         } else {
             mMainStage = new StageTaskListener(
                     mContext,
@@ -499,7 +500,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     this /*stageListenerCallbacks*/,
                     mSyncQueue,
                     iconProvider,
-                    mWindowDecorViewModel, STAGE_TYPE_MAIN);
+                    mWindowDecorViewModel, STAGE_TYPE_MAIN,
+                    bubbleController);
             mSideStage = new StageTaskListener(
                     mContext,
                     mTaskOrganizer,
@@ -507,7 +509,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     this /*stageListenerCallbacks*/,
                     mSyncQueue,
                     iconProvider,
-                    mWindowDecorViewModel, STAGE_TYPE_SIDE);
+                    mWindowDecorViewModel, STAGE_TYPE_SIDE,
+                    mBubbleController);
         }
         mTransitions = transitions;
         mDisplayController = displayController;
@@ -1745,7 +1748,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     /**
      * Starts a new transition to dismiss split.
      */
-    private void dismissSplit(@StageType int stageToTop, @ExitReason int exitReason) {
+    @VisibleForTesting
+    void dismissSplit(@StageType int stageToTop, @ExitReason int exitReason) {
         if (!isSplitActive()) {
             return;
         }
@@ -2357,6 +2361,37 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         for (int i = mListeners.size() - 1; i >= 0; --i) {
             mListeners.get(i).onTaskStageChanged(taskId, stage, visible);
         }
+    }
+
+    @Override
+    public void onChildTaskMovedToBubble(StageTaskListener stage, int taskId) {
+        if (stage.getChildCount() != 0) {
+            ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
+                    "onChildTaskMovedToBubble: task=%d in stage=%s moved to bubble, ignore, "
+                            + "childCount=%d",
+                    taskId, stageTypeToString(stage.getId()), stage.getChildCount());
+            return;
+        }
+        int stageToTop = STAGE_TYPE_UNDEFINED;
+        if (enableFlexibleSplit()) {
+            for (StageTaskListener activeStage : mStageOrderOperator.getActiveStages()) {
+                // See if any other stage still has children
+                if (activeStage.getChildCount() > 0) {
+                    stageToTop = activeStage.getId();
+                    break;
+                }
+            }
+        } else {
+            final StageTaskListener remainingStage = stage == mMainStage ? mSideStage : mMainStage;
+            if (remainingStage.getChildCount() > 0) {
+                stageToTop = remainingStage.getId();
+            }
+        }
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
+                "onChildTaskMovedToBubble: taskId=%d in stage=%s moved to bubble exit split "
+                        + "stageToTop=%s",
+                taskId, stageTypeToString(stage.getId()), stageTypeToString(stageToTop));
+        dismissSplit(stageToTop, EXIT_REASON_CHILD_TASK_ENTER_BUBBLE);
     }
 
     private void updateRecentTasksSplitPair() {
