@@ -340,8 +340,10 @@ constructor(
                 // Display#getRoundedCorner) and a padding value. The proper way of doing this is
                 // using safe insets, that take this into account already.
                 // For now, as external displays with corner radius are extremely uncommon, we're
-                // just returning zero.
-                0
+                // just returning an hardcoded small padding.
+                rotatedResources.getDimensionPixelSize(
+                    R.dimen.status_bar_padding_without_rounded_corners
+                )
             }
         val minDotPadding =
             if (isPrivacyDotEnabled)
