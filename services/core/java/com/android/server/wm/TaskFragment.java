@@ -807,6 +807,34 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return mIsEmbedded;
     }
 
+
+    /**
+     * Returns true if this container fills its parent by policy or bounds. Similar to
+     * {@link ActivityRecord}, this returns {@code true} if it has override bounds which equals
+     * to its parent bounds
+     */
+    @Override
+    boolean fillsParentBounds() {
+        if (com.android.window.flags.Flags.rootTaskForBubble()) {
+            final int windowingMode = getWindowingMode();
+            if (windowingMode == WINDOWING_MODE_PINNED) {
+                return false;
+            }
+            if (windowingMode == WINDOWING_MODE_FULLSCREEN) {
+                return true;
+            }
+
+            final Rect overrideBounds = getResolvedOverrideBounds();
+            if (overrideBounds.isEmpty()) {
+                return true;
+            }
+            final WindowContainer parent = getParent();
+            return parent == null || parent.getBounds().equals(overrideBounds);
+        }
+
+        return super.fillsParentBounds();
+    }
+
     @EmbeddingCheckResult
     int isAllowedToEmbedActivity(@NonNull ActivityRecord a) {
         return isAllowedToEmbedActivity(a, mTaskFragmentOrganizerUid);

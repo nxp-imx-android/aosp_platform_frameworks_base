@@ -1148,8 +1148,8 @@ public class BubbleTransitions {
                 } else {
                     opts.setTaskAlwaysOnTop(true);
                     opts.setLaunchNextToBubble(true);
+                    opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
                 }
-                opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
                 opts.setLaunchBounds(launchBounds);
                 // TODO(b/437451940): start the pending intent or shortcut via WCT
                 if (mBubble.isShortcut()) {
@@ -1480,7 +1480,7 @@ public class BubbleTransitions {
                     mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                             && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                    mTaskInfo.token, mBubbleController.getAppBubbleRootTaskToken(),
+                    mTaskInfo.token, mBubbleController.getAppBubbleRootTaskToken(), launchBounds,
                     true /* isAppBubble */, reparentToTda);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);

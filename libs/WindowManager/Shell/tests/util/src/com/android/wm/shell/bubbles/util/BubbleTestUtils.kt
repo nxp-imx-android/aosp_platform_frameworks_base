@@ -68,9 +68,11 @@ object BubbleTestUtils {
         } else {
             assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
         }
-        assertThat(change.forceExcludedFromRecents).isTrue()
-        assertThat(change.disablePip).isTrue()
-        assertThat(change.disableLaunchAdjacent).isTrue()
+        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+            assertThat(change.forceExcludedFromRecents).isTrue()
+            assertThat(change.disablePip).isTrue()
+            assertThat(change.disableLaunchAdjacent).isTrue()
+        }
     }
 
     /** Verifies the [WindowContainerTransaction] to exit Bubble. */
