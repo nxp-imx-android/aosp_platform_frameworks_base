@@ -1950,6 +1950,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 activityOrientation = r.getOverrideOrientation();
             }
         }
+        if (activityOrientation == SCREEN_ORIENTATION_UNSPECIFIED && !r.providesOrientation()) {
+            return ROTATION_UNDEFINED;
+        }
         if (r.inMultiWindowMode() || r.getRequestedConfigurationOrientation(true /* forDisplay */,
                 activityOrientation) == getConfiguration().orientation) {
             return ROTATION_UNDEFINED;

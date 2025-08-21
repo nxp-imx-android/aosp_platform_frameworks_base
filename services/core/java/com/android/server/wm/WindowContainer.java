@@ -1626,6 +1626,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return source;
     }
 
+    /** Returns true if unspecified orientation should be reported to parent. */
     boolean providesOrientation() {
         return fillsParent();
     }
