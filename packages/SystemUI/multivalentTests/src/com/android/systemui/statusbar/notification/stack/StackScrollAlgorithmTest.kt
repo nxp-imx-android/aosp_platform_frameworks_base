@@ -141,8 +141,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         hostView.addView(notificationRow)
 
         headsUpAnimator = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
-        stackScrollAlgorithm =
-            StackScrollAlgorithm(context, hostView, headsUpAnimator)
+        stackScrollAlgorithm = StackScrollAlgorithm(context, hostView, headsUpAnimator)
     }
 
     private fun isTv(): Boolean {
@@ -979,6 +978,19 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
 
         assertThat(notificationRow.viewState.alpha).isEqualTo(1f - ambientState.hideAmount)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_shadeCollapsed_footerViewBecomesTransparent() {
+        ambientState.expansionFraction = 0f
+        stackScrollAlgorithm.initView(context)
+        hostView.removeAllViews()
+        hostView.addView(footerView)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(footerView.viewState.alpha).isEqualTo(0f)
     }
 
     @Test

@@ -200,9 +200,10 @@ public class StackScrollAlgorithm {
 
             // On the final call to {@link #resetViewState}, the alpha is set back to 1f but
             // ambientState.isExpansionChanging() is now false. This causes a flicker on the
-            // EmptyShadeView after the shade is collapsed. Make sure the empty shade view
-            // isn't visible unless the shade is expanded.
-            if (view instanceof EmptyShadeView && ambientState.getExpansionFraction() == 0f) {
+            // EmptyShadeView or the FooterView after the shade is collapsed. Make sure these views
+            // aren't visible unless the shade is expanded.
+            if (ambientState.getExpansionFraction() == 0f && ((view instanceof EmptyShadeView) || (
+                    SceneContainerFlag.isEnabled() && view instanceof FooterView))) {
                 viewState.setAlpha(0f);
             }
 
