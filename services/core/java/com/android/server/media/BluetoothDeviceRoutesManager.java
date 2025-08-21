@@ -302,11 +302,19 @@ import java.util.stream.Collectors;
     }
 
     /**
-     * Trigger {@link BluetoothProfileMonitor} to stop the broadcast, optionally making a new BT
+     * Trigger {@link BluetoothProfileMonitor} to stop the broadcast, optionally making a new LEA
      * device active.
+     *
+     * @param routeId id of the LEA Bluetooth route to be set as active after broadcast stops.
      */
     protected void stopBroadcast(@Nullable String routeId) {
-        mBluetoothProfileMonitor.stopBroadcast(routeId);
+        BluetoothDevice bluetoothDevice =
+                mBluetoothRoutes.values().stream()
+                        .filter(routeInfo -> routeInfo.mRoute.getId().equals(routeId))
+                        .findFirst()
+                        .map(routeInfo -> routeInfo.mBtDevice)
+                        .orElse(null);
+        mBluetoothProfileMonitor.stopBroadcast(bluetoothDevice);
     }
 
     /**
