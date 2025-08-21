@@ -24,6 +24,9 @@ android.view.cts.PointerCaptureTest never
 # We list failed tests as "disable" too to keep track of known test methods.
 
 # AUTO-GENERATED START
+
+# Total=915 Passed=574 Failed=334 Skipped=7
+
 android.view.cts.AbsSavedStateTest#testConstructor disable
 android.view.cts.AbsSavedStateTest#testConstructorNullParcel
 android.view.cts.AbsSavedStateTest#testConstructorNullParcelAndClassLoader

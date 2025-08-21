@@ -47,6 +47,9 @@ $my_command: Run all or specified ravenwood tests
      $my_command [OPTIONS] TEST-MODULE-NAME...
         Run specified test module
 
+  Note:
+     Tests with @FlakyTest are always ignored.
+
   Options:
 EOF
     sed -n -e '/OPTIONS-START/,/OPTIONS-END/s/^ *\([a-zA-Z]\)) #/   -\1/p' "$my_command"
@@ -216,6 +219,7 @@ for test in $(remove_comments ../texts/experimental-api-allowed-tests.txt); do
 done
 
 echo "RAVENWOOD_RUN_DISABLED_TESTS=$RAVENWOOD_RUN_DISABLED_TESTS"
+echo "RAVENWOOD_FORCE_FILTER_REGEX=$RAVENWOOD_FORCE_FILTER_REGEX"
 
 # =========================================================
 
@@ -231,6 +235,7 @@ extra_args=()
 exclude_annos=()
 # Always ignore flaky tests
 exclude_annos+=(
+    "android.platform.test.annotations.FlakyTest"
     "androidx.test.filters.FlakyTest"
 )
 # Maybe ignore large tests
