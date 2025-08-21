@@ -1932,10 +1932,10 @@ class MediaRouter2ServiceImpl {
             // How about removing mUserRecord from routerRecord?
             routerRecord.mUserRecord.mHandler.sendMessage(
                     obtainMessage(
-                            UserHandler::notifyDiscoveryPreferenceChangedToManager,
-                            routerRecord.mUserRecord.mHandler,
-                            routerRecord,
-                            manager));
+                            ManagerRecord::notifyDiscoveryPreferenceChanged,
+                            managerRecord,
+                            routerRecord.mPackageName,
+                            routerRecord.mDiscoveryPreference));
         }
 
         userRecord.mHandler.sendMessage(
@@ -4075,17 +4075,6 @@ class MediaRouter2ServiceImpl {
                                 ? originalRequestId
                                 : MediaRouter2Manager.REQUEST_ID_NONE;
                 manager.notifySessionCreated(requestId, session);
-            }
-        }
-
-        private void notifyDiscoveryPreferenceChangedToManager(@NonNull RouterRecord routerRecord,
-                @NonNull IMediaRouter2Manager manager) {
-            try {
-                manager.notifyDiscoveryPreferenceChanged(routerRecord.mPackageName,
-                        routerRecord.mDiscoveryPreference);
-            } catch (RemoteException ex) {
-                Slog.w(TAG, "Failed to notify preferred features changed."
-                        + " Manager probably died.", ex);
             }
         }
 
