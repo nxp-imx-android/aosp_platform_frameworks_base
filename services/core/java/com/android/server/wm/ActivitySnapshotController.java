@@ -18,8 +18,6 @@ package com.android.server.wm;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 
-import static com.android.server.wm.SnapshotPersistQueue.MAX_HW_STORE_QUEUE_DEPTH;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -34,7 +32,6 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
-import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -354,9 +351,7 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
         if (DEBUG) {
             Slog.d(TAG, "ActivitySnapshotController#recordSnapshot " + activity);
         }
-        final int maxStoreQueue = Flags.extendingPersistenceSnapshotQueueDepth()
-                ? mSnapshotPersistQueue.mMaxTotalStoreQueue
-                : MAX_HW_STORE_QUEUE_DEPTH;
+        final int maxStoreQueue = mSnapshotPersistQueue.mMaxTotalStoreQueue;
         if (mSnapshotPersistQueue.peekWriteQueueSize() >= maxStoreQueue
                 || mSnapshotPersistQueue.peekQueueSize() > MAX_PERSIST_SNAPSHOT_COUNT) {
             Slog.w(TAG, "Skipping recording activity snapshot, too many requests!");
