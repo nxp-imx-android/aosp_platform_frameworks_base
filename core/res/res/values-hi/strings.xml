@@ -2047,12 +2047,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"बड़ा करें"</string>
     <string name="close_button_text" msgid="10603510034455258">"बंद करें"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>: <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"जवाब दें"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"वीडियो"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"अस्वीकार करें"</string>
@@ -2580,25 +2577,17 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ऐप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"अब आपके फ़िंगरप्रिंट की पहचान नहीं की जा सकती. फ़िंगरप्रिंट अनलॉक की सुविधा को दोबारा सेट अप करें."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"सुरक्षा और निजता"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"स्क्रीन अनलॉक करें और यूएसबी को फिर से कनेक्ट करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"यूएसबी को कनेक्ट करने के लिए स्क्रीन को अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, यूएसबी को कनेक्ट करने के लिए स्क्रीन को अनलॉक करना ज़रूरी है"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, यूएसबी को कनेक्ट करने के लिए स्क्रीन को अनलॉक करना ज़रूरी है"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, तेज़ी से चार्ज करने के लिए स्क्रीन को अनलॉक करना ज़रूरी है"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"ऐडवांस सुरक्षा की सुविधा चालू होने पर, तेज़ी से चार्ज करने या यूएसबी कनेक्ट करने के लिए, स्क्रीन को अनलॉक करना ज़रूरी है"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"आवाज़ बंद करें"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"सूचनाओं की आवाज़ या वाइब्रेशन को बंद कर दिया गया"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"फ़ोन रीस्टार्ट करने के बाद ही आपको ऐडवांस सुरक्षा के तहत यूएसबी से जुड़ी सूचनाएं मिलेंगी"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"यूएसबी से कोई संदिग्ध गतिविधि की गई"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"यूएसबी से डेटा ट्रांसफ़र करने की सुविधा बंद कर दी गई है"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"कर्सर ब्लिंक करने की सेटिंग बंद करें"</string>

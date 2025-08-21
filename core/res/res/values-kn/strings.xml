@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ನಿಮ್ಮ ಅನ್‌ಲಾಕ್ ಮಾಡುವಿಕೆ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು ಸಲಹೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ಬ್ಲಿಂಕ್ ಮಾಡಬೇಡಿ"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ಟಿವಿ ಆಫ್ ಮಾಡಲು ಪವರ್ ಬಟನ್ ಅನ್ನು ಲಾಂಗ್ ಪ್ರೆಸ್ ಮಾಡಿ"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ಸಿಸ್ಟಮ್ ಸಂಪನ್ಮೂಲಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಎಚ್ಚರಿಕೆಗಳು"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ಸಂಪನ್ಮೂಲಗಳನ್ನು ಮಿತಿಮೀರಿ ಬಳಸಲಾಗುತ್ತಿದೆ"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ಆ್ಯಪ್ \'<xliff:g id="APP_NAME">%1$s</xliff:g> ತೀರಾ ಹೆಚ್ಚಿನ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಬಳಸುತ್ತಿದೆ.\""</string>
 </resources>
