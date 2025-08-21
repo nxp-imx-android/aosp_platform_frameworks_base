@@ -106,6 +106,7 @@ import com.android.systemui.navigationbar.views.buttons.NavBarButtonClickLogger;
 import com.android.systemui.navigationbar.views.buttons.NavbarOrientationTrackingLogger;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.recents.Recents;
+import com.android.systemui.rotation.RotationPolicyWrapper;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.settings.UserContextProvider;
@@ -196,6 +197,8 @@ public class NavigationBarTest extends SysuiTestCase {
     private SysUiState mMockSysUiState;
     @Mock
     private Handler mHandler;
+    @Mock
+    private RotationPolicyWrapper mMockRotationPolicyWrapper;
 
     @Mock
     private Handler mBgHandler;
@@ -687,6 +690,7 @@ public class NavigationBarTest extends SysuiTestCase {
                 mock(PanelExpansionInteractor.class),
                 mock(NotificationRemoteInputManager.class),
                 mock(NotificationShadeDepthController.class),
+                mMockRotationPolicyWrapper,
                 mHandler,
                 mFakeExecutor,
                 mFakeExecutor,
