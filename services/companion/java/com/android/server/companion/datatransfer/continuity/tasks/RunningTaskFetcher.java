@@ -111,7 +111,8 @@ public class RunningTaskFetcher {
             taskInfo.taskId,
             packageMetadata.label(),
             taskInfo.lastActiveTime,
-            packageMetadata.icon());
+            packageMetadata.icon(),
+            false);
     }
 
     @NonNull
