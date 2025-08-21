@@ -379,6 +379,12 @@ final class InputMethodBindingController {
     @GuardedBy("ImfLock.class")
     private final ServiceConnection mMainConnection = new ServiceConnection() {
         @Override
+        public void onBindingDied(ComponentName name) {
+            synchronized (ImfLock.class) {
+                unbindCurrentMethod();
+            }
+        }
+        @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.onServiceConnected");
             synchronized (ImfLock.class) {
