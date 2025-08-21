@@ -56,44 +56,41 @@ public class ActiveRestoreSessionTest {
     private ActiveRestoreSession mRestoreSession;
     private ApplicationInfo mTestApp;
 
-    @Mock
-    private UserBackupManagerService mBackupManagerService;
-    @Mock
-    private BackupEligibilityRules mBackupEligibilityRules;
-    @Mock
-    private Context mContext;
-    @Mock
-    private PackageManagerInternal mPackageManagerInternal;
-    @Mock
-    private TransportManager mTransportManager;
+    @Mock private UserBackupManagerService mBackupManagerService;
+    @Mock private BackupEligibilityRules mBackupEligibilityRules;
+    @Mock private Context mContext;
+    @Mock private PackageManagerInternal mPackageManagerInternal;
+    @Mock private TransportManager mTransportManager;
     @Mock private UserManager mUserManager;
 
+    @Rule public final SetFlagsRule mFlagsRule = new SetFlagsRule();
+
     @Rule
-    public final SetFlagsRule mFlagsRule = new SetFlagsRule();
-    @Rule
-    public final ExtendedMockitoRule mExtendedMockitoRule = new ExtendedMockitoRule
-            .Builder(/* testClassInstance */ this)
-            .mockStatic(LocalServices.class)
-            .afterSessionFinished(
-                    () -> LocalServices.removeServiceForTest(PackageManagerInternal.class)
-            ).build();
+    public final ExtendedMockitoRule mExtendedMockitoRule =
+            new ExtendedMockitoRule.Builder(/* testClassInstance */ this)
+                    .mockStatic(LocalServices.class)
+                    .afterSessionFinished(
+                            () -> LocalServices.removeServiceForTest(PackageManagerInternal.class))
+                    .build();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(/* testClass */ this);
         when(mBackupEligibilityRules.isAppEligibleForRestore(any())).thenReturn(true);
-        when(mBackupManagerService.getEligibilityRulesForOperation(anyInt())).thenReturn(
-                mBackupEligibilityRules);
+        when(mBackupManagerService.getEligibilityRulesForOperation(anyInt()))
+                .thenReturn(mBackupEligibilityRules);
         when(mBackupManagerService.getTransportManager()).thenReturn(mTransportManager);
         when(mBackupManagerService.getContext()).thenReturn(mContext);
         when(mContext.getSystemService(eq(UserManager.class))).thenReturn(mUserManager);
-        when(LocalServices.getService(PackageManagerInternal.class)).thenReturn(
-                mPackageManagerInternal);
+        when(LocalServices.getService(PackageManagerInternal.class))
+                .thenReturn(mPackageManagerInternal);
 
-        mRestoreSession = new ActiveRestoreSession(mBackupManagerService,
-                /* packageName */ null,
-                /* transportName */ "",
-                mBackupEligibilityRules);
+        mRestoreSession =
+                new ActiveRestoreSession(
+                        mBackupManagerService,
+                        /* packageName */ null,
+                        /* transportName */ "",
+                        mBackupEligibilityRules);
         mTestApp = new ApplicationInfo();
         mTestApp.packageName = TEST_APP_NAME;
     }
@@ -101,16 +98,17 @@ public class ActiveRestoreSessionTest {
     @Test
     public void testGetBackupEligibilityRules_skipRestoreFlagOn_skipsLaunchedAppRestore() {
         mFlagsRule.enableFlags(Flags.FLAG_ENABLE_SKIPPING_RESTORE_LAUNCHED_APPS);
-        RestoreSet restoreSet = new RestoreSet(
-                /* name */ null,
-                /* device */ null,
-                /* token */ 0,
-                /* backupTransportFlags */ BackupAgent.FLAG_SKIP_RESTORE_FOR_LAUNCHED_APPS);
+        RestoreSet restoreSet =
+                new RestoreSet(
+                        /* name */ null,
+                        /* device */ null,
+                        /* token */ 0,
+                        /* backupTransportFlags */ BackupAgent.FLAG_SKIP_RESTORE_FOR_LAUNCHED_APPS);
         when(mPackageManagerInternal.wasPackageEverLaunched(eq(TEST_APP_NAME), anyInt()))
                 .thenReturn(true);
 
-        BackupEligibilityRules eligibilityRules = mRestoreSession.getBackupEligibilityRules(
-                restoreSet);
+        BackupEligibilityRules eligibilityRules =
+                mRestoreSession.getBackupEligibilityRules(restoreSet);
 
         assertThat(eligibilityRules.isAppEligibleForRestore(mTestApp)).isFalse();
     }
@@ -118,16 +116,17 @@ public class ActiveRestoreSessionTest {
     @Test
     public void testGetBackupEligibilityRules_skipRestoreFlagOff_allowsAppRestore() {
         mFlagsRule.disableFlags(Flags.FLAG_ENABLE_SKIPPING_RESTORE_LAUNCHED_APPS);
-        RestoreSet restoreSet = new RestoreSet(
-                /* name */ null,
-                /* device */ null,
-                /* token */ 0,
-                /* backupTransportFlags */ BackupAgent.FLAG_SKIP_RESTORE_FOR_LAUNCHED_APPS);
+        RestoreSet restoreSet =
+                new RestoreSet(
+                        /* name */ null,
+                        /* device */ null,
+                        /* token */ 0,
+                        /* backupTransportFlags */ BackupAgent.FLAG_SKIP_RESTORE_FOR_LAUNCHED_APPS);
         when(mPackageManagerInternal.wasPackageEverLaunched(eq(TEST_APP_NAME), anyInt()))
                 .thenReturn(true);
 
-        BackupEligibilityRules eligibilityRules = mRestoreSession.getBackupEligibilityRules(
-                restoreSet);
+        BackupEligibilityRules eligibilityRules =
+                mRestoreSession.getBackupEligibilityRules(restoreSet);
 
         assertThat(eligibilityRules.isAppEligibleForRestore(mTestApp)).isTrue();
     }
