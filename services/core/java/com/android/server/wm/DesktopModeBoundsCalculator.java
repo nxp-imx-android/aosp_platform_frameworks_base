@@ -23,8 +23,8 @@ import static android.content.pm.ActivityInfo.isFixedOrientationPortrait;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
-import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.internal.policy.DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds;
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.server.wm.LaunchParamsUtil.applyLayoutGravity;
 import static com.android.server.wm.LaunchParamsUtil.calculateLayoutBounds;
 
@@ -125,7 +125,7 @@ public final class DesktopModeBoundsCalculator {
             logger.accept("respecting option bounds cascaded position="
                     + shouldRespectOptionPosition);
         }
-        if (updateOptionBoundsSize && captionHeight != 0) {
+        if (captionHeight != 0) {
             outParams.mAppBounds.set(outParams.mBounds);
             outParams.mAppBounds.top += captionHeight;
             logger.accept("exclude-caption-height-from-app-bounds");
