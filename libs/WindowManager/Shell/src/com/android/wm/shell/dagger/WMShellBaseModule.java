@@ -817,8 +817,10 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
-    static FocusTransitionObserver provideFocusTransitionObserver() {
-        return new FocusTransitionObserver();
+    static FocusTransitionObserver provideFocusTransitionObserver(
+            ShellInit shellInit,
+            ShellCommandHandler shellCommandHandler) {
+        return new FocusTransitionObserver(shellInit, shellCommandHandler);
     }
 
     @WMSingleton
