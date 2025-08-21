@@ -36,6 +36,8 @@ class DesktopStateImpl(context: Context) : DesktopState {
     private val windowManager = context.getSystemService(WindowManager::class.java)
     private val displayManager = context.getSystemService(DisplayManager::class.java)
 
+    private val projectedModeState by lazy { ProjectedModeState(context, this) }
+
     private val enforceDeviceRestrictions =
         SystemProperties.getBoolean(ENFORCE_DEVICE_RESTRICTIONS_SYS_PROP, true)
 
@@ -122,19 +124,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
         return windowManager?.isEligibleForDesktopMode(display.displayId) ?: false
     }
 
-    override fun isProjectedMode(): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
-            return false
-        }
-
-        if (isDesktopModeSupportedOnDisplay(Display.DEFAULT_DISPLAY)) {
-            return false
-        }
-
-        return displayManager?.displays
-            ?.any { display -> isDesktopModeSupportedOnDisplay(display)
-            } ?: false
-    }
+    override fun isProjectedMode(): Boolean = projectedModeState.isProjectedMode
 
     private val deviceHasLargeScreen =
         displayManager?.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
@@ -170,5 +160,22 @@ class DesktopStateImpl(context: Context) : DesktopState {
         @VisibleForTesting
         const val ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP =
             "persist.wm.debug.enter_desktop_by_default_on_freeform_display"
+
+        @Volatile
+        private var instance: DesktopState? = null
+
+        /**
+         * Get or create the [DesktopState] singleton.
+         *
+         * This method should not be used if Dagger is used to inject the singleton.
+         */
+        fun getInstance(context: Context): DesktopState {
+            return instance ?: synchronized(this) {
+                if (instance == null) {
+                    instance = DesktopStateImpl(context)
+                }
+                instance!!
+            }
+        }
     }
 }
