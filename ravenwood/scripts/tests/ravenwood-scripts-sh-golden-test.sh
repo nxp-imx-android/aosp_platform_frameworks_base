@@ -92,6 +92,8 @@ run_all_commands() {
 
     run_test "Run with no arguments" run-ravenwood-tests-wrapper
 
+    run_test "Help" run-ravenwood-tests-wrapper -h
+
     run_test "Smoke tests" run-ravenwood-tests-wrapper -s
 
     run_test "Exclude large tests" run-ravenwood-tests-wrapper -L
@@ -110,6 +112,8 @@ run_all_commands() {
     run_test "Exclusion" run-ravenwood-tests-wrapper -x '(Test[2345])'
 
     ALL_TESTS="DeviceTest1 DeviceTest2" run_test "Run device tests (-D) " run-ravenwood-tests-wrapper -D
+
+    run_test "Run with disabled tests" run-ravenwood-tests-wrapper -R
 
     echo "== All commands finished =="
 }
