@@ -350,6 +350,7 @@ import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriPermissionOwner;
 import com.android.server.wm.ActivityMetricsLogger.TransitionInfoSnapshot;
 import com.android.server.wm.WindowManagerService.H;
+import com.android.server.wm.utils.RegionUtils;
 import com.android.window.flags.Flags;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -2701,7 +2702,7 @@ final class ActivityRecord extends WindowToken {
                 || mStartingData.mAssociatedTask != null) {
             return;
         }
-        if (task.isVisible() && !task.inTransition()) {
+        if (task.isVisible() && !task.inTransition() && !task.getBounds().equals(getBounds())) {
             // Don't associated with task if the task is visible especially when the activity is
             // embedded. We just need to show splash screen on the activity in case the first frame
             // is not ready.
@@ -4536,7 +4537,11 @@ final class ActivityRecord extends WindowToken {
             }
             // Do not transfer if the orientation doesn't match, redraw starting window while it is
             // on top will cause flicker.
-            if (!isStartingOrientationCompatible(fromActivity)) {
+            if (!isStartingOrientationCompatible(fromActivity)
+                    // Also, do not transfer if the sizes of the activities are different and the
+                    // starting window is not attached to the task.
+                    || (fromActivity.mStartingData.mAssociatedTask == null
+                    && !RegionUtils.sizeEquals(fromActivity.getBounds(), getBounds()))) {
                 return false;
             }
 
