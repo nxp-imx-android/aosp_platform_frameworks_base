@@ -301,6 +301,7 @@ class HandleMenuTest : ShellTestCase() {
                 }
                 else -> error("Invalid windowing mode")
             }
+        val captionView = LayoutInflater.from(mContext).inflate(layoutId, null)
         val handleMenu =
             if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
                 handleMenuFactory.create(
@@ -324,7 +325,7 @@ class HandleMenuTest : ShellTestCase() {
                     isBrowserApp = false,
                     openInAppOrBrowserIntent = null,
                     mockDesktopModeUiEventLogger,
-                    captionView = mock(),
+                    captionView = captionView,
                     captionWidth = HANDLE_WIDTH,
                     captionHeight = 50,
                     captionX = captionX,
@@ -350,7 +351,7 @@ class HandleMenuTest : ShellTestCase() {
                     isBrowserApp = false,
                     openInAppOrBrowserIntent = null,
                     mockDesktopModeUiEventLogger,
-                    captionView = mock(),
+                    captionView = captionView,
                     captionWidth = HANDLE_WIDTH,
                     captionHeight = 50,
                     captionX = captionX,
