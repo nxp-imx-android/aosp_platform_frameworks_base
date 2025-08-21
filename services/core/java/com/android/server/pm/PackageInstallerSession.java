@@ -491,6 +491,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private final DeveloperVerificationStatusInternal mDeveloperVerificationStatusInternal =
             DeveloperVerificationStatusInternal.UNKNOWN;
 
+    /**
+     * The extension response received from the developer verifier will be preserved here and
+     * reported back to the installer if non-null.
+     */
+    @Nullable private PersistableBundle mDeveloperVerificationExtensionResponse = null;
+
     /** Staging location where client data is written. */
     final File stageDir;
     final String stageCid;
@@ -2745,6 +2751,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                         extras.getInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON), packageName);
             }
         }
+        extras = appendDeveloperVerificationExtensionResponse(extras);
         // Dispatch message to remove session from PackageInstallerService.
         dispatchSessionFinished(error, msg, extras);
         maybeFinishChildSessions(error, msg);
@@ -2752,8 +2759,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     private void onSessionDependencyResolveFailure(int error, String msg) {
         Slog.e(TAG, "Failed to resolve dependency for session " + sessionId);
+        Bundle extras = appendDeveloperVerificationExtensionResponse(null);
         // Dispatch message to remove session from PackageInstallerService.
-        dispatchSessionFinished(error, msg, null);
+        dispatchSessionFinished(error, msg, extras);
         maybeFinishChildSessions(error, msg);
     }
 
@@ -3197,37 +3205,50 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Failed to receive developer verification results from all sessions. Cannot proceed.
             setSessionFailedDueToDeveloperVerification(
                     /* verificationFailedReason= */ DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN,
-                    /* isLiteVerification= */ false, /* includeExtraIntent= */ false,
-                    /* extensionResponse= */ null,
+                    /* includeExtraIntent= */ false,
                     "Session failed due to missing developer verification result");
         }
 
-        // Fail the parent session if any of the child sessions failed developer verification.
-        // Use combined error message and extension response in the final result.
         boolean hasFailure = false;
         StringBuilder errorMessage = null;
-        PersistableBundle extensionResponse = new PersistableBundle();
         for (int i = 0; i < results.size(); i++) {
             final DeveloperVerificationFutureResult result = results.get(i);
             if (!result.mSuccess) {
                 hasFailure = true;
+                // Combine error messages from all child sessions.
                 if (errorMessage == null) {
                     errorMessage = new StringBuilder();
                 } else {
                     errorMessage.append("\n");
                 }
                 errorMessage.append(result.mFailedMessage);
-                if (result.mExtensionResponse != null) {
-                    extensionResponse.putAll(result.mExtensionResponse);
-                }
             }
         }
 
+        PersistableBundle extensionResponse = null;
+        boolean isLite = false;
+        // Check if any child session has Lite mode enabled. If so, set so for the parent session.
+        final List<PackageInstallerSession> children = getChildSessions();
+        for (int i = 0; i < children.size(); i++) {
+            PackageInstallerSession child = children.get(i);
+            if (child.mDeveloperVerificationStatusInternal.isLiteVerification()) {
+                isLite = true;
+            }
+            if (child.mDeveloperVerificationExtensionResponse != null) {
+                if (extensionResponse == null) {
+                    extensionResponse = new PersistableBundle();
+                }
+                extensionResponse.putAll(child.mDeveloperVerificationExtensionResponse);
+            }
+        }
+        mDeveloperVerificationStatusInternal.setLiteVerification(isLite);
+        mDeveloperVerificationExtensionResponse = extensionResponse;
+
+        // Fail the parent session if any of the child sessions failed developer verification.
         if (hasFailure) {
             return DeveloperVerificationFutureResult.ofFailure(
                     DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
-                    /* failedMessage= */ errorMessage.toString(),
-                    /* extensionResponse= */ extensionResponse);
+                    /* failedMessage= */ errorMessage.toString());
         } else {
             return DeveloperVerificationFutureResult.ofSuccess();
         }
@@ -3240,10 +3261,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         } else {
             setSessionFailedDueToDeveloperVerification(
                     finalResult.mVerificationFailureReason,
-                    /* isLiteVerification= */
-                    mDeveloperVerificationStatusInternal.isLiteVerification(),
                     /* includeExtraIntent= */ true,
-                    /* extensionResponse= */ finalResult.mExtensionResponse,
                     finalResult.mFailedMessage);
         }
     }
@@ -3446,8 +3464,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                             userActionNeededReason,
                             /* failedMessage= */
                             "A verifier agent is specified on device but cannot "
-                                    + "be connected because of unknown error.",
-                            /* extensionResponse= */ null));
+                                    + "be connected because of unknown error."));
                 }
             });
         }
@@ -3484,8 +3501,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                                     userActionNeededReason,
                                     /* failedMessage= */
                                     "A verifier agent is available on device but cannot "
-                                            + "be connected.",
-                                    /* extensionResponse= */ null));
+                                            + "be connected."));
                 }
             });
         }
@@ -3533,8 +3549,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                                     userActionNeededReason,
                                     /* failedMessage= */
                                     "Verification timed out; missing a response from the "
-                                            + "verifier within the time limit",
-                                    /* extensionResponse= */ null));
+                                            + "verifier within the time limit"));
                 }
             });
         }
@@ -3555,6 +3570,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                         statusReceived.getAppMetadataVerificationStatus());
                 mDeveloperVerificationStatusInternal.setLiteVerification(
                         statusReceived.isLiteVerification());
+                mDeveloperVerificationExtensionResponse = extensionResponse;
                 synchronized (mMetrics) {
                     mMetrics.onDeveloperVerificationFinished(mDeveloperVerificationStatusInternal);
                 }
@@ -3565,8 +3581,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 }
                 if (statusReceived.isVerified()) {
                     // Verified. Continue with the rest of the verification and install.
-                    // TODO(b/360129657): also add extension response to successful install
-                    // results
                     mFuture.complete(DeveloperVerificationFutureResult.ofSuccess());
                     return;
                 }
@@ -3588,8 +3602,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     }
                     mFuture.complete(DeveloperVerificationFutureResult.ofFailure(
                             userActionNeededReason,
-                            /* failedMessage= */ sb.toString(),
-                            /* extensionResponse= */ extensionResponse));
+                            /* failedMessage= */ sb.toString()));
                 }
             });
         }
@@ -3640,8 +3653,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                                     /* userActionNeededReason= */
                                     userActionNeededReason,
                                     /* failedMessage= */
-                                    sb.toString(),
-                                    /* extensionResponse= */ null));
+                                    sb.toString()));
                 }
             });
         }
@@ -3748,18 +3760,13 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     private void setSessionFailedDueToDeveloperVerification(
             @PackageInstaller.DeveloperVerificationFailedReason int verificationFailedReason,
-            boolean isLiteVerification, boolean includeExtraIntent,
-            PersistableBundle extensionResponse, String failedMessage) {
+            boolean includeExtraIntent, String failedMessage) {
         Bundle bundle = new Bundle();
         bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON, verificationFailedReason);
         bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                isLiteVerification);
+                mDeveloperVerificationStatusInternal.isLiteVerification());
         if (includeExtraIntent) {
             bundle.putParcelable(Intent.EXTRA_INTENT, getDeveloperVerificationUserActionIntent());
-        }
-        if (extensionResponse != null) {
-            bundle.putParcelable(EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE,
-                    extensionResponse);
         }
         setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, failedMessage);
         onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, failedMessage, bundle);
@@ -3776,35 +3783,29 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         final boolean mSuccess;
         final int mVerificationFailureReason;
         final String mFailedMessage;
-        final PersistableBundle mExtensionResponse;
 
         static DeveloperVerificationFutureResult ofSuccess() {
             return new DeveloperVerificationFutureResult(
                     /* success= */ true,
                     /* verificationFailureReason= */ DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN,
-                    /* failedMessage= */ null,
-                    /* extensionResponse= */ null);
+                    /* failedMessage= */ null);
         }
 
         static DeveloperVerificationFutureResult ofFailure(
-                int userActionNeededReason, String failedMessage,
-                PersistableBundle extensionResponse) {
+                int userActionNeededReason, String failedMessage) {
             return new DeveloperVerificationFutureResult(
                     /* success= */ false,
                     /* verificationFailureReason= */
                     getVerificationFailureReason(userActionNeededReason),
-                    /* failedMessage= */ failedMessage,
-                    /* extensionResponse= */ extensionResponse);
+                    /* failedMessage= */ failedMessage);
         }
 
         private DeveloperVerificationFutureResult(
                 boolean success,
-                int verificationFailureReason, String failedMessage,
-                PersistableBundle extensionResponse) {
+                int verificationFailureReason, String failedMessage) {
             mSuccess = success;
             mVerificationFailureReason = verificationFailureReason;
             mFailedMessage = failedMessage;
-            mExtensionResponse = extensionResponse;
         }
     }
 
@@ -4066,17 +4067,31 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                         extras.putStringArrayList(
                                 PackageInstaller.EXTRA_WARNINGS, multiPackageWarnings);
                     }
+                    extras = result.session.appendDeveloperVerificationExtensionResponse(extras);
                     result.session.dispatchSessionFinished(
                             INSTALL_SUCCEEDED, "Session installed", extras);
                 }
             } else {
                 PackageManagerException e = (PackageManagerException) t.getCause();
+                final Bundle extras = appendDeveloperVerificationExtensionResponse(null);
                 setSessionFailed(e.error,
                         PackageManager.installStatusToString(e.error, e.getMessage()));
-                dispatchSessionFinished(e.error, e.getMessage(), null);
+                dispatchSessionFinished(e.error, e.getMessage(), extras);
                 maybeFinishChildSessions(e.error, e.getMessage());
             }
         });
+    }
+
+    private Bundle appendDeveloperVerificationExtensionResponse(@Nullable Bundle extras) {
+        if (mDeveloperVerificationExtensionResponse == null) {
+            return extras;
+        }
+        if (extras == null) {
+            extras = new Bundle();
+        }
+        extras.putParcelable(EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE,
+                mDeveloperVerificationExtensionResponse);
+        return extras;
     }
 
     /**
@@ -5528,7 +5543,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                             ? "User could not be notified about the pending verification."
                             : "User denied proceeding with the pending verification.";
                     mFuture.complete(DeveloperVerificationFutureResult.ofFailure(
-                            mUserActionNeededReason, errorMsg, /* extensionResponse= */ null));
+                            mUserActionNeededReason, errorMsg));
                 }
                 case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {
                     // The future is not completed until the retry of developer verification has
