@@ -129,9 +129,15 @@ public class CollapsingToolbarDelegate {
         Context context = (activity != null) ? activity : inflater.getContext();
         mIsExpressiveTheme = SettingsThemeHelper.isExpressiveTheme(context);
         if (useCollapsingToolbar) {
-            layoutId = mIsExpressiveTheme
-                    ? R.layout.settingslib_expressive_collapsing_toolbar_base_layout
-                    : R.layout.collapsing_toolbar_base_layout;
+            if (mIsExpressiveTheme) {
+                if (activity instanceof AppCompatActivity) {
+                    layoutId = R.layout.settingslib_expressive_collapsing_toolbar_appcompat_layout;
+                } else {
+                    layoutId = R.layout.settingslib_expressive_collapsing_toolbar_base_layout;
+                }
+            } else {
+                layoutId = R.layout.collapsing_toolbar_base_layout;
+            }
         } else {
             layoutId = R.layout.non_collapsing_toolbar_base_layout;
         }
@@ -342,8 +348,10 @@ public class CollapsingToolbarDelegate {
             return;
         }
 
-        mCollapsingToolbarLayout.removeAllViews();
-        inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
+        if (!SettingsThemeHelper.isExpressiveTheme(inflater.getContext())) {
+            mCollapsingToolbarLayout.removeAllViews();
+            inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
+        }
 
         final androidx.appcompat.widget.Toolbar supportToolbar =
                 mCollapsingToolbarLayout.findViewById(R.id.support_action_bar);
