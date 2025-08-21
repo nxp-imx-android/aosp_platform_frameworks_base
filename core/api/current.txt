@@ -55766,6 +55766,7 @@ package android.view.accessibility {
     method public android.view.accessibility.AccessibilityRecord getRecord(int);
     method public int getRecordCount();
     method public int getSpeechStateChangeTypes();
+    method @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public int getTextChangeTypes();
     method public int getWindowChanges();
     method public void initFromParcel(android.os.Parcel);
     method public boolean isAccessibilityDataSensitive();
@@ -55780,6 +55781,7 @@ package android.view.accessibility {
     method public void setMovementGranularity(int);
     method public void setPackageName(CharSequence);
     method public void setSpeechStateChangeTypes(int);
+    method @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public void setTextChangeTypes(int);
     method public void writeToParcel(android.os.Parcel, int);
     field @FlaggedApi("android.view.accessibility.tri_state_checked") public static final int CONTENT_CHANGE_TYPE_CHECKED = 8192; // 0x2000
     field public static final int CONTENT_CHANGE_TYPE_CONTENT_DESCRIPTION = 4; // 0x4
@@ -55806,6 +55808,10 @@ package android.view.accessibility {
     field public static final int SPEECH_STATE_LISTENING_START = 4; // 0x4
     field public static final int SPEECH_STATE_SPEAKING_END = 2; // 0x2
     field public static final int SPEECH_STATE_SPEAKING_START = 1; // 0x1
+    field @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public static final int TEXT_CHANGE_TYPE_COMMITTED_BY_IME = 2; // 0x2
+    field @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public static final int TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME = 4; // 0x4
+    field @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public static final int TEXT_CHANGE_TYPE_IN_COMPOSITION = 1; // 0x1
+    field @FlaggedApi("android.view.accessibility.a11y_text_change_types_api") public static final int TEXT_CHANGE_TYPE_UNDEFINED = 0; // 0x0
     field public static final int TYPES_ALL_MASK = -1; // 0xffffffff
     field @Deprecated @FlaggedApi("android.view.accessibility.deprecate_accessibility_announcement_apis") public static final int TYPE_ANNOUNCEMENT = 16384; // 0x4000
     field public static final int TYPE_ASSIST_READING_CONTEXT = 16777216; // 0x1000000

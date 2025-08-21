@@ -21,10 +21,13 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.os.Parcel;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,13 +39,15 @@ import java.lang.reflect.Modifier;
  */
 @RunWith(AndroidJUnit4.class)
 public class AccessibilityEventTest {
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     // The number of fields tested in the corresponding CTS AccessibilityEventTest:
     // See the CTS tests for AccessibilityRecord:
     // fullyPopulateAccessibilityEvent, assertEqualsAccessiblityEvent,
     // and assertAccessibilityEventCleared
 
     /** The number of properties of the {@link AccessibilityEvent} class. */
-    private static final int A11Y_EVENT_NON_STATIC_FIELD_COUNT = 33;
+    private static final int A11Y_EVENT_NON_STATIC_FIELD_COUNT = 34;
 
     // The number of fields tested in the corresponding CTS AccessibilityRecordTest:
     // assertAccessibilityRecordCleared, fullyPopulateAccessibilityRecord,
@@ -85,6 +90,16 @@ public class AccessibilityEventTest {
         AccessibilityEvent event = AccessibilityEvent.obtain();
         event.setWindowChanges(windowChanges);
         assertEquals(windowChanges, copyEventViaParcel(event).getWindowChanges());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_A11Y_TEXT_CHANGE_TYPES_API)
+    public void testTextChangeTypes_getSetWorkAcrossParceling() {
+        final int textChangeTypes = AccessibilityEvent.TEXT_CHANGE_TYPE_IN_COMPOSITION
+                | AccessibilityEvent.TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME;
+        AccessibilityEvent event = AccessibilityEvent.obtain();
+        event.setTextChangeTypes(textChangeTypes);
+        assertEquals(textChangeTypes, copyEventViaParcel(event).getTextChangeTypes());
     }
 
     @Test
