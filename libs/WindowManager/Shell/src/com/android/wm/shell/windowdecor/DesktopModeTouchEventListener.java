@@ -25,6 +25,7 @@ import static android.view.MotionEvent.ACTION_UP;
 
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
+import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
@@ -516,7 +517,7 @@ public class DesktopModeTouchEventListener
                     mDragPointerId = e.getPointerId(0);
                     final Rect initialBounds = mDragPositioningCallback.onDragPositioningStart(
                             0 /* ctrlType */, e.getDisplayId(), e.getRawX(0),
-                            e.getRawY(0));
+                            e.getRawY(0), getInputMethodFromMotionEvent(e));
                     updateDragStatus(decoration, e);
                     mOnDragStartInitialBounds.set(initialBounds);
                     mCurrentBounds.set(initialBounds);

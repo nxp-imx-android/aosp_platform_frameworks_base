@@ -35,10 +35,17 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getInputMethodType
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
+import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT
+import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
+import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
 import java.util.concurrent.TimeUnit
 
 /**
@@ -81,6 +88,8 @@ class MultiDisplayVeiledResizeTaskPositioner(
     private var hasMoved = false
     private val displayIds = mutableSetOf<Int>()
     private var hasMovedTaskSurfaceOffScreen = false
+    private var resizeTrigger = ResizeTrigger.UNKNOWN_RESIZE_TRIGGER
+    private var inputMethod = InputMethod.UNKNOWN_INPUT_METHOD
 
     constructor(
         taskOrganizer: ShellTaskOrganizer,
@@ -109,7 +118,13 @@ class MultiDisplayVeiledResizeTaskPositioner(
         displayController.addDisplayWindowListener(this)
     }
 
-    override fun onDragPositioningStart(ctrlType: Int, displayId: Int, x: Float, y: Float): Rect {
+    override fun onDragPositioningStart(
+        ctrlType: Int,
+        displayId: Int,
+        x: Float,
+        y: Float,
+        inputMethodType: Int,
+    ): Rect {
         this.ctrlType = ctrlType
         startDisplayId = displayId
         hasMovedTaskSurfaceOffScreen = false
@@ -118,7 +133,27 @@ class MultiDisplayVeiledResizeTaskPositioner(
         )
         repositionStartPoint[x] = y
         hasMoved = false
+        inputMethod = getInputMethodType(inputMethodType)
         if (isResizing) {
+            resizeTrigger =
+                if (
+                    ctrlType == CTRL_TYPE_BOTTOM ||
+                        ctrlType == CTRL_TYPE_TOP ||
+                        ctrlType == CTRL_TYPE_RIGHT ||
+                        ctrlType == CTRL_TYPE_LEFT
+                ) {
+                    ResizeTrigger.EDGE
+                } else {
+                    ResizeTrigger.CORNER
+                }
+            for (dragEventListener in dragEventListeners) {
+                dragEventListener.onDragResizeStarted(
+                    windowDecoration.taskInfo.taskId,
+                    resizeTrigger,
+                    inputMethod,
+                    taskBoundsAtDragStart,
+                )
+            }
             // Capture CUJ for re-sizing window in DW mode.
             interactionJankMonitor.begin(
                 createLongTimeoutJankConfigBuilder(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
@@ -270,6 +305,14 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     windowDecoration,
                     desktopState.canEnterDesktopMode,
                 )
+                for (dragEventListener in dragEventListeners) {
+                    dragEventListener.onDragResizeEnded(
+                        windowDecoration.taskInfo.taskId,
+                        resizeTrigger,
+                        inputMethod,
+                        repositionTaskBounds,
+                    )
+                }
                 windowDecoration.updateResizeVeil(repositionTaskBounds)
                 val wct = WindowContainerTransaction()
                 wct.setBounds(windowDecoration.taskInfo.token, repositionTaskBounds)

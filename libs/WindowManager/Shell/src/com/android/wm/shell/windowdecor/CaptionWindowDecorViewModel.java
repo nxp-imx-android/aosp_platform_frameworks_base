@@ -25,6 +25,8 @@ import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 
+import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
+
 import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.content.ContentResolver;
@@ -491,7 +493,8 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
                 case MotionEvent.ACTION_DOWN: {
                     mDragPointerId = e.getPointerId(0);
                     mDragPositioningCallback.onDragPositioningStart(
-                            0 /* ctrlType */, e.getDisplayId(), e.getRawX(0), e.getRawY(0));
+                            0 /* ctrlType */, e.getDisplayId(), e.getRawX(0), e.getRawY(0),
+                            getInputMethodFromMotionEvent(e));
                     mIsDragging = false;
                     return false;
                 }

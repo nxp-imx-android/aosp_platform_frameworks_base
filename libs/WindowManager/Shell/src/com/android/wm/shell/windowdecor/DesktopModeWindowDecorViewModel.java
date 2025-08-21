@@ -40,6 +40,7 @@ import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContain
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
+import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
@@ -222,6 +223,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     private final ExclusionRegionListener mExclusionRegionListener =
             new ExclusionRegionListenerImpl();
+    private final DragPositioningCallbackUtility.DragEventListener mDragEventListener =
+            new DesktopModeDragEventListener();
 
     private final SparseArray<WindowDecorationWrapper> mWindowDecorByTaskId;
     private final Function<Integer, WindowDecorationWrapper> mWindowDecorationFinder =
@@ -1681,6 +1684,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 touchEventListener, touchEventListener, touchEventListener, touchEventListener);
         windowDecoration.setExclusionRegionListener(mExclusionRegionListener);
         windowDecoration.setDragPositioningCallback(taskPositioner);
+        windowDecoration.addDragResizeListener(mDragEventListener);
         windowDecoration.relayout(taskInfo, startT, finishT,
                 false /* applyStartTransactionOnDraw */, false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
@@ -1841,6 +1845,31 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public void onExclusionRegionDismissed(int taskId) {
             mDesktopTasksController.removeExclusionRegionForTask(taskId);
+        }
+    }
+
+    private class DesktopModeDragEventListener implements
+            DragPositioningCallbackUtility.DragEventListener {
+
+        @Override
+        public void onDragMove(int taskId) {
+            // Do nothing.
+        }
+
+        @Override
+        public void onDragResizeStarted(int taskId,
+                @NonNull ResizeTrigger resizeTrigger,
+                @NonNull InputMethod inputMethod,
+                @NonNull Rect startTaskBounds) {
+            // TODO: b/423560267 - Implement logging task resize started.
+        }
+
+        @Override
+        public void onDragResizeEnded(int taskId,
+                @NonNull ResizeTrigger resizeTrigger,
+                @NonNull InputMethod inputMethod,
+                @NonNull Rect endTaskBounds) {
+            // TODO: b/423560267 - Implement logging task resize ended.
         }
     }
 
