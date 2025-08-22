@@ -344,14 +344,6 @@ fun ContentScope.OverlayShadeHeader(
     showClock: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val localContext = LocalContext.current
-    val themedContext =
-        ContextThemeWrapper(localContext, R.style.Theme_SystemUI_QuickSettings_Header)
-    val primaryColor =
-        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimary)
-    val inverseColor =
-        Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
-
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
@@ -418,8 +410,8 @@ fun ContentScope.OverlayShadeHeader(
                         viewModel = viewModel,
                         useExpandedFormat = false,
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
-                        foregroundColor = if (isHighlighted) primaryColor else inverseColor,
-                        backgroundColor = if (isHighlighted) inverseColor else primaryColor,
+                        foregroundColor = quickSettingsHighlight.foregroundColor.toArgb(),
+                        backgroundColor = quickSettingsHighlight.backgroundColor.toArgb(),
                     )
                     BatteryInfo(
                         viewModel = viewModel,
