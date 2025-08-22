@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.footer.ui.viewmodel
 import android.annotation.SuppressLint
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor
 import com.android.systemui.statusbar.notification.NotificationActivityStarter.SettingsIntent
@@ -55,7 +56,20 @@ constructor(
         FooterMessageViewModel(
             messageId = R.string.unlock_to_see_notif_text,
             iconId = R.drawable.ic_friction_lock_closed,
-            isVisible = seenNotificationsInteractor.hasFilteredOutSeenNotifications,
+            isVisible =
+                if (SceneContainerFlag.isEnabled) {
+                    // Only show the footer message if there are notifications present.
+                    // Otherwise the empty shade will show it instead, so the footer only needs
+                    // to show the buttons.
+                    combine(
+                        seenNotificationsInteractor.hasFilteredOutSeenNotifications,
+                        activeNotificationsInteractor.areAnyNotificationsPresent,
+                    ) { hasFilteredOutSeenNotifications, areAnyNotificationsPresent ->
+                        hasFilteredOutSeenNotifications && areAnyNotificationsPresent
+                    }
+                } else {
+                    seenNotificationsInteractor.hasFilteredOutSeenNotifications
+                },
         )
 
     private val clearAllButtonVisible =

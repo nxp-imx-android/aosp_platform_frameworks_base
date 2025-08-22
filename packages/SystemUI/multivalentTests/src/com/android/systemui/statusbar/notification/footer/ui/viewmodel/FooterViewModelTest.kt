@@ -23,6 +23,8 @@ import android.provider.Settings
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -39,6 +41,7 @@ import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
 import com.android.systemui.statusbar.notification.data.model.NotifStats
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
+import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.statusbar.notification.footer.shared.NotifRedesignFooter
 import com.android.systemui.testKosmos
 import com.android.systemui.util.ui.isAnimating
@@ -80,10 +83,35 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun messageVisible_whenFilteredNotifications() =
         kosmos.runTest {
             val visible by collectLastValue(underTest.message.isVisible)
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
+            assertThat(visible).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun messageVisible_whenFilteredNotificationsAndEmptyShade() =
+        kosmos.runTest {
+            val visible by collectLastValue(underTest.message.isVisible)
+
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+            activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
+
+            assertThat(visible).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun messageVisible_whenFilteredNotificationsAndShadeNotEmpty() =
+        kosmos.runTest {
+            val visible by collectLastValue(underTest.message.isVisible)
+
+            activeNotificationListRepository.setActiveNotifs(count = 1)
+            activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
+
             assertThat(visible).isTrue()
         }
 
@@ -132,6 +160,7 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         kosmos.runTest {
             val visible by collectLastValue(underTest.clearAllButton.isVisible)
 
+            activeNotificationListRepository.setActiveNotifs(count = 1)
             activeNotificationListRepository.notifStats.value =
                 NotifStats(
                     hasNonClearableAlertingNotifs = false,
@@ -264,6 +293,7 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun manageButtonVisible_whenMessageVisible() =
         kosmos.runTest {
             val visible by collectLastValue(underTest.manageOrHistoryButton.isVisible)
+            activeNotificationListRepository.setActiveNotifs(count = 1)
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
             assertThat(visible?.value).isFalse()
         }
@@ -284,6 +314,7 @@ class FooterViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val settingsVisible by collectLastValue(underTest.settingsButtonVisible)
             val historyVisible by collectLastValue(underTest.historyButtonVisible)
 
+            activeNotificationListRepository.setActiveNotifs(count = 1)
             activeNotificationListRepository.hasFilteredOutSeenNotifications.value = true
 
             assertThat(settingsVisible).isFalse()
