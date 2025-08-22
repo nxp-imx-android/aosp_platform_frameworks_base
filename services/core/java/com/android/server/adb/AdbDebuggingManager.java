@@ -572,7 +572,14 @@ public class AdbDebuggingManager {
         static final String MSG_START_ADB_WIFI = "W1";
         static final String MSG_STOP_ADB_WIFI = "W0";
 
-        @Nullable @VisibleForTesting AdbKeyStore mAdbKeyStore;
+        @VisibleForTesting @NonNull
+        final AdbKeyStore mAdbKeyStore =
+                new AdbKeyStore(
+                        mContext,
+                        mTempKeysFile,
+                        mUserKeyFile,
+                        mTicker,
+                        () -> sendPersistKeyStoreMessage());
 
         private final AdbDebuggingThread mThread;
 
@@ -598,20 +605,6 @@ public class AdbDebuggingManager {
                 thread.setHandler(this);
             }
             mThread = thread;
-        }
-
-        /** Initialize the AdbKeyStore so tests can grab mAdbKeyStore immediately. */
-        @VisibleForTesting
-        void initKeyStore() {
-            if (mAdbKeyStore == null) {
-                mAdbKeyStore =
-                        new AdbKeyStore(
-                                mContext,
-                                mTempKeysFile,
-                                mUserKeyFile,
-                                mTicker,
-                                () -> sendPersistKeyStoreMessage());
-            }
         }
 
         // Show when at least one device is connected.
@@ -661,8 +654,6 @@ public class AdbDebuggingManager {
         }
 
         public void handleMessage(Message msg) {
-            initKeyStore();
-
             switch (msg.what) {
                 case MESSAGE_ADB_ENABLED -> {
                     if (mAdbUsbEnabled) {
@@ -722,9 +713,6 @@ public class AdbDebuggingManager {
                 case MESSAGE_ADB_CLEAR -> {
                     Slog.d(TAG, "Received a request to clear the adb authorizations");
                     mConnectedKeys.clear();
-                    // If the key store has not yet been instantiated then do so now; this avoids
-                    // the unnecessary creation of the key store when adb is not enabled.
-                    initKeyStore();
                     mWifiConnectedKeys.clear();
                     mAdbKeyStore.deleteKeyStore();
                     cancelJobToUpdateAdbKeyStore();
@@ -1449,14 +1437,7 @@ public class AdbDebuggingManager {
 
     /** Returns the list of paired devices. */
     public Map<String, PairDevice> getPairedDevices() {
-        AdbKeyStore keystore =
-                new AdbKeyStore(
-                        mContext,
-                        mTempKeysFile,
-                        mUserKeyFile,
-                        mTicker,
-                        () -> sendPersistKeyStoreMessage());
-        return getPairedDevicesForKeys(keystore.getKeys());
+        return getPairedDevicesForKeys(mHandler.mAdbKeyStore.getKeys());
     }
 
     private Map<String, PairDevice> getPairedDevicesForKeys(Set<String> keys) {

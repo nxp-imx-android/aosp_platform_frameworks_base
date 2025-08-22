@@ -118,7 +118,6 @@ public final class AdbDebuggingManagerTest {
         mHandler = mManager.mHandler;
         mThread.setHandler(mHandler);
 
-        mHandler.initKeyStore();
         mKeyStore = mHandler.mAdbKeyStore;
 
         mOriginalAllowedConnectionTime = mKeyStore.getAllowedConnectionTime();
