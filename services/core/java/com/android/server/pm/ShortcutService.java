@@ -15,7 +15,7 @@
  */
 package com.android.server.pm;
 
-import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_DENIED;
+import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS;
 
 import static com.android.server.pm.ShortcutUser.DIRECTORY_LAUNCHERS;
 import static com.android.server.pm.ShortcutUser.DIRECTORY_PACKAGES;
@@ -4321,7 +4321,7 @@ public class ShortcutService extends IShortcutService.Stub {
         try {
             ActivityOptions options = ActivityOptions.makeBasic()
                     .setPendingIntentBackgroundActivityStartMode(
-                            MODE_BACKGROUND_ACTIVITY_START_DENIED);
+                            MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
             intentSender.sendIntent(mContext, 0 /* code */, extras,
                     null /* requiredPermission */, options.toBundle(),
                     null /* executor */, null /* onFinished*/);
