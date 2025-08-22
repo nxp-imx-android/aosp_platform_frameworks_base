@@ -20,14 +20,16 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.wm.shell.dagger.WMSingleton;
 
 import javax.inject.Inject;
 
 /**
  * Implementation of UiEventLogger for logging bubble UI events.
  *
- * See UiEventReported atom in atoms.proto for more context.
+ * <p>See UiEventReported atom in atoms.proto for more context.
  */
+@WMSingleton
 public class BubbleLogger {
 
     private final UiEventLogger mUiEventLogger;

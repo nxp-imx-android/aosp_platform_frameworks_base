@@ -33,12 +33,15 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -94,6 +97,7 @@ class BubbleControllerBubbleBarTest {
     private lateinit var bubbleData: BubbleData
     private lateinit var mainExecutor: TestShellExecutor
     private lateinit var bgExecutor: TestShellExecutor
+    private lateinit var sessionTracker: BubbleSessionTracker
 
     @Before
     fun setUp() {
@@ -105,6 +109,9 @@ class BubbleControllerBubbleBarTest {
 
         uiEventLoggerFake = UiEventLoggerFake()
         val bubbleLogger = BubbleLogger(uiEventLoggerFake)
+
+        val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
+        sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
 
         val deviceConfig =
             DeviceConfig(
@@ -362,7 +369,7 @@ class BubbleControllerBubbleBarTest {
         addBubble("key", autoExpand = true)
 
         // 2 events: add bubble + expand
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(3)
         assertThat(uiEventLoggerFake.eventId(1))
             .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id)
     }
@@ -544,6 +551,7 @@ class BubbleControllerBubbleBarTest {
             { Optional.empty() },
             Optional.empty(),
             { false },
+            sessionTracker,
         )
     }
 

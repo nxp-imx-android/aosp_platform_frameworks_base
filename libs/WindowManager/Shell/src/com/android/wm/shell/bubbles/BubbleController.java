@@ -109,6 +109,7 @@ import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
 import com.android.wm.shell.bubbles.fold.BubblesUnfoldListener;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.bubbles.shortcut.BubbleShortcutHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -237,6 +238,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleAppInfoProvider mAppInfoProvider;
     private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
     private final BubblesFoldLockSettingsObserver mFoldLockSettingsObserver;
+    private final BubbleSessionTracker mSessionTracker;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -375,7 +377,8 @@ public class BubbleController implements ConfigurationChangeListener,
             BubbleAppInfoProvider appInfoProvider,
             Lazy<Optional<SplitScreenController>> splitScreenController,
             Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
-            BubblesFoldLockSettingsObserver foldLockSettingsObserver) {
+            BubblesFoldLockSettingsObserver foldLockSettingsObserver,
+            BubbleSessionTracker sessionTracker) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -432,6 +435,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mAppInfoProvider = appInfoProvider;
         mSplitScreenController = splitScreenController;
         mFoldLockSettingsObserver = foldLockSettingsObserver;
+        mSessionTracker = sessionTracker;
         shellInit.addInitCallback(this::onInit, this);
 
         if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()
@@ -2799,6 +2803,20 @@ public class BubbleController implements ConfigurationChangeListener,
                 // Some updates aren't relevant to the bubble bar so check first.
                 if (bubbleBarUpdate.anythingChanged() && mBubbleStateListener != null) {
                     mBubbleStateListener.onBubbleStateChange(bubbleBarUpdate);
+                }
+            }
+
+            if (update.expandedChanged) {
+                if (update.expanded) {
+                    if (isShowingAsBubbleBar()) {
+                        mSessionTracker.startBubbleBar();
+                    } else {
+                        mSessionTracker.startFloating();
+                    }
+                } else if (isShowingAsBubbleBar()) {
+                    mSessionTracker.stopBubbleBar();
+                } else {
+                    mSessionTracker.stopFloating();
                 }
             }
         }

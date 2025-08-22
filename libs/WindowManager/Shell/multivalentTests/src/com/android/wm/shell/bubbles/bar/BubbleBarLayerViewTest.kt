@@ -35,6 +35,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
@@ -56,6 +57,8 @@ import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -113,6 +116,7 @@ class BubbleBarLayerViewTest {
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var testBubblesList: MutableList<Bubble>
     private lateinit var dragZoneFactory: DragZoneFactory
+    private lateinit var sessionTracker: BubbleSessionTracker
 
     @Before
     fun setUp() {
@@ -122,6 +126,9 @@ class BubbleBarLayerViewTest {
 
         uiEventLoggerFake = UiEventLoggerFake()
         bubbleLogger = BubbleLogger(uiEventLoggerFake)
+
+        val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
+        sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
 
         mainExecutor = TestShellExecutor()
         bgExecutor = TestShellExecutor()
@@ -249,6 +256,7 @@ class BubbleBarLayerViewTest {
             { Optional.empty() },
             Optional.empty(),
             { false },
+            sessionTracker,
         )
     }
 
