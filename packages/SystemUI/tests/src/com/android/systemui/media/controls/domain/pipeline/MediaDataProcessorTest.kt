@@ -54,7 +54,6 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.data.repository.mediaDataRepository
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.domain.resume.MediaResumeListener
 import com.android.systemui.media.controls.domain.resume.ResumeMediaBrowser
@@ -64,6 +63,7 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.controls.util.mediaFlags
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.notificationLockscreenUserManager
@@ -150,7 +150,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
 
     private val mediaControllerFactory = kosmos.fakeMediaControllerFactory
     private val notificationLockscreenUserManager = kosmos.notificationLockscreenUserManager
-    private val mediaFilterRepository = kosmos.mediaFilterRepository
+    private val mediaPipelineRepository = kosmos.mediaPipelineRepository
     private val mediaDataFilter = kosmos.mediaDataFilter
 
     private val instanceIdSequence = InstanceIdSequenceFake(1 shl 20)
@@ -203,7 +203,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
                 mediaDeviceManager = mediaDeviceManager,
                 mediaDataCombineLatest = mediaDataCombineLatest,
                 mediaDataFilter = mediaDataFilter,
-                mediaPipelineRepository = mediaFilterRepository,
+                mediaPipelineRepository = mediaPipelineRepository,
                 keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
             )
@@ -1182,7 +1182,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
                 .setState(PlaybackState.STATE_PLAYING, 0, 10f)
                 .setActions(stateActions)
         whenever(controller.playbackState).thenReturn(stateBuilder.build())
-        val userEntries by testScope.collectLastValue(mediaFilterRepository.currentUserEntries)
+        val userEntries by testScope.collectLastValue(mediaPipelineRepository.currentUserEntries)
 
         mediaDataProcessor.addInternalListener(mediaDataFilter)
         mediaDataFilter.mediaDataProcessor = mediaDataProcessor
