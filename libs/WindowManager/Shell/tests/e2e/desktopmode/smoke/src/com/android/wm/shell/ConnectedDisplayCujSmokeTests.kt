@@ -376,8 +376,15 @@ class ConnectedDisplayCujSmokeTests {
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, DEFAULT_DISPLAY, visible = true)
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = false)
 
+        // Open overview. If the device is not expected to have DesktopWallpaperActivity (i.e.,
+        // `shouldShowHomeBehindDesktop` is true), we here use `tapl.workspace` because
+        // `tapl.launchedAppState` expects any fullscreen app is visible and `tapl.workspace`
+        // expects no fullscreen app is visible.
+        val overview = if (desktopState.shouldShowHomeBehindDesktop) {
+            tapl.workspace.openOverviewFromActionPlusTabKeyboardShortcut()
+        } else tapl.launchedAppState.switchToOverview()
+
         // Verify the overview has both the fullscreen app and the desktop.
-        val overview = tapl.launchedAppState.switchToOverview()
         overview.flingBackward()
         assertTrue("Can't find a desktop overview item", overview.currentTask.isDesktop)
         overview.flingForward()
