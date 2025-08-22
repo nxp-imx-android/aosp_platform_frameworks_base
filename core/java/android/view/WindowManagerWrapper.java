@@ -244,7 +244,6 @@ public class WindowManagerWrapper implements WindowManager {
         mBase.unregisterTrustedPresentationListener(listener);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     @Override
     public InputTransferToken registerBatchedSurfaceControlInputReceiver(
@@ -255,7 +254,6 @@ public class WindowManagerWrapper implements WindowManager {
                 hostInputTransferToken, surfaceControl, choreographer, receiver);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     @Override
     public InputTransferToken registerUnbatchedSurfaceControlInputReceiver(
@@ -266,20 +264,17 @@ public class WindowManagerWrapper implements WindowManager {
                 hostInputTransferToken, surfaceControl, looper, receiver);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @Override
     public void unregisterSurfaceControlInputReceiver(@NonNull SurfaceControl surfaceControl) {
         mBase.unregisterSurfaceControlInputReceiver(surfaceControl);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @Nullable
     @Override
     public IBinder getSurfaceControlInputClientToken(@NonNull SurfaceControl surfaceControl) {
         return mBase.getSurfaceControlInputClientToken(surfaceControl);
     }
 
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @Override
     public boolean transferTouchGesture(@NonNull InputTransferToken transferFromToken,
             @NonNull InputTransferToken transferToToken) {
