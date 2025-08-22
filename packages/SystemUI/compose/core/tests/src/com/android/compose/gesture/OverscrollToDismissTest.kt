@@ -27,6 +27,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -41,8 +42,8 @@ import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.mechanics.debug.MotionValueDebuggerState
-import com.android.mechanics.debug.motionValueDebugger
+import com.android.mechanics.debug.LocalMotionValueDebugController
+import com.android.mechanics.debug.MotionValueDebugController
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.sin
@@ -148,7 +149,7 @@ class OverscrollToDismissTest {
         }
 
     private fun performGesture(gestureControl: TouchInjectionScope.() -> Unit) = MotionControl {
-        val debugInspector = debugger.observedMotionValues.single().debugInspector()
+        val debugInspector = debugger.observed.single().debugInspector()
         try {
             performTouchInputAsync(onNodeWithTag("DismissContainer")) { gestureControl() }
             awaitCondition { !debugInspector.isAnimating && !pagerState.isScrollInProgress }
@@ -158,7 +159,7 @@ class OverscrollToDismissTest {
     }
 
     private var isDismissed = false
-    private val debugger = MotionValueDebuggerState()
+    private val debugger = MotionValueDebugController()
     private lateinit var pagerState: PagerState
 
     @Composable
@@ -169,33 +170,33 @@ class OverscrollToDismissTest {
         isSwipingEnabled: Boolean = true,
     ) {
         pagerState = rememberPagerState(initialPage) { pageCount }
-
-        Box(
-            modifier =
-                Modifier.motionValueDebugger(debugger)
-                    .size(150.dp, 100.dp)
-                    .background(Color.Blue)
-                    .testTag("DismissContainer")
-                    .overscrollToDismiss(
-                        rememberMotionBuilderContext(),
-                        enabled = isSwipingEnabled,
-                        onDismissed = { isDismissed = true },
+        CompositionLocalProvider(LocalMotionValueDebugController provides debugger) {
+            Box(
+                modifier =
+                    Modifier.size(150.dp, 100.dp)
+                        .background(Color.Blue)
+                        .testTag("DismissContainer")
+                        .overscrollToDismiss(
+                            rememberMotionBuilderContext(),
+                            enabled = isSwipingEnabled,
+                            onDismissed = { isDismissed = true },
+                        )
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    userScrollEnabled = isSwipingEnabled,
+                    pageSpacing = 8.dp,
+                    key = { it },
+                    modifier = Modifier.fillMaxSize(),
+                ) { pageIndex: Int ->
+                    Box(
+                        modifier =
+                            Modifier.height(64.dp)
+                                .fillMaxWidth()
+                                .background(Color.Red)
+                                .testTag("Page$pageIndex")
                     )
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = isSwipingEnabled,
-                pageSpacing = 8.dp,
-                key = { it },
-                modifier = Modifier.fillMaxSize(),
-            ) { pageIndex: Int ->
-                Box(
-                    modifier =
-                        Modifier.height(64.dp)
-                            .fillMaxWidth()
-                            .background(Color.Red)
-                            .testTag("Page$pageIndex")
-                )
+                }
             }
         }
     }
