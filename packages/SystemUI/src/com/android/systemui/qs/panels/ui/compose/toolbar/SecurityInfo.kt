@@ -18,7 +18,6 @@ package com.android.systemui.qs.panels.ui.compose.toolbar
 
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
@@ -66,7 +65,6 @@ fun SecurityInfo(
                 rememberExpandableController(color = Color.Transparent, shape = CircleShape),
             modifier =
                 modifier
-                    .padding(horizontal = 4.dp)
                     .borderOnFocus(color = MaterialTheme.colorScheme.secondary, CornerSize(0))
                     .semantics {
                         if (onClick != null) {
@@ -91,7 +89,7 @@ fun SecurityInfo(
                         text = viewModel.text,
                         maxLines = 1,
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.basicMarquee(iterations = 1, initialDelayMillis = 1000),
                     )
                 }
