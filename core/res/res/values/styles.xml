@@ -1689,7 +1689,15 @@ please see styles_device_defaults.xml.
     <!-- @hide -->
     <style name="NotificationExpandedMetricValue" parent="NotificationMetricValue">
         <item name="textSize">28sp</item>
-        <item name="fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variable-headline-medium-emphasized</item>
+    </style>
+
+    <!-- @hide -->
+    <style name="NotificationExpandedSingleMetricLabel" parent="NotificationMetricLabel" />
+
+    <!-- @hide -->
+    <style name="NotificationExpandedSingleMetricValue" parent="NotificationExpandedMetricValue">
+        <item name="textSize">36sp</item>
+        <item name="gravity">end</item>
     </style>
 
     <style name="AccessibilityDialog">

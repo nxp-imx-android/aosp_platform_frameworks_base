@@ -851,6 +851,8 @@ public class Notification implements Parcelable
                         -> Flags.apiMetricStyle();
                 case R.layout.notification_2025_template_expanded_metric
                         -> Flags.apiMetricStyle();
+                case R.layout.notification_2025_template_expanded_single_metric
+                        -> Flags.apiMetricStyle();
                 default -> false;
             };
         }
@@ -8073,6 +8075,10 @@ public class Notification implements Parcelable
             return R.layout.notification_2025_template_expanded_metric;
         }
 
+        private int getExpandedSingleMetricLayoutResource() {
+            return R.layout.notification_2025_template_expanded_single_metric;
+        }
+
         private int getCollapsedMediaLayoutResource() {
             if (Flags.notificationsRedesignTemplates()) {
                 return R.layout.notification_2025_template_collapsed_media;
@@ -11844,9 +11850,14 @@ public class Notification implements Parcelable
                     .titleViewId(R.id.alt_title)
                     .hideRightIcon(true);
             final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getExpandedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */ true);
+            final int expandedLayoutRes;
+            if (mMetrics.size() == 1) {
+                expandedLayoutRes = mBuilder.getExpandedSingleMetricLayoutResource();
+            } else {
+                expandedLayoutRes = mBuilder.getExpandedMetricLayoutResource();
+            }
+            final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
+            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */true);
         }
 
         private RemoteViews bindMetricStyleMetrics(
