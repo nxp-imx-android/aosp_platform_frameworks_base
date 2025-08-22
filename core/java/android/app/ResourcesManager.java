@@ -340,6 +340,9 @@ public class ResourcesManager {
         @Nullable
         public WeakReference<Resources> resources;
 
+        /** Whether this resource is created for the token itself. */
+        boolean isBaseResource;
+
         private ActivityResource() {}
     }
 
@@ -946,6 +949,9 @@ public class ResourcesManager {
         activityResource.overrideConfig.setTo(initialOverrideConfig);
         activityResource.overrideDisplayId = overrideDisplayId;
         activityResources.activityResources.add(activityResource);
+        if (activityResources.activityResources.size() == 1) {
+            activityResource.isBaseResource = true;
+        }
         if (DEBUG) {
             Slog.d(TAG, "- creating new ref=" + resources);
             Slog.d(TAG, "- setting ref=" + resources + " with impl=" + impl);
@@ -1476,8 +1482,13 @@ public class ResourcesManager {
         // Ensure the new key keeps the expected override display instead of the new token display.
         displayId = overrideDisplayId != null ? overrideDisplayId : displayId;
 
+        // Do not use token identify if it is a derived resource (isBaseResource == false) because
+        // if the window configuration is different, the key for derived resource should not find
+        // the ResourcesImpl instance of token resource.
+        final int tokenIdentity = activityResource.isBaseResource
+                ? System.identityHashCode(activityToken) : 0;
         // Create the new ResourcesKey with the rebased override config.
-        final ResourcesKey newKey = new ResourcesKey(System.identityHashCode(activityToken),
+        final ResourcesKey newKey = new ResourcesKey(tokenIdentity,
                 oldKey.mResDir, oldKey.mSplitResDirs, oldKey.mOverlayPaths, oldKey.mLibDirs,
                 displayId, rebasedOverrideConfig, oldKey.mCompatInfo, oldKey.mLoaders);
 
