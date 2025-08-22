@@ -2725,22 +2725,6 @@ public final class SQLiteDatabase extends SQLiteClosable {
         return connectionPools;
     }
 
-    /** @hide */
-    @NeverCompile
-    public int getTotalPreparedStatements() {
-        throwIfNotOpenLocked();
-
-        return mConnectionPoolLocked.mTotalPrepareStatements;
-    }
-
-    /** @hide */
-    @NeverCompile
-    public int getTotalStatementCacheMisses() {
-        throwIfNotOpenLocked();
-
-        return mConnectionPoolLocked.mTotalPrepareStatementCacheMiss;
-    }
-
     /**
      * Dump detailed information about all open databases in the current process.
      * Used by bug report.
