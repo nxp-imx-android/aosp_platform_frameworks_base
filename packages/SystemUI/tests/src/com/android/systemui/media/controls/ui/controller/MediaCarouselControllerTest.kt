@@ -80,6 +80,7 @@ import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.anyLong
 import org.mockito.Mockito.atLeast
+import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.floatThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -733,6 +734,67 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         verify(panel, times(MediaPlayerData.players().size)).listening = false
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun testOnCarouselBecomesVisible_requestsSuggestion() {
+        mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = true
+        addPlayer(playerId = "player1")
+        addPlayer(playerId = "player2")
+
+        mediaCarouselController.mediaCarouselScrollHandler.visibleMediaIndex = 0
+        mediaCarouselController.onCarouselVisibleToUser()
+
+        verify(panel).onPanelFullyVisible()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun testUpdateVisibility_samePlayerVisible_doNothing() {
+        mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = true
+        addPlayer(playerId = "player1")
+        addPlayer(playerId = "player2")
+
+        mediaCarouselController.mediaCarouselScrollHandler.visibleMediaIndex = 0
+        mediaCarouselController.onVisibleCardChanged()
+
+        verify(panel).onPanelFullyVisible()
+        clearInvocations(panel)
+
+        mediaCarouselController.mediaCarouselScrollHandler.visibleMediaIndex = 0
+        mediaCarouselController.onVisibleCardChanged()
+
+        verify(panel, never()).onPanelFullyVisible()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun testUpdateVisibility_noPlayerAvailable_doNothing() {
+        mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = true
+        mediaCarouselController.mediaCarouselScrollHandler.visibleMediaIndex = 0
+        mediaCarouselController.onVisibleCardChanged()
+
+        verify(panel, never()).onPanelFullyVisible()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    @Test
+    fun testUpdateVisibility_activePlayerChanged_requestsSuggestion() {
+        mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = true
+        addPlayer(playerId = "player1")
+        addPlayer(playerId = "player2")
+
+        mediaCarouselController.mediaCarouselScrollHandler.visibleMediaIndex = 0
+        mediaCarouselController.onVisibleCardChanged()
+
+        verify(panel).onPanelFullyVisible()
+        clearInvocations(panel)
+
+        mediaCarouselController.mediaCarouselScrollHandler.visibleMediaIndex = 1
+        mediaCarouselController.onVisibleCardChanged()
+
+        verify(panel).onPanelFullyVisible()
+    }
+
     @Test
     fun testVisibleToUserAndExpanded_playersListening() {
         // Add players to carousel.
@@ -943,6 +1005,20 @@ class MediaCarouselControllerTest : SysuiTestCase() {
             verify(mediaPlayer, atLeast(1)).setPageArrowsVisible(eq(false))
             verify(mediaPlayer, never()).setPageArrowsVisible(eq(true))
         }
+    }
+
+    private fun addPlayer(playerId: String) {
+        clock.setCurrentTimeMillis(1000L)
+        MediaPlayerData.addMediaPlayer(
+            key = playerId,
+            data =
+                DATA.copy(
+                    clickIntent = mock(PendingIntent::class.java),
+                    notificationKey = playerId,
+                ),
+            player = panel,
+            clock = clock,
+        )
     }
 
     /**

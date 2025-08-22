@@ -606,9 +606,9 @@ public class MediaControlPanel {
     }
 
     /**
-     * Should be called when the space that holds device suggestions becomes visible to the user.
+     * Called when the panel becomes fully visible.
      */
-    public void onSuggestionSpaceVisible() {
+    public void onPanelFullyVisible() {
         if (!Flags.enableSuggestedDeviceUi()) {
             return;
         }
