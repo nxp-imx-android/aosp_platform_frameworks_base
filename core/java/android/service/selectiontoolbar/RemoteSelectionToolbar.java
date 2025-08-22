@@ -17,7 +17,6 @@
 package android.service.selectiontoolbar;
 
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -93,6 +92,7 @@ public final class RemoteSelectionToolbar {
     private final int mMarginVertical;
 
     /* View components */
+    private FloatingToolbarRoot mContentHolder;
     private final ViewGroup mContentContainer;  // holds all contents.
     private final ViewGroup mMainPanel;  // holds menu items that are initially displayed.
     // holds menu items hidden in the overflow.
@@ -182,7 +182,10 @@ public final class RemoteSelectionToolbar {
         mTransferTouchListener = transferTouchListener;
         mOnPasteActionCallback = onPasteActionCallback;
         mHostInputToken = showInfo.hostInputToken;
+        mContentHolder = new FloatingToolbarRoot(mContext,
+                mHostInputToken, mTransferTouchListener);
         mContentContainer = createContentContainer(mContext);
+        mContentHolder.addView(mContentContainer);
         mMarginHorizontal = mContext.getResources()
                 .getDimensionPixelSize(R.dimen.floating_toolbar_horizontal_margin);
         mMarginVertical = mContext.getResources()
@@ -240,16 +243,7 @@ public final class RemoteSelectionToolbar {
         mDismissAnimation = createExitAnimation(
                 mContentContainer,
                 150,  // startDelay
-                new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        // TODO(b/215497659): should dismiss window after animation
-                        mContentContainer.removeAllViews();
-                        mSurfaceControlViewHost.release();
-                        mSurfaceControlViewHost = null;
-                        mSurfacePackage = null;
-                    }
-                });
+                null);
         mHideAnimation = createExitAnimation(
                 mContentContainer,
                 0,  // startDelay
@@ -297,17 +291,24 @@ public final class RemoteSelectionToolbar {
 
     private SurfaceControlViewHost.SurfacePackage getSurfacePackage() {
         if (mSurfaceControlViewHost == null) {
-            final FloatingToolbarRoot contentHolder = new FloatingToolbarRoot(mContext,
-                    mHostInputToken, mTransferTouchListener);
-            contentHolder.addView(mContentContainer);
             mSurfaceControlViewHost = new SurfaceControlViewHost(mContext, mContext.getDisplay(),
                     new InputTransferToken(mHostInputToken), "RemoteSelectionToolbar");
-            mSurfaceControlViewHost.setView(contentHolder, mPopupWidth, mPopupHeight);
+            mSurfaceControlViewHost.setView(mContentHolder, mPopupWidth, mPopupHeight);
         }
         if (mSurfacePackage == null) {
             mSurfacePackage = mSurfaceControlViewHost.getSurfacePackage();
         }
         return mSurfacePackage;
+    }
+
+    private void releaseSurfaceControlViewHost() {
+        if (mSurfaceControlViewHost != null) {
+            // If hiding has finished before dismissing there will not be a SCVH to release at this
+            // point.
+            mSurfaceControlViewHost.release();
+            mSurfaceControlViewHost = null;
+        }
+        mSurfacePackage = null;
     }
 
     private void layoutMenuItems(
@@ -334,30 +335,29 @@ public final class RemoteSelectionToolbar {
         mMenuItems = transformMenuItems(mContext, showInfo.menuItems);
         mViewPortOnScreen.set(showInfo.viewPortOnScreen);
 
-        debugLog("show(): layoutRequired=" + showInfo.layoutRequired);
         if (showInfo.layoutRequired) {
             layoutMenuItems(mMenuItems, showInfo.suggestedWidth);
         }
-        Rect contentRect = showInfo.contentRect;
-        if (!isShowing()) {
-            show(contentRect);
-        } else if (!mPreviousContentRect.equals(contentRect)) {
-            updateCoordinates(contentRect);
+
+        if (isHidden()) {
+            cancelDismissAndHideAnimations();
         }
-        mPreviousContentRect.set(contentRect);
-    }
-
-    private void show(Rect contentRectOnScreen) {
-        Objects.requireNonNull(contentRectOnScreen);
-
-        cancelDismissAndHideAnimations();
         cancelOverflowAnimations();
-        refreshCoordinatesAndOverflowDirection(contentRectOnScreen);
+        refreshCoordinatesAndOverflowDirection(showInfo.contentRect);
         preparePopupContent();
+
+        if (!isShowing()) {
+            mShowAnimation.start();
+            mCallbackWrapper.onShown(createWidgetInfo());
+        } else {
+            mCallbackWrapper.onWidgetUpdated(createWidgetInfo());
+        }
+
+        mSurfaceControlViewHost.relayout(mPopupWidth, mPopupHeight);
+
         mState = TOOLBAR_STATE_SHOWN;
-        mCallbackWrapper.onShown(createWidgetInfo());
         // TODO(b/215681595): Use Choreographer to coordinate for show between different thread
-        mShowAnimation.start();
+        mPreviousContentRect.set(showInfo.contentRect);
     }
 
     /**
@@ -368,6 +368,7 @@ public final class RemoteSelectionToolbar {
         if (mState == TOOLBAR_STATE_DISMISSED) {
             return;
         }
+        releaseSurfaceControlViewHost();
         mHideAnimation.cancel();
         mDismissAnimation.start();
         mState = TOOLBAR_STATE_DISMISSED;
@@ -381,6 +382,7 @@ public final class RemoteSelectionToolbar {
         if (!isShowing()) {
             return;
         }
+        releaseSurfaceControlViewHost();
         mHideAnimation.start();
         mState = TOOLBAR_STATE_HIDDEN;
     }
@@ -391,20 +393,6 @@ public final class RemoteSelectionToolbar {
 
     public boolean isHidden() {
         return mState == TOOLBAR_STATE_HIDDEN;
-    }
-
-    private void updateCoordinates(Rect contentRectOnScreen) {
-        Objects.requireNonNull(contentRectOnScreen);
-
-        if (!isShowing()) {
-            return;
-        }
-        cancelOverflowAnimations();
-        refreshCoordinatesAndOverflowDirection(contentRectOnScreen);
-        preparePopupContent();
-        WidgetInfo widgetInfo = createWidgetInfo();
-        mSurfaceControlViewHost.relayout(mPopupWidth, mPopupHeight);
-        mCallbackWrapper.onWidgetUpdated(widgetInfo);
     }
 
     private void refreshCoordinatesAndOverflowDirection(Rect contentRectOnScreen) {
@@ -1437,8 +1425,14 @@ public final class RemoteSelectionToolbar {
      * Dumps information about this class.
      */
     public void dump(String prefix, PrintWriter pw) {
-        pw.print(prefix); pw.print("dismissed: "); pw.println(mState == TOOLBAR_STATE_DISMISSED);
-        pw.print(prefix); pw.print("hidden: "); pw.println(mState == TOOLBAR_STATE_HIDDEN);
+        pw.print(prefix); pw.print("state: "); pw.println(
+                switch (mState) {
+                    case TOOLBAR_STATE_SHOWN -> "SHOWN";
+                    case TOOLBAR_STATE_HIDDEN -> "HIDDEN";
+                    case TOOLBAR_STATE_DISMISSED -> "DISMISSED";
+                    default -> "UNKNOWN";
+                }
+        );
         pw.print(prefix); pw.print("popup width: "); pw.println(mPopupWidth);
         pw.print(prefix); pw.print("popup height: "); pw.println(mPopupHeight);
         pw.print(prefix); pw.print("relative coords: "); pw.println(mRelativeCoordsForToolbar);

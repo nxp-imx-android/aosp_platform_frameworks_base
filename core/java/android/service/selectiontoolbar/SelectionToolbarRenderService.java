@@ -246,15 +246,6 @@ public abstract class SelectionToolbarRenderService extends Service {
                 // no-op
             }
         }
-
-        @Override
-        public void onError(int errorCode, int sequenceNumber) {
-            try {
-                mRemoteCallback.onError(errorCode, sequenceNumber);
-            } catch (RemoteException e) {
-                // no-op
-            }
-        }
     }
 
     /**

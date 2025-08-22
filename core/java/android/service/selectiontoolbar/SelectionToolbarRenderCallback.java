@@ -37,8 +37,4 @@ public interface SelectionToolbarRenderCallback {
      * The menu item index on the selection toolbar has been clicked.
      */
     void onMenuItemClicked(int itemIndex);
-    /**
-     * The error occurred when operating on the selection toolbar.
-     */
-    void onError(int errorCode, int sequenceNumber);
 }

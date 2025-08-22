@@ -28,5 +28,4 @@ oneway interface ISelectionToolbarCallback {
     void onShown(in WidgetInfo info);
     void onWidgetUpdated(in WidgetInfo info);
     void onMenuItemClicked(int itemIndex);
-    void onError(int errorCode, int sequenceNumber);
 }
