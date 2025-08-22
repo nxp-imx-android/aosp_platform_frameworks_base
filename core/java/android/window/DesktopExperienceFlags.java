@@ -241,6 +241,9 @@ public enum DesktopExperienceFlags {
     ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX(
             Flags::enablePipParamsUpdateNotificationBugfix, false,
             Flags.FLAG_ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX),
+    ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK(
+            Flags::enablePresentationDisallowedOnUnfocusedHostTask, false,
+            Flags.FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK),
     ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS(Flags::enablePresentationForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, true,

@@ -1231,6 +1231,16 @@ flag {
 }
 
 flag {
+    name: "enable_presentation_disallowed_on_unfocused_host_task"
+    namespace: "lse_desktop_experience"
+    description: "Disallows presentations from being shown on their unfocused host tasks."
+    bug: "435586251"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_presentation_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enables full support of presentation API for connected displays."
