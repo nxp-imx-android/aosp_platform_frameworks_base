@@ -246,3 +246,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_consent"
+    namespace: "virtual_devices"
+    description: "Show a consent dialog for computer control session creation"
+    bug: "437901655"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

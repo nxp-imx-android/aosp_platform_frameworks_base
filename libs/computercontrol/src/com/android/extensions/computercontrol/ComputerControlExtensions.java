@@ -21,6 +21,7 @@ import android.annotation.RequiresPermission;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.content.Context;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.view.accessibility.AccessibilityManager;
 
@@ -95,6 +96,18 @@ public class ComputerControlExtensions {
 
         var sessionCallback =
                 new android.companion.virtual.computercontrol.ComputerControlSession.Callback() {
+
+                    @Override
+                    public void onSessionPending(@NonNull IntentSender intentSender) {
+                        // TODO(b/437901655): Pass this to the caller.
+                        try {
+                            params.getContext().startIntentSender(intentSender, null, 0, 0, 0);
+                        } catch (IntentSender.SendIntentException e) {
+                            callback.onSessionCreationFailed(
+                                    android.companion.virtual.computercontrol
+                                            .ComputerControlSession.ERROR_PERMISSION_DENIED);
+                        }
+                    }
 
                     @Override
                     public void onSessionCreated(
