@@ -182,11 +182,11 @@ public final class SQLiteDebug {
         public int lookaside;
 
         /** @hide */
-        final public int cacheHits;
+        public int cacheHits;
         /** @hide */
-        final public int cacheMisses;
+        public int cacheMisses;
         /** @hide */
-        final public int cacheSize;
+        public int cacheSize;
 
         /** true if connection specific stats or whole connection pool if false */
         public final boolean arePoolStats;
@@ -201,6 +201,12 @@ public final class SQLiteDebug {
             this.cacheMisses = misses;
             this.cacheSize = cachesize;
             this.arePoolStats = arePoolStats;
+        }
+
+        void addCacheStatsFrom(SQLiteConnection connection) {
+            cacheHits += connection.getPreparedStatementCacheHitCount();
+            cacheMisses += connection.getPreparedStatementCacheMissCount();
+            cacheSize += connection.getPreparedStatementCacheSize();
         }
     }
 
