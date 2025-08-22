@@ -98,6 +98,9 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
                         timestampRange(startMillis = 150, endMillis = 250, easing = LinearEasing) {
                             fade(BundleHeader.Elements.PreviewIcon1)
                         }
+                        timestampRange(startMillis = 150, endMillis = 250, easing = LinearEasing) {
+                            fade(NotificationRowPrimitives.Elements.ExpandedNumber)
+                        }
                         timestampRange(
                             startMillis = 50,
                             endMillis = 300,
