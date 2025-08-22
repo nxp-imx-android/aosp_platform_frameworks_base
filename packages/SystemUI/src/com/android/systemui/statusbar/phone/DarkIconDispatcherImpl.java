@@ -27,6 +27,7 @@ import android.view.Display;
 import android.widget.ImageView;
 
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.LifecycleListener;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton;
 import com.android.systemui.dump.DumpManager;
 
@@ -44,7 +45,7 @@ import javax.inject.Inject;
  */
 @PerDisplaySingleton
 public class DarkIconDispatcherImpl implements SysuiDarkIconDispatcher,
-        LightBarTransitionsController.DarkIntensityApplier {
+        LightBarTransitionsController.DarkIntensityApplier, LifecycleListener {
 
     private final LightBarTransitionsController mTransitionsController;
     private final ArrayList<Rect> mTintAreas = new ArrayList<>();
