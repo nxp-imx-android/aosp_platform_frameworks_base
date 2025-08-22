@@ -33,6 +33,7 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,7 @@ public class RunningTaskFetcherTest {
     private static final String LAUNCHER_PACKAGE_NAME = "com.example.launcher";
 
     @Mock private ActivityTaskManager mockActivityTaskManager;
+    @Mock private ActivityTaskManagerInternal mockActivityTaskManagerInternal;
     @Mock private PackageManager mockPackageManager;
     @Mock private PackageMetadataCache mockPackageMetadataCache;
 
@@ -66,15 +68,33 @@ public class RunningTaskFetcherTest {
             .thenReturn(launcherResolveInfo);
 
         runningTaskFetcher = new RunningTaskFetcher(
-            mockActivityTaskManager, mockPackageManager, mockPackageMetadataCache);
+            mockActivityTaskManager,
+            mockActivityTaskManagerInternal,
+            mockPackageManager,
+            mockPackageMetadataCache);
     }
 
     @Test
     public void testGetRunningTasks_returnsRunningTasks() {
         FakeTask[] tasks = {
-            new FakeTask(1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0])),
-            new FakeTask(2, "com.example.app2", 200, new PackageMetadata("app2", new byte[0])),
-            new FakeTask(3, LAUNCHER_PACKAGE_NAME, 300, new PackageMetadata("app3", new byte[0]))
+            new FakeTask(
+                1,
+                "com.example.app1",
+                100,
+                new PackageMetadata("app1", new byte[0]),
+                true),
+            new FakeTask(
+                2,
+                "com.example.app2",
+                200,
+                new PackageMetadata("app2", new byte[0]),
+                false),
+            new FakeTask(
+                3,
+                LAUNCHER_PACKAGE_NAME,
+                300,
+                new PackageMetadata("app3", new byte[0]),
+                true)
         };
         setupRunningTasks(tasks);
 
@@ -90,8 +110,13 @@ public class RunningTaskFetcherTest {
     @Test
     public void testGetRunningTasks_filtersTasksWithoutPackageMetadata() {
         FakeTask[] tasks = {
-            new FakeTask(1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0])),
-            new FakeTask(2, "com.example.app2", 200, null),
+            new FakeTask(
+                1,
+                "com.example.app1",
+                100,
+                new PackageMetadata("app1", new byte[0]),
+                true),
+            new FakeTask(2, "com.example.app2", 200, null, true),
         };
         setupRunningTasks(tasks);
 
@@ -105,8 +130,18 @@ public class RunningTaskFetcherTest {
     @Test
     public void testGetRunningTaskById_returnsRunningTask() {
         FakeTask[] tasks = {
-            new FakeTask(1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0])),
-            new FakeTask(2, "com.example.app2", 200, new PackageMetadata("app2", new byte[0])),
+            new FakeTask(
+                1,
+                "com.example.app1",
+                100,
+                new PackageMetadata("app1", new byte[0]),
+                true),
+            new FakeTask(
+                2,
+                "com.example.app2",
+                200,
+                new PackageMetadata("app2", new byte[0]),
+                false),
         };
         setupRunningTasks(tasks);
 
@@ -118,8 +153,18 @@ public class RunningTaskFetcherTest {
     @Test
     public void testGetRunningTaskById_taskNotFound_returnsNull() {
         FakeTask[] tasks = {
-            new FakeTask(1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0])),
-            new FakeTask(2, "com.example.app2", 200, new PackageMetadata("app2", new byte[0])),
+            new FakeTask(
+                1,
+                "com.example.app1",
+                100,
+                new PackageMetadata("app1", new byte[0]),
+                true),
+            new FakeTask(
+                2,
+                "com.example.app2",
+                200,
+                new PackageMetadata("app2", new byte[0]),
+                false),
         };
         setupRunningTasks(tasks);
 
@@ -131,7 +176,7 @@ public class RunningTaskFetcherTest {
     @Test
     public void testGetRunningTaskById_taskWithoutPackageMetadata_returnsNull() {
         FakeTask[] tasks = {
-            new FakeTask(2, "com.example.app2", 200, null),
+            new FakeTask(2, "com.example.app2", 200, null, true),
         };
         setupRunningTasks(tasks);
 
@@ -144,7 +189,7 @@ public class RunningTaskFetcherTest {
     public void testGetRunningTaskById_launcherPackage_returnsNull() {
         FakeTask[] tasks = {
             new FakeTask(
-                1, LAUNCHER_PACKAGE_NAME, 200, new PackageMetadata("launcher", new byte[0])),
+                1, LAUNCHER_PACKAGE_NAME, 200, new PackageMetadata("launcher", new byte[0]), false),
         };
         setupRunningTasks(tasks);
 
@@ -157,7 +202,8 @@ public class RunningTaskFetcherTest {
         int taskId,
         String packageName,
         long lastActiveTime,
-        PackageMetadata packageMetadata) {
+        PackageMetadata packageMetadata,
+        boolean isHandoffEnabled) {
 
         public RemoteTaskInfo toRemoteTaskInfo() {
             return new RemoteTaskInfo(
@@ -165,7 +211,7 @@ public class RunningTaskFetcherTest {
                 packageMetadata.label(),
                 lastActiveTime,
                 packageMetadata.icon(),
-                true);
+                isHandoffEnabled);
         }
     }
 
@@ -185,6 +231,8 @@ public class RunningTaskFetcherTest {
         taskInfo.lastActiveTime = task.lastActiveTime;
         when(mockPackageMetadataCache.getMetadataForPackage(task.packageName))
             .thenReturn(task.packageMetadata);
+        when(mockActivityTaskManagerInternal.isHandoffEnabledForTask(task.taskId))
+            .thenReturn(task.isHandoffEnabled);
 
         return taskInfo;
     }
