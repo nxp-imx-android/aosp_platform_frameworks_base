@@ -132,7 +132,7 @@ interface ISystemUiProxy {
     void expandNotificationPanel() = 29;
 
     /**
-     * Notifies SystemUI to invoke Back.
+     * Notifies SystemUI of KEYCODE_BACK, sending a ACTION_DOWN followed by ACTION_UP.
      */
     void onBackPressed() = 44;
 
@@ -162,5 +162,10 @@ interface ISystemUiProxy {
      */
     void toggleNotificationPanel() = 50;
 
-    // Next id = 51
+    /**
+     * Notifies SystemUI of a KeyEvent of the specified type (e.g. KEYCODE_BACK, KEYCODE_HOME).
+     */
+    oneway void onKeyEvent(int keycode) = 60;
+
+    // Next id = 61
 }
