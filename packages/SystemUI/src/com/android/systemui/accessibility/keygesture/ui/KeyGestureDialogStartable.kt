@@ -68,6 +68,7 @@ constructor(
         if (
             !Flags.enableTalkbackAndMagnifierKeyGestures() &&
                 !Flags.enableSelectToSpeakKeyGestures() &&
+                !Flags.enableTalkbackKeyGestures() &&
                 !Flags.enableVoiceAccessKeyGestures()
         ) {
             return
