@@ -2987,10 +2987,13 @@ class MediaRouter2ServiceImpl {
          * Notifies the corresponding manager of an update in the given session.
          *
          * @param sessionInfo The updated session info.
+         * @param shouldShowVolumeUi Whether a volume UI affordance should be presented as a result
+         *     of this session update.
          */
-        public void notifySessionUpdated(RoutingSessionInfo sessionInfo) {
+        public void notifySessionUpdated(
+                RoutingSessionInfo sessionInfo, boolean shouldShowVolumeUi) {
             try {
-                mManager.notifySessionUpdated(sessionInfo);
+                mManager.notifySessionUpdated(sessionInfo, shouldShowVolumeUi);
             } catch (RemoteException ex) {
                 logRemoteException("notifySessionUpdated", ex);
             }
@@ -3241,14 +3244,16 @@ class MediaRouter2ServiceImpl {
         public void onSessionUpdated(
                 @NonNull MediaRoute2Provider provider,
                 @NonNull RoutingSessionInfo sessionInfo,
-                Set<String> packageNamesWithRoutingSessionOverrides) {
+                Set<String> packageNamesWithRoutingSessionOverrides,
+                boolean shouldShowVolumeUi) {
             sendMessage(
                     PooledLambda.obtainMessage(
                             UserHandler::onSessionInfoChangedOnHandler,
                             this,
                             provider,
                             sessionInfo,
-                            packageNamesWithRoutingSessionOverrides));
+                            packageNamesWithRoutingSessionOverrides,
+                            shouldShowVolumeUi));
         }
 
         @Override
@@ -3830,7 +3835,8 @@ class MediaRouter2ServiceImpl {
         private void onSessionInfoChangedOnHandler(
                 @NonNull MediaRoute2Provider provider,
                 @NonNull RoutingSessionInfo sessionInfo,
-                Set<String> packageNamesWithRoutingSessionOverrides) {
+                Set<String> packageNamesWithRoutingSessionOverrides,
+                boolean shouldShowVolumeUi) {
             List<ManagerRecord> managers = getManagerRecords();
             List<AppId> appsWithOverridesToReport = null;
 
@@ -3865,7 +3871,7 @@ class MediaRouter2ServiceImpl {
                         continue;
                     }
                 }
-                manager.notifySessionUpdated(sessionInfo);
+                manager.notifySessionUpdated(sessionInfo, shouldShowVolumeUi);
             }
 
             // For system provider, notify all routers.

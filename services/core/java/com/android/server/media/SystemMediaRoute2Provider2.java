@@ -506,7 +506,11 @@ import java.util.stream.Stream;
             sessionInfo = mSessionInfos.getFirst();
         }
 
-        mCallback.onSessionUpdated(this, sessionInfo, packageNamesWithRoutingSessionOverrides);
+        mCallback.onSessionUpdated(
+                this,
+                sessionInfo,
+                packageNamesWithRoutingSessionOverrides,
+                /* shouldShowVolumeUi= */ false);
     }
 
     @Override
@@ -592,10 +596,13 @@ import java.util.stream.Stream;
         mLastSystemProviderInfo.getRoutes().stream()
                 .map(MediaRoute2Info::getOriginalId)
                 .forEach(builder::addTransferableRoute);
+        // TODO: b/396394220 - Pass shouldShowVolumeUi = true if the session update is the result
+        // of a HW volume key press.
         mCallback.onSessionUpdated(
                 /* provider= */ this,
                 builder.build(),
-                /* packageNamesWithRoutingSessionOverrides= */ Set.of());
+                /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
+                /* shouldShowVolumeUi= */ false);
     }
 
     /**
