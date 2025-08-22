@@ -46,6 +46,13 @@ flag {
 }
 
 flag {
+    name: "change_default_display_lid_closed"
+    namespace: "display_manager"
+    description: "Make one of the secondary displays the default display when the device's lid is closed"
+    bug: "400351704"
+}
+
+flag {
     name: "enable_display_offload"
     namespace: "display_manager"
     description: "Feature flag for DisplayOffload"
