@@ -96,6 +96,7 @@ import android.app.admin.DevicePolicyManagerInternal;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.Disabled;
+import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
 import android.content.ComponentName;
 import android.content.Context;
@@ -414,13 +415,13 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private static final long THROW_EXCEPTION_COMMIT_WITH_IMMUTABLE_PENDING_INTENT = 240618202L;
 
     /**
-     * Potentially notify the user about an incomplete / failed verification using a
-     * STATUS_PENDING_USER_ACTION status code if the installer targets API
-     * {@link android.os.Build.VERSION_CODES#BAKLAVA} or above.
+     * Potentially notify the user about an incomplete / failed developer verification using a
+     * STATUS_PENDING_USER_ACTION status code if the installer has a target SDK higher than API
+     * {@link android.os.Build.VERSION_CODES#BAKLAVA}.
      */
     @ChangeId
-    @EnabledSince(targetSdkVersion = VERSION_CODES.BAKLAVA)
-    private static final long NOTIFY_USER_VERIFICATION_INCOMPLETE = 360130528L;
+    @EnabledAfter(targetSdkVersion = VERSION_CODES.BAKLAVA)
+    private static final long NOTIFY_USER_FOR_DEVELOPER_VERIFICATION = 360130528L;
 
     /**
      * Configurable maximum number of pre-verified domains allowed to be added to the session.
@@ -3681,8 +3682,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      * following scenarios:
      * <ul>
      * <li>The installer is the system package installer.</li>
-     * <li>If it's a non-blocking failure and the installer targets Baklava or above.</li>
-     * <li>If the installer targets less than Baklava and the installer does not have </li>
+     * <li>If it's a non-blocking failure and the installer targets above Baklava.</li>
+     * <li>If the installer targets Baklava or less and the installer does not have </li>
      * {@link android.Manifest.permission#INSTALL_PACKAGES INSTALL_PACKAGES} permission.
      * </ul>
      * For other cases, the installer will receive a failure status code in its IntentSender
@@ -3711,12 +3712,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         }
 
         final int installerUid = getInstallerUid();
-        if (CompatChanges.isChangeEnabled(NOTIFY_USER_VERIFICATION_INCOMPLETE, installerUid)) {
-            // Target SDK of the installer >= 36, non blocking failures can be bypassed upon
+        if (CompatChanges.isChangeEnabled(NOTIFY_USER_FOR_DEVELOPER_VERIFICATION, installerUid)) {
+            // Target SDK of the installer > 36, non blocking failures can be bypassed upon
             // user confirmation.
             return !blockingFailure;
         } else {
-            // Target SDK of the installer <= 35. Installers that do not have the
+            // Target SDK of the installer <= 36. Installers that do not have the
             // privileged installation permission will need to request for user action.
             return PackageManager.PERMISSION_GRANTED != snapshot.checkUidPermission(
                     Manifest.permission.INSTALL_PACKAGES, installerUid);
