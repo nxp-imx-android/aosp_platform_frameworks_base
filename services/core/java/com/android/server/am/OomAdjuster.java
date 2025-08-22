@@ -953,179 +953,141 @@ public abstract class OomAdjuster {
         final int numLru = lruList.size();
         int nextVisibleAppAdj = VISIBLE_APP_ADJ;
         int nextPreviousAppAdj = PREVIOUS_APP_ADJ;
-        if (mConstants.USE_TIERED_CACHED_ADJ) {
-            final long now = mInjector.getUptimeMillis();
-            int uiTargetAdj = 10;
-            // mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE is 10 by default, but is configurable.
-            final int uiTierMaxAdj = 10 + mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
-            for (int i = numLru - 1; i >= 0; i--) {
-                ProcessRecord app = lruList.get(i);
-                final ProcessRecordInternal state = app;
-                final int curAdj = state.getCurAdj();
-                if (VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ) {
-                    state.setCurAdj(nextVisibleAppAdj);
-                    nextVisibleAppAdj = Math.min(nextVisibleAppAdj + 1, VISIBLE_APP_MAX_ADJ);
-                } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
-                    state.setCurAdj(nextPreviousAppAdj);
-                    nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
-                } else if (!app.isKilledByAm() && app.isProcessRunning() && (curAdj >= UNKNOWN_ADJ
-                            || (state.getHasShownUi() && curAdj >= CACHED_APP_MIN_ADJ))) {
-                    final ProcessServiceRecord psr = app.mServices;
-                    int targetAdj = CACHED_APP_MIN_ADJ;
 
-                    if (state.getHasShownUi() && uiTargetAdj < uiTierMaxAdj) {
-                        // The most recent UI-showing apps get [910, 910 + ui tier size).
-                        targetAdj += uiTargetAdj++;
-                    } else if ((state.getSetAdj() >= CACHED_APP_MIN_ADJ)
-                            && (state.getLastStateTime()
-                                    + mConstants.TIERED_CACHED_ADJ_DECAY_TIME) < now) {
-                        // Older cached apps get 940 + ui tier size (950 by default).
-                        targetAdj += 40 + mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
-                    } else {
-                        // Newer cached apps get 910 + ui tier size (920 by default).
-                        targetAdj += 10 + mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
-                    }
-                    state.setCurRawAdj(targetAdj);
-                    state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(), targetAdj));
-                }
-            }
-        } else {
-            // First update the OOM adjustment for each of the
-            // application processes based on their current state.
-            int curCachedAdj = CACHED_APP_MIN_ADJ;
-            int nextCachedAdj = curCachedAdj + (CACHED_APP_IMPORTANCE_LEVELS * 2);
-            int curCachedImpAdj = 0;
-            int curEmptyAdj = CACHED_APP_MIN_ADJ + CACHED_APP_IMPORTANCE_LEVELS;
-            int nextEmptyAdj = curEmptyAdj + (CACHED_APP_IMPORTANCE_LEVELS * 2);
+        // First update the OOM adjustment for each of the
+        // application processes based on their current state.
+        int curCachedAdj = CACHED_APP_MIN_ADJ;
+        int nextCachedAdj = curCachedAdj + (CACHED_APP_IMPORTANCE_LEVELS * 2);
+        int curCachedImpAdj = 0;
+        int curEmptyAdj = CACHED_APP_MIN_ADJ + CACHED_APP_IMPORTANCE_LEVELS;
+        int nextEmptyAdj = curEmptyAdj + (CACHED_APP_IMPORTANCE_LEVELS * 2);
 
-            final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
-            final int cachedProcessLimit = mConstants.CUR_MAX_CACHED_PROCESSES
-                                           - emptyProcessLimit;
-            // Let's determine how many processes we have running vs.
-            // how many slots we have for background processes; we may want
-            // to put multiple processes in a slot of there are enough of
-            // them.
-            int numEmptyProcs = numLru - mNumNonCachedProcs - mNumCachedHiddenProcs;
-            if (numEmptyProcs > cachedProcessLimit) {
-                // If there are more empty processes than our limit on cached
-                // processes, then use the cached process limit for the factor.
-                // This ensures that the really old empty processes get pushed
-                // down to the bottom, so if we are running low on memory we will
-                // have a better chance at keeping around more cached processes
-                // instead of a gazillion empty processes.
-                numEmptyProcs = cachedProcessLimit;
-            }
-            int cachedFactor = (mNumCachedHiddenProcs > 0
-                    ? (mNumCachedHiddenProcs + mNumSlots - 1) : 1)
-                               / mNumSlots;
-            if (cachedFactor < 1) cachedFactor = 1;
+        final int emptyProcessLimit = mConstants.CUR_MAX_EMPTY_PROCESSES;
+        final int cachedProcessLimit = mConstants.CUR_MAX_CACHED_PROCESSES
+                                        - emptyProcessLimit;
+        // Let's determine how many processes we have running vs.
+        // how many slots we have for background processes; we may want
+        // to put multiple processes in a slot of there are enough of
+        // them.
+        int numEmptyProcs = numLru - mNumNonCachedProcs - mNumCachedHiddenProcs;
+        if (numEmptyProcs > cachedProcessLimit) {
+            // If there are more empty processes than our limit on cached
+            // processes, then use the cached process limit for the factor.
+            // This ensures that the really old empty processes get pushed
+            // down to the bottom, so if we are running low on memory we will
+            // have a better chance at keeping around more cached processes
+            // instead of a gazillion empty processes.
+            numEmptyProcs = cachedProcessLimit;
+        }
+        int cachedFactor = (mNumCachedHiddenProcs > 0
+                ? (mNumCachedHiddenProcs + mNumSlots - 1) : 1)
+                            / mNumSlots;
+        if (cachedFactor < 1) cachedFactor = 1;
 
-            int emptyFactor = (numEmptyProcs + mNumSlots - 1) / mNumSlots;
-            if (emptyFactor < 1) emptyFactor = 1;
+        int emptyFactor = (numEmptyProcs + mNumSlots - 1) / mNumSlots;
+        if (emptyFactor < 1) emptyFactor = 1;
 
-            int stepCached = -1;
-            int stepEmpty = -1;
-            int lastCachedGroup = 0;
-            int lastCachedGroupImportance = 0;
-            int lastCachedGroupUid = 0;
+        int stepCached = -1;
+        int stepEmpty = -1;
+        int lastCachedGroup = 0;
+        int lastCachedGroupImportance = 0;
+        int lastCachedGroupUid = 0;
 
-
-            for (int i = numLru - 1; i >= 0; i--) {
-                ProcessRecord app = lruList.get(i);
-                final ProcessRecordInternal state = app;
-                final int curAdj = state.getCurAdj();
-                if (VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ) {
-                    state.setCurAdj(nextVisibleAppAdj);
-                    nextVisibleAppAdj = Math.min(nextVisibleAppAdj + 1, VISIBLE_APP_MAX_ADJ);
-                } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
-                    state.setCurAdj(nextPreviousAppAdj);
-                    nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
-                } else if (!app.isKilledByAm() && app.isProcessRunning() && curAdj >= UNKNOWN_ADJ) {
-                    // If we haven't yet assigned the final cached adj to the process, do that now.
-                    final ProcessServiceRecordInternal psr = app.mServices;
-                    switch (state.getCurProcState()) {
-                        case PROCESS_STATE_LAST_ACTIVITY:
-                        case PROCESS_STATE_CACHED_ACTIVITY:
-                        case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT:
-                        case ActivityManager.PROCESS_STATE_CACHED_RECENT:
-                            // Figure out the next cached level, taking into account groups.
-                            boolean inGroup = false;
-                            final int connectionGroup = psr.getConnectionGroup();
-                            if (connectionGroup != 0) {
-                                final int connectionImportance = psr.getConnectionImportance();
-                                if (lastCachedGroupUid == app.uid
+        for (int i = numLru - 1; i >= 0; i--) {
+            ProcessRecord app = lruList.get(i);
+            final ProcessRecordInternal state = app;
+            final int curAdj = state.getCurAdj();
+            if (VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ) {
+                state.setCurAdj(nextVisibleAppAdj);
+                nextVisibleAppAdj = Math.min(nextVisibleAppAdj + 1, VISIBLE_APP_MAX_ADJ);
+            } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
+                state.setCurAdj(nextPreviousAppAdj);
+                nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
+            } else if (!app.isKilledByAm() && app.isProcessRunning() && curAdj >= UNKNOWN_ADJ) {
+                // If we haven't yet assigned the final cached adj to the process, do that now.
+                final ProcessServiceRecordInternal psr = app.mServices;
+                switch (state.getCurProcState()) {
+                    case PROCESS_STATE_LAST_ACTIVITY:
+                    case PROCESS_STATE_CACHED_ACTIVITY:
+                    case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT:
+                    case ActivityManager.PROCESS_STATE_CACHED_RECENT:
+                        // Figure out the next cached level, taking into account groups.
+                        boolean inGroup = false;
+                        final int connectionGroup = psr.getConnectionGroup();
+                        if (connectionGroup != 0) {
+                            final int connectionImportance = psr.getConnectionImportance();
+                            if (lastCachedGroupUid == app.uid
                                     && lastCachedGroup == connectionGroup) {
-                                    // This is in the same group as the last process, just tweak
-                                    // adjustment by importance.
-                                    if (connectionImportance > lastCachedGroupImportance) {
-                                        lastCachedGroupImportance = connectionImportance;
-                                        if (curCachedAdj < nextCachedAdj
-                                            && curCachedAdj < CACHED_APP_MAX_ADJ) {
-                                            curCachedImpAdj++;
-                                        }
-                                    }
-                                    inGroup = true;
-                                } else {
-                                    lastCachedGroupUid = app.uid;
-                                    lastCachedGroup = connectionGroup;
+                                // This is in the same group as the last process, just tweak
+                                // adjustment by importance.
+                                if (connectionImportance > lastCachedGroupImportance) {
                                     lastCachedGroupImportance = connectionImportance;
-                                }
-                            }
-                            if (!inGroup && curCachedAdj != nextCachedAdj) {
-                                stepCached++;
-                                curCachedImpAdj = 0;
-                                if (stepCached >= cachedFactor) {
-                                    stepCached = 0;
-                                    curCachedAdj = nextCachedAdj;
-                                    nextCachedAdj += CACHED_APP_IMPORTANCE_LEVELS * 2;
-                                    if (nextCachedAdj > CACHED_APP_MAX_ADJ) {
-                                        nextCachedAdj = CACHED_APP_MAX_ADJ;
+                                    if (curCachedAdj < nextCachedAdj
+                                            && curCachedAdj < CACHED_APP_MAX_ADJ) {
+                                        curCachedImpAdj++;
                                     }
                                 }
+                                inGroup = true;
+                            } else {
+                                lastCachedGroupUid = app.uid;
+                                lastCachedGroup = connectionGroup;
+                                lastCachedGroupImportance = connectionImportance;
                             }
-                            // This process is a cached process holding activities...
-                            // assign it the next cached value for that type, and then
-                            // step that cached level.
-                            final int rawAdj = curCachedAdj + curCachedImpAdj;
-                            state.setCurRawAdj(rawAdj);
-                            state.setCurAdj(
-                                    applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
-                            if (DEBUG_LRU) {
-                                Slog.d(TAG_LRU, "Assigning activity LRU #" + i
-                                        + " adj: " + state.getCurAdj()
-                                        + " (curCachedAdj=" + curCachedAdj
-                                        + " curCachedImpAdj=" + curCachedImpAdj + ")");
-                            }
-                            break;
-                        default:
-                            // Figure out the next cached level.
-                            if (curEmptyAdj != nextEmptyAdj) {
-                                stepEmpty++;
-                                if (stepEmpty >= emptyFactor) {
-                                    stepEmpty = 0;
-                                    curEmptyAdj = nextEmptyAdj;
-                                    nextEmptyAdj += CACHED_APP_IMPORTANCE_LEVELS * 2;
-                                    if (nextEmptyAdj > CACHED_APP_MAX_ADJ) {
-                                        nextEmptyAdj = CACHED_APP_MAX_ADJ;
-                                    }
+                        }
+                        if (!inGroup && curCachedAdj != nextCachedAdj) {
+                            stepCached++;
+                            curCachedImpAdj = 0;
+                            if (stepCached >= cachedFactor) {
+                                stepCached = 0;
+                                curCachedAdj = nextCachedAdj;
+                                nextCachedAdj += CACHED_APP_IMPORTANCE_LEVELS * 2;
+                                if (nextCachedAdj > CACHED_APP_MAX_ADJ) {
+                                    nextCachedAdj = CACHED_APP_MAX_ADJ;
                                 }
                             }
-                            // For everything else, assign next empty cached process
-                            // level and bump that up.  Note that this means that
-                            // long-running services that have dropped down to the
-                            // cached level will be treated as empty (since their process
-                            // state is still as a service), which is what we want.
-                            state.setCurRawAdj(curEmptyAdj);
-                            state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
-                                    curEmptyAdj));
-                            if (DEBUG_LRU) {
-                                Slog.d(TAG_LRU, "Assigning empty LRU #" + i
-                                        + " adj: " + state.getCurAdj()
-                                        + " (curEmptyAdj=" + curEmptyAdj
-                                        + ")");
+                        }
+                        // This process is a cached process holding activities...
+                        // assign it the next cached value for that type, and then
+                        // step that cached level.
+                        final int rawAdj = curCachedAdj + curCachedImpAdj;
+                        state.setCurRawAdj(rawAdj);
+                        state.setCurAdj(
+                                applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
+                        if (DEBUG_LRU) {
+                            Slog.d(TAG_LRU, "Assigning activity LRU #" + i
+                                    + " adj: " + state.getCurAdj()
+                                    + " (curCachedAdj=" + curCachedAdj
+                                    + " curCachedImpAdj=" + curCachedImpAdj + ")");
+                        }
+                        break;
+                    default:
+                        // Figure out the next cached level.
+                        if (curEmptyAdj != nextEmptyAdj) {
+                            stepEmpty++;
+                            if (stepEmpty >= emptyFactor) {
+                                stepEmpty = 0;
+                                curEmptyAdj = nextEmptyAdj;
+                                nextEmptyAdj += CACHED_APP_IMPORTANCE_LEVELS * 2;
+                                if (nextEmptyAdj > CACHED_APP_MAX_ADJ) {
+                                    nextEmptyAdj = CACHED_APP_MAX_ADJ;
+                                }
                             }
-                            break;
-                    }
+                        }
+                        // For everything else, assign next empty cached process
+                        // level and bump that up.  Note that this means that
+                        // long-running services that have dropped down to the
+                        // cached level will be treated as empty (since their process
+                        // state is still as a service), which is what we want.
+                        state.setCurRawAdj(curEmptyAdj);
+                        state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
+                                curEmptyAdj));
+                        if (DEBUG_LRU) {
+                            Slog.d(TAG_LRU, "Assigning empty LRU #" + i
+                                    + " adj: " + state.getCurAdj()
+                                    + " (curEmptyAdj=" + curEmptyAdj
+                                    + ")");
+                        }
+                        break;
                 }
             }
         }
