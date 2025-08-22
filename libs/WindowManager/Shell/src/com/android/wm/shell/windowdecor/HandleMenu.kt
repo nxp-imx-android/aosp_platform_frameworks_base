@@ -115,6 +115,7 @@ private constructor(
     private val isBrowserApp: Boolean,
     private val openInAppOrBrowserIntent: Intent?,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val captionView: View?,
     private val captionWidth: Int,
     private val captionHeight: Int,
     captionX: Int,
@@ -131,8 +132,8 @@ private constructor(
     private val menuWidth = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_width)
     private val menuHeight = getHandleMenuHeight()
     private val marginMenuTop = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_top)
-    private val marginMenuStart =
-        loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_start)
+    private val marginMenuPadding =
+        loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_padding_left_bottom_right)
 
     @VisibleForTesting var handleMenuViewContainer: AdditionalViewContainer? = null
 
@@ -210,6 +211,7 @@ private constructor(
                     windowDecorationActions = windowDecorationActions,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
                     menuWidth = menuWidth,
+                    captionView = captionView,
                     captionHeight = captionHeight,
                     shouldShowWindowingPill = shouldShowWindowingPill,
                     shouldShowBrowserPill = shouldShowBrowserPill,
@@ -251,8 +253,8 @@ private constructor(
                     taskId = taskInfo.taskId,
                     x = x,
                     y = y,
-                    width = menuWidth,
-                    height = menuHeight,
+                    width = menuWidth + 2 * marginMenuPadding,
+                    height = menuHeight + marginMenuPadding,
                     flags = lpFlags,
                     view = handleMenuView.rootView,
                     forciblyShownTypes =
@@ -271,8 +273,8 @@ private constructor(
                     t,
                     x,
                     y,
-                    menuWidth,
-                    menuHeight,
+                    menuWidth + 2 * marginMenuPadding,
+                    menuHeight + marginMenuPadding,
                     lpFlags,
                 )
             } else {
@@ -284,8 +286,8 @@ private constructor(
                     ssg,
                     x,
                     y,
-                    menuWidth,
-                    menuHeight,
+                    menuWidth + 2 * marginMenuPadding,
+                    menuHeight + marginMenuPadding,
                 )
             }
 
@@ -351,7 +353,6 @@ private constructor(
             calculateMenuPosition(
                 splitScreenController,
                 taskInfo,
-                marginStart = marginMenuStart,
                 marginMenuTop,
                 captionX,
                 captionY,
@@ -364,9 +365,9 @@ private constructor(
             // Align the handle menu to the start of the header.
             menuX =
                 if (context.isRtl()) {
-                    taskBounds.width() - menuWidth - marginMenuStart
+                    taskBounds.width() - menuWidth
                 } else {
-                    marginMenuStart
+                    0
                 }
             menuY = captionY + marginMenuTop
         } else {
@@ -519,6 +520,7 @@ private constructor(
         private val windowDecorationActions: WindowDecorationActions,
         private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
         menuWidth: Int,
+        private val captionView: View?,
         captionHeight: Int,
         private val shouldShowWindowingPill: Boolean,
         private val shouldShowBrowserPill: Boolean,
@@ -646,7 +648,8 @@ private constructor(
             )
 
         private val decorThemeUtil = DecorThemeUtil(context)
-        private val animator = HandleMenuAnimator(rootView, menuWidth, captionHeight.toFloat())
+        private val animator =
+            HandleMenuAnimator(context, rootView, menuWidth, captionHeight.toFloat())
 
         private lateinit var style: MenuStyle
 
@@ -819,7 +822,7 @@ private constructor(
         /** Animates the menu opening. */
         fun animateOpenMenu() {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
-                animator.animateCaptionHandleExpandToOpen()
+                animator.animateCaptionHandleExpandToOpen(requireNotNull(captionView))
             } else {
                 animator.animateOpen()
             }
@@ -828,7 +831,7 @@ private constructor(
         /** Animates the menu closing. */
         fun animateCloseMenu(onAnimFinish: () -> Unit) {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
-                animator.animateCollapseIntoHandleClose(onAnimFinish)
+                animator.animateCollapseIntoHandleClose(requireNotNull(captionView), onAnimFinish)
             } else {
                 animator.animateClose(onAnimFinish)
             }
@@ -1105,6 +1108,7 @@ private constructor(
             isBrowserApp: Boolean,
             openInAppOrBrowserIntent: Intent?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            captionView: View?,
             captionWidth: Int,
             captionHeight: Int,
             captionX: Int,
@@ -1140,6 +1144,7 @@ private constructor(
                 isBrowserApp,
                 openInAppOrBrowserIntent,
                 desktopModeUiEventLogger,
+                captionView,
                 captionWidth,
                 captionHeight,
                 captionX,
@@ -1169,6 +1174,7 @@ private constructor(
             isBrowserApp: Boolean,
             openInAppOrBrowserIntent: Intent?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            captionView: View?,
             captionWidth: Int,
             captionHeight: Int,
             captionX: Int,
@@ -1204,6 +1210,7 @@ private constructor(
                 isBrowserApp,
                 openInAppOrBrowserIntent,
                 desktopModeUiEventLogger,
+                captionView,
                 captionWidth,
                 captionHeight,
                 captionX,

@@ -522,6 +522,7 @@ class AppHeaderController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionView = null,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,

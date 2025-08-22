@@ -22,13 +22,15 @@
     android:layout_height="wrap_content"
     android:clipChildren="false"
     android:clipToPadding="false"
+    android:paddingLeft="@dimen/desktop_mode_handle_menu_padding_left_bottom_right"
+    android:paddingRight="@dimen/desktop_mode_handle_menu_padding_left_bottom_right"
     android:paddingBottom="@dimen/desktop_mode_handle_menu_pill_elevation_padding"
     android:paddingEnd="@dimen/desktop_mode_handle_menu_pill_elevation_padding"
     android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/app_info_pill"
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/desktop_mode_handle_menu_width"
         android:layout_height="@dimen/desktop_mode_handle_menu_app_info_pill_height"
         android:layout_marginTop="@dimen/desktop_mode_handle_menu_margin_top"
         android:layout_marginStart="1dp"
@@ -62,7 +64,7 @@
 
     <LinearLayout
         android:id="@+id/windowing_pill"
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/desktop_mode_handle_menu_width"
         android:layout_height="@dimen/desktop_mode_handle_menu_windowing_pill_height"
         android:layout_marginTop="@dimen/desktop_mode_handle_menu_pill_spacing_margin"
         android:layout_marginStart="1dp"
@@ -133,7 +135,7 @@
 
     <LinearLayout
         android:id="@+id/more_actions_pill"
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/desktop_mode_handle_menu_width"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/desktop_mode_handle_menu_pill_spacing_margin"
         android:layout_marginStart="1dp"
@@ -171,7 +173,7 @@
 
         <LinearLayout
             android:id="@+id/handle_menu_restart_pill"
-            android:layout_width="match_parent"
+            android:layout_width="@dimen/desktop_mode_handle_menu_width"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
@@ -201,7 +203,7 @@
 
     <LinearLayout
         android:id="@+id/open_in_app_or_browser_pill"
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/desktop_mode_handle_menu_width"
         android:layout_height="@dimen/desktop_mode_handle_menu_open_in_browser_pill_height"
         android:layout_marginTop="@dimen/desktop_mode_handle_menu_pill_spacing_margin"
         android:layout_marginStart="1dp"
