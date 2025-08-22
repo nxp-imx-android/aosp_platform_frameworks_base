@@ -5746,6 +5746,16 @@ class DesktopTasksController(
     }
 
     /**
+     * Adds a listener to find out about desk changes.
+     *
+     * @param listener the listener to add.
+     * @param callbackExecutor the executor to call the listener on.
+     */
+    fun addDeskChangeListener(listener: DeskChangeListener, callbackExecutor: Executor) {
+        userRepositories.current.addDeskChangeListener(listener, callbackExecutor)
+    }
+
+    /**
      * Adds a listener to track changes to desktop task gesture exclusion regions
      *
      * @param listener the listener to add.
@@ -5821,7 +5831,6 @@ class DesktopTasksController(
                 ) {
                     // Inherit parent's bounds.
                     newWindowBounds.set(taskInfo.configuration.windowConfiguration.bounds)
-
                 } else {
                     newWindowBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
                 }
@@ -5985,6 +5994,15 @@ class DesktopTasksController(
         ) {
             mainExecutor.execute {
                 this@DesktopTasksController.addVisibleTasksListener(listener, callbackExecutor)
+            }
+        }
+
+        override fun addDeskChangeListener(
+            listener: DeskChangeListener,
+            callbackExecutor: Executor,
+        ) {
+            mainExecutor.execute {
+                this@DesktopTasksController.addDeskChangeListener(listener, callbackExecutor)
             }
         }
 

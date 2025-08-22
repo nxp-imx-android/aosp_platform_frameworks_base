@@ -25,6 +25,8 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.model.SysUiState
+import com.android.systemui.model.sysUiStateOverrideFactory
 import kotlinx.coroutines.CoroutineScope
 
 class FakePerDisplayStore(
@@ -74,8 +76,30 @@ class FakePerDisplayInstanceProviderWithSetupAndTeardown :
     }
 }
 
+class FakePerDisplaySysUIStateProvider(private val kosmos: Kosmos) :
+    PerDisplayInstanceProviderWithTeardown<SysUiState>,
+    PerDisplayInstanceProviderWithSetup<SysUiState> {
+    val destroyed = mutableListOf<SysUiState>()
+    val created = mutableListOf<SysUiState>()
+
+    override fun destroyInstance(instance: SysUiState) {
+        destroyed += instance
+    }
+
+    override fun setupInstance(instance: SysUiState) {
+        created += instance
+    }
+
+    override fun createInstance(displayId: Int): SysUiState? {
+        return kosmos.sysUiStateOverrideFactory.invoke(displayId)
+    }
+}
+
 val Kosmos.fakePerDisplayInstanceProviderWithSetupAndTeardown by
     Kosmos.Fixture { FakePerDisplayInstanceProviderWithSetupAndTeardown() }
+
+val Kosmos.fakePerDisplayInstanceProviderSysUIStateWithSetupAndTeardown by
+    Kosmos.Fixture { FakePerDisplaySysUIStateProvider(this) }
 
 val Kosmos.perDisplayDumpHelper by Kosmos.Fixture { PerDisplayRepoDumpHelper(dumpManager) }
 val Kosmos.fakeDisplayInstanceLifecycleManager by
@@ -95,8 +119,28 @@ val Kosmos.fakePerDisplayInstanceRepository by
         }
     }
 
+val Kosmos.fakePerDisplaySysUIStateInstanceRepository by
+    Kosmos.Fixture {
+        { lifecycleManager: DisplayInstanceLifecycleManager? ->
+            PerDisplayInstanceRepositoryImpl(
+                debugName = "fakePerDisplaySysUIStateInstanceRepository",
+                instanceProvider = fakePerDisplayInstanceProviderSysUIStateWithSetupAndTeardown,
+                lifecycleManager,
+                testScope.backgroundScope,
+                displayRepository,
+                perDisplayDumpHelper,
+            )
+        }
+    }
+
 fun Kosmos.createPerDisplayInstanceRepository(
     overrideLifecycleManager: DisplayInstanceLifecycleManager? = null
 ): PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> {
     return fakePerDisplayInstanceRepository(overrideLifecycleManager)
+}
+
+fun Kosmos.createPerDisplayInstanceSysUIStateRepository(
+    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null
+): PerDisplayInstanceRepositoryImpl<SysUiState> {
+    return fakePerDisplaySysUIStateInstanceRepository(overrideLifecycleManager)
 }
