@@ -31,7 +31,6 @@ import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
-import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
@@ -49,6 +48,7 @@ import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
+import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -174,7 +174,7 @@ public class ComputerControlSessionProcessor {
             // Don't bother creating the session if the requester is not around anymore.
             return;
         }
-        IComputerControlSession session;
+        ComputerControlSessionImpl session;
         synchronized (mSessions) {
             if (!checkSessionCreationPreconditionsLocked(params, callback)) {
                 return;
@@ -186,8 +186,14 @@ public class ComputerControlSessionProcessor {
                     new OnSessionClosedListener(params.getName(), callback));
             mSessions.add(session.asBinder());
         }
+
+        // If the client provided a surface, disable the screenshot API.
+        // TODO(b/439774796): Do not allow client-provided surface and dimensions.
+        final int displayId = params.getDisplaySurface() == null
+                ? session.getVirtualDisplayId()
+                : Display.INVALID_DISPLAY;
         try {
-            callback.onSessionCreated(session);
+            callback.onSessionCreated(displayId, session.getVirtualDisplayToken(), session);
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
                     + " about session creation success");

@@ -150,7 +150,7 @@ public class ComputerControlSessionProcessorTest {
             }
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS))
-                    .onSessionCreated(mSessionArgumentCaptor.capture());
+                    .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
 
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                     mParams, mComputerControlSessionCallback);
@@ -167,7 +167,7 @@ public class ComputerControlSessionProcessorTest {
                     mParams, mComputerControlSessionCallback);
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS + 1))
-                    .onSessionCreated(mSessionArgumentCaptor.capture());
+                    .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
         } finally {
             for (IComputerControlSession session : mSessionArgumentCaptor.getAllValues()) {
                 session.close();
@@ -192,7 +192,7 @@ public class ComputerControlSessionProcessorTest {
                 Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
         resultReceiver.send(Activity.RESULT_OK, null);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(any());
+                .onSessionCreated(anyInt(), any(), any());
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)

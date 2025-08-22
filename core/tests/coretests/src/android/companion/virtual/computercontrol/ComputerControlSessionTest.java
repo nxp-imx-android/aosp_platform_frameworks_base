@@ -23,9 +23,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.IDisplayManager;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
 import android.os.RemoteException;
+import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.Surface;
 
@@ -48,6 +52,10 @@ public class ComputerControlSessionTest {
     @Mock
     private IComputerControlSession mMockSession;
     @Mock
+    private IDisplayManager mDisplayManager;
+    @Mock
+    private IVirtualDisplayCallback mVirtualDisplayCallback;
+    @Mock
     private IInteractiveMirrorDisplay mMockInteractiveMirrorDisplay;
 
     private ComputerControlSession mSession;
@@ -55,14 +63,24 @@ public class ComputerControlSessionTest {
     private AutoCloseable mMockitoSession;
 
     @Before
-    public void setUp() {
+    public void setUp() throws RemoteException {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mSession = new ComputerControlSession(mMockSession);
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.logicalWidth = WIDTH;
+        displayInfo.logicalHeight = HEIGHT;
+        when(mDisplayManager.getDisplayInfo(DISPLAY_ID)).thenReturn(displayInfo);
+        mSession = new ComputerControlSession(DISPLAY_ID, mVirtualDisplayCallback, mMockSession,
+                new DisplayManagerGlobal(mDisplayManager));
     }
 
     @After
     public void tearDown() throws Exception {
         mMockitoSession.close();
+    }
+
+    @Test
+    public void setsVirtualDisplaySurface() throws RemoteException {
+        verify(mDisplayManager).setVirtualDisplaySurface(eq(mVirtualDisplayCallback), any());
     }
 
     @Test

@@ -18,6 +18,7 @@ package android.companion.virtual.computercontrol;
 
 import android.annotation.IntRange;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Surface;
@@ -43,7 +44,7 @@ public final class ComputerControlSessionParams implements Parcelable {
             int displayWidthPx,
             int displayHeightPx,
             int displayDpi,
-            @NonNull Surface displaySurface,
+            @Nullable Surface displaySurface,
             boolean isDisplayAlwaysUnlocked) {
         mName = name;
         mDisplayWidthPx = displayWidthPx;
@@ -84,7 +85,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     }
 
     /** Returns the surface to which the display content should be rendered. */
-    @NonNull
+    @Nullable
     public Surface getDisplaySurface() {
         return mDisplaySurface;
     }
@@ -229,17 +230,19 @@ public final class ComputerControlSessionParams implements Parcelable {
             if (mName == null || mName.isEmpty()) {
                 throw new IllegalArgumentException("Name must be set");
             }
-            if (mDisplaySurface == null) {
-                throw new IllegalArgumentException("Surface must be set");
-            }
-            if (mDisplayWidthPx <= 0) {
-                throw new IllegalArgumentException("Display width must be positive");
-            }
-            if (mDisplayHeightPx <= 0) {
-                throw new IllegalArgumentException("Display height must be positive");
-            }
-            if (mDisplayDpi <= 0) {
-                throw new IllegalArgumentException("Display DPI must be positive");
+            if (mDisplaySurface != null) {
+                if (mDisplayWidthPx <= 0) {
+                    throw new IllegalArgumentException(
+                            "Display width must be positive if surface is set");
+                }
+                if (mDisplayHeightPx <= 0) {
+                    throw new IllegalArgumentException(
+                            "Display height must be positive if surface is set");
+                }
+                if (mDisplayDpi <= 0) {
+                    throw new IllegalArgumentException(
+                            "Display DPI must be positive if surface is set");
+                }
             }
             return new ComputerControlSessionParams(
                     mName,

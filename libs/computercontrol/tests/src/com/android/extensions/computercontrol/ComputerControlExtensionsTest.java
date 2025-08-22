@@ -31,8 +31,10 @@ import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.pm.PackageManager;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.testing.TestableContext;
+import android.view.Display;
 import android.view.Surface;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
@@ -71,6 +73,7 @@ public class ComputerControlExtensionsTest {
     @Mock private IVirtualDeviceManager mIVirtualDeviceManager;
     @Mock private IComputerControlSession mIComputerControlSession;
     @Mock private ComputerControlSession.Callback mSessionCallback;
+    @Mock private IVirtualDisplayCallback mVirtualDisplayCallback;
 
     private AutoCloseable mMockitoSession;
 
@@ -190,8 +193,8 @@ public class ComputerControlExtensionsTest {
         mContext.addMockSystemService(VirtualDeviceManager.class,
                 new VirtualDeviceManager(mIVirtualDeviceManager, mContext));
         doAnswer(inv -> {
-            ((IComputerControlSessionCallback) (inv.getArgument(2)))
-                    .onSessionCreated(mIComputerControlSession);
+            ((IComputerControlSessionCallback) (inv.getArgument(2))).onSessionCreated(
+                    Display.INVALID_DISPLAY, mVirtualDisplayCallback, mIComputerControlSession);
             return null;
         }).when(mIVirtualDeviceManager).requestComputerControlSession(any(), any(), any());
 

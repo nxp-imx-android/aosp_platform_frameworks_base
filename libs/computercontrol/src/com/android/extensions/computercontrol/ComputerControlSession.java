@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
+import android.media.Image;
 import android.os.Bundle;
 import android.view.Surface;
 import android.view.accessibility.AccessibilityDisplayProxy;
@@ -93,6 +94,21 @@ public final class ComputerControlSession implements AutoCloseable {
                 ActivityOptions.makeBasic().setLaunchDisplayId(mVirtualDisplayId).toBundle();
         context.startActivity(intent, activityOptionsBundle);
         mAccessibilityProxy.resetStabilityState();
+    }
+
+    /**
+     * Screenshot the current display content.
+     *
+     * <p>The behavior is similar to {@link android.media.ImageReader#acquireLatestImage}, meaning
+     * that any previously acquired images should be released before attempting to acquire new ones.
+     * </p>
+     *
+     * @return A screenshot of the current display content, or {@code null} if no screenshot is
+     *   currently available.
+     */
+    @Nullable
+    public Image getScreenshot() {
+        return mSession.getScreenshot();
     }
 
     /**
@@ -220,11 +236,11 @@ public final class ComputerControlSession implements AutoCloseable {
         private final int mDisplayWidthPx;
         private final int mDisplayHeightPx;
         private final int mDisplayDpi;
-        @NonNull private final Surface mDisplaySurface;
+        @Nullable private final Surface mDisplaySurface;
         private final boolean mIsDisplayAlwaysUnlocked;
 
         private Params(@NonNull Context context, @NonNull String name, int displayWidthPx,
-                int displayHeightPx, int displayDpi, @NonNull Surface displaySurface,
+                int displayHeightPx, int displayDpi, @Nullable Surface displaySurface,
                 boolean isDisplayAlwaysUnlocked) {
             mContext = context;
             mName = name;
@@ -285,7 +301,7 @@ public final class ComputerControlSession implements AutoCloseable {
          *
          * @see Builder#setDisplaySurface(Surface)
          */
-        @NonNull
+        @Nullable
         public Surface getDisplaySurface() {
             return mDisplaySurface;
         }
@@ -397,17 +413,19 @@ public final class ComputerControlSession implements AutoCloseable {
                 if (mName == null) {
                     mName = "ComputerControl-" + mContext.getPackageName();
                 }
-                if (mDisplayWidthPx <= 0) {
-                    throw new IllegalArgumentException("Invalid display width");
-                }
-                if (mDisplayHeightPx <= 0) {
-                    throw new IllegalArgumentException("Invalid display height");
-                }
-                if (mDisplayDpi <= 0) {
-                    throw new IllegalArgumentException("Invalid display DPI");
-                }
-                if (mDisplaySurface == null) {
-                    throw new NullPointerException("Missing display surface");
+                if (mDisplaySurface != null) {
+                    if (mDisplayWidthPx <= 0) {
+                        throw new IllegalArgumentException(
+                                "Display width must be positive if surface is set");
+                    }
+                    if (mDisplayHeightPx <= 0) {
+                        throw new IllegalArgumentException(
+                                "Display height must be positive if surface is set");
+                    }
+                    if (mDisplayDpi <= 0) {
+                        throw new IllegalArgumentException(
+                                "Display DPI must be positive if surface is set");
+                    }
                 }
 
                 return new Params(mContext, mName, mDisplayWidthPx, mDisplayHeightPx, mDisplayDpi,

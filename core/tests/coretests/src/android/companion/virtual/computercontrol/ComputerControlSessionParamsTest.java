@@ -67,17 +67,6 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void build_unsetSurface_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComputerControlSessionParams.Builder()
-                        .setName(COMPUTER_CONTROL_SESSION_NAME)
-                        .setDisplayWidthPx(DISPLAY_WIDTH)
-                        .setDisplayHeightPx(DISPLAY_HEIGHT)
-                        .setDisplayDpi(DISPLAY_DPI)
-                        .build());
-    }
-
-    @Test
     public void build_unsetName_throwsException() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ComputerControlSessionParams.Builder()
@@ -89,7 +78,7 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void build_nonPositiveDisplayDimensions_throwsException() {
+    public void build_setSurface_nonPositiveDisplayDimensions_throwsException() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ComputerControlSessionParams.Builder()
                         .setName(COMPUTER_CONTROL_SESSION_NAME)
@@ -109,7 +98,7 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void build_nonPositiveDisplayDpi_throwsException() {
+    public void build_setSurface_nonPositiveDisplayDpi_throwsException() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ComputerControlSessionParams.Builder()
                         .setName(COMPUTER_CONTROL_SESSION_NAME)
