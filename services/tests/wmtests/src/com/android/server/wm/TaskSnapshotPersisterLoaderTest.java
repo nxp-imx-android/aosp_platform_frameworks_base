@@ -36,8 +36,6 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArraySet;
 import android.view.Surface;
 import android.window.TaskSnapshot;
@@ -47,7 +45,6 @@ import androidx.test.filters.MediumTest;
 import com.android.server.wm.AppSnapshotLoader.PreRLegacySnapshotConfig;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
 import com.android.server.wm.TaskSnapshotPersister.RemoveObsoleteFilesQueueItem;
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -124,35 +121,7 @@ public class TaskSnapshotPersisterLoaderTest extends TaskSnapshotPersisterTestBa
      * Tests that too many store write queue items are being purged.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_EXTENDING_PERSISTENCE_SNAPSHOT_QUEUE_DEPTH)
     public void testPurging() {
-        mPersister.persistSnapshot(100, mTestUserId, createSnapshot());
-        mSnapshotPersistQueue.waitForQueueEmpty();
-        mSnapshotPersistQueue.setPaused(true);
-        mPersister.persistSnapshot(1, mTestUserId, createSnapshot());
-        mPersister.removeObsoleteFiles(new ArraySet<>(), new int[]{mTestUserId});
-        mPersister.persistSnapshot(2, mTestUserId, createSnapshot());
-        mPersister.persistSnapshot(3, mTestUserId, createSnapshot());
-        mPersister.persistSnapshot(4, mTestUserId, createSnapshot());
-        // Verify there should only keep the latest request when received a duplicated id.
-        mPersister.persistSnapshot(4, mTestUserId, createSnapshot());
-        // Expected 3: One remove obsolete request, two persist request.
-        assertEquals(3, mSnapshotPersistQueue.peekQueueSize());
-        mSnapshotPersistQueue.setPaused(false);
-        mSnapshotPersistQueue.waitForQueueEmpty();
-
-        // Make sure 1,2 were purged but removeObsoleteFiles wasn't.
-        final File[] existsFiles = convertFilePath("3.proto", "4.proto");
-        final File[] nonExistsFiles = convertFilePath("100.proto", "1.proto", "2.proto");
-        assertTrueForFiles(existsFiles, File::exists, " must exist");
-        assertTrueForFiles(nonExistsFiles, file -> !file.exists(), " must not exist");
-    }
-    /**
-     * Tests that too many store write queue items are being purged.
-     */
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_EXTENDING_PERSISTENCE_SNAPSHOT_QUEUE_DEPTH)
-    public void testPurging_HW() {
         mPersister.persistSnapshot(100, mTestUserId, createFakeSnapshot());
         mSnapshotPersistQueue.waitForQueueEmpty();
         mSnapshotPersistQueue.setPaused(true);
