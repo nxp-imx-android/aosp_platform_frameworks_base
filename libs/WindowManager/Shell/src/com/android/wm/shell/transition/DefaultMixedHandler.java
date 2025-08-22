@@ -863,8 +863,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             return null;
         }
-        final TransitionInfo.Change change =
-                DefaultMixedTransition.getChangeForBubblingTask(info, mBubbleTransitions);
+        final TransitionInfo.Change change = mBubbleTransitions.getEnterBubbleTask(info);
         if (!com.android.wm.shell.Flags.fixTaskViewRotationAnimation()) {
             return change;
         }
