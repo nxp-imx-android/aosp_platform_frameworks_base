@@ -41,7 +41,6 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
-import android.os.vibrator.Flags;
 import android.util.IndentingPrintWriter;
 import android.util.IntArray;
 import android.util.Slog;
@@ -266,8 +265,7 @@ final class VibratorControlService extends IVibratorControlService.Stub {
                 return null;
             }
 
-            if (Flags.throttleVibrationParamsRequests() && mVibrationParamRequest != null
-                    && mVibrationParamRequest.usage == usage) {
+            if (mVibrationParamRequest != null && mVibrationParamRequest.usage == usage) {
                 // Reuse existing future for ongoing request with same usage.
                 return mVibrationParamRequest.future;
             }
