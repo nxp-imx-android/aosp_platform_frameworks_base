@@ -47,6 +47,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ElementsIntoSet
+import dagger.multibindings.IntoSet
 import dagger.multibindings.Multibinds
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
@@ -76,6 +77,13 @@ interface PerDisplaySystemUIModule {
     fun statusBarRootFactory(statusBarRootFactory: StatusBarRootFactory): StatusBarRootFactory
 
     @Binds @DisplayAware fun darkIconDispatcher(impl: DarkIconDispatcherImpl): DarkIconDispatcher
+
+    @Binds
+    @DisplayAware
+    @IntoSet
+    fun bindDarkIconDispatcherLifecycleListener(
+        impl: DarkIconDispatcherImpl
+    ): SystemUIDisplaySubcomponent.LifecycleListener
 
     @Binds
     @DisplayAware
