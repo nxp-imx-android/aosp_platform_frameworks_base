@@ -15,5 +15,8 @@ filegroup {
         "**/*.aidl",
     ],
     path: "java",
-    visibility: ["//frameworks/base"],
+    visibility: [
+        "//frameworks/base",
+        "//packages/modules/Telephony:__subpackages__",
+    ],
 }

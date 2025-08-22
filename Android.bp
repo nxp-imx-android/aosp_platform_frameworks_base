@@ -495,7 +495,7 @@ java_library {
         "//frameworks/base:__subpackages__",
         "//packages/modules/NeuralNetworks:__subpackages__",
         // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
-        "//packages/modules/Telephony/framework:__subpackages__",
+        "//packages/modules/Telephony:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
     compile_dex: false,

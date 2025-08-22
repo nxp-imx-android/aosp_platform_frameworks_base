@@ -241,6 +241,7 @@ java_aconfig_library {
 java_aconfig_library {
     name: "telecom_flags_core_java_lib",
     aconfig_declarations: "telecom_flags",
+    min_sdk_version: "36",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
