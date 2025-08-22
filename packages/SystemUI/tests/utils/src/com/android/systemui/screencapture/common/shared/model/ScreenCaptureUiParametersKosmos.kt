@@ -28,6 +28,7 @@ val Kosmos.recordScreenCaptureUiParameters: ScreenCaptureUiParameters by
             mediaProjection = null,
             hostAppUserHandle = UserHandle.CURRENT,
             hostAppUid = 0,
+            largeScreenParameters = largeScreenCaptureUiParameters,
         )
     }
 
@@ -54,3 +55,7 @@ val Kosmos.shareScreenCaptureUiParameters: ScreenCaptureUiParameters by
             hostAppUid = 0,
         )
     }
+
+/** Modifiable to set the default capture type and capture region */
+var Kosmos.largeScreenCaptureUiParameters: LargeScreenCaptureUiParameters by
+    Kosmos.Fixture { LargeScreenCaptureUiParameters() }

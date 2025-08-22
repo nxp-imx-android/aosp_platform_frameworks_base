@@ -22,11 +22,15 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
+import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
@@ -39,17 +43,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-
-enum class ScreenCaptureType {
-    SCREENSHOT,
-    SCREEN_RECORD,
-}
-
-enum class ScreenCaptureRegion {
-    FULLSCREEN,
-    PARTIAL,
-    APP_WINDOW,
-}
 
 /** Models UI for the Screen Capture UI for large screen devices. */
 class PreCaptureViewModel
@@ -64,11 +57,19 @@ constructor(
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    @ScreenCaptureUi private val screenCaptureUiParams: ScreenCaptureUiParameters,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
-
     private val isShowingUiFlow = MutableStateFlow(true)
-    private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
-    private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
+    private val captureTypeSource =
+        MutableStateFlow(
+            screenCaptureUiParams.largeScreenParameters?.defaultCaptureType
+                ?: ScreenCaptureType.SCREENSHOT
+        )
+    private val captureRegionSource =
+        MutableStateFlow(
+            screenCaptureUiParams.largeScreenParameters?.defaultCaptureRegion
+                ?: ScreenCaptureRegion.FULLSCREEN
+        )
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
@@ -125,7 +126,7 @@ constructor(
     fun beginCapture() {
         when (captureTypeSource.value) {
             ScreenCaptureType.SCREENSHOT -> takeScreenshot()
-            ScreenCaptureType.SCREEN_RECORD -> startRecording()
+            ScreenCaptureType.RECORDING -> startRecording()
         }
     }
 
@@ -168,7 +169,7 @@ constructor(
     }
 
     private fun startFullscreenRecording() {
-        require(captureTypeSource.value == ScreenCaptureType.SCREEN_RECORD)
+        require(captureTypeSource.value == ScreenCaptureType.RECORDING)
         require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
 
         // Hide the pre-capture UI before starting the recording.
@@ -217,8 +218,8 @@ constructor(
             RadioButtonGroupItemViewModel(
                 icon = icons?.screenRecord,
                 label = applicationContext.getString(R.string.screen_capture_toolbar_record_button),
-                isSelected = selectedType == ScreenCaptureType.SCREEN_RECORD,
-                onClick = { updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
+                isSelected = selectedType == ScreenCaptureType.RECORDING,
+                onClick = { updateCaptureType(ScreenCaptureType.RECORDING) },
             ),
             RadioButtonGroupItemViewModel(
                 selectedIcon = icons?.screenshotToolbar,
@@ -249,7 +250,7 @@ constructor(
                                     ScreenCaptureType.SCREENSHOT ->
                                         R.string
                                             .screen_capture_toolbar_app_window_button_screenshot_a11y
-                                    ScreenCaptureType.SCREEN_RECORD ->
+                                    ScreenCaptureType.RECORDING ->
                                         R.string
                                             .screen_capture_toolbar_app_window_button_record_a11y
                                 }
@@ -268,7 +269,7 @@ constructor(
                             when (selectedCaptureType) {
                                 ScreenCaptureType.SCREENSHOT ->
                                     R.string.screen_capture_toolbar_region_button_screenshot_a11y
-                                ScreenCaptureType.SCREEN_RECORD ->
+                                ScreenCaptureType.RECORDING ->
                                     R.string.screen_capture_toolbar_region_button_record_a11y
                             }
                         ),
@@ -286,7 +287,7 @@ constructor(
                                 ScreenCaptureType.SCREENSHOT ->
                                     R.string
                                         .screen_capture_toolbar_fullscreen_button_screenshot_a11y
-                                ScreenCaptureType.SCREEN_RECORD ->
+                                ScreenCaptureType.RECORDING ->
                                     R.string.screen_capture_toolbar_fullscreen_button_record_a11y
                             }
                         ),
