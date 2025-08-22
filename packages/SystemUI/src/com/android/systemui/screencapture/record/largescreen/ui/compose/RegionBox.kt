@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Rect as IntRect
+import android.view.PointerIcon as AndroidPointerIcon
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
@@ -33,14 +34,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
@@ -151,8 +159,28 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
     var rect by mutableStateOf<Rect?>(null)
         private set
 
-    private var dragMode by mutableStateOf(DragMode.NONE)
-    private var resizeZone by mutableStateOf<ResizeZone?>(null)
+    var dragMode by mutableStateOf(DragMode.NONE)
+
+    /**
+     * Tracks which edge or corner of the selection box the user has clicked on to start a
+     * drag-to-resize action (i.e., dragMode == DragMode.RESIZING).
+     */
+    var resizeZone by mutableStateOf<ResizeZone?>(null)
+
+    /**
+     * Tracks which edge or corner that the user is currently hovering over, without any buttons
+     * being clicked. It's used to dynamically show the correct resize cursor.
+     */
+    var hoveredZone by mutableStateOf<ResizeZone?>(null)
+
+    /** The bounds of the capture button, relative to the selection box. */
+    var captureButtonBounds by mutableStateOf<Rect?>(null)
+
+    /** True if the user is currently hovering over the selection box. */
+    var isHoveringBox by mutableStateOf(false)
+
+    /** True if the user is currently hovering over the capture button. */
+    var isHoveringButton by mutableStateOf(false)
 
     // The offset of the initial press when the user starts a drag gesture.
     private var newBoxStartOffset by mutableStateOf(Offset.Zero)
@@ -273,6 +301,44 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
         dragMode = DragMode.NONE
         resizeZone = null
     }
+
+    /**
+     * A low-level pointer input handler that is used to update the hover state of the different
+     * parts of the UI.
+     */
+    fun updateHoverState(event: PointerEvent) {
+        val change = event.changes.first()
+        val pointerPosition = change.position
+        val isPressed = change.pressed
+
+        // Don't update hover state if a button is pressed to prevent flicker
+        // during drags.
+        if (isPressed) {
+            return
+        }
+
+        if (event.type == PointerEventType.Move) {
+            rect?.let { currentRect ->
+                // Convert to coordinates relative to the box's top-left.
+                val relativePosition = pointerPosition - currentRect.topLeft
+
+                hoveredZone =
+                    getTouchedZone(
+                        boxWidth = currentRect.width,
+                        boxHeight = currentRect.height,
+                        startOffset = relativePosition,
+                        touchAreaPx = touchAreaPx,
+                    )
+
+                isHoveringBox = currentRect.contains(pointerPosition)
+
+                captureButtonBounds?.let { buttonBounds ->
+                    val globalButtonBounds = buttonBounds.translate(currentRect.topLeft)
+                    isHoveringButton = globalButtonBounds.contains(pointerPosition)
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -306,16 +372,23 @@ fun RegionBox(
 
     val state = remember { RegionBoxState(minSizePx, touchAreaPx) }
     val scrimColor = ScreenCaptureColors.scrimColor
+    val pointerIcon = rememberPointerIcon(state)
 
     Box(
         modifier =
             modifier
                 .fillMaxSize()
-                // .onSizeChanged gives us the final size of this box, which is the screen size,
-                // after it has been drawn.
                 .onSizeChanged { sizeInPixels: IntSize ->
                     state.screenWidth = sizeInPixels.width.toFloat()
                     state.screenHeight = sizeInPixels.height.toFloat()
+                }
+                .pointerHoverIcon(pointerIcon)
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            state.updateHoverState(awaitPointerEvent(PointerEventPass.Main))
+                        }
+                    }
                 }
                 .pointerInput(Unit) {
                     detectDragGestures(
@@ -549,6 +622,16 @@ fun RegionBox(
                                                     (currentRect.height - buttonSize.height) / 2f
                                             }
                                     )
+
+                                state.captureButtonBounds =
+                                    Rect(
+                                        offset = Offset(targetTranslationX, targetTranslationY),
+                                        size =
+                                            Size(
+                                                width = buttonSize.width.toFloat(),
+                                                height = buttonSize.height.toFloat(),
+                                            ),
+                                    )
                                 PrimaryButton(
                                     modifier =
                                         Modifier.graphicsLayer {
@@ -595,4 +678,62 @@ fun RegionBox(
             }
         }
     }
+}
+
+/**
+ * Remembers the appropriate [PointerIcon] based on the current interaction state.
+ *
+ * @param state The current [RegionBoxState].
+ * @return The [PointerIcon] to be displayed.
+ */
+@Composable
+private fun rememberPointerIcon(state: RegionBoxState): PointerIcon {
+    val topLeftBottomRightResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW)
+    val topRightButtonLeftResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW)
+    val verticalResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_VERTICAL_DOUBLE_ARROW)
+    val horizontalResizeIcon =
+        rememberSystemPointerIcon(AndroidPointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)
+    val fourArrowMoveIcon = rememberSystemPointerIcon(AndroidPointerIcon.TYPE_ALL_SCROLL)
+
+    return remember(
+        state.resizeZone,
+        state.hoveredZone,
+        state.dragMode,
+        state.isHoveringBox,
+        state.isHoveringButton,
+    ) {
+        val activeZone = state.resizeZone ?: state.hoveredZone
+        when {
+            state.isHoveringButton -> PointerIcon.Hand
+            state.dragMode == DragMode.MOVING -> fourArrowMoveIcon
+            activeZone != null ->
+                when (activeZone) {
+                    ResizeZone.Corner.TopLeft,
+                    ResizeZone.Corner.BottomRight -> topLeftBottomRightResizeIcon
+                    ResizeZone.Corner.TopRight,
+                    ResizeZone.Corner.BottomLeft -> topRightButtonLeftResizeIcon
+                    ResizeZone.Edge.Top,
+                    ResizeZone.Edge.Bottom -> verticalResizeIcon
+                    ResizeZone.Edge.Left,
+                    ResizeZone.Edge.Right -> horizontalResizeIcon
+                }
+            state.isHoveringBox -> fourArrowMoveIcon
+            else -> PointerIcon.Crosshair
+        }
+    }
+}
+
+/**
+ * Remembers a system [PointerIcon] for the given Android pointer icon type.
+ *
+ * @param type The system pointer icon type from [android.view.PointerIcon].
+ * @return A Compose [PointerIcon] to be used with pointerInput modifiers.
+ */
+@Composable
+private fun rememberSystemPointerIcon(type: Int): PointerIcon {
+    val context = LocalContext.current
+    return remember(context, type) { PointerIcon(AndroidPointerIcon.getSystemIcon(context, type)) }
 }
