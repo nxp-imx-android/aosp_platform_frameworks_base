@@ -482,6 +482,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (isHandleMenuActive()) {
             mHandleMenu.relayout(
                     startT,
+                    taskInfo.configuration,
                     mResult.mCaptionX,
                     // Add top padding to the caption Y so that the menu is shown over what is the
                     // actual contents of the caption, ignoring padding. This is currently relevant
