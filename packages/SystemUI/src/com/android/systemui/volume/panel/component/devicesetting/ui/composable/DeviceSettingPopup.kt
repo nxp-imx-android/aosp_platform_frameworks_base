@@ -17,6 +17,7 @@
 package com.android.systemui.volume.panel.component.devicesetting.ui.composable
 
 import android.view.Gravity
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,31 +61,28 @@ constructor(
     /** Shows a popup with the [expandable] animation. */
     fun show(expandable: Expandable, horizontalGravity: Int) {
         val gravity = horizontalGravity or Gravity.BOTTOM
-        volumePanelPopup.show(
-            expandable,
-            gravity,
-            body = {
-                val viewModel =
-                    rememberViewModel("DeviceSettingPopup#viewModel") { viewModelFactory() }
-                viewModel.setting?.let { setting ->
-                    Box(
-                        modifier =
-                            Modifier.padding(horizontal = 80.dp).fillMaxWidth().wrapContentHeight(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        VolumePanelPopupDefaults.Title(setting.label)
-                    }
+        volumePanelPopup.show(expandable, gravity, body = { Body(it) })
+    }
 
-                    Box(
-                        modifier =
-                            Modifier.padding(horizontal = 16.dp).fillMaxWidth().wrapContentHeight(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Content(it, setting)
-                    }
-                }
-            },
-        )
+    @Composable
+    @VisibleForTesting
+    fun Body(dialog: SystemUIDialog) {
+        val viewModel = rememberViewModel("DeviceSettingPopup#viewModel") { viewModelFactory() }
+        viewModel.setting?.let { setting ->
+            Box(
+                modifier = Modifier.padding(horizontal = 80.dp).fillMaxWidth().wrapContentHeight(),
+                contentAlignment = Alignment.Center,
+            ) {
+                VolumePanelPopupDefaults.Title(setting.label)
+            }
+
+            Box(
+                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().wrapContentHeight(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Content(dialog, setting)
+            }
+        }
     }
 
     @Composable

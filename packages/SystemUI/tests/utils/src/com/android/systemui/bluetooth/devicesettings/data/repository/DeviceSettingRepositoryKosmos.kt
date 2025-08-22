@@ -16,7 +16,10 @@
 
 package com.android.systemui.bluetooth.devicesettings.data.repository
 
+import com.android.settingslib.bluetooth.devicesettings.data.repository.DeviceSettingRepository
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.fakeDeviceSettingRepository by Kosmos.Fixture { FakeDeviceSettingRepository() }
-var Kosmos.deviceSettingRepository by Kosmos.Fixture { fakeDeviceSettingRepository }
+val Kosmos.fakeDeviceSettingRepository: FakeDeviceSettingRepository by
+    Kosmos.Fixture { FakeDeviceSettingRepository() }
+var Kosmos.deviceSettingRepository: DeviceSettingRepository by
+    Kosmos.Fixture { fakeDeviceSettingRepository }
