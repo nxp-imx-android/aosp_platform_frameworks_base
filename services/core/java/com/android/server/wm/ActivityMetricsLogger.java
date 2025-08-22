@@ -749,12 +749,6 @@ class ActivityMetricsLogger {
                     + " newActivityCreated=" + newActivityCreated + " info=" + info);
         }
 
-        if (launchedActivity.isReportedDrawn() && launchedActivity.isVisible()) {
-            // Launched activity is already visible. We cannot measure windows drawn delay.
-            abort(launchingState, "launched activity already visible");
-            return;
-        }
-
         // If the launched activity is started from an existing active transition, it will be put
         // into the transition info.
         if (info != null && info.canCoalesce(launchedActivity)) {
@@ -777,6 +771,11 @@ class ActivityMetricsLogger {
                 startLaunchTrace(info);
             }
             scheduleCheckActivityToBeDrawnIfSleeping(launchedActivity);
+            abortIfAlreadyVisible(launchedActivity, launchingState);
+            return;
+        }
+
+        if (abortIfAlreadyVisible(launchedActivity, launchingState)) {
             return;
         }
 
@@ -822,6 +821,19 @@ class ActivityMetricsLogger {
                 scheduleCheckActivityToBeDrawn(prevInfo.mLastLaunchedActivity, 0 /* delay */);
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the launched activity is already visible, indicating that window
+     * draw delay cannot be measured and the operation should be aborted.
+     */
+    private boolean abortIfAlreadyVisible(@NonNull ActivityRecord launchedActivity,
+            @NonNull LaunchingState launchingState) {
+        if (launchedActivity.isReportedDrawn() && launchedActivity.isVisible()) {
+            abort(launchingState, "launched activity already visible");
+            return true;
+        }
+        return false;
     }
 
     /**
