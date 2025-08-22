@@ -54,11 +54,15 @@ public class DisplayModeFactory {
 
     @SuppressLint("WrongConstant")
     static Display.Mode createMode(SurfaceControl.DisplayMode mode, float[] alternativeRefreshRates,
-            boolean hasArrSupport, boolean syntheticModesV2Enabled) {
+            boolean hasArrSupport, boolean syntheticModesV2Enabled, boolean sizeOverrideEnabled) {
         int flags = 0;
         if (syntheticModesV2Enabled
                 && hasArrSupport && mode.peakRefreshRate <= SYNTHETIC_MODE_HIGH_BOUNDARY) {
             flags |= Display.Mode.FLAG_ARR_RENDER_RATE;
+        }
+
+        if (sizeOverrideEnabled) {
+            flags |= Display.Mode.FLAG_SIZE_OVERRIDE;
         }
 
         return new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
