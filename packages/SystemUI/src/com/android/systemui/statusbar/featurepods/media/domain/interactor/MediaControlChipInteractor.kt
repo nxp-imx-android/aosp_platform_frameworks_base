@@ -22,8 +22,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.media.remedia.data.repository.MediaRepositoryImpl
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.featurepods.media.shared.model.MediaControlChipModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -59,18 +59,18 @@ constructor(
     /**
      * A flow of [MediaControlChipModel] representing the current state of the media controls chip.
      * This flow emits null when no active media is playing or when playback information is
-     * unavailable. This flow is only active when [SceneContainerFlag] is disabled.
+     * unavailable. This flow is only active when [MediaControlsInComposeFlag] is disabled.
      */
     private val mediaControlChipModelLegacy = MutableStateFlow<MediaControlChipModel?>(null)
 
     fun updateMediaControlChipModelLegacy(mediaData: MediaData?) {
-        if (!SceneContainerFlag.isEnabled) {
+        if (!MediaControlsInComposeFlag.isEnabled) {
             mediaControlChipModelLegacy.value = mediaData?.toMediaControlChipModel()
         }
     }
 
     private val _mediaControlChipModel: Flow<MediaControlChipModel?> =
-        if (SceneContainerFlag.isEnabled) {
+        if (MediaControlsInComposeFlag.isEnabled) {
             mediaControlChipModelForScene
         } else {
             mediaControlChipModelLegacy
