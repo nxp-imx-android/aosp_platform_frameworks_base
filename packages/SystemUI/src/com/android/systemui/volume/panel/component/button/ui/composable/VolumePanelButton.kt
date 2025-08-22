@@ -48,8 +48,9 @@ fun VolumePanelButton(
     icon: Icon?,
     isActive: Boolean,
     onClick: (expandable: Expandable) -> Unit,
-    modifier: Modifier = Modifier,
     semanticsRole: Role,
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
 ) {
     Column(
         modifier = modifier,
@@ -63,17 +64,17 @@ fun VolumePanelButton(
                     contentDescription = label
                 },
             color =
-                if (isActive) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
+                when {
+                    !isEnabled -> MaterialTheme.colorScheme.surfaceContainerHighest
+                    isActive -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.surfaceContainerHigh
                 },
             shape = RoundedCornerShape(20.dp),
             contentColor =
-                if (isActive) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
+                when {
+                    !isEnabled -> MaterialTheme.colorScheme.outline
+                    isActive -> MaterialTheme.colorScheme.onPrimary
+                    else -> MaterialTheme.colorScheme.onSurface
                 },
             onClick = { onClick(it) },
         ) {
