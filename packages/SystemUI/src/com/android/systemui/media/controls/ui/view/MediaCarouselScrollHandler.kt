@@ -31,6 +31,7 @@ import com.android.settingslib.Utils
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.classifier.Classifier.MEDIA_CAROUSEL_SWIPE
 import com.android.systemui.media.controls.util.MediaUiEventLogger
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.PageIndicator
 import com.android.systemui.res.R
@@ -202,22 +203,24 @@ class MediaCarouselScrollHandler(
 
     init {
         gestureDetector = GestureDetector(scrollView.context, gestureListener)
-        scrollView.touchListener = touchListener
-        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER)
         mediaContent = scrollView.contentContainer
-        scrollView.setOnScrollChangeListener(scrollChangedListener)
-        scrollView.outlineProvider =
-            object : ViewOutlineProvider() {
-                override fun getOutline(view: View?, outline: Outline?) {
-                    outline?.setRoundRect(
-                        0,
-                        0,
-                        carouselWidth,
-                        carouselHeight,
-                        cornerRadius.toFloat(),
-                    )
+        if (!MediaControlsInComposeFlag.isEnabled) {
+            scrollView.touchListener = touchListener
+            scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER)
+            scrollView.setOnScrollChangeListener(scrollChangedListener)
+            scrollView.outlineProvider =
+                object : ViewOutlineProvider() {
+                    override fun getOutline(view: View?, outline: Outline?) {
+                        outline?.setRoundRect(
+                            0,
+                            0,
+                            carouselWidth,
+                            carouselHeight,
+                            cornerRadius.toFloat(),
+                        )
+                    }
                 }
-            }
+        }
     }
 
     fun onSettingsButtonUpdated(button: View) {
