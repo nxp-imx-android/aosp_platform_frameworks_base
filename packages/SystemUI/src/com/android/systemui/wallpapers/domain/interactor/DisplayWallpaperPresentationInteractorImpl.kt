@@ -52,13 +52,13 @@ constructor(
     private val keyguardDisplayManager: Lazy<KeyguardDisplayManager>,
 ) : DisplayWallpaperPresentationInteractor {
     override val presentationFactoryFlow: StateFlow<WallpaperPresentationType> by lazy {
-        val keyguardDismissedFlow = keyguardInteractor.get().isKeyguardDismissible
+        val keyguardShowingFlow = keyguardInteractor.get().isKeyguardShowing
         val deviceProvisionedFlow = deviceProvisioningRepository.get().isDeviceProvisioned
-        combine(keyguardDismissedFlow, deviceProvisionedFlow) {
-                isKeyguardDismissed,
+        combine(keyguardShowingFlow, deviceProvisionedFlow) {
+                isKeyguardShowing,
                 isDeviceProvisioned ->
                 debugLog(enabled = DEBUG, tag = TAG) {
-                    "Display ${display.displayId} - isKeyguardDismissed: $isKeyguardDismissed, " +
+                    "Display ${display.displayId} - isKeyguardShowing: $isKeyguardShowing, " +
                         "isDeviceProvisioned: $isDeviceProvisioned"
                 }
                 when {
@@ -69,7 +69,7 @@ constructor(
                             NONE
                         }
 
-                    !isKeyguardDismissed ->
+                    isKeyguardShowing ->
                         if (keyguardDisplayManager.get().isKeyguardShowable(display)) {
                             KEYGUARD
                         } else {
