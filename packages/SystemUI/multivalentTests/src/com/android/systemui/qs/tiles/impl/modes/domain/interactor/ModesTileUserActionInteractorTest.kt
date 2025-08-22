@@ -104,7 +104,7 @@ class ModesTileUserActionInteractorTest : SysuiTestCase() {
                     TestModeBuilder().setName("Mode 2").setActive(true).build(),
                 )
             )
-            assertThat(activeModes?.modeNames?.count()).isEqualTo(3)
+            assertThat(activeModes?.count).isEqualTo(3)
 
             underTest.handleInput(
                 QSTileInputTestKtx.toggleClick(

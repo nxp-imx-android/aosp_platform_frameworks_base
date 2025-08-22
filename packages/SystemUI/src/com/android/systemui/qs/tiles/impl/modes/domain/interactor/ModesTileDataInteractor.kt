@@ -184,9 +184,9 @@ constructor(
     private fun buildTileDataLegacy(activeModes: ActiveZenModes): ModesTileModel {
         return ModesTileModel(
             isActivated = activeModes.isAnyActive(),
-            activeModes = activeModes.modeNames.map { ModesTileModel.ActiveMode(null, it) },
+            activeModes = activeModes.names.map { ModesTileModel.ActiveMode(null, it) },
             icon =
-                if (activeModes.mainMode != null) activeModes.mainMode.icon.toTileIcon()
+                if (activeModes.main != null) activeModes.main.icon.toTileIcon()
                 else getDefaultTileIcon(),
             quickMode = null,
         )

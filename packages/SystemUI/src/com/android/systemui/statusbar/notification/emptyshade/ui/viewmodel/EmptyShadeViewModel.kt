@@ -82,11 +82,10 @@ constructor(
                 // out, or something like "Notifications paused by SomeMode" otherwise.
                 val msgFormat =
                     MessageFormat(context.getString(R.string.modes_suppressing_shade_text), locale)
-                val count = modes.count()
                 val args: MutableMap<String, Any> = HashMap()
-                args["count"] = count
-                if (count >= 1) {
-                    args["mode"] = modes[0].name
+                args["count"] = modes.count
+                if (modes.main != null) {
+                    args["mode"] = modes.main.name
                 }
                 msgFormat.format(args)
             }
@@ -106,9 +105,9 @@ constructor(
                 zenModeInteractor.modesHidingNotifications,
                 notificationSettingsInteractor.isNotificationHistoryEnabled,
             ) { modes, isNotificationHistoryEnabled ->
-                if (modes.isNotEmpty()) {
-                    if (modes.size == 1) {
-                        SettingsIntent.forModeSettings(modes[0].id)
+                if (modes.main != null) {
+                    if (modes.count == 1) {
+                        SettingsIntent.forModeSettings(modes.main.id)
                     } else {
                         SettingsIntent.forModesSettings()
                     }
