@@ -327,6 +327,16 @@ flag {
 }
 
 flag {
+    name: "enable_cross_displays_app_launch_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enables a transition for launching an already opened app on another display."
+    bug: "422333177"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_cross_displays_pip_task_launch"
     namespace: "lse_desktop_experience"
     description: "Enables launching an app while it's in PiP on another display."
