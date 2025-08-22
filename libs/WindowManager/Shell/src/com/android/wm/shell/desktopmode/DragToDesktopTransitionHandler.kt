@@ -759,6 +759,17 @@ sealed class DragToDesktopTransitionHandler(
             startT.apply()
             finishCallback.onTransitionFinished(/* wct= */ null)
             startTransitionFinishCb.onTransitionFinished(/* wct= */ null)
+            // For splitscreen, dragging upward to "cancel" actually is a signal from the user
+            // that we want to go to fullscreen. We will cancel the desktop transition, let
+            // splitscreen go back to where it was, and then expand to fullscreen.
+            // TODO (b/396438812): Let this be a single transition that actually goes straight
+            // to fullscreen
+            if (state is TransitionState.FromSplit) {
+                splitScreenController.moveTaskToFullscreen(
+                    state.draggedTaskId,
+                    SplitScreenController.EXIT_REASON_DRAG_TO_FULLSCREEN,
+                )
+            }
             clearState()
             return
         }
