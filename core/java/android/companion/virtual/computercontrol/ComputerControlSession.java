@@ -20,6 +20,11 @@ import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
 import android.os.Binder;
@@ -43,13 +48,17 @@ import java.util.concurrent.Executor;
  */
 public final class ComputerControlSession implements AutoCloseable {
 
+    /** @hide */
+    public static final String ACTION_REQUEST_ACCESS =
+            "android.companion.virtual.computercontrol.action.REQUEST_ACCESS";
+
     /**
      * Error code indicating that a new session cannot be created because the maximum number of
      * allowed concurrent sessions has been reached.
      *
      * <p>This is a transient error and the session creation request can be retried later.</p>
      */
-    public static final int ERROR_SESSION_LIMIT_REACHED = -1;
+    public static final int ERROR_SESSION_LIMIT_REACHED = 1;
 
     /**
      * Error code indicating that a new session cannot be created because the lock screen (also
@@ -59,13 +68,19 @@ public final class ComputerControlSession implements AutoCloseable {
      *
      * @see android.app.KeyguardManager#isKeyguardLocked()
      */
-    public static final int ERROR_KEYGUARD_LOCKED = -2;
+    public static final int ERROR_KEYGUARD_LOCKED = 2;
+
+    /**
+     * Error code indicating that the user did not approve the creation of a new session.
+     */
+    public static final int ERROR_PERMISSION_DENIED = 3;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "ERROR_", value = {
             ERROR_SESSION_LIMIT_REACHED,
-            ERROR_KEYGUARD_LOCKED})
+            ERROR_KEYGUARD_LOCKED,
+            ERROR_PERMISSION_DENIED})
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCreationError {
     }
@@ -137,6 +152,19 @@ public final class ComputerControlSession implements AutoCloseable {
     /** Callback for computer control session events. */
     public interface Callback {
 
+        /**
+         * Called when the session request needs to approved by the user.
+         *
+         * <p>Applications should launch the {@link Activity} "encapsulated" in {@code intentSender}
+         * {@link IntentSender} object by calling
+         * {@link Activity#startIntentSenderForResult(IntentSender, int, Intent, int, int, int)} or
+         * {@link Context#startIntentSender(IntentSender, Intent, int, int, int)}
+         *
+         * @param intentSender an {@link IntentSender} which applications should use to launch
+         *   the UI for the user to allow the creation of the session.
+         */
+        void onSessionPending(@NonNull IntentSender intentSender);
+
         /** Called when the session has been successfully created. */
         void onSessionCreated(@NonNull ComputerControlSession session);
 
@@ -163,6 +191,13 @@ public final class ComputerControlSession implements AutoCloseable {
         public CallbackProxy(@NonNull Executor executor, @NonNull Callback callback) {
             mExecutor = executor;
             mCallback = callback;
+        }
+
+        @Override
+        public void onSessionPending(@NonNull PendingIntent pendingIntent) {
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() ->
+                            mCallback.onSessionPending(pendingIntent.getIntentSender())));
         }
 
         @Override

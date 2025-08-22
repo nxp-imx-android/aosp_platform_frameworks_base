@@ -16,6 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.app.PendingIntent;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 
 /**
@@ -24,6 +25,9 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
  * @hide
  */
 oneway interface IComputerControlSessionCallback {
+
+    /** Called when the session request needs to approved by the user. */
+    void onSessionPending(in PendingIntent pendingIntent);
 
     /** Called when the session has been successfully created. */
     void onSessionCreated(in IComputerControlSession session);

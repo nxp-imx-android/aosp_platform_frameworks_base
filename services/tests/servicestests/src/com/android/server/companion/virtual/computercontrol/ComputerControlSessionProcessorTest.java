@@ -19,22 +19,32 @@ package com.android.server.companion.virtual.computercontrol;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MAXIMUM_CONCURRENT_SESSIONS;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
+import android.app.AppOpsManager;
 import android.app.KeyguardManager;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.os.Binder;
+import android.os.ResultReceiver;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Surface;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -45,6 +55,7 @@ import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -56,16 +67,26 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionProcessorTest {
 
+    private static final int CALLBACK_TIMEOUT_MS = 1_000;
+
+    @Rule
+    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private KeyguardManager mKeyguardManager;
+    @Mock
+    private AppOpsManager mAppOpsManager;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
+    private ComputerControlSessionProcessor.PendingIntentFactory mPendingIntentFactory;
+    @Mock
     private IVirtualDevice mVirtualDevice;
     @Mock
     private IComputerControlSessionCallback mComputerControlSessionCallback;
+    @Captor
+    private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     @Captor
     private ArgumentCaptor<IComputerControlSession> mSessionArgumentCaptor;
 
@@ -93,11 +114,16 @@ public class ComputerControlSessionProcessorTest {
         mContext = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(mContext.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
+        when(mContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_AGENT_CONTROL), any(), any()))
+                .thenReturn(AppOpsManager.MODE_ALLOWED);
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
-        mProcessor = new ComputerControlSessionProcessor(mContext, mVirtualDeviceFactory);
+        mProcessor = new ComputerControlSessionProcessor(
+                mContext, mVirtualDeviceFactory, mPendingIntentFactory);
     }
 
     @After
@@ -111,7 +137,7 @@ public class ComputerControlSessionProcessorTest {
 
         mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                 mParams, mComputerControlSessionCallback);
-        verify(mComputerControlSessionCallback)
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_KEYGUARD_LOCKED);
     }
 
@@ -122,12 +148,13 @@ public class ComputerControlSessionProcessorTest {
                 mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                         mParams, mComputerControlSessionCallback);
             }
-            verify(mComputerControlSessionCallback, times(MAXIMUM_CONCURRENT_SESSIONS))
+            verify(mComputerControlSessionCallback,
+                    timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS))
                     .onSessionCreated(mSessionArgumentCaptor.capture());
 
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                     mParams, mComputerControlSessionCallback);
-            verify(mComputerControlSessionCallback)
+            verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                     .onSessionCreationFailed(ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
 
             // Close the first session.
@@ -138,7 +165,8 @@ public class ComputerControlSessionProcessorTest {
 
             mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
                     mParams, mComputerControlSessionCallback);
-            verify(mComputerControlSessionCallback, times(MAXIMUM_CONCURRENT_SESSIONS + 1))
+            verify(mComputerControlSessionCallback,
+                    timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS + 1))
                     .onSessionCreated(mSessionArgumentCaptor.capture());
         } finally {
             for (IComputerControlSession session : mSessionArgumentCaptor.getAllValues()) {
@@ -147,5 +175,41 @@ public class ComputerControlSessionProcessorTest {
             verify(mComputerControlSessionCallback, times(MAXIMUM_CONCURRENT_SESSIONS + 1))
                     .onSessionClosed();
         }
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
+    @Test
+    public void onSessionPending_consentGranted_sessionCreated() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_AGENT_CONTROL), any(), any()))
+                .thenReturn(AppOpsManager.MODE_IGNORED);
+
+        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
+                mParams, mComputerControlSessionCallback);
+        verify(mPendingIntentFactory).create(any(), anyInt(), mIntentArgumentCaptor.capture());
+        verify(mComputerControlSessionCallback).onSessionPending(any());
+
+        ResultReceiver resultReceiver = mIntentArgumentCaptor.getValue().getParcelableExtra(
+                Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
+        resultReceiver.send(Activity.RESULT_OK, null);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(any());
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
+    @Test
+    public void onSessionPending_consentDenied_sessionCreationFailed() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_AGENT_CONTROL), any(), any()))
+                .thenReturn(AppOpsManager.MODE_IGNORED);
+
+        mProcessor.processNewSessionRequest(AttributionSource.myAttributionSource(),
+                mParams, mComputerControlSessionCallback);
+        verify(mPendingIntentFactory).create(any(), anyInt(), mIntentArgumentCaptor.capture());
+        verify(mComputerControlSessionCallback).onSessionPending(any());
+
+        ResultReceiver resultReceiver = mIntentArgumentCaptor.getValue().getParcelableExtra(
+                Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
+        resultReceiver.send(Activity.RESULT_CANCELED, null);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
     }
 }
