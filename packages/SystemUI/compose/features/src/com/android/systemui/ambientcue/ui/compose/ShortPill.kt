@@ -90,6 +90,7 @@ fun ShortPill(
     visible: Boolean = true,
     expanded: Boolean = false,
     rotation: Int = 0,
+    taskBarMode: Boolean = false,
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
     onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit = { _, _ -> },
@@ -181,12 +182,13 @@ fun ShortPill(
                 // SmartScrim
                 val halfWidth = size.width / 2f
                 val halfHeight = size.height / 2f
+                val smartScrimRadius = 50.dp.toPx()
                 if (!(halfWidth > 0) || !(halfHeight > 0)) return@drawBehind
                 val scrimBrush =
                     Brush.radialGradient(
                         colors = listOf(scrimColor, scrimColor.copy(alpha = 0f)),
                         center = Offset.Zero,
-                        radius = if (horizontal) halfWidth else halfHeight,
+                        radius = if (horizontal) smartScrimRadius * 0.9f else halfHeight,
                     )
                 translate(
                     left =
@@ -194,17 +196,17 @@ fun ShortPill(
                         else {
                             if (rotation == ROTATION_90) size.width else 0f
                         },
-                    top = if (horizontal) size.height else halfHeight,
+                    top = if (taskBarMode) size.height else halfHeight,
                 ) {
                     scale(
-                        scaleX = if (horizontal) 1f else 0.3f,
-                        scaleY = if (horizontal) 0.3f else 1f,
+                        scaleX = if (horizontal) 4.12f else 0.3f,
+                        scaleY = 1f,
                         pivot = Offset.Zero,
                     ) {
                         drawCircle(
                             brush = scrimBrush,
                             alpha = smartScrimAlpha + smartScrimAlphaBoost,
-                            radius = if (horizontal) halfWidth else halfHeight,
+                            radius = if (horizontal) smartScrimRadius else halfHeight,
                             center = Offset.Zero,
                         )
                     }
