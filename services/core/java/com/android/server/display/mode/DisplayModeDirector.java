@@ -1349,7 +1349,7 @@ public class DisplayModeDirector {
         private Vote getBaseModeVote(@Nullable Display.Mode mode, float requestedRefreshRate) {
             Vote vote = null;
             if (mode != null) {
-                if (mode.isSynthetic()) {
+                if ((mode.getFlags() & Display.Mode.FLAG_ARR_RENDER_RATE)  != 0) {
                     vote = Vote.forRequestedRefreshRate(mode.getRefreshRate());
                 } else {
                     vote = Vote.forBaseModeRefreshRate(mode.getRefreshRate());
