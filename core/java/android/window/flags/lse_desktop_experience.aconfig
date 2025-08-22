@@ -1062,6 +1062,16 @@ flag {
 }
 
 flag {
+    name: "enable_launcher_handle_go_home_keyboard_shortcut"
+    namespace: "lse_desktop_experience"
+    description: "Enables handling the go home keyboard shortcut on the Launcher side."
+    bug: "427579352"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_minimize_button"
     namespace: "lse_desktop_experience"
     description: "Adds a minimize button the the caption bar"
