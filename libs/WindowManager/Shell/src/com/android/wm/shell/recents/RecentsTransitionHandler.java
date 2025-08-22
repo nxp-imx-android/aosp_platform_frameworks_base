@@ -41,6 +41,7 @@ import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSI
 import static com.android.wm.shell.shared.ShellSharedConstants.KEY_EXTRA_SHELL_CAN_HAND_OFF_ANIMATION;
 import static com.android.wm.shell.shared.split.SplitBounds.KEY_EXTRA_SPLIT_BOUNDS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
@@ -110,6 +111,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
     // A placeholder for a synthetic transition that isn't backed by a true system transition
     public static final IBinder SYNTHETIC_TRANSITION = new Binder();
+
+    private static final int CANCEL_WITH_SNAPSHOTS_FINISH_TIMEOUT_MS = 200;
 
     private final Transitions mTransitions;
     private final ShellTaskOrganizer mShellTaskOrganizer;
@@ -548,10 +551,28 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 }
             }
             if (mFinishCB != null) {
-                finishInner(toHome, false /* userLeave */, null /* finishCb */, "cancel");
+                if (withScreenshots) {
+                    // Launcher is supposed to apply screenshots, wait for the Recents to draw them,
+                    // and Binder call finish into the recents controller on its own.
+                    ProtoLog.d(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                            "[%d] RecentsController.cancel: waiting for Launcher to finish",
+                            mInstanceId);
+                    setupFinishOnTimeout(mTransition);
+                } else {
+                    finishInner(toHome, false /* userLeave */, null /* finishCb */, "cancel");
+                }
             } else {
                 cleanUp();
             }
+        }
+
+        private void setupFinishOnTimeout(IBinder transitionToken) {
+            mExecutor.executeDelayed(() -> {
+                if (mTransition == transitionToken && mFinishCB != null) {
+                    finishInner(true /* toHome */, false /* userLeave */, null /* finishCb */,
+                            "cancel-timeout");
+                }
+            }, CANCEL_WITH_SNAPSHOTS_FINISH_TIMEOUT_MS);
         }
 
         /**
@@ -1075,10 +1096,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
-            if (info.getType() == TRANSIT_REMOVE_PIP) {
+            if (info.getType() == TRANSIT_REMOVE_PIP
+                    || info.getType() == TRANSIT_PIP_BOUNDS_CHANGE) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: transit_remove_pip", mInstanceId);
-                // Cancel the merge if transition is removing PiP; PiP is on top of everything else.
+                // Cancel the merge if transition is resizing/removing PiP; PiP is always on top.
                 cancel(true /* toHome */, mWillFinishToHome /* withScreenshots */,
                         "transit_remove_pip");
                 return;
