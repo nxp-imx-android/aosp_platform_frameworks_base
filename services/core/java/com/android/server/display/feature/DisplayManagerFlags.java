@@ -33,7 +33,9 @@ import java.util.function.Supplier;
 
 /**
  * Utility class to read the flags used in the display manager server.
+ * @deprecated use {@link Flags} directly, see b/440342129
  */
+@Deprecated
 public class DisplayManagerFlags {
     private static final String TAG = "DisplayManagerFlags";
 
