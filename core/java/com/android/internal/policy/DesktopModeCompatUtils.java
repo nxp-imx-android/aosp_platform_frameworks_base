@@ -25,6 +25,7 @@ import android.annotation.NonNull;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.view.Gravity;
 import android.window.DesktopModeFlags;
 
 /**
@@ -50,6 +51,32 @@ public final class DesktopModeCompatUtils {
                 && !isConfigurationDecoupled(info, optOutEdgeToEdge)
                 && (!isResizeable
                     || info.isChangeEnabled(OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS));
+    }
+
+    /**
+     * Applies a vertical and horizontal gravity on the inOutBounds in relation to the stableBounds.
+     */
+    public static void applyLayoutGravity(int verticalGravity, int horizontalGravity,
+            @NonNull Rect inOutBounds, @NonNull Rect stableBounds) {
+        final int width = inOutBounds.width();
+        final int height = inOutBounds.height();
+
+        final float fractionOfHorizontalOffset = switch (horizontalGravity) {
+            case Gravity.LEFT -> 0f;
+            case Gravity.RIGHT -> 1f;
+            default -> 0.5f;
+        };
+
+        final float fractionOfVerticalOffset = switch (verticalGravity) {
+            case Gravity.TOP -> 0f;
+            case Gravity.BOTTOM -> 1f;
+            default -> 0.5f;
+        };
+
+        inOutBounds.offsetTo(stableBounds.left, stableBounds.top);
+        final int xOffset = (int) (fractionOfHorizontalOffset * (stableBounds.width() - width));
+        final int yOffset = (int) (fractionOfVerticalOffset * (stableBounds.height() - height));
+        inOutBounds.offset(xOffset, yOffset);
     }
 
     /**
