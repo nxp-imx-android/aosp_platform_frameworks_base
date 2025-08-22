@@ -2358,7 +2358,14 @@ public class MediaQualityService extends SystemService {
 
         @Override
         public void requestPictureParameters(long pictureProfileId) throws RemoteException {
-            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(pictureProfileId, true);
+            if (DEBUG) {
+                Log.d(TAG, "requestPictureParameters for picture profile id "
+                        + pictureProfileId);
+            }
+            PictureProfile profile = mOriginalHandleToCurrentPictureProfile.get(pictureProfileId);
+            if (profile == null) {
+                profile = mMqDatabaseUtils.getPictureProfile(pictureProfileId, true);
+            }
             if (profile != null) {
                 mHalNotifier.notifyHalOnPictureProfileChange(pictureProfileId,
                         profile.getParameters());
