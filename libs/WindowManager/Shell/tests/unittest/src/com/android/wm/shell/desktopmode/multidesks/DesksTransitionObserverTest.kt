@@ -473,6 +473,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = deskId,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )
@@ -505,6 +506,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = 5,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = true,
                 exitReason = ExitReason.UNKNOWN_EXIT,
             )
@@ -532,6 +534,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = 5,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )
@@ -561,6 +564,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                     transition,
                     userId = USER_ID_1,
                     deskId = 5,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.UNKNOWN_EXIT,
                 )
@@ -589,6 +593,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = 5,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )
@@ -628,6 +633,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = deskId,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )
@@ -708,6 +714,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = deskId,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )
@@ -733,6 +740,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = deskId,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )
@@ -773,6 +781,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition,
                 userId = USER_ID_1,
                 deskId = 1,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.DRAG_TO_EXIT,
             )

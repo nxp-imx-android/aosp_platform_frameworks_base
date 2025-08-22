@@ -148,6 +148,7 @@ import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
+import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
@@ -294,6 +295,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var mockDisplayContext: Context
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
+    @Mock private lateinit var deskSwitchTransitionHandler: DeskSwitchTransitionHandler
     @Mock
     private lateinit var moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler
     @Mock private lateinit var mockAppOpsManager: AppOpsManager
@@ -407,6 +409,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     anyOrNull(),
                 )
             )
+            .thenReturn(Binder())
+        whenever(deskSwitchTransitionHandler.startTransition(any(), any(), any(), any(), any()))
             .thenReturn(Binder())
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
         whenever(displayController.getDisplayContext(anyInt())).thenReturn(mockDisplayContext)
@@ -524,6 +528,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             userProfileContexts,
             desktopModeCompatPolicy,
             windowDragTransitionHandler,
+            deskSwitchTransitionHandler,
             moveToDisplayTransitionHandler,
             homeIntentProvider,
             desktopState,
@@ -4239,6 +4244,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     token = transition,
                     userId = taskRepository.userId,
                     deskId = sourceDeskId,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.TASK_MOVED_FROM_DESK,
                 )
@@ -4736,6 +4742,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     transition,
                     userId = taskRepository.userId,
                     deskId = 0,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.TASK_FINISHED,
                 )
@@ -4866,6 +4873,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     token = transition,
                     userId = taskRepository.userId,
                     deskId = 0,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.TASK_MINIMIZED,
                 )
@@ -5004,7 +5012,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DeskTransition.DeactivateDesk(
                     transition,
                     userId = taskRepository.userId,
-                    deskId,
+                    deskId = deskId,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.TASK_MINIMIZED,
                 )
@@ -5423,6 +5432,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     transition,
                     userId = taskRepository.userId,
                     deskId = 0,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.FULLSCREEN_LAUNCH,
                 )
@@ -6427,6 +6437,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 transition,
                 userId = taskRepository.userId,
                 deskId = 0,
+                displayId = DEFAULT_DISPLAY,
                 switchingUser = false,
                 exitReason = ExitReason.UNKNOWN_EXIT,
             )
@@ -6671,7 +6682,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DeskTransition.DeactivateDesk(
                     transition,
                     userId = taskRepository.userId,
-                    deskId,
+                    deskId = deskId,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.FULLSCREEN_LAUNCH,
                 )
@@ -7274,6 +7286,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     token = transition,
                     userId = taskRepository.userId,
                     deskId = 0,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.TASK_FINISHED,
                 )
@@ -7480,6 +7493,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     token = transition,
                     userId = taskRepository.userId,
                     deskId = 0,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.TASK_FINISHED,
                 )
@@ -10840,6 +10854,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     token = transition,
                     userId = taskRepository.userId,
                     deskId = 0,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
                 )
@@ -11855,7 +11870,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DeskTransition.DeactivateDesk(
                     transition,
                     userId = taskRepository.userId,
-                    deskId,
+                    deskId = deskId,
+                    displayId = DEFAULT_DISPLAY,
                     switchingUser = false,
                     exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
                 )
