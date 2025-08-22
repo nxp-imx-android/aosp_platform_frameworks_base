@@ -32,3 +32,11 @@ flag {
     description: "when enabled listview types will report scroll state changes to janktracker"
     bug: "439161162"
   }
+
+flag {
+    name: "instrument_scrollview_scroll_states"
+    namespace: "system_performance"
+    description: "when enabled scrollview types will report scroll state changes to janktracker"
+    bug: "440646411"
+  }
+
