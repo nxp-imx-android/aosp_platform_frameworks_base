@@ -7671,6 +7671,12 @@
     <string-array name="config_appFunctionDeviceSettingsPackages" translatable="false">
     </string-array>
 
+    <!-- Defines the default allowlist of package names for preloaded agents authorized to use App
+         Function features. This static list operates as a fallback allowlist in case the
+         updatable allowlist is not available. -->
+    <string-array name="config_defaultAppFunctionAgentAllowlist" translatable="false">
+    </string-array>
+
     <!-- Package name for developer verification service provider app [DO NOT TRANSLATE] -->
     <string name="config_developerVerificationServiceProviderPackageName" translatable="false"></string>
     <!-- Package name for developer verification policy delegate app [DO NOT TRANSLATE] -->
