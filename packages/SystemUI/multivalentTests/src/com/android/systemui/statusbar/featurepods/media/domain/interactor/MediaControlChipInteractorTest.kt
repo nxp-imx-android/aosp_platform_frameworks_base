@@ -30,7 +30,7 @@ import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaRepository
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -188,7 +188,7 @@ class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     private fun updateMedia(mediaData: MediaData) {
-        if (SceneContainerFlag.isEnabled) {
+        if (MediaControlsInComposeFlag.isEnabled) {
             mediaRepository.addCurrentUserMediaEntry(mediaData)
         } else {
             kosmos.underTest.updateMediaControlChipModelLegacy(mediaData)
@@ -196,7 +196,7 @@ class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     private fun removeMedia(mediaData: MediaData) {
-        if (SceneContainerFlag.isEnabled) {
+        if (MediaControlsInComposeFlag.isEnabled) {
             val instanceId = mediaData.instanceId
             mediaRepository.removeCurrentUserMediaEntry(instanceId, mediaData)
         } else {
