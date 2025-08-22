@@ -12092,11 +12092,11 @@ public class Notification implements Parcelable
          * the duration as a fixed value.
          *
          * <p>This value can also specify its formatting, whether as a "chronometer" (e.g. 43:21)
-         * or an adaptive time (e.g. 43m).
+         * or an adaptive time (e.g. 1h 43m).
          */
         public static final class TimeDifference extends MetricValue {
 
-            /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m; now). */
+            /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m 30s; 5s). */
             public static final int FORMAT_ADAPTIVE = 1;
 
             /** Formatting option: chronometer-style, (e.g. two hours = "2:00:00"). */
