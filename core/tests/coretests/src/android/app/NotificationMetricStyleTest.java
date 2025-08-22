@@ -414,7 +414,7 @@ public class NotificationMetricStyleTest {
     public void valueToString_fixedFloat() {
         FixedFloat defaultDigits = new FixedFloat(1612.3456789f);
         assertThat(defaultDigits.toValueString(mContext)).isEqualTo(
-                new ValueString("1,612.346", null));
+                new ValueString("1,612.35", null));
 
         FixedFloat minDigits = new FixedFloat(42, "km", 2, 4);
         assertThat(minDigits.toValueString(mContext)).isEqualTo(new ValueString("42.00", "km"));

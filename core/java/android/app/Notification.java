@@ -12690,7 +12690,7 @@ public class Notification implements Parcelable
             private static final int LOWER_BOUND_FRACTION_DIGITS = 0;
             private static final int UPPER_BOUND_FRACTION_DIGITS = 6;
             /** @hide */ @TestApi public static final int DEFAULT_MIN_FRACTION_DIGITS = 0;
-            /** @hide */ @TestApi public static final int DEFAULT_MAX_FRACTION_DIGITS = 3;
+            /** @hide */ @TestApi public static final int DEFAULT_MAX_FRACTION_DIGITS = 2;
 
             private static final String KEY_VALUE = "value";
             private static final String KEY_UNIT = "unit";
@@ -12711,7 +12711,7 @@ public class Notification implements Parcelable
             }
 
             /**
-             * Creates a {@link FixedFloat} instance with 0 minimum and 3 maximum fractional digits.
+             * Creates a {@link FixedFloat} instance with 0 minimum and 2 maximum fractional digits.
              * @param unit optional unit for the value. Limit this to a few characters.
              */
             public FixedFloat(float value, @Nullable String unit) {
