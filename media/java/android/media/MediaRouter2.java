@@ -1318,6 +1318,18 @@ public final class MediaRouter2 {
         mImpl.setRouteVolume(route, volume);
     }
 
+    /**
+     * Returns the set of apps currently affected by a system session override.
+     *
+     * <p>This method is only supported by proxy routers.
+     *
+     * @see SystemSessionOverridesListener
+     * @hide
+     */
+    public Set<AppId> getSystemSessionOverridesAppIds() {
+        return mImpl.getSystemSessionOverridesAppIds();
+    }
+
     void syncRoutesOnHandler(
             List<MediaRoute2Info> currentRoutes, RoutingSessionInfo currentSystemSessionInfo) {
         if (currentRoutes == null || currentRoutes.isEmpty() || currentSystemSessionInfo == null) {
@@ -2971,6 +2983,13 @@ public final class MediaRouter2 {
          * @param listener The listener to unregister.
          */
         void unregisterSystemSessionOverridesListener(SystemSessionOverridesListener listener);
+
+        /**
+         * Returns the set of apps affected by a system session override.
+         *
+         * @see SystemSessionOverridesListener
+         */
+        Set<AppId> getSystemSessionOverridesAppIds();
     }
 
     /**
@@ -3002,6 +3021,17 @@ public final class MediaRouter2 {
         private final List<InstanceInvalidatedCallbackRecord> mInstanceInvalidatedCallbackRecords =
                 new ArrayList<>();
 
+        /**
+         * Holds the last snapshot of ids of apps affected by a system session override.
+         *
+         * <p>Must hold an immutable set to avoid the need for a copy in {@link
+         * #getSystemSessionOverridesAppIds}.
+         *
+         * @see SystemSessionOverridesListener
+         */
+        @GuardedBy("mLock")
+        private Set<AppId> mLastSystemSessionSessionOverridesLocked = Set.of();
+
         ProxyMediaRouter2Impl(
                 @NonNull Context context,
                 @NonNull String clientPackageName,
@@ -3019,8 +3049,19 @@ public final class MediaRouter2 {
                         mContext.getApplicationContext().getPackageName(),
                         mClientPackageName,
                         mClientUser);
+                initSystemSessionOverridesSnapshot();
             } catch (RemoteException ex) {
                 throw ex.rethrowFromSystemServer();
+            }
+        }
+
+        private void initSystemSessionOverridesSnapshot() throws RemoteException {
+            if (!Flags.enableMirroringInMediaRouter2()) {
+                return;
+            }
+            synchronized (mLock) {
+                mLastSystemSessionSessionOverridesLocked =
+                        Set.copyOf(mMediaRouterService.getSystemSessionOverridesAppIds(mClient));
             }
         }
 
@@ -3601,6 +3642,13 @@ public final class MediaRouter2 {
                             /* executor= */ Runnable::run, listener));
         }
 
+        @Override
+        public Set<AppId> getSystemSessionOverridesAppIds() {
+            synchronized (mLock) {
+                return mLastSystemSessionSessionOverridesLocked;
+            }
+        }
+
         /**
          * Retrieves the system session info for the given package.
          *
@@ -3921,6 +3969,9 @@ public final class MediaRouter2 {
 
         private void notifySystemSessionOverridesChangedOnHandler(List<AppId> appsWithOverrides) {
             var appsWithOverridesAsSet = Set.copyOf(appsWithOverrides);
+            synchronized (mLock) {
+                mLastSystemSessionSessionOverridesLocked = appsWithOverridesAsSet;
+            }
             for (var record : mSystemSessionOverridesListenerRecords) {
                 record.mExecutor.execute(
                         () ->
@@ -4434,6 +4485,12 @@ public final class MediaRouter2 {
                 SystemSessionOverridesListener listener) {
             throw new UnsupportedOperationException(
                     "unregisterSystemSessionOverridesListener is only supported on proxy routers.");
+        }
+
+        @Override
+        public Set<AppId> getSystemSessionOverridesAppIds() {
+            throw new UnsupportedOperationException(
+                    "getAppsWithSystemSessionOverrides is only supported on proxy routers.");
         }
 
         @GuardedBy("mLock")

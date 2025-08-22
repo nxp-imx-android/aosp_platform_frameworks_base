@@ -17,6 +17,7 @@
 package android.media;
 
 import android.content.Intent;
+import android.media.AppId;
 import android.media.IMediaRouter2;
 import android.media.IMediaRouter2Manager;
 import android.media.IMediaRouterClient;
@@ -87,6 +88,7 @@ interface IMediaRouterService {
     List<RoutingSessionInfo> getRemoteSessions(IMediaRouter2Manager manager);
     RoutingSessionInfo getSystemSessionInfoForPackage(String callerPackageName,
         String targetPackageName);
+    List<AppId> getSystemSessionOverridesAppIds(IMediaRouter2Manager manager);
     void registerManager(IMediaRouter2Manager manager, String packageName);
     void registerProxyRouter(IMediaRouter2Manager manager, String callingPackageName, String targetPackageName, in UserHandle targetUser);
     void unregisterManager(IMediaRouter2Manager manager);
