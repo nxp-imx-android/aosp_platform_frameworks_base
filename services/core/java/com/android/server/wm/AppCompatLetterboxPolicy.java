@@ -180,6 +180,12 @@ class AppCompatLetterboxPolicy {
     }
 
     void updateLetterboxSurfaceIfNeeded(@NonNull WindowState winHint) {
+        // If a starting window is active, only apply updates to that specific window.
+        if (Flags.appCompatRefactoringSkipStartingWindowLetterbox()
+                && mActivityRecord.mStartingWindow != null
+                && mActivityRecord.mStartingWindow != winHint) {
+            return;
+        }
         mLetterboxPolicyState.updateLetterboxSurfaceIfNeeded(winHint,
                 mActivityRecord.getSyncTransaction(), mActivityRecord.getPendingTransaction());
     }
