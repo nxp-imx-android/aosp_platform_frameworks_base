@@ -351,6 +351,27 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
     }
 
     @Test
+    public void testAbandonShouldCleanUpApexSession_AbandonDuringVerification() throws Exception {
+        String before = getDevice().executeShellCommand("apexd --dump sessions");
+        getDevice().setProperty("apexd.test_hook.submit_staged_session", "sleep_ms 1000");
+        try {
+            runPhase("testAbandonShouldCleanUpApexSession_AbandonDuringVerification");
+            String after = getDevice().executeShellCommand("apexd --dump sessions");
+            assertThat(after).isEqualTo(before);
+        } finally {
+            getDevice().setProperty("apexd.test_hook.submit_staged_session", "");
+        }
+    }
+
+    @Test
+    public void testAbandonShouldCleanUpApexSession_AbandonAfterVerification() throws Exception {
+        String before = getDevice().executeShellCommand("apexd --dump sessions");
+        runPhase("testAbandonShouldCleanUpApexSession_AbandonAfterVerification");
+        String after = getDevice().executeShellCommand("apexd --dump sessions");
+        assertThat(after).isEqualTo(before);
+    }
+
+    @Test
     public void testStagedSessionShouldCleanUpOnVerificationFailure() throws Exception {
         assumeTrue("Device does not support updating APEX",
                 mHostUtils.isApexUpdateSupported());

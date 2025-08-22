@@ -721,6 +721,25 @@ public class StagingManagerTest {
         verify(observer, never()).onApexStaged(any());
     }
 
+    @Test
+    public void abortCommittedSession_ensuresApexSessionIsAborted_whenItsNotReady()
+            throws Exception {
+        // Create a session and abandon it. It's not ready and committed to StagingManager yet.
+        FakeStagedSession session = new FakeStagedSession(239);
+        session.setIsApex(true);
+        session.setDestroyed(true);
+        assertThat(session.isSessionReady()).isFalse();
+
+        ApexSessionInfo stagedSessionInfo = new ApexSessionInfo();
+        stagedSessionInfo.sessionId = 239;
+        stagedSessionInfo.isVerified = true;
+        when(mApexManager.getStagedSessionInfo(239)).thenReturn(stagedSessionInfo);
+
+        mStagingManager.abortCommittedSession(session);
+
+        verify(mApexManager, times(1)).abortStagedSession(239);
+    }
+
     private StagingManager.StagedSession createSession(int sessionId, String packageName,
             long committedMillis) {
         PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
