@@ -89,6 +89,10 @@ class AppIdPermissionPolicy : SchemePolicy() {
         }
     }
 
+    override fun MutateStateScope.onUserRemoved(userId: Int) {
+        onPermissionFlagsChangedListeners.forEachIndexed { _, it -> it.onUserRemoved(userId) }
+    }
+
     override fun MutateStateScope.onAppIdRemoved(appId: Int) {
         newState.userStates.forEachIndexed { userStateIndex, _, userState ->
             if (appId in userState.appIdPermissionFlags) {
@@ -96,6 +100,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 // Skip notifying the change listeners since the app ID no longer exists.
             }
         }
+        onPermissionFlagsChangedListeners.forEachIndexed { _, it -> it.onAppIdRemoved(appId) }
     }
 
     override fun MutateStateScope.onStorageVolumeMounted(
@@ -2046,6 +2051,24 @@ class AppIdPermissionPolicy : SchemePolicy() {
             oldFlags: Int,
             newFlags: Int,
         )
+
+        /**
+         * Called when a user is removed from the system.
+         *
+         * Implementations should keep this method fast to avoid stalling the locked state mutation,
+         * and only call external code after [onStateMutated] when the new state has actually become
+         * the current state visible to external code.
+         */
+        fun onUserRemoved(userId: Int) {}
+
+        /**
+         * Called when an application ID (appId) is removed from the system.
+         *
+         * Implementations should keep this method fast to avoid stalling the locked state mutation,
+         * and only call external code after [onStateMutated] when the new state has actually become
+         * the current state visible to external code.
+         */
+        fun onAppIdRemoved(appId: Int) {}
 
         /**
          * Called when the upcoming new state has become the current state.
