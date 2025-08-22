@@ -186,7 +186,12 @@ class AppHandleController(
                     wct,
                 )
 
-            handleMenu?.relayout(startT, captionLayout.captionX, captionLayout.captionY)
+            handleMenu?.relayout(
+                startT,
+                taskInfo.configuration,
+                captionLayout.captionX,
+                captionLayout.captionY,
+            )
             openByDefaultDialog?.relayout(taskInfo)
 
             updateViewHolder(captionLayout)

@@ -23,6 +23,7 @@ import android.app.WindowConfiguration
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
@@ -57,6 +58,7 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Accessibilit
 import androidx.core.view.isGone
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
+import com.android.wm.shell.common.split.SplitScreenUtils
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_DESKTOP_VIEW
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_FULLSCREEN
@@ -387,10 +389,16 @@ private constructor(
     }
 
     /** Update pill layout, in case task changes have caused positioning to change. */
-    fun relayout(t: SurfaceControl.Transaction, captionX: Int, captionY: Int) {
+    fun relayout(
+        t: SurfaceControl.Transaction,
+        configuration: Configuration,
+        captionX: Int,
+        captionY: Int,
+    ) {
         handleMenuViewContainer?.let { container ->
             updateHandleMenuPillPositions(captionX, captionY)
             container.setPosition(t, handleMenuPosition.x, handleMenuPosition.y)
+            handleMenuView?.updateSplitScreenButtonOrientation(configuration)
         }
     }
 
@@ -947,6 +955,7 @@ private constructor(
                         drawableInsets = iconButtonDrawableInsetsBase,
                     )
             }
+            updateSplitScreenButtonOrientation(taskInfo.configuration)
 
             floatingBtn.apply {
                 background =
@@ -965,6 +974,21 @@ private constructor(
                         drawableInsets = iconButtonDrawableInsetEnd,
                     )
             }
+        }
+
+        /** Update the split screen button (horizontal vs. vertical split) orientation. */
+        fun updateSplitScreenButtonOrientation(configuration: Configuration) {
+            splitscreenBtn.rotation =
+                if (
+                    SplitScreenUtils.isLeftRightSplit(
+                        SplitScreenUtils.allowLeftRightSplitInPortrait(context.resources),
+                        configuration,
+                    )
+                ) {
+                    0f
+                } else {
+                    90f
+                }
         }
 
         private fun bindMoreActionsPill(style: MenuStyle) {
