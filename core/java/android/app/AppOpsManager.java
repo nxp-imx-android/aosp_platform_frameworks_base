@@ -1733,9 +1733,16 @@ public class AppOpsManager {
      */
     public static final int OP_READ_CELL_INFO = AppOpEnums.APP_OP_READ_CELL_INFO;
 
+    /**
+     * Allow the app to create sessions for automated control of other applications.
+     *
+     * @hide
+     */
+    public static final int OP_AGENT_CONTROL = AppOpEnums.APP_OP_AGENT_CONTROL;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 167;
+    public static final int _NUM_OP = 168;
 
     /**
      * All app ops represented as strings.
@@ -1905,7 +1912,8 @@ public class AppOpsManager {
             OPSTR_POST_PROMOTED_NOTIFICATIONS,
             OPSTR_SYSTEM_APPLICATION_OVERLAY,
             OPSTR_READ_CELL_IDENTITY,
-            OPSTR_READ_CELL_INFO
+            OPSTR_READ_CELL_INFO,
+            OPSTR_AGENT_CONTROL,
     })
     public @interface AppOpString {}
 
@@ -2715,6 +2723,9 @@ public class AppOpsManager {
     /** @hide Read telephony cell information. */
     public static final String OPSTR_READ_CELL_INFO = "android:read_cell_info";
 
+    /** @hide Control other applications. */
+    public static final String OPSTR_AGENT_CONTROL = "android:agent_control";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -3387,6 +3398,9 @@ public class AppOpsManager {
         new AppOpInfo.Builder(OP_READ_CELL_INFO, OPSTR_READ_CELL_INFO,
                 "READ_CELL_INFO")
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED)
+                .build(),
+        new AppOpInfo.Builder(OP_AGENT_CONTROL, OPSTR_AGENT_CONTROL, "AGENT_CONTROL")
+                .setDefaultMode(AppOpsManager.MODE_IGNORED)
                 .build(),
     };
 
