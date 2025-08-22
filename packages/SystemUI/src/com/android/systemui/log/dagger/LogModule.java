@@ -18,9 +18,11 @@ package com.android.systemui.log.dagger;
 
 import android.os.Build;
 
+import com.android.systemui.CoreStartable;
 import com.android.systemui.common.data.repository.PackageChangeRepository;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.deviceentry.data.repository.DeviceEntryFaceAuthRepositoryImpl;
+import com.android.systemui.log.ClearLogBuffersCommand;
 import com.android.systemui.log.LogBuffer;
 import com.android.systemui.log.LogBufferFactory;
 import com.android.systemui.log.LogcatEchoTracker;
@@ -34,9 +36,12 @@ import com.android.systemui.qs.pipeline.shared.QSPipelineFlagsRepository;
 import com.android.systemui.qs.pipeline.shared.TileSpec;
 import com.android.systemui.util.wakelock.WakeLockLog;
 
+import dagger.Binds;
 import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
+import dagger.multibindings.ClassKey;
+import dagger.multibindings.IntoMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +50,7 @@ import java.util.Map;
  * Dagger module for providing instances of {@link LogBuffer}.
  */
 @Module
-public class LogModule {
+public abstract class LogModule {
     /** Provides a logging buffer for doze-related logs. */
     @Provides
     @SysUISingleton
@@ -664,4 +669,12 @@ public class LogModule {
     public static LogBuffer providesRearDisplayLog(LogBufferFactory factory) {
         return factory.create("RearDisplayLog", 50);
     }
+
+    /**
+     * Registers the clear log buffers ADB command.
+     */
+    @Binds
+    @IntoMap
+    @ClassKey(ClearLogBuffersCommand.class)
+    public abstract CoreStartable bindsClearLogBuffersCommand(ClearLogBuffersCommand command);
 }
