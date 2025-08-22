@@ -17,7 +17,6 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
-import android.util.Size
 import android.view.InputDevice.SOURCE_MOUSE
 import android.view.InputDevice.SOURCE_TOUCHSCREEN
 import android.view.MotionEvent
@@ -30,6 +29,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.internal.util.FrameworkStatsLog
 import com.android.wm.shell.EventLogTags
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.data.DesktopRepository.Companion.INVALID_DESK_ID
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.windowdecor.DragPositioningCallback.INPUT_METHOD_TYPE_MOUSE
@@ -46,10 +46,58 @@ class DesktopModeEventLogger {
 
     /** The session id for the current desktop mode session */
     @VisibleForTesting val currentSessionId: AtomicInteger = AtomicInteger(NO_SESSION_ID)
+    @VisibleForTesting val deskToSessionId = mutableMapOf<Int, Int>()
+    private val pendingLogSessionExit = mutableMapOf<Int, ExitReason>()
 
     private fun generateSessionId() = 1 + random.nextInt(1 shl 20)
 
+    // Caching whether the previous transition was exit due to screen off. This helps check if a
+    // following enter reason could be Screen On.
+    private var wasPreviousTransitionExitByScreenOff: Boolean = false
+
+    /** Logs enter into desktop mode with [enterReason]. */
+    fun logSessionEnter(deskId: Int, enterReason: EnterReason) {
+        if (deskToSessionId.containsKey(deskId)) {
+            ProtoLog.w(
+                WM_SHELL_DESKTOP_MODE,
+                "DesktopModeLogger: Existing desktop session: %s found on desk: %s mode enter",
+                deskToSessionId[deskId],
+                deskId,
+            )
+        }
+        val sessionId = generateSessionId()
+        deskToSessionId[deskId] = sessionId
+
+        val reason =
+            if (wasPreviousTransitionExitByScreenOff && enterReason == EnterReason.UNKNOWN_ENTER) {
+                wasPreviousTransitionExitByScreenOff = false
+                EnterReason.SCREEN_ON
+            } else {
+                enterReason
+            }
+
+        ProtoLog.v(
+            WM_SHELL_DESKTOP_MODE,
+            "DesktopModeLogger: Logging session enter, session: %s deskId: %s reason: %s",
+            sessionId,
+            deskId,
+            reason.name,
+        )
+        FrameworkStatsLog.write(
+            DESKTOP_MODE_ATOM_ID,
+            /* event */ FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EVENT__ENTER,
+            /* enterReason */ reason.reason,
+            /* exitReason */ 0,
+            /* session_id */ sessionId,
+        )
+        EventLogTags.writeWmShellEnterDesktopMode(reason.reason, sessionId)
+    }
+
     /** Logs enter into desktop mode with [enterReason] */
+    @Deprecated(
+        "Use logSessionEnter(deskId, enterReason) instead",
+        ReplaceWith("logSessionEnter(deskId, enterReason)"),
+    )
     fun logSessionEnter(enterReason: EnterReason) {
         val sessionId = generateSessionId()
         val previousSessionId = currentSessionId.getAndSet(sessionId)
@@ -57,7 +105,7 @@ class DesktopModeEventLogger {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
                 "DesktopModeLogger: Existing desktop mode session id: %s found on desktop " +
-                    "mode enter",
+                        "mode enter",
                 previousSessionId,
             )
         }
@@ -78,7 +126,84 @@ class DesktopModeEventLogger {
         EventLogTags.writeWmShellEnterDesktopMode(enterReason.reason, sessionId)
     }
 
+    /** Logs exit from all desktop mode sessions with [ExitReason.SCREEN_OFF]. */
+    fun logScreenOff() {
+        val exitReason = ExitReason.SCREEN_OFF
+        deskToSessionId.forEach { deskId, sessionId ->
+            ProtoLog.v(
+                WM_SHELL_DESKTOP_MODE,
+                "DesktopModeLogger: Logging session exit, session: %s deskId: %s reason: %s",
+                sessionId,
+                deskId,
+                exitReason.name,
+            )
+            FrameworkStatsLog.write(
+                DESKTOP_MODE_ATOM_ID,
+                /* event */ FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EVENT__EXIT,
+                /* enterReason */ 0,
+                /* exitReason */ exitReason.reason,
+                /* session_id */ sessionId,
+            )
+            EventLogTags.writeWmShellExitDesktopMode(exitReason.reason, sessionId)
+        }
+        wasPreviousTransitionExitByScreenOff = true
+        deskToSessionId.clear()
+    }
+
+    /** Queue pending exit from a desk id with active session with [ExitReason]. */
+    fun logPendingSessionExit(deskId: Int, exitReason: ExitReason) {
+        val sessionId = deskToSessionId.getOrElse(deskId, { NO_SESSION_ID })
+        if (sessionId == NO_SESSION_ID) {
+            ProtoLog.w(
+                WM_SHELL_DESKTOP_MODE,
+                "DesktopModeLogger: No session id found for logging exit from deskId: %s",
+                deskId,
+            )
+            return
+        }
+
+        ProtoLog.v(
+            WM_SHELL_DESKTOP_MODE,
+            "DesktopModeLogger: Logging session pending exit, session: %s deskId: %s reason: %s",
+            sessionId,
+            deskId,
+            exitReason.name,
+        )
+
+        pendingLogSessionExit[deskId] = exitReason
+    }
+
+    /** Logs all pending exit from all desktop mode sessions with [ExitReason]. */
+    fun logSessionExitIfNeeded() {
+        pendingLogSessionExit.forEach { deskId, exitReason ->
+            val sessionId = deskToSessionId.getOrElse(deskId, { NO_SESSION_ID })
+            if (sessionId != NO_SESSION_ID) {
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "DesktopModeLogger: Logging session exit, session: %s deskId: %s reason: %s",
+                    sessionId,
+                    deskId,
+                    exitReason.name,
+                )
+                FrameworkStatsLog.write(
+                    DESKTOP_MODE_ATOM_ID,
+                    /* event */ FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EVENT__EXIT,
+                    /* enterReason */ 0,
+                    /* exitReason */ exitReason.reason,
+                    /* session_id */ sessionId,
+                )
+                EventLogTags.writeWmShellExitDesktopMode(exitReason.reason, sessionId)
+            }
+            deskToSessionId.remove(deskId)
+        }
+        pendingLogSessionExit.clear()
+    }
+
     /** Logs exit from desktop mode session with [exitReason] */
+    @Deprecated(
+        "Use logSessionExit(deskId, enterReason) instead",
+        ReplaceWith("logSessionExit(deskId, enterReason)"),
+    )
     fun logSessionExit(exitReason: ExitReason) {
         val sessionId = currentSessionId.getAndSet(NO_SESSION_ID)
         if (sessionId == NO_SESSION_ID) {
@@ -106,12 +231,16 @@ class DesktopModeEventLogger {
     }
 
     /** Logs that a task with [taskUpdate] was added in a desktop mode session */
-    fun logTaskAdded(taskUpdate: TaskUpdate) {
-        val sessionId = currentSessionId.get()
+    fun logTaskAdded(taskUpdate: TaskUpdate, deskId: Int? = INVALID_DESK_ID) {
+        val sessionId =
+            deskId
+                ?.takeIf { it != INVALID_DESK_ID }
+                ?.let { deskToSessionId.getOrDefault(it, NO_SESSION_ID) } ?: currentSessionId.get()
         if (sessionId == NO_SESSION_ID) {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
-                "DesktopModeLogger: No session id found for logging task added",
+                "DesktopModeLogger: No session id found for logging task added in deskId: %s",
+                deskId,
             )
             return
         }
@@ -130,12 +259,16 @@ class DesktopModeEventLogger {
     }
 
     /** Logs that a task with [taskUpdate] was removed from a desktop mode session */
-    fun logTaskRemoved(taskUpdate: TaskUpdate) {
-        val sessionId = currentSessionId.get()
+    fun logTaskRemoved(taskUpdate: TaskUpdate, deskId: Int? = INVALID_DESK_ID) {
+        val sessionId =
+            deskId
+                ?.takeIf { it != INVALID_DESK_ID }
+                ?.let { deskToSessionId.getOrDefault(it, NO_SESSION_ID) } ?: currentSessionId.get()
         if (sessionId == NO_SESSION_ID) {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
-                "DesktopModeLogger: No session id found for logging task removed",
+                "DesktopModeLogger: No session id found for logging task removed in deskId: %s",
+                deskId,
             )
             return
         }
@@ -154,8 +287,11 @@ class DesktopModeEventLogger {
     }
 
     /** Logs that a task with [taskUpdate] had it's info changed in a desktop mode session */
-    fun logTaskInfoChanged(taskUpdate: TaskUpdate) {
-        val sessionId = currentSessionId.get()
+    fun logTaskInfoChanged(taskUpdate: TaskUpdate, deskId: Int? = INVALID_DESK_ID) {
+        val sessionId =
+            deskId
+                ?.takeIf { it != INVALID_DESK_ID }
+                ?.let { deskToSessionId.getOrDefault(it, NO_SESSION_ID) } ?: currentSessionId.get()
         if (sessionId == NO_SESSION_ID) {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
@@ -178,7 +314,7 @@ class DesktopModeEventLogger {
     }
 
     /**
-     * Logs that a task resize event is starting with [taskSizeUpdate] within a Desktop mode
+     * Logs that a task resize event is starting with [TaskSizeUpdate] within a Desktop mode
      * session.
      */
     fun logTaskResizingStarted(
@@ -188,11 +324,14 @@ class DesktopModeEventLogger {
         taskWidth: Int? = null,
         taskHeight: Int? = null,
         displayController: DisplayController? = null,
-        displayLayoutSize: Size? = null,
+        deskId: Int?,
     ) {
         if (!DesktopModeFlags.ENABLE_RESIZING_METRICS.isTrue) return
 
-        val sessionId = currentSessionId.get()
+        val sessionId =
+            deskId
+                ?.takeIf { it != INVALID_DESK_ID }
+                ?.let { deskToSessionId.getOrDefault(it, NO_SESSION_ID) } ?: currentSessionId.get()
         if (sessionId == NO_SESSION_ID) {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
@@ -209,7 +348,6 @@ class DesktopModeEventLogger {
                 taskWidth,
                 taskHeight,
                 displayController = displayController,
-                displayLayoutSize = displayLayoutSize,
             )
 
         ProtoLog.v(
@@ -235,11 +373,14 @@ class DesktopModeEventLogger {
         taskWidth: Int? = null,
         taskHeight: Int? = null,
         displayController: DisplayController? = null,
-        displayLayoutSize: Size? = null,
+        deskId: Int?,
     ) {
         if (!DesktopModeFlags.ENABLE_RESIZING_METRICS.isTrue) return
 
-        val sessionId = currentSessionId.get()
+        val sessionId =
+            deskId
+                ?.takeIf { it != INVALID_DESK_ID }
+                ?.let { deskToSessionId.getOrDefault(it, NO_SESSION_ID) } ?: currentSessionId.get()
         if (sessionId == NO_SESSION_ID) {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
@@ -256,7 +397,6 @@ class DesktopModeEventLogger {
                 taskWidth,
                 taskHeight,
                 displayController,
-                displayLayoutSize,
             )
 
         ProtoLog.v(
@@ -280,7 +420,6 @@ class DesktopModeEventLogger {
         taskWidth: Int? = null,
         taskHeight: Int? = null,
         displayController: DisplayController? = null,
-        displayLayoutSize: Size? = null,
     ): TaskSizeUpdate {
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
 
@@ -288,13 +427,8 @@ class DesktopModeEventLogger {
         val width = taskWidth ?: taskBounds.width()
 
         val displaySize =
-            when {
-                displayLayoutSize != null -> displayLayoutSize.height * displayLayoutSize.width
-                displayController != null ->
-                    displayController.getDisplayLayout(taskInfo.displayId)?.let {
-                        it.height() * it.width()
-                    }
-                else -> null
+            displayController?.getDisplayLayout(taskInfo.displayId)?.let {
+                it.height() * it.width()
             }
 
         return TaskSizeUpdate(

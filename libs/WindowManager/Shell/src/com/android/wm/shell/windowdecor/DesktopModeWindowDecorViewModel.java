@@ -1861,7 +1861,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 @NonNull ResizeTrigger resizeTrigger,
                 @NonNull InputMethod inputMethod,
                 @NonNull Rect startTaskBounds) {
-            // TODO: b/423560267 - Implement logging task resize started.
+            final WindowDecorationWrapper winDecor = mWindowDecorByTaskId.get(taskId);
+            final RunningTaskInfo currTaskInfo = winDecor.getTaskInfo();
+            final DesktopRepository desktopRepository =
+                    mDesktopUserRepositories.getProfile(currTaskInfo.userId);
+            final Integer deskId = desktopRepository.getDeskIdForTask(taskId);
+            mDesktopModeEventLogger.logTaskResizingStarted(resizeTrigger, inputMethod,
+                    currTaskInfo, startTaskBounds.width(),
+                    startTaskBounds.height(), mDisplayController, deskId);
         }
 
         @Override
@@ -1869,7 +1876,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 @NonNull ResizeTrigger resizeTrigger,
                 @NonNull InputMethod inputMethod,
                 @NonNull Rect endTaskBounds) {
-            // TODO: b/423560267 - Implement logging task resize ended.
+            final WindowDecorationWrapper winDecor = mWindowDecorByTaskId.get(taskId);
+            final RunningTaskInfo currTaskInfo = winDecor.getTaskInfo();
+            final DesktopRepository desktopRepository =
+                    mDesktopUserRepositories.getProfile(currTaskInfo.userId);
+            final Integer deskId = desktopRepository.getDeskIdForTask(taskId);
+            mDesktopModeEventLogger.logTaskResizingEnded(resizeTrigger, inputMethod,
+                    winDecor.getTaskInfo(), endTaskBounds.width(),
+                    endTaskBounds.height(), mDisplayController, deskId);
         }
     }
 

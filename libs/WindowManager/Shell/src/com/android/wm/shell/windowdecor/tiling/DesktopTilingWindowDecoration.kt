@@ -300,6 +300,7 @@ class DesktopTilingWindowDecoration(
             leftTiledTask.bounds.width(),
             leftTiledTask.bounds.height(),
             displayController,
+            deskId,
         )
 
         desktopModeEventLogger.logTaskResizingStarted(
@@ -309,6 +310,7 @@ class DesktopTilingWindowDecoration(
             rightTiledTask.bounds.width(),
             rightTiledTask.bounds.height(),
             displayController,
+            deskId,
         )
     }
 
@@ -376,6 +378,7 @@ class DesktopTilingWindowDecoration(
             leftTiledTask.newBounds.width(),
             leftTiledTask.newBounds.height(),
             displayController,
+            deskId,
         )
 
         desktopModeEventLogger.logTaskResizingEnded(
@@ -385,6 +388,7 @@ class DesktopTilingWindowDecoration(
             rightTiledTask.newBounds.width(),
             rightTiledTask.newBounds.height(),
             displayController,
+            deskId,
         )
 
         if (leftTiledTask.newBounds == leftTiledTask.bounds) {
