@@ -132,6 +132,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_refactoring_skip_starting_window_letterbox"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Skip letterboxing on starting window if not related to the current activity."
+  bug: "431928994"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "enable_transition_on_activity_set_requested_orientation"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether a Transition should be created after setRequestedOrientation"
