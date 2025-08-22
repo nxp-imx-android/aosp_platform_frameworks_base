@@ -28,6 +28,7 @@ import static com.android.wm.shell.draganddrop.SplitDragPolicy.Target.TYPE_SPLIT
 import static com.android.wm.shell.draganddrop.SplitDragPolicy.Target.TYPE_SPLIT_LEFT;
 import static com.android.wm.shell.draganddrop.SplitDragPolicy.Target.TYPE_SPLIT_RIGHT;
 import static com.android.wm.shell.draganddrop.SplitDragPolicy.Target.TYPE_SPLIT_TOP;
+import static com.android.wm.shell.shared.draganddrop.DragAndDropConstants.IS_FROM_NOTIFICATION;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 
@@ -124,6 +125,7 @@ public class DragLayout extends LinearLayout
 
     private boolean mIsShowing;
     private boolean mHasDropped;
+    private boolean mAllowBubbleTarget;
     private DragSession mSession;
     // The last position that was handled by the drag layout
     private final Point mLastPosition = new Point();
@@ -340,7 +342,8 @@ public class DragLayout extends LinearLayout
         mSession = session;
         mHasDropped = false;
         mCurrentTarget = null;
-
+        mAllowBubbleTarget = mSession.appData == null
+                || !mSession.appData.getBooleanExtra(IS_FROM_NOTIFICATION, false);
         boolean alreadyInSplit = mSplitScreenController != null
                 && mSplitScreenController.isSplitScreenVisible();
         if (!alreadyInSplit) {
@@ -549,7 +552,7 @@ public class DragLayout extends LinearLayout
             return;
         }
         // if event is over the bubble don't let split handle it
-        if (interceptBubbleBarEvent(x, y)) {
+        if (mAllowBubbleTarget && interceptBubbleBarEvent(x, y)) {
             mLastPosition.set(x, y);
             return;
         }
@@ -663,7 +666,8 @@ public class DragLayout extends LinearLayout
         // Process the drop exclusive by DropTarget OR by the BubbleBar
         if (mCurrentTarget != null) {
             mPolicy.onDropped(mCurrentTarget, hideTaskToken);
-        } else if (appData != null
+        } else if (mAllowBubbleTarget
+                && appData != null
                 && mIsOverBubblesDropZone
                 && BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             handleDropOnBubbleBar(appData, Objects.requireNonNull(mDragToBubbleController));
