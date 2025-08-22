@@ -107,7 +107,7 @@ internal class Element(val key: ElementKey) {
 
         /** The last state this element had in this content. */
         var lastOffset = Offset.Unspecified
-        var lastSize by mutableStateOf(SizeUnspecified)
+        var lastSize = SizeUnspecified
         var lastScale = Scale.Unspecified
         var lastAlpha = AlphaUnspecified
 
@@ -410,6 +410,7 @@ internal class ElementNode(
 
         val placeable =
             measure(layoutImpl, element, transition, stateInContent, measurable, constraints)
+        stateInContent.lastSize = placeable.size()
         return layout(placeable.width, placeable.height) { place(elementState, placeable) }
     }
 
@@ -1213,7 +1214,6 @@ private fun measure(
     maybePlaceable?.let { placeable ->
         stateInContent.sizeBeforeInterruption = Element.SizeUnspecified
         stateInContent.sizeInterruptionDelta = IntSize.Zero
-        stateInContent.lastSize = placeable.size()
         return placeable
     }
 
@@ -1236,9 +1236,6 @@ private fun measure(
                 )
             },
         )
-
-    stateInContent.lastSize = interruptedSize
-
     return measurable.measure(
         Constraints.fixed(
             interruptedSize.width.coerceAtLeast(0),
