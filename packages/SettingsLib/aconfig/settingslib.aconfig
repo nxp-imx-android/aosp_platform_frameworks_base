@@ -153,6 +153,13 @@ flag {
 }
 
 flag {
+    name: "hearing_devices_separated_preset_control"
+    namespace: "accessibility"
+    description: "Enable the separated preset control in device details and hearing devices dialog."
+    bug: "417628947"
+}
+
+flag {
     name: "settings_preference_write_consent_enabled"
     namespace: "android_settings"
     description: "Enable the user consent prompt before writing sensitive preferences via service"
