@@ -319,6 +319,12 @@ public class ActiveRestoreSession extends IRestoreSession.Stub {
                 DEVICE_NAME_FOR_D2D_SET.equals(restoreSet.device)
                         ? BackupDestination.DEVICE_TRANSFER
                         : BackupDestination.CLOUD;
+        if (Flags.enableCrossPlatformTransfer()
+                && ((restoreSet.backupTransportFlags
+                                & BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS)
+                        != 0)) {
+            backupDestination = BackupDestination.CROSS_PLATFORM_TRANSFER;
+        }
 
         if (!Flags.enableSkippingRestoreLaunchedApps()) {
             return mBackupManagerService.getEligibilityRulesForOperation(backupDestination);

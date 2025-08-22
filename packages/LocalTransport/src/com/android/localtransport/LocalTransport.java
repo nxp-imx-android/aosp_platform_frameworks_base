@@ -19,6 +19,7 @@ package com.android.localtransport;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.backup.BackupAgent;
+import android.app.backup.BackupAgent.BackupTransportFlags;
 import android.app.backup.BackupAnnotations;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
@@ -662,8 +663,13 @@ public class LocalTransport extends BackupTransport {
                 mParameters.isDeviceTransfer()
                         ? DEVICE_NAME_FOR_D2D_RESTORE_SET
                         : DEFAULT_DEVICE_NAME_FOR_RESTORE_SET;
+        @BackupTransportFlags int transportFlags = 0;
+        if (Flags.enableCrossPlatformTransfer() && mParameters.isCrossPlatformTransferIos()) {
+            transportFlags |= BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS;
+        }
         for (int i = 0; i < available.length; i++) {
-            available[i] = new RestoreSet("Local disk image", deviceName, existing[i]);
+            available[i] =
+                    new RestoreSet("Local disk image", deviceName, existing[i], transportFlags);
         }
         return available;
     }
