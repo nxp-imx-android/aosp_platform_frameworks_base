@@ -4319,20 +4319,6 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     }
 
     /**
-     * For test only
-     */
-    @VisibleForTesting
-    @GuardedBy({"mService", "mProcLock"})
-    void setLruProcessServiceStartLSP(int pos) {
-        mLruProcessServiceStart = pos;
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getLruProcessServiceStartLOSP() {
-        return mLruProcessServiceStart;
-    }
-
-    /**
      * Iterate the whole LRU list, invoke the given {@code callback} with each of the ProcessRecord
      * in that list.
      *
