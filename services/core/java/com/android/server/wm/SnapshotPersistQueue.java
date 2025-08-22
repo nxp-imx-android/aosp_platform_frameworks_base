@@ -344,10 +344,21 @@ class SnapshotPersistQueue {
         return new StoreWriteQueueItem(id, userId, snapshot, provider, lowResSnapshotConsumer);
     }
 
+    void updateKnownLowResSnapshotIfPossible(int id, TaskSnapshot lowResSnapshot) {
+        synchronized (mLock) {
+            for (StoreWriteQueueItem item : mStoreQueueItems) {
+                if (item.mId == id && item.updateKnownLowResSnapshotIfPossible(lowResSnapshot)) {
+                    break;
+                }
+            }
+        }
+    }
+
     class StoreWriteQueueItem extends WriteQueueItem {
         private final int mId;
         private final TaskSnapshot mSnapshot;
         private final Consumer<LowResSnapshotSupplier> mLowResSnapshotConsumer;
+        private TaskSnapshot mKnownLowResSnapshot;
 
         StoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
                 PersistInfoProvider provider,
@@ -366,6 +377,7 @@ class SnapshotPersistQueue {
             mStoreQueueItems.removeIf(item -> {
                 if (item.equals(this) && item.mSnapshot != mSnapshot) {
                     item.mSnapshot.removeReference(TaskSnapshot.REFERENCE_PERSIST);
+                    item.removeKnownLowResSnapshot();
                     return true;
                 }
                 return false;
@@ -377,6 +389,22 @@ class SnapshotPersistQueue {
         @Override
         void onDequeuedLocked() {
             mStoreQueueItems.remove(this);
+        }
+
+        boolean updateKnownLowResSnapshotIfPossible(TaskSnapshot lowResSnapshot) {
+            if (mSnapshot.getId() == lowResSnapshot.getId() && mKnownLowResSnapshot == null) {
+                mKnownLowResSnapshot = lowResSnapshot;
+                mKnownLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WILL_UPDATE_TO_CACHE);
+                return true;
+            }
+            return false;
+        }
+
+        private void removeKnownLowResSnapshot() {
+            if (mKnownLowResSnapshot != null) {
+                mKnownLowResSnapshot.removeReference(
+                        TaskSnapshot.REFERENCE_WILL_UPDATE_TO_CACHE);
+            }
         }
 
         @Override
@@ -490,6 +518,10 @@ class SnapshotPersistQueue {
                 mLowResSnapshotConsumer.accept(new LowResSnapshotSupplier() {
                     @Override
                     public TaskSnapshot getLowResSnapshot() {
+                        if (mKnownLowResSnapshot != null) {
+                            lowResBitmap.recycle();
+                            return mKnownLowResSnapshot;
+                        }
                         final TaskSnapshot result = TaskSnapshotConvertUtil
                                 .convertLowResSnapshot(mSnapshot, lowResBitmap);
                         lowResBitmap.recycle();
@@ -499,10 +531,12 @@ class SnapshotPersistQueue {
                     @Override
                     public void abort() {
                         lowResBitmap.recycle();
+                        removeKnownLowResSnapshot();
                     }
                 });
             } else {
                 lowResBitmap.recycle();
+                removeKnownLowResSnapshot();
             }
 
             return true;
@@ -520,6 +554,7 @@ class SnapshotPersistQueue {
         void onRemovedFromWriteQueue() {
             mStoreQueueItems.remove(this);
             mSnapshot.removeReference(TaskSnapshot.REFERENCE_PERSIST);
+            removeKnownLowResSnapshot();
         }
 
         @Override
