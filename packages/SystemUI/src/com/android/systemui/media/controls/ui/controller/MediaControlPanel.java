@@ -205,6 +205,7 @@ public class MediaControlPanel {
     private boolean mIsArtworkBound = false;
     private int mArtworkBoundId = 0;
     private int mArtworkNextBindRequestId = 0;
+    private boolean mPageArrowsVisible = false;
 
     private final KeyguardStateController mKeyguardStateController;
     private final ActivityIntentHelper mActivityIntentHelper;
@@ -1095,7 +1096,8 @@ public class MediaControlPanel {
     }
 
     void setPageArrowsVisible(boolean visible) {
-        if (!Flags.mediaCarouselArrows()) return;
+        if (!Flags.mediaCarouselArrows() || mPageArrowsVisible == visible) return;
+        mPageArrowsVisible = visible;
 
         ConstraintSet expandedSet = mMediaViewController.getExpandedLayout();
         setVisibleAndAlpha(expandedSet, R.id.page_left, visible);
