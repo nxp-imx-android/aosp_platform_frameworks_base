@@ -30,7 +30,6 @@ import com.android.compose.modifiers.thenIf
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory.Companion.lockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.math.max
 import kotlin.math.min
@@ -117,12 +116,14 @@ fun ContentScope.LockscreenSceneLayout(
 ) {
     Layout(
         content = {
-            factory.lockscreenElement(LockscreenElementKeys.StatusBar, context)
-            factory.lockscreenElement(LockscreenElementKeys.Region.Upper, context)
-            factory.lockscreenElement(LockscreenElementKeys.LockIcon, context)
-            factory.lockscreenElement(LockscreenElementKeys.AmbientIndicationArea, context)
-            factory.lockscreenElement(LockscreenElementKeys.Region.Lower, context)
-            factory.lockscreenElement(LockscreenElementKeys.SettingsMenu, context)
+            with(factory) {
+                LockscreenElement(LockscreenElementKeys.StatusBar, context, Modifier)
+                LockscreenElement(LockscreenElementKeys.Region.Upper, context, Modifier)
+                LockscreenElement(LockscreenElementKeys.LockIcon, context, Modifier)
+                LockscreenElement(LockscreenElementKeys.AmbientIndicationArea, context, Modifier)
+                LockscreenElement(LockscreenElementKeys.Region.Lower, context, Modifier)
+                LockscreenElement(LockscreenElementKeys.SettingsMenu, context, Modifier)
+            }
         },
         // Hide the lock screen elements when an overlay is shown above.
         modifier = modifier.thenIf(isIdleWithOverlay()) { Modifier.graphicsLayer { alpha = 0f } },

@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.isVisible
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.padding
 import com.android.systemui.keyguard.ui.binder.KeyguardSettingsViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSettingsMenuViewModel
@@ -55,21 +55,20 @@ constructor(
     private val vibratorHelper: VibratorHelper,
     private val activityStarter: ActivityStarter,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(settingsMenuElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(SettingsMenuElement()) }
 
-    private val settingsMenuElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.SettingsMenu
-            override val context = this@SettingsMenuElementProvider.context
+    private inner class SettingsMenuElement : LockscreenElement {
+        override val key = LockscreenElementKeys.SettingsMenu
+        override val context = this@SettingsMenuElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                SettingsMenu()
-            }
+        @Composable
+        override fun ElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            SettingsMenu()
         }
+    }
 
     @Composable
     @SuppressWarnings("InflateParams") // null is passed into the inflate call, on purpose.

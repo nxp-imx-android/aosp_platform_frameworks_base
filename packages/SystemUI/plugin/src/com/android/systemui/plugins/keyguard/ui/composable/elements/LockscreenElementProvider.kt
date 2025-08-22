@@ -22,7 +22,7 @@ import com.android.systemui.plugins.annotations.ProtectedReturn
 @GeneratedImport("java.util.ArrayList")
 /** Provides Lockscreen Elements for use by the lockscreen layout */
 interface LockscreenElementProvider {
-    @get:ProtectedReturn("return new ArrayList<LockscreenElement>();")
+    @get:ProtectedReturn("return new ArrayList<BaseLockscreenElement>();")
     /** Returns the clock views as a map of composable functions. */
-    val elements: List<LockscreenElement>
+    val elements: List<BaseLockscreenElement>
 }

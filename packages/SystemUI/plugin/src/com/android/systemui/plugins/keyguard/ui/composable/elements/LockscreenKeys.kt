@@ -16,13 +16,37 @@
 
 package com.android.systemui.plugins.keyguard.ui.composable.elements
 
+import com.android.compose.animation.scene.DefaultElementContentPicker
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.MovableElementKey
+import com.android.compose.animation.scene.SceneKey
+
+/** Keys for lockscreen scenes that our movable elements may appear in */
+object LockscreenSceneKeys {
+    val Lockscreen = SceneKey("lockscreen") // Non-nested top-level scene
+    val CenteredClockScene = SceneKey("WideLayout-CenteredClock")
+    val TwoColumnScene = SceneKey("WideLayout-TwoColumns")
+}
 
 /**
  * Defines several compose element keys which are useful for sharing a composable between the host
  * process and the client. These are similar to the view ids used previously.
  */
 object LockscreenElementKeys {
+    /**
+     * Picker to use with our MovableElementKeys
+     *
+     * Note: Only use when actually necessary. Prefer regular ElementKeys. MovableElement is
+     * typically needed when an AndroidView needs to animate between two of our subscenes, but two
+     * copies of the wrapped view cannot be created at the same time.
+     */
+    private val ContentPicker =
+        with(LockscreenSceneKeys) {
+            DefaultElementContentPicker(
+                contents = setOf(Lockscreen, CenteredClockScene, TwoColumnScene)
+            )
+        }
+
     /** Root element of the entire lockcsreen */
     val Root = ElementKey("LockscreenRoot")
     val BehindScrim = ElementKey("LockscreenBehindScrim")
@@ -60,11 +84,19 @@ object LockscreenElementKeys {
     /** Lock Icon / UDFPS */
     val LockIcon = ElementKey("LockIcon")
 
+    /** Customize affordance pop-up */
     val SettingsMenu = ElementKey("SettingsMenu")
+
+    /** Lockscreen-specific Status Bar element */
     val StatusBar = ElementKey("LockscreenStatusBar")
+
+    /** Standard indication area element */
     val IndicationArea = ElementKey("IndicationArea")
+
+    /** Ambient Indication Area (vendor defined, not included in AOSP) */
     val AmbientIndicationArea = ElementKey("AmbientIndicationArea")
 
+    /** Element keys for the start and end shortcuts */
     object Shortcuts {
         val Start = ElementKey("ShortcutStart")
         val End = ElementKey("ShortcutEnd")
@@ -72,14 +104,14 @@ object LockscreenElementKeys {
 
     /** Element Keys for composables which wrap clock views */
     object Clock {
-        val Large = ElementKey("LargeClock")
-        val Small = ElementKey("SmallClock")
+        val Large = MovableElementKey("LargeClock", ContentPicker)
+        val Small = MovableElementKey("SmallClock", ContentPicker)
     }
 
     /** Smartspace provided lockscreen elements */
     object Smartspace {
         /** The card view is the large smartspace view which shows contextual information. */
-        val Cards = ElementKey("SmartspaceCards")
+        val Cards = MovableElementKey("SmartspaceCards", ContentPicker)
 
         /**
          * DWA is the parent element for date/weather/alarm elements. The relative layout of these
@@ -89,13 +121,13 @@ object LockscreenElementKeys {
          */
         object DWA {
             object LargeClock {
-                val Above = ElementKey("SmartspaceDWA-LargeClock-Above")
-                val Below = ElementKey("SmartspaceDWA-LargeClock-Below")
+                val Above = MovableElementKey("SmartspaceDWA-LargeClock-Above", ContentPicker)
+                val Below = MovableElementKey("SmartspaceDWA-LargeClock-Below", ContentPicker)
             }
 
             object SmallClock {
-                val Column = ElementKey("SmartspaceDWA-SmallClock-Column")
-                val Row = ElementKey("SmartspaceDWA-SmallClock-Row")
+                val Column = MovableElementKey("SmartspaceDWA-SmallClock-Column", ContentPicker)
+                val Row = MovableElementKey("SmartspaceDWA-SmallClock-Row", ContentPicker)
             }
         }
     }

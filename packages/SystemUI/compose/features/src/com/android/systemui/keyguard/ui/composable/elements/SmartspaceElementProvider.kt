@@ -29,18 +29,18 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.MovableElementContentScope
+import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.modifiers.padding
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
@@ -56,7 +56,7 @@ constructor(
     private val keyguardSmartspaceViewModel: KeyguardSmartspaceViewModel,
     private val aodBurnInViewModel: AodBurnInViewModel,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy {
+    override val elements: List<MovableLockscreenElement> by lazy {
         listOf(
             DWAColumnElement(Smartspace.DWA.SmallClock.Column, isLargeClock = false),
             DWARowElement(Smartspace.DWA.SmallClock.Row, isLargeClock = false),
@@ -67,13 +67,13 @@ constructor(
     }
 
     private inner class DWAColumnElement(
-        override val key: ElementKey,
+        override val key: MovableElementKey,
         private val isLargeClock: Boolean,
-    ) : LockscreenElement {
+    ) : MovableLockscreenElement {
         override val context = this@SmartspaceElementProvider.context
 
         @Composable
-        override fun ContentScope.LockscreenElement(
+        override fun MovableElementContentScope.LockscreenElement(
             factory: LockscreenElementFactory,
             context: LockscreenElementContext,
         ) {
@@ -96,13 +96,13 @@ constructor(
     }
 
     private inner class DWARowElement(
-        override val key: ElementKey,
+        override val key: MovableElementKey,
         private val isLargeClock: Boolean,
-    ) : LockscreenElement {
+    ) : MovableLockscreenElement {
         override val context = this@SmartspaceElementProvider.context
 
         @Composable
-        override fun ContentScope.LockscreenElement(
+        override fun MovableElementContentScope.LockscreenElement(
             factory: LockscreenElementFactory,
             context: LockscreenElementContext,
         ) {
@@ -143,12 +143,12 @@ constructor(
         return dateView
     }
 
-    private inner class CardsElement : LockscreenElement {
+    private inner class CardsElement : MovableLockscreenElement {
         override val key = Smartspace.Cards
         override val context = this@SmartspaceElementProvider.context
 
         @Composable
-        override fun ContentScope.LockscreenElement(
+        override fun MovableElementContentScope.LockscreenElement(
             factory: LockscreenElementFactory,
             context: LockscreenElementContext,
         ) {

@@ -17,13 +17,13 @@ package com.android.systemui.customization.clocks.utils
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.BaseContentScope
 import com.android.compose.animation.scene.ElementKey
 
 object ContentScopeUtils {
     @Composable
     /** Convenience method for building an element w/ the default Modifier */
-    fun ContentScope.Element(key: ElementKey, content: @Composable BoxScope.() -> Unit) {
+    fun BaseContentScope.Element(key: ElementKey, content: @Composable BoxScope.() -> Unit) {
         Element(key, Modifier, content)
     }
 }
