@@ -1660,10 +1660,6 @@ public class AutoclickControllerTest {
                 .registerInputDeviceListener(listenerCaptor.capture(), any());
         InputManager.InputDeviceListener listener = listenerCaptor.getValue();
 
-        // Manually trigger once to establish initial connected state.
-        listener.onInputDeviceChanged(1);
-        mTestableLooper.processAllMessages();
-
         // Mock panels to verify interactions.
         AutoclickTypePanel mockTypePanel = mock(AutoclickTypePanel.class);
         AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
@@ -1772,10 +1768,6 @@ public class AutoclickControllerTest {
         verify(mMockInputManagerWrapper)
                 .registerInputDeviceListener(listenerCaptor.capture(), any());
         InputManager.InputDeviceListener listener = listenerCaptor.getValue();
-
-        // Manually trigger once to establish initial connected state.
-        listener.onInputDeviceChanged(1);
-        mTestableLooper.processAllMessages();
 
         // Mock panels to verify interactions.
         AutoclickTypePanel mockTypePanel = mock(AutoclickTypePanel.class);
