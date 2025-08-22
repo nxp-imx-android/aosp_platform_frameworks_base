@@ -48,49 +48,54 @@ public class FullRestoreEngineTest {
     @Test
     public void shouldSkipReadOnlyDir_skipsAllReadonlyDirsAndTheirChildren() {
         // Create the file tree.
-        TestFile[] testFiles = new TestFile[] {
-                TestFile.dir("root"),
-                TestFile.file("root/auth_token"),
-                TestFile.dir("root/media"),
-                TestFile.file("root/media/picture1.png"),
-                TestFile.file("root/push_token.txt"),
-                TestFile.dir("root/read-only-dir-1").markReadOnly().expectSkipped(),
-                TestFile.dir("root/read-only-dir-1/writable-subdir").expectSkipped(),
-                TestFile.file("root/read-only-dir-1/writable-subdir/writable-file").expectSkipped(),
-                TestFile.dir("root/read-only-dir-1/writable-subdir/read-only-subdir-2")
-                        .markReadOnly().expectSkipped(),
-                TestFile.file("root/read-only-dir-1/writable-file").expectSkipped(),
-                TestFile.file("root/random-stuff.txt"),
-                TestFile.dir("root/database"),
-                TestFile.file("root/database/users.db"),
-                TestFile.dir("root/read-only-dir-2").markReadOnly().expectSkipped(),
-                TestFile.file("root/read-only-dir-2/writable-file-1").expectSkipped(),
-                TestFile.file("root/read-only-dir-2/writable-file-2").expectSkipped(),
-        };
+        TestFile[] testFiles =
+                new TestFile[] {
+                    TestFile.dir("root"),
+                    TestFile.file("root/auth_token"),
+                    TestFile.dir("root/media"),
+                    TestFile.file("root/media/picture1.png"),
+                    TestFile.file("root/push_token.txt"),
+                    TestFile.dir("root/read-only-dir-1").markReadOnly().expectSkipped(),
+                    TestFile.dir("root/read-only-dir-1/writable-subdir").expectSkipped(),
+                    TestFile.file("root/read-only-dir-1/writable-subdir/writable-file")
+                            .expectSkipped(),
+                    TestFile.dir("root/read-only-dir-1/writable-subdir/read-only-subdir-2")
+                            .markReadOnly()
+                            .expectSkipped(),
+                    TestFile.file("root/read-only-dir-1/writable-file").expectSkipped(),
+                    TestFile.file("root/random-stuff.txt"),
+                    TestFile.dir("root/database"),
+                    TestFile.file("root/database/users.db"),
+                    TestFile.dir("root/read-only-dir-2").markReadOnly().expectSkipped(),
+                    TestFile.file("root/read-only-dir-2/writable-file-1").expectSkipped(),
+                    TestFile.file("root/read-only-dir-2/writable-file-2").expectSkipped(),
+                };
 
         assertCorrectItemsAreSkipped(testFiles);
     }
 
     @Test
     public void shouldSkipReadOnlyDir_onlySkipsChildrenUnderTheSamePackage() {
-        TestFile[] testFiles = new TestFile[]{
-                TestFile.dir("read-only-dir").markReadOnly().expectSkipped(),
-                TestFile.file("read-only-dir/file").expectSkipped(),
-                TestFile.file("read-only-dir/file-from-different-package")
-                        .setPackage(NEW_PACKAGE_NAME),
-        };
+        TestFile[] testFiles =
+                new TestFile[] {
+                    TestFile.dir("read-only-dir").markReadOnly().expectSkipped(),
+                    TestFile.file("read-only-dir/file").expectSkipped(),
+                    TestFile.file("read-only-dir/file-from-different-package")
+                            .setPackage(NEW_PACKAGE_NAME),
+                };
 
         assertCorrectItemsAreSkipped(testFiles);
     }
 
     @Test
     public void shouldSkipReadOnlyDir_onlySkipsChildrenUnderTheSameDomain() {
-        TestFile[] testFiles = new TestFile[]{
-                TestFile.dir("read-only-dir").markReadOnly().expectSkipped(),
-                TestFile.file("read-only-dir/file").expectSkipped(),
-                TestFile.file("read-only-dir/file-from-different-domain")
-                        .setDomain(NEW_DOMAIN_NAME),
-        };
+        TestFile[] testFiles =
+                new TestFile[] {
+                    TestFile.dir("read-only-dir").markReadOnly().expectSkipped(),
+                    TestFile.file("read-only-dir/file").expectSkipped(),
+                    TestFile.file("read-only-dir/file-from-different-domain")
+                            .setDomain(NEW_DOMAIN_NAME),
+                };
 
         assertCorrectItemsAreSkipped(testFiles);
     }
@@ -100,8 +105,9 @@ public class FullRestoreEngineTest {
         for (TestFile testFile : testFiles) {
             boolean actualExcluded = mRestoreEngine.shouldSkipReadOnlyDir(testFile.mMetadata);
             boolean expectedExcluded = testFile.mShouldSkip;
-            assertWithMessage(testFile.mMetadata.path).that(actualExcluded).isEqualTo(
-                    expectedExcluded);
+            assertWithMessage(testFile.mMetadata.path)
+                    .that(actualExcluded)
+                    .isEqualTo(expectedExcluded);
         }
     }
 
