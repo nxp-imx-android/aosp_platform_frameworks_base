@@ -1911,7 +1911,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             @Nullable ImeTracker.Token statsToken) {
         // TODO(b/166736352): We should only skip the animation of specific types, not all types.
         boolean skipsAnim = false;
-        if ((types & ime()) != 0) {
+        if (!Flags.unifySkipAnimationOnceWithInitiallyVisible() && (types & ime()) != 0) {
             final InsetsSourceControl imeControl = mImeSourceConsumer.getControl();
             // Skip showing animation once that made by system for some reason.
             // (e.g. starting window with hasImeSurface)

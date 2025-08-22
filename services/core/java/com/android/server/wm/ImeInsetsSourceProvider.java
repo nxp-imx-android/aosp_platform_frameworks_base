@@ -211,12 +211,52 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         return isSurfaceVisible;
     }
 
+    @Override
+    protected boolean isInitiallyVisible(@NonNull InsetsControlTarget target) {
+        boolean initiallyVisible = super.isInitiallyVisible(target);
+        // parent initiallyVisible is true, if it is client visible.
+        if (initiallyVisible && mServerVisible) {
+            WindowContainer<?> imeParentWindow = mDisplayContent.getImeParentWindow();
+            // If the IME is attached to an app window, only consider it initially visible
+            // if the parent is visible and wasn't part of a transition.
+            initiallyVisible =
+                    imeParentWindow != null && !imeParentWindow.inTransition()
+                            && imeParentWindow.isVisible()
+                            && imeParentWindow.isVisibleRequested();
+        } else {
+            initiallyVisible = false;
+        }
+        if (android.view.inputmethod.Flags.unifySkipAnimationOnceWithInitiallyVisible()
+                && !initiallyVisible && target.getWindow() != null) {
+            final var targetWin = target.getWindow();
+            final Task task = targetWin.getTask();
+            // If the control target has a starting window, and its snapshot was captured while
+            // the IME was visible, skip the next IME show animation on the IME source control,
+            // to gracefully restore the IME visibility.
+            StartingData startingData = null;
+            if (task != null) {
+                startingData = targetWin.mActivityRecord.mStartingData;
+                if (startingData == null) {
+                    final WindowState startingWin = task.topStartingWindow();
+                    if (startingWin != null) {
+                        startingData = startingWin.mStartingData;
+                    }
+                }
+                initiallyVisible = startingData != null && startingData.hasImeSurface();
+                ProtoLog.d(WM_DEBUG_IME, "Overwriting initiallyVisible %s for %s",
+                        initiallyVisible, targetWin);
+            }
+        }
+        return initiallyVisible;
+    }
+
     @Nullable
     @Override
     InsetsSourceControl getControl(@NonNull InsetsControlTarget target) {
         final InsetsSourceControl control = super.getControl(target);
         final WindowState targetWin = target.getWindow();
-        if (control != null && targetWin != null) {
+        if (!android.view.inputmethod.Flags.unifySkipAnimationOnceWithInitiallyVisible()
+                && control != null && targetWin != null) {
             final Task task = targetWin.getTask();
             // If the control target has a starting window, and its snapshot was captured while
             // the IME was visible, skip the next IME show animation on the IME source control,

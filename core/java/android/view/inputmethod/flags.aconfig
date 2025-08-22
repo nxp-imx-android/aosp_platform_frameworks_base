@@ -229,3 +229,9 @@ flag {
   bug: "364856257"
 }
 
+flag {
+  name: "unify_skip_animation_once_with_initially_visible"
+  namespace: "input_method"
+  description: "Deprecating skipAnimationOnce and using initiallyVisible instead."
+  bug: "440511879"
+}
