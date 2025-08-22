@@ -36,12 +36,15 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.util.proto.ProtoOutputStream;
 import android.window.DesktopModeFlags;
 
 import com.android.server.wm.utils.OptPropFactory;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -51,6 +54,24 @@ class AppCompatCameraOverrides {
 
     private static final String TAG = TAG_WITH_CLASS_NAME
             ? "AppCompatCameraOverrides" : TAG_ATM;
+
+
+    /** There is no active or requested refresh for the activity. */
+    static final int NONE = 0;
+
+    /** A request was made for this activity to be refreshed, but it hasn't started yet. */
+    static final int REQUESTED = 1;
+
+    /** The activity is currently refreshing. */
+    static final int IN_PROGRESS = 2;
+
+    @IntDef(value = {
+            NONE,
+            REQUESTED,
+            IN_PROGRESS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ActivityRefreshState {}
 
     @NonNull
     private final ActivityRecord mActivityRecord;
@@ -216,6 +237,22 @@ class AppCompatCameraOverrides {
     /**
      * Whether activity "refresh" was requested but not finished in {@link #activityResumedLocked}.
      */
+    @ActivityRefreshState
+    int getActivityRefreshState() {
+        return mAppCompatCameraOverridesState.mActivityRefreshState;
+    }
+
+    /**
+     * @param refreshState Whether activity "refresh" is requested, pending (in progress), or not
+     *                    needed, in {@link #activityResumedLocked}.
+     */
+    void setActivityRefreshState(@ActivityRefreshState int refreshState) {
+        mAppCompatCameraOverridesState.mActivityRefreshState = refreshState;
+    }
+
+    /**
+     * Whether activity "refresh" was requested but not finished in {@link #activityResumedLocked}.
+     */
     boolean isRefreshRequested() {
         return mAppCompatCameraOverridesState.mIsRefreshRequested;
     }
@@ -248,9 +285,15 @@ class AppCompatCameraOverrides {
     }
 
     static class AppCompatCameraOverridesState {
+        // Whether activity "refresh" was requested, in progress, or not needed, following the
+        // camera compat treatment applied by AppCompatCameraSimReqOrientationPolicy
+        // (AppCompatCameraDisplayRotationPolicy is being sunset so it is left unchanged).
+        @ActivityRefreshState
+        private int mActivityRefreshState = NONE;
+
         // Whether activity "refresh" was requested but not finished in
-        // ActivityRecord#activityResumedLocked following the camera compat force rotation in
-        // DisplayRotationCompatPolicy.
+        // ActivityRecord#activityResumedLocked following the camera compat treatment applied by
+        // AppCompatCameraDisplayRotationPolicy or AppCompatCameraSimReqOrientationPolicy.
         private boolean mIsRefreshRequested;
     }
 }
