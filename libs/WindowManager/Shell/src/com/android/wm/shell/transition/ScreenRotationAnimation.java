@@ -183,8 +183,7 @@ class ScreenRotationAnimation {
                 }
                 hardwareBuffer.close();
             }
-            if ((flags & FLAG_HAS_WALLPAPER) != 0
-                    && !com.android.window.flags.Flags.noAlphaRotationEnterAnimation()) {
+            if ((flags & FLAG_HAS_WALLPAPER) != 0) {
                 mBackEffectSurface = new SurfaceControl.Builder()
                         .setCallsite("ShellRotationAnimation").setParent(rootLeash)
                         .setEffectLayer().setOpaque(true).setName("BackEffect").build();
