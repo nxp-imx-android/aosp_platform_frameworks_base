@@ -23,6 +23,8 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
+import com.android.systemui.desktop.domain.interactor.enableDesktopFeatureSet
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
@@ -94,6 +96,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             KeyguardStatusBarViewModel(
                 testScope.backgroundScope,
                 headsUpNotificationInteractor,
+                kosmos.desktopInteractor,
                 kosmos.sceneInteractor,
                 keyguardInteractor,
                 keyguardStatusBarInteractor,
@@ -164,6 +167,20 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
             kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    fun isVisible_desktopFeatureSetEnabled_false() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.isVisible)
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
+            runCurrent()
+            assertThat(latest).isTrue()
+
+            kosmos.enableDesktopFeatureSet()
+            runCurrent()
 
             assertThat(latest).isFalse()
         }
