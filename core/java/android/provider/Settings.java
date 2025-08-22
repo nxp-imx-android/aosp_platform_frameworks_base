@@ -10467,6 +10467,9 @@ public final class Settings {
          * Whether to mirror the built-in display on all connected displays.
          * @hide
          */
+        @TestApi
+        @Readable
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi purely for CTS support.
         public static final String MIRROR_BUILT_IN_DISPLAY = "mirror_built_in_display";
 
         /**
