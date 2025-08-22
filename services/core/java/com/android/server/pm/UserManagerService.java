@@ -1414,6 +1414,20 @@ public class UserManagerService extends IUserManager.Stub {
         return UserHandle.USER_NULL;
     }
 
+    private @UserIdInt int getDeviceOwnerUserId() {
+        DevicePolicyManagerInternal dpmi = getDevicePolicyManagerInternal();
+        if (dpmi == null) {
+            return UserHandle.USER_NULL;
+        }
+        // TODO(b/435271558): change dpmi.getDeviceOwnerUserId() so it doesn't check for permissions
+        long ident = Binder.clearCallingIdentity();
+        try {
+            return dpmi.getDeviceOwnerUserId();
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
     @Override
     public void setBootUser(@UserIdInt int userId) {
         checkCreateUsersPermission("Set boot user");
@@ -7172,6 +7186,9 @@ public class UserManagerService extends IUserManager.Stub {
         if (mRemovingUserIds.get(userId)) {
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
         }
+        if (userId == getDeviceOwnerUserId()) {
+            return UserManager.REMOVE_RESULT_DEVICE_OWNER;
+        }
         if (isNonRemovableLastAdminUserLU(userData.info)) {
             return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
         }
@@ -7196,6 +7213,9 @@ public class UserManagerService extends IUserManager.Stub {
             case UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER ->
                 Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.",
                         userId, action);
+            case UserManager.REMOVE_RESULT_DEVICE_OWNER ->
+                    Slogf.w(LOG_TAG, "User %d can not be %s because it's the device owner", userId,
+                            action);
             default -> {}
         }
     }
