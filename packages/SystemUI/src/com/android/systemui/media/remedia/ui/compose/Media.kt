@@ -621,7 +621,7 @@ private fun ContentScope.CardForegroundContent(
                 if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
                     AnimatedVisibility(visible = viewModel.playPauseAction != null) {
                         PlayPauseAction(
-                            viewModel = checkNotNull(viewModel.playPauseAction),
+                            viewModel = viewModel.playPauseAction,
                             buttonSize = playPauseSize,
                             buttonColor = colorScheme.primary,
                             iconColor = colorScheme.onPrimary,
@@ -703,7 +703,7 @@ private fun ContentScope.CardForegroundContent(
                 if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
                     AnimatedVisibility(visible = viewModel.playPauseAction != null) {
                         PlayPauseAction(
-                            viewModel = checkNotNull(viewModel.playPauseAction),
+                            viewModel = viewModel.playPauseAction,
                             buttonSize = playPauseSize,
                             buttonColor = colorScheme.primary,
                             iconColor = colorScheme.onPrimary,
@@ -772,7 +772,7 @@ private fun ContentScope.CompactCardForeground(
 
         AnimatedVisibility(visible = viewModel.playPauseAction != null) {
             PlayPauseAction(
-                viewModel = checkNotNull(viewModel.playPauseAction),
+                viewModel = viewModel.playPauseAction,
                 buttonSize = DpSize(width = 72.dp, height = 48.dp),
                 buttonColor = MaterialTheme.colorScheme.primaryContainer,
                 iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -1263,13 +1263,15 @@ private fun DeviceChip(
 /** Renders the primary action of media controls: the play/pause button. */
 @Composable
 private fun ContentScope.PlayPauseAction(
-    viewModel: MediaPlayPauseActionViewModel,
+    viewModel: MediaPlayPauseActionViewModel?,
     buttonSize: DpSize,
     buttonColor: Color,
     iconColor: Color,
     buttonCornerRadius: (isPlaying: Boolean) -> Dp,
     modifier: Modifier = Modifier,
 ) {
+    if (viewModel == null) return
+
     val cornerRadius: Dp by
         animateDpAsState(
             targetValue = buttonCornerRadius(viewModel.state != MediaSessionState.Paused),
