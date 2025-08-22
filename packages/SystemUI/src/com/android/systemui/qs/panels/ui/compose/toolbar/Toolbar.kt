@@ -56,7 +56,11 @@ import com.android.systemui.qs.ui.compose.borderOnFocus
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
+fun Toolbar(
+    viewModel: ToolbarViewModel,
+    isFullyVisible: () -> Boolean,
+    modifier: Modifier = Modifier,
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val securityInfoCollapsed = viewModel.securityInfoShowCollapsed
 
@@ -67,7 +71,11 @@ fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
                 label = "Toolbar.CollapsedSecurityInfo",
             ) { securityInfoCollapsed ->
                 if (securityInfoCollapsed) {
-                    StandardToolbarLayout(animatedContentScope = this@AnimatedContent, viewModel)
+                    StandardToolbarLayout(
+                        animatedContentScope = this@AnimatedContent,
+                        viewModel,
+                        isFullyVisible,
+                    )
                 } else {
                     SecurityInfo(
                         viewModel = viewModel.securityInfoViewModel,
@@ -94,6 +102,7 @@ fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
 private fun SharedTransitionScope.StandardToolbarLayout(
     animatedContentScope: AnimatedContentScope,
     viewModel: ToolbarViewModel,
+    isFullyVisible: () -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier) {
@@ -106,10 +115,9 @@ private fun SharedTransitionScope.StandardToolbarLayout(
         )
 
         // Edit mode button
-        // TODO(b/410843063): Support the tooltip in DualShade
         val editModeButtonViewModel =
             rememberViewModel("Toolbar") { viewModel.editModeButtonViewModelFactory.create() }
-        EditModeButton(editModeButtonViewModel, tooltipEnabled = false)
+        EditModeButton(editModeButtonViewModel, isVisible = isFullyVisible())
 
         // Settings button
         IconButton(
