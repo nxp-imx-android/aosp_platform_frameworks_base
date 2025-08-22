@@ -23,6 +23,7 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREG
 import static android.app.Flags.fixGetBitmapCrops;
 import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.Flags.updateRecentsFromSystem;
+import static android.app.Flags.alwaysRebindUserSetWallpaper;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -3244,8 +3245,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     boolean setWallpaperDescription(WallpaperDescription description, String callingPackage,
             @SetWallpaperFlags int which, int userId) {
         boolean fromForeground = isFromForegroundApp(callingPackage);
-        return setWallpaperDescriptionInternal(description, which, userId, false, fromForeground,
-                null);
+        return setWallpaperDescriptionInternal(description, which, userId,
+                alwaysRebindUserSetWallpaper(), fromForeground, null);
     }
 
     private boolean setWallpaperDescriptionInternal(@NonNull WallpaperDescription description,
