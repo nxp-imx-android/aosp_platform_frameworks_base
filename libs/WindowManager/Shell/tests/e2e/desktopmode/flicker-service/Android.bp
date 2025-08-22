@@ -276,6 +276,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-ActionTabSwitchToDesktopAppFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.ActionTabSwitchToDesktopAppFlickerTest"],
+}
+
+test_module_config {
     name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeFlickerTest",
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
