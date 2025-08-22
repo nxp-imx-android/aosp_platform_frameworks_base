@@ -441,7 +441,7 @@ fun RegionBox(
         }
 
         // The width of the border stroke around the region box.
-        val borderStrokeWidth = 4.dp
+        val borderStrokeWidth = 2.dp
 
         state.rect?.let { currentRect ->
             // A parent container for the region box and its associated UI. By applying the
@@ -661,7 +661,7 @@ fun RegionBox(
                                         Modifier.size(boxWidthDp, boxHeightDp)
                                             .border(
                                                 borderStrokeWidth,
-                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                                MaterialTheme.colorScheme.primary,
                                             )
                                 )
                             }
