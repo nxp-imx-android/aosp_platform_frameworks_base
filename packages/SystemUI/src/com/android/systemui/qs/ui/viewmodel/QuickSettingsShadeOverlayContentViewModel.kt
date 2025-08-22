@@ -24,6 +24,7 @@ import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
+import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.qs.flags.QsDetailedView
@@ -69,6 +70,7 @@ constructor(
     val desktopInteractor: DesktopInteractor,
     audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
     val audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
+    val buildNumberViewModelFactory: BuildNumberViewModel.Factory,
     @ShadeDisplayAware shadeContext: Context,
     val shadeInteractor: ShadeInteractor,
     val shadeModeInteractor: ShadeModeInteractor,

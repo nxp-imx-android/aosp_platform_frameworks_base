@@ -18,9 +18,13 @@ package com.android.systemui.qs.panels.ui.compose.toolbar
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -44,8 +48,6 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.development.ui.compose.BuildNumber
-import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel
 import com.android.systemui.qs.panels.ui.compose.toolbar.Toolbar.TransitionKeys.SecurityInfoKey
@@ -131,7 +133,6 @@ private fun SharedTransitionScope.StandardToolbarLayout(
         // Text feedback chip / build number
         ToolbarTextFeedback(
             viewModelFactory = viewModel.textFeedbackContentViewModelFactory,
-            buildNumberViewModelFactory = viewModel.buildNumberViewModelFactory,
             modifier = Modifier.weight(1f).align(Alignment.CenterVertically),
         )
     }
@@ -186,7 +187,6 @@ private fun ToolbarIcon(icon: Icon, modifier: Modifier = Modifier, tint: Color) 
 @Composable
 private fun ToolbarTextFeedback(
     viewModelFactory: TextFeedbackContentViewModel.Factory,
-    buildNumberViewModelFactory: BuildNumberViewModel.Factory,
     modifier: Modifier,
 ) {
     Box(modifier = modifier) {
@@ -197,16 +197,14 @@ private fun ToolbarTextFeedback(
             }
         val hasTextFeedback = viewModel.textFeedback !is TextFeedbackViewModel.NoFeedback
 
-        AnimatedContent(
-            targetState = hasTextFeedback,
+        AnimatedVisibility(
+            visible = hasTextFeedback,
             modifier = Modifier.align(Alignment.Center),
             label = "Toolbar.ToolbarTextFeedback",
-        ) { showTextFeedback ->
-            if (showTextFeedback) {
-                TextFeedback(model = viewModel.textFeedback)
-            } else {
-                BuildNumber(viewModelFactory = buildNumberViewModelFactory)
-            }
+            enter = fadeIn(tween(durationMillis = 200)),
+            exit = fadeOut(tween(durationMillis = 200)),
+        ) {
+            TextFeedback(model = viewModel.textFeedback)
         }
     }
 }

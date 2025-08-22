@@ -18,6 +18,7 @@ package com.android.systemui.qs.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
+import com.android.systemui.development.ui.viewmodel.buildNumberViewModelFactory
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.toolbarViewModelFactory
@@ -47,6 +48,7 @@ val Kosmos.quickSettingsShadeOverlayContentViewModelFactory:
                     shadeContext = applicationContext,
                     audioDetailsViewModelFactory = audioDetailsViewModelFactory,
                     audioStreamSliderViewModelFactory = audioStreamSliderViewModelFactory,
+                    buildNumberViewModelFactory = buildNumberViewModelFactory,
                     volumeSliderCoroutineScope = volumeSliderCoroutineScope,
                     toolbarViewModelFactory = toolbarViewModelFactory,
                     windowRootViewBlurInteractor = windowRootViewBlurInteractor,
