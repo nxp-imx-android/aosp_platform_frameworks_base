@@ -42,6 +42,7 @@ import android.graphics.Region;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
@@ -80,6 +81,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.ShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
@@ -2215,6 +2217,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     /** */
     public final class QsFragmentListener implements FragmentHostManager.FragmentListener {
 
+        private int mLastDisplayIdWithMediaVisibilityChange = Display.DEFAULT_DISPLAY;
+
         /** */
         @Override
         public void onFragmentViewCreated(String tag, Fragment fragment) {
@@ -2243,10 +2247,21 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     mLastMediaVisibility = visible;
                     mPanelViewControllerLazy.get().positionClockAndNotifications();
                 }
-                if (mQs.isHeaderShown()) {
+                boolean shouldSkipAnimation = false;
+
+                if (ShadeWindowGoesAround.isEnabled() && mLastDisplayIdWithMediaVisibilityChange
+                        != getDisplayId()) {
+                    // Let's not animate the bounds if the visibility change is due to the
+                    // display being changed, otherwise we'll see some animation after the
+                    // shade changes display.
+                    shouldSkipAnimation = true;
+                    mLastDisplayIdWithMediaVisibilityChange = getDisplayId();
+                }
+                if (mQs.isHeaderShown() && !shouldSkipAnimation) {
                     setAnimateNextNotificationBounds(
                             StackStateAnimator.ANIMATION_DURATION_STANDARD, 0);
                     mNotificationStackScrollLayoutController.animateNextTopPaddingChange();
+
                 }
             });
             mLockscreenShadeTransitionController.setQS(mQs);
@@ -2266,6 +2281,10 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             }
             mQs.setScrollListener(mQsScrollListener);
             updateExpansion();
+        }
+
+        private int getDisplayId() {
+            return mPanelView.getContext().getDisplayId();
         }
 
         /** */
