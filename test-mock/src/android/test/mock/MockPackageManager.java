@@ -1085,7 +1085,7 @@ public class MockPackageManager extends PackageManager {
         throw new UnsupportedOperationException();
     }
 
-    /** {@removed} */
+    /** @removed */
     @Deprecated
     public String getDefaultBrowserPackageName(int userId) {
         throw new UnsupportedOperationException();
@@ -1097,7 +1097,7 @@ public class MockPackageManager extends PackageManager {
         throw new UnsupportedOperationException();
     }
 
-    /** {@removed} */
+    /** @removed */
     @Deprecated
     public boolean setDefaultBrowserPackageName(String packageName, int userId) {
         throw new UnsupportedOperationException();
