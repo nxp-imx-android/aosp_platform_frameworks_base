@@ -4611,15 +4611,19 @@ public final class InputMethodManager {
     }
 
     /**
-     * A test API for CTS to check whether there are any pending IME visibility requests.
+     * A test API for CTS to wait until there are no more pending IME visibility requests, up to the
+     * given timeout. This will throw a {@link java.util.concurrent.TimeoutException} if the wait
+     * times out.
      *
-     * @return {@code true} iff there are pending IME visibility requests.
+     * @param timeoutMs the timeout in milliseconds.
+     *
      * @hide
      */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
     @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    public boolean hasPendingImeVisibilityRequests() {
-        return IInputMethodManagerGlobalInvoker.hasPendingImeVisibilityRequests();
+    public void waitUntilNoPendingRequests(long timeoutMs) {
+        IInputMethodManagerGlobalInvoker.waitUntilNoPendingRequests(timeoutMs);
     }
 
     /**
@@ -4631,8 +4635,8 @@ public final class InputMethodManager {
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
     @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    public void finishTrackingPendingImeVisibilityRequests() {
-        IInputMethodManagerGlobalInvoker.finishTrackingPendingImeVisibilityRequests();
+    public void finishTrackingPendingRequests() {
+        IInputMethodManagerGlobalInvoker.finishTrackingPendingRequests();
     }
 
     /**

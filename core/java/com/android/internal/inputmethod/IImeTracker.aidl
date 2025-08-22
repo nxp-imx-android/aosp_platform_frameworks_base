@@ -24,7 +24,7 @@ import com.android.internal.infra.AndroidFuture;
  * Interface to the global IME tracker service, used by all client applications.
  * @hide
  */
-interface IImeTracker {
+oneway interface IImeTracker {
 
     /**
      * Called when an IME request is started.
@@ -37,7 +37,7 @@ interface IImeTracker {
      * @param fromUser whether this request was created directly from user interaction.
      * @param startTime the time in milliseconds when the request was started.
      */
-    oneway void onStart(in ImeTracker.Token statsToken, int uid, int type, int origin, int reason,
+    void onStart(in ImeTracker.Token statsToken, int uid, int type, int origin, int reason,
         boolean fromUser, long startTime);
 
     /**
@@ -46,7 +46,7 @@ interface IImeTracker {
      * @param statsToken the token tracking the request.
      * @param phase the new phase the request reached.
      */
-    oneway void onProgress(in ImeTracker.Token statsToken, int phase);
+    void onProgress(in ImeTracker.Token statsToken, int phase);
 
     /**
      * Called when the IME request fails.
@@ -54,7 +54,7 @@ interface IImeTracker {
      * @param statsToken the token tracking the request.
      * @param phase the phase the request failed at.
      */
-    oneway void onFailed(in ImeTracker.Token statsToken, int phase);
+    void onFailed(in ImeTracker.Token statsToken, int phase);
 
     /**
      * Called when the IME request is cancelled.
@@ -62,21 +62,21 @@ interface IImeTracker {
      * @param statsToken the token tracking the request.
      * @param phase the phase the request was cancelled at.
      */
-    oneway void onCancelled(in ImeTracker.Token statsToken, int phase);
+    void onCancelled(in ImeTracker.Token statsToken, int phase);
 
     /**
      * Called when the show IME request is successful.
      *
      * @param statsToken the token tracking the request.
      */
-    oneway void onShown(in ImeTracker.Token statsToken);
+    void onShown(in ImeTracker.Token statsToken);
 
     /**
      * Called when the hide IME request is successful.
      *
      * @param statsToken the token tracking the request.
      */
-    oneway void onHidden(in ImeTracker.Token statsToken);
+    void onHidden(in ImeTracker.Token statsToken);
 
     /**
      * Called when the user-controlled IME request was dispatched to the requesting app. The
@@ -84,27 +84,28 @@ interface IImeTracker {
      *
      * @param statsToken the token tracking the request.
      */
-    oneway void onDispatched(in ImeTracker.Token statsToken);
+    void onDispatched(in ImeTracker.Token statsToken);
 
     /**
-     * Checks whether there are any pending IME visibility requests.
+     * Waits until there are no more pending IME visibility requests, up to a given timeout, and
+     * notifies the given future.
      *
-     * @return {@code true} iff there are pending IME visibility requests.
+     * @param future    the future to notify.
+     * @param timeoutMs the timeout in milliseconds.
      */
     @EnforcePermission("TEST_INPUT_METHOD")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
-    boolean hasPendingImeVisibilityRequests();
+    void waitUntilNoPendingRequests(in AndroidFuture<void> future, long timeoutMs);
 
     /**
-     * Finishes the tracking of any pending IME visibility requests. This won't stop the actual
-     * requests, but allows resetting the state when starting up test runs.
+     * Finishes the tracking of any pending IME visibility requests and notifies the given future.
+     * This won't stop the actual requests, but allows resetting the state when starting test runs.
      *
-     * @param completionSignal used to signal when the tracking has been finished.
+     * @param future the future to notify.
      */
     @EnforcePermission("TEST_INPUT_METHOD")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
-    oneway void finishTrackingPendingImeVisibilityRequests(
-        in AndroidFuture completionSignal /* T=Void */);
+    void finishTrackingPendingRequests(in AndroidFuture<void> future);
 }
