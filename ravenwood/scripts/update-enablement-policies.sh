@@ -30,11 +30,22 @@ query='
 select
     Class || "#" || RawMethodName ||
     (case when (sum(failed) + sum(skipped)) = 0 then "" else " disable" end )
-    as "# AUTO-GENERATED START"
+    as "# Per method enable/disable"
 from stdin
 where type="m"
 group by Class, RawMethodName
 order by Class, RawMethodName
+'
+
+summary_query='
+select
+    "# Total=" || printf("%d",sum(passed) + sum(failed) + sum(skipped)) || " " ||
+    "Passed=" || printf("%d", sum(passed)) || " " ||
+    "Failed=" || printf("%d", sum(failed)) || " " ||
+    "Skipped=" || printf("%d", sum(skipped))
+    as "# Summary"
+from stdin
+where type="m"
 '
 
 # Return the test module name from a policy file.
@@ -54,6 +65,12 @@ get_header() {
     sed -e '/^# AUTO-GENERATED START/,$d' $1
 }
 
+# Normalize the csvsql output.
+normalize() {
+    # Remove the header, and convert to space-delimited.
+    csvformat -E -M $'\n' -D $'\t'
+}
+
 do_main() {
     local policies="$@"
     for policy in $policies ; do
@@ -71,7 +88,15 @@ do_main() {
         new="$policy.tmp"
         {
             get_header "$policy"
-            csvsql --query "$query" < "$csv"
+            echo "# AUTO-GENERATED START"
+            echo
+
+            # Summary
+            csvsql --query "$summary_query" < "$csv" | normalize
+
+            echo
+            # Per-method enable/disable
+            csvsql --query "$query" < "$csv" | normalize
             echo "Success" 1>&2
         } >"$new"
 
