@@ -1958,6 +1958,7 @@ public final class SurfaceControl implements Parcelable {
      */
     public static final class StaticDisplayInfo {
         public boolean isInternal;
+        public int port;
         public float density;
         public boolean secure;
         public DeviceProductInfo deviceProductInfo;
@@ -1967,6 +1968,7 @@ public final class SurfaceControl implements Parcelable {
         @Override
         public String toString() {
             return "StaticDisplayInfo{isInternal=" + isInternal
+                    + ", port=" + port
                     + ", density=" + density
                     + ", secure=" + secure
                     + ", deviceProductInfo=" + deviceProductInfo
@@ -1980,6 +1982,7 @@ public final class SurfaceControl implements Parcelable {
             if (o == null || getClass() != o.getClass()) return false;
             StaticDisplayInfo that = (StaticDisplayInfo) o;
             return isInternal == that.isInternal
+                    && port == that.port
                     && density == that.density
                     && secure == that.secure
                     && Objects.equals(deviceProductInfo, that.deviceProductInfo)
@@ -1989,7 +1992,7 @@ public final class SurfaceControl implements Parcelable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(isInternal, density, secure, deviceProductInfo,
+            return Objects.hash(isInternal, port, density, secure, deviceProductInfo,
                 installOrientation, screenPartStatus);
         }
     }

@@ -107,6 +107,7 @@ static struct {
     jclass clazz;
     jmethodID ctor;
     jfieldID isInternal;
+    jfieldID port;
     jfieldID density;
     jfieldID secure;
     jfieldID deviceProductInfo;
@@ -1548,6 +1549,7 @@ static jobject nativeGetStaticDisplayInfo(JNIEnv* env, jclass clazz, jlong id) {
 
     const bool isInternal = info.connectionType == ui::DisplayConnectionType::Internal;
     env->SetBooleanField(object, gStaticDisplayInfoClassInfo.isInternal, isInternal);
+    env->SetIntField(object, gStaticDisplayInfoClassInfo.port, info.port);
     env->SetFloatField(object, gStaticDisplayInfoClassInfo.density, info.density);
     env->SetBooleanField(object, gStaticDisplayInfoClassInfo.secure, info.secure);
     env->SetObjectField(object, gStaticDisplayInfoClassInfo.deviceProductInfo,
@@ -2906,6 +2908,7 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gStaticDisplayInfoClassInfo.clazz = MakeGlobalRefOrDie(env, infoClazz);
     gStaticDisplayInfoClassInfo.ctor = GetMethodIDOrDie(env, infoClazz, "<init>", "()V");
     gStaticDisplayInfoClassInfo.isInternal = GetFieldIDOrDie(env, infoClazz, "isInternal", "Z");
+    gStaticDisplayInfoClassInfo.port = GetFieldIDOrDie(env, infoClazz, "port", "I");
     gStaticDisplayInfoClassInfo.density = GetFieldIDOrDie(env, infoClazz, "density", "F");
     gStaticDisplayInfoClassInfo.secure = GetFieldIDOrDie(env, infoClazz, "secure", "Z");
     gStaticDisplayInfoClassInfo.deviceProductInfo =
