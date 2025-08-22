@@ -16,6 +16,8 @@
 
 package com.android.systemui.privacy.logging
 
+import android.app.ActivityManager
+import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.permission.PermissionGroupUsage
 import com.android.systemui.log.LogBuffer
@@ -43,6 +45,19 @@ class PrivacyLogger @Inject constructor(
         }, {
             "App Op: $int1 for $str1($int2), active=$bool1"
         })
+    }
+
+    fun logLocationAppOps(uid: Int, packageName: String, importance: Int, isForeground: Boolean) {
+        log(
+            LogLevel.INFO, {
+                int1 = uid
+                int2 = importance
+                str1 = packageName
+                bool1 = isForeground
+            },
+            {
+                "Location Op: $str1($int1) importance=$int2 isFg=$bool1"
+            })
     }
 
     fun logUpdatedItemFromMediaProjection(uid: Int, packageName: String, active: Boolean) {
