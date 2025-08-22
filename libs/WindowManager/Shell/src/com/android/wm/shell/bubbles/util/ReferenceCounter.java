@@ -88,4 +88,13 @@ public class ReferenceCounter<T> {
     public void clear() {
         mReferences.clear();
     }
+
+    /**
+     * Returns whether the item is tracked. An item is tracked even if its reference count is
+     * zero.
+     */
+    @VisibleForTesting
+    public boolean isTracked(@NonNull T item) {
+        return mReferences.containsKey(item);
+    }
 }
