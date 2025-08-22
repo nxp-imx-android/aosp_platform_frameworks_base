@@ -536,6 +536,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt)))
                 .thenReturn(transition);
 
+        bt.continueExpand();
         bt.continueConvert(mLayerView);
 
         verify(mTransitions)
@@ -609,6 +610,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt)))
                 .thenReturn(transition);
 
+        bt.continueExpand();
         bt.continueConvert(mLayerView);
 
         verify(mTransitions)
@@ -646,10 +648,28 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, mBubblePositioner);
 
         verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
+        bt.continueExpand();
 
         bt.continueConvert(mLayerView);
         // call continue convert again
         bt.continueConvert(mLayerView);
+
+        // verify we only started the transition once
+        verify(mTransitions, times(1))
+                .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
+    }
+
+    @Test
+    public void convertFloatingBubbleToBarBubble_mustContinueExpand() {
+        setupBubble();
+
+        final BubbleTransitions.FloatingToBarConversion bt =
+                mBubbleTransitions.new FloatingToBarConversion(mBubble, mBubblePositioner);
+        bt.continueConvert(mLayerView);
+
+        verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
+
+        bt.continueExpand();
 
         // verify we only started the transition once
         verify(mTransitions, times(1))
