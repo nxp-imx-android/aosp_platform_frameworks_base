@@ -45,8 +45,10 @@ constructor(
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     private val keyguardTransitionAnimationCallbackDelegator:
         KeyguardTransitionAnimationCallbackDelegator,
-    @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
+    private val lockscreenAlphaViewModelFactory: LockscreenAlphaViewModel.Factory,
+    @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
+    @Assisted private val viewStateAccessor: ViewStateAccessor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("LockscreenContentViewModel.hydrator")
@@ -80,10 +82,19 @@ constructor(
             initialValue = deviceEntryUdfpsInteractor.isUdfpsSupported.value,
         )
 
+    /** Alpha value applied to all LockscreenElements. */
+    val alpha: Float
+        get() = lockscreenAlphaViewModel.alpha
+
+    private val lockscreenAlphaViewModel: LockscreenAlphaViewModel by lazy {
+        lockscreenAlphaViewModelFactory.create(viewStateAccessor)
+    }
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             try {
                 launch { hydrator.activate() }
+                launch { lockscreenAlphaViewModel.activate() }
 
                 keyguardTransitionAnimationCallbackDelegator.delegate =
                     keyguardTransitionAnimationCallback
@@ -114,7 +125,8 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback
+            keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
+            viewState: ViewStateAccessor,
         ): LockscreenContentViewModel
     }
 }
