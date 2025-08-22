@@ -1235,6 +1235,13 @@ public class AutoclickControllerTest {
         assertThat(mMotionEventCaptor.upEvent).isNotNull();
         assertThat(mMotionEventCaptor.upEvent.getDownTime()).isEqualTo(
                 mMotionEventCaptor.downEvent.getDownTime());
+
+        // Verify the button release & up event have the correct click parameters.
+        assertThat(mMotionEventCaptor.buttonReleaseEvent.getActionButton()).isEqualTo(
+                MotionEvent.BUTTON_PRIMARY);
+        assertThat(mMotionEventCaptor.buttonReleaseEvent.getButtonState()).isEqualTo(0);
+        assertThat(mMotionEventCaptor.upEvent.getActionButton()).isEqualTo(0);
+        assertThat(mMotionEventCaptor.upEvent.getButtonState()).isEqualTo(0);
     }
 
 
