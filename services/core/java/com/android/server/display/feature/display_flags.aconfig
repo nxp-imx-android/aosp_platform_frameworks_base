@@ -465,3 +465,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_app_resolution_change"
+    namespace: "display_manager"
+    description: "Enable dynamic resolution changing requested by apps"
+    bug: "414654227"
+}
