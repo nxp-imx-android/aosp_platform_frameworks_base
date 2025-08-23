@@ -129,9 +129,7 @@ final class VibrationScaler {
      * @return The adaptive haptics scale.
      */
     public float getAdaptiveHapticsScale(int usageHint) {
-        return Flags.adaptiveHapticsEnabled()
-                ? mAdaptiveHapticsScales.get(usageHint, ADAPTIVE_SCALE_NONE)
-                : ADAPTIVE_SCALE_NONE;
+        return mAdaptiveHapticsScales.get(usageHint, ADAPTIVE_SCALE_NONE);
     }
 
     /**

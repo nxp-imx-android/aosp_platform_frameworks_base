@@ -3,13 +3,6 @@ container: "system"
 
 flag {
     namespace: "haptics"
-    name: "adaptive_haptics_enabled"
-    description: "Enables the adaptive haptics feature"
-    bug: "305961689"
-}
-
-flag {
-    namespace: "haptics"
     name: "vibration_xml_apis"
     is_exported: true
     description: "Enabled System APIs for vibration effect XML parser and serializer"

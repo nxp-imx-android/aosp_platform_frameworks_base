@@ -193,9 +193,8 @@ final class VibrationStepConductor {
             expectIsVibrationThread(true);
         }
 
-        if (Flags.adaptiveHapticsEnabled()) {
-            waitForVibrationParamsIfRequired();
-        }
+        waitForVibrationParamsIfRequired();
+
         // Scale resolves the default amplitudes from the effect before scaling them.
         mVibration.scaleEffects(mVibrationScaler);
 
