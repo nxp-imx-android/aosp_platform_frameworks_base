@@ -17,6 +17,7 @@
 package com.android.systemui.qs.ui.viewmodel
 
 import android.content.Context
+import android.graphics.Rect
 import android.media.AudioManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
@@ -176,6 +178,20 @@ constructor(
     /** Notifies that the bounds of the QuickSettings panel have changed. */
     fun onPanelShapeInWindowChanged(shape: ShadeScrimShape?) {
         notificationStackAppearanceInteractor.setQsPanelShapeInWindow(shape)
+    }
+
+    /** Notifies that the bounds of the shade panel have changed. */
+    fun onShadeOverlayBoundsChanged(bounds: androidx.compose.ui.geometry.Rect?) {
+        val boundsRect =
+            bounds?.let {
+                Rect(
+                    it.left.roundToInt(),
+                    it.top.roundToInt(),
+                    it.right.roundToInt(),
+                    it.bottom.roundToInt(),
+                )
+            }
+        shadeInteractor.setShadeOverlayBounds(boundsRect)
     }
 
     fun onScrimClicked() {

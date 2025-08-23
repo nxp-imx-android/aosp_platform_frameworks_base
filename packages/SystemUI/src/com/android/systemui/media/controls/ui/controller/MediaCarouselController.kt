@@ -60,6 +60,7 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.controls.ui.controller.MediaPlayerData.visiblePlayerKeys
 import com.android.systemui.media.controls.ui.view.MediaCarouselScrollHandler
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.controls.ui.view.MediaScrollView
@@ -154,6 +155,9 @@ constructor(
 
     /** Are we currently disabling scrolling, only allowing the first media session to show */
     private var currentlyDisableScrolling: Boolean = false
+
+    /** A key for the last player card that is completely visible */
+    private var lastFullyVisiblePlayerKey: String? = null
 
     /**
      * The desired location where we'll be at the end of the transformation. Usually this matches
@@ -336,7 +340,7 @@ constructor(
                 this::updateSeekbarListening,
                 this::closeGuts,
                 falsingManager,
-                this::onCarouselVisibleToUser,
+                this::onVisibleCardChanged,
                 logger,
             )
         carouselLocale = context.resources.configuration.locales.get(0)
@@ -1052,18 +1056,48 @@ constructor(
         layout(0, 0, width, height)
     }
 
+    /** Triggered whenever carousel becomes visible, e.g. on swipe down the notification shade. */
     fun onCarouselVisibleToUser() {
+        if (!enableSuggestedDeviceUi()) {
+            return
+        }
+        onCardVisibilityChanged()
+    }
+
+    /** Triggered whenever carousel's scroll position changes, revealing a new card.  */
+    fun onVisibleCardChanged() {
+        if (!enableSuggestedDeviceUi()) {
+            return
+        }
+        val newVisiblePlayerKey =
+            visiblePlayerKeys().elementAtOrNull(mediaCarouselScrollHandler.visibleMediaIndex)?.key
+        if (newVisiblePlayerKey != lastFullyVisiblePlayerKey) {
+            lastFullyVisiblePlayerKey = newVisiblePlayerKey
+            if (newVisiblePlayerKey != null) {
+                onCardVisibilityChanged()
+            }
+        }
+    }
+
+    /**
+     * Triggered whenever card becomes visible either due to the carousel being visible or the card
+     * visibility changed within the carousel.
+     */
+    private fun onCardVisibilityChanged() {
+        val isCarouselVisible = mediaCarouselScrollHandler.visibleToUser
+        val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
+        debugLogger.logCardVisibilityChanged(isCarouselVisible, visibleMediaIndex)
+
         if (
             !enableSuggestedDeviceUi() ||
-                !mediaCarouselScrollHandler.visibleToUser ||
+                !isCarouselVisible ||
                 MediaPlayerData.mediaData().all { it.second.resumption }
         ) {
             return
         }
-        val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex
         if (MediaPlayerData.players().size > visibleMediaIndex) {
             val mediaControlPanel = MediaPlayerData.getMediaControlPanel(visibleMediaIndex)
-            mediaControlPanel?.onSuggestionSpaceVisible()
+            mediaControlPanel?.onPanelFullyVisible()
         }
     }
 

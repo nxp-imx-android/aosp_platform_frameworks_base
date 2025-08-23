@@ -19,16 +19,19 @@ import android.content.pm.UserInfo
 import android.graphics.Color
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND
+import com.android.systemui.Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
 import com.android.systemui.communal.util.fakeCommunalColors
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.display.data.repository.createPerDisplayInstanceSysUIStateRepository
 import com.android.systemui.flags.Flags.COMMUNAL_SERVICE_ENABLED
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.ScreenLifecycle
@@ -44,6 +47,7 @@ import com.android.systemui.model.sysUiState
 import com.android.systemui.notetask.NoteTaskInitializer
 import com.android.systemui.settings.FakeDisplayTracker
 import com.android.systemui.settings.userTracker
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.commandQueue
 import com.android.systemui.statusbar.commandline.commandRegistry
@@ -53,6 +57,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.wm.shell.desktopmode.DesktopMode
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.onehanded.OneHanded
 import com.android.wm.shell.onehanded.OneHandedEventCallback
@@ -61,12 +66,13 @@ import com.android.wm.shell.pip.Pip
 import com.android.wm.shell.recents.RecentTasks
 import com.android.wm.shell.splitscreen.SplitScreen
 import com.android.wm.shell.sysui.ShellInterface
+import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import java.util.concurrent.Executor
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -91,6 +97,8 @@ class WMShellTest : SysuiTestCase() {
     private val Kosmos.screenLifecycle by Kosmos.Fixture { mock<ScreenLifecycle>() }
     private val Kosmos.displayTracker by Kosmos.Fixture { FakeDisplayTracker(context) }
     private val Kosmos.shellInterface by Kosmos.Fixture { mock<ShellInterface>() }
+    private val Kosmos.perDisplayRepository by
+        Kosmos.Fixture { createPerDisplayInstanceSysUIStateRepository() }
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
@@ -116,6 +124,7 @@ class WMShellTest : SysuiTestCase() {
                 /* communalTransitionViewModel = */ communalTransitionViewModel,
                 /* javaAdapter = */ javaAdapter,
                 /* sysUiMainExecutor = */ fakeExecutor,
+                /* perDisplayRepository= */ perDisplayRepository,
             )
         }
 
@@ -152,6 +161,123 @@ class WMShellTest : SysuiTestCase() {
                     any(VisibleTasksListener::class.java),
                     any(Executor::class.java),
                 )
+            verify(desktopMode)
+                .addDeskChangeListener(
+                    any(DesktopRepository.DeskChangeListener::class.java),
+                    any(Executor::class.java),
+                )
+        }
+
+    @Test
+    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
+    fun onActiveDeskChanged_enterDesktop_desktopStateIsActive() =
+        kosmos.runTest {
+            val displayId = Display.DEFAULT_DISPLAY
+            val displaySysUiState = perDisplayRepository[displayId]
+            underTest.initDesktopMode(desktopMode)
+            val listenerCaptor =
+                ArgumentCaptor.forClass(DesktopRepository.DeskChangeListener::class.java)
+            verify(desktopMode)
+                .addDeskChangeListener(listenerCaptor.capture(), any(Executor::class.java))
+            val listener = listenerCaptor.value
+            displaySysUiState
+                ?.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE, false)
+                ?.commitUpdate()
+
+            listener.onActiveDeskChanged(
+                displayId,
+                newActiveDeskId = 1,
+                oldActiveDeskId = DesktopRepository.INVALID_DESK_ID,
+            )
+            fakeExecutor.runAllReady()
+
+            assertThat(
+                    displaySysUiState?.isFlagEnabled(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE)
+                )
+                .isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
+    fun onActiveDeskChanged_exitDesktop_desktopStateIsNotActive() =
+        kosmos.runTest {
+            val displayId = Display.DEFAULT_DISPLAY
+            val displaySysUiState = perDisplayRepository[displayId]
+            underTest.initDesktopMode(desktopMode)
+            val listenerCaptor =
+                ArgumentCaptor.forClass(DesktopRepository.DeskChangeListener::class.java)
+            verify(desktopMode)
+                .addDeskChangeListener(listenerCaptor.capture(), any(Executor::class.java))
+            val listener = listenerCaptor.value
+            displaySysUiState
+                ?.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE, true)
+                ?.commitUpdate()
+
+            listener.onActiveDeskChanged(
+                displayId,
+                newActiveDeskId = DesktopRepository.INVALID_DESK_ID,
+                oldActiveDeskId = 1,
+            )
+            fakeExecutor.runAllReady()
+
+            assertThat(
+                    displaySysUiState?.isFlagEnabled(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE)
+                )
+                .isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
+    fun onActiveDeskChanged_stayInDesktop_desktopStateIsActive() =
+        kosmos.runTest {
+            val displayId = Display.DEFAULT_DISPLAY
+            val displaySysUiState = perDisplayRepository[displayId]
+            underTest.initDesktopMode(desktopMode)
+            val listenerCaptor =
+                ArgumentCaptor.forClass(DesktopRepository.DeskChangeListener::class.java)
+            verify(desktopMode)
+                .addDeskChangeListener(listenerCaptor.capture(), any(Executor::class.java))
+            val listener = listenerCaptor.value
+            displaySysUiState
+                ?.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE, true)
+                ?.commitUpdate()
+
+            listener.onActiveDeskChanged(displayId, newActiveDeskId = 2, oldActiveDeskId = 1)
+            fakeExecutor.runAllReady()
+
+            assertThat(
+                    displaySysUiState?.isFlagEnabled(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE)
+                )
+                .isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
+    fun onActiveDeskChanged_stayOutsideDesktop_desktopStateIsNotActive() =
+        kosmos.runTest {
+            val displayId = Display.DEFAULT_DISPLAY
+            val displaySysUiState = perDisplayRepository[displayId]
+            underTest.initDesktopMode(desktopMode)
+            val listenerCaptor =
+                ArgumentCaptor.forClass(DesktopRepository.DeskChangeListener::class.java)
+            verify(desktopMode)
+                .addDeskChangeListener(listenerCaptor.capture(), any(Executor::class.java))
+            val listener = listenerCaptor.value
+            displaySysUiState
+                ?.setFlag(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE, false)
+                ?.commitUpdate()
+
+            listener.onActiveDeskChanged(
+                displayId,
+                newActiveDeskId = DesktopRepository.INVALID_DESK_ID,
+                oldActiveDeskId = DesktopRepository.INVALID_DESK_ID,
+            )
+            fakeExecutor.runAllReady()
+
+            assertThat(
+                    displaySysUiState?.isFlagEnabled(SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE)
+                )
+                .isFalse()
         }
 
     @Test

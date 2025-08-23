@@ -25,8 +25,8 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.testKosmos
@@ -60,7 +60,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             val shownPopupChips = underTest.shownPopupChips
             val userMedia = MediaData(active = true, song = "test")
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             Snapshot.takeSnapshot {
                 assertThat(shownPopupChips).hasSize(1)
@@ -75,7 +75,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
 
             val userMedia = MediaData(active = true, song = "test")
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             Snapshot.takeSnapshot {
                 assertThat(shownPopupChips).hasSize(1)

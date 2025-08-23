@@ -6490,7 +6490,6 @@ public interface WindowManager extends ViewManager {
      * @return Returns the {@link InputTransferToken} that can be used to transfer touch gesture
      * to or from other windows.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     default InputTransferToken registerBatchedSurfaceControlInputReceiver(
             @NonNull InputTransferToken hostInputTransferToken,
@@ -6520,7 +6519,6 @@ public interface WindowManager extends ViewManager {
      * @return Returns the {@link InputTransferToken} that can be used to transfer touch gesture
      * to or from other windows.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @NonNull
     default InputTransferToken registerUnbatchedSurfaceControlInputReceiver(
             @NonNull InputTransferToken hostInputTransferToken,
@@ -6542,7 +6540,6 @@ public interface WindowManager extends ViewManager {
      *
      * @param surfaceControl The SurfaceControl to remove and unregister the input channel for.
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     default void unregisterSurfaceControlInputReceiver(@NonNull SurfaceControl surfaceControl) {
         throw new UnsupportedOperationException(
                 "unregisterSurfaceControlInputReceiver is not implemented");
@@ -6561,7 +6558,6 @@ public interface WindowManager extends ViewManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     @TestApi
     @Nullable
     default IBinder getSurfaceControlInputClientToken(@NonNull SurfaceControl surfaceControl) {
@@ -6640,7 +6636,6 @@ public interface WindowManager extends ViewManager {
      * @see android.view.SurfaceControlViewHost.SurfacePackage#getInputTransferToken()
      * @see AttachedSurfaceControl#getInputTransferToken()
      */
-    @FlaggedApi(Flags.FLAG_SURFACE_CONTROL_INPUT_RECEIVER)
     default boolean transferTouchGesture(@NonNull InputTransferToken transferFromToken,
             @NonNull InputTransferToken transferToToken) {
         throw new UnsupportedOperationException("transferTouchGesture is not implemented");

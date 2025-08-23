@@ -1332,7 +1332,7 @@ public final class MediaRouter2 {
         mSystemController.setRoutingSessionInfo(ensureClientPackageNameForSystemSession(
                 currentSystemSessionInfo, mContext.getPackageName()));
         if (!oldInfo.equals(currentSystemSessionInfo)) {
-            notifyControllerUpdated(mSystemController);
+            notifyControllerUpdated(mSystemController, /* shouldShowVolumeUi= */ false);
         }
     }
 
@@ -1396,7 +1396,7 @@ public final class MediaRouter2 {
                     MediaRoute2Info currentRoute = routesMap.get(selectedRoute);
                     MediaRoute2Info oldRoute = mPreviousUnfilteredRoutes.get(selectedRoute);
                     if (!currentRoute.equals(oldRoute)) {
-                        notifyControllerUpdated(controller);
+                        notifyControllerUpdated(controller, /* shouldShowVolumeUi= */ false);
                         break;
                     }
                 }
@@ -1527,7 +1527,7 @@ public final class MediaRouter2 {
                                 sessionInfo, mImpl.getClientPackageName());
             }
             controller.setRoutingSessionInfo(sessionInfo);
-            notifyControllerUpdated(controller);
+            notifyControllerUpdated(controller, /* shouldShowVolumeUi= */ false);
         }
     }
 
@@ -1775,9 +1775,10 @@ public final class MediaRouter2 {
         }
     }
 
-    private void notifyControllerUpdated(RoutingController controller) {
+    private void notifyControllerUpdated(RoutingController controller, boolean shouldShowVolumeUi) {
         for (ControllerCallbackRecord record : mControllerCallbackRecords) {
-            record.mExecutor.execute(() -> record.mCallback.onControllerUpdated(controller));
+            record.mExecutor.execute(
+                    () -> record.mCallback.onControllerUpdated(controller, shouldShowVolumeUi));
         }
     }
 
@@ -1960,6 +1961,23 @@ public final class MediaRouter2 {
          * @see #getSystemController()
          */
         public void onControllerUpdated(@NonNull RoutingController controller) {}
+
+        /**
+         * Equivalent to {@link #onControllerUpdated(RoutingController)} except it adds {@code
+         * shouldShowVolumeUi}, which indicates that a UI affordance should be presented as a result
+         * of this controller update. Likely, because the update is the result of a HW volume key
+         * press.
+         *
+         * <p>By default, this method invokes {@link #onControllerUpdated(RoutingController)}, which
+         * means it's sufficient to override any of the methods in this class to receive controller
+         * update events.
+         *
+         * @hide
+         */
+        public void onControllerUpdated(
+                @NonNull RoutingController controller, boolean shouldShowVolumeUi) {
+            this.onControllerUpdated(controller);
+        }
     }
 
     /**
@@ -3704,7 +3722,8 @@ public final class MediaRouter2 {
             notifyTransferFailure(route);
         }
 
-        private void onSessionUpdated(@NonNull RoutingSessionInfo session) {
+        private void onSessionUpdated(
+                @NonNull RoutingSessionInfo session, boolean shouldShowVolumeUi) {
             if (!isSessionRelatedToTargetPackageName(session)) {
                 return;
             }
@@ -3717,7 +3736,7 @@ public final class MediaRouter2 {
             } else {
                 controller = new RoutingController(session);
             }
-            notifyControllerUpdated(controller);
+            notifyControllerUpdated(controller, shouldShowVolumeUi);
         }
 
         /**
@@ -3773,7 +3792,8 @@ public final class MediaRouter2 {
             }
         }
 
-        private void onSessionUpdatedOnHandler(@NonNull RoutingSessionInfo updatedSession) {
+        private void onSessionUpdatedOnHandler(
+                @NonNull RoutingSessionInfo updatedSession, boolean shouldShowVolumeUi) {
             for (MediaRouter2Manager.TransferRequest request : mTransferRequests) {
                 String sessionId = request.mOldSessionInfo.getId();
                 if (!TextUtils.equals(sessionId, updatedSession.getId())) {
@@ -3785,7 +3805,7 @@ public final class MediaRouter2 {
                     break;
                 }
             }
-            this.onSessionUpdated(updatedSession);
+            this.onSessionUpdated(updatedSession, shouldShowVolumeUi);
         }
 
         private void onSessionReleasedOnHandler(@NonNull RoutingSessionInfo session) {
@@ -3922,12 +3942,14 @@ public final class MediaRouter2 {
             }
 
             @Override
-            public void notifySessionUpdated(RoutingSessionInfo routingSessionInfo) {
+            public void notifySessionUpdated(
+                    RoutingSessionInfo routingSessionInfo, boolean shouldShowVolumeUi) {
                 mHandler.sendMessage(
                         obtainMessage(
                                 ProxyMediaRouter2Impl::onSessionUpdatedOnHandler,
                                 ProxyMediaRouter2Impl.this,
-                                routingSessionInfo));
+                                routingSessionInfo,
+                                shouldShowVolumeUi));
             }
 
             @Override

@@ -16,15 +16,25 @@
 
 package com.android.systemui.securelockdevice.domain.interactor
 
+import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
+import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
+import com.android.systemui.biometrics.shared.model.BiometricModalities
+import com.android.systemui.biometrics.shared.model.SensorStrength
+import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 
 /** Handles business logic for secure lock device. */
@@ -34,7 +44,10 @@ class SecureLockDeviceInteractor
 constructor(
     @Application applicationScope: CoroutineScope,
     secureLockDeviceRepository: SecureLockDeviceRepository,
+    biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
+    fingerprintPropertyInteractor: FingerprintPropertyInteractor,
+    facePropertyInteractor: FacePropertyInteractor,
 ) {
     /** @see SecureLockDeviceRepository.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled: StateFlow<Boolean> =
@@ -60,6 +73,65 @@ constructor(
             false,
         )
 
+    private val _shouldShowBiometricAuth = MutableStateFlow<Boolean>(false)
+    /** Whether the secure lock device biometric auth UI should be shown. */
+    val shouldShowBiometricAuth: StateFlow<Boolean> = _shouldShowBiometricAuth.asStateFlow()
+
+    /**
+     * The timestamp of the last strong face authentication success, or null otherwise. This is used
+     * to ensure that a stale face authentication success will not re-authenticate the user if
+     * secure lock device biometric auth is interrupted (e.g. power press, back gesture, etc) after
+     * authenticating a user's face but before the user confirms the authentication on the UI.
+     */
+    var lastProcessedFaceAuthSuccessTime: Long? = null
+
+    /**
+     * If the user has successfully authenticated a strong biometric in the secure lock device UI
+     * (and explicitly confirmed if required).
+     */
+    private val _strongBiometricAuthenticationComplete = MutableStateFlow(false)
+
+    private val _isFullyUnlockedAndReadyToDismiss = MutableStateFlow<Boolean>(false)
+    /**
+     * Whether the user completed successful two-factor authentication (primary + strong biometric)
+     * in secure lock device, and the device should be considered unlocked. This is true when the
+     * strong biometric does not require confirmation (e.g. fingerprint) or when the strong
+     * biometric does require confirmation (e.g. face) but the user has completed confirmation on
+     * the UI, and the confirmation animation has played, so the UI is ready to be dismissed.
+     */
+    val isFullyUnlockedAndReadyToDismiss: StateFlow<Boolean> =
+        _isFullyUnlockedAndReadyToDismiss.asStateFlow()
+
+    /**
+     * Whether the user has completed two-factor authentication (primary authentication and active
+     * strong biometric authentication or confirmed passive strong biometric authentication)
+     */
+    val isAuthenticatedButPendingDismissal: StateFlow<Boolean> =
+        combine(_strongBiometricAuthenticationComplete, isFullyUnlockedAndReadyToDismiss) {
+                strongBiometricAuthenticationComplete,
+                isFullyUnlockedAndReadyToDismiss ->
+                strongBiometricAuthenticationComplete || isFullyUnlockedAndReadyToDismiss
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    /** Called upon updates to strong biometric authenticated status. */
+    fun onBiometricAuthenticatedStateUpdated(authState: PromptAuthState) {
+        _strongBiometricAuthenticationComplete.value = authState.isAuthenticatedAndConfirmed
+    }
+
+    /**
+     * Called after the user completes successful two-factor authentication (primary + strong
+     * biometric) in secure lock device and the authenticated animation has finished playing,
+     * indicating the biometric auth UI is ready for dismissal
+     */
+    fun onReadyToDismissBiometricAuth() {
+        _isFullyUnlockedAndReadyToDismiss.value = true
+    }
+
     /**
      * Whether the device should listen for biometric auth while secure lock device is enabled. The
      * device should stop listening when pending authentication, when authenticated, or when the
@@ -69,9 +141,36 @@ constructor(
         // TODO (b/405120698, b/405120700): update to consider confirm / try again buttons
         requiresStrongBiometricAuthForSecureLockDevice
 
+    /** Strong biometric modalities enrolled and enabled on the device. */
+    val enrolledStrongBiometricModalities: Flow<BiometricModalities> =
+        combine(
+                biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled,
+                biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled,
+                fingerprintPropertyInteractor.sensorInfo,
+                facePropertyInteractor.sensorInfo,
+            ) { fingerprintEnrolledAndEnabled, faceEnrolledAndEnabled, fpSensorInfo, faceSensorInfo
+                ->
+                val hasStrongFingerprint =
+                    fingerprintEnrolledAndEnabled && fpSensorInfo.strength == SensorStrength.STRONG
+                val hasStrongFace =
+                    faceEnrolledAndEnabled && faceSensorInfo?.strength == SensorStrength.STRONG
+
+                if (hasStrongFingerprint && hasStrongFace) {
+                    BiometricModalities(fpSensorInfo, faceSensorInfo)
+                } else if (hasStrongFingerprint) {
+                    BiometricModalities(fpSensorInfo, null)
+                } else if (hasStrongFace) {
+                    BiometricModalities(null, faceSensorInfo)
+                } else {
+                    BiometricModalities()
+                }
+            }
+            .distinctUntilChanged()
+
     /** Called when biometric authentication is requested for secure lock device. */
     // TODO: call when secure lock device biometric auth is shown
     fun onBiometricAuthRequested() {
+        _shouldShowBiometricAuth.value = true
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
     }
 }

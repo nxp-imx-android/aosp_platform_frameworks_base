@@ -16,6 +16,8 @@
 
 package com.android.server.display;
 
+import static android.view.Display.Mode.INVALID_MODE_ID;
+
 import static com.android.server.display.DisplayDeviceInfo.TOUCH_NONE;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
@@ -232,15 +234,17 @@ final class LogicalDisplay {
     private final boolean mSyncedResolutionSwitchEnabled;
 
     private final boolean mSyntheticModesV2Enabled;
+    private final boolean mSizeOverrideEnabled;
 
     private boolean mCanHostTasks;
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice) {
-        this(displayId, layerStack, primaryDisplayDevice, false, true);
+        this(displayId, layerStack, primaryDisplayDevice, false, true, false);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isSyncedResolutionSwitchEnabled, boolean syntheticModesV2Enabled) {
+            boolean isSyncedResolutionSwitchEnabled, boolean syntheticModesV2Enabled,
+            boolean sizeOverrideEnabled) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
         mPrimaryDisplayDevice = primaryDisplayDevice;
@@ -253,6 +257,7 @@ final class LogicalDisplay {
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
         mSyntheticModesV2Enabled = syntheticModesV2Enabled;
+        mSizeOverrideEnabled = sizeOverrideEnabled;
 
         // No need to initialize mCanHostTasks here; it's handled in
         // DisplayManagerService#setupLogicalDisplay().
@@ -505,16 +510,30 @@ final class LogicalDisplay {
                     && mDevicePosition != Layout.Display.POSITION_REAR) {
                 mBaseDisplayInfo.flags |= Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
             }
+
+            int currentWidth = deviceInfo.width;
+            int currentHeight = deviceInfo.height;
+            float currentXDpi = deviceInfo.xDpi;
+            float currentYDpi = deviceInfo.yDpi;
+
+            Display.Mode sizeOverrideMode = getUserPreferredModeForSizeOverrideLocked(deviceInfo);
+            if (sizeOverrideMode != null && mSizeOverrideEnabled) {
+                currentWidth = sizeOverrideMode.getPhysicalWidth();
+                currentHeight = sizeOverrideMode.getPhysicalHeight();
+                currentXDpi = currentXDpi * (currentWidth / (float) deviceInfo.width);
+                currentYDpi = currentYDpi * (currentHeight / (float) deviceInfo.height);
+            }
+
             Rect maskingInsets = getMaskingInsets(deviceInfo);
-            int maskedWidth = deviceInfo.width - maskingInsets.left - maskingInsets.right;
-            int maskedHeight = deviceInfo.height - maskingInsets.top - maskingInsets.bottom;
+            int maskedWidth = currentWidth - maskingInsets.left - maskingInsets.right;
+            int maskedHeight = currentHeight - maskingInsets.top - maskingInsets.bottom;
 
             if (mIsAnisotropyCorrectionEnabled && deviceInfo.type == Display.TYPE_EXTERNAL
-                        && deviceInfo.xDpi > 0 && deviceInfo.yDpi > 0) {
-                if (deviceInfo.xDpi > deviceInfo.yDpi * DisplayDevice.MAX_ANISOTROPY) {
-                    maskedHeight = (int) (maskedHeight * deviceInfo.xDpi / deviceInfo.yDpi + 0.5);
-                } else if (deviceInfo.xDpi * DisplayDevice.MAX_ANISOTROPY < deviceInfo.yDpi) {
-                    maskedWidth = (int) (maskedWidth * deviceInfo.yDpi / deviceInfo.xDpi + 0.5);
+                        && currentXDpi > 0 && currentYDpi > 0) {
+                if (currentXDpi > currentYDpi * DisplayDevice.MAX_ANISOTROPY) {
+                    maskedHeight = (int) (maskedHeight * currentXDpi / currentYDpi + 0.5);
+                } else if (currentXDpi * DisplayDevice.MAX_ANISOTROPY < currentYDpi) {
+                    maskedWidth = (int) (maskedWidth * currentYDpi / currentXDpi + 0.5);
                 }
             }
 
@@ -553,10 +572,10 @@ final class LogicalDisplay {
                     deviceInfo.allmSupported || deviceInfo.gameContentTypeSupported;
             mBaseDisplayInfo.logicalDensityDpi = deviceInfo.densityDpi > 0
                     ? deviceInfo.densityDpi
-                    : calculateBaseDensity(deviceInfo.xDpi, deviceInfo.yDpi, maskedWidth,
+                    : calculateBaseDensity(currentXDpi, currentYDpi, maskedWidth,
                             maskedHeight);
-            mBaseDisplayInfo.physicalXDpi = deviceInfo.xDpi;
-            mBaseDisplayInfo.physicalYDpi = deviceInfo.yDpi;
+            mBaseDisplayInfo.physicalXDpi = currentXDpi;
+            mBaseDisplayInfo.physicalYDpi = currentYDpi;
             mBaseDisplayInfo.appVsyncOffsetNanos = deviceInfo.appVsyncOffsetNanos;
             mBaseDisplayInfo.presentationDeadlineNanos = deviceInfo.presentationDeadlineNanos;
             mBaseDisplayInfo.state = deviceInfo.state;
@@ -621,6 +640,36 @@ final class LogicalDisplay {
         double dpi =
                 pixels * DisplayMetrics.DENSITY_DEFAULT / BASE_TOUCH_TARGET_SIZE_DP;
         return Math.max((int) (dpi + 0.5), EXTERNAL_DISPLAY_MIN_DENSITY_DPI);
+    }
+
+    @Nullable
+    private Display.Mode getUserPreferredModeForSizeOverrideLocked(DisplayDeviceInfo deviceInfo) {
+        Display.Mode[] modes = deviceInfo.supportedModes;
+        int selectedModeId = deviceInfo.modeId;
+        int userPreferredModeId = deviceInfo.userPreferredModeId;
+
+        if (userPreferredModeId == INVALID_MODE_ID) {
+            return null;
+        }
+        // user preferred mode is normal mode
+        if (userPreferredModeId == selectedModeId) {
+            return null;
+        }
+
+        Display.Mode userPreferredMode = null;
+        for (Display.Mode mode : modes) {
+            if (userPreferredModeId == mode.getModeId()) {
+                userPreferredMode = mode;
+                break;
+            }
+        }
+
+        if (userPreferredMode != null
+                && (userPreferredMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
+            return userPreferredMode;
+        }
+
+        return null;
     }
 
     private void updateFrameRateOverrides(DisplayDeviceInfo deviceInfo) {

@@ -67,7 +67,7 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
     @Mock lateinit var seekBarUpdateListener: (visibleToUser: Boolean) -> Unit
     @Mock lateinit var closeGuts: (immediate: Boolean) -> Unit
     @Mock lateinit var falsingManager: FalsingManager
-    @Mock lateinit var onCarouselVisibleToUser: () -> Unit
+    @Mock lateinit var onVisibleCardChanged: () -> Unit
     @Mock lateinit var logger: MediaUiEventLogger
     @Mock lateinit var contentContainer: ViewGroup
     @Mock lateinit var settingsButton: View
@@ -97,7 +97,7 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
                 seekBarUpdateListener,
                 closeGuts,
                 falsingManager,
-                onCarouselVisibleToUser,
+                onVisibleCardChanged,
                 logger,
             )
         mediaCarouselScrollHandler.playerWidthPlusPadding = carouselWidth
@@ -257,7 +257,7 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
     }
 
     @Test
-    fun testCarouselScrollToNewIndex_onCarouselVisibleToUser() {
+    fun testCarouselScrollToNewIndex_exactScroll_onVisibleCardChanged() {
         setupMediaContainer(visibleIndex = 0)
         whenever(mediaCarousel.relativeScrollX).thenReturn(carouselWidth)
         mediaCarouselScrollHandler.visibleToUser = true
@@ -266,7 +266,20 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
 
         captor.value.onScrollChange(null, 0, 0, 0, 0)
 
-        verify(onCarouselVisibleToUser).invoke()
+        verify(onVisibleCardChanged).invoke()
+    }
+
+    @Test
+    fun testCarouselScrollToNewIndex_partialScroll_noCallbackInvoked() {
+        setupMediaContainer(visibleIndex = 0)
+        whenever(mediaCarousel.relativeScrollX).thenReturn(carouselWidth + 15)
+        mediaCarouselScrollHandler.visibleToUser = true
+        val captor = ArgumentCaptor.forClass(View.OnScrollChangeListener::class.java)
+        verify(mediaCarousel).setOnScrollChangeListener(captor.capture())
+
+        captor.value.onScrollChange(null, 0, 0, 0, 0)
+
+        verify(onVisibleCardChanged, never()).invoke()
     }
 
     private fun setupMediaContainer(visibleIndex: Int, showsSettingsButton: Boolean = true) {

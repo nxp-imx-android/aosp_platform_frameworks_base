@@ -53,6 +53,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -415,6 +416,26 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
 
         verify(desktopTasksController)
             .activateNextDesk(displayId, DEFAULT_USER_ID, EnterReason.KEYBOARD_SHORTCUT_ENTER)
+    }
+
+    @Test
+    fun keyGestureToggleFullscreen_toggleFocusedTaskFullscreenState() {
+        val displayId = 2
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN)
+                .build()
+
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(desktopTasksController)
+            .toggleFocusedTaskFullscreenState(
+                displayId = displayId,
+                userId = repository.userId,
+                transitionSource = DesktopModeTransitionSource.KEYBOARD_SHORTCUT,
+            )
     }
 
     private fun setUpDesktopTask(

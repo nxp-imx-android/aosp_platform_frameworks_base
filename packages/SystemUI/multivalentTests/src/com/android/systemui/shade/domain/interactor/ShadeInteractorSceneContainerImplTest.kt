@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
@@ -33,6 +34,7 @@ import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -49,6 +51,7 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val underTest by lazy { kosmos.shadeInteractorSceneContainerImpl }
+    private val shadeRepository by lazy { kosmos.shadeRepository }
 
     @Test
     fun qsExpansionWhenInSplitShadeAndQsExpanded() =
@@ -1003,6 +1006,19 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
 
             // THEN the notifications overlay is replaced by the QS overlay
             assertThat(currentOverlays).containsExactly(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun setShadeBounds_forwardsToShadeRepository() =
+        kosmos.runTest {
+            var shadeBounds: Rect? = null
+            shadeRepository.addShadeBoundsListener { shadeBounds = it }
+            assertThat(shadeBounds).isNull()
+
+            val bounds = Rect(0, 0, 100, 100)
+            underTest.setShadeOverlayBounds(bounds)
+
+            assertThat(shadeBounds).isEqualTo(bounds)
         }
 
     private fun Kosmos.openShade(overlay: OverlayKey) {

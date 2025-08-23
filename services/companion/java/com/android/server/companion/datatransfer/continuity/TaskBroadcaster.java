@@ -25,6 +25,7 @@ import android.content.Context;
 import android.os.RemoteException;
 import android.util.Slog;
 
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
@@ -32,6 +33,7 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskR
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.tasks.RunningTaskFetcher;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,11 +43,13 @@ import java.util.Objects;
  *
  * other devices via {@link CompanionDeviceManager}.
  */
-class TaskBroadcaster extends TaskStackListener {
+class TaskBroadcaster
+    extends TaskStackListener implements ActivityTaskManagerInternal.HandoffEnablementListener {
 
     private static final String TAG = "TaskBroadcaster";
 
     private final ActivityTaskManager mActivityTaskManager;
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final RunningTaskFetcher mRunningTaskFetcher;
 
@@ -57,16 +61,19 @@ class TaskBroadcaster extends TaskStackListener {
         this(
             Objects.requireNonNull(taskContinuityMessenger),
             Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
+            Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
             new RunningTaskFetcher(Objects.requireNonNull(context)));
     }
 
     public TaskBroadcaster(
         @NonNull TaskContinuityMessenger taskContinuityMessenger,
         @NonNull ActivityTaskManager activityTaskManager,
+        @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
         @NonNull RunningTaskFetcher runningTaskFetcher) {
 
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
+        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mRunningTaskFetcher = Objects.requireNonNull(runningTaskFetcher);
     }
 
@@ -79,6 +86,7 @@ class TaskBroadcaster extends TaskStackListener {
         synchronized (this) {
             if (!mIsListeningToActivityTaskManager) {
                 mActivityTaskManager.registerTaskStackListener(this);
+                mActivityTaskManagerInternal.registerHandoffEnablementListener(this);
                 mIsListeningToActivityTaskManager = true;
             }
         }
@@ -88,6 +96,7 @@ class TaskBroadcaster extends TaskStackListener {
         synchronized (this) {
             if (mIsListeningToActivityTaskManager) {
                 mActivityTaskManager.unregisterTaskStackListener(this);
+                mActivityTaskManagerInternal.unregisterHandoffEnablementListener(this);
                 mIsListeningToActivityTaskManager = false;
             }
         }
@@ -116,9 +125,21 @@ class TaskBroadcaster extends TaskStackListener {
     public void onTaskMovedToFront(RunningTaskInfo taskInfo) throws RemoteException {
         Slog.v(TAG, "onTaskMovedToFront: taskId=" + taskInfo.taskId);
 
-        RemoteTaskInfo remoteTaskInfo = mRunningTaskFetcher.getRunningTaskById(taskInfo.taskId);
+        sendTaskUpdatedMessage(taskInfo.taskId);
+    }
+
+    @Override
+    public void onHandoffEnabledChanged(int taskId, boolean isHandoffEnabled) {
+        Slog.v(TAG, "onHandoffEnabledChanged: taskId=" + taskId
+                + ", isHandoffEnabled=" + isHandoffEnabled);
+
+        sendTaskUpdatedMessage(taskId);
+    }
+
+    private void sendTaskUpdatedMessage(int taskId) {
+        RemoteTaskInfo remoteTaskInfo = mRunningTaskFetcher.getRunningTaskById(taskId);
         if (remoteTaskInfo == null) {
-            Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
+            Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskId);
             return;
         }
 

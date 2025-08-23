@@ -16,18 +16,28 @@
 
 package com.android.systemui.securelockdevice.domain.interactor
 
+import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_POWER_BUTTON
 import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.data.repository.fakeFacePropertyRepository
+import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRepository
+import com.android.systemui.biometrics.faceSensorPropertiesInternal
+import com.android.systemui.biometrics.fingerprintSensorPropertiesInternal
+import com.android.systemui.biometrics.shared.model.BiometricModalities
+import com.android.systemui.biometrics.shared.model.toFaceSensorInfo
+import com.android.systemui.biometrics.shared.model.toFingerprintSensorInfo
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,7 +51,14 @@ class SecureLockDeviceInteractorTest : SysuiTestCase() {
     @JvmField @Rule var mockitoRule: MockitoRule = MockitoJUnit.rule()
 
     private val kosmos = testKosmos()
-    private val underTest: SecureLockDeviceInteractor = kosmos.secureLockDeviceInteractor
+    private val testScope = kosmos.testScope
+    private val underTest = kosmos.secureLockDeviceInteractor
+
+    @Before
+    fun setup() {
+        kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+        kosmos.biometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
+    }
 
     @Test
     fun secureLockDeviceStateUpdates_acrossAuthenticationProgress() =
@@ -74,4 +91,58 @@ class SecureLockDeviceInteractorTest : SysuiTestCase() {
             assertThat(requiresPrimaryAuthForSecureLockDevice).isEqualTo(false)
             assertThat(requiresStrongBiometricAuthForSecureLockDevice).isEqualTo(false)
         }
+
+    @Test
+    fun updatesModalitiesFromInteractor_strongFp() {
+        testScope.runTest {
+            val modalities by collectLastValue(underTest.enrolledStrongBiometricModalities)
+            val fpSensorInfo =
+                fingerprintSensorPropertiesInternal(sensorType = TYPE_POWER_BUTTON)
+                    .first()
+                    .toFingerprintSensorInfo()
+            assertThat(modalities).isEqualTo(BiometricModalities())
+
+            kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+            kosmos.fakeFingerprintPropertyRepository.supportsSideFps()
+            runCurrent()
+
+            assertThat(modalities).isEqualTo(BiometricModalities(fpSensorInfo, null))
+        }
+    }
+
+    @Test
+    fun updatesModalitiesFromInteractor_strongFace() {
+        testScope.runTest {
+            val modalities by collectLastValue(underTest.enrolledStrongBiometricModalities)
+            val faceSensorInfo = faceSensorPropertiesInternal().first().toFaceSensorInfo()
+            assertThat(modalities).isEqualTo(BiometricModalities())
+
+            kosmos.biometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
+            kosmos.fakeFacePropertyRepository.setSensorInfo(faceSensorInfo)
+            runCurrent()
+
+            assertThat(modalities).isEqualTo(BiometricModalities(null, faceSensorInfo))
+        }
+    }
+
+    @Test
+    fun updatesModalitiesFromInteractor_strongCoex() {
+        testScope.runTest {
+            val modalities by collectLastValue(underTest.enrolledStrongBiometricModalities)
+            val fpSensorInfo =
+                fingerprintSensorPropertiesInternal(sensorType = TYPE_POWER_BUTTON)
+                    .first()
+                    .toFingerprintSensorInfo()
+            val faceSensorInfo = faceSensorPropertiesInternal().first().toFaceSensorInfo()
+            assertThat(modalities).isEqualTo(BiometricModalities())
+
+            kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+            kosmos.biometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
+            kosmos.fakeFingerprintPropertyRepository.supportsSideFps()
+            kosmos.fakeFacePropertyRepository.setSensorInfo(faceSensorInfo)
+            runCurrent()
+
+            assertThat(modalities).isEqualTo(BiometricModalities(fpSensorInfo, faceSensorInfo))
+        }
+    }
 }

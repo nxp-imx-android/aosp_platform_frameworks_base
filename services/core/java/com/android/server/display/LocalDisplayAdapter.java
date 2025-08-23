@@ -293,8 +293,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         public boolean updateDisplayPropertiesLocked(SurfaceControl.StaticDisplayInfo staticInfo,
                 SurfaceControl.DynamicDisplayInfo dynamicInfo,
                 SurfaceControl.DesiredDisplayModeSpecs modeSpecs) {
-            boolean changed = updateDisplayModesLocked(dynamicInfo, modeSpecs);
-
+            boolean changed = updateDisplayModesLocked(dynamicInfo, modeSpecs,
+                    staticInfo.isInternal);
             changed |= updateStaticInfo(staticInfo);
             changed |= updateColorModesLocked(dynamicInfo.supportedColorModes,
                     dynamicInfo.activeColorMode);
@@ -312,13 +312,15 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         }
 
         private boolean updateDisplayModesLocked(SurfaceControl.DynamicDisplayInfo dynamicInfo,
-                SurfaceControl.DesiredDisplayModeSpecs modeSpecs) {
+                SurfaceControl.DesiredDisplayModeSpecs modeSpecs, boolean isInternal) {
             SurfaceControl.DisplayMode[] displayModes = dynamicInfo.supportedDisplayModes;
             int preferredSfDisplayModeId = dynamicInfo.preferredBootDisplayMode;
             int activeSfDisplayModeId = dynamicInfo.activeDisplayModeId;
             float renderFrameRate = dynamicInfo.renderFrameRate;
             boolean hasArrSupport = dynamicInfo.hasArrSupport;
             boolean syntheticModesV2Enabled = getFeatureFlags().isSyntheticModesV2Enabled();
+            boolean sizeOverrideEnabled =
+                    getFeatureFlags().isSizeOverrideForExternalDisplaysEnabled() && !isInternal;
 
             mSfDisplayModes = Arrays.copyOf(displayModes, displayModes.length);
             mActiveSfDisplayMode = getModeById(displayModes, activeSfDisplayModeId);
@@ -369,8 +371,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     for (int j = 0; j < alternativeRates.length; j++) {
                         alternativeRates[j] = alternativeRefreshRates.get(j);
                     }
-                    Display.Mode displayMode = DisplayModeFactory.createMode(
-                            mode, alternativeRates, hasArrSupport, syntheticModesV2Enabled);
+                    Display.Mode displayMode = DisplayModeFactory.createMode(mode, alternativeRates,
+                            hasArrSupport, syntheticModesV2Enabled, sizeOverrideEnabled);
                     record = new DisplayModeRecord(displayMode);
                     modesAdded = true;
                 }

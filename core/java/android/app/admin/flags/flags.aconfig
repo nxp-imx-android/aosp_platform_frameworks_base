@@ -475,6 +475,7 @@ flag {
   namespace: "enterprise"
   description: "Add bulk APIs for cross profile widget providers"
   bug: "421053737"
+  is_exported: true
 }
 
 flag {

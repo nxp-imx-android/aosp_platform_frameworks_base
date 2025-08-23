@@ -309,9 +309,9 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
-                "FULLSCREEN -> Turns a task into fullscreen",
+                "FULLSCREEN -> Toggles the focused task's fullscreen state",
                 intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
-                KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN,
                 intArrayOf(KeyEvent.KEYCODE_FULLSCREEN),
                 0,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),

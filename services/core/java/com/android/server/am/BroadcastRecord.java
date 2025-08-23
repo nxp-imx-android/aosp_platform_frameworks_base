@@ -296,7 +296,7 @@ final class BroadcastRecord extends Binder {
         pw.print(prefix); pw.print("caller="); pw.print(callerPackage); pw.print(" ");
                 pw.print(callerApp != null ? callerApp.toShortString() : "null");
                 pw.print(" pid="); pw.print(callingPid);
-                pw.print(" uid="); pw.println(callingUid);
+                pw.print(" uid="); pw.print(callingUid);
                 pw.print(" realCallingUid="); pw.println(realCallingUid);
         if ((requiredPermissions != null && requiredPermissions.length > 0)
                 || appOp != AppOpsManager.OP_NONE) {
