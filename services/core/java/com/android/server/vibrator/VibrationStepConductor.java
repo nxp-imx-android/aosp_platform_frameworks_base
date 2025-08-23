@@ -23,7 +23,6 @@ import android.os.VibrationEffect;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
-import android.os.vibrator.RampSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.IntArray;
 import android.util.Slog;
@@ -167,10 +166,6 @@ final class VibrationStepConductor {
         if (segment instanceof PrimitiveSegment) {
             return new ComposePrimitivesVibratorStep(this, startTime, vibrator, effect,
                     segmentIndex, pendingVibratorOffDeadline);
-        }
-        if (segment instanceof RampSegment) {
-            return new ComposePwleVibratorStep(this, startTime, vibrator, effect, segmentIndex,
-                    pendingVibratorOffDeadline);
         }
         if (segment instanceof PwleSegment) {
             return new ComposePwleV2VibratorStep(this, startTime, vibrator, effect,

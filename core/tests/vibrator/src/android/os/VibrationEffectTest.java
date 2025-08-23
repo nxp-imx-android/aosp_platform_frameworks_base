@@ -17,8 +17,6 @@
 package android.os;
 
 import static android.os.VibrationEffect.DEFAULT_AMPLITUDE;
-import static android.os.VibrationEffect.VibrationParameter.targetAmplitude;
-import static android.os.VibrationEffect.VibrationParameter.targetFrequency;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -47,7 +45,6 @@ import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -62,7 +59,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -436,35 +432,6 @@ public class VibrationEffectTest {
                 .addControlPoint(/*intensity=*/ 0.3f, /*sharpness=*/ 0.5f, /*durationMillis=*/ 50)
                 .addControlPoint(/*intensity=*/ 0.4f, /*sharpness=*/ 0.5f, /*durationMillis=*/ 80)
                 .addControlPoint(/*intensity=*/ 0.0f, /*sharpness=*/ 0.3f, /*durationMillis=*/ 40)
-                .build();
-
-        assertNull(effect.computeCreateWaveformOffOnTimingsOrNull());
-    }
-
-    @Test
-    public void computeLegacyPattern_effectsViaStartWaveform() {
-        // Effects created via startWaveform are not expected to be converted to long[] patterns, as
-        // they are not configured to always play with the default amplitude.
-        VibrationEffect effect = VibrationEffect.startWaveform(targetFrequency(60))
-                .addTransition(Duration.ofMillis(100), targetAmplitude(1), targetFrequency(120))
-                .addSustain(Duration.ofMillis(200))
-                .addTransition(Duration.ofMillis(100), targetAmplitude(0), targetFrequency(60))
-                .build();
-
-        assertNull(effect.computeCreateWaveformOffOnTimingsOrNull());
-
-        effect = VibrationEffect.startWaveform(targetFrequency(60))
-                .addTransition(Duration.ofMillis(80), targetAmplitude(1))
-                .addSustain(Duration.ofMillis(200))
-                .addTransition(Duration.ofMillis(100), targetAmplitude(0))
-                .build();
-
-        assertNull(effect.computeCreateWaveformOffOnTimingsOrNull());
-
-        effect = VibrationEffect.startWaveform(targetFrequency(60))
-                .addTransition(Duration.ofMillis(100), targetFrequency(50))
-                .addSustain(Duration.ofMillis(50))
-                .addTransition(Duration.ofMillis(20), targetFrequency(75))
                 .build();
 
         assertNull(effect.computeCreateWaveformOffOnTimingsOrNull());
@@ -876,51 +843,6 @@ public class VibrationEffectTest {
     }
 
     @Test
-    public void testValidateWaveformBuilder() {
-        // Cover builder methods
-        VibrationEffect.startWaveform(targetAmplitude(1))
-                .addTransition(Duration.ofSeconds(1), targetAmplitude(0.5f), targetFrequency(100))
-                .addTransition(Duration.ZERO, targetAmplitude(0f), targetFrequency(200))
-                .addSustain(Duration.ofMinutes(2))
-                .addTransition(Duration.ofMillis(10), targetAmplitude(1f), targetFrequency(50))
-                .addSustain(Duration.ofMillis(1))
-                .addTransition(Duration.ZERO, targetFrequency(150))
-                .addSustain(Duration.ofMillis(2))
-                .addTransition(Duration.ofSeconds(15), targetAmplitude(1))
-                .build()
-                .validate();
-
-        // Make sure class summary javadoc examples compile and are valid.
-        // NOTE: IF THIS IS UPDATED, PLEASE ALSO UPDATE WaveformBuilder javadocs.
-        VibrationEffect.startWaveform(targetFrequency(60))
-                .addTransition(Duration.ofMillis(100), targetAmplitude(1), targetFrequency(120))
-                .addSustain(Duration.ofMillis(200))
-                .addTransition(Duration.ofMillis(100), targetAmplitude(0), targetFrequency(60))
-                .build()
-                .validate();
-        VibrationEffect.createWaveform(new long[]{10, 20, 30}, new int[]{51, 102, 204}, -1)
-                .validate();
-        VibrationEffect.startWaveform(targetAmplitude(0.2f))
-                .addSustain(Duration.ofMillis(10))
-                .addTransition(Duration.ZERO, targetAmplitude(0.4f))
-                .addSustain(Duration.ofMillis(20))
-                .addTransition(Duration.ZERO, targetAmplitude(0.8f))
-                .addSustain(Duration.ofMillis(30))
-                .build()
-                .validate();
-
-        assertThrows(IllegalStateException.class,
-                () -> VibrationEffect.startWaveform().build().validate());
-        assertThrows(IllegalArgumentException.class, () -> targetAmplitude(-2));
-        assertThrows(IllegalArgumentException.class, () -> targetFrequency(0));
-        assertThrows(IllegalArgumentException.class,
-                () -> VibrationEffect.startWaveform().addTransition(
-                        Duration.ofMillis(-10), targetAmplitude(1)).build().validate());
-        assertThrows(IllegalArgumentException.class,
-                () -> VibrationEffect.startWaveform().addSustain(Duration.ZERO).build().validate());
-    }
-
-    @Test
     public void testValidateComposed() {
         // Cover builder methods
         VibrationEffect.startComposition()
@@ -1232,7 +1154,7 @@ public class VibrationEffectTest {
 
         List<VibrationEffectSegment> repeatingSegments = new ArrayList<>(
                 ((VibrationEffect.Composed) original).getSegments());
-        repeatingSegments.add(new StepSegment(0, 0, loopDelayMs));
+        repeatingSegments.add(new StepSegment(0, loopDelayMs));
 
         VibrationEffect loopingWithDelay = new VibrationEffect.Composed(repeatingSegments, 0);
         loopingWithDelay.validate();
@@ -1444,12 +1366,6 @@ public class VibrationEffectTest {
         assertFalse(VibrationEffect.createOneShot(1500, 255).isHapticFeedbackCandidate());
         assertFalse(VibrationEffect.createWaveform(
                 new long[]{200, 200, 700}, new int[]{1, 2, 3}, -1).isHapticFeedbackCandidate());
-        assertFalse(VibrationEffect.startWaveform()
-                .addTransition(Duration.ofMillis(500), targetAmplitude(1))
-                .addTransition(Duration.ofMillis(200), targetAmplitude(0.5f))
-                .addTransition(Duration.ofMillis(500), targetAmplitude(0))
-                .build()
-                .isHapticFeedbackCandidate());
     }
 
     @Test
@@ -1495,12 +1411,6 @@ public class VibrationEffectTest {
         assertTrue(VibrationEffect.createOneShot(500, 255).isHapticFeedbackCandidate());
         assertTrue(VibrationEffect.createWaveform(
                 new long[]{100, 200, 300}, new int[]{1, 2, 3}, -1).isHapticFeedbackCandidate());
-        assertTrue(VibrationEffect.startWaveform()
-                .addTransition(Duration.ofMillis(300), targetAmplitude(1))
-                .addTransition(Duration.ofMillis(200), targetAmplitude(0.5f))
-                .addTransition(Duration.ofMillis(300), targetAmplitude(0))
-                .build()
-                .isHapticFeedbackCandidate());
     }
 
     @Test

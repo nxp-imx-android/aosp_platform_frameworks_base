@@ -30,7 +30,6 @@ import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
-import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.IndentingPrintWriter;
@@ -347,8 +346,6 @@ abstract class Vibration {
             final long token = proto.start(fieldId);
             if (segment instanceof StepSegment) {
                 dumpEffect(proto, SegmentProto.STEP, (StepSegment) segment);
-            } else if (segment instanceof RampSegment) {
-                dumpEffect(proto, SegmentProto.RAMP, (RampSegment) segment);
             } else if (segment instanceof PrebakedSegment) {
                 dumpEffect(proto, SegmentProto.PREBAKED, (PrebakedSegment) segment);
             } else if (segment instanceof PrimitiveSegment) {
@@ -385,17 +382,6 @@ abstract class Vibration {
             final long token = proto.start(fieldId);
             proto.write(StepSegmentProto.DURATION, segment.getDuration());
             proto.write(StepSegmentProto.AMPLITUDE, segment.getAmplitude());
-            proto.write(StepSegmentProto.FREQUENCY, segment.getFrequencyHz());
-            proto.end(token);
-        }
-
-        private void dumpEffect(ProtoOutputStream proto, long fieldId, RampSegment segment) {
-            final long token = proto.start(fieldId);
-            proto.write(RampSegmentProto.DURATION, segment.getDuration());
-            proto.write(RampSegmentProto.START_AMPLITUDE, segment.getStartAmplitude());
-            proto.write(RampSegmentProto.END_AMPLITUDE, segment.getEndAmplitude());
-            proto.write(RampSegmentProto.START_FREQUENCY, segment.getStartFrequencyHz());
-            proto.write(RampSegmentProto.END_FREQUENCY, segment.getEndFrequencyHz());
             proto.end(token);
         }
 

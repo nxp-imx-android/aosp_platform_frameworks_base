@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import android.hardware.vibrator.Braking;
 import android.hardware.vibrator.IVibrator;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -138,19 +137,13 @@ public class VibratorInfoTest {
         VibratorInfo info = new VibratorInfo.Builder(TEST_VIBRATOR_ID)
                 .setPrimitiveDelayMax(100)
                 .setCompositionSizeMax(10)
-                .setPwlePrimitiveDurationMax(50)
-                .setPwleSizeMax(20)
                 .build();
         assertEquals(100, info.getPrimitiveDelayMax());
         assertEquals(10, info.getCompositionSizeMax());
-        assertEquals(50, info.getPwlePrimitiveDurationMax());
-        assertEquals(20, info.getPwleSizeMax());
 
         VibratorInfo emptyInfo = new VibratorInfo.Builder(TEST_VIBRATOR_ID).build();
         assertEquals(0, emptyInfo.getPrimitiveDelayMax());
         assertEquals(0, emptyInfo.getCompositionSizeMax());
-        assertEquals(0, emptyInfo.getPwlePrimitiveDurationMax());
-        assertEquals(0, emptyInfo.getPwleSizeMax());
     }
 
     @Test
@@ -181,17 +174,6 @@ public class VibratorInfoTest {
         assertEquals(0, emptyInfo.getMinEnvelopeEffectControlPointDurationMillis());
         assertEquals(0, emptyInfo.getMaxEnvelopeEffectControlPointDurationMillis());
         assertEquals(0, emptyInfo.getMaxEnvelopeEffectDurationMillis());
-    }
-
-    @Test
-    public void testGetDefaultBraking_returnsFirstSupportedBraking() {
-        assertEquals(Braking.NONE, new VibratorInfo.Builder(
-                TEST_VIBRATOR_ID).build().getDefaultBraking());
-        assertEquals(Braking.CLAB,
-                new VibratorInfo.Builder(TEST_VIBRATOR_ID)
-                        .setSupportedBraking(Braking.NONE, Braking.CLAB)
-                        .build()
-                        .getDefaultBraking());
     }
 
     @Test
@@ -432,9 +414,6 @@ public class VibratorInfoTest {
                     .setSupportedPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 20)
                     .setPrimitiveDelayMax(100)
                     .setCompositionSizeMax(10)
-                    .setSupportedBraking(Braking.CLAB)
-                    .setPwlePrimitiveDurationMax(50)
-                    .setPwleSizeMax(20)
                     .setQFactor(2f)
                     .setFrequencyProfileLegacy(TEST_FREQUENCY_PROFILE_LEGACY)
                     .setFrequencyProfile(TEST_FREQUENCY_PROFILE)
@@ -526,13 +505,6 @@ public class VibratorInfoTest {
                 .build();
         assertNotEquals(unknownEffectSupport, knownEmptyEffectSupport);
         assertFalse(unknownEffectSupport.equalContent(knownEmptyEffectSupport));
-
-        VibratorInfo unknownBrakingSupport = new VibratorInfo.Builder(TEST_VIBRATOR_ID).build();
-        VibratorInfo knownEmptyBrakingSupport = new VibratorInfo.Builder(TEST_VIBRATOR_ID)
-                .setSupportedBraking(new int[0])
-                .build();
-        assertNotEquals(unknownBrakingSupport, knownEmptyBrakingSupport);
-        assertFalse(unknownBrakingSupport.equalContent(knownEmptyBrakingSupport));
     }
 
     @Test

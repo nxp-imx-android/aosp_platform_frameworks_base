@@ -37,8 +37,8 @@ import java.util.List;
 /**
  * Serializer implementation for {@link VibrationEffect}.
  *
- * <p>This serializer does not support effects created with {@link VibrationEffect.WaveformBuilder}
- * nor {@link VibrationEffect.Composition#addEffect(VibrationEffect)}. It only supports vibration
+ * <p>This serializer does not support effects created with
+ * {@link VibrationEffect.Composition#addEffect(VibrationEffect)}. It only supports vibration
  * effects defined as:
  *
  * <ul>
@@ -182,9 +182,6 @@ public final class LegacyVibrationEffectXmlSerializer {
             if (effect.getRepeatIndex() == i) {
                 serializedWaveformBuilder.setRepeatIndexToCurrentEntry();
             }
-
-            XmlValidator.checkSerializerCondition(Float.compare(segment.getFrequencyHz(), 0) == 0,
-                    "Unsupported segment with non-default frequency %f", segment.getFrequencyHz());
 
             serializedWaveformBuilder.addDurationAndAmplitude(
                     segment.getDuration(), toAmplitudeInt(segment.getAmplitude()));

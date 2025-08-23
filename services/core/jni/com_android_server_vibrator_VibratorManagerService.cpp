@@ -559,26 +559,6 @@ static jint nativeVibratorComposeEffectWithCallback(JNIEnv* env, jclass /* clazz
     return vibrationResultFromStatus(status, INT32_MAX, __func__);
 }
 
-static jint nativeVibratorComposePwleEffectWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
-                                                        jint vibratorId, jlong vibrationId,
-                                                        jlong stepId, jobject pwles) {
-    if (DEBUG) {
-        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
-              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
-    }
-    auto service = toNativeService(ptr, __func__);
-    auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
-    if (service == nullptr || hal == nullptr) {
-        return -1;
-    }
-    auto effects = vectorFromJavaParcel<PrimitivePwle>(env, pwles);
-    auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
-                                                                vibratorId, vibrationId, stepId);
-    auto status = hal->composePwle(effects, callback);
-    service->processVibratorStatus(static_cast<int32_t>(vibratorId), status, __func__);
-    return vibrationResultFromStatus(status, INT32_MAX, __func__);
-}
-
 static jint nativeVibratorComposePwleV2EffectWithCallback(JNIEnv* env, jclass /* clazz */,
                                                           jlong ptr, jint vibratorId,
                                                           jlong vibrationId, jlong stepId,
@@ -933,8 +913,6 @@ static const JNINativeMethod method_table[] = {
          (void*)nativeVibratorPerformEffectWithCallback},
         {"nativeVibratorComposeEffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
          (void*)nativeVibratorComposeEffectWithCallback},
-        {"nativeVibratorComposePwleEffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
-         (void*)nativeVibratorComposePwleEffectWithCallback},
         {"nativeVibratorComposePwleV2EffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
          (void*)nativeVibratorComposePwleV2EffectWithCallback},
         {"nativeStartHapticGeneratorSessionWithCallback", "(JJILandroid/os/Parcel;)Z",

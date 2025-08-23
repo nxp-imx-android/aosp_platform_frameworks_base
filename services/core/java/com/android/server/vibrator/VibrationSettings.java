@@ -328,15 +328,6 @@ final class VibrationSettings {
     }
 
     /**
-     * The duration, in milliseconds, that should be applied to convert vibration effect's
-     * {@link android.os.vibrator.RampSegment} to a {@link android.os.vibrator.StepSegment} on
-     * devices without PWLE support.
-     */
-    public int getRampStepDuration() {
-        return mVibrationConfig.getRampStepDurationMs();
-    }
-
-    /**
      * The duration, in milliseconds, that should be applied to the ramp to turn off the vibrator
      * when a vibration is cancelled or finished at non-zero amplitude.
      */

@@ -25,16 +25,7 @@ message StepSegmentProto {
    option (.android.msg_privacy).dest = DEST_AUTOMATIC;
    optional int32 duration = 1; // In milliseconds.
    optional float amplitude = 2;
-   optional float frequency = 3;
-}
-
-message RampSegmentProto {
-    option (.android.msg_privacy).dest = DEST_AUTOMATIC;
-    optional int32 duration = 1; // In milliseconds.
-    optional float startAmplitude = 2;
-    optional float endAmplitude = 3;
-    optional float startFrequency = 4;
-    optional float endFrequency = 5;
+   reserved 3; // prev float frequency
 }
 
 message PrebakedSegmentProto {
@@ -74,7 +65,7 @@ message SegmentProto {
     optional PrebakedSegmentProto prebaked = 1;
     optional PrimitiveSegmentProto primitive = 2;
     optional StepSegmentProto step = 3;
-    optional RampSegmentProto ramp = 4;
+    reserved 4; // prev ramp segment
     optional PwleSegmentProto pwle = 5;
     optional BasicPwleSegmentProto basic_pwle = 6;
 }

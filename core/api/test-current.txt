@@ -2861,9 +2861,6 @@ package android.os {
     method public static android.os.VibrationEffect get(int, boolean);
     method @Nullable public static android.os.VibrationEffect get(android.net.Uri, android.content.Context);
     method public abstract long getDuration();
-    method @NonNull public static android.os.VibrationEffect.WaveformBuilder startWaveform();
-    method @NonNull public static android.os.VibrationEffect.WaveformBuilder startWaveform(@NonNull android.os.VibrationEffect.VibrationParameter);
-    method @NonNull public static android.os.VibrationEffect.WaveformBuilder startWaveform(@NonNull android.os.VibrationEffect.VibrationParameter, @NonNull android.os.VibrationEffect.VibrationParameter);
     field public static final int EFFECT_POP = 4; // 0x4
     field public static final int EFFECT_STRENGTH_LIGHT = 0; // 0x0
     field public static final int EFFECT_STRENGTH_MEDIUM = 1; // 0x1
@@ -2891,18 +2888,6 @@ package android.os {
     method @NonNull public android.os.PersistableBundle getVendorData();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.VibrationEffect.VendorEffect> CREATOR;
-  }
-
-  public static class VibrationEffect.VibrationParameter {
-    method @NonNull public static android.os.VibrationEffect.VibrationParameter targetAmplitude(@FloatRange(from=0, to=1) float);
-    method @NonNull public static android.os.VibrationEffect.VibrationParameter targetFrequency(@FloatRange(from=1) float);
-  }
-
-  public static final class VibrationEffect.WaveformBuilder {
-    method @NonNull public android.os.VibrationEffect.WaveformBuilder addSustain(@NonNull java.time.Duration);
-    method @NonNull public android.os.VibrationEffect.WaveformBuilder addTransition(@NonNull java.time.Duration, @NonNull android.os.VibrationEffect.VibrationParameter);
-    method @NonNull public android.os.VibrationEffect.WaveformBuilder addTransition(@NonNull java.time.Duration, @NonNull android.os.VibrationEffect.VibrationParameter, @NonNull android.os.VibrationEffect.VibrationParameter);
-    method @NonNull public android.os.VibrationEffect build();
   }
 
   public abstract class Vibrator {
@@ -3094,22 +3079,10 @@ package android.os.vibrator {
     field @NonNull public static final android.os.Parcelable.Creator<android.os.vibrator.PwleSegment> CREATOR;
   }
 
-  public final class RampSegment extends android.os.vibrator.VibrationEffectSegment {
-    method public int describeContents();
-    method public long getDuration();
-    method public float getEndAmplitude();
-    method public float getEndFrequencyHz();
-    method public float getStartAmplitude();
-    method public float getStartFrequencyHz();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.os.vibrator.RampSegment> CREATOR;
-  }
-
   public final class StepSegment extends android.os.vibrator.VibrationEffectSegment {
     method public int describeContents();
     method public float getAmplitude();
     method public long getDuration();
-    method public float getFrequencyHz();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.vibrator.StepSegment> CREATOR;
   }

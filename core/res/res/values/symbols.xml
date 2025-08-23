@@ -2120,9 +2120,7 @@
   <java-symbol type="bool" name="config_enablePopulationDensityProviderOverlay" />
   <java-symbol type="array" name="config_testLocationProviders" />
   <java-symbol type="array" name="config_defaultNotificationVibePattern" />
-  <java-symbol type="array" name="config_defaultNotificationVibeWaveform" />
   <java-symbol type="array" name="config_notificationFallbackVibePattern" />
-  <java-symbol type="array" name="config_notificationFallbackVibeWaveform" />
   <java-symbol type="bool" name="config_enableServerNotificationEffectsForAutomotive" />
   <java-symbol type="bool" name="config_useAttentionLight" />
   <java-symbol type="bool" name="config_enableNotificationAccessibilityEvents" />
@@ -2257,7 +2255,6 @@
   <java-symbol type="bool" name="config_ringtoneVibrationSettingsSupported" />
   <java-symbol type="array" name="config_ringtoneVibrationPatternToMetricIdMapping" />
   <java-symbol type="array" name="config_notificationVibrationPatternToMetricIdMapping" />
-  <java-symbol type="integer" name="config_vibrationWaveformRampStepDuration" />
   <java-symbol type="bool" name="config_ignoreVibrationsOnWirelessCharger" />
   <java-symbol type="integer" name="config_vibrationWaveformRampDownDuration" />
   <java-symbol type="integer" name="config_vibrationPipelineMaxDuration" />

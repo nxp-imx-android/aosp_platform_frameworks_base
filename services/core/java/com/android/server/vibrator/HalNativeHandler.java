@@ -24,7 +24,6 @@ import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
-import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.VendorEffect;
 import android.hardware.vibrator.VibrationEffectContent;
 
@@ -98,18 +97,6 @@ interface HalNativeHandler {
      */
     int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
             CompositeEffect[] effects);
-
-    /**
-     * Call {@link IVibrator#composePwle} on single vibrator using vibration id for callbacks
-     * from HAL.
-     *
-     * <p>This should only be called if HAL has {@link IVibrator#CAP_COMPOSE_PWLE_EFFECTS}. The HAL
-     * might fail the request otherwise.
-     *
-     * @return max int value if successful, zero if unsupported or negative if failed.
-     */
-    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
-            PrimitivePwle[] effects);
 
     /**
      * Call {@link IVibrator#composePwleV2} on single vibrator using vibration id for callbacks
