@@ -383,7 +383,6 @@ APerformanceHintSession* APerformanceHintManager::createSession(
         const int32_t* threadIds, size_t size, int64_t initialTargetWorkDurationNanos,
         hal::SessionTag tag, bool isJava) {
     ndk::ScopedAStatus ret;
-    hal::SessionConfig sessionConfig{.id = -1};
 
     ASessionCreationConfig creationConfig{{
             .tids = std::vector<int32_t>(threadIds, threadIds + size),
