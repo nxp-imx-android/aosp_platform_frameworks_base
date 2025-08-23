@@ -22,13 +22,14 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.Key
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
+import com.android.systemui.plugins.annotations.ProtectedBaseInterface
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.SimpleProperty
 import com.android.systemui.plugins.annotations.ThrowsOnFailure
 
 /** Element Composable together with some metadata about the function. */
 @Stable
-@ProtectedInterface
+@ProtectedBaseInterface
 interface BaseLockscreenElement {
     @get:SimpleProperty
     /** Key of identifying this lockscreen element */
