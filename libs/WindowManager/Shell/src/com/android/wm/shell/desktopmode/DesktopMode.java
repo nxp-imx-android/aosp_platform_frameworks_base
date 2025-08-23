@@ -70,6 +70,10 @@ public interface DesktopMode {
     /** Called when requested to go to split screen from the current focused desktop app. */
     void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop);
 
+    /** Called when requested to toggle the fullscreen state of the focused app. */
+    void toggleFocusedTaskFullscreenState(
+            int displayId, DesktopModeTransitionSource transitionSource);
+
     /**
      * Register a listener that will receive callbacks about desktop-first state. Once it's
      * registered, the listener immediately receives the current state.

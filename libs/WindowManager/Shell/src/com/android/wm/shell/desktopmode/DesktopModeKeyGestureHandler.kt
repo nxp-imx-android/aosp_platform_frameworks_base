@@ -35,6 +35,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Minimiz
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
@@ -66,6 +67,7 @@ class DesktopModeKeyGestureHandler(
                     KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
                     KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
                     KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN,
                 )
             inputManager.registerKeyGestureEventHandler(supportedGestures, this)
         }
@@ -180,6 +182,18 @@ class DesktopModeKeyGestureHandler(
                 logV("Found focused desktop task %d to close", focusedTask.taskId)
                 mainExecutor.execute {
                     desktopModeWindowDecorViewModel.get().closeTask(focusedTask)
+                }
+            }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN -> {
+                logV("Key gesture TOGGLE_FULLSCREEN is handled")
+                mainExecutor.execute {
+                    desktopTasksController
+                        .get()
+                        .toggleFocusedTaskFullscreenState(
+                            displayId = focusTransitionObserver.globallyFocusedDisplayId,
+                            userId = desktopUserRepositories.current.userId,
+                            transitionSource = DesktopModeTransitionSource.KEYBOARD_SHORTCUT,
+                        )
                 }
             }
         }

@@ -27,6 +27,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD;
 import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER;
 import static android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE;
+import static android.window.DesktopExperienceFlags.TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
@@ -818,7 +819,9 @@ final class KeyGestureController {
                     if (firstDown) {
                         handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_FULLSCREEN},
                                 /* modifierState = */0,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
+                                TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY.isTrue()
+                                        ? KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN
+                                        : KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
                                 focusedToken, /* flags = */0, /* appLaunchData = */null);
                     }

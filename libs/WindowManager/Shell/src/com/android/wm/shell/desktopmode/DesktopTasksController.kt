@@ -446,19 +446,7 @@ class DesktopTasksController(
         when (allFocusedTasks.size) {
             0 -> return
             // Full screen case
-            1 -> {
-                if (
-                    desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
-                        allFocusedTasks.single()
-                    )
-                ) {
-                    return
-                }
-                moveTaskToDefaultDeskAndActivate(
-                    allFocusedTasks.single().taskId,
-                    transitionSource = transitionSource,
-                )
-            }
+            1 -> moveFullscreenTaskToDesktop(allFocusedTasks.single(), transitionSource)
             // Split-screen case where there are two focused tasks, then we find the child
             // task to move to desktop.
             2 -> {
@@ -474,6 +462,36 @@ class DesktopTasksController(
             else ->
                 logW(
                     "DesktopTasksController: Cannot enter desktop, expected less " +
+                        "than 3 focused tasks but found %d",
+                    allFocusedTasks.size,
+                )
+        }
+    }
+
+    /**
+     * Toggles the focused task's fullscreen state. A desktop task or a split screen task is moved
+     * into fullscreen mode, while a fullscreen task is moved into desktop mode.
+     */
+    fun toggleFocusedTaskFullscreenState(
+        displayId: Int,
+        userId: Int = shellController.currentUserId,
+        transitionSource: DesktopModeTransitionSource,
+    ) {
+        getFocusedDesktopTask(displayId = displayId, userId = userId)?.let {
+            // Desktop -> Fullscreen.
+            moveDesktopTaskToFullscreen(it, displayId, transitionSource)
+            return
+        }
+        val allFocusedTasks = getFocusedNonDesktopTasks(displayId = displayId, userId = userId)
+        when (allFocusedTasks.size) {
+            0 -> {}
+            // Fullscreen -> Desktop.
+            1 -> moveFullscreenTaskToDesktop(allFocusedTasks.single(), transitionSource)
+            // Split screen -> Fullscreen (the active split screen app is moved into fullscreen).
+            2 -> splitScreenController.goToFullscreenFromSplit()
+            else ->
+                logW(
+                    "DesktopTasksController: Cannot toggle fullscreen state, expected less " +
                         "than 3 focused tasks but found %d",
                     allFocusedTasks.size,
                 )
@@ -504,6 +522,25 @@ class DesktopTasksController(
     /** Returns child task from two focused tasks in split screen mode. */
     private fun getSplitFocusedTask(task1: RunningTaskInfo, task2: RunningTaskInfo) =
         if (task1.taskId == task2.parentTaskId) task2 else task1
+
+    /** Moves a desktop task into fullscreen mode. */
+    private fun moveDesktopTaskToFullscreen(
+        task: RunningTaskInfo,
+        displayId: Int,
+        transitionSource: DesktopModeTransitionSource,
+    ) {
+        snapEventHandler.removeTaskIfTiled(displayId, task.taskId)
+        moveToFullscreenWithAnimation(task, task.positionInParent, transitionSource)
+    }
+
+    /** Moves a fullscreen task into desktop mode. */
+    private fun moveFullscreenTaskToDesktop(
+        task: RunningTaskInfo,
+        transitionSource: DesktopModeTransitionSource,
+    ) {
+        if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) return
+        moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = transitionSource)
+    }
 
     @Deprecated("Use isDisplayDesktopFirst() instead.", ReplaceWith("isDisplayDesktopFirst()"))
     private fun isDesktopFirstLegacy(displayId: Int): Boolean {
@@ -1864,8 +1901,7 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
     ) {
         getFocusedDesktopTask(displayId = displayId, userId = userId)?.let {
-            snapEventHandler.removeTaskIfTiled(displayId, it.taskId)
-            moveToFullscreenWithAnimation(it, it.positionInParent, transitionSource)
+            moveDesktopTaskToFullscreen(it, displayId, transitionSource)
         }
     }
 
@@ -6045,6 +6081,19 @@ class DesktopTasksController(
             logV("moveFocusedTaskToStageSplit")
             mainExecutor.execute {
                 this@DesktopTasksController.enterSplit(displayId = displayId, leftOrTop = leftOrTop)
+            }
+        }
+
+        override fun toggleFocusedTaskFullscreenState(
+            displayId: Int,
+            transitionSource: DesktopModeTransitionSource,
+        ) {
+            logV("toggleFocusedTaskFullscreenState")
+            mainExecutor.execute {
+                this@DesktopTasksController.toggleFocusedTaskFullscreenState(
+                    displayId = displayId,
+                    transitionSource = transitionSource,
+                )
             }
         }
 
