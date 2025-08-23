@@ -66,6 +66,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -120,6 +121,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastRoundToInt
@@ -1103,6 +1105,7 @@ private fun CardGuts(
                 Modifier.align(Alignment.TopEnd).padding(top = 16.dp, end = 16.dp).clickable {
                     viewModel.settingsButton.onClick()
                 },
+            tint = Color.White,
         )
 
         //  Content.
@@ -1114,7 +1117,12 @@ private fun CardGuts(
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 32.dp, bottom = 40.dp),
         ) {
-            Text(text = viewModel.text, color = Color.White)
+            Text(
+                text = viewModel.text,
+                color = Color.White,
+                style = MaterialTheme.typography.labelMedium,
+                fontSize = 14.sp,
+            )
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1123,20 +1131,27 @@ private fun CardGuts(
                 PlatformButton(
                     onClick = viewModel.primaryAction.onClick,
                     modifier = Modifier.sysuiResTag(MediaRes.HIDE_BTN),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
                 ) {
                     Text(
                         text = checkNotNull(viewModel.primaryAction.text),
                         color = colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontSize = 14.sp,
                     )
                 }
 
                 viewModel.secondaryAction?.let { button ->
                     PlatformOutlinedButton(
                         onClick = button.onClick,
-                        border = BorderStroke(width = 1.dp, color = Color.White),
+                        border = BorderStroke(width = 1.dp, color = colorScheme.primary),
                     ) {
-                        Text(text = checkNotNull(button.text), color = Color.White)
+                        Text(
+                            text = checkNotNull(button.text),
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontSize = 14.sp,
+                        )
                     }
                 }
             }
@@ -1145,6 +1160,7 @@ private fun CardGuts(
 }
 
 /** Renders the metadata labels of a track. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ContentScope.Metadata(
     title: String,
@@ -1161,7 +1177,7 @@ private fun ContentScope.Metadata(
                 Text(
                     text = title,
                     modifier = Modifier.sysuiResTag(MediaRes.TITLE),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                     color = color,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -1247,7 +1263,7 @@ private fun DeviceChip(
                     rememberLastNonNull(viewModel.text)?.let {
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.labelMedium,
                             color = style.contentColor,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
