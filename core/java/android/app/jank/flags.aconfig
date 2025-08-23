@@ -24,4 +24,11 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
+ }
+
+flag {
+    name: "instrument_listview_scroll_states"
+    namespace: "system_performance"
+    description: "when enabled listview types will report scroll state changes to janktracker"
+    bug: "439161162"
+  }
