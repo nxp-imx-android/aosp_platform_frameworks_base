@@ -18,6 +18,7 @@ package com.android.systemui.notifications.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Rect
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
@@ -41,6 +42,7 @@ import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
@@ -167,6 +169,20 @@ constructor(
 
     fun onScrimClicked() {
         shadeInteractor.collapseNotificationsShade(loggingReason = "shade scrim clicked")
+    }
+
+    /** Notifies that the bounds of the shade panel have changed. */
+    fun onShadeOverlayBoundsChanged(bounds: Rect?) {
+        val boundsRect =
+            bounds?.let {
+                android.graphics.Rect(
+                    it.left.roundToInt(),
+                    it.top.roundToInt(),
+                    it.right.roundToInt(),
+                    it.bottom.roundToInt(),
+                )
+            }
+        shadeInteractor.setShadeOverlayBounds(boundsRect)
     }
 
     @AssistedFactory

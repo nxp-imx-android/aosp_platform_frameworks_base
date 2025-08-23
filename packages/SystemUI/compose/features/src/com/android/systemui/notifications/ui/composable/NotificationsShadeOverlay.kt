@@ -27,6 +27,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
@@ -86,6 +87,10 @@ constructor(
                 viewModel.notificationsPlaceholderViewModelFactory.create()
             }
 
+        DisposableEffectWithLifecycle(Unit) {
+            onDispose { viewModel.onShadeOverlayBoundsChanged(null) }
+        }
+
         val isFullWidth = isFullWidthShade()
 
         OverlayShade(
@@ -94,6 +99,7 @@ constructor(
             enableTransparency = viewModel.isTransparencyEnabled,
             modifier = modifier,
             onScrimClicked = viewModel::onScrimClicked,
+            onBackgroundPlaced = { bounds, _, _ -> viewModel.onShadeOverlayBoundsChanged(bounds) },
             header = {
                 if (viewModel.showHeader) {
                     val headerViewModel =

@@ -16,7 +16,9 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.graphics.Rect
 import com.android.compose.animation.scene.TransitionKey
+import com.android.systemui.shade.ShadeOverlayBoundsListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -156,6 +158,15 @@ interface BaseShadeInteractor {
      * is open. If both are already collapsed, this has no effect.
      */
     fun collapseEitherShade(loggingReason: String, transitionKey: TransitionKey? = null)
+
+    /** Sets the bounds of the currently visible shade overlay in window coordinates. */
+    fun setShadeOverlayBounds(bounds: Rect?)
+
+    /** Add a listener for shade overlay bounds changes. */
+    fun addShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener)
+
+    /** Remove a listener for shade overlay bounds changes. */
+    fun removeShadeOverlayBoundsListener(listener: ShadeOverlayBoundsListener)
 }
 
 fun createAnyExpansionFlow(
