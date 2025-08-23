@@ -47,6 +47,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieCompositionFactory
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.biometrics.BiometricAuthIconAssets
 import com.android.systemui.biometrics.Utils.ellipsize
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
@@ -178,17 +179,20 @@ object BiometricViewBinder {
             // these do not change and need to be set before any size transitions
             val modalities = viewModel.modalities.first()
 
+            val coexAssets = BiometricAuthIconAssets.getCoexAssetsList(hasSfps = true)
+            val fingerprintAssets = BiometricAuthIconAssets.getFingerprintAssetsList(hasSfps = true)
+            val faceAssets = BiometricAuthIconAssets.getFaceAssetsList()
             /**
              * Load the given [rawResources] immediately so they are cached for use in the
              * [context].
              */
             val rawResources =
                 if (modalities.hasFaceAndFingerprint) {
-                    viewModel.iconViewModel.getCoexAssetsList(modalities.hasSfps)
+                    coexAssets
                 } else if (modalities.hasFingerprintOnly) {
-                    viewModel.iconViewModel.getFingerprintAssetsList(modalities.hasSfps)
+                    fingerprintAssets
                 } else if (modalities.hasFaceOnly) {
-                    viewModel.iconViewModel.getFaceAssetsList()
+                    faceAssets
                 } else {
                     listOf()
                 }

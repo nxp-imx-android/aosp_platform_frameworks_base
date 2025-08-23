@@ -81,6 +81,7 @@ import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.keyguard.shared.model.AcquiredFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.withArgCaptor
@@ -89,6 +90,7 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -198,6 +200,8 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
 
     private val kosmos = testKosmos()
 
+    private lateinit var underTest: PromptViewModel
+
     @Before
     fun setup() {
         setupLogo()
@@ -243,6 +247,8 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
                 .setDescription("test")
                 .setMoreOptionsButtonListener(kosmos.fakeExecutor) { _, _ -> }
                 .build()
+        underTest = kosmos.promptViewModel
+        underTest.iconViewModel.internal.activateIn(kosmos.testScope)
     }
 
     private fun setupLogo() {
@@ -321,11 +327,14 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
             val authenticating by collectLastValue(kosmos.promptViewModel.isAuthenticating)
             val authenticated by collectLastValue(kosmos.promptViewModel.isAuthenticated)
             val modalities by collectLastValue(kosmos.promptViewModel.modalities)
-            val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+            val iconAsset by
+                collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
             val shouldAnimateIconView by
-                collectLastValue(kosmos.promptViewModel.iconViewModel.shouldAnimateIconView)
+                collectLastValue(
+                    flow = kosmos.promptViewModel.iconViewModel.internal.shouldAnimateIconView
+                )
             val iconContentDescriptionId by
-                collectLastValue(kosmos.promptViewModel.iconViewModel.contentDescriptionId)
+                collectLastValue(kosmos.promptViewModel.iconViewModel.internal.contentDescriptionId)
             val message by collectLastValue(kosmos.promptViewModel.message)
             val size by collectLastValue(kosmos.promptViewModel.size)
 
@@ -391,12 +400,14 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
 
     @Test
     fun start_authenticating_show_and_clear_error() = runGenericTest {
-        val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+        val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
         val iconContentDescriptionId by
-            collectLastValue(kosmos.promptViewModel.iconViewModel.contentDescriptionId)
+            collectLastValue(kosmos.promptViewModel.iconViewModel.internal.contentDescriptionId)
         val shouldAnimateIconView by
-            collectLastValue(kosmos.promptViewModel.iconViewModel.shouldAnimateIconView)
+            collectLastValue(kosmos.promptViewModel.iconViewModel.internal.shouldAnimateIconView)
         val message by collectLastValue(kosmos.promptViewModel.message)
+        val previousIconWasError by
+            collectLastValue(kosmos.promptViewModel.iconViewModel.internal.previousIconWasError)
 
         var forceExplicitFlow =
             testCase.isCoex && testCase.confirmationRequested || testCase.authenticatedByFingerprint
@@ -413,7 +424,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
             )
             forceExplicitFlow = true
             // Usually done by binder
-            kosmos.promptViewModel.iconViewModel.setPreviousIconWasError(true)
+            kosmos.promptViewModel.iconViewModel.internal.setPreviousIconWasError(true)
         }
 
         assertThat(message?.isError).isEqualTo(true)
@@ -468,11 +479,16 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
             runGenericTest {
                 // Distinct asset for error -> success only applicable for fingerprint-only /
                 // explicit co-ex auth
-                val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+                val iconAsset by
+                    collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
                 val iconContentDescriptionId by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.contentDescriptionId)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.contentDescriptionId
+                    )
                 val shouldAnimateIconView by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.shouldAnimateIconView)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.shouldAnimateIconView
+                    )
 
                 var forceExplicitFlow =
                     testCase.isCoex && testCase.confirmationRequested ||
@@ -483,7 +499,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
                 verifyIconSize(forceExplicitFlow)
 
                 kosmos.promptViewModel.ensureFingerprintHasStarted(isDelayed = true)
-                kosmos.promptViewModel.iconViewModel.setPreviousIconWasError(true)
+                kosmos.promptViewModel.iconViewModel.internal.setPreviousIconWasError(true)
 
                 kosmos.promptViewModel.showAuthenticated(
                     modality = testCase.authenticatedModality,
@@ -543,11 +559,16 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     fun shows_authenticated_no_errors_no_confirmation_required() {
         if (!testCase.confirmationRequested) {
             runGenericTest {
-                val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+                val iconAsset by
+                    collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
                 val iconContentDescriptionId by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.contentDescriptionId)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.contentDescriptionId
+                    )
                 val shouldAnimateIconView by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.shouldAnimateIconView)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.shouldAnimateIconView
+                    )
                 val message by collectLastValue(kosmos.promptViewModel.message)
                 verifyIconSize()
 
@@ -585,11 +606,16 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     fun shows_pending_confirmation() {
         if (testCase.authenticatedByFace && testCase.confirmationRequested) {
             runGenericTest {
-                val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+                val iconAsset by
+                    collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
                 val iconContentDescriptionId by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.contentDescriptionId)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.contentDescriptionId
+                    )
                 val shouldAnimateIconView by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.shouldAnimateIconView)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.shouldAnimateIconView
+                    )
 
                 val forceExplicitFlow = testCase.isCoex && testCase.confirmationRequested
                 verifyIconSize(forceExplicitFlow = forceExplicitFlow)
@@ -624,11 +650,16 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     fun shows_authenticated_explicitly_confirmed() {
         if (testCase.authenticatedByFace && testCase.confirmationRequested) {
             runGenericTest {
-                val iconAsset by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+                val iconAsset by
+                    collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
                 val iconContentDescriptionId by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.contentDescriptionId)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.contentDescriptionId
+                    )
                 val shouldAnimateIconView by
-                    collectLastValue(kosmos.promptViewModel.iconViewModel.shouldAnimateIconView)
+                    collectLastValue(
+                        kosmos.promptViewModel.iconViewModel.internal.shouldAnimateIconView
+                    )
                 val forceExplicitFlow = testCase.isCoex && testCase.confirmationRequested
                 verifyIconSize(forceExplicitFlow = forceExplicitFlow)
 
@@ -719,7 +750,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
 
     // Verifies expected icon sizes for all modalities
     private fun TestScope.verifyIconSize(forceExplicitFlow: Boolean = false) {
-        val iconSize by collectLastValue(kosmos.promptViewModel.iconSize)
+        val iconSize by collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconSize)
         if ((testCase.isCoex && !forceExplicitFlow) || testCase.isFaceOnly) {
             // Face-only or implicit co-ex auth
             assertThat(iconSize).isEqualTo(Pair(mockFaceIconSize, mockFaceIconSize))
@@ -864,7 +895,8 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     fun sfpsAuthenticatedIconUpdates_onRotation() {
         if (testCase.sensorType == FingerprintSensorProperties.TYPE_POWER_BUTTON) {
             runGenericTest {
-                val currentIcon by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+                val currentIcon by
+                    collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
 
                 kosmos.promptViewModel.showAuthenticated(
                     modality = testCase.authenticatedModality,
@@ -897,7 +929,8 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     fun sfpsIconUpdates_onRearDisplayMode() {
         if (testCase.sensorType == FingerprintSensorProperties.TYPE_POWER_BUTTON) {
             runGenericTest {
-                val currentIcon by collectLastValue(kosmos.promptViewModel.iconViewModel.iconAsset)
+                val currentIcon by
+                    collectLastValue(kosmos.promptViewModel.iconViewModel.internal.iconAsset)
 
                 kosmos.displayStateRepository.setIsInRearDisplayMode(false)
                 val iconNotRearDisplayMode = currentIcon

@@ -59,6 +59,7 @@ import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.testKosmos
@@ -674,7 +675,9 @@ open class AuthContainerViewTest : SysuiTestCase() {
             kosmos.lockPatternUtils,
             kosmos.interactionJankMonitor,
             { kosmos.promptSelectorInteractor },
-            kosmos.promptViewModel,
+            kosmos.promptViewModel.apply {
+                this.iconViewModel.internal.activateIn(kosmos.testScope)
+            },
             { kosmos.credentialViewModel },
             kosmos.fakeExecutor,
             kosmos.vibratorHelper,
