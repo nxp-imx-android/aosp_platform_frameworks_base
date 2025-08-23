@@ -17,6 +17,7 @@ package com.android.systemui.lowlight
 
 import android.os.Flags
 import android.os.UserHandle
+import androidx.annotation.VisibleForTesting
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.CoreStartable
 import com.android.systemui.common.domain.interactor.BatteryInteractorDeprecated
@@ -46,13 +47,16 @@ import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flowOf
@@ -157,11 +161,14 @@ constructor(
      * Whether the device is idle (lockscreen showing or dreaming or asleep) and not in doze/AOD, as
      * we do not want to override doze/AOD with lowlight dream.
      */
+    @OptIn(FlowPreview::class)
     private val isDeviceIdleAndNotDozing: Flow<Boolean> =
         allOf(
             not(anyDoze),
             anyOf(
-                keyguardInteractor.isDreaming,
+                keyguardInteractor.isDreaming.debounce(
+                    DREAM_STATE_DEBOUNCE_DURATION_MS.milliseconds
+                ),
                 keyguardInteractor.isKeyguardShowing,
                 powerInteractor.isAsleep,
             ),
@@ -224,5 +231,7 @@ constructor(
 
     companion object {
         private const val TAG = "LowLightBehaviorCoreStartable"
+
+        @VisibleForTesting const val DREAM_STATE_DEBOUNCE_DURATION_MS = 100
     }
 }
