@@ -21,6 +21,9 @@
 #include <asyncio/AsyncIO.h>
 #include <core_jni_helpers.h>
 #include <fcntl.h>
+#include <fstream>
+#include <linux/aio_abi.h>
+
 #include <linux/uhid.h>
 #include <linux/usb/f_accessory.h>
 #include <nativehelper/JNIPlatformHelp.h>
@@ -33,7 +36,6 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 #include <map>
 #include <thread>
 
@@ -1504,6 +1506,62 @@ static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /*
     return JNI_TRUE;
 }
 
+// Function to check if a given path is a functionfs mount point
+bool is_path_mounted_as_functionfs(std::string path) {
+
+    std::ifstream mounts_file("/proc/mounts");
+    if (!mounts_file.is_open()) {
+        ALOGE("Could not open /proc/mounts");
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(mounts_file, line)) {
+        std::stringstream ss(line);
+        std::string device, mount_point, fs_type;
+
+        ss >> device >> mount_point >> fs_type;
+
+        if (mount_point == path && fs_type == "functionfs") {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::string get_parent_directory(std::string path) {
+    std::string parent_dir = path;
+    size_t pos = path.find_last_of('/');
+    if (pos != std::string::npos) {
+        parent_dir = path.substr(0, pos);
+    }
+    return parent_dir;
+}
+
+static jboolean android_server_UsbDeviceManager_checkAccessoryFfsDirectories(JNIEnv * /* env */,
+                                                                             jobject /* thiz */) {
+    if (access(FFS_VENDOR_CTRL_REQUEST_EP0, F_OK) != 0) {
+        ALOGE("Cannot access %s", FFS_VENDOR_CTRL_REQUEST_EP0);
+        return JNI_FALSE;
+    }
+
+    if (!is_path_mounted_as_functionfs(get_parent_directory(FFS_VENDOR_CTRL_REQUEST_EP0))) {
+        return JNI_FALSE;
+    }
+
+    if (access(FFS_ACCESSORY_EP0, F_OK) != 0) {
+        ALOGE("Cannot access %s", FFS_ACCESSORY_EP0);
+        return JNI_FALSE;
+    }
+
+    if (!is_path_mounted_as_functionfs(get_parent_directory(FFS_ACCESSORY_EP0))) {
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
+}
+
 static jstring android_server_UsbDeviceManager_waitAndGetProperty(JNIEnv *env, jobject thiz,
                                                                   jstring jPropName) {
     ScopedUtfChars propName(env, jPropName);
@@ -1527,6 +1585,8 @@ static const JNINativeMethod method_table[] = {
          (void *)android_server_UsbDeviceManager_openAccessoryForInputStream},
         {"nativeOpenAccessoryForOutputStream", "()Landroid/os/ParcelFileDescriptor;",
          (void *)android_server_UsbDeviceManager_openAccessoryForOutputStream},
+        {"nativeCheckAccessoryFfsDirectories", "()Z",
+         (void *)android_server_UsbDeviceManager_checkAccessoryFfsDirectories},
         {"nativeIsStartRequested", "()Z", (void *)android_server_UsbDeviceManager_isStartRequested},
         {"nativeOpenControl", "(Ljava/lang/String;)Ljava/io/FileDescriptor;",
          (void *)android_server_UsbDeviceManager_openControl},
