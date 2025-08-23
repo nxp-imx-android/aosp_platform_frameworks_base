@@ -45,6 +45,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_LOCKOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.systemui.Flags.glanceableHubV2;
 import static com.android.systemui.Flags.simPinBouncerReset;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
@@ -901,38 +902,65 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         Trace.endSection();
     }
 
+    /**
+     * Indicates if STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE flag is set for a given
+     * userId.
+     *
+     * Returns false if FLAG_SECURE_LOCK_DEVICE is disabled.
+     */
+    private boolean isSecureLockDeviceStrongBiometricAuthFlagSet(int userId) {
+        if (!secureLockDevice()) {
+            return false;
+        }
+
+        return containsFlag(mStrongAuthTracker.getStrongAuthForUser(userId),
+                STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+    }
+
+
     @VisibleForTesting
     public void onFingerprintAuthenticated(int userId, boolean isStrongBiometric) {
-        Assert.isMainThread();
-        Trace.beginSection("KeyGuardUpdateMonitor#onFingerPrintAuthenticated");
-        mUserFingerprintAuthenticated.put(userId,
-                new BiometricAuthenticated(true, isStrongBiometric));
-        // Update/refresh trust state only if user can skip bouncer
-        if (getUserCanSkipBouncer(userId)) {
-            mTrustManager.unlockedByBiometricForUser(userId, FINGERPRINT);
-        }
-        // Don't send cancel if authentication succeeds
-        mFingerprintCancelSignal = null;
-        mLogger.logFingerprintSuccess(userId, isStrongBiometric);
-        updateFingerprintListeningState(BIOMETRIC_ACTION_UPDATE);
-        for (int i = 0; i < mCallbacks.size(); i++) {
-            KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
-            if (cb != null) {
-                cb.onBiometricAuthenticated(userId, FINGERPRINT,
-                        isStrongBiometric);
+        try {
+            Assert.isMainThread();
+            Trace.beginSection("KeyguardUpdateMonitor#onFingerprintAuthenticated");
+            mUserFingerprintAuthenticated.put(userId,
+                    new BiometricAuthenticated(true, isStrongBiometric));
+            // Update/refresh trust state only if user can skip bouncer
+            if (getUserCanSkipBouncer(userId)) {
+                mTrustManager.unlockedByBiometricForUser(userId, FINGERPRINT);
             }
+            // Don't send cancel if authentication succeeds
+            mFingerprintCancelSignal = null;
+            mLogger.logFingerprintSuccess(userId, isStrongBiometric);
+            updateFingerprintListeningState(BIOMETRIC_ACTION_UPDATE);
+            for (int i = 0; i < mCallbacks.size(); i++) {
+                KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
+                if (cb != null) {
+                    cb.onBiometricAuthenticated(userId, FINGERPRINT,
+                            isStrongBiometric);
+                }
+            }
+
+            mHandler.sendMessageDelayed(
+                    mHandler.obtainMessage(MSG_BIOMETRIC_AUTHENTICATION_CONTINUE),
+                    FINGERPRINT_CONTINUE_DELAY_MS);
+
+            // Only authenticate fingerprint once when assistant is visible
+            mAssistantVisible = false;
+
+            if (secureLockDevice() && isSecureLockDeviceStrongBiometricAuthFlagSet(userId)) {
+                // Disabling secure lock device / unsetting strong auth flags is handled by
+                // SecureLockDeviceService.
+                Log.d(TAG, "onFingerprintAuthenticated(): secure lock device is enabled - unlock "
+                        + "is handled by SecureLockDeviceService.");
+                return;
+            }
+
+            // Report unlock with strong or non-strong biometric
+            reportSuccessfulBiometricUnlock(isStrongBiometric, userId);
+        } finally {
+            Trace.endSection();
         }
-
-        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_BIOMETRIC_AUTHENTICATION_CONTINUE),
-                FINGERPRINT_CONTINUE_DELAY_MS);
-
-        // Only authenticate fingerprint once when assistant is visible
-        mAssistantVisible = false;
-
-        // Report unlock with strong or non-strong biometric
-        reportSuccessfulBiometricUnlock(isStrongBiometric, userId);
-
-        Trace.endSection();
     }
 
     private void reportSuccessfulBiometricUnlock(boolean isStrongBiometric, int userId) {
@@ -1200,8 +1228,16 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         // Only authenticate face once when assistant is visible
         mAssistantVisible = false;
 
-        // Report unlock with strong or non-strong biometric
-        reportSuccessfulBiometricUnlock(isStrongBiometric, userId);
+        if (secureLockDevice() && isSecureLockDeviceStrongBiometricAuthFlagSet(userId)) {
+            // Disabling secure lock device / unsetting strong auth flags is handled by
+            // SecureLockDeviceService.
+            Log.d(TAG, "onFaceAuthenticated(): secure lock device is enabled - skipping "
+                    + "unlock because face success requires user confirmation and is handled by "
+                    + "SecureLockDeviceService.");
+        } else {
+            // Report unlock with strong or non-strong biometric
+            reportSuccessfulBiometricUnlock(isStrongBiometric, userId);
+        }
 
         Trace.endSection();
     }

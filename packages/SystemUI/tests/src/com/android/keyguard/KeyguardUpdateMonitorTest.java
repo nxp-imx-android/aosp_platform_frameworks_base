@@ -34,6 +34,7 @@ import static android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_CANCELLING_RESTARTING;
 import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_STATE_STOPPED;
 import static com.android.keyguard.KeyguardUpdateMonitor.HAL_POWER_PRESS_TIMEOUT;
@@ -1227,6 +1228,30 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         when(mFaceAuthInteractor.isAuthenticated()).thenReturn(MutableStateFlow(true));
 
         assertThat(mKeyguardUpdateMonitor.getUserCanSkipBouncer(user)).isFalse();
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testDoesNotReportFingerprintUnlock_duringSecureLockDevice() {
+        when(mStrongAuthTracker.getStrongAuthForUser(mSelectedUserInteractor.getSelectedUserId()))
+                .thenReturn(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        int user = mSelectedUserInteractor.getSelectedUserId();
+        mKeyguardUpdateMonitor.onFingerprintAuthenticated(user, true /* isClass3Biometric */);
+        verify(mLockPatternUtils, never()).reportSuccessfulBiometricUnlock(
+                eq(true), eq(user));
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void testDoesNotReportFaceUnlock_duringSecureLockDevice() {
+        when(mStrongAuthTracker.getStrongAuthForUser(mSelectedUserInteractor.getSelectedUserId()))
+                .thenReturn(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        int user = mSelectedUserInteractor.getSelectedUserId();
+        mKeyguardUpdateMonitor.onFaceAuthenticated(user, true /* isClass3Biometric */);
+        verify(mLockPatternUtils, never()).reportSuccessfulBiometricUnlock(
+                eq(true), eq(user));
     }
 
     @Test
