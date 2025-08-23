@@ -43,9 +43,10 @@ import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
+import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.bodyMediumTF
 import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.headlineSmallTF
-import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.labelLargeTF
 import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.labelMediumTF
+import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.titleMediumEmphasizedTF
 import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.titleMediumTF
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
@@ -983,7 +984,11 @@ constructor(
             // Let's squish the media player if our size was overridden
             result = squishViewState(result, state.squishFraction)
         }
-        logger.logMediaSize("update to carousel (squish ${state?.squishFraction}", result.width, result.height)
+        logger.logMediaSize(
+            "update to carousel (squish ${state?.squishFraction}",
+            result.width,
+            result.height,
+        )
         return result
     }
 
@@ -1077,7 +1082,8 @@ constructor(
         when (location) {
             MediaHierarchyManager.LOCATION_COMMUNAL_HUB ->
                 viewHolder?.updateFontFamily(headlineSmallTF, titleMediumTF, labelMediumTF)
-            else -> viewHolder?.updateFontFamily(titleMediumTF, labelLargeTF, labelMediumTF)
+            else ->
+                viewHolder?.updateFontFamily(titleMediumEmphasizedTF, bodyMediumTF, labelMediumTF)
         }
     }
 
