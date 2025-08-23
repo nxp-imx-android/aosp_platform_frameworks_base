@@ -3035,7 +3035,7 @@ public class IntentFilter implements Parcelable {
      * For debugging -- perform a check on the filter, return true if it passed
      * or false if it failed.
      *
-     * {@hide}
+     * @hide
      */
     public boolean debugCheck() {
         return true;

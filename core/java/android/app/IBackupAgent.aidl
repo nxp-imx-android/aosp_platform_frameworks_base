@@ -28,7 +28,7 @@ import com.android.internal.infra.AndroidFuture;
  * backup & restore mechanism.  End user code will not typically implement
  * this interface directly; they subclass BackupAgent instead.
  *
- * {@hide}
+ * @hide
  */ 
 oneway interface IBackupAgent {
     /**

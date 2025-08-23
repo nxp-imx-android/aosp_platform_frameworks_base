@@ -373,17 +373,6 @@ flag {
 }
 
 flag {
-    name: "extending_persistence_snapshot_queue_depth"
-    namespace: "windowing_frontend"
-    description: "Use ImageReader to persist snapshot into disk, and extending the persistence snapshot queue depth."
-    bug: "416144425"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "predictive_back_delay_wm_transition"
     namespace: "windowing_frontend"
     description: "Separate the predictive back transition request from start navigation"

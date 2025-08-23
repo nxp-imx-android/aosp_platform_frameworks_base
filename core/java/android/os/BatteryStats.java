@@ -807,7 +807,7 @@ public abstract class BatteryStats {
         public abstract ControllerActivityCounter getModemControllerActivity();
 
         /**
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage
         public abstract int getUid();
@@ -2346,7 +2346,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the screen has been on while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public abstract long getScreenOnTime(long elapsedRealtimeUs, int which);
@@ -2354,7 +2354,7 @@ public abstract class BatteryStats {
     /**
      * Returns the number of times the screen was turned on.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getScreenOnCount(int which);
 
@@ -2362,14 +2362,14 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the screen has been dozing while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getScreenDozeTime(long elapsedRealtimeUs, int which);
 
     /**
      * Returns the number of times the screen was turned dozing.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getScreenDozeCount(int which);
 
@@ -2396,7 +2396,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the screen has been on with
      * the given brightness
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public abstract long getScreenBrightnessTime(int brightnessBin,
@@ -2405,14 +2405,14 @@ public abstract class BatteryStats {
     /**
      * Returns the {@link Timer} object that tracks the given screen brightness.
      *
-     * {@hide}
+     * @hide
      */
     public abstract Timer getScreenBrightnessTimer(int brightnessBin);
 
     /**
      * Returns the number of physical displays on the device.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getDisplayCount();
 
@@ -2420,7 +2420,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the screen has been on for a display while the
      * device was running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getDisplayScreenOnTime(int display, long elapsedRealtimeUs);
 
@@ -2428,7 +2428,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that a display has been dozing while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getDisplayScreenDozeTime(int display, long elapsedRealtimeUs);
 
@@ -2436,7 +2436,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that a display has been on with the given brightness
      * level while the device was running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getDisplayScreenBrightnessTime(int display, int brightnessBin,
             long elapsedRealtimeUs);
@@ -2445,14 +2445,14 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that power save mode has been enabled while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getPowerSaveModeEnabledTime(long elapsedRealtimeUs, int which);
 
     /**
      * Returns the number of times that power save mode was enabled.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getPowerSaveModeEnabledCount(int which);
 
@@ -2475,14 +2475,14 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that device has been in idle mode while
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getDeviceIdleModeTime(int mode, long elapsedRealtimeUs, int which);
 
     /**
      * Returns the number of times that the devie has gone in to idle mode.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getDeviceIdleModeCount(int mode, int which);
 
@@ -2498,21 +2498,21 @@ public abstract class BatteryStats {
      * counts all of the time that we consider the device to be idle, whether or not
      * it is currently in the actual device idle mode.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getDeviceIdlingTime(int mode, long elapsedRealtimeUs, int which);
 
     /**
      * Returns the number of times that the device has started idling.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getDeviceIdlingCount(int mode, int which);
 
     /**
      * Returns the number of times that connectivity state changed.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getNumConnectivityChange(int which);
 
@@ -2521,7 +2521,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the phone has been running with
      * the given GPS signal quality level
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getGpsSignalQualityTime(int strengthBin,
         long elapsedRealtimeUs, int which);
@@ -2529,7 +2529,7 @@ public abstract class BatteryStats {
     /**
      * Returns the GPS battery drain in mA-ms
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getGpsBatteryDrainMaMs();
 
@@ -2537,7 +2537,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the phone has been on while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public abstract long getPhoneOnTime(long elapsedRealtimeUs, int which);
@@ -2545,7 +2545,7 @@ public abstract class BatteryStats {
     /**
      * Returns the number of times a phone call was activated.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getPhoneOnCount(int which);
 
@@ -2553,7 +2553,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the phone has been running with
      * the given signal strength.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public abstract long getPhoneSignalStrengthTime(int strengthBin,
@@ -2563,7 +2563,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the phone has been trying to
      * acquire a signal.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getPhoneSignalScanningTime(
             long elapsedRealtimeUs, int which);
@@ -2572,14 +2572,14 @@ public abstract class BatteryStats {
      * Returns the {@link Timer} object that tracks how much the phone has been trying to
      * acquire a signal.
      *
-     * {@hide}
+     * @hide
      */
     public abstract Timer getPhoneSignalScanningTimer();
 
     /**
      * Returns the number of times the phone has entered the given signal strength.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getPhoneSignalStrengthCount(int strengthBin, int which);
 
@@ -2593,7 +2593,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the mobile network has been active
      * (in a high power state).
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public abstract long getMobileRadioActiveTime(long elapsedRealtimeUs, int which);
@@ -2602,7 +2602,7 @@ public abstract class BatteryStats {
      * Returns the number of times that the mobile network has transitioned to the
      * active state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getMobileRadioActiveCount(int which);
 
@@ -2611,7 +2611,7 @@ public abstract class BatteryStats {
      * time we saw based on the elapsed timestamp when going down vs. the given time stamp
      * from the radio.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getMobileRadioActiveAdjustedTime(int which);
 
@@ -2619,14 +2619,14 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the mobile network has been active
      * (in a high power state) but not being able to blame on an app.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getMobileRadioActiveUnknownTime(int which);
 
     /**
      * Return count of number of times radio was up that could not be blamed on apps.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getMobileRadioActiveUnknownCount(int which);
 
@@ -2665,7 +2665,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the phone has been running with
      * the given data connection.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getPhoneDataConnectionTime(int dataType,
             long elapsedRealtimeUs, int which);
@@ -2674,7 +2674,7 @@ public abstract class BatteryStats {
      * Returns the number of times the phone has entered the given data
      * connection type.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getPhoneDataConnectionCount(int dataType, int which);
 
@@ -2687,7 +2687,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the phone's data connection was in NR NSA mode while
      * on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getNrNsaTime(long elapsedRealtimeUs);
 
@@ -2786,14 +2786,14 @@ public abstract class BatteryStats {
     /**
      * Returned value if power data is unavailable.
      *
-     * {@hide}
+     * @hide
      */
 //    public static final long POWER_DATA_UNAVAILABLE = -1L;
 
     /**
      * Returned value if duration data is unavailable.
      *
-     * {@hide}
+     * @hide
      */
     public static final long DURATION_UNAVAILABLE = -1L;
 
@@ -2802,7 +2802,7 @@ public abstract class BatteryStats {
      * of (custom) energy consumer type
      * {@link android.hardware.power.stats.EnergyConsumerType#OTHER}).
      *
-     * {@hide}
+     * @hide
      */
     public abstract @NonNull String[] getCustomEnergyConsumerNames();
 
@@ -2904,7 +2904,7 @@ public abstract class BatteryStats {
      * Returns total time for WiFi Multicast Wakelock timer.
      * Note that this may be different from the sum of per uid timer values.
      *
-     *  {@hide}
+     * @hide
      */
     public abstract long getWifiMulticastWakelockTime(long elapsedRealtimeUs, int which);
 
@@ -2912,7 +2912,7 @@ public abstract class BatteryStats {
      * Returns total time for WiFi Multicast Wakelock timer
      * Note that this may be different from the sum of per uid timer values.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getWifiMulticastWakelockCount(int which);
 
@@ -2920,7 +2920,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that wifi has been on while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public abstract long getWifiOnTime(long elapsedRealtimeUs, int which);
@@ -2929,7 +2929,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that wifi has been active while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getWifiActiveTime(long elapsedRealtimeUs, int which);
 
@@ -2937,7 +2937,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that wifi has been on and the driver has
      * been in the running state while the device was running on battery.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public abstract long getGlobalWifiRunningTime(long elapsedRealtimeUs, int which);
@@ -2950,7 +2950,7 @@ public abstract class BatteryStats {
     /**
      * Returns the time in microseconds that WiFi has been running in the given state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getWifiStateTime(@WifiState int wifiState,
             long elapsedRealtimeUs, @StatName int which);
@@ -2958,14 +2958,14 @@ public abstract class BatteryStats {
     /**
      * Returns the number of times that WiFi has entered the given state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getWifiStateCount(@WifiState int wifiState, @StatName int which);
 
     /**
      * Returns the {@link Timer} object that tracks the given WiFi state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract Timer getWifiStateTimer(@WifiState int wifiState);
 
@@ -2973,7 +2973,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the wifi supplicant has been
      * in a given state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getWifiSupplStateTime(@WifiSupplState int state, long elapsedRealtimeUs,
             @StatName int which);
@@ -2982,14 +2982,14 @@ public abstract class BatteryStats {
      * Returns the number of times that the wifi supplicant has transitioned
      * to a given state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getWifiSupplStateCount(@WifiSupplState int state, @StatName int which);
 
     /**
      * Returns the {@link Timer} object that tracks the given wifi supplicant state.
      *
-     * {@hide}
+     * @hide
      */
     public abstract Timer getWifiSupplStateTimer(@WifiSupplState int state);
 
@@ -2999,7 +2999,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that WIFI has been running with
      * the given signal strength.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getWifiSignalStrengthTime(int strengthBin,
             long elapsedRealtimeUs, int which);
@@ -3007,14 +3007,14 @@ public abstract class BatteryStats {
     /**
      * Returns the number of times WIFI has entered the given signal strength.
      *
-     * {@hide}
+     * @hide
      */
     public abstract int getWifiSignalStrengthCount(int strengthBin, int which);
 
     /**
      * Returns the {@link Timer} object that tracks the given WIFI signal strength.
      *
-     * {@hide}
+     * @hide
      */
     public abstract Timer getWifiSignalStrengthTimer(int strengthBin);
 
@@ -3022,7 +3022,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the flashlight has been on while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getFlashlightOnTime(long elapsedRealtimeUs, int which);
 
@@ -3030,7 +3030,7 @@ public abstract class BatteryStats {
      * Returns the number of times that the flashlight has been turned on while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getFlashlightOnCount(int which);
 
@@ -3038,7 +3038,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that the camera has been on while the device was
      * running on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getCameraOnTime(long elapsedRealtimeUs, int which);
 
@@ -3046,7 +3046,7 @@ public abstract class BatteryStats {
      * Returns the time in microseconds that bluetooth scans were running while the device was
      * on battery.
      *
-     * {@hide}
+     * @hide
      */
     public abstract long getBluetoothScanTime(long elapsedRealtimeUs, int which);
 

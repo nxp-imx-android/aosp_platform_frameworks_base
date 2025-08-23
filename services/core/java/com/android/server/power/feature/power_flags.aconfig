@@ -129,3 +129,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "wake_adjacent_displays_on_wakeup_call"
+    namespace: "lse_desktop_experience"
+    description: "Wakes up the displays from default and default adjacent group"
+    bug: "428848574"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.FrameworkStatsLog;
@@ -67,6 +68,12 @@ public class BubbleLogger {
 
         @UiEvent(doc = "Restore bubble to overflow after phone reboot.")
         BUBBLE_OVERFLOW_RECOVER(691),
+
+        @UiEvent(doc = "Bubble session started.")
+        BUBBLE_SESSION_STARTED(2422),
+
+        @UiEvent(doc = "Bubble session ended.")
+        BUBBLE_SESSION_ENDED(2423),
 
         // endregion
 
@@ -162,6 +169,12 @@ public class BubbleLogger {
         @UiEvent(doc = "bubble bar moved to the right edge of the screen by dragging a task")
         BUBBLE_BAR_MOVED_RIGHT_DRAG_TASK(2147),
 
+        @UiEvent(doc = "Bubble Bar session started.")
+        BUBBLE_BAR_SESSION_STARTED(2424),
+
+        @UiEvent(doc = "Bubble Bar session ended.")
+        BUBBLE_BAR_SESSION_ENDED(2425),
+
         // endregion
         ;
 
@@ -194,6 +207,11 @@ public class BubbleLogger {
      */
     public void log(Bubble b, UiEventLogger.UiEventEnum e) {
         mUiEventLogger.logWithInstanceId(e, b.getAppUid(), b.getPackageName(), b.getInstanceId());
+    }
+
+    /** Log a UiEvent for the specified {@code sessionId}. */
+    public void logWithSessionId(UiEventLogger.UiEventEnum e, InstanceId sessionId) {
+        mUiEventLogger.log(e, sessionId);
     }
 
     /**

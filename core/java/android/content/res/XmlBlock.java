@@ -44,7 +44,7 @@ import java.io.Reader;
 /**
  * Wrapper around a compiled XML file.
  *
- * {@hide}
+ * @hide
  */
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 @RavenwoodKeepWholeClass

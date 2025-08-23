@@ -186,7 +186,12 @@ class AppHandleController(
                     wct,
                 )
 
-            handleMenu?.relayout(startT, captionLayout.captionX, captionLayout.captionY)
+            handleMenu?.relayout(
+                startT,
+                taskInfo.configuration,
+                captionLayout.captionX,
+                captionLayout.captionY,
+            )
             openByDefaultDialog?.relayout(taskInfo)
 
             updateViewHolder(captionLayout)
@@ -402,6 +407,7 @@ class AppHandleController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionView = viewHolder.captionHandle,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,

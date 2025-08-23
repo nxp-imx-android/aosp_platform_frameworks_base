@@ -114,6 +114,9 @@ import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.concurrency.Execution;
 import com.android.systemui.util.time.SystemClock;
 
+import com.google.android.msdl.data.model.MSDLToken;
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import dagger.Lazy;
 
 import kotlin.Unit;
@@ -189,6 +192,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     @NonNull private final CoroutineScope mScope;
     @NonNull private final InputManager mInputManager;
     @NonNull private final SelectedUserInteractor mSelectedUserInteractor;
+    @NonNull private final MSDLPlayer mMsdlPlayer;
     private final boolean mIgnoreRefreshRate;
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
 
@@ -719,7 +723,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             @NonNull PowerInteractor powerInteractor,
             @Application CoroutineScope scope,
             UserActivityNotifier userActivityNotifier,
-            Lazy<WakefulnessLifecycle> wakefulnessLifecycle) {
+            Lazy<WakefulnessLifecycle> wakefulnessLifecycle,
+            MSDLPlayer msdlPlayer) {
         mContext = context;
         mExecution = execution;
         mVibrator = vibrator;
@@ -772,6 +777,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
         mDeviceEntryUdfpsTouchOverlayViewModel = deviceEntryUdfpsTouchOverlayViewModel;
         mDefaultUdfpsTouchOverlayViewModel = defaultUdfpsTouchOverlayViewModel;
         mPromptUdfpsTouchOverlayViewModel = promptUdfpsTouchOverlayViewModel;
+        mMsdlPlayer = msdlPlayer;
 
         mDumpManager.registerDumpable(TAG, this);
 
@@ -916,14 +922,18 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             mKeyguardViewManager.showPrimaryBouncer(true, "UdfpsController#onAodInterrupt");
 
             // play the same haptic as the DeviceEntryIcon longpress
-            if (mOverlay != null && mOverlay.getTouchOverlay() != null) {
-                mVibrator.performHapticFeedback(
-                        mOverlay.getTouchOverlay(),
-                        UdfpsController.LONG_PRESS
-                );
+            if (Flags.msdlFeedback()) {
+                mMsdlPlayer.playToken(MSDLToken.LONG_PRESS, null);
             } else {
-                Log.e(TAG, "No haptics played. Could not obtain overlay view to perform"
-                        + "vibration. Either the controller overlay is null or has no view");
+                if (mOverlay != null && mOverlay.getTouchOverlay() != null) {
+                    mVibrator.performHapticFeedback(
+                            mOverlay.getTouchOverlay(),
+                            UdfpsController.LONG_PRESS
+                    );
+                } else {
+                    Log.e(TAG, "No haptics played. Could not obtain overlay view to perform"
+                            + "vibration. Either the controller overlay is null or has no view");
+                }
             }
             return;
         }

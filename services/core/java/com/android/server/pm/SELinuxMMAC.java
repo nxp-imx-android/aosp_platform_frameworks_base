@@ -56,7 +56,7 @@ import java.util.Set;
  * class is responsible for loading the appropriate mac_permissions.xml file
  * as well as providing an interface for assigning seinfo values to apks.
  *
- * {@hide}
+ * @hide
  */
 public final class SELinuxMMAC {
 

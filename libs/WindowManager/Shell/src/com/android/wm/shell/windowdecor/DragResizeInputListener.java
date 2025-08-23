@@ -644,14 +644,6 @@ class DragResizeInputListener implements AutoCloseable {
                         mDragStartTaskBounds = mCallback.onDragPositioningStart(ctrlType,
                                 e.getDisplayId(), rawX, rawY, getInputMethodFromMotionEvent(e));
                         mLastMotionEventOnDown = MotionEvent.obtain(e);
-                        mResizeTrigger = (ctrlType == CTRL_TYPE_BOTTOM || ctrlType == CTRL_TYPE_TOP
-                                || ctrlType == CTRL_TYPE_RIGHT || ctrlType == CTRL_TYPE_LEFT)
-                                ? ResizeTrigger.EDGE : ResizeTrigger.CORNER;
-                        mDesktopModeEventLogger.logTaskResizingStarted(mResizeTrigger,
-                                DesktopModeEventLogger.getInputMethodFromMotionEvent(e),
-                                mTaskInfo, mDragStartTaskBounds.width(),
-                                mDragStartTaskBounds.height(), /* displayController= */ null,
-                                /* displayLayoutSize= */ mDisplayLayoutSizeSupplier.get());
                         // Increase the input sink region to cover the whole screen; this is to
                         // prevent input and focus from going to other tasks during a drag resize.
                         updateInputSinkRegionForDrag(mDragStartTaskBounds);
@@ -701,13 +693,6 @@ class DragResizeInputListener implements AutoCloseable {
                         if (taskBounds.equals(mDragStartTaskBounds)) {
                             mTouchRegionConsumer.accept(mTouchRegion);
                         }
-
-                        mDesktopModeEventLogger.logTaskResizingEnded(mResizeTrigger,
-                                DesktopModeEventLogger.getInputMethodFromMotionEvent(
-                                        mLastMotionEventOnDown), mTaskInfo, taskBounds.width(),
-                                taskBounds.height(),
-                                /* displayController= */ null,
-                                /* displayLayoutSize= */ mDisplayLayoutSizeSupplier.get());
                     }
                     mShouldHandleEvents = false;
                     mDragPointerId = -1;

@@ -16,6 +16,8 @@
 
 package com.android.compose.animation.scene.mechanics
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.mechanics.GestureContext
@@ -39,5 +41,15 @@ fun ContentScope.gestureContextOrDefault(
 
         private val gestureContext
             get() = layoutState.currentTransition?.gestureContext
+    }
+}
+
+@Composable
+fun ContentScope.rememberGestureContext(
+    defaultDragOffset: Float = 0f,
+    defaultDirection: InputDirection = InputDirection.Max,
+): GestureContext {
+    return remember(defaultDragOffset, defaultDirection) {
+        gestureContextOrDefault(defaultDragOffset, defaultDirection)
     }
 }

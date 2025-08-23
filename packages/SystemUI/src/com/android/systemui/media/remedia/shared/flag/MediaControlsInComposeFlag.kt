@@ -17,11 +17,21 @@
 package com.android.systemui.media.remedia.shared.flag
 
 import com.android.systemui.Flags.mediaControlsInCompose
+import com.android.systemui.flags.RefactorFlagUtils
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 
 object MediaControlsInComposeFlag {
+    /** The flag description -- not an aconfig flag name */
+    const val DESCRIPTION = "MediaControlsInComposeFlag"
 
     @JvmStatic
     inline val isEnabled: Boolean
         get() = mediaControlsInCompose() || SceneContainerFlag.isEnabled
+
+    /**
+     * Called to ensure code is only run when the flag is disabled. This will throw an exception if
+     * the flag is enabled to ensure that the refactor author catches issues in testing.
+     */
+    @JvmStatic
+    inline fun assertInLegacyMode() = RefactorFlagUtils.assertInLegacyMode(isEnabled, DESCRIPTION)
 }

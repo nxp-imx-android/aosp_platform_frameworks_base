@@ -16,5 +16,5 @@
 
 package android.content.theming;
 
-/** {@hide} */
+/** @hide */
 parcelable ThemeInfo;

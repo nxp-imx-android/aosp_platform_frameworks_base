@@ -1080,7 +1080,6 @@ public final class SQLiteConnection implements CancellationSignal.OnCancelListen
      * Return a {@link #PreparedStatement}, possibly from the cache.
      */
     private PreparedStatement acquirePreparedStatementLI(String sql) {
-        ++mPool.mTotalPrepareStatements;
         PreparedStatement statement = mPreparedStatementCache.getStatement(sql);
         long seqNum = mPreparedStatementCache.getLastSeqNum();
 
@@ -1105,7 +1104,6 @@ public final class SQLiteConnection implements CancellationSignal.OnCancelListen
                 skipCache = true;
             }
         }
-        ++mPool.mTotalPrepareStatementCacheMiss;
         final long statementPtr = mPreparedStatementCache.createStatement(sql);
         seqNum = mPreparedStatementCache.getLastSeqNum();
         try {
@@ -1441,9 +1439,21 @@ public final class SQLiteConnection implements CancellationSignal.OnCancelListen
         } else {
             label = mConfiguration.path + " (" + mConnectionId + ")";
         }
-        return new DbStats(label, pageCount, pageSize, lookaside,
-                mPreparedStatementCache.hitCount(), mPreparedStatementCache.missCount(),
-                mPreparedStatementCache.size(), false);
+        DbStats dbStats = new DbStats(label, pageCount, pageSize, lookaside, 0, 0, 0, false);
+        dbStats.addCacheStatsFrom(this);
+        return dbStats;
+    }
+
+    int getPreparedStatementCacheHitCount() {
+        return mPreparedStatementCache.hitCount();
+    }
+
+    int getPreparedStatementCacheMissCount() {
+        return mPreparedStatementCache.missCount();
+    }
+
+    int getPreparedStatementCacheSize() {
+        return mPreparedStatementCache.size();
     }
 
     @Override

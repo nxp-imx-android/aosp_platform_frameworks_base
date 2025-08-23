@@ -377,6 +377,8 @@ public final class SystemServer implements Dumpable {
             "com.android.clockwork.settings.WearSettingsService";
     private static final String WEAR_GESTURE_SERVICE_CLASS =
             "com.android.clockwork.gesture.WearGestureService";
+    private static final String WEAR_INPUT_SERVICE_CLASS =
+            "com.android.clockwork.input.WearInputService";
     private static final String WRIST_ORIENTATION_SERVICE_CLASS =
             "com.android.clockwork.wristorientation.WristOrientationService";
     private static final String IOT_SERVICE_CLASS =
@@ -2882,6 +2884,15 @@ public final class SystemServer implements Dumpable {
                 t.traceBegin("StartWearGestureService");
                 mSystemServiceManager.startService(WEAR_GESTURE_SERVICE_CLASS);
                 t.traceEnd();
+            }
+
+            if (com.android.server.policy.Flags.wearKeyGestureHandling()) {
+                t.traceBegin("StartWearKeyGestureService");
+                try {
+                    mSystemServiceManager.startService(WEAR_INPUT_SERVICE_CLASS);
+                } finally {
+                    t.traceEnd();
+                }
             }
         }
 

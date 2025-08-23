@@ -1457,7 +1457,7 @@ public class ResourcesImpl {
     /**
      * Start preloading of resource data using this Resources object.  Only
      * for use by the zygote process for loading common system resources.
-     * {@hide}
+     * @hide
      */
     public final void startPreloading() {
         synchronized (sSync) {

@@ -22,7 +22,7 @@ import android.companion.datatransfer.continuity.RemoteTask;
 
 /**
  * Interface for communication with the task continuity service.
- * {@hide}
+ * @hide
  */
 oneway interface ITaskContinuityManager {
 

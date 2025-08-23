@@ -223,11 +223,11 @@ public final class StorageStats implements Parcelable {
         return externalCacheBytes;
     }
 
-    /** {@hide} */
+    /** @hide */
     public StorageStats() {
     }
 
-    /** {@hide} */
+    /** @hide */
     public StorageStats(Parcel in) {
         this.packageName = in.readString8();
         this.userHandle = in.readInt();

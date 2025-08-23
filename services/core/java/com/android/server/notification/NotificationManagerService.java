@@ -388,6 +388,7 @@ import com.android.internal.util.ConcurrentUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.Preconditions;
+import com.android.internal.util.VibrationStatsWriter;
 import com.android.internal.util.XmlUtils;
 import com.android.internal.util.function.TriPredicate;
 import com.android.internal.widget.LockPatternUtils;
@@ -458,7 +459,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-/** {@hide} */
+/** @hide */
 public class NotificationManagerService extends SystemService {
     public static final String TAG = "NotificationService";
     public static final boolean DBG = Log.isLoggable(TAG, Log.DEBUG);
@@ -2992,7 +2993,8 @@ public class NotificationManagerService extends SystemService {
 
         mAttentionHelper = new NotificationAttentionHelper(getContext(), mNotificationLock,
                 lightsManager, mAccessibilityManager, mPackageManagerClient, userManager,
-                usageStats, mNotificationManagerPrivate, mZenModeHelper, flagResolver);
+                usageStats, mNotificationManagerPrivate, mZenModeHelper, flagResolver,
+                VibrationStatsWriter.getInstance(getContext()));
 
         // register for various Intents.
         // If this is called within a test, make sure to unregister the intent receivers by
@@ -7006,8 +7008,11 @@ public class NotificationManagerService extends SystemService {
             try {
                 if (mAllowedManagedServicePackages.test(
                         pkg, userId, mConditionProviders.getRequiredPermission())) {
-                    mConditionProviders.setPackageOrComponentEnabled(
-                            pkg, userId, true, granted);
+                    boolean changed = mConditionProviders.setPackageOrComponentEnabled(pkg, userId,
+                            /* isPrimary= */ true, granted);
+                    if (Flags.limitManagedServicesCount() && !changed) {
+                        return;
+                    }
 
                     getContext().sendBroadcastAsUser(new Intent(
                             ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED)
@@ -7272,10 +7277,15 @@ public class NotificationManagerService extends SystemService {
             try {
                 if (mAllowedManagedServicePackages.test(
                         listener.getPackageName(), userId, mListeners.getRequiredPermission())) {
+                    boolean changed = mListeners.setPackageOrComponentEnabled(
+                            listener.flattenToString(), userId, /* isPrimary= */ true, granted,
+                            userSet);
+                    if (Flags.limitManagedServicesCount() && !changed) {
+                        return;
+                    }
+
                     mConditionProviders.setPackageOrComponentEnabled(listener.flattenToString(),
                             userId, false, granted, userSet);
-                    mListeners.setPackageOrComponentEnabled(listener.flattenToString(),
-                            userId, true, granted, userSet);
 
                     getContext().sendBroadcastAsUser(new Intent(
                             ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED)
@@ -13287,19 +13297,20 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected void setPackageOrComponentEnabled(String pkgOrComponent, int userId,
+        protected boolean setPackageOrComponentEnabled(String pkgOrComponent, int userId,
                 boolean isPrimary, boolean enabled, boolean userSet) {
             // Ensures that only one component is enabled at a time
             if (enabled) {
                 List<ComponentName> allowedComponents = getAllowedComponents(userId);
                 if (!allowedComponents.isEmpty()) {
                     ComponentName currentComponent = CollectionUtils.firstOrNull(allowedComponents);
-                    if (currentComponent.flattenToString().equals(pkgOrComponent)) return;
+                    if (currentComponent.flattenToString().equals(pkgOrComponent)) return false;
                     setNotificationAssistantAccessGrantedForUserInternal(
                             currentComponent, userId, false, userSet);
                 }
             }
-            super.setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, userSet);
+            return super.setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled,
+                    userSet);
         }
 
         private boolean isVerboseLogEnabled() {
@@ -13772,9 +13783,14 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected void setPackageOrComponentEnabled(String pkgOrComponent, int userId,
+        protected boolean setPackageOrComponentEnabled(String pkgOrComponent, int userId,
                 boolean isPrimary, boolean enabled, boolean userSet) {
-            super.setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary, enabled, userSet);
+            boolean changed = super.setPackageOrComponentEnabled(pkgOrComponent, userId, isPrimary,
+                    enabled, userSet);
+            if (Flags.limitManagedServicesCount() && !changed) {
+                return false;
+            }
+
             String pkgName = getPackageName(pkgOrComponent);
             if (redactSensitiveNotificationsFromUntrustedListeners()) {
                 int uid = mPackageManagerInternal.getPackageUid(pkgName, 0, userId);
@@ -13794,6 +13810,8 @@ public class NotificationManagerService extends SystemService {
                     new Intent(ACTION_NOTIFICATION_LISTENER_ENABLED_CHANGED)
                             .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY),
                     UserHandle.of(userId), null);
+
+            return true;
         }
 
         @Override

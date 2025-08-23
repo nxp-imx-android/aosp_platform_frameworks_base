@@ -676,6 +676,8 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
                     LinearLayout secondaryLayout = mDialogView.requireViewById(
                             R.id.secondary_mobile_network_layout);
 
+                    mBgExecutor.runAllReady();
+
                     verify(mInternetDetailsContentController).getMobileNetworkSummary(1);
                     assertThat(primaryLayout.getBackground()).isNotEqualTo(
                             secondaryLayout.getBackground());

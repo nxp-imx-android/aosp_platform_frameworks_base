@@ -68,7 +68,7 @@ import java.util.Map;
  *  See {@link PackageManager} for documentation on most of the APIs
  *  here.
  *
- *  {@hide}
+ * @hide
  */
 interface IPackageManager {
     void checkPackageStartable(String packageName, int userId);

@@ -13,22 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Run all the ravenwood tests + hoststubgen unit tests.
 #
-# Major options:
+# Run all or selected the ravenwood tests + hoststubgen unit tests.
 #
-#   -s: "Smoke" test -- skip slow tests (SysUI, ICU) and large tests.
+# Use -h to see the help.
 #
-#   -x PCRE: Specify exclusion filter in PCRE
-#            Example: -x '^(Cts|hoststub)' # Exclude CTS and hoststubgen tests.
-#
-#   -f PCRE: Specify inclusion filter in PCRE
 
 set -e
 shopt -s nullglob # if a glob matches no file, expands to an empty string.
 
 # Move to the script's directory
 cd "${0%/*}"
+my_command="${0##*/}"
 
 # Find the enablement files. This may be an empty list if there's no match.
 default_enablement_policy=(../texts/enablement-policy-*.txt)
@@ -37,6 +33,29 @@ default_enablement_policy=(../texts/enablement-policy-*.txt)
 # let's disable it by default.
 : ${ROLLING_TF_SUBPROCESS_OUTPUT:=0}
 export ROLLING_TF_SUBPROCESS_OUTPUT
+
+
+show_help() {
+    cat <<EOF
+
+$my_command: Run all or specified ravenwood tests
+
+  Usage:
+     $my_command [OPTIONS]
+        Run all ravenwood tests and relevant host side tests.
+
+     $my_command [OPTIONS] TEST-MODULE-NAME...
+        Run specified test module
+
+  Note:
+     Tests with @FlakyTest are always ignored.
+
+  Options:
+EOF
+    sed -n -e '/OPTIONS-START/,/OPTIONS-END/s/^ *\([a-zA-Z]\)) #/   -\1/p' "$my_command"
+    echo
+    return
+}
 
 smoke=0
 include_re=""
@@ -49,49 +68,49 @@ atest_opts=""
 list_options=""
 with_tools_tests=1
 
-while getopts "sx:f:dtbLa:rD" opt; do
+while getopts "sx:f:dtbLa:rDRh" opt; do
 case "$opt" in
-    s)
-        # Remove slow tests.
+# OPTIONS-START
+    s) # Remove slow tests
         smoke=1
         exclude_large_tests=1
         ;;
-    x)
-        # Take a PCRE from the arg, and use it as an exclusion filter.
+    x) # Take a PCRE from the arg, and use it as an exclusion filter. Example: -x '^(Cts|hoststub)' # Exclude CTS and hoststubgen tests.
         exclude_re="$OPTARG"
         ;;
-    f)
-        # Take a PCRE from the arg, and use it as an inclusion filter.
+    f) # Take a PCRE from the arg, and use it as an inclusion filter.
         include_re="$OPTARG"
         ;;
-    d)
-        # Dry run
+    d) # Dry run
         dry_run="echo"
         ;;
-    t)
-        # Redirect log to terminal
+    t) # Redirect log to terminal
         export RAVENWOOD_LOG_OUT=-
         ;;
-    a)
-        # atest options (e.g. "-t")
+    a) # atest options (e.g. "-t")
         atest_opts="$OPTARG"
         ;;
-    L)
-        # exclude large tests
+    L) # exclude large tests
         exclude_large_tests=1
         ;;
-    r)
-        # only run tests under frameworks/base/ravenwood/
+    r) # only run tests under frameworks/base/ravenwood/
         list_options="$list_options -r"
         ;;
-    D)
-        # Run device tests under f/b/r
+    D) # Only run device tests under frameworks/base/ravenwood/
         list_options="$list_options -D"
         with_tools_tests=0
+        ;;
+    R) # Run disabled tests too
+        export RAVENWOOD_RUN_DISABLED_TESTS=1
+        ;;
+    h) # Show help
+        show_help
+        exit 0
         ;;
     '?')
         exit 1
         ;;
+# OPTIONS-END
 esac
 done
 shift $(($OPTIND - 1))
@@ -199,6 +218,9 @@ for test in $(remove_comments ../texts/experimental-api-allowed-tests.txt); do
     export RAVENWOOD_ENABLE_EXP_API_${test}=1
 done
 
+echo "RAVENWOOD_RUN_DISABLED_TESTS=$RAVENWOOD_RUN_DISABLED_TESTS"
+echo "RAVENWOOD_FORCE_FILTER_REGEX=$RAVENWOOD_FORCE_FILTER_REGEX"
+
 # =========================================================
 
 run() {
@@ -213,6 +235,7 @@ extra_args=()
 exclude_annos=()
 # Always ignore flaky tests
 exclude_annos+=(
+    "android.platform.test.annotations.FlakyTest"
     "androidx.test.filters.FlakyTest"
 )
 # Maybe ignore large tests

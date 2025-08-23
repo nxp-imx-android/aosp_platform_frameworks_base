@@ -16,6 +16,8 @@
 
 package com.android.server.display.mode;
 
+import static android.view.Display.Mode.INVALID_MODE_ID;
+
 import android.annotation.Nullable;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -128,6 +130,9 @@ final class VoteSummary {
         boolean missingBaseModeRefreshRate = appRequestBaseModeRefreshRate > 0f;
 
         for (Display.Mode mode : modes) {
+            if (mode.getParentModeId() != INVALID_MODE_ID) {
+                continue;
+            }
             if (!validateRefreshRatesSupported(mode)) {
                 continue;
             }

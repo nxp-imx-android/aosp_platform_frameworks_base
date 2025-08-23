@@ -21,6 +21,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -39,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.android.compose.animation.Expandable
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -54,23 +56,26 @@ import com.android.systemui.qs.ui.compose.borderOnFocus
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
+fun Toolbar(
+    viewModel: ToolbarViewModel,
+    isFullyVisible: () -> Boolean,
+    modifier: Modifier = Modifier,
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val securityInfoCollapsed = viewModel.securityInfoShowCollapsed
 
         SharedTransitionLayout(modifier = Modifier.weight(1f)) {
             AnimatedContent(
                 targetState = securityInfoCollapsed,
-                contentAlignment =
-                    if (securityInfoCollapsed) {
-                        Alignment.CenterStart
-                    } else {
-                        Alignment.Center
-                    },
+                contentAlignment = Alignment.CenterStart,
                 label = "Toolbar.CollapsedSecurityInfo",
             ) { securityInfoCollapsed ->
                 if (securityInfoCollapsed) {
-                    StandardToolbarLayout(animatedContentScope = this@AnimatedContent, viewModel)
+                    StandardToolbarLayout(
+                        animatedContentScope = this@AnimatedContent,
+                        viewModel,
+                        isFullyVisible,
+                    )
                 } else {
                     SecurityInfo(
                         viewModel = viewModel.securityInfoViewModel,
@@ -97,6 +102,7 @@ fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
 private fun SharedTransitionScope.StandardToolbarLayout(
     animatedContentScope: AnimatedContentScope,
     viewModel: ToolbarViewModel,
+    isFullyVisible: () -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier) {
@@ -105,13 +111,13 @@ private fun SharedTransitionScope.StandardToolbarLayout(
             model = viewModel.userSwitcherViewModel,
             Modifier.sysuiResTag("multi_user_switch").minimumInteractiveComponentSize(),
             iconColor = Color.Unspecified,
+            useIconColorProtection = true,
         )
 
         // Edit mode button
-        // TODO(b/410843063): Support the tooltip in DualShade
         val editModeButtonViewModel =
             rememberViewModel("Toolbar") { viewModel.editModeButtonViewModelFactory.create() }
-        EditModeButton(editModeButtonViewModel, tooltipEnabled = false)
+        EditModeButton(editModeButtonViewModel, isVisible = isFullyVisible())
 
         // Settings button
         IconButton(
@@ -145,6 +151,7 @@ private fun IconButton(
     model: FooterActionsButtonViewModel?,
     modifier: Modifier = Modifier,
     iconColor: Color = MaterialTheme.colorScheme.onSurface,
+    useIconColorProtection: Boolean = false,
 ) {
     if (model == null) {
         return
@@ -157,7 +164,19 @@ private fun IconButton(
             modifier.borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50)),
         useModifierBasedImplementation = true,
     ) {
-        ToolbarIcon(icon = model.icon, modifier = Modifier.size(24.dp), tint = iconColor)
+        val protectionColor =
+            if (useIconColorProtection) {
+                LocalAndroidColorScheme.current.surfaceEffect1
+            } else {
+                Color.Transparent
+            }
+        Box(
+            modifier =
+                Modifier.size(36.dp).background(color = protectionColor, shape = CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            ToolbarIcon(icon = model.icon, modifier = Modifier.size(24.dp), tint = iconColor)
+        }
     }
 }
 

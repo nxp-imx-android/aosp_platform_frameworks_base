@@ -1932,10 +1932,10 @@ class MediaRouter2ServiceImpl {
             // How about removing mUserRecord from routerRecord?
             routerRecord.mUserRecord.mHandler.sendMessage(
                     obtainMessage(
-                            UserHandler::notifyDiscoveryPreferenceChangedToManager,
-                            routerRecord.mUserRecord.mHandler,
-                            routerRecord,
-                            manager));
+                            ManagerRecord::notifyDiscoveryPreferenceChanged,
+                            managerRecord,
+                            routerRecord.mPackageName,
+                            routerRecord.mDiscoveryPreference));
         }
 
         userRecord.mHandler.sendMessage(
@@ -2956,6 +2956,21 @@ class MediaRouter2ServiceImpl {
         }
 
         /**
+         * Notifies the corresponding manager of the creation of the given {@link
+         * RoutingSessionInfo}.
+         *
+         * @param requestId The id of the request that originated the creation of the session.
+         * @param session The session that was created.
+         */
+        public void notifySessionCreated(int requestId, @NonNull RoutingSessionInfo session) {
+            try {
+                mManager.notifySessionCreated(requestId, session);
+            } catch (RemoteException ex) {
+                logRemoteException("notifySessionCreated", ex);
+            }
+        }
+
+        /**
          * Notifies the corresponding manager of the availability of the given routes.
          *
          * @param routes The routes available to the manager that corresponds to this record.
@@ -2991,6 +3006,19 @@ class MediaRouter2ServiceImpl {
                 mManager.notifySessionReleased(sessionInfo);
             } catch (RemoteException ex) {
                 logRemoteException("notifySessionReleased", ex);
+            }
+        }
+
+        /**
+         * Notifies the corresponding manager that the discovery preference has changed for the
+         * given {@code packageName}.
+         */
+        public void notifyDiscoveryPreferenceChanged(
+                String packageName, RouteDiscoveryPreference preference) {
+            try {
+                mManager.notifyDiscoveryPreferenceChanged(packageName, preference);
+            } catch (RemoteException ex) {
+                logRemoteException("notifyDiscoveryPreferenceChanged", ex);
             }
         }
 
@@ -4042,43 +4070,20 @@ class MediaRouter2ServiceImpl {
             int originalRequestId = toOriginalRequestId(managerRequestId);
 
             for (ManagerRecord manager : getManagerRecords()) {
-                try {
-                    manager.mManager.notifySessionCreated(
-                            ((manager.mManagerId == requesterId) ? originalRequestId :
-                                    MediaRouter2Manager.REQUEST_ID_NONE), session);
-                } catch (RemoteException ex) {
-                    Slog.w(TAG, "notifySessionCreatedToManagers: "
-                            + "Failed to notify. Manager probably died.", ex);
-                }
-            }
-        }
-
-        private void notifyDiscoveryPreferenceChangedToManager(@NonNull RouterRecord routerRecord,
-                @NonNull IMediaRouter2Manager manager) {
-            try {
-                manager.notifyDiscoveryPreferenceChanged(routerRecord.mPackageName,
-                        routerRecord.mDiscoveryPreference);
-            } catch (RemoteException ex) {
-                Slog.w(TAG, "Failed to notify preferred features changed."
-                        + " Manager probably died.", ex);
+                int requestId =
+                        manager.mManagerId == requesterId
+                                ? originalRequestId
+                                : MediaRouter2Manager.REQUEST_ID_NONE;
+                manager.notifySessionCreated(requestId, session);
             }
         }
 
         private void notifyDiscoveryPreferenceChangedToManagers(@NonNull String routerPackageName,
                 @Nullable RouteDiscoveryPreference discoveryPreference) {
-            List<IMediaRouter2Manager> managers = new ArrayList<>();
             synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
-                    managers.add(managerRecord.mManager);
-                }
-            }
-            for (IMediaRouter2Manager manager : managers) {
-                try {
-                    manager.notifyDiscoveryPreferenceChanged(routerPackageName,
-                            discoveryPreference);
-                } catch (RemoteException ex) {
-                    Slog.w(TAG, "Failed to notify preferred features changed."
-                            + " Manager probably died.", ex);
+                    managerRecord.notifyDiscoveryPreferenceChanged(
+                            routerPackageName, discoveryPreference);
                 }
             }
         }

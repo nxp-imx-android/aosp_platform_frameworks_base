@@ -289,7 +289,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         @VisibleForTesting
         public void moveShadeWindowIfNeeded(MotionEvent event) {
-            if (ShadeWindowGoesAround.isEnabled() && SceneContainerFlag.isEnabled()) {
+            if (ShadeWindowGoesAround.isEnabled()) {
                 Trace.beginSection("LauncherProxyService#moveShadeWindowIfNeeded");
                 // TODO: b/407496148 - Refactor to use DisplayMetricsRepository instead
                 final DisplayInfo displayInfo = new DisplayInfo();

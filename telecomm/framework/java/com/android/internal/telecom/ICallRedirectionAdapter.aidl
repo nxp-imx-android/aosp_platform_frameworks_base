@@ -24,7 +24,7 @@ import android.telecom.PhoneAccountHandle;
  *
  * @see android.telecom.CallRedirectionService
  *
- * {@hide}
+ * @hide
  */
 oneway interface ICallRedirectionAdapter {
     void cancelCall();

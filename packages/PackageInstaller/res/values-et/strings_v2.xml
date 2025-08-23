@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Kas desinstallida rakenduse värskendused?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Kas desinstallida rakenduse värskendused kõigi kasutajate jaoks?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Kas desinstallida see rakendus kõigi kasutajate jaoks?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Kas desinstallida see rakendus kasutaja <xliff:g id="USER_NAME">%1$s</xliff:g> jaoks?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Rakendust ei leitud"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Rakendust ei saa desinstallida"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Rakenduse desinstallimine ebaõnnestus"</string>
     <string name="title_archive" msgid="2876455228073419830">"Kas arhiivida see rakendus?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Kas arhiivida see rakendus kõigi kasutajate puhul?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Kas arhiivida see rakendus kasutaja <xliff:g id="USER_NAME">%1$s</xliff:g> jaoks?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Kas taastada see rakendus?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Toiming on vajalik"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Pole piisavalt salvestusruumi"</string>
@@ -75,7 +73,7 @@
     <string name="message_parse_failed" msgid="205300138438352785">"Rakenduse failiga on probleem."</string>
     <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"Rakenduste installimine on piiratud."</string>
     <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"Tundmatute rakenduste installimine on piiratud."</string>
-    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Selle rakenduse kloon on juba olemas ja see kustutatakse."</string>
+    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Olemas on ka selle rakenduse kloon ja see kustutatakse."</string>
     <string name="message_delete_clone_app" msgid="6632017049227330363">"See rakendus on rakenduse <xliff:g id="APP_LABEL">%1$s</xliff:g> kloon."</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"See rakendus asendatakse tehaseversiooniga. Kõik rakenduse andmed eemaldatakse."</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"See rakendus asendatakse seadmes tehaseversiooniga kõigi kasutajate jaoks. Kõik rakenduse andmed eemaldatakse."</string>
@@ -84,7 +82,7 @@
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Seda rakendust ei leitud installitud rakenduste loendist või see on juba desinstallitud."</string>
     <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Praegusel kasutajal ei ole lubatud seda desinstallimist teha."</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"Seda rakendust ei saanud desinstallida."</string>
-    <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Säilitage rakenduse andmed."</string>
+    <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Säilita rakenduse andmed"</string>
     <string name="message_archive" msgid="943853731737315850">"Teie rakenduse andmed salvestatakse."</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Kõik rakenduse andmed salvestatakse."</string>
     <string name="message_archive_other_user" msgid="6465828676043191175">"Rakenduse andmed salvestatakse."</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> on osa järgmisest rakendusest: <xliff:g id="APP_NAME">%2$s</xliff:g>."</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;See rakendus blokeeriti. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate rakendusi.&lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Seda rakendust ei värskendatud. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate värskendusi.&lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Seda rakendust ei installitud. Kinnitamata arendajate rakendused ei pruugi olla turvalised.&lt;/p&gt; &lt;p&gt;Rakenduse arendaja kinnitamiseks on vaja internetiühendust. Kontrollige ühendust ja üritage siis rakendust uuesti installida. &lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Seda rakendust ei värskendatud. Kinnitamata arendajate värskendused ei pruugi olla turvalised.&lt;/p&gt; &lt;p&gt;Rakenduse arendaja kinnitamiseks on vaja internetiühendust. Kontrollige ühendust ja üritage siis rakendust uuesti värskendada. &lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Rakenduse arendaja kinnitamisel ilmnes probleem. Kinnitamata arendajate rakendused ei pruugi olla turvalised, seega rakendust ei installitud.&lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Rakenduse arendaja kinnitamisel ilmnes probleem. Kinnitamata arendajate värskendused ei pruugi olla turvalised, seega rakendust ei värskendatud.&lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Rakendus blokeeriti, kuna arendaja kinnitamisel ilmnes probleem. Teie seadme ja andmete kaitsmiseks võite installida vaid kinnitatud arendajate rakendusi.&lt;/p&gt; &lt;a href=&gt;Lisateave arendaja kinnitamise kohta&lt;/a&gt;"</string>
@@ -117,7 +113,7 @@
     <string name="update_without_verifying" msgid="2841466981431484179">"Värskenda kinnitamata"</string>
     <string name="button_install" msgid="7434013176505680162">"Installi"</string>
     <string name="button_update" msgid="3046719350226327526">"Värskenda"</string>
-    <string name="button_update_anyway" msgid="6674207037708730779">"Värskenda ikkagi"</string>
+    <string name="button_update_anyway" msgid="6674207037708730779">"Värskenda ikka"</string>
     <string name="button_done" msgid="3408025390982260629">"Valmis"</string>
     <string name="button_open" msgid="6892684987374117955">"Ava"</string>
     <string name="button_cancel" msgid="6690491435205617214">"Tühista"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Taasta"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalli värskendused"</string>
     <string name="button_settings" msgid="3837571366246132287">"Seaded"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Proovi uuesti"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Üksuse <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> kloon"</string>
 </resources>

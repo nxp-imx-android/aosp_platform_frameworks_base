@@ -72,8 +72,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.animation.Easings
+import com.android.compose.modifiers.size
 import com.android.compose.modifiers.thenIf
 import com.android.keyguard.PinShapeAdapter
+import com.android.systemui.bouncer.shared.constants.PinBouncerConstants
 import com.android.systemui.bouncer.ui.viewmodel.EntryToken.Digit
 import com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.PinInputViewModel
@@ -188,7 +190,7 @@ private fun HintingPinInputDisplay(
     var playAnimation by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { playAnimation = true }
 
-    val dotColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val dotColor = MaterialTheme.colorScheme.onSurface
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -502,7 +504,7 @@ private class PinInputEntry(val digit: Digit, val shapeAnimations: ShapeAnimatio
         val animatedShapeSize by shapeSize.asState()
         val animatedEntryWidth by entryWidth.asState()
 
-        val dotColor = MaterialTheme.colorScheme.onSurfaceVariant
+        val dotColor = MaterialTheme.colorScheme.onSurface
         val shapeHeight = shapeAnimations.shapeSize
         var atEnd by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { atEnd = true }
@@ -564,7 +566,7 @@ private class ShapeAnimations(
 @Composable
 private fun rememberShapeAnimations(pinShapes: PinShapeAdapter): ShapeAnimations {
     // NOTE: `animatedVectorResource` does remember the returned AnimatedImageVector.
-    val dotToCircle = AnimatedImageVector.animatedVectorResource(R.drawable.pin_dot_delete_avd)
+    val dotToCircle = AnimatedImageVector.animatedVectorResource(PinBouncerConstants.pinDotAvd)
     val shapesToDot = pinShapes.shapes.map { AnimatedImageVector.animatedVectorResource(it) }
     val shapeSize = dimensionResource(R.dimen.password_shape_size)
 

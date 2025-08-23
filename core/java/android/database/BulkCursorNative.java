@@ -28,7 +28,7 @@ import android.os.RemoteException;
  * Native implementation of the bulk cursor. This is only for use in implementing
  * IPC, application code should use the Cursor interface.
  *
- * {@hide}
+ * @hide
  */
 public abstract class BulkCursorNative extends Binder implements IBulkCursor
 {

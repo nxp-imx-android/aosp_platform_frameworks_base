@@ -33,7 +33,6 @@ import android.util.proto.ProtoOutputStream;
 import android.util.proto.ProtoParseException;
 
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataSerializer;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

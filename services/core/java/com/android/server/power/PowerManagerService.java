@@ -6437,45 +6437,45 @@ public final class PowerManagerService extends SystemService
         @Override // Binder call
         public void wakeUp(long eventTime, @WakeReason int reason, String details,
                 String opPackageName) {
-            wakeUpWithDisplayId(eventTime, reason, details, opPackageName, Display.DEFAULT_DISPLAY);
-        }
-
-        @Override // Binder call
-        public void wakeUpWithDisplayId(long eventTime, @WakeReason int reason, String details,
-                String opPackageName, int displayId) {
-            final long now = mClock.uptimeMillis();
-            if (eventTime > now) {
-                Slog.e(TAG, "Event time " + eventTime + " cannot be newer than " + now);
-                throw new IllegalArgumentException("event time must not be in the future");
-            }
-            int displayGroupId = getDisplayGroupId(displayId);
-            wakeupDisplayGroups(IntArray.wrap(new int[]{displayGroupId}), eventTime, reason,
-                    details, opPackageName);
-        }
-
-        private void wakeupDisplayGroups(IntArray groupIds, long eventTime,
-                @WakeReason int reason, String details, String opPackageName) {
-            mContext.enforceCallingOrSelfPermission(
-                    android.Manifest.permission.DEVICE_POWER, null);
+            validateWakeupIsEligible(eventTime);
 
             final int uid = Binder.getCallingUid();
             final long ident = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
-                    if (!mBootCompleted && sQuiescent) {
-                        mDirty |= DIRTY_QUIESCENT;
-                        updatePowerStateLocked();
-                        return;
-                    }
-                    int size = groupIds.size();
-                    for (int i = 0; i < size; i++) {
-                        int groupId = groupIds.get(i);
-                        PowerGroup powerGroup = mPowerGroups.get(groupId);
-                        if (powerGroup != null) {
-                            wakePowerGroupLocked(mPowerGroups.get(groupId), eventTime,
-                                    reason, details, uid, opPackageName, uid);
+                    IntArray groupIds = new IntArray();
+                    if (com.android.server.display.feature.flags.Flags.separateTimeouts()
+                            && mFeatureFlags.isWakeAdjacentDisplaysOnWakeupCallEnabled()) {
+                        for (int idx = 0; idx < mPowerGroups.size(); idx++) {
+                            PowerGroup powerGroup = mPowerGroups.valueAt(idx);
+                            if (powerGroup.isDefaultOrAdjacentGroup()) {
+                                groupIds.add(powerGroup.getGroupId());
+                            }
                         }
+                    } else {
+                        groupIds.add(Display.DEFAULT_DISPLAY_GROUP);
                     }
+                    wakeupDisplayGroupsLocked(groupIds, eventTime, reason, details, opPackageName,
+                            uid);
+                }
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+
+        }
+
+        @Override // Binder call
+        public void wakeUpWithDisplayId(long eventTime, @WakeReason int reason, String details,
+                String opPackageName, int displayId) {
+            validateWakeupIsEligible(eventTime);
+
+            int displayGroupId = getDisplayGroupId(displayId);
+            final int uid = Binder.getCallingUid();
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    wakeupDisplayGroupsLocked(IntArray.wrap(new int[]{displayGroupId}), eventTime,
+                            reason, details, opPackageName, uid);
                 }
             } finally {
                 Binder.restoreCallingIdentity(ident);
@@ -7537,6 +7537,38 @@ public final class PowerManagerService extends SystemService
         }
 
         return false;
+    }
+
+    private void validateWakeupIsEligible(long eventTime) {
+        final long now = mClock.uptimeMillis();
+        if (eventTime > now) {
+            Slog.e(TAG, "Event time " + eventTime + " cannot be newer than " + now);
+            throw new IllegalArgumentException("event time must not be in the future");
+        }
+        mContext.enforceCallingOrSelfPermission(
+                android.Manifest.permission.DEVICE_POWER, null);
+    }
+
+    /**
+     * This will not wakeup the power groups if the device is in the quiescent mode or is still
+     * booting up
+     */
+    private void wakeupDisplayGroupsLocked(IntArray groupIds, long eventTime,
+            @WakeReason int reason, String details, String opPackageName, int uid) {
+        if (!mBootCompleted && sQuiescent) {
+            mDirty |= DIRTY_QUIESCENT;
+            updatePowerStateLocked();
+            return;
+        }
+        int size = groupIds.size();
+        for (int i = 0; i < size; i++) {
+            int groupId = groupIds.get(i);
+            PowerGroup powerGroup = mPowerGroups.get(groupId);
+            if (powerGroup != null) {
+                wakePowerGroupLocked(mPowerGroups.get(groupId), eventTime,
+                        reason, details, uid, opPackageName, uid);
+            }
+        }
     }
 
     @RequiresPermission(android.Manifest.permission.DEVICE_POWER)

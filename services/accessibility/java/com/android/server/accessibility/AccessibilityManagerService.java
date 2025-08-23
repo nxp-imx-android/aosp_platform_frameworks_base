@@ -46,6 +46,7 @@ import static android.view.accessibility.AccessibilityManager.FlashNotificationR
 
 import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
+import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
@@ -672,8 +673,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
         }
         if (enableTalkbackAndMagnifierKeyGestures()) {
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION);
+        }
+        if (enableTalkbackKeyGestures()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
         }
         if (enableVoiceAccessKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
@@ -4484,13 +4487,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 enable, shortcutType, shortcutTargets, userId));
 
         if (shortcutType == UserShortcutType.KEY_GESTURE) {
-            if(!enableTalkbackAndMagnifierKeyGestures() &&
-                    (shortcutTargets.contains(MAGNIFICATION_CONTROLLER_NAME) ||
-                            shortcutTargets.contains(mContext.getString(
-                                    R.string.config_defaultAccessibilityService)))) {
+            if (!enableTalkbackAndMagnifierKeyGestures()
+                    && shortcutTargets.contains(MAGNIFICATION_CONTROLLER_NAME)) {
                 Slog.w(LOG_TAG,
-                        "KEY_GESTURE type magnification and TalkBack shortcuts are disabled by "
-                                + "feature flag");
+                        "KEY_GESTURE type magnification shortcuts are disabled by feature "
+                                + "flag");
                 return;
             }
             if (!enableSelectToSpeakKeyGestures() && shortcutTargets.contains(mContext.getString(
@@ -4498,6 +4499,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 Slog.w(LOG_TAG,
                         "KEY_GESTURE type select to speak shortcuts are disabled by feature "
                                 + "flag");
+                return;
+            }
+            if (!enableTalkbackKeyGestures()
+                    && shortcutTargets.contains(mContext.getString(
+                                    R.string.config_defaultAccessibilityService))) {
+                Slog.w(LOG_TAG,
+                        "KEY_GESTURE type TalkBack shortcuts are disabled by feature flag");
                 return;
             }
             if (!enableVoiceAccessKeyGestures() && shortcutTargets.contains(mContext.getString(

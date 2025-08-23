@@ -24,7 +24,7 @@ import android.telecom.VideoProfile;
   *
   * @see android.telecom.InCallService.VideoCall.Listener
   *
-  * {@hide}
+  * @hide
   */
 oneway interface IVideoCallback {
     void receiveSessionModifyRequest(in VideoProfile videoProfile);

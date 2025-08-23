@@ -958,6 +958,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         mSubIdTelephonyDisplayInfoMap.put(SUB_ID, info1);
         mSubIdTelephonyDisplayInfoMap.put(SUB_ID2, info2);
 
+        doReturn(SUB_ID).when(spyController).getActiveDataSubId();
         doReturn(SUB_ID2).when(spyController).getActiveAutoSwitchNonDdsSubId();
         doReturn(true).when(spyController).isMobileDataEnabled();
         doReturn(true).when(spyController).activeNetworkIsCellular();
@@ -971,10 +972,45 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
+    public void getMobileNetworkSummary_activeDataOnCbrsSim_get5g() {
+        mFlags.set(Flags.QS_SECONDARY_DATA_SUB_INFO, true);
+        Resources res1 = mock(Resources.class);
+        doReturn("LTE").when(res1).getString(anyInt());
+        Resources res2 = mock(Resources.class);
+        doReturn("5G").when(res2).getString(anyInt());
+        when(SubscriptionManager.getResourcesForSubId(any(), eq(SUB_ID))).thenReturn(res1);
+        when(SubscriptionManager.getResourcesForSubId(any(), eq(SUB_ID2))).thenReturn(res2);
+
+        InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
+        Map<Integer, TelephonyDisplayInfo> mSubIdTelephonyDisplayInfoMap =
+                spyController.mSubIdTelephonyDisplayInfoMap;
+        TelephonyDisplayInfo info1 = new TelephonyDisplayInfo(TelephonyManager.NETWORK_TYPE_NR,
+                TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE);
+        TelephonyDisplayInfo info2 = new TelephonyDisplayInfo(TelephonyManager.NETWORK_TYPE_LTE,
+                TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE);
+
+        mSubIdTelephonyDisplayInfoMap.put(SUB_ID, info1);
+        mSubIdTelephonyDisplayInfoMap.put(SUB_ID2, info2);
+
+        doReturn(SUB_ID2).when(spyController).getActiveDataSubId();
+        doReturn(SubscriptionManager.INVALID_SUBSCRIPTION_ID).when(
+                spyController).getActiveAutoSwitchNonDdsSubId();
+        doReturn(true).when(spyController).isMobileDataEnabled();
+        doReturn(true).when(spyController).activeNetworkIsCellular();
+        String ddsSummary = spyController.getMobileNetworkSummary(SUB_ID2);
+
+        String ddsNetworkType = ddsSummary.split("/")[1];
+        assertThat(ddsSummary).contains(mContext.getString(R.string.mobile_data_connection_active));
+        assertThat(ddsNetworkType).contains("5G");
+    }
+
+    @Test
     public void getMobileNetworkSummary_flagOff() {
         InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
         doReturn(true).when(spyController).isMobileDataEnabled();
         doReturn(true).when(spyController).activeNetworkIsCellular();
+        doReturn(SUB_ID).when(spyController).getActiveDataSubId();
+
         String dds = spyController.getMobileNetworkSummary(SUB_ID);
 
         assertThat(dds).contains(mContext.getString(R.string.mobile_data_connection_active));

@@ -101,7 +101,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 mockTDAOrganizer,
                 Optional.of(mockTaskChangeListener),
             )
-        organizer.setOnDesktopTaskInfoChangedListener(taskInfoChangedListener)
+        organizer.addOnDesktopTaskInfoChangedListener(taskInfoChangedListener)
 
         val tda = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
         whenever(mockTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(tda)
@@ -1049,6 +1049,19 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.onTaskInfoChanged(task)
 
         verify(taskInfoChangedListener).invoke(task)
+    }
+
+    @Test
+    fun onTaskInfoChanged_taskNotRoot_multipleListeners_invokesAllListeners() = runTest {
+        createDeskSuspending()
+        val task = createFreeformTask().apply { taskId = TEST_CHILD_TASK_ID }
+        val secondListener = mock<(ActivityManager.RunningTaskInfo) -> Unit>()
+        organizer.addOnDesktopTaskInfoChangedListener(secondListener)
+
+        organizer.onTaskInfoChanged(task)
+
+        verify(taskInfoChangedListener).invoke(task)
+        verify(secondListener).invoke(task)
     }
 
     @Test

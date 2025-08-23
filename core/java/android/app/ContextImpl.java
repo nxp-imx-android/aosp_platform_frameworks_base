@@ -3502,14 +3502,14 @@ class ContextImpl extends Context {
         return file;
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     @RavenwoodKeep
     public UserHandle getUser() {
         return mUser;
     }
 
-    /** {@hide} */
+    /** @hide */
     @Override
     @RavenwoodKeep
     public int getUserId() {

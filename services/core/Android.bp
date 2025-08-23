@@ -223,6 +223,7 @@ java_library_static {
         "securebox",
         "apache-commons-math",
         "apache-commons-compress",
+        "adb_flags_lib",
         "battery_saver_flag_lib",
         "notification_flags_lib",
         "power_hint_flags_lib",

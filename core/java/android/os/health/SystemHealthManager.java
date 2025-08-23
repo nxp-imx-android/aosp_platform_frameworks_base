@@ -131,7 +131,7 @@ public class SystemHealthManager {
                         ServiceManager.getService(Context.PERFORMANCE_HINT_SERVICE)));
     }
 
-    /** {@hide} */
+    /** @hide */
     public SystemHealthManager(@NonNull IBatteryStats batteryStats,
             @Nullable IPowerStatsService powerStats, @Nullable IHintManager hintManager) {
         mBatteryStats = batteryStats;

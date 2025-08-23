@@ -2970,6 +2970,20 @@ public class DevicePolicyManager {
     @SystemApi
     public static final int STATUS_HEADLESS_ONLY_SYSTEM_USER = 17;
 
+    // TODO(b/435271558): expose as @SystemApi
+    /**
+     * Result code for {@link #checkProvisioningPrecondition}.
+     *
+     * <p>Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} when provisioning a DPC into
+     * the {@link DeviceAdminInfo#HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER} mode but the target user
+     * is not the first full user of the device (i.e., first user other than the headless system
+     * user).
+     *
+     * @hide
+     */
+    public static final int STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER = 18;
+
+
     /**
      * Result codes for {@link #checkProvisioningPrecondition} indicating all the provisioning pre
      * conditions.
@@ -2984,7 +2998,8 @@ public class DevicePolicyManager {
             STATUS_CANNOT_ADD_MANAGED_PROFILE, STATUS_DEVICE_ADMIN_NOT_SUPPORTED,
             STATUS_SPLIT_SYSTEM_USER_DEVICE_SYSTEM_USER,
             STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS,
-            STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED, STATUS_HEADLESS_ONLY_SYSTEM_USER
+            STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED, STATUS_HEADLESS_ONLY_SYSTEM_USER,
+            STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER
     })
     public @interface ProvisioningPrecondition {}
 

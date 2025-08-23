@@ -33,7 +33,7 @@ import com.android.internal.widget.VerifyCredentialResponse;
 
 import java.util.Map;
 
-/** {@hide} */
+/** @hide */
 @SensitiveData
 interface ILockSettings {
     @UnsupportedAppUsage

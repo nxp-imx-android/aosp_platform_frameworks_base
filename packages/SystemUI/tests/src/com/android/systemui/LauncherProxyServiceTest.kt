@@ -419,12 +419,27 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 }
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
-            verify(statusBarShadeDisplayPolicy, never())
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+
             verify(shadeViewController, never()).startExpandLatencyTracking()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun onStatusBarTouchEvent_withoutSceneFlag_dispatchesToShadeDisplayPolicy() =
+        kosmos.testScope.runTest {
+            val shadeDisplayId = 1
+            whenever(statusBarShadeDisplayPolicy.displayId)
+                .thenReturn(MutableStateFlow(shadeDisplayId))
+
+            val event =
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_DOWN, 500f, 500f, 0).apply {
+                    displayId = 0
+                }
+
+            subject.mSysUiProxy.onStatusBarTouchEvent(event)
+            verify(statusBarShadeDisplayPolicy)
+                .onStatusBarOrLauncherTouched(argThat<MotionEvent> { displayId == 0 }, anyInt())
         }
 
     @Test
@@ -442,7 +457,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 }
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
-            verify(statusBarShadeDisplayPolicy, never())
+            verify(statusBarShadeDisplayPolicy)
                 .onStatusBarOrLauncherTouched(
                     argThat<MotionEvent> { displayId == shadeDisplayId },
                     anyInt(),

@@ -19,7 +19,6 @@ package com.android.systemui.qs.panels.ui.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.PaginatableViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
@@ -33,16 +32,14 @@ interface GridLayout {
      *
      * @param listening can be used to compose the grid but limit when tiles should be listening. It
      *   should be a function tracking a snapshot state.
-     * @param revealEffectContainer The [ElementKey] of the container driving the reveal animation.
-     *   During expansion, tiles use this container's height to compute their own, creating a
-     *   synchronized reveal effect. When `null`, the effect is disabled.
+     * @param enableRevealEffect If `true`, the tiles will animate using the reveal animation.
      */
     @Composable
     fun ContentScope.TileGrid(
         tiles: List<TileViewModel>,
         modifier: Modifier,
         listening: () -> Boolean,
-        revealEffectContainer: ElementKey?,
+        enableRevealEffect: Boolean,
     )
 
     @Composable

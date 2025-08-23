@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Απεγκατάσταση ενημερώσεων εφαρμογών;"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Απεγκατάσταση ενημερώσεων εφαρμογών για όλους τους χρήστες;"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Απεγκατάσταση αυτής της εφαρμογής για όλους τους χρήστες;"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Απεγκατάσταση αυτής της εφαρμογής για τον χρήστη <xliff:g id="USER_NAME">%1$s</xliff:g>;"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Η εφαρμογή δεν βρέθηκε"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Δεν είναι δυνατή η απεγκατάσταση αυτής της εφαρμογής"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Δεν καταργήθηκε η εγκατάσταση της εφαρμογής"</string>
     <string name="title_archive" msgid="2876455228073419830">"Αρχειοθέτηση αυτής της εφαρμογής;"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Αρχειοθέτηση αυτής της εφαρμογής για όλους τους χρήστες;"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Αρχειοθέτηση αυτής της εφαρμογής για τον χρήστη <xliff:g id="USER_NAME">%1$s</xliff:g>;"</string>
     <string name="title_restore" msgid="8934911753892124574">"Επαναφορά αυτής της εφαρμογής;"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Απαιτείται ενέργεια"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Δεν επαρκεί ο αποθηκευτικός χώρος"</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"Η δραστηριότητα <xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> αποτελεί τμήμα της ακόλουθης εφαρμογής: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Αυτή η εφαρμογή αποκλείστηκε. Για τη διατήρηση της ασφάλειας της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο εφαρμογές από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Αυτή η εφαρμογή δεν ενημερώθηκε. Για τη διατήρηση της ασφάλειας της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο ενημερώσεις από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Αυτή η εφαρμογή δεν εγκαταστάθηκε. Οι εφαρμογές από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς.&lt;/p&gt; &lt;p&gt;Απαιτείται σύνδεση στο διαδίκτυο για την επαλήθευση του προγραμματιστή εφαρμογής. Ελέγξτε τη σύνδεσή σας και έπειτα δοκιμάστε ξανά να εγκαταστήσετε την εφαρμογή. &lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Αυτή η εφαρμογή δεν ενημερώθηκε. Οι ενημερώσεις από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς.&lt;/p&gt; &lt;p&gt;Απαιτείται σύνδεση στο διαδίκτυο για την επαλήθευση του προγραμματιστή εφαρμογής. Ελέγξτε τη σύνδεσή σας και έπειτα δοκιμάστε ξανά να ενημερώσετε την εφαρμογή. &lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή αυτής της εφαρμογής. Οι εφαρμογές από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς, επομένως η εφαρμογή δεν εγκαταστάθηκε.&lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή αυτής της εφαρμογής. Οι ενημερώσεις από μη επαληθευμένους προγραμματιστές ενδέχεται να μην είναι ασφαλείς, επομένως η εφαρμογή δεν ενημερώθηκε.&lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Αυτή η εφαρμογή αποκλείστηκε, επειδή παρουσιάστηκε πρόβλημα κατά την επαλήθευση του προγραμματιστή. Για τη διατήρηση της ασφάλειας της συσκευής και των δεδομένων σας, μπορούν να εγκατασταθούν μόνο εφαρμογές από επαληθευμένους προγραμματιστές.&lt;/p&gt; &lt;a href=&gt;Μάθετε περισσότερα σχετικά με την επαλήθευση προγραμματιστή&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Επαναφορά"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Απεγκατάσταση ενημερώσεων"</string>
     <string name="button_settings" msgid="3837571366246132287">"Ρυθμίσεις"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Επανάληψη"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Διπλότυπο του πακέτου <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
 </resources>

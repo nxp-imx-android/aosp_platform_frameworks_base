@@ -75,8 +75,7 @@ public class TaskSnapshotConvertUtil {
             pixelFormat = hwBuffer.getFormat();
             hasProtectedContent = TransitionAnimation.hasProtectedContent(hwBuffer);
         }
-        return !Flags.extendingPersistenceSnapshotQueueDepth()
-                || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
+        return (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
                 || !snapshot.isRealSnapshot()
                 || hasProtectedContent;
     }

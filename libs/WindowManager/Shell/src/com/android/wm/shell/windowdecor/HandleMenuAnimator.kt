@@ -19,6 +19,8 @@ package com.android.wm.shell.windowdecor
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
+import android.content.Context
 import android.view.View
 import android.view.View.ALPHA
 import android.view.View.SCALE_X
@@ -27,13 +29,19 @@ import android.view.View.TRANSLATION_Y
 import android.view.View.TRANSLATION_Z
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
+import android.window.DesktopExperienceFlags
 import androidx.core.animation.doOnEnd
 import androidx.core.view.children
+import androidx.core.view.isVisible
+import com.android.app.animation.Interpolators.EMPHASIZED
 import com.android.wm.shell.R
 import com.android.wm.shell.shared.animation.Interpolators
+import com.android.wm.shell.windowdecor.common.DrawingHandle
+import kotlin.math.max
 
 /** Animates the Handle Menu opening. */
 class HandleMenuAnimator(
+    private val context: Context,
     private val handleMenu: View,
     private val menuWidth: Int,
     private val captionHeight: Float,
@@ -65,6 +73,10 @@ class HandleMenuAnimator(
         private const val HEADER_CONTENT_OPACITY_CLOSE_DELAY: Long = 25
         private const val HEADER_CONTENT_OPACITY_CLOSE_DURATION: Long = 25
         private const val BODY_CLOSE_DURATION: Long = 50
+
+        // Handle->menu animation constants
+        private const val WIDTH_SWAP_FRACTION = 0.19f
+        private const val HANDLE_MENU_OPEN_CLOSE_DURATION: Long = 600
     }
 
     private val animators: MutableList<Animator> = mutableListOf()
@@ -75,6 +87,21 @@ class HandleMenuAnimator(
     private val moreActionsPill: ViewGroup = handleMenu.requireViewById(R.id.more_actions_pill)
     private val openInAppOrBrowserPill: ViewGroup =
         handleMenu.requireViewById(R.id.open_in_app_or_browser_pill)
+
+    private val handleHeight: Float =
+        context.resources.getDimensionPixelSize(R.dimen.app_handle_height).toFloat()
+    private val handleMenuWidth: Float =
+        context.resources.getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_width).toFloat()
+    private val appInfoPillHeight: Float =
+        context.resources
+            .getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_app_info_pill_height)
+            .toFloat()
+    private val menuColor: Int =
+        handleMenu.context.getColor(com.android.internal.R.color.materialColorSurfaceBright)
+    private val marginMenuTop =
+        context.resources.getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_top)
+    private val menuItemElevation: Int =
+        context.getResources().getDimensionPixelSize(R.dimen.app_menu_elevation)
 
     /** Animates the opening of the handle menu. */
     fun animateOpen() {
@@ -98,19 +125,40 @@ class HandleMenuAnimator(
      * will expand until it assumes the shape of the app info pill. Then, the other two pills will
      * appear.
      */
-    fun animateCaptionHandleExpandToOpen() {
-        prepareMenuForAnimation()
-        captionHandleExpandIntoAppInfoPill()
-        animateAppInfoPillOpen()
-        animateWindowingPillOpen()
-        animateMoreActionsPillOpen()
-        animateOpenInAppOrBrowserPill()
-        runAnimations {
+    fun animateCaptionHandleExpandToOpen(handleView: View) {
+        if (DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue) {
+            val showMenuAnimation = ValueAnimator.ofFloat(0f, 1f)
+            showMenuAnimation.setDuration(HANDLE_MENU_OPEN_CLOSE_DURATION)
+            showMenuAnimation.setInterpolator(EMPHASIZED)
+            setupAnimator(showMenuAnimation, handleView)
+        } else {
+            prepareMenuForAnimation()
+            captionHandleExpandIntoAppInfoPill()
+            animateAppInfoPillOpen()
+            animateWindowingPillOpen()
+            animateMoreActionsPillOpen()
+            animateOpenInAppOrBrowserPill()
+        }
+        val animationCallback: () -> Unit = {
             appInfoPill.post {
                 appInfoPill
                     .requireViewById<View>(R.id.collapse_menu_button)
                     .sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
             }
+        }
+        if (!handleMenu.isAttachedToWindow) {
+            handleMenu.addOnAttachStateChangeListener(
+                object : View.OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(v: View) {
+                        runAnimations(animationCallback)
+                        handleMenu.removeOnAttachStateChangeListener(this)
+                    }
+
+                    override fun onViewDetachedFromWindow(v: View) {}
+                }
+            )
+        } else {
+            runAnimations(animationCallback)
         }
     }
 
@@ -121,12 +169,19 @@ class HandleMenuAnimator(
      *
      * @param after runs after the animation finishes.
      */
-    fun animateCollapseIntoHandleClose(after: () -> Unit) {
-        appInfoCollapseToHandle()
-        animateAppInfoPillFadeOut()
-        windowingPillClose()
-        moreActionsPillClose()
-        openInAppOrBrowserPillClose()
+    fun animateCollapseIntoHandleClose(handleView: View, after: () -> Unit) {
+        if (DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue) {
+            val closeMenuAnimation = ValueAnimator.ofFloat(1f, 0f)
+            closeMenuAnimation.setDuration(HANDLE_MENU_OPEN_CLOSE_DURATION)
+            closeMenuAnimation.setInterpolator(EMPHASIZED)
+            setupAnimator(closeMenuAnimation, handleView)
+        } else {
+            appInfoCollapseToHandle()
+            animateAppInfoPillFadeOut()
+            windowingPillClose()
+            moreActionsPillClose()
+            openInAppOrBrowserPillClose()
+        }
         runAnimations(after)
     }
 
@@ -144,6 +199,69 @@ class HandleMenuAnimator(
         moreActionsPillClose()
         openInAppOrBrowserPillClose()
         runAnimations(after)
+    }
+
+    private fun setupAnimator(showMenuAnimation: ValueAnimator, handleView: View) {
+        val widthDiff: Int = (handleMenuWidth - handleView.width).toInt()
+        val targetWidth: Float = handleView.width + widthDiff * WIDTH_SWAP_FRACTION
+        val targetHeight: Float = targetWidth * appInfoPillHeight / handleMenuWidth
+
+        // Calculating deltas
+        val swapScale: Float = targetWidth / handleMenuWidth
+        val handleWidthDelta: Float = targetWidth - handleView.width
+        val handleHeightDelta = targetHeight - handleHeight
+
+        showMenuAnimation.addUpdateListener { animator ->
+            val progress: Float = animator.animatedValue as Float
+            val showHandle: Boolean = (progress <= WIDTH_SWAP_FRACTION)
+            handleView.isVisible = showHandle
+            handleMenu.isVisible = !showHandle
+            val handleViewView = handleView as DrawingHandle
+            if (showHandle) {
+                val handleAnimationProgress: Float = progress / WIDTH_SWAP_FRACTION
+                handleViewView.animateHandleForMenu(
+                    handleAnimationProgress,
+                    handleWidthDelta,
+                    handleHeightDelta,
+                    menuColor,
+                )
+            } else {
+                val menuAnimationProgress: Float =
+                    (progress - WIDTH_SWAP_FRACTION) / (1 - WIDTH_SWAP_FRACTION)
+                val oldCenterY =
+                    captionHeight / 2 + (handleHeight + handleHeightDelta * progress) / 2
+                val currentMenuScale = swapScale + (1 - swapScale) * menuAnimationProgress
+                val finalCenterY = currentMenuScale * appInfoPillHeight / 2 + marginMenuTop
+                val diff = oldCenterY - finalCenterY
+                handleMenu.translationY = diff * (1 - menuAnimationProgress)
+                handleMenu.pivotY = 0f
+                handleMenu.pivotX = handleMenu.width.toFloat() / 2
+                animateFromStartScale(currentMenuScale, menuAnimationProgress)
+            }
+        }
+        animators += showMenuAnimation
+    }
+
+    private fun animateFromStartScale(currentScale: Float, progress: Float) {
+        val SHOW_MENU_STAGES_COUNT = 3
+        handleMenu.scaleX = currentScale
+        handleMenu.scaleY = currentScale
+
+        appInfoPill.children.forEach { it.alpha = progress }
+        appInfoPill.elevation = menuItemElevation * progress
+        val actionsBackgroundAlpha =
+            max(0f, (progress - 1f / SHOW_MENU_STAGES_COUNT) * (SHOW_MENU_STAGES_COUNT - 1))
+        val actionItemsAlpha =
+            max(0f, (progress - 2f / SHOW_MENU_STAGES_COUNT) * SHOW_MENU_STAGES_COUNT)
+        windowingPill.setAlpha(actionsBackgroundAlpha)
+        windowingPill.setElevation(menuItemElevation * actionsBackgroundAlpha)
+        windowingPill.children.forEach { it.alpha = actionItemsAlpha }
+        moreActionsPill.setAlpha(actionsBackgroundAlpha)
+        moreActionsPill.setElevation(menuItemElevation * actionsBackgroundAlpha)
+        moreActionsPill.children.forEach { it.alpha = actionItemsAlpha }
+        openInAppOrBrowserPill.setAlpha(actionsBackgroundAlpha)
+        openInAppOrBrowserPill.setElevation(menuItemElevation * actionsBackgroundAlpha)
+        openInAppOrBrowserPill.children.forEach { it.alpha = actionItemsAlpha }
     }
 
     /**

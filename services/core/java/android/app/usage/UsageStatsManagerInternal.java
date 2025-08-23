@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * UsageStatsManager local system service interface.
  *
- * {@hide} Only for use within the system server.
+ * @hide Only for use within the system server.
  */
 public abstract class UsageStatsManagerInternal {
 

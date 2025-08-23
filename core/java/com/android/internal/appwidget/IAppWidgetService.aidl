@@ -31,7 +31,7 @@ import android.widget.RemoteViews;
 import android.app.IApplicationThread;
 import android.app.IServiceConnection;
 
-/** {@hide} */
+/** @hide */
 interface IAppWidgetService {
 
     //

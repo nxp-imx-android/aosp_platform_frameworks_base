@@ -3,7 +3,7 @@ package android.window;
 import android.window.ScreenCapture;
 
 /**
- * {@hide}
+ * @hide
  */
 interface IScreenCaptureCallback {
     oneway void onSuccess(in ScreenCapture.ScreenCaptureResult result);

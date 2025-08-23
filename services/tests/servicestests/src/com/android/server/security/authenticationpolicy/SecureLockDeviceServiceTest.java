@@ -22,7 +22,6 @@ import static android.app.StatusBarManager.DISABLE2_SYSTEM_ICONS;
 import static android.app.StatusBarManager.DISABLE_BACK;
 import static android.app.StatusBarManager.DISABLE_EXPAND;
 import static android.app.StatusBarManager.DISABLE_HOME;
-import static android.app.StatusBarManager.DISABLE_NONE;
 import static android.app.StatusBarManager.DISABLE_NOTIFICATION_ALERTS;
 import static android.app.StatusBarManager.DISABLE_NOTIFICATION_ICONS;
 import static android.app.StatusBarManager.DISABLE_ONGOING_CALL_CHIP;
@@ -33,10 +32,8 @@ import static android.hardware.biometrics.SensorProperties.STRENGTH_STRONG;
 import static android.hardware.biometrics.SensorProperties.STRENGTH_WEAK;
 import static android.os.UserManager.DISALLOW_CHANGE_WIFI_STATE;
 import static android.os.UserManager.DISALLOW_CONFIG_WIFI;
-import static android.os.UserManager.DISALLOW_DEBUGGING_FEATURES;
 import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
 import static android.os.UserManager.DISALLOW_SMS;
-import static android.os.UserManager.DISALLOW_USB_FILE_TRANSFER;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
@@ -55,6 +52,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,10 +68,14 @@ import android.hardware.biometrics.BiometricStateListener;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.hardware.usb.IUsbManagerInternal;
+import android.hardware.usb.UsbManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.IThermalService;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -86,6 +88,7 @@ import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 import android.testing.TestableContext;
 import android.util.ArrayMap;
+import android.util.Slog;
 
 import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
@@ -95,6 +98,10 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.test.LocalServiceKeeperRule;
+import com.android.server.security.authenticationpolicy.settings.DevicePolicyRestrictionsController;
+import com.android.server.security.authenticationpolicy.settings.SecureLockDeviceSettingsManager;
+import com.android.server.security.authenticationpolicy.settings.SecureLockDeviceSettingsManagerImpl;
+import com.android.server.security.authenticationpolicy.settings.SecureLockDeviceStore;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -108,14 +115,17 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.lang.reflect.Field;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-/**
- * atest FrameworksServicesTests:SecureLockDeviceServiceTest
- */
+/** atest FrameworksServicesTests:SecureLockDeviceServiceTest */
 @Presubmit
 @SmallTest
 @EnableFlags({FLAG_SECURE_LOCKDOWN, FLAG_SECURE_LOCK_DEVICE})
@@ -123,47 +133,23 @@ import java.util.Map;
 public class SecureLockDeviceServiceTest {
     private static final int TEST_USER_ID = 0;
     private static final int OTHER_USER_ID = 1;
-    private final UserHandle mUser = new UserHandle(TEST_USER_ID);
-    private final UserHandle mOtherUser = new UserHandle(OTHER_USER_ID);
-
-    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-    @Rule public final SecureLockDeviceContext mTestContext = new SecureLockDeviceContext(
-            InstrumentationRegistry.getInstrumentation().getTargetContext(), mUser, mOtherUser);
-    @Rule public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
-    @Rule public MockitoRule mockito = MockitoJUnit.rule();
-
-    @Captor private ArgumentCaptor<BiometricStateListener> mBiometricStateListenerCaptor;
-    @Captor private ArgumentCaptor<Integer> mSecureLockDeviceAvailableStatusArgumentCaptor;
-    @Captor private ArgumentCaptor<Boolean> mSecureLockDeviceEnabledStatusArgumentCaptor;
-
-    @Mock private ActivityManager mActivityManager;
-    @Mock private ActivityTaskManager mActivityTaskManager;
-    @Mock private AuthenticationPolicyService mAuthenticationPolicyService;
-    @Mock private BiometricManager mBiometricManager;
-    @Mock private BiometricManager mUserBiometricManager;
-    @Mock private BiometricManager mOtherUserBiometricManager;
-    @Mock private DevicePolicyManager mDevicePolicyManager;
-    @Mock private FaceManager mFaceManager;
-    @Mock private FingerprintManager mFingerprintManager;
-    @Mock private IBinder mSecureLockDeviceStatusListenerBinder;
-    @Mock private IBinder mSecureLockDeviceStatusOtherListenerBinder;
-    @Mock private IPowerManager mIPowerManager;
-    @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusListener;
-    // For OTHER_USER_ID
-    @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusOtherListener;
-    @Mock private IStatusBarService mStatusBarService;
-    @Mock private IThermalService mThermalService;
-    @Mock private IVoiceInteractionManagerService mVoiceInteractionManagerService;
-    @Mock private SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
-    @Mock private WindowManagerInternal mWindowManagerInternal;
-
-    private final EnableSecureLockDeviceParams mEnableParams =
-            new EnableSecureLockDeviceParams("test");
-    private final DisableSecureLockDeviceParams mDisableParams =
-            new DisableSecureLockDeviceParams("test");
-    private SecureLockDeviceService mSecureLockDeviceService;
-    private SecureLockDeviceService.SecureLockDeviceStore mSecureLockDeviceStore;
-
+    private static final String TAG = "SecureLockDeviceService";
+    private static final String FILE_NAME = "secure_lock_device_state";
+    private static final String XML_TAG_ROOT = "secure-lock-device-state";
+    private static final String XML_TAG_ENABLED = "enabled";
+    private static final String XML_TAG_CLIENT_ID = "client-id";
+    private static final String XML_TAG_ORIGINAL_SETTINGS = "original-settings";
+    private static final Set<String> DEVICE_POLICY_RESTRICTIONS = Set.of(
+            DISALLOW_CHANGE_WIFI_STATE,
+            DISALLOW_CONFIG_WIFI,
+            DISALLOW_OUTGOING_CALLS,
+            DISALLOW_SMS,
+            DISALLOW_USER_SWITCH
+    );
+    private static final String DEVICE_POLICY_RESTRICTIONS_KEY = "device_policy_restrictions";
+    private static final String DISABLE_FLAGS_KEY = "disable_flags";
+    private static final String USB_ENABLED_KEY = "usb_enabled";
+    private static final String NFC_ENABLED_KEY = "nfc_enabled";
     private static final int DISABLE_FLAGS =
             // Flag to make the status bar not expandable
             DISABLE_EXPAND
@@ -190,9 +176,88 @@ public class SecureLockDeviceServiceTest {
                     // Flag to disable notification shade
                     | DISABLE2_NOTIFICATION_SHADE;
 
+    // Map of secure settings keys to their values when secure lock device is enabled
+    private static final Map<String, Integer> SECURE_SETTINGS_SECURE_LOCK_DEVICE_VALUES =
+            Map.of(
+                    Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, 0,
+                    Settings.Secure.DOUBLE_TAP_POWER_BUTTON_GESTURE_ENABLED, 0,
+                    Settings.Secure.CAMERA_GESTURE_DISABLED, 1,
+                    Settings.Secure.CAMERA_DOUBLE_TAP_POWER_GESTURE_DISABLED, 1,
+                    Settings.Secure.CAMERA_LIFT_TRIGGER_ENABLED, 0,
+                    Settings.Secure.LOCK_SCREEN_WEATHER_ENABLED, 0,
+                    Settings.Secure.LOCKSCREEN_SHOW_CONTROLS, 0,
+                    Settings.Secure.LOCKSCREEN_SHOW_WALLET, 0,
+                    Settings.Secure.LOCK_SCREEN_SHOW_QR_CODE_SCANNER, 0,
+                    Settings.Secure.GLANCEABLE_HUB_ENABLED, 0);
+
+    // Map of system settings keys to their values when secure lock device is enabled
+    private static final Map<String, Integer> SYSTEM_SETTINGS_SECURE_LOCK_DEVICE_VALUES =
+            Map.of(
+                    Settings.System.BLUETOOTH_DISCOVERABILITY, 0,
+                    Settings.System.LOCK_TO_APP_ENABLED, 0);
+
+    private static final Set<String> GLOBAL_SETTINGS =
+            Set.of(
+                    Settings.Global.ADB_ENABLED,
+                    Settings.Global.ADB_WIFI_ENABLED,
+                    Settings.Global.ADD_USERS_WHEN_LOCKED,
+                    Settings.Global.USER_SWITCHER_ENABLED,
+                    Settings.Global.ALLOW_USER_SWITCHING_WHEN_SYSTEM_USER_LOCKED);
+
+    @Captor private ArgumentCaptor<BiometricStateListener> mBiometricStateListenerCaptor;
+    @Captor private ArgumentCaptor<Integer> mSecureLockDeviceAvailableStatusArgumentCaptor;
+    @Captor private ArgumentCaptor<Boolean> mSecureLockDeviceEnabledStatusArgumentCaptor;
+
+    @Mock private ActivityManager mActivityManager;
+    @Mock private ActivityTaskManager mActivityTaskManager;
+    @Mock private BiometricManager mBiometricManager;
+    @Mock private BiometricManager mUserBiometricManager;
+    @Mock private BiometricManager mOtherUserBiometricManager;
+    @Mock private DevicePolicyManager mDevicePolicyManager;
+    @Mock private FaceManager mFaceManager;
+    @Mock private FingerprintManager mFingerprintManager;
+    @Mock private IBinder mSecureLockDeviceStatusListenerBinder;
+    @Mock private IBinder mSecureLockDeviceStatusOtherListenerBinder;
+    @Mock private IPowerManager mIPowerManager;
+    @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusListener;
+    // For OTHER_USER_ID
+    @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusOtherListener;
+    @Mock private IStatusBarService mStatusBarService;
+    @Mock private IThermalService mThermalService;
+    @Mock private IVoiceInteractionManagerService mVoiceInteractionManagerService;
+    @Mock private SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
+    @Mock private UsbManager mUsbManager;
+    @Mock private IUsbManagerInternal mUsbManagerInternal;
+    @Mock private WindowManagerInternal mWindowManagerInternal;
+
+    private final EnableSecureLockDeviceParams mEnableParams =
+            new EnableSecureLockDeviceParams("test");
+    private final DisableSecureLockDeviceParams mDisableParams =
+            new DisableSecureLockDeviceParams("test");
+    private final UserHandle mUser = new UserHandle(TEST_USER_ID);
+    private final UserHandle mOtherUser = new UserHandle(OTHER_USER_ID);
+    private final Context mContext =
+            InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public final SecureLockDeviceContext mTestContext =
+            new SecureLockDeviceContext(mContext, mUser, mOtherUser);
+    @Rule public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
+    @Rule public MockitoRule mockito = MockitoJUnit.rule();
+
+    private SecureLockDeviceService mSecureLockDeviceService;
+    private int mDisableFlags;
+    private int mDisable2Flags;
+    private SecureLockDeviceStore mSecureLockDeviceStore;
+    private SecureLockDeviceSettingsManager mSecureLockDeviceSettingsManager;
+    private Set<String> mDevicePolicyRestrictions = new HashSet<>();
+
     @SuppressLint("VisibleForTests")
     @Before
     public void setUp() throws Exception {
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
         // Mock user-aware BiometricManager retrieval
         mTestContext.mockBiometricManagerForUser(mUser, mUserBiometricManager);
         mTestContext.mockBiometricManagerForUser(mOtherUser, mOtherUserBiometricManager);
@@ -207,61 +272,73 @@ public class SecureLockDeviceServiceTest {
         mTestContext.addMockSystemService((FingerprintManager.class), mFingerprintManager);
 
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(true);
-        Bundle userRestrictions = constructUserRestrictionsBundle();
-        when(mDevicePolicyManager.getUserRestrictionsGlobally()).thenReturn(userRestrictions);
+        doAnswer(
+                invocation -> {
+                    String restriction = invocation.getArgument(1);
+                    mDevicePolicyRestrictions.add(restriction);
+                    return null;
+                })
+                .when(mDevicePolicyManager).addUserRestrictionGlobally(anyString(), anyString());
+
+        doAnswer(
+                invocation -> {
+                    String restriction = invocation.getArgument(1);
+                    mDevicePolicyRestrictions.remove(restriction);
+                    return null;
+                })
+                .when(mDevicePolicyManager).clearUserRestrictionGlobally(anyString(), anyString());
+        when(mDevicePolicyManager.getUserRestrictionsGlobally())
+                .thenReturn(setToBundle(mDevicePolicyRestrictions));
 
         when(mSecureLockDeviceStatusListener.asBinder())
                 .thenReturn(mSecureLockDeviceStatusListenerBinder);
         when(mSecureLockDeviceStatusOtherListener.asBinder())
                 .thenReturn(mSecureLockDeviceStatusOtherListenerBinder);
 
-        mLocalServiceKeeperRule.overrideLocalService(AuthenticationPolicyService.class,
-                mAuthenticationPolicyService);
-        mLocalServiceKeeperRule.overrideLocalService(SecureLockDeviceServiceInternal.class,
-                mSecureLockDeviceServiceInternal);
-        mLocalServiceKeeperRule.overrideLocalService(WindowManagerInternal.class,
-                mWindowManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(
+                SecureLockDeviceServiceInternal.class, mSecureLockDeviceServiceInternal);
+        mLocalServiceKeeperRule.overrideLocalService(
+                WindowManagerInternal.class, mWindowManagerInternal);
 
-        mSecureLockDeviceService = new SecureLockDeviceService(mTestContext);
+        doAnswer(
+                invocation -> {
+                    mDisableFlags = invocation.getArgument(0);
+                    return null;
+                })
+                .when(mStatusBarService)
+                .disable(anyInt(), any(), anyString());
+        doAnswer(
+                invocation -> {
+                    mDisable2Flags = invocation.getArgument(0);
+                    return null;
+                })
+                .when(mStatusBarService)
+                .disable2(anyInt(), any(), anyString());
+        when(mStatusBarService.getDisableFlags(any(), anyInt())).thenReturn(
+                new int[] {mDisableFlags, mDisable2Flags});
+
+        mSecureLockDeviceSettingsManager = new SecureLockDeviceSettingsManagerImpl(mTestContext,
+                mActivityTaskManager, mStatusBarService, mVoiceInteractionManagerService);
+        mSecureLockDeviceSettingsManager.initSettingsControllerDependencies(
+                mDevicePolicyManager, null /* nfcAdapter */, mUsbManager, mUsbManagerInternal);
+
+        mSecureLockDeviceService =
+                new SecureLockDeviceService(
+                        mTestContext,
+                        mSecureLockDeviceSettingsManager,
+                        mBiometricManager,
+                        mFaceManager,
+                        mFingerprintManager,
+                        new PowerManager(mTestContext, mIPowerManager, mThermalService, null));
+
+        File secureLockDeviceStateFile =
+                File.createTempFile(FILE_NAME, ".xml", mTestContext.getCacheDir());
         mSecureLockDeviceStore = mSecureLockDeviceService.getStore();
+        mSecureLockDeviceStore.overrideStateFile(secureLockDeviceStateFile);
 
         mSecureLockDeviceService.setSecureLockDeviceTestStatus(true);
         mSecureLockDeviceService.onLockSettingsReady();
         mSecureLockDeviceService.onBootCompleted();
-
-        try {
-            Field statusBarService = SecureLockDeviceService.class.getDeclaredField(
-                    "mStatusBarService");
-            statusBarService.setAccessible(true);
-            statusBarService.set(mSecureLockDeviceService, mStatusBarService);
-
-            Field voiceInteractionManagerService =
-                    SecureLockDeviceService.class.getDeclaredField(
-                            "mVoiceInteractionManagerService");
-            voiceInteractionManagerService.setAccessible(true);
-            voiceInteractionManagerService.set(mSecureLockDeviceService,
-                    mVoiceInteractionManagerService);
-
-            Field activityTaskManager =
-                    SecureLockDeviceService.class.getDeclaredField("mActivityTaskManager");
-            activityTaskManager.setAccessible(true);
-            activityTaskManager.set(mSecureLockDeviceService, mActivityTaskManager);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Failed to inject mock services", e);
-        }
-    }
-
-    private Bundle constructUserRestrictionsBundle() {
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(SecureLockDeviceService.class.getSimpleName(), true);
-        bundle.putBoolean(DISALLOW_USB_FILE_TRANSFER, false);
-        bundle.putBoolean(DISALLOW_DEBUGGING_FEATURES, false);
-        bundle.putBoolean(DISALLOW_CHANGE_WIFI_STATE, false);
-        bundle.putBoolean(DISALLOW_CONFIG_WIFI, false);
-        bundle.putBoolean(DISALLOW_OUTGOING_CALLS, false);
-        bundle.putBoolean(DISALLOW_SMS, false);
-        bundle.putBoolean(DISALLOW_USER_SWITCH, false);
-        return bundle;
     }
 
     @SuppressLint("VisibleForTests")
@@ -375,7 +452,7 @@ public class SecureLockDeviceServiceTest {
                 OTHER_USER_ID);
 
         verify(mDevicePolicyManager).addUserRestrictionGlobally(
-                eq(SecureLockDeviceService.class.getSimpleName()), eq(DISALLOW_USER_SWITCH));
+                eq(DevicePolicyRestrictionsController.TAG), eq(DISALLOW_USER_SWITCH));
     }
 
     @Test
@@ -467,8 +544,8 @@ public class SecureLockDeviceServiceTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void securityFeaturesEnabled_onSecureLockDeviceEnabled()
-            throws RemoteException, Settings.SettingNotFoundException {
+    public void enableSecureLockDevice_appliesSecurityFeatures_writesSettingsToFile()
+            throws RemoteException, IOException {
         final String tag = "SecureLockDeviceService";
 
         setupBiometricState(
@@ -478,74 +555,122 @@ public class SecureLockDeviceServiceTest {
         );
         enableSecureLockDevice(mUser);
 
-        assertThat(Settings.System.getInt(mTestContext.getContentResolver(),
-                Settings.System.BLUETOOTH_DISCOVERABILITY)).isEqualTo(0);
-        assertThat(Settings.System.getInt(mTestContext.getContentResolver(),
-                Settings.System.LOCK_TO_APP_ENABLED)).isEqualTo(0);
+        SYSTEM_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingKey, secureLockDeviceValue) -> {
+            try {
+                int currentValue = Settings.System.getIntForUser(mTestContext.getContentResolver(),
+                        settingKey, TEST_USER_ID);
+                assertThat(currentValue).isEqualTo(secureLockDeviceValue);
+            } catch (Settings.SettingNotFoundException e) {
+                Slog.w(TAG, "System setting not found: ", e);
+            }
+        });
 
-        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
-                Settings.Secure.CAMERA_DOUBLE_TAP_POWER_GESTURE_DISABLED)).isEqualTo(1);
-        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
-                Settings.Secure.CAMERA_GESTURE_DISABLED)).isEqualTo(1);
-        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
-                Settings.Secure.CAMERA_LIFT_TRIGGER_ENABLED)).isEqualTo(0);
-        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
-                Settings.Secure.DOUBLE_TAP_POWER_BUTTON_GESTURE_ENABLED)).isEqualTo(0);
-        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
-                Settings.Secure.GLANCEABLE_HUB_ENABLED)).isEqualTo(0);
-        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
-                Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS)).isEqualTo(0);
+        SECURE_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingKey, secureLockDeviceValue) -> {
+            try {
+                int currentValue = Settings.Secure.getIntForUser(mTestContext.getContentResolver(),
+                        settingKey, TEST_USER_ID);
+                assertThat(currentValue).isEqualTo(secureLockDeviceValue);
+            } catch (Settings.SettingNotFoundException e) {
+                Slog.w(TAG, "Secure setting not found: ", e);
+            }
+        });
 
         verify(mActivityTaskManager).stopSystemLockTaskMode();
-
         verify(mStatusBarService).disable(eq(DISABLE_FLAGS), any(), anyString());
         verify(mStatusBarService).disable2(eq(DISABLE2_FLAGS), any(), anyString());
-
         verify(mVoiceInteractionManagerService).setDisabled(eq(true));
 
-        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_CHANGE_WIFI_STATE));
-        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_CONFIG_WIFI));
-        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_OUTGOING_CALLS));
-        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_SMS));
-        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_USER_SWITCH));
+        DEVICE_POLICY_RESTRICTIONS.forEach(setting -> {
+            verify(mDevicePolicyManager).addUserRestrictionGlobally(
+                    eq(DevicePolicyRestrictionsController.TAG), eq(setting));
+        });
+
+        // Read the contents of the file
+        String fileContents = readFileContents(mSecureLockDeviceStore.getStateFile().getBaseFile());
+
+        // Assert that the file contains the correct settings in XML format
+        assertThat(fileContents).contains(XML_TAG_ROOT);
+        assertThat(fileContents).contains(XML_TAG_ENABLED);
+        assertThat(fileContents).contains(XML_TAG_CLIENT_ID);
+        assertThat(fileContents).contains(XML_TAG_ORIGINAL_SETTINGS);
+        assertThat(fileContents).contains(DEVICE_POLICY_RESTRICTIONS_KEY);
+        assertThat(fileContents).contains(DISABLE_FLAGS_KEY);
+        assertThat(fileContents).contains(NFC_ENABLED_KEY);
+        assertThat(fileContents).contains(USB_ENABLED_KEY);
+
+        // Assert that each setting is in the XML
+        SECURE_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingsKey, secureLockDeviceValue) -> {
+            assertThat(fileContents).contains(settingsKey);
+        });
+        SYSTEM_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingsKey, secureLockDeviceValue) -> {
+            assertThat(fileContents).contains(settingsKey);
+        });
+        GLOBAL_SETTINGS.forEach(settingsKey -> {
+            assertThat(fileContents).contains(settingsKey);
+        });
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void securityFeaturesDisabled_onSecureLockDeviceDisabled()
-            throws RemoteException {
-        final String tag = "SecureLockDeviceService";
-
+    public void disableSecureLockDevice_restoresSettingsToOriginalValues() throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
                 false /* otherUserHasStrongBiometricEnrollment */
         );
-        enableSecureLockDevice(mUser);
-        clearInvocations();
+        final Map<String, Integer> originalSystemSettings = new HashMap<>();
+        SYSTEM_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingKey, secureLockDeviceValue) -> {
+            try {
+                int currentValue = Settings.System.getIntForUser(mTestContext.getContentResolver(),
+                        settingKey, TEST_USER_ID);
+                originalSystemSettings.put(settingKey, currentValue);
+            } catch (Settings.SettingNotFoundException e) {
+                Slog.w(TAG, "System setting not found: ", e);
+            }
+        });
 
+        final Map<String, Integer> originalSecureSettings = new HashMap<>();
+        SECURE_SETTINGS_SECURE_LOCK_DEVICE_VALUES.forEach((settingKey, secureLockDeviceValue) -> {
+            try {
+                int currentValue = Settings.Secure.getIntForUser(mTestContext.getContentResolver(),
+                        settingKey, TEST_USER_ID);
+                originalSecureSettings.put(settingKey, currentValue);
+            } catch (Settings.SettingNotFoundException e) {
+                Slog.w(TAG, "Secure setting not found: ", e);
+            }
+        });
+
+        int[] originalStatusBarState =
+                mStatusBarService.getDisableFlags(new Binder(), TEST_USER_ID);
+        Bundle originalDevicePolicyRestrictions =
+                mDevicePolicyManager.getUserRestrictionsGlobally();
+
+        enableSecureLockDevice(mUser);
+        clearInvocations(mStatusBarService, mActivityTaskManager, mDevicePolicyManager);
         disableSecureLockDevice(mUser);
 
-        verify(mStatusBarService).disable(eq(DISABLE_NONE), any(), anyString());
-        verify(mStatusBarService).disable2(eq(DISABLE_NONE), any(), anyString());
+        originalSystemSettings.forEach((settingKey, originalValue) -> {
+            try {
+                int currentValue = Settings.System.getIntForUser(mTestContext.getContentResolver(),
+                        settingKey, TEST_USER_ID);
+                assertThat(currentValue).isEqualTo(originalValue);
+            } catch (Exception e) {
+                Slog.w(TAG, "System setting not found: ", e);
+            }
+        });
 
-        verify(mVoiceInteractionManagerService).setDisabled(eq(false));
-
-        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_CHANGE_WIFI_STATE));
-        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_CONFIG_WIFI));
-        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_OUTGOING_CALLS));
-        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_SMS));
-        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
-                eq(DISALLOW_USER_SWITCH));
+        originalSecureSettings.forEach((settingKey, originalValue) -> {
+            try {
+                int currentValue = Settings.Secure.getIntForUser(mTestContext.getContentResolver(),
+                        settingKey, TEST_USER_ID);
+                assertThat(currentValue).isEqualTo(originalValue);
+            } catch (Exception e) {
+                Slog.w(TAG, "Secure setting not found: ", e);
+            }
+        });
+        assertThat(mStatusBarService.getDisableFlags(new Binder(), TEST_USER_ID))
+                .isEqualTo(originalStatusBarState);
+        assertThat(mDevicePolicyManager.getUserRestrictionsGlobally()).isEqualTo(
+                originalDevicePolicyRestrictions);
     }
 
     @Test
@@ -646,9 +771,7 @@ public class SecureLockDeviceServiceTest {
                 false /* otherUserHasStrongBiometricEnrollment */
         );
         biometricStateListener.onEnrollmentsChanged(
-                TEST_USER_ID,
-                1 /* sensorId */,
-                true /* hasEnrollments */
+                TEST_USER_ID, 1 /* sensorId */, true /* hasEnrollments */
         );
 
         // Verify user that enrolled is notified
@@ -693,9 +816,7 @@ public class SecureLockDeviceServiceTest {
                 false /* otherUserHasStrongBiometricEnrollment */
         );
         biometricStateListener.onEnrollmentsChanged(
-                TEST_USER_ID,
-                1 /* sensorId */,
-                false /* hasEnrollments */
+                TEST_USER_ID, 1 /* sensorId */, false /* hasEnrollments */
         );
 
         // Verify user that enrolled is notified
@@ -707,6 +828,14 @@ public class SecureLockDeviceServiceTest {
         // Verify other user is not notified
         verify(mSecureLockDeviceStatusOtherListener, never())
                 .onSecureLockDeviceAvailableStatusChanged(anyInt());
+    }
+
+    private String readFileContents(File file) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        fis.close();
+        return new String(data, StandardCharsets.UTF_8);
     }
 
     private void setupBiometricState(
@@ -762,15 +891,22 @@ public class SecureLockDeviceServiceTest {
         return mSecureLockDeviceService.disableSecureLockDevice(user, mDisableParams);
     }
 
+    private Bundle setToBundle(Set<String> restrictions) {
+        Bundle bundle = new Bundle();
+        for (String restriction : restrictions) {
+            bundle.putBoolean(restriction, true);
+        }
+        return bundle;
+    }
+
     private class SecureLockDeviceContext extends TestableContext {
-        @Rule public final TestableContext mUserContext = new TestableContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), null);
-        @Rule public final TestableContext mOtherUserContext = new TestableContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), null);
+        private final Context mContext =
+                InstrumentationRegistry.getInstrumentation().getTargetContext();
+        @Rule public final TestableContext mUserContext = new TestableContext(mContext, null);
+        @Rule public final TestableContext mOtherUserContext = new TestableContext(mContext, null);
         private final ArrayMap<UserHandle, TestableContext> mMockUserContexts = new ArrayMap<>();
 
-        SecureLockDeviceContext(Context baseContext, UserHandle primaryUser,
-                UserHandle otherUser) {
+        SecureLockDeviceContext(Context baseContext, UserHandle primaryUser, UserHandle otherUser) {
             super(baseContext);
             mMockUserContexts.put(primaryUser, mUserContext);
             mMockUserContexts.put(otherUser, mOtherUserContext);

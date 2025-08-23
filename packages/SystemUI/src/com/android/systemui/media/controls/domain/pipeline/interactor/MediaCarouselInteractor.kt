@@ -21,7 +21,6 @@ import android.media.MediaDescription
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.service.notification.StatusBarNotification
-import com.android.internal.logging.InstanceId
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -30,7 +29,6 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
-import com.android.systemui.media.controls.data.repository.MediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.MediaDataCombineLatest
 import com.android.systemui.media.controls.domain.pipeline.MediaDataFilterImpl
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
@@ -47,7 +45,6 @@ import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -91,15 +88,6 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
-
-    /** The current list for user media instances */
-    val currentMedia =
-        if (!MediaControlsInComposeFlag.isEnabled) {
-            (mediaPipelineRepository as MediaFilterRepository).currentMedia
-        } else {
-            // TODO(b/397989775) remove, not used with media_controls_in_compose
-            MutableStateFlow(mutableListOf())
-        }
 
     val allowMediaOnLockscreen: StateFlow<Boolean> =
         mediaPipelineRepository.allowMediaPlayerOnLockscreen
@@ -205,10 +193,6 @@ constructor(
         return mediaDataProcessor.dismissMediaData(key, delay, userInitiated)
     }
 
-    fun removeMediaControl(instanceId: InstanceId, delay: Long) {
-        mediaDataProcessor.dismissMediaData(instanceId, delay, userInitiated = false)
-    }
-
     override fun onNotificationRemoved(key: String) {
         mediaDataProcessor.onNotificationRemoved(key)
     }
@@ -224,12 +208,6 @@ constructor(
     override fun hasActiveMedia() = mediaPipelineRepository.hasActiveMedia()
 
     override fun hasAnyMedia() = mediaPipelineRepository.hasAnyMedia()
-
-    fun reorderMedia() {
-        if (!MediaControlsInComposeFlag.isEnabled) {
-            (mediaPipelineRepository as MediaFilterRepository).setOrderedMedia()
-        }
-    }
 
     /** Add a listener for internal events. */
     private fun addInternalListener(listener: MediaDataManager.Listener) =

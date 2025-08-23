@@ -33,7 +33,7 @@ parcelable CompatibilityChangeInfo;
  *
  * <p>Note: for app processes please use {@code android.compat.Compatibility} API.
  *
- * {@hide}
+ * @hide
  */
 interface IPlatformCompat {
 

@@ -115,12 +115,6 @@ constructor(
         coroutineScope {
             launch { hydrator.activate() }
 
-            launch(context = mainContext) {
-                shadeInteractor.isAnyExpanded
-                    .filter { it }
-                    .collect { headsUpNotificationInteractor.unpinAll(true) }
-            }
-
             launch {
                 sceneInteractor.transitionState
                     .filter { it is ObservableTransitionState.Idle }

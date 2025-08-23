@@ -2047,12 +2047,9 @@
     <string name="maximize_button_text" msgid="4258922519914732645">"အများဆုံး လုပ်ပေးရန်"</string>
     <string name="close_button_text" msgid="10603510034455258">"ပိတ်ရန်"</string>
     <string name="notification_messaging_title_template" msgid="772857526770251989">"<xliff:g id="CONVERSATION_TITLE">%1$s</xliff:g>− <xliff:g id="SENDER_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for notification_metric_label_unit (309618413505128451) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_unit_separator (5631839566551764472) -->
-    <skip />
-    <!-- no translation found for notification_metric_label_separator (8416027475779515033) -->
-    <skip />
+    <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
+    <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)-"</string>
+    <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>-"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"ဖုန်းကိုင်ရန်"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"ဗီဒီယို"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"ငြင်းပယ်ရန်"</string>
@@ -2580,25 +2577,17 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"အပလီကေးရှင်းများ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"သင့်လက်ဗွေများကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"လုံခြုံရေးနှင့် ကိုယ်ရေးအချက်အလက်လုံခြုံမှု"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (3711633462195368964) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (2426356396215833585) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (3936428118409384816) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_data_notification_text (8392199274984083972) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_notification_text (6563939109526112446) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_charge_data_notification_text (411509882563364946) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"စခရင်ဖွင့်ပြီး USB ပြန်လည်ချိတ်ဆက်ပါ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"USB ချိတ်ဆက်ရန်အတွက် စခရင်ဖွင့်ပါ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"USB ချိတ်ဆက်နိုင်မှု စတင်ရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"USB ချိတ်ဆက်နိုင်မှု စတင်ရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"အမြန်အားသွင်းရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"အမြန်အားသွင်းရန် (သို့) USB ချိတ်ဆက်နိုင်မှု စတင်ရန်အတွက် ‘အဆင့်မြင့်ကာကွယ်ရေး’ သည် သင့်စခရင်ကို ဖွင့်ထားရန်လိုအပ်သည်"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"အသံတိတ်ရန်"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"အကြောင်းကြားချက်များ အသံတိတ်ထားသည်"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (8394777105856033342) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"သင့်စက်ပစ္စည်းကို ပြန်မစမချင်း ‘အဆင့်မြင့်ကာကွယ်ရေး’ USB အကြောင်းကြားချက်များကို ရရှိမည်မဟုတ်ပါ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"သံသယဖြစ်ဖွယ် USB လုပ်ဆောင်ချက်"</string>
-    <!-- no translation found for usb_apm_usb_suspicious_activity_notification_text (5772698072220844779) -->
-    <skip />
+    <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"USB ဒေတာအချက်ပြမှုကို ပိတ်လိုက်ပါပြီ"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"လော့ခ်ဖွင့်ရာတွင် ပိုအဆင်ပြေစေရန်အတွက် အကြံပြုချက်များကြည့်ရန် တို့ပါ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"မှိတ်တုတ်မလင်းပါနှင့်"</string>

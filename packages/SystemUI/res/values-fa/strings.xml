@@ -146,7 +146,17 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ضبط مجدد"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ویرایش"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"حذف"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"گرفتن اسکرین شات از کل صفحه"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"گرفتن اسکرین شات از ناحیه انتخاب شده"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
@@ -214,8 +224,8 @@
     <string name="accessibility_qr_code_scanner_button" msgid="7521277927692910795">"کدخوان پاسخ‌سریع"</string>
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"قفل‌نشده"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"دستگاه قفل است"</string>
-    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"دستگاه را تأیید و قفل آن را باز کنید"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"قفل‌گشایی با چهره را دوباره امتحان کنید"</string>
+    <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"تأیید دستگاه و باز کردن قفل"</string>
+    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"امتحان مجدد «قفل‌گشایی با چهره»"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"درحال اسکن کردن چهره"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"ارسال"</string>
     <string name="cancel" msgid="1089011503403416730">"لغو"</string>
@@ -411,8 +421,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"دستگاه بدون نام"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"دستگاهی موجود نیست"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"‏اتصال Wi-Fi یا اترنت وجود ندارد"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"قطع اتصال"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"روشنایی"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"وارونگی رنگ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"تصحیح رنگ"</string>
@@ -422,8 +431,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"بستن"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"متصل"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"در حال اتصال..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"‏درحال اسکن برای Wi-Fi..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"نقطه اتصال"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"روشن کردن…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"صرفه‌جویی داده روشن است"</string>
@@ -554,7 +562,7 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"برای باز کردن، انگشتتان را تند به‌بالا بکشید"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"برای باز کردن، نماد قفل‌گشایی را فشار دهید"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"قفلْ با چهره باز شد. برای باز کردن، تند به‌بالا بکشید."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"قفلْ با چهره باز شد. برای ادامه، تایید را فشار دهید."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"قفلْ با چهره باز شد. برای ادامه، تأیید را فشار دهید."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"قفلْ با چهره باز شد. برای باز کردن، نماد قفل‌گشایی را فشار دهید."</string>
     <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"قفلْ با چهره باز شد. برای باز کردن، فشار دهید."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"چهره شناسایی شد. برای باز کردن، فشار دهید."</string>
@@ -1194,12 +1202,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"برنامه‌هایی که در پس‌زمینه اجرا می‌شوند"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"برای جزئیات مربوط به مصرف باتری و داده، تک‌ضرب بزنید"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"داده تلفن همراه خاموش شود؟"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"داده تلفن همراه را روشن می کنید؟"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"استفاده از داده تلفن همراه ممکن است بسته به پلان خدمت تلفن همراه شما، هزینه‌هایی را در پی داشته باشد."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"روشن کردن"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"‏نمی‌توانید ازطریق <xliff:g id="CARRIER">%s</xliff:g> به داده یا اینترنت دسترسی داشته باشید. اینترنت فقط ازطریق Wi-Fi در دسترس خواهد بود."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"شرکت مخابراتی شما"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"می‌خواهید به <xliff:g id="CARRIER">%s</xliff:g> برگردید؟"</string>
@@ -1479,7 +1484,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"تمام"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"کپی شد"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"از <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"بستن نوشتار کپی‌شده"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"ویرایش نوشتار کپی‌شده"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"ویرایش تصویر کپی‌شده"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"ارسال به دستگاهی در اطراف"</string>

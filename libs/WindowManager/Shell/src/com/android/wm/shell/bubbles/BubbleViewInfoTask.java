@@ -227,6 +227,9 @@ public class BubbleViewInfoTask {
         if (mCallback != null) {
             mCallback.onBubbleViewsReady(mBubble);
         }
+        if (mBubble.isConvertingToBar()) {
+            mBubble.getPreparingTransition().continueExpand();
+        }
     }
 
     private boolean verifyState() {

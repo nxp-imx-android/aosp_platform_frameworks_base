@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"अ‍ॅप अपडेट अनइंस्टॉल करायची आहेत का?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"अ‍ॅप अपडेट सर्व वापरकर्त्यांसाठी अनइंस्टॉल करायची आहेत का?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"हे ॲप सर्व वापरकर्त्यांसाठी अनइंस्टॉल करायचे आहे का?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"हे अ‍ॅप \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" या वापरकर्त्यासाठी अनइंस्टॉल करायचे आहे का?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"अ‍ॅप आढळले नाही"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"हे अ‍ॅप अनइंस्टॉल करू शकत नाही"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"अ‍ॅप इंस्टॉल केलेले नाही"</string>
     <string name="title_archive" msgid="2876455228073419830">"हे अ‍ॅप संग्रहित करायचे आहे का?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"हे ॲप सर्व वापरकर्त्यांसाठी संग्रहित करायचे आहे का?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"हे अ‍ॅप \"<xliff:g id="USER_NAME">%1$s</xliff:g>\" या वापरकर्त्यासाठी संग्रहित करायचे आहे का?"</string>
     <string name="title_restore" msgid="8934911753892124574">"हे अ‍ॅप रिस्टोअर करायचे आहे का?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"कृती आवश्यक"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"पुरेसे स्टोरेज नाही"</string>

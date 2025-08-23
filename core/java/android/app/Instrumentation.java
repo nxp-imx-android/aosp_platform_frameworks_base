@@ -1965,7 +1965,7 @@ public class Instrumentation {
      * @see Activity#startActivity(Intent)
      * @see Activity#startActivityForResult(Intent, int)
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public ActivityResult execStartActivity(
@@ -2030,7 +2030,7 @@ public class Instrumentation {
      * {@link ActivityMonitor} objects only match against the first activity in
      * the array.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public void execStartActivities(Context who, IBinder contextThread,
@@ -2049,7 +2049,7 @@ public class Instrumentation {
      *         {@link ActivityManager#START_SUCCESS} etc. indicating whether the launch was
      *         successful.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public int execStartActivitiesAsUser(Context who, IBinder contextThread,
@@ -2141,7 +2141,7 @@ public class Instrumentation {
      * @see Activity#startActivity(Intent)
      * @see Activity#startActivityForResult(Intent, int)
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public ActivityResult execStartActivity(
@@ -2221,7 +2221,7 @@ public class Instrumentation {
      * @see Activity#startActivity(Intent)
      * @see Activity#startActivityForResult(Intent, int)
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public ActivityResult execStartActivity(

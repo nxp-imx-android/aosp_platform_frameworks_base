@@ -5780,13 +5780,13 @@ public class ActivityManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_OR_STOPPED = 1 << 0;
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_AND_LOCKED = 1 << 1;
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_AND_UNLOCKED = 1 << 2;
-    /** {@hide} */
+    /** @hide */
     public static final int FLAG_AND_UNLOCKING_OR_UNLOCKED = 1 << 3;
 
     /**
@@ -5807,7 +5807,7 @@ public class ActivityManager {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     public boolean isVrModePackageEnabled(ComponentName component) {
         try {
             return getService().isVrModePackageEnabled(component);

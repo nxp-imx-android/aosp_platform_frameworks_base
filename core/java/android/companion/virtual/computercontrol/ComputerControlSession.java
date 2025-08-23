@@ -20,11 +20,25 @@ import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.graphics.PixelFormat;
+import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Binder;
 import android.os.RemoteException;
+import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.Surface;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -43,13 +57,17 @@ import java.util.concurrent.Executor;
  */
 public final class ComputerControlSession implements AutoCloseable {
 
+    /** @hide */
+    public static final String ACTION_REQUEST_ACCESS =
+            "android.companion.virtual.computercontrol.action.REQUEST_ACCESS";
+
     /**
      * Error code indicating that a new session cannot be created because the maximum number of
      * allowed concurrent sessions has been reached.
      *
      * <p>This is a transient error and the session creation request can be retried later.</p>
      */
-    public static final int ERROR_SESSION_LIMIT_REACHED = -1;
+    public static final int ERROR_SESSION_LIMIT_REACHED = 1;
 
     /**
      * Error code indicating that a new session cannot be created because the lock screen (also
@@ -59,22 +77,70 @@ public final class ComputerControlSession implements AutoCloseable {
      *
      * @see android.app.KeyguardManager#isKeyguardLocked()
      */
-    public static final int ERROR_KEYGUARD_LOCKED = -2;
+    public static final int ERROR_KEYGUARD_LOCKED = 2;
+
+    /**
+     * Error code indicating that the user did not approve the creation of a new session.
+     */
+    public static final int ERROR_PERMISSION_DENIED = 3;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "ERROR_", value = {
             ERROR_SESSION_LIMIT_REACHED,
-            ERROR_KEYGUARD_LOCKED})
+            ERROR_KEYGUARD_LOCKED,
+            ERROR_PERMISSION_DENIED})
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCreationError {
     }
 
+    @NonNull
     private final IComputerControlSession mSession;
+    // TODO(b/439774796): Make this non-nullable.
+    @Nullable
+    private final ImageReader mImageReader;
 
     /** @hide */
-    public ComputerControlSession(@NonNull IComputerControlSession session) {
+    public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
+            @NonNull IComputerControlSession session) {
+        this(displayId, displayToken, session, DisplayManagerGlobal.getInstance());
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
+            @NonNull IComputerControlSession session,
+            @NonNull DisplayManagerGlobal displayManagerGlobal) {
         mSession = Objects.requireNonNull(session);
+
+        // TODO(b/439774796): Require a valid display id.
+        if (displayId != Display.INVALID_DISPLAY) {
+            final Display display = displayManagerGlobal.getRealDisplay(displayId);
+            Objects.requireNonNull(display);
+            final DisplayInfo displayInfo = new DisplayInfo();
+            display.getDisplayInfo(displayInfo);
+
+            mImageReader = ImageReader.newInstance(displayInfo.logicalWidth,
+                    displayInfo.logicalHeight,
+                    PixelFormat.RGBA_8888, /* maxImages= */ 2);
+            displayManagerGlobal.setVirtualDisplaySurface(displayToken, mImageReader.getSurface());
+        } else {
+            mImageReader = null;
+        }
+    }
+
+    /**
+     * Screenshot the current display content.
+     *
+     * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any
+     * previously acquired images should be released before attempting to acquire new ones.</p>
+     *
+     * @return A screenshot of the current display content, or {@code null} if no screenshot is
+     *   currently available.
+     */
+    @Nullable
+    public Image getScreenshot() {
+        return mImageReader == null ? null : mImageReader.acquireLatestImage();
     }
 
     /** Returns the ID of the single trusted virtual display for this session. */
@@ -137,6 +203,19 @@ public final class ComputerControlSession implements AutoCloseable {
     /** Callback for computer control session events. */
     public interface Callback {
 
+        /**
+         * Called when the session request needs to approved by the user.
+         *
+         * <p>Applications should launch the {@link Activity} "encapsulated" in {@code intentSender}
+         * {@link IntentSender} object by calling
+         * {@link Activity#startIntentSenderForResult(IntentSender, int, Intent, int, int, int)} or
+         * {@link Context#startIntentSender(IntentSender, Intent, int, int, int)}
+         *
+         * @param intentSender an {@link IntentSender} which applications should use to launch
+         *   the UI for the user to allow the creation of the session.
+         */
+        void onSessionPending(@NonNull IntentSender intentSender);
+
         /** Called when the session has been successfully created. */
         void onSessionCreated(@NonNull ComputerControlSession session);
 
@@ -166,10 +245,18 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         @Override
-        public void onSessionCreated(IComputerControlSession session) {
+        public void onSessionPending(@NonNull PendingIntent pendingIntent) {
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() ->
-                            mCallback.onSessionCreated(new ComputerControlSession(session))));
+                            mCallback.onSessionPending(pendingIntent.getIntentSender())));
+        }
+
+        @Override
+        public void onSessionCreated(int displayId, IVirtualDisplayCallback displayToken,
+                IComputerControlSession session) {
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mCallback.onSessionCreated(
+                            new ComputerControlSession(displayId, displayToken, session))));
         }
 
         @Override

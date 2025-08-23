@@ -33,7 +33,9 @@ import java.util.function.Supplier;
 
 /**
  * Utility class to read the flags used in the display manager server.
+ * @deprecated use {@link Flags} directly, see b/440342129
  */
+@Deprecated
 public class DisplayManagerFlags {
     private static final String TAG = "DisplayManagerFlags";
 
@@ -257,6 +259,11 @@ public class DisplayManagerFlags {
     private final FlagState mIsMinmodeCapBrightnessEnabled = new FlagState(
             Flags.FLAG_MINMODE_CAP_BRIGHTNESS_ENABLED,
             Flags::minmodeCapBrightnessEnabled
+    );
+
+    private final FlagState mSyntheticModesV2 = new FlagState(
+            Flags.FLAG_ENABLE_SYNTHETIC_MODES_V2,
+            Flags::enableSyntheticModesV2
     );
 
     private final FlagState mIsSingleAppEventForModeAndFrameRateOverrideEnabled = new FlagState(
@@ -521,6 +528,10 @@ public class DisplayManagerFlags {
         return mIsMinmodeCapBrightnessEnabled.isEnabled();
     }
 
+    public boolean isSyntheticModesV2Enabled() {
+        return mSyntheticModesV2.isEnabled();
+    }
+
     public boolean isSingleAppEventForModeAndFrameRateOverrideEnabled() {
         return mIsSingleAppEventForModeAndFrameRateOverrideEnabled.isEnabled();
     }
@@ -586,6 +597,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
+        pw.println(" " + mSyntheticModesV2);
         pw.println(" " + mIsSingleAppEventForModeAndFrameRateOverrideEnabled);
         pw.println(" " + mIsDisplayMirrorInLockTaskModeEnabled);
         pw.println(" " + mIsSizeOverrideForExternalDisplaysEnabled);

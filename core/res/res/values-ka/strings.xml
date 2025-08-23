@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"შეეხეთ, რომ მიმოიხილოთ მინიშნებები თქვენი განბლოკვის გამოცდილების გასაუმჯობესებლად"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"არ იციმციმოს"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ტელევიზორის გამოსართავად ხანგრძლივად დააჭირეთ ჩართვის ღილაკს"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"სისტემის რესურსების გაფრთხილებები"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"რესურსების გადაჭარბებული გამოყენება"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"აპი „<xliff:g id="APP_NAME">%1$s</xliff:g> იყენებს ზედმეტად ბევრ რესურსს“"</string>
 </resources>

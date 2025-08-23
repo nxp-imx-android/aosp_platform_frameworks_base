@@ -139,7 +139,11 @@ constructor(
     @Style.Type private var themeStyle: Int? = null
 
     init {
+        clockController.isPreview = true
+        clockController.registerListeners()
+        disposables += DisposableHandle { clockController.unregisterListeners() }
         clockController.setFallbackWeatherData(WeatherData.getPlaceholderWeatherData())
+
         quickAffordancesCombinedViewModel.enablePreviewMode(
             initiallySelectedSlotId =
                 previewViewModel.request.getString(KEY_INITIALLY_SELECTED_SLOT_ID)

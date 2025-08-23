@@ -24,7 +24,7 @@ import android.telecom.CallScreeningService;
  *
  * @see android.telecom.CallScreeningService
  *
- * {@hide}
+ * @hide
  */
 oneway interface ICallScreeningAdapter {
     void onScreeningResponse(String callId, in ComponentName componentName,

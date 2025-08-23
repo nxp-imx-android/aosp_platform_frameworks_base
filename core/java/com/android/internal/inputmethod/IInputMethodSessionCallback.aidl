@@ -21,7 +21,7 @@ import com.android.internal.inputmethod.IInputMethodSession;
 /**
  * Helper interface for IInputMethod to allow the input method to notify the client when a new
  * session has been created.
- * {@hide}
+ * @hide
  */
 
 oneway interface IInputMethodSessionCallback {

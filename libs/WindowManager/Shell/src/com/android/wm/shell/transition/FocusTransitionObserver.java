@@ -41,6 +41,8 @@ import android.window.TransitionInfo;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
 import com.android.wm.shell.shared.TransitionUtil.LeafTaskFilter;
+import com.android.wm.shell.sysui.ShellCommandHandler;
+import com.android.wm.shell.sysui.ShellInit;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -57,6 +59,8 @@ import java.util.concurrent.Executor;
 public class FocusTransitionObserver {
     private static final String TAG = FocusTransitionObserver.class.getSimpleName();
 
+    private final ShellCommandHandler mShellCommandHandler;
+
     private IFocusTransitionListener mRemoteListener;
     private final Map<FocusTransitionListener, Executor> mLocalListeners =
             new HashMap<>();
@@ -66,7 +70,16 @@ public class FocusTransitionObserver {
 
     private final ArraySet<RunningTaskInfo> mTmpTasksToBeNotified = new ArraySet<>();
 
-    public FocusTransitionObserver() {}
+    public FocusTransitionObserver(
+            @NonNull ShellInit shellInit,
+            @NonNull ShellCommandHandler shellCommandHandler) {
+        mShellCommandHandler = shellCommandHandler;
+        shellInit.addInitCallback(this::onInit, this);
+    }
+
+    private void onInit() {
+        mShellCommandHandler.addDumpCallback(this::dump, this);
+    }
 
     /**
      * Update display/window focus state from the given transition info and notifies changes if any.

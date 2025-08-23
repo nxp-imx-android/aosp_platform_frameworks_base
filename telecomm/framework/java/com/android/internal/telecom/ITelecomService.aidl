@@ -31,7 +31,7 @@ import com.android.internal.telecom.ICallEventCallback;
 /**
  * Interface used to interact with Telecom. Mostly this is used by TelephonyManager for passing
  * commands that were previously handled by ITelephony.
- * {@hide}
+ * @hide
  */
 interface ITelecomService {
     /**

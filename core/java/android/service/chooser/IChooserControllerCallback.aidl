@@ -19,7 +19,7 @@ package android.service.chooser;
 import android.graphics.Rect;
 import android.service.chooser.IChooserController;
 
-/** {@hide} */
+/** @hide */
 interface IChooserControllerCallback {
     oneway void registerChooserController(in IChooserController updater);
     oneway void onBoundsChanged(in Rect size);

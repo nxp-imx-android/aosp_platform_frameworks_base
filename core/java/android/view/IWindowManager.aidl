@@ -86,7 +86,7 @@ import android.window.WindowContextInfo;
 /**
  * System private interface to the window manager.
  *
- * {@hide}
+ * @hide
  */
 interface IWindowManager
 {

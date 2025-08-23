@@ -32,7 +32,7 @@ import android.os.UserHandle;
 
 import android.graphics.Bitmap;
 
-/** {@hide} */
+/** @hide */
 interface IPackageInstaller {
     int createSession(in PackageInstaller.SessionParams params, String installerPackageName,
             String installerAttributionTag, int userId);

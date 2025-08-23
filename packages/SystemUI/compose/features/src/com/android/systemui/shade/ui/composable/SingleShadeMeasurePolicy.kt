@@ -71,7 +71,11 @@ class SingleShadeMeasurePolicy(
                 mediaAndQqsPlaceable = mediaAndQqsPlaceable,
                 insetsTop = insetsTop,
             )
-        onNotificationsTopChanged(notificationsTop)
+        // Don't send position updates during the lookahead pass, as it can report a value  that is
+        // not yet reflected in the UI.
+        if (!isLookingAhead) {
+            onNotificationsTopChanged(notificationsTop)
+        }
 
         return layout(constraints.maxWidth, constraints.maxHeight) {
             shadeHeaderPlaceable?.placeRelative(x = insetsLeft, y = insetsTop)

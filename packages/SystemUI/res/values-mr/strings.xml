@@ -146,10 +146,19 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"पुन्हा घ्या"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"संपादित करा"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"हटवा"</string>
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"संपूर्ण स्क्रीनचा स्क्रीनशॉट घ्या"</string>
-    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
     <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"संपूर्ण स्क्रीनचा स्क्रीनशॉट घ्या"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"निवडलेला भाग रेकॉर्ड करा"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"स्क्रीनशॉट"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकॉर्ड करा"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"शेअर करा"</string>
@@ -390,7 +399,7 @@
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"श्रवणयंत्रे"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"सुरू करत आहे…"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"ब्राइटनेस टॉप ॲपद्वारे नियंत्रित केला जात असल्यामुळे ॲडजस्ट करू शकत नाही"</string>
-    <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटो-रोटेट"</string>
+    <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ऑटोमॅटिक रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ऑटोमॅटिक रोटेट स्क्रीन"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"स्थान"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"स्क्रीन सेव्हर"</string>
@@ -822,7 +831,7 @@
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"व्हायब्रेट करा"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> वर प्ले करत आहे"</string>
     <string name="media_output_title_without_playing" msgid="3825663683169305013">"ऑडिओ यावर प्ले होईल"</string>
-    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"यावर कॉल करत आहे"</string>
+    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"कॉल करत आहे"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"सिस्टीम UI ट्युनर"</string>
     <string name="status_bar" msgid="4357390266055077437">"स्टेटस बार"</string>
     <string name="demo_mode" msgid="263484519766901593">"सिस्टीम UI डेमो मोड"</string>
@@ -1474,7 +1483,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"पूर्ण झाले"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"कॉपी केले"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"<xliff:g id="APPNAME">%1$s</xliff:g> वरून"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"कॉपी केलेला मजकूर डिसमिस करा"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"कॉपी केलेला मजकूर संपादित करा"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"कॉपी केलेली इमेज संपादित करा"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"जवळपासच्या डिव्हाइसवर पाठवा"</string>
@@ -1687,7 +1695,7 @@
     <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"आणखी डिम शॉर्टकट काढून टाकले आहेत"</string>
     <string name="qs_edit_mode_category_connectivity" msgid="4559726936546032672">"कनेक्टिव्हिटी"</string>
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"अ‍ॅक्सेसिबिलिटी"</string>
-    <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"उपयुक्तता"</string>
+    <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"युटिलिटी"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"गोपनीयता"</string>
     <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"सिस्टीम ॲप्सवरून"</string>
     <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"तुम्ही इंस्टॉल केलेल्या ॲप्सवरून"</string>

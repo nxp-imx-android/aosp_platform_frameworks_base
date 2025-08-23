@@ -510,7 +510,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     /**
      * Value for {@link #privateFlags}: true if the application is hidden via restrictions and for
      * most purposes is considered as not installed.
-     * {@hide}
+     * @hide
      */
     public static final int PRIVATE_FLAG_HIDDEN = 1<<0;
 
@@ -523,7 +523,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * android.R.styleable#AndroidManifestApplication_cantSaveState
      * attribute of the &lt;application&gt; tag.
      *
-     * {@hide}
+     * @hide
      */
     public static final int PRIVATE_FLAG_CANT_SAVE_STATE = 1<<1;
 
@@ -531,7 +531,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * Value for {@link #privateFlags}: set to {@code true} if the application
      * is permitted to hold privileged permissions.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     @TestApi
@@ -541,7 +541,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * Value for {@link #privateFlags}: {@code true} if the application has any IntentFiler
      * with some data URI using HTTP or HTTPS with an associated VIEW action.
      *
-     * {@hide}
+     * @hide
      */
     public static final int PRIVATE_FLAG_HAS_DOMAIN_URLS = 1<<4;
 
@@ -966,10 +966,10 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      */
     public UUID storageUuid;
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public String scanSourceDir;
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage
     public String scanPublicSourceDir;
 
@@ -1040,7 +1040,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * this application uses. This field is only used if there are extra resource
      * packages, otherwise it is null.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public String[] resourceDirs;
@@ -1049,7 +1049,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * Contains the contents of {@link #resourceDirs} and along with paths for overlays that may or
      * may not be APK packages.
      *
-     * {@hide}
+     * @hide
      */
     public String[] overlayPaths;
 
@@ -1058,7 +1058,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * the mac_permissions.xml policy construct. This value is used for setting an SELinux security
      * context on the process as well as its data directory.
      *
-     * {@hide}
+     * @hide
      */
     public String seInfo;
 
@@ -1072,7 +1072,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * work than necessary and these values should only be set once. When that
      * happens, we can merge the per-user value with the seInfo state above.
      *
-     * {@hide}
+     * @hide
      */
     public String seInfoUser;
 
@@ -1092,7 +1092,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      *
      * NOTE: the list also contains the result of {@link #getOptionalSharedLibraryInfos}.
      *
-     * {@hide}
+     * @hide
      */
     @Nullable
     public List<SharedLibraryInfo> sharedLibraryInfos;
@@ -1181,7 +1181,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      *
      * If non-null, the application will always be launched with this ABI.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public String primaryCpuAbi;
@@ -1191,7 +1191,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * installs. The application itself never uses this ABI, but other applications that
      * use its code might.
      *
-     * {@hide}
+     * @hide
      */
     @UnsupportedAppUsage
     public String secondaryCpuAbi;
@@ -1326,7 +1326,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      */
     public @Category int category = CATEGORY_UNDEFINED;
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = { "CATEGORY_" }, value = {
             CATEGORY_UNDEFINED,
             CATEGORY_GAME,
@@ -1526,7 +1526,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     private @PageSizeAppCompatFlags int mPageSizeAppCompatFlags =
             ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED;
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(
             prefix = {"PAGE_SIZE_APP_COMPAT_FLAG_"},
             value = {
@@ -1887,7 +1887,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         super.dumpBack(pw, prefix);
     }
 
-    /** {@hide} */
+    /** @hide */
     public void dumpDebug(ProtoOutputStream proto, long fieldId, int dumpFlags) {
         long token = proto.start(fieldId);
         super.dumpDebug(proto, ApplicationInfoProto.PACKAGE, dumpFlags);
@@ -2021,7 +2021,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         return (flags & FLAG_SUPPORTS_RTL) == FLAG_SUPPORTS_RTL;
     }
 
-    /** {@hide} */
+    /** @hide */
     public boolean hasCode() {
         return (flags & FLAG_HAS_CODE) != 0;
     }
@@ -2392,7 +2392,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
                  FLAG_SUPPORTS_SCREEN_DENSITIES | FLAG_SUPPORTS_XLARGE_SCREENS)) == 0;
     }
 
-    /** {@hide} */
+    /** @hide */
     @android.ravenwood.annotation.RavenwoodThrow(blockedBy = Environment.class)
     public void initForUser(int userId) {
         uid = UserHandle.getUid(userId, UserHandle.getAppId(uid));
@@ -2872,23 +2872,23 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         return output.toArray(new String[output.size()]);
     }
 
-    /** {@hide} */ public void setCodePath(String codePath) { scanSourceDir = codePath; }
-    /** {@hide} */ public void setBaseCodePath(String baseCodePath) { sourceDir = baseCodePath; }
-    /** {@hide} */ public void setSplitCodePaths(String[] splitCodePaths) { splitSourceDirs = splitCodePaths; }
-    /** {@hide} */ public void setResourcePath(String resourcePath) { scanPublicSourceDir = resourcePath; }
-    /** {@hide} */ public void setBaseResourcePath(String baseResourcePath) { publicSourceDir = baseResourcePath; }
-    /** {@hide} */ public void setSplitResourcePaths(String[] splitResourcePaths) { splitPublicSourceDirs = splitResourcePaths; }
-    /** {@hide} */ public void setGwpAsanMode(@GwpAsanMode int value) { gwpAsanMode = value; }
-    /** {@hide} */ public void setMemtagMode(@MemtagMode int value) { memtagMode = value; }
-    /** {@hide} */ public void setNativeHeapZeroInitialized(@NativeHeapZeroInitialized int value) {
+    /** @hide */ public void setCodePath(String codePath) { scanSourceDir = codePath; }
+    /** @hide */ public void setBaseCodePath(String baseCodePath) { sourceDir = baseCodePath; }
+    /** @hide */ public void setSplitCodePaths(String[] splitCodePaths) { splitSourceDirs = splitCodePaths; }
+    /** @hide */ public void setResourcePath(String resourcePath) { scanPublicSourceDir = resourcePath; }
+    /** @hide */ public void setBaseResourcePath(String baseResourcePath) { publicSourceDir = baseResourcePath; }
+    /** @hide */ public void setSplitResourcePaths(String[] splitResourcePaths) { splitPublicSourceDirs = splitResourcePaths; }
+    /** @hide */ public void setGwpAsanMode(@GwpAsanMode int value) { gwpAsanMode = value; }
+    /** @hide */ public void setMemtagMode(@MemtagMode int value) { memtagMode = value; }
+    /** @hide */ public void setNativeHeapZeroInitialized(@NativeHeapZeroInitialized int value) {
         nativeHeapZeroInitialized = value;
     }
-    /** {@hide} */
+    /** @hide */
     public void setRequestRawExternalStorageAccess(@Nullable Boolean value) {
         requestRawExternalStorageAccess = value;
     }
 
-    /** {@hide} */
+    /** @hide */
     public void setPageSizeAppCompatFlags(@PageSizeAppCompatFlags int value) {
         mPageSizeAppCompatFlags |= value;
     }
@@ -2896,7 +2896,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     /**
      * Replaces {@link #mAppClassNamesByProcess}. This takes over the ownership of the passed map.
      * Do not modify the argument at the callsite.
-     * {@hide}
+     * @hide
      */
     public void setAppClassNamesByProcess(@Nullable ArrayMap<String, String> value) {
         if (ArrayUtils.size(value) == 0) {
@@ -2906,16 +2906,16 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         }
     }
 
-    /** {@hide} */
+    /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public String getCodePath() { return scanSourceDir; }
-    /** {@hide} */ public String getBaseCodePath() { return sourceDir; }
-    /** {@hide} */ public String[] getSplitCodePaths() { return splitSourceDirs; }
-    /** {@hide} */ public String getResourcePath() { return scanPublicSourceDir; }
-    /** {@hide} */
+    /** @hide */ public String getBaseCodePath() { return sourceDir; }
+    /** @hide */ public String[] getSplitCodePaths() { return splitSourceDirs; }
+    /** @hide */ public String getResourcePath() { return scanPublicSourceDir; }
+    /** @hide */
     @UnsupportedAppUsage
     public String getBaseResourcePath() { return publicSourceDir; }
-    /** {@hide} */ public String[] getSplitResourcePaths() { return splitPublicSourceDirs; }
+    /** @hide */ public String[] getSplitResourcePaths() { return splitPublicSourceDirs; }
     @GwpAsanMode
     public int getGwpAsanMode() { return gwpAsanMode; }
 

@@ -16,7 +16,9 @@
 
 package com.android.wm.shell.bubbles;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
@@ -172,6 +174,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
         final WindowContainerToken token = new MockToken().token();
         taskInfo.token = token;
+        taskInfo.configuration.windowConfiguration.setActivityType(ACTIVITY_TYPE_STANDARD);
         when(taskViewTaskController.getTaskInfo()).thenReturn(taskInfo);
         when(taskView.getController()).thenReturn(taskViewTaskController);
         when(mBubble.getTaskView()).thenReturn(taskView);
@@ -189,7 +192,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
         when(mBubble.isApp()).thenReturn(true);
         when(mBubble.getIntent()).thenReturn(new Intent());
         when(mBubble.getUser()).thenReturn(new UserHandle(0));
-        return setupBubble(taskView, taskViewTaskController);
+        final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
+                taskView, taskViewTaskController);
+        when(mBubbleController.shouldBeAppBubble(taskInfo)).thenReturn(true);
+        return taskInfo;
     }
 
     private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo,
@@ -536,6 +542,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt)))
                 .thenReturn(transition);
 
+        bt.continueExpand();
         bt.continueConvert(mLayerView);
 
         verify(mTransitions)
@@ -609,6 +616,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt)))
                 .thenReturn(transition);
 
+        bt.continueExpand();
         bt.continueConvert(mLayerView);
 
         verify(mTransitions)
@@ -646,10 +654,28 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, mBubblePositioner);
 
         verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
+        bt.continueExpand();
 
         bt.continueConvert(mLayerView);
         // call continue convert again
         bt.continueConvert(mLayerView);
+
+        // verify we only started the transition once
+        verify(mTransitions, times(1))
+                .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
+    }
+
+    @Test
+    public void convertFloatingBubbleToBarBubble_mustContinueExpand() {
+        setupBubble();
+
+        final BubbleTransitions.FloatingToBarConversion bt =
+                mBubbleTransitions.new FloatingToBarConversion(mBubble, mBubblePositioner);
+        bt.continueConvert(mLayerView);
+
+        verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
+
+        bt.continueExpand();
 
         // verify we only started the transition once
         verify(mTransitions, times(1))
@@ -1052,5 +1078,49 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Now the queue should be empty
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
+    @Test
+    public void testGetEnterBubbleTask() {
+        final SurfaceControl leash = new SurfaceControl.Builder().setName("testLeash").build();
+        final ActivityManager.RunningTaskInfo taskInfo0 = setupAppBubble();
+        final ActivityManager.RunningTaskInfo taskInfo1 = setupAppBubble();
+
+        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        final TransitionInfo.Change openingBubble = new TransitionInfo.Change(
+                taskInfo0.token, leash);
+        openingBubble.setTaskInfo(taskInfo0);
+        openingBubble.setMode(TRANSIT_OPEN);
+        final TransitionInfo.Change closingBubble = new TransitionInfo.Change(
+                taskInfo1.token, leash);
+        closingBubble.setTaskInfo(taskInfo1);
+        closingBubble.setMode(TRANSIT_CLOSE);
+        info.addChange(closingBubble);
+        info.addChange(openingBubble);
+        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+
+        assertThat(mBubbleTransitions.getEnterBubbleTask(info)).isEqualTo(openingBubble);
+    }
+
+    @Test
+    public void testGetClosingBubbleTask() {
+        final SurfaceControl leash = new SurfaceControl.Builder().setName("testLeash").build();
+        final ActivityManager.RunningTaskInfo taskInfo0 = setupAppBubble();
+        final ActivityManager.RunningTaskInfo taskInfo1 = setupAppBubble();
+
+        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        final TransitionInfo.Change openingBubble = new TransitionInfo.Change(
+                taskInfo0.token, leash);
+        openingBubble.setTaskInfo(taskInfo0);
+        openingBubble.setMode(TRANSIT_OPEN);
+        final TransitionInfo.Change closingBubble = new TransitionInfo.Change(
+                taskInfo1.token, leash);
+        closingBubble.setTaskInfo(taskInfo1);
+        closingBubble.setMode(TRANSIT_CLOSE);
+        info.addChange(openingBubble);
+        info.addChange(closingBubble);
+        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+
+        assertThat(mBubbleTransitions.getClosingBubbleTask(info)).isEqualTo(closingBubble);
     }
 }

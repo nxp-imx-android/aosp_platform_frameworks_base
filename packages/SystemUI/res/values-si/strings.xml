@@ -146,27 +146,30 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"යළි ගන්න"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"සංස්කරණය කරන්න"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"මකන්න"</string>
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
+    <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"මුළු තිරයේම තිර රුවක් ගන්න"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"තෝරා ගත් ප්‍රදේශයේ තිර රුවක් ගන්න"</string>
     <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
     <skip />
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"තිර රුව"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"පටිගත කරන්න"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"බෙදා ගන්න"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"කවුළුවේ තිර රුවක් ගන්න"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"පටිගත කිරීමේ කවුළුව"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"තෝරා ගත් ප්‍රදේශයේ තිර රුවක් ගන්න"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"තෝරාගත් ප්‍රදේශය පටිගත කරන්න"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"මුළු තිරයේම තිර රුවක් ගන්න"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"සම්පූර්ණ තිරය පටිගත කරන්න"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"තිර ග්‍රහණ සැකසීම්"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"තිරය ​​බෙදා ගැනීම"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"අන්තර්ගතය බෙදා ගැනීම"</string>
@@ -411,8 +414,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"නම් නොකළ උපාංගය"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"උපාංග නොතිබේ"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi හෝ ඊතර්නෙට් සම්බන්ධතාවයක් නැත"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"විසන්ධි කරන්න"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"දීප්තිමත් බව"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"වර්ණ අපවර්තනය"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"වර්ණ නිවැරදි කිරීම"</string>
@@ -422,8 +424,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"වසන්න"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"සම්බන්ධිත"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"සම්බන්ධ වෙමින්..."</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Wi‑Fi සඳහා ස්කෑන් කරමින්..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"හොට්ස්පොට්"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ක්‍රියාවිරහිත කරමින්…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"දත්ත සුරැකුම ක්‍රියාත්මකයි"</string>
@@ -1138,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> යනු ඔබට ශබ්ද නඟා කථා කරන අයිතම ඇසීමට ඉඩ සලසන තිර කියවනයකි. එය තිරය බැලීමට අසීරු පුද්ගලයන් සඳහා ප්‍රයෝජනවත් විය හැක."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> ඔබේ උපාංගය හෑන්ඩ්ස්-ෆ්‍රී ලෙස පාලනය කිරීමට ඔබට ඉඩ සලසයි."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ක්‍රියාත්මක කරන්න"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> යතුරු පුවරු කෙටිමඟ ක්‍රියාත්මක කර ඇත"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"ක්‍රියා "<annotation id="action_key_icon">"නිරූපකය"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> යනු <xliff:g id="ID_3">^3</xliff:g> භාවිතා කිරීමට ඇති යතුරු පුවරු කෙටිමඟයි. අන්තර්ගතය විශාල කිරීම සඳහා තිරය ඉක්මනින් විශාලනය කිරීමට මෙය ඔබට ඉඩ දෙයි. විශාලනය සීරුමාරු කිරීමට ක්‍රියාව "<annotation id="action_key_icon">" නිරූපකය "</annotation>" + <xliff:g id="ID_4">^1</xliff:g> සහ \"+\" හෝ \"-\" ඔබන්න."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"කෙටිමඟ ක්‍රියාවිරහිත කරන්න"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ක්‍රියාත්මක කර තබන්න"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"අගුලු තිරය"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"වසා දමමින්…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"රැකවරණ පියවර බලන්න"</string>
@@ -1194,12 +1191,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"පසුබිමින් ධාවනය වන යෙදුම්"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"බැටරි හා දත්ත භාවිතය පිළිබඳව විස්තර සඳහා තට්ටු කරන්න"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"ජංගම දත්ත ක්‍රියාවිරහිත කරන්නද?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"ජංගම දත්ත ක්‍රියාත්මක කරන්න ද?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"ඔබේ ජංගම සේවා සැලැස්ම අනුව ජංගම දත්ත භාවිතා කිරීම සඳහා ගාස්තු අය කළ හැකිය."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ක්‍රියාත්මක කරන්න"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"ඔබට <xliff:g id="CARRIER">%s</xliff:g> හරහා දත්ත හෝ අන්තර්ජාලයට පිවිසීමේ හැකියාවක් නැත. අන්තර්ජාලය Wi-Fi හරහා පමණක් ලබා ගත හැකිය."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"ඔබගේ වාහකය"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"<xliff:g id="CARRIER">%s</xliff:g> වෙත ආපසු මාරු කරන්නද?"</string>
@@ -1479,7 +1473,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"නිමයි"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"පිටපත් කරන ලදි"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"<xliff:g id="APPNAME">%1$s</xliff:g> සිට"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"පිටපත් කළ පෙළ අස් කරන්න"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"පිටපත් කළ පෙළ සංස්කරණය කරන්න"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"පිටපත් කළ රූපය සංස්කරණය කරන්න"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"අවට උපාංගය වෙත යවන්න"</string>

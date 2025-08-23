@@ -278,7 +278,7 @@ public class BroadcastOptions extends ComponentOptions {
      */
     public static final int DELIVERY_GROUP_POLICY_MERGED = 2;
 
-    /** {@hide} */
+    /** @hide */
     @IntDef(prefix = { "DEFERRAL_POLICY_" }, value = {
             DEFERRAL_POLICY_DEFAULT,
             DEFERRAL_POLICY_NONE,
@@ -762,7 +762,7 @@ public class BroadcastOptions extends ComponentOptions {
                 == PowerExemptionManager.REASON_PUSH_MESSAGING_OVER_QUOTA;
     }
 
-    /** {@hide} */
+    /** @hide */
     public long getRequireCompatChangeId() {
         return mRequireCompatChangeId;
     }
@@ -1258,7 +1258,7 @@ public class BroadcastOptions extends ComponentOptions {
         return new BroadcastOptions(options);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static @Nullable BroadcastOptions fromBundleNullable(@Nullable Bundle options) {
         return (options != null) ? new BroadcastOptions(options) : null;
     }

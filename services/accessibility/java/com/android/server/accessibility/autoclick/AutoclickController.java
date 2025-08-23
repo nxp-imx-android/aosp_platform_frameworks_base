@@ -416,6 +416,8 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                     new InputManagerWrapper(mContext.getSystemService(InputManager.class));
         }
         mInputManagerWrapper.registerInputDeviceListener(mInputDeviceListener, handler);
+        // Trigger listener to register currently connected input device.
+        mInputDeviceListener.onInputDeviceChanged(/* deviceId= */ 0);
     }
 
     @Override

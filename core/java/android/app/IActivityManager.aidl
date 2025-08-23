@@ -87,7 +87,7 @@ import java.util.List;
  * System private API for talking with the activity manager service.  This
  * provides calls from the application back to the activity manager.
  *
- * {@hide}
+ * @hide
  */
 interface IActivityManager {
     // WARNING: when these transactions are updated, check if they are any callers on the native

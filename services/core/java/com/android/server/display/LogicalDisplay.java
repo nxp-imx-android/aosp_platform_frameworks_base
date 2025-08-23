@@ -231,14 +231,16 @@ final class LogicalDisplay {
 
     private final boolean mSyncedResolutionSwitchEnabled;
 
+    private final boolean mSyntheticModesV2Enabled;
+
     private boolean mCanHostTasks;
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice) {
-        this(displayId, layerStack, primaryDisplayDevice, false);
+        this(displayId, layerStack, primaryDisplayDevice, false, true);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isSyncedResolutionSwitchEnabled) {
+            boolean isSyncedResolutionSwitchEnabled, boolean syntheticModesV2Enabled) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
         mPrimaryDisplayDevice = primaryDisplayDevice;
@@ -250,6 +252,7 @@ final class LogicalDisplay {
         mPowerThrottlingDataId = DisplayDeviceConfig.DEFAULT_ID;
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
+        mSyntheticModesV2Enabled = syntheticModesV2Enabled;
 
         // No need to initialize mCanHostTasks here; it's handled in
         // DisplayManagerService#setupLogicalDisplay().
@@ -535,9 +538,10 @@ final class LogicalDisplay {
             mBaseDisplayInfo.userPreferredModeId = deviceInfo.userPreferredModeId;
             mBaseDisplayInfo.supportedModes = Arrays.copyOf(
                     deviceInfo.supportedModes, deviceInfo.supportedModes.length);
-            mBaseDisplayInfo.appsSupportedModes = syntheticModeManager.createAppSupportedModes(
-                    config, mBaseDisplayInfo.supportedModes, mBaseDisplayInfo.hasArrSupport
-            );
+            mBaseDisplayInfo.appsSupportedModes = mSyntheticModesV2Enabled
+                    ? Arrays.copyOf(deviceInfo.supportedModes, deviceInfo.supportedModes.length)
+                    : syntheticModeManager.createAppSupportedModes(config,
+                            mBaseDisplayInfo.supportedModes, mBaseDisplayInfo.hasArrSupport);
             mBaseDisplayInfo.colorMode = deviceInfo.colorMode;
             mBaseDisplayInfo.supportedColorModes = Arrays.copyOf(
                     deviceInfo.supportedColorModes,

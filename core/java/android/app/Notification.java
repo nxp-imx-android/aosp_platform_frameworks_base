@@ -4210,7 +4210,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static String visibilityToString(int vis) {
         switch (vis) {
@@ -4226,7 +4226,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static String priorityToString(@Priority int pri) {
         switch (pri) {
@@ -4246,7 +4246,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * {@hide}
+     * @hide
      */
     public static String flagsToString(@NotificationFlags int flags) {
         final List<String> flagStrings = new ArrayList<String>();
@@ -12092,22 +12092,18 @@ public class Notification implements Parcelable
          * the duration as a fixed value.
          *
          * <p>This value can also specify its formatting, whether as a "chronometer" (e.g. 43:21)
-         * or an adaptive time (e.g. 43m).
+         * or an adaptive time (e.g. 1h 43m).
          */
         public static final class TimeDifference extends MetricValue {
 
-            /** Formatting option: automatically chosen by the system. */
-            public static final int FORMAT_AUTOMATIC = 0;
-
-            /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m; now). */
+            /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m 30s; 5s). */
             public static final int FORMAT_ADAPTIVE = 1;
 
             /** Formatting option: chronometer-style, (e.g. two hours = "2:00:00"). */
-            public static final int FORMAT_CHRONOMETER = 3;
+            public static final int FORMAT_CHRONOMETER = 2;
 
             /** @hide */
             @IntDef(prefix = { "FORMAT_" }, value = {
-                    FORMAT_AUTOMATIC,
                     FORMAT_ADAPTIVE,
                     FORMAT_CHRONOMETER
             })
@@ -12208,7 +12204,7 @@ public class Notification implements Parcelable
                         "Exactly one of zeroTime, zeroElapsedRealtime, or pausedDuration must be "
                                 + "present; received %s,%s,%s",
                         zeroTime, zeroElapsedRealtime, pausedDuration);
-                checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_CHRONOMETER,
+                checkArgument(format >= FORMAT_ADAPTIVE && format <= FORMAT_CHRONOMETER,
                         "Invalid format: %s", format);
                 mZeroTime = zeroTime;
                 mZeroElapsedRealtime = zeroElapsedRealtime;
@@ -12228,7 +12224,7 @@ public class Notification implements Parcelable
                 if (zeroTime != null || zeroElapsedRealtime != null || pausedDuration != null) {
                     return new TimeDifference(zeroTime, zeroElapsedRealtime, pausedDuration,
                             bundle.getBoolean(KEY_COUNT_DOWN),
-                            bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC));
+                            bundle.getInt(KEY_FORMAT));
                 } else {
                     return null;
                 }
@@ -12694,7 +12690,7 @@ public class Notification implements Parcelable
             private static final int LOWER_BOUND_FRACTION_DIGITS = 0;
             private static final int UPPER_BOUND_FRACTION_DIGITS = 6;
             /** @hide */ @TestApi public static final int DEFAULT_MIN_FRACTION_DIGITS = 0;
-            /** @hide */ @TestApi public static final int DEFAULT_MAX_FRACTION_DIGITS = 3;
+            /** @hide */ @TestApi public static final int DEFAULT_MAX_FRACTION_DIGITS = 2;
 
             private static final String KEY_VALUE = "value";
             private static final String KEY_UNIT = "unit";
@@ -12715,7 +12711,7 @@ public class Notification implements Parcelable
             }
 
             /**
-             * Creates a {@link FixedFloat} instance with 0 minimum and 3 maximum fractional digits.
+             * Creates a {@link FixedFloat} instance with 0 minimum and 2 maximum fractional digits.
              * @param unit optional unit for the value. Limit this to a few characters.
              */
             public FixedFloat(float value, @Nullable String unit) {

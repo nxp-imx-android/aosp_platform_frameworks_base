@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"App-Updates deinstallieren?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"App-Updates für alle Nutzer deinstallieren?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Diese App für alle Nutzer deinstallieren?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Diese App für den Nutzer „<xliff:g id="USER_NAME">%1$s</xliff:g>“ deinstallieren?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App nicht gefunden"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Diese App kann nicht deinstalliert werden"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"App nicht deinstalliert"</string>
     <string name="title_archive" msgid="2876455228073419830">"Diese App archivieren?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Diese App für alle Nutzer archivieren?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Diese App für den Nutzer „<xliff:g id="USER_NAME">%1$s</xliff:g>“ archivieren?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Diese App wiederherstellen?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Wichtige Informationen"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nicht genügend Speicherplatz verfügbar"</string>
@@ -57,9 +55,9 @@
     <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ist deaktiviert"</string>
     <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ist nicht installiert"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Ein Fehler ist aufgetreten"</string>
-    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Normalerweise erhält diese App Updates von &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Wenn du ein Update unter Verwendung einer anderen Quelle vornimmst, erhältst du künftige Updates auf deinem Tablet möglicherweise aus beliebigen Quellen. Die Funktionalität der App kann sich ändern."</string>
-    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Normalerweise erhält diese App Updates von &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Wenn du ein Update unter Verwendung einer anderen Quelle vornimmst, erhältst du künftige Updates auf deinem Fernseher möglicherweise aus beliebigen Quellen. Die Funktionalität der App kann sich ändern."</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"Normalerweise erhält diese App Updates von &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Wenn du ein Update unter Verwendung einer anderen Quelle vornimmst, erhältst du künftige Updates auf deinem Smartphone möglicherweise aus beliebigen Quellen. Die Funktionalität der App kann sich ändern."</string>
+    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Normalerweise erhält diese App Updates von &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Wenn du ein Update unter Verwendung einer anderen Quelle vornimmst, kann es sein, dass du künftige Updates von irgendeiner anderen Quelle auf deinem Tablet erhältst. Die Funktionalität der App kann sich ändern."</string>
+    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Normalerweise erhält diese App Updates von &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Wenn du ein Update unter Verwendung einer anderen Quelle vornimmst, kann es sein, dass du künftige Updates von irgendeiner anderen Quelle auf deinem Fernseher erhältst. Die Funktionalität der App kann sich ändern."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"Normalerweise erhält diese App Updates von &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Wenn du ein Update unter Verwendung einer anderen Quelle vornimmst, kann es sein, dass du künftige Updates von irgendeiner anderen Quelle auf deinem Smartphone erhältst. Die Funktionalität der App kann sich ändern."</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"Aus Sicherheitsgründen kannst du auf deinem Tablet derzeit keine unbekannten Apps aus dieser Quelle installieren. Du kannst das in den Einstellungen ändern."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Aus Sicherheitsgründen kannst du auf deinem Fernseher derzeit keine unbekannten Apps aus dieser Quelle installieren. Du kannst das in den Einstellungen ändern."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Aus Sicherheitsgründen kannst du auf deiner Smartwatch derzeit keine unbekannten Apps aus dieser Quelle installieren. Du kannst das in den Einstellungen ändern."</string>
@@ -100,10 +98,8 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"„<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>“ gehört zu folgender App: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Diese App wurde blockiert. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Diese App wurde nicht aktualisiert. Zum Schutz deines Geräts und deiner Daten können nur Updates von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
-    <!-- no translation found for cannot_install_verification_no_internet_summary (7724830883028720846) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (1204784740944424893) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Diese App wurde nicht installiert. Apps von nicht überprüften Entwicklern können unsicher sein.&lt;/p&gt;&lt;p&gt;Zur Überprüfung von App-Entwicklern ist eine Internetverbindung erforderlich. Prüfe deine Verbindung und versuch dann noch einmal, die App zu installieren. &lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Diese App wurde nicht aktualisiert. Updates von nicht überprüften Entwicklern können unsicher sein.&lt;/p&gt;&lt;p&gt;Zur Überprüfung von App-Entwicklern ist eine Internetverbindung erforderlich. Prüfe deine Verbindung und versuch dann noch einmal, die App zu aktualisieren. &lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Beim Überprüfen des App-Entwicklers ist ein Problem aufgetreten. Apps von nicht überprüften Entwicklern können unsicher sein, daher wurde die App nicht installiert.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
     <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Beim Überprüfen des App-Entwicklers ist ein Problem aufgetreten. Updates von nicht überprüften Entwicklern können unsicher sein, daher wurde die App nicht aktualisiert.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Diese App wurde blockiert, weil der Entwickler nicht überprüft werden konnte. Zum Schutz deines Geräts und deiner Daten können nur Apps von überprüften Entwicklern installiert werden.&lt;/p&gt; &lt;a href=&gt;Weitere Informationen zur Entwicklerüberprüfung&lt;/a&gt;"</string>
@@ -131,7 +127,6 @@
     <string name="button_restore" msgid="4388317532933866637">"Wiederherstellen"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Updates deinstallieren"</string>
     <string name="button_settings" msgid="3837571366246132287">"Einstellungen"</string>
-    <!-- no translation found for button_retry (6736082260813816198) -->
-    <skip />
+    <string name="button_retry" msgid="6736082260813816198">"Noch einmal versuchen"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>-Klon"</string>
 </resources>

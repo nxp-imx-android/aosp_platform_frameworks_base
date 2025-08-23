@@ -560,7 +560,10 @@ public class UserBackupManagerService {
         mJournalDir.mkdirs(); // creates mBaseStateDir along the way
         mJournal = null; // will be created on first use
 
-        mConstants = new BackupManagerConstants(mBackupHandler, mContext.getContentResolver());
+        // We need a context for the user in question to observe setting changes for that user.
+        Context userContext = mContext.createContextAsUser(UserHandle.of(mUserId), /* flags */ 0);
+
+        mConstants = new BackupManagerConstants(mBackupHandler, userContext.getContentResolver());
         // We are observing changes to the constants throughout the lifecycle of BMS. This is
         // because we reference the constants in multiple areas of BMS, which otherwise would
         // require frequent starting and stopping.

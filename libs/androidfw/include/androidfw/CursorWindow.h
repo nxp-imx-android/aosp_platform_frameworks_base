@@ -154,6 +154,11 @@ private:
     String8 mName;
     std::optional<android::base::MappedFile> mMappedFile;
     int mAshmemFd = -1;
+    /**
+     * Pointer to the start of the memory region, either mmap'ed from ashmem, or malloc'ed.
+     * Must not be null after full initialization even for an empty window, as many getters perform
+     * pointer arithmetic on it without null checks for performance reasons.
+     */
     void* mData = nullptr;
     /**
      * Pointer to the first FieldSlot, used to optimize the extremely

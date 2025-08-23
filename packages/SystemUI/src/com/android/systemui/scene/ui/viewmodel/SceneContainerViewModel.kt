@@ -40,6 +40,7 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
+import com.android.systemui.statusbar.notification.domain.interactor.NotificationContainerInteractor
 import com.android.systemui.scene.domain.interactor.OnBootTransitionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.logger.SceneLogger
@@ -69,6 +70,7 @@ constructor(
     private val falsingInteractor: FalsingInteractor,
     private val powerInteractor: PowerInteractor,
     private val onBootTransitionInteractor: OnBootTransitionInteractor,
+    private val notificationContainerInteractor: NotificationContainerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
     private val logger: SceneLogger,
@@ -145,6 +147,9 @@ constructor(
             coroutineScope {
                 launch { hydrator.activate() }
                 launch("SceneContainerHapticsViewModel") { hapticsViewModel.activate() }
+                launch("NotificationContainerInteractor") {
+                    notificationContainerInteractor.activate()
+                }
             }
             awaitCancellation()
         } finally {

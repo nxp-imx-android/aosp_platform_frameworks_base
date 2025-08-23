@@ -78,7 +78,6 @@ fun EditModeButton(
     viewModel: EditModeButtonViewModel,
     modifier: Modifier = Modifier,
     isVisible: Boolean = true,
-    tooltipEnabled: Boolean = true,
 ) {
     if (!viewModel.isEditButtonVisible) {
         return
@@ -87,7 +86,7 @@ fun EditModeButton(
         value = LocalContentColor provides MaterialTheme.colorScheme.onSurface
     ) {
         val tooltipState = rememberTooltipState(isPersistent = true)
-        val showTooltip = tooltipEnabled && isVisible && viewModel.showTooltip
+        val showTooltip = isVisible && viewModel.showTooltip
         LaunchedEffect(showTooltip) { if (showTooltip) tooltipState.show() }
 
         // Make sure to dismiss the tooltip if it's still visible when it shouldn't be due to always

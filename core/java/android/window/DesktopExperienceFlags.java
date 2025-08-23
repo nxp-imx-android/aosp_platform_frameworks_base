@@ -59,7 +59,7 @@ public enum DesktopExperienceFlags {
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
             com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
             com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
-    CLOSE_TASK_KEYBOARD_SHORTCUT(Flags::closeTaskKeyboardShortcut, false,
+    CLOSE_TASK_KEYBOARD_SHORTCUT(Flags::closeTaskKeyboardShortcut, true,
             Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT),
     CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true,
             com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
@@ -176,6 +176,8 @@ public enum DesktopExperienceFlags {
     ENABLE_DRAG_END_STABLE_BOUNDS_RESET(Flags::enableDragEndStableBoundsReset, false,
             Flags.FLAG_ENABLE_DRAG_END_STABLE_BOUNDS_RESET),
     ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true, Flags.FLAG_ENABLE_DRAG_TO_MAXIMIZE),
+    ENABLE_DRAWING_APP_HANDLE(Flags::enableDrawingAppHandle, false,
+            Flags.FLAG_ENABLE_DRAWING_APP_HANDLE),
     ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION(Flags::enableDreamActivityWindowingExclusion, false,
             Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION),
     ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, true,
@@ -241,6 +243,9 @@ public enum DesktopExperienceFlags {
     ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX(
             Flags::enablePipParamsUpdateNotificationBugfix, false,
             Flags.FLAG_ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX),
+    ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK(
+            Flags::enablePresentationDisallowedOnUnfocusedHostTask, false,
+            Flags.FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK),
     ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS(Flags::enablePresentationForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, true,
@@ -322,7 +327,7 @@ public enum DesktopExperienceFlags {
             Flags::limitSystemFullscreenOverrideToDefaultDisplay, false,
             Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY),
     MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE(
-            Flags::moveToNextDisplayShortcutWithProjectedMode, false,
+            Flags::moveToNextDisplayShortcutWithProjectedMode, true,
             Flags.FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE),
     PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH(
             Flags::preserveRecentsTaskConfigurationOnRelaunch, true,

@@ -109,7 +109,7 @@ public class TaskContinuityMessengerTest {
         int expectedAssociationId = 1;
         connectAssociations(List.of(expectedAssociationId));
         ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
-                    List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
+                    List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
 
         listener.onMessageReceived(
             expectedAssociationId,
@@ -133,7 +133,7 @@ public class TaskContinuityMessengerTest {
         mTaskContinuityMessenger.enable();
         connectAssociations(List.of(associationId));
         ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
-            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
+            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
         TaskContinuityMessenger.SendMessageResult result
             = mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, times(1))
@@ -150,7 +150,7 @@ public class TaskContinuityMessengerTest {
 
         int associationId = 1;
         ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
-            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
+            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
         TaskContinuityMessenger.SendMessageResult result
             = mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, never())

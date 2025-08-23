@@ -20,9 +20,11 @@ import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_A
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.view.View.INVISIBLE;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
@@ -132,7 +134,8 @@ public class BubbleTransitions {
         mAppInfoProvider = appInfoProvider;
     }
 
-    void setBubbleController(BubbleController controller) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void setBubbleController(BubbleController controller) {
         mBubbleController = controller;
     }
 
@@ -141,20 +144,6 @@ public class BubbleTransitions {
      */
     public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         return mBubbleController.shouldBeAppBubble(taskInfo);
-    }
-
-    /**
-     * Returns whether bubbles are showing as the bubble bar.
-     */
-    public boolean isShowingAsBubbleBar() {
-        return mBubbleController.isShowingAsBubbleBar();
-    }
-
-    /**
-     * Returns whether there is an existing bubble with the given task id.
-     */
-    public boolean hasBubbleWithTaskId(int taskId) {
-        return mBubbleData.getBubbleInStackWithTaskId(taskId) != null;
     }
 
     /**
@@ -304,6 +293,84 @@ public class BubbleTransitions {
     /** Starts a transition that converts a dragged bubble icon to a full screen task. */
     public BubbleTransition startDraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation) {
         return new DraggedBubbleIconToFullscreen(bubble, dropLocation);
+    }
+
+    /**
+     * Finds the Task that is entering Bubble. This can be either a Bubble Task that is becoming
+     * visible, or a visible Task that is changing to Bubble from other windowing mode.
+     */
+    @Nullable
+    public TransitionInfo.Change getEnterBubbleTask(@NonNull TransitionInfo info) {
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change chg = info.getChanges().get(i);
+            final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
+            // Exclude activity transition scenarios.
+            if (taskInfo == null || taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
+                continue;
+            }
+            // Only process opening or change transitions.
+            if (!isOpeningMode(chg.getMode()) && chg.getMode() != TRANSIT_CHANGE) {
+                continue;
+            }
+            // Skip non-app-bubble tasks (e.g. a reused task in a bubble-to-fullscreen scenario).
+            if (!shouldBeAppBubble(taskInfo)) {
+                continue;
+            }
+            return chg;
+        }
+        return null;
+    }
+
+    /**
+     * Finds the Bubble Task that is closing.
+     * Note: this doesn't find move-to-back Task.
+     */
+    @Nullable
+    public TransitionInfo.Change getClosingBubbleTask(@NonNull TransitionInfo info) {
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change chg = info.getChanges().get(i);
+            final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
+            // Exclude activity transition scenarios.
+            if (taskInfo == null || taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
+                continue;
+            }
+            // Only process closing transitions.
+            if (chg.getMode() != TRANSIT_CLOSE) {
+                continue;
+            }
+            // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen scenario).
+            if (!shouldBeAppBubble(taskInfo)) {
+                continue;
+            }
+            return chg;
+        }
+        return null;
+    }
+
+    /**
+     * Whether the transition contains any Task that is changed from expanded App Bubbled to
+     * non-Bubbled.
+     */
+    public boolean containsNonBubbledExpandedTaskInStack(@NonNull TransitionInfo info) {
+        if (!mBubbleData.isExpanded() || mBubbleData.getSelectedBubble() == null) {
+            // No expanded.
+            return false;
+        }
+        if (!(mBubbleData.getSelectedBubble() instanceof Bubble bubble) || !bubble.isApp()) {
+            // Not app Bubble.
+            return false;
+        }
+        final int expandedTaskId = bubble.getTaskId();
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change chg = info.getChanges().get(i);
+            final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
+            if (taskInfo == null || taskInfo.taskId != expandedTaskId) {
+                continue;
+            }
+            // Check whether it is still an app bubble.
+            return !shouldBeAppBubble(taskInfo);
+        }
+        return false;
     }
 
     /**
@@ -1672,6 +1739,8 @@ public class BubbleTransitions {
         private SurfaceControl mTaskLeash;
         private SurfaceControl.Transaction mFinishTransaction;
         private boolean mIsStarted = false;
+        private boolean mHasBounds = false;
+        private boolean mCanExpand = false;
 
         FloatingToBarConversion(Bubble bubble, BubblePositioner positioner) {
             this(bubble, SurfaceControl.Transaction::new, positioner);
@@ -1760,11 +1829,24 @@ public class BubbleTransitions {
 
         @Override
         public void continueConvert(BubbleBarLayerView layerView) {
+            mHasBounds = true;
             mPositioner.getTaskViewRestBounds(mBounds);
             mWct.setBounds(mBubble.getTaskView().getTaskInfo().token, mBounds);
-            if (!mIsStarted) {
+            if (canStart()) {
                 startTransition();
             }
+        }
+
+        @Override
+        public void continueExpand() {
+            mCanExpand = true;
+            if (canStart()) {
+                startTransition();
+            }
+        }
+
+        private boolean canStart() {
+            return mHasBounds && mCanExpand && !mIsStarted;
         }
 
         private void startTransition() {

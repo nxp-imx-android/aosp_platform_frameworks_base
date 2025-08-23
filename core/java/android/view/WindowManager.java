@@ -3159,7 +3159,7 @@ public interface WindowManager extends ViewManager {
          * Touches can slide out of the window but they cannot necessarily slide
          * back in (unless the other window with touch focus permits it).
          *
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage
         @TestApi
@@ -3359,7 +3359,7 @@ public interface WindowManager extends ViewManager {
          * types that normally only appear on the owning user's screen. Refer to each window type
          * to determine its default behavior.
          *
-         * {@hide} */
+         * @hide */
         @SystemApi
         @RequiresPermission(permission.INTERNAL_SYSTEM_WINDOW)
         public static final int SYSTEM_FLAG_SHOW_FOR_ALL_USERS = 1 << 4;
@@ -3376,20 +3376,20 @@ public interface WindowManager extends ViewManager {
          * Never animate position changes of the window.
          *
          * @see android.R.styleable#Window_windowNoMoveAnimation
-         * {@hide}
+         * @hide
          */
         @UnsupportedAppUsage
         public static final int PRIVATE_FLAG_NO_MOVE_ANIMATION = 1 << 6;
 
         /** Window flag: the client side view can intercept back progress, so system does not
          * need to pilfer pointers.
-         * {@hide} */
+         * @hide */
         public static final int PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED = 1 << 7;
 
         /** Window flag: a special option intended for system dialogs.  When
          * this flag is set, the window will demand focus unconditionally when
          * it is created.
-         * {@hide} */
+         * @hide */
         public static final int PRIVATE_FLAG_SYSTEM_ERROR = 1 << 8;
 
         /**
@@ -3397,14 +3397,14 @@ public interface WindowManager extends ViewManager {
          * necessary. If a window size can be known by the LayoutParams, we can use the size to
          * relayout window, and we don't have to measure the view hierarchy before laying out the
          * views. This reduces the chances to perform measure.
-         * {@hide}
+         * @hide
          */
         public static final int PRIVATE_FLAG_OPTIMIZE_MEASURE = 1 << 9;
 
         /**
          * Flag that prevents the wallpaper behind the current window from receiving touch events.
          *
-         * {@hide}
+         * @hide
          */
         public static final int PRIVATE_FLAG_DISABLE_WALLPAPER_TOUCH_EVENTS = 1 << 10;
 
@@ -3420,7 +3420,7 @@ public interface WindowManager extends ViewManager {
          * is given, and the window is covering the display cutout. The extended frame will not be
          * larger than the parent frame.
          *
-         * {@hide}
+         * @hide
          */
         public static final int PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT = 1 << 12;
 
@@ -5410,44 +5410,44 @@ public interface WindowManager extends ViewManager {
         public static final int SCREEN_ORIENTATION_CHANGED = 1<<10;
         public static final int SCREEN_BRIGHTNESS_CHANGED = 1<<11;
         public static final int ROTATION_ANIMATION_CHANGED = 1<<12;
-        /** {@hide} */
+        /** @hide */
         public static final int BUTTON_BRIGHTNESS_CHANGED = 1<<13;
-        /** {@hide} */
+        /** @hide */
         public static final int SYSTEM_UI_VISIBILITY_CHANGED = 1<<14;
-        /** {@hide} */
+        /** @hide */
         public static final int SYSTEM_UI_LISTENER_CHANGED = 1<<15;
-        /** {@hide} */
+        /** @hide */
         public static final int INPUT_FEATURES_CHANGED = 1<<16;
-        /** {@hide} */
+        /** @hide */
         public static final int PRIVATE_FLAGS_CHANGED = 1<<17;
-        /** {@hide} */
+        /** @hide */
         public static final int USER_ACTIVITY_TIMEOUT_CHANGED = 1<<18;
-        /** {@hide} */
+        /** @hide */
         public static final int TRANSLUCENT_FLAGS_CHANGED = 1<<19;
-        /** {@hide} */
+        /** @hide */
         public static final int SURFACE_INSETS_CHANGED = 1<<20;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_REFRESH_RATE_CHANGED = 1 << 21;
-        /** {@hide} */
+        /** @hide */
         public static final int DISPLAY_FLAGS_CHANGED = 1 << 22;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_DISPLAY_MODE_ID = 1 << 23;
-        /** {@hide} */
+        /** @hide */
         public static final int ACCESSIBILITY_ANCHOR_CHANGED = 1 << 24;
-        /** {@hide} */
+        /** @hide */
         @TestApi
         public static final int ACCESSIBILITY_TITLE_CHANGED = 1 << 25;
-        /** {@hide} */
+        /** @hide */
         public static final int COLOR_MODE_CHANGED = 1 << 26;
-        /** {@hide} */
+        /** @hide */
         public static final int INSET_FLAGS_CHANGED = 1 << 27;
-        /** {@hide} */
+        /** @hide */
         public static final int MINIMAL_POST_PROCESSING_PREFERENCE_CHANGED = 1 << 28;
-        /** {@hide} */
+        /** @hide */
         public static final int BLUR_BEHIND_RADIUS_CHANGED = 1 << 29;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_MIN_DISPLAY_REFRESH_RATE = 1 << 30;
-        /** {@hide} */
+        /** @hide */
         public static final int PREFERRED_MAX_DISPLAY_REFRESH_RATE = 1 << 31;
 
         // internal buffer to backup/restore parameters under compatibility mode.

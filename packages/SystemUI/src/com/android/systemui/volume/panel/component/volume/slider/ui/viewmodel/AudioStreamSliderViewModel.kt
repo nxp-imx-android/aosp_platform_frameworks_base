@@ -236,7 +236,7 @@ constructor(
                 zenModeInteractor
                     .activeModesBlockingStream(audioStream)
                     .map { blockingZenModes ->
-                        blockingZenModes.mainMode?.name?.let {
+                        blockingZenModes.main?.name?.let {
                             context.getString(R.string.stream_unavailable_by_modes, it)
                         } ?: context.getString(R.string.stream_unavailable_by_unknown)
                     }

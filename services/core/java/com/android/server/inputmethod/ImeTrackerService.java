@@ -19,11 +19,14 @@ package com.android.server.inputmethod;
 import static android.view.ViewProtoLogGroups.IME_TRACKER;
 
 import android.Manifest;
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
+import android.annotation.ElapsedRealtimeLong;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.inputmethod.ImeTracker;
@@ -41,11 +44,13 @@ import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -76,6 +81,10 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
     /** Recorder for metrics data from entries. */
     private final MetricsRecorder mMetricsRecorder;
+
+    /** Collection of listeners waiting until there are no more pending requests. */
+    @GuardedBy("mLock")
+    private final ArrayList<AndroidFuture<Void>> mPendingRequestsListeners = new ArrayList<>();
 
     /** Interface for recording metrics data from entries. */
     @FunctionalInterface
@@ -110,7 +119,8 @@ public final class ImeTrackerService extends IImeTracker.Stub {
     @Override
     public void onStart(@NonNull ImeTracker.Token statsToken, int uid, @ImeTracker.Type int type,
             @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason, boolean fromUser,
-            long startTime) {
+            @CurrentTimeMillisLong long startWallTimeMs,
+            @ElapsedRealtimeLong long startTimestampMs) {
         synchronized (mLock) {
             final long id = statsToken.getId();
             final String tag = statsToken.getTag();
@@ -127,7 +137,8 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                     return;
                 }
 
-                entry.onStart(tag, uid, type, origin, reason, fromUser, startTime);
+                entry.onStart(tag, uid, type, origin, reason, fromUser, startWallTimeMs,
+                        startTimestampMs);
 
                 if (entry.mFinished) {
                     complete(id, entry);
@@ -139,9 +150,10 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 }
 
                 final var newEntry = new History.Entry();
-                // Prefer current time to startTime when creating the entry in onStart.
+                // Prefer current time to passed in startTime when creating the entry in onStart.
                 newEntry.onStart(tag, uid, type, origin, reason, fromUser,
-                        System.currentTimeMillis() /* startTime */);
+                        System.currentTimeMillis() /* startWallTimeMs */,
+                        SystemClock.elapsedRealtime() /* startTimestampMs */);
 
                 mHistory.putActive(id, newEntry);
                 registerTimeout(id, newEntry);
@@ -334,27 +346,32 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)
     @Override
-    public boolean hasPendingImeVisibilityRequests() {
-        super.hasPendingImeVisibilityRequests_enforcePermission();
+    public void waitUntilNoPendingRequests(@NonNull AndroidFuture<Void> future, long timeoutMs) {
+        super.waitUntilNoPendingRequests_enforcePermission();
         synchronized (mLock) {
-            return !mHistory.activeEntries().isEmpty();
+            if (mHistory.activeEntries().isEmpty()) {
+                future.complete(null);
+            } else {
+                mPendingRequestsListeners.add(future);
+                mHandler.postDelayed(() -> {
+                    future.completeExceptionally(new TimeoutException());
+                    mPendingRequestsListeners.remove(future);
+                }, future, timeoutMs);
+            }
         }
     }
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)
     @Override
-    public void finishTrackingPendingImeVisibilityRequests(
-            @NonNull AndroidFuture completionSignal /* T=Void */) {
-        super.finishTrackingPendingImeVisibilityRequests_enforcePermission();
-        @SuppressWarnings("unchecked") final AndroidFuture<Void> typedCompletionSignal =
-                completionSignal;
+    public void finishTrackingPendingRequests(@NonNull AndroidFuture<Void> future) {
+        super.finishTrackingPendingRequests_enforcePermission();
         try {
             synchronized (mLock) {
                 mHistory.activeEntries().clear();
             }
-            typedCompletionSignal.complete(null);
+            future.complete(null);
         } catch (Throwable e) {
-            typedCompletionSignal.completeExceptionally(e);
+            future.completeExceptionally(e);
         }
     }
 
@@ -367,10 +384,18 @@ public final class ImeTrackerService extends IImeTracker.Stub {
      */
     @GuardedBy("mLock")
     private void complete(long id, @NonNull History.Entry entry) {
-        entry.mDuration = entry.mFinishTime - entry.mStartTime;
+        entry.mDuration = entry.mFinishTimestampMs - entry.mStartTimestampMs;
         mHandler.removeCallbacksAndMessages(entry /* token */);
         mHistory.complete(id, entry);
         mMetricsRecorder.record(entry);
+        if (!mPendingRequestsListeners.isEmpty() && mHistory.mActiveEntries.isEmpty()) {
+            for (int i = 0; i < mPendingRequestsListeners.size(); i++) {
+                final var listener = mPendingRequestsListeners.get(i);
+                listener.complete(null);
+                mHandler.removeCallbacksAndMessages(listener);
+            }
+            mPendingRequestsListeners.clear();
+        }
     }
 
     /**
@@ -535,23 +560,28 @@ public final class ImeTrackerService extends IImeTracker.Stub {
              */
             private boolean mFinished;
 
-            /** Time in milliseconds when the request was started. */
-            @DurationMillisLong
-            private long mStartTime;
+            /** Wall time in milliseconds when the request was started. */
+            @CurrentTimeMillisLong
+            private long mStartWallTimeMs;
 
-            /** Time in milliseconds when the request was finished. */
-            @DurationMillisLong
-            private long mFinishTime;
+            /** Time since boot in milliseconds when the request was started. */
+            @ElapsedRealtimeLong
+            private long mStartTimestampMs;
+
+            /** Time since boot in milliseconds when the request was finished. */
+            @ElapsedRealtimeLong
+            private long mFinishTimestampMs;
 
             /** Duration in milliseconds of the request from start to finish. */
+            @DurationMillisLong
             private long mDuration;
 
             /**
              * Clock time in milliseconds when the last {@link #onProgress} call was received. Used
              * in analyzing timed out requests.
              */
-            @DurationMillisLong
-            private long mLastProgressTime;
+            @CurrentTimeMillisLong
+            private long mLastProgressWallTimeMs;
 
             /**
              * Logging tag, of the shape "component:random_hexadecimal".
@@ -598,7 +628,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
             Entry() {
                 mSequenceNumber = sSequenceNumber.getAndIncrement();
-                mLastProgressTime = System.currentTimeMillis();
+                mLastProgressWallTimeMs = System.currentTimeMillis();
                 mTag = "not set";
                 mUid = -1;
                 mType = ImeTracker.TYPE_NOT_SET;
@@ -613,25 +643,30 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             /**
              * Records the starting data of the entry.
              *
-             * @param tag       the logging tag.
-             * @param uid       the uid of the client that started the request.
-             * @param type      the type of the request.
-             * @param origin    the origin of the request.
-             * @param reason    the reason for starting the request.
-             * @param fromUser  whether this request was created directly from user interaction.
-             * @param startTime the time in milliseconds when the request was started.
+             * @param tag              the logging tag.
+             * @param uid              the uid of the client that started the request.
+             * @param type             the type of the request.
+             * @param origin           the origin of the request.
+             * @param reason           the reason for starting the request.
+             * @param fromUser         whether this request was created directly from user
+             *                         interaction.
+             * @param startWallTimeMs  the wall time in milliseconds when the request was started.
+             * @param startTimestampMs the time since boot in milliseconds when the request was
+             *                         started.
              */
             @GuardedBy("mLock")
             void onStart(@NonNull String tag, int uid, @ImeTracker.Type int type,
                     @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason,
-                    boolean fromUser, long startTime) {
+                    boolean fromUser, @CurrentTimeMillisLong long startWallTimeMs,
+                    @ElapsedRealtimeLong long startTimestampMs) {
                 mTag = tag;
                 mUid = uid;
                 mType = type;
                 mOrigin = origin;
                 mReason = reason;
                 mFromUser = fromUser;
-                mStartTime = startTime;
+                mStartWallTimeMs = startWallTimeMs;
+                mStartTimestampMs = startTimestampMs;
                 mStarted = true;
             }
 
@@ -643,7 +678,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             @GuardedBy("mLock")
             void onProgress(@ImeTracker.Phase int phase) {
                 mPhase = phase;
-                mLastProgressTime = System.currentTimeMillis();
+                mLastProgressWallTimeMs = System.currentTimeMillis();
             }
 
             /**
@@ -659,7 +694,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                     mPhase = phase;
                 }
                 mStatus = status;
-                mFinishTime = System.currentTimeMillis();
+                mFinishTimestampMs = SystemClock.elapsedRealtime();
                 mFinished = true;
             }
 
@@ -680,7 +715,8 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 pw.println(" (" + mDuration + "ms):");
 
                 pw.print(prefix);
-                pw.print("  startTime=" + formatter.format(Instant.ofEpochMilli(mStartTime)));
+                pw.print("  startTime=" + formatter.format(Instant.ofEpochMilli(mStartWallTimeMs)));
+                pw.print(" (timestamp=" + mStartTimestampMs + ")");
                 pw.println(" " + ImeTracker.Debug.originToString(mOrigin));
 
                 pw.print(prefix);
@@ -689,7 +725,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
                 if (mStatus == ImeTracker.STATUS_TIMEOUT) {
                     pw.print(" lastProgressTime="
-                            + formatter.format(Instant.ofEpochMilli(mLastProgressTime)));
+                            + formatter.format(Instant.ofEpochMilli(mLastProgressWallTimeMs)));
                 }
                 pw.println();
 
@@ -710,8 +746,9 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                         + ", mPhase: " + ImeTracker.Debug.phaseToString(mPhase)
                         + ", mFromUser: " + mFromUser
                         + ", mRequestWindowName: " + mRequestWindowName
-                        + ", mStartTime: " + mStartTime
-                        + ", mFinishTime: " + mFinishTime
+                        + ", mStartWallTime: " + mStartWallTimeMs
+                        + ", mStartTimestamp: " + mStartTimestampMs
+                        + ", mFinishTimestamp: " + mFinishTimestampMs
                         + ", mDuration: " + mDuration
                         + ", mStarted: " + mStarted
                         + ", mFinished: " + mFinished

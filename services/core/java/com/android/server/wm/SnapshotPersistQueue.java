@@ -25,7 +25,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
 import android.hardware.HardwareBuffer;
 import android.os.Process;
 import android.os.SystemClock;
@@ -36,7 +35,6 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.policy.TransitionAnimation;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.BaseAppSnapshotPersister.LowResSnapshotSupplier;
@@ -177,17 +175,13 @@ class SnapshotPersistQueue {
     }
 
     private void addToQueueInternal(WriteQueueItem item, boolean insertToFront) {
-        if (Flags.extendingPersistenceSnapshotQueueDepth()) {
-            final Iterator<WriteQueueItem> iterator = mWriteQueue.iterator();
-            while (iterator.hasNext()) {
-                final WriteQueueItem next = iterator.next();
-                if (item.isDuplicateOrExclusiveItem(next)) {
-                    iterator.remove();
-                    break;
-                }
+        final Iterator<WriteQueueItem> iterator = mWriteQueue.iterator();
+        while (iterator.hasNext()) {
+            final WriteQueueItem next = iterator.next();
+            if (item.isDuplicateOrExclusiveItem(next)) {
+                iterator.remove();
+                break;
             }
-        } else {
-            mWriteQueue.removeFirstOccurrence(item);
         }
         if (insertToFront) {
             mWriteQueue.addFirst(item);
@@ -215,15 +209,6 @@ class SnapshotPersistQueue {
 
     @GuardedBy("mLock")
     private void ensureStoreQueueDepthLocked() {
-        if (!Flags.extendingPersistenceSnapshotQueueDepth()) {
-            while (mStoreQueueItems.size() > MAX_HW_STORE_QUEUE_DEPTH) {
-                final StoreWriteQueueItem item = mStoreQueueItems.poll();
-                mWriteQueue.remove(item);
-                Slog.i(TAG, "Queue is too deep! Purged item with index=" + item.mId);
-            }
-            return;
-        }
-
         // Rules for store queue depth:
         //  - Hardware render involved items < MAX_HW_STORE_QUEUE_DEPTH
         //  - Total (SW + HW) items < mMaxTotalStoreQueue
@@ -235,7 +220,7 @@ class SnapshotPersistQueue {
             final StoreWriteQueueItem item = iterator.next();
             totalStoreCount++;
             boolean removeItem = false;
-            if (mustPersistByHardwareRender(item.mSnapshot)) {
+            if (TaskSnapshotConvertUtil.mustPersistByHardwareRender(item.mSnapshot)) {
                 hwStoreCount++;
                 if (hwStoreCount > MAX_HW_STORE_QUEUE_DEPTH) {
                     removeItem = true;
@@ -351,23 +336,6 @@ class SnapshotPersistQueue {
         boolean isDuplicateOrExclusiveItem(WriteQueueItem testItem) {
             return false;
         }
-    }
-
-    static boolean mustPersistByHardwareRender(@NonNull TaskSnapshot snapshot) {
-        final int pixelFormat;
-        final boolean hasProtectedContent;
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            pixelFormat = snapshot.getHardwareBufferFormat();
-            hasProtectedContent = snapshot.hasProtectedContent();
-        } else {
-            final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
-            pixelFormat = hwBuffer.getFormat();
-            hasProtectedContent = TransitionAnimation.hasProtectedContent(hwBuffer);
-        }
-        return !Flags.extendingPersistenceSnapshotQueueDepth()
-                || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
-                || !snapshot.isRealSnapshot()
-                || hasProtectedContent;
     }
 
     StoreWriteQueueItem createStoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,

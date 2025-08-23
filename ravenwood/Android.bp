@@ -102,7 +102,8 @@ java_library {
     sdk_version: "core_current",
     srcs: ["common-src/**/*.java"],
     static_libs: [
-        "framework-annotations-lib", // should it be "libs" instead?
+        "junit",
+        "framework-annotations-lib",
         "modules-utils-ravenwood",
     ],
     visibility: ["//visibility:private"],

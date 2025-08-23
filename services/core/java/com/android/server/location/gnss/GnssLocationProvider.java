@@ -135,7 +135,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A GNSS implementation of LocationProvider used by LocationManager.
  *
- * {@hide}
+ * @hide
  */
 public class GnssLocationProvider extends AbstractLocationProvider implements
         InjectTimeCallback, GnssSatelliteBlocklistCallback, GnssNative.BaseCallbacks,

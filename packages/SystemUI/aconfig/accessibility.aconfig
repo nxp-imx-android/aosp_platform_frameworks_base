@@ -21,10 +21,37 @@ flag {
 }
 
 flag {
+    name: "floating_menu_hearing_device_status_icon"
+    namespace: "accessibility"
+    description: "Update hearing device icon in floating menu according to the connection status."
+    bug: "357882387"
+}
+
+flag {
     name: "floating_menu_radii_animation"
     namespace: "accessibility"
     description: "Animates the floating menu's transition between curved and jagged edges."
     bug: "281140482"
+}
+
+flag {
+    name: "hearing_devices_dialog_related_tools"
+    namespace: "accessibility"
+    description: "Shows the related tools for hearing devices dialog."
+    bug: "341648471"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "privacy_dot_live_region"
+    namespace: "accessibility"
+    description: "Exposes the status bar privacy dot as a live region so it is announced when it appears."
+    bug: "197201744"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -48,33 +75,6 @@ flag {
     bug: "419389153"
     metadata {
       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "hearing_devices_dialog_related_tools"
-    namespace: "accessibility"
-    description: "Shows the related tools for hearing devices dialog."
-    bug: "341648471"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "floating_menu_hearing_device_status_icon"
-    namespace: "accessibility"
-    description: "Update hearing device icon in floating menu according to the connection status."
-    bug: "357882387"
-}
-
-flag {
-    name: "privacy_dot_live_region"
-    namespace: "accessibility"
-    description: "Exposes the status bar privacy dot as a live region so it is announced when it appears."
-    bug: "197201744"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }
 

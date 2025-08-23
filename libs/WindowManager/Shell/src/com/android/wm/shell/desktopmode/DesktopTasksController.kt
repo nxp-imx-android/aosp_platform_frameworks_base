@@ -357,6 +357,9 @@ class DesktopTasksController(
         )
         dragAndDropController.addListener(this)
         shellController.addKeyguardChangeListener(this)
+        desksOrganizer.addOnDesktopTaskInfoChangedListener { taskInfo ->
+            onTaskInfoChanged(taskInfo)
+        }
     }
 
     @VisibleForTesting
@@ -2432,6 +2435,13 @@ class DesktopTasksController(
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
             if (!task.isFreeform) {
+                if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) {
+                    logW(
+                        "moveToDisplay: do nothing because the desktop entry points should be " +
+                            "disabled for the focused task"
+                    )
+                    return
+                }
                 addMoveToDeskTaskChanges(wct = wct, task = task, deskId = destinationDeskId)
             } else {
                 if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -2565,6 +2575,7 @@ class DesktopTasksController(
     fun toggleDesktopTaskSize(taskInfo: RunningTaskInfo, interaction: ToggleTaskSizeInteraction) {
         val repository = userRepositories.getProfile(taskInfo.userId)
         val currentTaskBounds = taskInfo.configuration.windowConfiguration.bounds
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         desktopModeEventLogger.logTaskResizingStarted(
             interaction.resizeTrigger,
             interaction.inputMethod,
@@ -2572,6 +2583,7 @@ class DesktopTasksController(
             currentTaskBounds.width(),
             currentTaskBounds.height(),
             displayController,
+            deskId,
         )
         val displayLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return
         val destinationBounds = Rect()
@@ -2626,6 +2638,7 @@ class DesktopTasksController(
             destinationBounds.width(),
             destinationBounds.height(),
             displayController,
+            deskId,
         )
         toggleResizeDesktopTaskTransitionHandler.startTransition(
             wct,
@@ -2742,6 +2755,8 @@ class DesktopTasksController(
         resizeTrigger: ResizeTrigger,
         inputMethod: InputMethod,
     ) {
+        val repository = userRepositories.getProfile(taskInfo.userId)
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         desktopModeEventLogger.logTaskResizingStarted(
             resizeTrigger,
             inputMethod,
@@ -2749,6 +2764,7 @@ class DesktopTasksController(
             currentDragBounds.width(),
             currentDragBounds.height(),
             displayController,
+            deskId,
         )
 
         val destinationBounds = getSnapBounds(taskInfo.displayId, position)
@@ -2759,6 +2775,7 @@ class DesktopTasksController(
             destinationBounds.width(),
             destinationBounds.height(),
             displayController,
+            deskId,
         )
 
         if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()) {
@@ -4428,9 +4445,7 @@ class DesktopTasksController(
             wct.setBounds(task.token, inheritedTaskBounds)
         } else {
             val initialBounds = getInitialBounds(displayLayout, task, deskId)
-            if (canChangeTaskPosition(task)) {
-                wct.setBounds(task.token, initialBounds)
-            }
+            wct.setBounds(task.token, initialBounds)
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct = wct, deskId = deskId, task = task)
@@ -4520,8 +4535,14 @@ class DesktopTasksController(
             } else {
                 calculateDefaultDesktopTaskBounds(displayLayout)
             }
-
-        if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
+        var hasLayoutGravityApplied = false
+        if (!repository.isActiveTask(taskInfo.taskId)) {
+            // Only apply layout gravity to new tasks in desk.
+            val stableBounds = Rect()
+            displayLayout.getStableBoundsForDesktopMode(stableBounds)
+            hasLayoutGravityApplied = applyLayoutGravityIfNeeded(taskInfo, bounds, stableBounds)
+        }
+        if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue && !hasLayoutGravityApplied) {
             cascadeWindow(
                 context,
                 recentTasksController,
@@ -5894,6 +5915,11 @@ class DesktopTasksController(
                 !requestingImmersive &&
                 !RecentsTransitionStateListener.isRunning(recentsTransitionState)
         ) {
+            logV(
+                "onTaskInfoChanged taskId=%d stopped requesting immersive," +
+                    " breaking out of desktop-immersive mode",
+                taskInfo.taskId,
+            )
             // Exit immersive if the app is no longer requesting it.
             desktopImmersiveController.moveTaskToNonImmersive(
                 taskInfo,
@@ -5907,7 +5933,6 @@ class DesktopTasksController(
         pw.println("${prefix}DesktopTasksController")
         desktopConfig.dump(pw, innerPrefix)
         userRepositories.dump(pw, innerPrefix)
-        focusTransitionObserver.dump(pw, innerPrefix)
         if (Flags.showDesktopExperienceDevOption()) {
             dumpFlags(pw, prefix)
         }

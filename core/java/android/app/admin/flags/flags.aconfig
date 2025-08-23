@@ -510,3 +510,10 @@ flag {
   bug: "414733570"
   is_exported: true
 }
+
+flag {
+  name: "device_owner_for_all"
+  namespace: "enterprise"
+  description: "Enable any user (not just the Main User) to be a DeviceOwner"
+  bug: "435271558"
+}

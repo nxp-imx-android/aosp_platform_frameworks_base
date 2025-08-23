@@ -35,7 +35,7 @@ import java.lang.annotation.RetentionPolicy;
  * to display.
  *
  * @deprecated Legacy CDMA is unsupported.
- * {@hide}
+ * @hide
  */
 @Deprecated
 @SystemApi

@@ -18,7 +18,9 @@ package android.view.inputmethod;
 
 import android.Manifest;
 import android.annotation.AnyThread;
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
+import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
@@ -617,13 +619,15 @@ final class IInputMethodManagerGlobalInvoker {
     @AnyThread
     static void onStart(@NonNull ImeTracker.Token statsToken, int uid, @ImeTracker.Type int type,
             @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason, boolean fromUser,
-            long startTime) {
+            @CurrentTimeMillisLong long startWallTimeMs,
+            @ElapsedRealtimeLong long startTimestampMs) {
         final var service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            service.onStart(statsToken, uid, type, origin, reason, fromUser, startTime);
+            service.onStart(statsToken, uid, type, origin, reason, fromUser, startWallTimeMs,
+                    startTimestampMs);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -712,32 +716,36 @@ final class IInputMethodManagerGlobalInvoker {
         }
     }
 
-    /** @see com.android.server.inputmethod.ImeTrackerService#hasPendingImeVisibilityRequests */
+    /** @see com.android.server.inputmethod.ImeTrackerService#waitUntilNoPendingRequests */
     @AnyThread
     @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    static boolean hasPendingImeVisibilityRequests() {
-        final var service = getImeTrackerService();
-        if (service == null) {
-            return true;
-        }
-        try {
-            return service.hasPendingImeVisibilityRequests();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    @AnyThread
-    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    static void finishTrackingPendingImeVisibilityRequests() {
+    static void waitUntilNoPendingRequests(long timeoutMs) {
         final var service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            final var completionSignal = new AndroidFuture<Void>();
-            service.finishTrackingPendingImeVisibilityRequests(completionSignal);
-            completionSignal.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            final var future = new AndroidFuture<Void>();
+            service.waitUntilNoPendingRequests(future, timeoutMs);
+            future.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (Exception e) {
+            throw ExceptionUtils.propagate(e);
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
+    static void finishTrackingPendingRequests() {
+        final var service = getImeTrackerService();
+        if (service == null) {
+            return;
+        }
+        try {
+            final var future = new AndroidFuture<Void>();
+            service.finishTrackingPendingRequests(future);
+            future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (Exception e) {

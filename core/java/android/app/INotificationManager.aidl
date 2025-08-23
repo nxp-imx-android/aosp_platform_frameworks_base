@@ -44,7 +44,7 @@ import android.app.AutomaticZenRule;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenDeviceEffects;
 
-/** {@hide} */
+/** @hide */
 interface INotificationManager
 {
     @UnsupportedAppUsage

@@ -146,10 +146,19 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Reprendre"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Modifier"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Supprimer"</string>
-    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Prendre une capture d\'écran de l\'écran entier"</string>
-    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Prendre une capture d\'écran de la zone sélectionnée"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
+    <!-- no translation found for screen_record_play (4732544724679889445) -->
     <skip />
+    <!-- no translation found for screen_record_pause (1715012292444967776) -->
+    <skip />
+    <!-- no translation found for screen_record_mute (8111682249858638168) -->
+    <skip />
+    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
+    <skip />
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Prendre une capture d\'écran de l\'écran entier"</string>
+    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
+    <skip />
+    <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Prendre une capture d\'écran de la zone sélectionnée"</string>
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Enregistrer la zone sélectionnée"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Capture d\'écran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
@@ -411,8 +420,7 @@
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Appareil sans nom"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Aucun appareil à proximité"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Aucune connexion Wi-Fi ou Ethernet"</string>
-    <!-- no translation found for quick_settings_cast_disconnect (4836025217838730930) -->
-    <skip />
+    <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Déconnecter"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Luminosité"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversion des couleurs"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Correction des couleurs"</string>
@@ -422,8 +430,7 @@
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Fermer"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Connecté"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Connexion en cours…"</string>
-    <!-- no translation found for quick_settings_scanning_for_wifi (5875402701266073463) -->
-    <skip />
+    <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Recherche de réseaux Wi-Fi en cours…"</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Point d\'accès sans fil"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Activation en cours…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Écon. données activé"</string>
@@ -1194,12 +1201,9 @@
     <string name="running_foreground_services_title" msgid="5137313173431186685">"Applis qui fonctionnent en arrière-plan"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"Touchez pour afficher des détails sur l\'utilisation de la pile et des données"</string>
     <string name="mobile_data_disable_title" msgid="5366476131671617790">"Désactiver les données cellulaires?"</string>
-    <!-- no translation found for mobile_data_enable_title (8259903353761259200) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_message (2013861580086078913) -->
-    <skip />
-    <!-- no translation found for mobile_data_enable_turn_on (5577732543207882533) -->
-    <skip />
+    <string name="mobile_data_enable_title" msgid="8259903353761259200">"Activer les données cellulaires?"</string>
+    <string name="mobile_data_enable_message" msgid="2013861580086078913">"L\'utilisation de données cellulaires peut entraîner des frais en fonction de votre forfait mobile."</string>
+    <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"Activer"</string>
     <string name="mobile_data_disable_message" msgid="8604966027899770415">"Vous n\'aurez pas accès aux données ni à Internet avec <xliff:g id="CARRIER">%s</xliff:g>. Vous ne pourrez accéder à Internet que par Wi-Fi."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"votre fournisseur de services"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"Rebasculer vers <xliff:g id="CARRIER">%s</xliff:g>?"</string>
@@ -1479,7 +1483,6 @@
     <string name="clipboard_edit_text_done" msgid="4551887727694022409">"OK"</string>
     <string name="clipboard_overlay_text_copied" msgid="1872624400464891363">"Copié"</string>
     <string name="clipboard_edit_source" msgid="9156488177277788029">"À partir de <xliff:g id="APPNAME">%1$s</xliff:g>"</string>
-    <string name="clipboard_dismiss_description" msgid="3335990369850165486">"Ignorer le texte copié"</string>
     <string name="clipboard_edit_text_description" msgid="805254383912962103">"Modifier le texte copié"</string>
     <string name="clipboard_edit_image_description" msgid="8904857948976041306">"Modifier l\'image copiée"</string>
     <string name="clipboard_send_nearby_description" msgid="4629769637846717650">"Envoyer à un appareil à proximité"</string>

@@ -27,7 +27,7 @@ import android.telecom.CallEndpoint;
  *
  * @see android.telecom.InCallAdapter
  *
- * {@hide}
+ * @hide
  */
 oneway interface IInCallAdapter {
     void answerCall(String callId, int videoState);

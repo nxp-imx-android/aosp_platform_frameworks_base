@@ -22,6 +22,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
+import com.android.systemui.bouncer.domain.interactor.bouncerIsShowing
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
@@ -44,6 +45,7 @@ class WindowRootViewBlurInteractorTest : SysuiTestCase() {
     fun shadeBlurIsNotAppliedWhenBouncerBlurIsActive() =
         testScope.runTest {
             kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(true)
+            kosmos.bouncerIsShowing()
 
             assertThat(underTest.requestBlurForShade(30, 1.0f)).isFalse()
         }

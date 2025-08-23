@@ -188,9 +188,9 @@ status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outWindow
             goto fail_silent;
         }
 
+        window->mData = malloc(window->mSize);
+        if (!window->mData) goto fail;
         if (window->mSize > 0) {
-            window->mData = malloc(window->mSize);
-            if (!window->mData) goto fail;
             if (parcel->read(window->mData, window->mSize)) goto fail;
         }
     }

@@ -37,7 +37,7 @@ import android.window.StartingWindowRemovalInfo;
  *      responsibilities end.
  * </ul>
  *
- * {@hide}
+ * @hide
  */
 oneway interface ITransitionPlayer {
 

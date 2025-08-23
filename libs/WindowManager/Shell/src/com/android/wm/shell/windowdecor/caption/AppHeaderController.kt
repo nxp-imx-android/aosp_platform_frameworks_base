@@ -223,6 +223,7 @@ class AppHeaderController(
                 )
             handleMenu?.relayout(
                 startT,
+                taskInfo.configuration,
                 captionLayout.captionX,
                 // Add top padding to the caption Y so that the menu is shown over what is the
                 // actual contents of the caption, ignoring padding. This is currently relevant
@@ -522,6 +523,7 @@ class AppHeaderController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionView = null,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,

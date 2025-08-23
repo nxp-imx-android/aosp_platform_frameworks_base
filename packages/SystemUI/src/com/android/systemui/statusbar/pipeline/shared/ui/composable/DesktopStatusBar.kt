@@ -101,7 +101,8 @@ fun DesktopStatusBar(
                     Arrangement.spacedBy(
                         DesktopStatusBar.Dimensions.ElementSpacing,
                         Alignment.Start,
-                    )
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 ClockLegacy(textColor = tint, onClick = null)
 

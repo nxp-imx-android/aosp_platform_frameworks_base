@@ -102,7 +102,7 @@ fun ActionList(
     pillCenter: Offset = Offset.Unspecified,
     pillWidth: Float = 0f,
     rotation: Int = 0,
-    inTaskBarOr3ButtonMode: Boolean = false,
+    taskBarMode: Boolean = false,
 ) {
     val density = LocalDensity.current
     val minOverscrollDelta = (-8).dp
@@ -307,7 +307,7 @@ fun ActionList(
                 }
                 .drawBehind {
                     val sidePaddingPx =
-                        if (inTaskBarOr3ButtonMode && portrait) {
+                        if (taskBarMode) {
                             pillCenter.x - actionListCenterPositionX
                         } else {
                             with(density) { scrimHorizontalPadding.toPx() }

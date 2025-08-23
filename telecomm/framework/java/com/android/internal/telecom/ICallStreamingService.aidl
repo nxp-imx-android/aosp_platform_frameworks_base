@@ -25,7 +25,7 @@ import com.android.internal.telecom.IStreamingCallAdapter;
  *
  * @see android.telecom.CallStreamingService
  *
- * {@hide}
+ * @hide
  */
 oneway interface ICallStreamingService {
     void setStreamingCallAdapter(in IStreamingCallAdapter streamingCallAdapter);

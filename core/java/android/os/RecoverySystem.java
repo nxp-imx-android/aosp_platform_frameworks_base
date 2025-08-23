@@ -451,7 +451,7 @@ public class RecoverySystem {
      *   unconditionally returns true. Instead, check compatibility when the
      *   OTA package is generated.
      *
-     * {@hide}
+     * @hide
      */
     @Deprecated
     @SystemApi
@@ -883,26 +883,26 @@ public class RecoverySystem {
                 false /* force */, false /* wipeEuicc */);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void rebootWipeUserData(Context context, String reason) throws IOException {
         rebootWipeUserData(context, false /* shutdown */, reason, false /* force */,
                 false /* wipeEuicc */);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void rebootWipeUserData(Context context, boolean shutdown)
             throws IOException {
         rebootWipeUserData(context, shutdown, context.getPackageName(), false /* force */,
                 false /* wipeEuicc */);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void rebootWipeUserData(Context context, boolean shutdown, String reason,
             boolean force) throws IOException {
         rebootWipeUserData(context, shutdown, reason, force, false /* wipeEuicc */);
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void rebootWipeUserData(Context context, boolean shutdown, String reason,
             boolean force, boolean wipeEuicc) throws IOException {
         rebootWipeUserData(context, shutdown, reason, force, wipeEuicc, false /* keepMemtagMode */);
@@ -1235,7 +1235,7 @@ public class RecoverySystem {
         rebootWipeCache(context, context.getPackageName());
     }
 
-    /** {@hide} */
+    /** @hide */
     public static void rebootWipeCache(Context context, String reason) throws IOException {
         String reasonArg = null;
         if (!TextUtils.isEmpty(reason)) {

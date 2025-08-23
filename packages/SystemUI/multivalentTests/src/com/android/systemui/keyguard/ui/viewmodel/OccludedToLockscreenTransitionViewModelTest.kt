@@ -40,6 +40,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@DisableSceneContainer
 class OccludedToLockscreenTransitionViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope
@@ -99,7 +100,6 @@ class OccludedToLockscreenTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableSceneContainer
     fun statusBarAlphaOnCancel() =
         testScope.runTest {
             val values by collectValues(underTest.statusBarAlpha)
@@ -146,7 +146,6 @@ class OccludedToLockscreenTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableSceneContainer // onCancel values are not emitted when the scene container is enabled.
     fun lockscreenTranslationYResettedAfterJobCancelled() =
         testScope.runTest {
             configurationRepository.setDimensionPixelSize(

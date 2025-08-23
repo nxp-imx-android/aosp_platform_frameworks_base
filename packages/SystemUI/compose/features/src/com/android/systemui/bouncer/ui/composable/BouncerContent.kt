@@ -843,7 +843,7 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
                     }
                     .height(56.dp)
                     .clip(ButtonDefaults.shape)
-                    .background(color = MaterialTheme.colorScheme.tertiaryContainer)
+                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
                     .semantics { role = Role.Button }
                     .combinedClickable(
                         onClick = { actionButton?.let { viewModel.onActionButtonClicked(it) } },
@@ -854,8 +854,8 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
         ) {
             Text(
                 text = stringResource(id = actionButtonModel.labelResId),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.align(Alignment.Center).padding(ButtonDefaults.ContentPadding),
             )
         }
@@ -941,7 +941,7 @@ private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Mo
                     val context = LocalContext.current
                     Text(
                         text = checkNotNull(firstDropdownItem.text.loadText(context)),
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

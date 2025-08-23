@@ -58,11 +58,15 @@ class TaskSnapshotListenerTracker extends ITaskSnapshotListener.Stub {
      */
     @Override
     public void onTaskSnapshotChanged(int taskId, TaskSnapshot snapshot) {
-        mManager.createTracker(taskId, snapshot);
         final ArrayList<TaskSnapshotListener> tempList;
         synchronized (mLocalListeners) {
+            if (isEmpty()) {
+                snapshot.closeBuffer();
+                return;
+            }
             tempList = new ArrayList<>(mLocalListeners);
         }
+        mManager.createTrackerWithCount(taskId, snapshot, tempList.size());
         for (TaskSnapshotListener l : tempList) {
             l.onTaskSnapshotChanged(taskId, snapshot);
         }

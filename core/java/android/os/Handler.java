@@ -346,7 +346,7 @@ public class Handler {
         return handler == null ? getMain() : handler;
     }
 
-    /** {@hide} */
+    /** @hide */
     @NonNull
     public String getTraceName(@NonNull Message message) {
         if (message.callback instanceof TraceNameSupplier) {

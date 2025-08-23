@@ -25,7 +25,7 @@ import android.telephony.data.TrafficDescriptor;
 import com.android.internal.telephony.IIntegerConsumer;
 
 /**
- * {@hide}
+ * @hide
  */
 oneway interface IDataService
 {

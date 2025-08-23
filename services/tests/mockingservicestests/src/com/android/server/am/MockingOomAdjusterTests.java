@@ -198,7 +198,6 @@ public class MockingOomAdjusterTests {
 
     private static int sFirstCachedAdj = ProcessList.CACHED_APP_MIN_ADJ
             + ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
-    private static int sFirstUiCachedAdj = ProcessList.CACHED_APP_MIN_ADJ + 10;
 
     private Context mContext;
     private ProcessStateController mProcessStateController;
@@ -211,9 +210,6 @@ public class MockingOomAdjusterTests {
 
     private HandlerThread mActivityStateHandlerThread;
     private Handler mActivityStateHandler;
-
-    private int mUiTierSize;
-    private int mFirstNonUiCachedAdj;
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -316,9 +312,6 @@ public class MockingOomAdjusterTests {
         mService.mActivityTaskManager.initialize(null, null, mProcessStateController,
                 mActivityStateHandlerThread.getLooper());
         mService.mAtmInternal = spy(mService.mActivityTaskManager.getAtmInternal());
-
-        mUiTierSize = mService.mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
-        mFirstNonUiCachedAdj = sFirstUiCachedAdj + mUiTierSize;
     }
 
     @SuppressWarnings("GuardedBy")
@@ -653,8 +646,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? sFirstUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj,
                 SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
@@ -1273,8 +1265,7 @@ public class MockingOomAdjusterTests {
             mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
             mProcessStateController.runFollowUpUpdate();
 
-            final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                    ? sFirstUiCachedAdj : sFirstCachedAdj;
+            final int expectedAdj = sFirstCachedAdj;
             assertEquals(expectedAdj, app.getSetAdj());
             assertThatProcess(app).notHasImplicitCpuTimeCapability();
             // Follow up should not have been called again.
@@ -1423,8 +1414,7 @@ public class MockingOomAdjusterTests {
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
 
-        int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? sFirstUiCachedAdj : CACHED_APP_MIN_ADJ;
+        int expectedAdj = CACHED_APP_MIN_ADJ;
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, expectedAdj,
                 SCHED_GROUP_BACKGROUND, "previous-expired");
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
@@ -1504,15 +1494,9 @@ public class MockingOomAdjusterTests {
 
         for (int i = 0; i < numberOfApps - 1; i++) {
             final int mruIndex = numberOfApps - i - 1;
-            int expectedAdj;
-            if (mService.mConstants.USE_TIERED_CACHED_ADJ) {
-                expectedAdj = (i < numberOfApps - mUiTierSize)
-                        ? mFirstNonUiCachedAdj : sFirstUiCachedAdj + mruIndex;
-            } else {
-                expectedAdj = CACHED_APP_MIN_ADJ + (mruIndex * 2 * CACHED_APP_IMPORTANCE_LEVELS);
-                if (expectedAdj > CACHED_APP_MAX_ADJ) {
-                    expectedAdj = CACHED_APP_MAX_ADJ;
-                }
+            int expectedAdj = CACHED_APP_MIN_ADJ + (mruIndex * 2 * CACHED_APP_IMPORTANCE_LEVELS);
+            if (expectedAdj > CACHED_APP_MAX_ADJ) {
+                expectedAdj = CACHED_APP_MAX_ADJ;
             }
             assertProcStates(apps[i], PROCESS_STATE_LAST_ACTIVITY, expectedAdj,
                     SCHED_GROUP_BACKGROUND, "service");
@@ -1597,8 +1581,7 @@ public class MockingOomAdjusterTests {
         } else {
             updateOomAdj(app);
         }
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? sFirstUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj,
                 SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
@@ -1711,8 +1694,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(client, app);
         setTopProcess(null);
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? sFirstUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_SERVICE, expectedAdj, SCHED_GROUP_BACKGROUND);
         // This WPRIO service oom score is in the FREEZER_CUTOFF_ADJ range, but the client is not
         // frozen, so neither should the service.
@@ -1767,8 +1749,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? mFirstNonUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
     }
@@ -2232,8 +2213,7 @@ public class MockingOomAdjusterTests {
         bindProvider(app, cpr);
         updateOomAdj(app);
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? mFirstNonUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
     }
@@ -2251,8 +2231,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app, client);
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? mFirstNonUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
     }
@@ -2396,8 +2375,7 @@ public class MockingOomAdjusterTests {
         setProcessesToLru(client, app);
         mProcessStateController.runFollowUpUpdate();
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? mFirstNonUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj, SCHED_GROUP_BACKGROUND,
                 "cch-empty");
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
@@ -3602,8 +3580,6 @@ public class MockingOomAdjusterTests {
         final int userOwner = 0;
         final int userOther = 1;
 
-        // cachedAdj1 and cachedAdj2 will be read if USE_TIERED_CACHED_ADJ is disabled. Otherwise,
-        // sFirstUiCachedAdj and mFirstNonUiCachedAdj are used instead.
         final int cachedAdj1 = CACHED_APP_MIN_ADJ + CACHED_APP_IMPORTANCE_LEVELS;
         final int cachedAdj2 = cachedAdj1 + CACHED_APP_IMPORTANCE_LEVELS * 2;
         doReturn(userOwner).when(mService.mUserController).getCurrentUserId();
@@ -3647,12 +3623,10 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj();
 
-        assertProcStates(app, PROCESS_STATE_SERVICE,
-                mService.mConstants.USE_TIERED_CACHED_ADJ ? sFirstUiCachedAdj : cachedAdj1,
+        assertProcStates(app, PROCESS_STATE_SERVICE, cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-ui-services", true);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
-        assertProcStates(app2, PROCESS_STATE_SERVICE,
-                mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj2,
+        assertProcStates(app2, PROCESS_STATE_SERVICE, cachedAdj2,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
@@ -3673,8 +3647,7 @@ public class MockingOomAdjusterTests {
                 now - mService.mConstants.MAX_SERVICE_INACTIVITY - 1);
         updateOomAdj();
 
-        assertProcStates(app, PROCESS_STATE_SERVICE,
-                mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj1,
+        assertProcStates(app, PROCESS_STATE_SERVICE, cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
 
@@ -3697,8 +3670,7 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services", false);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
-        assertProcStates(app2, PROCESS_STATE_SERVICE,
-                mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj1,
+        assertProcStates(app2, PROCESS_STATE_SERVICE, cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
@@ -3713,8 +3685,7 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services", false);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
-        assertProcStates(app2, PROCESS_STATE_SERVICE,
-                mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj1,
+        assertProcStates(app2, PROCESS_STATE_SERVICE, cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
@@ -3722,8 +3693,7 @@ public class MockingOomAdjusterTests {
         mService.mOomAdjuster.handleUserSwitchedLocked();
 
         updateOomAdj();
-        assertProcStates(app, PROCESS_STATE_SERVICE,
-                mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj1,
+        assertProcStates(app, PROCESS_STATE_SERVICE, cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
         assertProcStates(app2, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
@@ -4061,8 +4031,7 @@ public class MockingOomAdjusterTests {
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? mFirstNonUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_SERVICE, expectedAdj, SCHED_GROUP_BACKGROUND,
                 "cch-started-services");
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
@@ -4210,8 +4179,7 @@ public class MockingOomAdjusterTests {
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? mFirstNonUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app1, PROCESS_STATE_CACHED_EMPTY, expectedAdj, SCHED_GROUP_BACKGROUND,
                 "cch-empty");
         assertThatProcess(app1).notHasImplicitCpuTimeCapability();
@@ -4278,8 +4246,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app, client);
 
-        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
-                ? sFirstUiCachedAdj : sFirstCachedAdj;
+        final int expectedAdj = sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_HOME, expectedAdj, SCHED_GROUP_BACKGROUND,
                 "cch-bound-ui-services");
         // CPU_TIME is not granted to the client and so cannot be propagated to the service.

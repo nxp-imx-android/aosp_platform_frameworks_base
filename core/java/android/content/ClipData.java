@@ -1205,7 +1205,7 @@ public class ClipData implements Parcelable {
         // No process boundaries on Ravenwood; ignored
     }
 
-    /** {@hide} */
+    /** @hide */
     @android.ravenwood.annotation.RavenwoodThrow
     public void prepareToEnterProcess(AttributionSource source) {
         final int size = mItems.size();

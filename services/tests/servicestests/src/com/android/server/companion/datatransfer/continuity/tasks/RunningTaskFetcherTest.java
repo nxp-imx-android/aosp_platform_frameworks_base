@@ -164,7 +164,8 @@ public class RunningTaskFetcherTest {
                 taskId,
                 packageMetadata.label(),
                 lastActiveTime,
-                packageMetadata.icon());
+                packageMetadata.icon(),
+                true);
         }
     }
 

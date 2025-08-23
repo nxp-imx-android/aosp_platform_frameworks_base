@@ -27,7 +27,7 @@
     <string name="title_reinstalling" msgid="8194821341725321638">"Reinstaliranje…"</string>
     <string name="title_reinstalled" msgid="4805694558041089418">"Aplikacija je reinstalirana"</string>
     <string name="title_update" msgid="1747328630716712391">"Želite da ažurirate ovu aplikaciju?"</string>
-    <string name="title_update_ownership_change" msgid="6628818356381453406">"Želite da ažurirate ovu aplikaciju pomoću: <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
+    <string name="title_update_ownership_change" msgid="6628818356381453406">"Želite da ažurirate ovu aplikaciju koristeći: <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
     <string name="title_updating" msgid="5449073288264173554">"Ažurira se…"</string>
     <string name="title_updated" msgid="3286125118804971449">"Aplikacija je ažurirana"</string>
     <string name="title_cant_install_app" msgid="8683361719005005686">"Instaliranje aplikacije nije uspelo"</string>
@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Želite da deinstalirate ažuriranja aplikacije?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Želite da deinstalirate ažuriranja aplikacije za sve korisnike?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Želite da deinstalirate ovu aplikaciju za sve korisnike?"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"Želite da deinstalirate ovu aplikaciju za korisnika <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplikacija nije pronađena"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Deinstaliranje ove aplikacije nije uspelo"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplikacija nije deinstalirana"</string>
     <string name="title_archive" msgid="2876455228073419830">"Želite da arhivirate ovu aplikaciju?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Želite da arhivirate ovu aplikaciju za sve korisnike?"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"Želite da arhivirate ovu aplikaciju za korisnika <xliff:g id="USER_NAME">%1$s</xliff:g>?"</string>
     <string name="title_restore" msgid="8934911753892124574">"Želite da vratite ovu aplikaciju?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Treba da reagujete"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Nema dovoljno memorijskog prostora"</string>

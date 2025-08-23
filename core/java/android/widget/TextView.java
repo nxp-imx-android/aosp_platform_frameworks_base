@@ -10935,7 +10935,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     /**
      * The width passed in is now the desired layout width,
      * not the full view width with padding.
-     * {@hide}
+     * @hide
      */
     @VisibleForTesting
     @UnsupportedAppUsage

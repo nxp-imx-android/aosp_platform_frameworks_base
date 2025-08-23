@@ -327,6 +327,16 @@ flag {
 }
 
 flag {
+    name: "enable_cross_displays_app_launch_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enables a transition for launching an already opened app on another display."
+    bug: "422333177"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_cross_displays_pip_task_launch"
     namespace: "lse_desktop_experience"
     description: "Enables launching an app while it's in PiP on another display."
@@ -915,6 +925,16 @@ flag {
 }
 
 flag {
+    name: "enable_drawing_app_handle"
+    namespace: "lse_desktop_experience"
+    description: "Enables app handle being drawn programmatically instead of using Drawables."
+    bug: "314288540"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_dream_activity_windowing_exclusion"
     namespace: "lse_desktop_experience"
     description: "When enabled activities with type dream will be exempt from desktop windowing"
@@ -1059,6 +1079,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the key gesture handler for listening to SysUi interested key events."
     bug: "406740557"
+}
+
+flag {
+    name: "enable_launcher_handle_go_home_keyboard_shortcut"
+    namespace: "lse_desktop_experience"
+    description: "Enables handling the go home keyboard shortcut on the Launcher side."
+    bug: "427579352"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1225,6 +1255,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Fixes the issue that OnPictureInPictureParamsChanged is sent to a root task."
     bug: "422654539"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_presentation_disallowed_on_unfocused_host_task"
+    namespace: "lse_desktop_experience"
+    description: "Disallows presentations from being shown on their unfocused host tasks."
+    bug: "435586251"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -305,7 +305,7 @@ import java.util.function.Consumer;
  * broadcasts, and other operations on it as the activity
  * manager requests.
  *
- * {@hide}
+ * @hide
  */
 @android.ravenwood.annotation.RavenwoodKeepPartialClass(comment =
         "Initialization logic is in ActivityThread_ravenwood and RavenwoodAppDriver."

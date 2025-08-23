@@ -94,6 +94,8 @@ import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.time.SystemClock;
 
+import com.google.android.msdl.domain.MSDLPlayer;
+
 import dagger.Lazy;
 
 import kotlinx.coroutines.CoroutineScope;
@@ -310,7 +312,8 @@ public class UdfpsControllerTest extends SysuiTestCase {
                 mPowerInteractor,
                 mock(CoroutineScope.class),
                 UserActivityNotifierKosmosKt.getUserActivityNotifier(mKosmos),
-                mWakefulnessLifecycle
+                mWakefulnessLifecycle,
+                mock(MSDLPlayer.class)
         );
         verify(mFingerprintManager).setUdfpsOverlayController(mOverlayCaptor.capture());
         mOverlayController = mOverlayCaptor.getValue();

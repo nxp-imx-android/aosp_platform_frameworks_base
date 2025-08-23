@@ -20,6 +20,8 @@ import android.content.Context
 import com.android.launcher3.icons.IconFactory
 import com.android.systemui.mediaprojection.appselector.data.RecentTaskListProvider
 import com.android.systemui.mediaprojection.appselector.data.ShellRecentTaskListProvider
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureAppContentRepository
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureAppContentRepositoryImpl
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepository
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepositoryImpl
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureLabelRepository
@@ -60,6 +62,11 @@ interface CommonModule {
     fun bindRecentTaskRepository(
         impl: ScreenCaptureRecentTaskRepositoryImpl
     ): ScreenCaptureRecentTaskRepository
+
+    @Binds
+    fun bindAppContentRepository(
+        impl: ScreenCaptureAppContentRepositoryImpl
+    ): ScreenCaptureAppContentRepository
 
     @Binds fun bindRecentTaskListProvider(impl: ShellRecentTaskListProvider): RecentTaskListProvider
 

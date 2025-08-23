@@ -39,6 +39,7 @@ import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
+import static android.os.UserManager.REMOVE_RESULT_DEVICE_OWNER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
 import static android.os.UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
@@ -2023,12 +2024,14 @@ public final class UserManagerServiceMockedTest {
                 new UserInfo(USER_ID3, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
         var dyingUser = addDyingUser(new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL));
         var deviceOwnerUser = addUser(
-                new UserInfo(USER_ID4, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+                new UserInfo(USER_ID5, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
+        mockGetDeviceOwnerUserId(deviceOwnerUser.id);
 
         // Failure cases first
         expectGetUserRemovability("system user", USER_SYSTEM, REMOVE_RESULT_ERROR_SYSTEM_USER);
         expectGetUserRemovability("null user", USER_NULL, REMOVE_RESULT_ERROR_USER_NOT_FOUND);
         expectGetUserRemovability("dying user", dyingUser.id, REMOVE_RESULT_ALREADY_BEING_REMOVED);
+        expectGetUserRemovability("device owner", deviceOwnerUser.id, REMOVE_RESULT_DEVICE_OWNER);
 
         // Then success ones
         expectGetUserRemovability("non-admin", nonAdminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
@@ -2037,7 +2040,6 @@ public final class UserManagerServiceMockedTest {
         expectGetUserRemovability("admin 1", adminUser1.id, REMOVE_RESULT_USER_IS_REMOVABLE);
         expectGetUserRemovability("admin 2", adminUser2.id, REMOVE_RESULT_USER_IS_REMOVABLE);
     }
-
 
     /**
      * Returns true if the user's XML file has Default restrictions
@@ -2148,6 +2150,12 @@ public final class UserManagerServiceMockedTest {
 
         when(mActivityManagerInternal.getCurrentAndTargetUserIds())
                 .thenReturn(new Pair<>(currentUserId, targetUserId));
+    }
+
+    private void mockGetDeviceOwnerUserId(@UserIdInt int deviceOwnerUserId) {
+        Log.d(TAG, "mockGetDeviceOwnerUserId(): " + deviceOwnerUserId);
+        mockGetLocalService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
+        when(mDevicePolicyManagerInternal.getDeviceOwnerUserId()).thenReturn(deviceOwnerUserId);
     }
 
     private <T> void mockGetLocalService(Class<T> serviceClass, T service) {

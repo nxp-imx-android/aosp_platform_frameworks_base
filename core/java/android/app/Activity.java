@@ -2357,7 +2357,7 @@ public class Activity extends ContextThemeWrapper
      * <p>All IDs will be bigger than {@link View#LAST_APP_AUTOFILL_ID}. All IDs returned
      * will be unique.
      *
-     * {@hide}
+     * @hide
      */
     @Override
     public int getNextAutofillId() {

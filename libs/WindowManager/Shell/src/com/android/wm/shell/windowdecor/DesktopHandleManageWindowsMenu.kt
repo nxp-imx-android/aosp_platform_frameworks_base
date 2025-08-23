@@ -62,7 +62,6 @@ class DesktopHandleManageWindowsMenu(
         return calculateMenuPosition(
             splitScreenController,
             callerTaskInfo,
-            marginStart = 0,
             marginTop =
                 context.resources.getDimensionPixelSize(
                     R.dimen.desktop_mode_handle_menu_margin_top

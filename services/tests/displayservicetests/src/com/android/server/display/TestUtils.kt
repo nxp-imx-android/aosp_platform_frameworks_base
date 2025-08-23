@@ -21,6 +21,7 @@ import android.hardware.SensorEvent
 import android.hardware.input.InputSensorInfo
 import android.os.Parcel
 import android.os.SystemClock
+import android.view.Display
 import android.view.DisplayAddress
 import java.io.InputStream
 import java.io.OutputStream
@@ -67,4 +68,20 @@ internal fun createSensorEvent(
     timestamp: Long = SystemClock.elapsedRealtimeNanos()
 ): SensorEvent = SensorEvent(
     sensor, 0, timestamp, floatArrayOf(value)
+)
+
+fun createDisplayMode(
+    id: Int = Display.Mode.INVALID_MODE_ID,
+    parentId: Int = Display.Mode.INVALID_MODE_ID,
+    flags: Int = 0,
+    width: Int = 100,
+    height: Int = 200,
+    peakRefreshRate: Float = 60f,
+    vsyncRate: Float = 60f,
+    alternativeRefreshRates: FloatArray = floatArrayOf(),
+    supportedHdrTypes: IntArray = intArrayOf()
+
+): Display.Mode = Display.Mode(
+    id, parentId, flags, width, height, peakRefreshRate, vsyncRate,
+    alternativeRefreshRates, supportedHdrTypes
 )

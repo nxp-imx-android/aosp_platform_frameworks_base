@@ -16,25 +16,44 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+import static android.app.PendingIntent.FLAG_ONE_SHOT;
+
 import android.annotation.NonNull;
+import android.app.Activity;
+import android.app.ActivityOptions;
+import android.app.AppOpsManager;
 import android.app.KeyguardManager;
+import android.app.PendingIntent;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
-import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Parcel;
+import android.os.Process;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
+import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
+import android.view.Display;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
+import com.android.server.ServiceThread;
 import com.android.server.wm.WindowManagerInternal;
 
 /**
@@ -51,19 +70,37 @@ public class ComputerControlSessionProcessor {
     @VisibleForTesting
     static final int MAXIMUM_CONCURRENT_SESSIONS = 5;
 
+    private final Context mContext;
     private final PackageManager mPackageManager;
     private final KeyguardManager mKeyguardManager;
+    private final AppOpsManager mAppOpsManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final WindowManagerInternal mWindowManagerInternal;
+    private final PendingIntentFactory mPendingIntentFactory;
 
     /** The binders of all currently active sessions. */
     private final ArraySet<IBinder> mSessions = new ArraySet<>();
 
+    private final Object mHandlerThreadLock = new Object();
+    @GuardedBy("mHandlerThreadLock")
+    private ServiceThread mHandlerThread;
+    private Handler mHandler;
+
     public ComputerControlSessionProcessor(
             Context context, VirtualDeviceFactory virtualDeviceFactory) {
+        this(context, virtualDeviceFactory, ComputerControlSessionProcessor::createPendingIntent);
+    }
+
+    @VisibleForTesting
+    ComputerControlSessionProcessor(
+            Context context, VirtualDeviceFactory virtualDeviceFactory,
+            PendingIntentFactory pendingIntentFactory) {
+        mContext = context;
         mVirtualDeviceFactory = virtualDeviceFactory;
+        mPendingIntentFactory = pendingIntentFactory;
         mPackageManager = context.getPackageManager();
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
+        mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
     }
 
@@ -78,29 +115,106 @@ public class ComputerControlSessionProcessor {
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
-        if (mKeyguardManager.isKeyguardLocked()) {
-            dispatchSessionCreationFailed(
-                    callback, params, ComputerControlSession.ERROR_KEYGUARD_LOCKED);
+        startHandlerThreadIfNeeded();
+
+        final boolean canCreateWithoutConsent;
+        if (Flags.computerControlConsent()) {
+            final int isOpAllowed = mAppOpsManager.noteOpNoThrow(
+                    AppOpsManager.OP_AGENT_CONTROL, attributionSource, "create session");
+            canCreateWithoutConsent = isOpAllowed == AppOpsManager.MODE_ALLOWED;
+        } else {
+            canCreateWithoutConsent = true;
+        }
+
+        if (canCreateWithoutConsent) {
+            mHandler.post(() -> createSession(attributionSource, params, callback));
             return;
         }
+
         synchronized (mSessions) {
-            if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
-                dispatchSessionCreationFailed(
-                        callback, params, ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
+            if (!checkSessionCreationPreconditionsLocked(params, callback)) {
                 return;
             }
-            IComputerControlSession session = new ComputerControlSessionImpl(
+        }
+
+        final ResultReceiver resultReceiver =
+                new ConsentResultReceiver(attributionSource, params, callback).prepareForIpc();
+        final Intent intent = new Intent(ComputerControlSession.ACTION_REQUEST_ACCESS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, attributionSource.getPackageName())
+                .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver);
+        final PendingIntent pendingIntent =
+                mPendingIntentFactory.create(mContext, Binder.getCallingUid(), intent);
+        try {
+            callback.onSessionPending(pendingIntent);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
+                    + " about pending session");
+        }
+    }
+
+    private void startHandlerThreadIfNeeded() {
+        synchronized (mHandlerThreadLock) {
+            if (mHandlerThread != null) {
+                return;
+            }
+            mHandlerThread =
+                    new ServiceThread(TAG, Process.THREAD_PRIORITY_FOREGROUND, /* allowTo= */false);
+            mHandlerThread.start();
+            mHandler = new Handler(mHandlerThread.getLooper());
+        }
+    }
+
+    private void createSession(@NonNull AttributionSource attributionSource,
+            @NonNull ComputerControlSessionParams params,
+            @NonNull IComputerControlSessionCallback callback) {
+        if (!callback.asBinder().pingBinder()) {
+            Slog.w(TAG, "Binder is dead for ComputerControlSession " + params.getName()
+                    + ", aborting session creation");
+            // Don't bother creating the session if the requester is not around anymore.
+            return;
+        }
+        ComputerControlSessionImpl session;
+        synchronized (mSessions) {
+            if (!checkSessionCreationPreconditionsLocked(params, callback)) {
+                return;
+            }
+            Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
+            session = new ComputerControlSessionImpl(
                     callback.asBinder(), params, attributionSource, mPackageManager,
                     mVirtualDeviceFactory, mWindowManagerInternal,
                     new OnSessionClosedListener(params.getName(), callback));
             mSessions.add(session.asBinder());
-            try {
-                callback.onSessionCreated(session);
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
-                        + " about session creation success");
-            }
         }
+
+        // If the client provided a surface, disable the screenshot API.
+        // TODO(b/439774796): Do not allow client-provided surface and dimensions.
+        final int displayId = params.getDisplaySurface() == null
+                ? session.getVirtualDisplayId()
+                : Display.INVALID_DISPLAY;
+        try {
+            callback.onSessionCreated(displayId, session.getVirtualDisplayToken(), session);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
+                    + " about session creation success");
+        }
+    }
+
+    @GuardedBy("mSessions")
+    private boolean checkSessionCreationPreconditionsLocked(
+            @NonNull ComputerControlSessionParams params,
+            @NonNull IComputerControlSessionCallback callback) {
+        if (mKeyguardManager.isKeyguardLocked()) {
+            dispatchSessionCreationFailed(callback, params,
+                    ComputerControlSession.ERROR_KEYGUARD_LOCKED);
+            return false;
+        }
+        if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
+            dispatchSessionCreationFailed(callback, params,
+                    ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
+            return false;
+        }
+        return true;
     }
 
     /** Notifies the client that session creation failed. */
@@ -111,6 +225,60 @@ public class ComputerControlSessionProcessor {
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
                     + " about session creation failure");
+        }
+    }
+
+    private static PendingIntent createPendingIntent(Context context, int uid, Intent intent) {
+        return Binder.withCleanCallingIdentity(() ->
+                PendingIntent.getActivityAsUser(
+                        context, /*requestCode= */ uid, intent,
+                        FLAG_ONE_SHOT | FLAG_CANCEL_CURRENT | FLAG_IMMUTABLE,
+                        ActivityOptions.makeBasic()
+                                .setPendingIntentCreatorBackgroundActivityStartMode(
+                                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                                .toBundle(),
+                        UserHandle.CURRENT));
+    }
+
+    private final class ConsentResultReceiver extends ResultReceiver {
+
+        private final AttributionSource mAttributionSource;
+        private final ComputerControlSessionParams mParams;
+        private final IComputerControlSessionCallback mCallback;
+
+        ConsentResultReceiver(@NonNull AttributionSource attributionSource,
+                @NonNull ComputerControlSessionParams params,
+                @NonNull IComputerControlSessionCallback callback) {
+            super(mHandler);
+            mAttributionSource = attributionSource;
+            mParams = params;
+            mCallback = callback;
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle data) {
+            if (resultCode == Activity.RESULT_OK) {
+                mHandler.post(() -> createSession(mAttributionSource, mParams, mCallback));
+            } else {
+                dispatchSessionCreationFailed(mCallback, mParams,
+                        ComputerControlSession.ERROR_PERMISSION_DENIED);
+            }
+        }
+
+        /**
+         * Convert this instance of a "locally-defined" ResultReceiver to an instance of
+         * {@link android.os.ResultReceiver} itself, which the receiving process will be able to
+         * unmarshall.
+         */
+        private ResultReceiver prepareForIpc() {
+            final Parcel parcel = Parcel.obtain();
+            writeToParcel(parcel, 0);
+            parcel.setDataPosition(0);
+
+            final ResultReceiver ipcFriendly = ResultReceiver.CREATOR.createFromParcel(parcel);
+            parcel.recycle();
+
+            return ipcFriendly;
         }
     }
 
@@ -159,5 +327,16 @@ public class ComputerControlSessionProcessor {
                 AttributionSource attributionSource,
                 VirtualDeviceParams params,
                 IVirtualDeviceActivityListener activityListener);
+    }
+
+    /**
+     * Interface for creating a pending intent for a computer control session.
+     */
+    @VisibleForTesting
+    public interface PendingIntentFactory {
+        /**
+         * Creates a new pending intent.
+         */
+        PendingIntent create(Context context, int uid, Intent intent);
     }
 }

@@ -41,15 +41,13 @@
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"アプリ アップデートをアンインストールしますか？"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"すべてのユーザーに対してアプリ アップデートをアンインストールしますか？"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"すべてのユーザーに対してこのアプリをアンインストールしますか？"</string>
-    <!-- no translation found for title_uninstall_other_user (2271467467800640363) -->
-    <skip />
+    <string name="title_uninstall_other_user" msgid="2271467467800640363">"ユーザー「<xliff:g id="USER_NAME">%1$s</xliff:g>」に対してこのアプリをアンインストールしますか？"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"アプリが見つかりません"</string>
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"このアプリをアンインストールできません"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"アプリをアンインストールできませんでした"</string>
     <string name="title_archive" msgid="2876455228073419830">"このアプリをアーカイブしますか？"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"すべてのユーザーに対してこのアプリをアーカイブしますか？"</string>
-    <!-- no translation found for title_archive_other_user (6686508642274629645) -->
-    <skip />
+    <string name="title_archive_other_user" msgid="6686508642274629645">"ユーザー「<xliff:g id="USER_NAME">%1$s</xliff:g>」に対してこのアプリをアーカイブしますか？"</string>
     <string name="title_restore" msgid="8934911753892124574">"このアプリを復元しますか？"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"ご対応のお願い"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"空き容量が不足しています"</string>
