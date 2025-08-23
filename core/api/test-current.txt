@@ -2583,6 +2583,11 @@ package android.os {
     ctor public NewUserResponse(@Nullable android.os.UserHandle, int);
   }
 
+  @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public final class PackageTagsList implements android.os.Parcelable {
+    method @Deprecated public boolean containsAll(@NonNull String);
+    method @Deprecated public boolean includes(@NonNull String);
+  }
+
   public final class Parcel {
     method public boolean allowSquashing();
     method public int getFlags();
