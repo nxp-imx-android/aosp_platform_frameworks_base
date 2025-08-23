@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
@@ -153,9 +154,12 @@ constructor(
             NestedScenes(
                 sceneKey = if (isTwoColumn) TwoColumnScene else CenteredClockScene,
                 transitions = {
-                    // TODO(b/418824686): Real transition timings and implementation
-                    from(from = CenteredClockScene, to = TwoColumnScene) { spec = tween(1000) }
-                    from(from = TwoColumnScene, to = CenteredClockScene) { spec = tween(1000) }
+                    from(from = CenteredClockScene, to = TwoColumnScene) {
+                        spec = tween(ClockCenteringDurationMS, easing = Easings.Emphasized)
+                    }
+                    from(from = TwoColumnScene, to = CenteredClockScene) {
+                        spec = tween(ClockCenteringDurationMS, easing = Easings.Emphasized)
+                    }
                 },
                 modifier = modifier,
             ) {
@@ -285,6 +289,8 @@ constructor(
     }
 
     companion object {
+        val ClockCenteringDurationMS = 1000
+
         enum class LayoutType {
             WIDE,
             NARROW,

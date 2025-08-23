@@ -51,6 +51,8 @@ import kotlin.collections.List
 open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     override val views = listOf(view)
 
+    var smallClockModifier: MovableElementContentScope.() -> Modifier = { Modifier }
+    var largeClockModifier: MovableElementContentScope.() -> Modifier = { Modifier }
     override val elements: List<MovableLockscreenElement> by lazy {
         if (view.id == ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE) {
             listOf(LargeClockElement())
@@ -69,10 +71,10 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
             context: LockscreenElementContext,
         ) {
             clockView(
-                view = view,
-                modifier =
-                    Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
-                        .then(context.burnInModifier),
+                view,
+                smallClockModifier()
+                    .height(dimensionResource(clocksR.dimen.small_clock_height))
+                    .then(context.burnInModifier),
             )
         }
     }
@@ -86,8 +88,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
             factory: LockscreenElementFactory,
             context: LockscreenElementContext,
         ) {
-            // TODO(b/418824686): Migrate stepping animation to compose
-            clockView(view, Modifier.wrapContentSize().then(context.burnInModifier))
+            clockView(view, largeClockModifier().wrapContentSize().then(context.burnInModifier))
         }
     }
 

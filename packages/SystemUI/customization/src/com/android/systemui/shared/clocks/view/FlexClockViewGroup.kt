@@ -44,6 +44,7 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import java.util.Locale
 import kotlin.collections.filterNotNull
 import kotlin.collections.map
+import kotlin.collections.max
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -420,6 +421,43 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         invalidate()
     }
 
+    fun resetGlyphsOffsets() {
+        if (digitOffsets.size <= 0) return
+        digitOffsets.clear()
+        invalidate()
+    }
+
+    /** Offsets the textViews of the clock for the compose version of the step clock animation. */
+    fun offsetGlyphsForStepClockAnimation(
+        startX: Float,
+        currentX: Float,
+        endX: Float,
+        progress: Float,
+    ) {
+        if (progress <= 0f || progress >= 1f) {
+            resetGlyphsOffsets()
+            return
+        }
+
+        val translation = endX - startX
+        // A map of the delays for a given digit, keyed by digit index
+        val delays = if (translation > 0) STEP_RIGHT_DELAYS else STEP_LEFT_DELAYS
+        childViews.forEachIndexed { index, child ->
+            val digitFraction =
+                constrainedMap(
+                    /* rangeMin= */ 0.0f,
+                    /* rangeMax= */ 1.0f,
+                    /* valueMin= */ delays[index],
+                    /* valueMax= */ delays[index] + STEP_ANIMATION_TIME,
+                    /* value= */ progress,
+                )
+
+            val digitX = translation * digitFraction + startX
+            digitOffsets[child.id] = (digitX - currentX)
+        }
+        invalidate()
+    }
+
     companion object {
         val FORMAT_NUMBER = 1234567890
         val AOD_TRANSITION_DURATION = 800L
@@ -432,7 +470,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         private val STEP_DIGIT_DELAY = 0.033f // Measured as fraction of total animation duration
         private val STEP_LEFT_DELAYS = listOf(0, 1, 2, 3).map { it * STEP_DIGIT_DELAY }
         private val STEP_RIGHT_DELAYS = listOf(1, 0, 3, 2).map { it * STEP_DIGIT_DELAY }
-        private val STEP_ANIMATION_TIME = 1.0f - STEP_DIGIT_DELAY * (STEP_LEFT_DELAYS.size - 1)
+        private val STEP_ANIMATION_TIME = 1.0f - STEP_LEFT_DELAYS.max()
 
         /** Languages that do not have vertically mono spaced numerals */
         private val NON_MONO_VERTICAL_NUMERIC_LINE_SPACING_LANGUAGES = setOf("my" /* Burmese */)
