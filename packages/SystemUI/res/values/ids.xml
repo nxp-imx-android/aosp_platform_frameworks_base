@@ -282,6 +282,9 @@
     <!--Id for the biometric prompt UDFPS accessibility overlay. -->
     <item type="id" name="biometric_prompt_udfps_accessibility_overlay" />
 
+    <!--Id for the secure lock device biometric auth composable. -->
+    <item type="id" name="secure_lock_device_biometric_auth_content" />
+
     <!-- Id for the udfps accessibility overlay -->
     <item type="id" name="udfps_accessibility_overlay" />
     <item type="id" name="udfps_accessibility_overlay_top_guideline" />
