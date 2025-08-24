@@ -239,6 +239,20 @@ flag {
 }
 
 flag {
+    name: "enable_angle_deny_list"
+    namespace: "gpu"
+    description: "Whether to use native driver for apps in the denylist"
+    bug: "434014731"
+}
+
+flag {
+    name: "enable_angle_for_games"
+    namespace: "gpu"
+    description: "Whether to use angle driver for games not in the denylist"
+    bug: "440630034"
+}
+
+flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"
