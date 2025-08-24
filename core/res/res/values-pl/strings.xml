@@ -338,8 +338,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Przełącz na profil służbowy"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Przełącz na osobistą aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Przełącz na służbową aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Kontakty"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"dostęp do kontaktów"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"Lokalizacja"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"dostęp do informacji o lokalizacji tego urządzenia"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalendarz"</string>

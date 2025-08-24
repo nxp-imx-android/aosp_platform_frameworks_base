@@ -336,8 +336,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"பணிச் சுயவிவரத்திற்கு மாற்றவும்"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"தனிப்பட்ட கணக்கிற்கு (<xliff:g id="APP_NAME">%1$s</xliff:g>) மாறு"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"பணிக் கணக்கிற்கு (<xliff:g id="APP_NAME">%1$s</xliff:g>) மாறு"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"தொடர்புகள்"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"தொடர்புகளை அணுக வேண்டும்"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"இருப்பிடம்"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"இந்தச் சாதனத்தின் இருப்பிடத்தை அறிந்து கொள்ள"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"கேலெண்டர்"</string>
@@ -2592,10 +2594,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"அன்லாக் செய்யும் அனுபவத்தை மேம்படுத்தும் உதவிக்குறிப்புகளைப் பார்க்க தட்டவும்"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"பிளிங் ஆகாது"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"டிவியை ஆஃப் செய்ய பவர் பட்டனை அழுத்திப் பிடியுங்கள்"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"சிஸ்டம் ஆதாரம் தொடர்பான விழிப்பூட்டல்கள்"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ஆதாரத்தை அதிகளவில் பயன்படுத்துதல்"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸ் மிக அதிகளவிலான ஆதாரங்களைப் பயன்படுத்துகிறது\"."</string>
 </resources>

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"प्रोफ़ाइल बदलकर वर्क प्रोफ़ाइल पर जाएं"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"<xliff:g id="APP_NAME">%1$s</xliff:g> की निजी प्रोफ़ाइल पर जाएं"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"<xliff:g id="APP_NAME">%1$s</xliff:g> की वर्क प्रोफ़ाइल पर जाएं"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"संपर्क"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"अपने संपर्कों को ऐक्सेस करें"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"संपर्क और खाते"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"आपके संपर्क ऐक्सेस करना और इस डिवाइस पर मौजूद उन खातों की सूची देखना जिनमें संपर्क सेव किए जा सकते हैं"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"जगह की जानकारी"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"इस डिवाइस की जगह तक पहुंचने दें"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"कैलेंडर"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"कर्सर ब्लिंक करने की सेटिंग बंद करें"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"टीवी बंद करने के लिए पावर बटन को दबाकर रखें"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टम के संसाधन से जुड़ी सूचनाएं"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"संसाधन का ज़्यादा इस्तेमाल"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> ऐप्लिकेशन बहुत ज़्यादा संसाधन इस्तेमाल कर रहा है."</string>
 </resources>

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"ವೈಯಕ್ತಿಕ <xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಬದಲಿಸಿ"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"ಕೆಲಸದ <xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಬದಲಿಸಿ"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"ಸಂಪರ್ಕಗಳು"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"ನಿಮ್ಮ ಸಂಪರ್ಕಗಳನ್ನು ಪ್ರವೇಶಿಸಲು"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"ಸಂಪರ್ಕಗಳು ಮತ್ತು ಖಾತೆಗಳು"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"ನಿಮ್ಮ ಸಂಪರ್ಕಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಸಂಪರ್ಕಗಳನ್ನು ಸೇವ್ ಮಾಡಬಹುದಾದ ನಿಮ್ಮ ಖಾತೆಗಳ ಪೂರ್ಣ ಪಟ್ಟಿಯನ್ನು ನೋಡುತ್ತದೆ"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"ಸ್ಥಳ"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ಈ ಸಾಧನದ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸಿ"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"ಕ್ಯಾಲೆಂಡರ್"</string>

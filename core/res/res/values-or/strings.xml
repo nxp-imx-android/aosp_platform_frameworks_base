@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"କାର୍ଯ୍ୟ ପ୍ରୋଫାଇଲ୍‌କୁ ଯାଆନ୍ତୁ"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"ବ୍ୟକ୍ତିଗତ <xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ସୁଇଚ କରନ୍ତୁ"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"ୱାର୍କ <xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ସୁଇଚ କରନ୍ତୁ"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"କଣ୍ଟାକ୍ଟ"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"ଆପଣଙ୍କ ଯୋଗାଯୋଗ ଆକ୍ସେସ୍ କରେ"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"କଣ୍ଟାକ୍ଟ ଏବଂ ଆକାଉଣ୍ଟ"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"ଆପଣଙ୍କର କଣ୍ଟାକ୍ଟକୁ ଆକ୍ସେସ କରେ ଏବଂ ଏହି ଡିଭାଇସରେ କଣ୍ଟାକ୍ଟଗୁଡ଼ିକୁ ସେଭ କରିପାରୁଥିବା ଆପଣଙ୍କର ଆକାଉଣ୍ଟଗୁଡ଼ିକର ତାଲିକା ଦେଖାଏ"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"ଲୋକେସନ"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ଏହି ଡିଭାଇସ୍‌ର ଲୋକେସନ୍‍ ଆକ୍ସେସ୍‍ କରେ"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ଆପଣଙ୍କ ଅନଲକ କରିବାର ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଟିପ୍ସର ସମୀକ୍ଷା କରିବାକୁ ଟାପ କରନ୍ତୁ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ବ୍ଲିଙ୍କ କରନ୍ତୁ ନାହିଁ"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ଟିଭି ବନ୍ଦ କରିବା ପାଇଁ ପାୱାର ବଟନକୁ ଅଧିକ ସମୟ ଦବାନ୍ତୁ"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ସିଷ୍ଟମ ରିସୋର୍ସ ଆଲର୍ଟ"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ରିସୋର୍ସର ଅତ୍ୟଧିକ ବ୍ୟବହାର"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ଆପ \'<xliff:g id="APP_NAME">%1$s</xliff:g> ଅନେକ ରିସୋର୍ସ ବ୍ୟବହାର କରୁଛି।\""</string>
 </resources>
