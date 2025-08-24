@@ -6133,6 +6133,9 @@
     <!-- The list of packages that will use ANGLE as the GLES driver -->
     <string-array name="config_angleAllowList"></string-array>
 
+    <!-- The list of packages that will not use ANGLE as the GLES driver -->
+    <string-array name="config_angleDenyList"></string-array>
+
     <!-- The list of packages to automatically opt in to refresh rate suppressing by small area
     detection. Format of this array should be packageName:threshold and threshold value should
      be between 0 to 1-->
