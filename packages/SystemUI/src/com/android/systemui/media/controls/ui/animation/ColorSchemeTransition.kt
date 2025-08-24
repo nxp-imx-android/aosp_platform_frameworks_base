@@ -21,6 +21,7 @@ import android.animation.ValueAnimator
 import android.animation.ValueAnimator.AnimatorUpdateListener
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
@@ -120,10 +121,16 @@ internal constructor(
 
     var loadingEffect: LoadingEffect? = null
 
+    private val buttonStrokeWidth =
+        context.resources.getDimensionPixelSize(
+            com.android.systemui.res.R.dimen.qs_media_button_stroke_width
+        )
+
     // Defaults may be briefly visible before loading a new player's colors
     private val backgroundDefault = context.getColor(R.color.system_on_surface_light)
     private val primaryDefault = context.getColor(R.color.system_primary_dark)
     private val onPrimaryDefault = context.getColor(R.color.system_on_primary_dark)
+    private val outlineDefault = context.getColor(R.color.system_outline_dark)
 
     private val backgroundColor: AnimatingColorTransition by lazy {
         animatingColorTransitionFactory(backgroundDefault, ::backgroundFromScheme) { color ->
@@ -141,17 +148,6 @@ internal constructor(
                 it.effectColor = primaryColorList
             }
             mediaViewHolder.seekBar.progressBackgroundTintList = primaryColorList
-            if (enableSuggestedDeviceUi()) {
-                mediaViewHolder.deviceSuggestionText.setTextColor(primaryColor)
-                mediaViewHolder.deviceSuggestionIcon.imageTintList = primaryColorList
-                mediaViewHolder.deviceSuggestionConnectingIcon.indeterminateTintList =
-                    primaryColorList
-                mediaViewHolder.deviceSuggestionButton.backgroundTintList = primaryColorList
-                (mediaViewHolder.deviceSuggestionButton.background as? RippleDrawable)?.let {
-                    it.setColor(primaryColorList)
-                    it.effectColor = primaryColorList
-                }
-            }
         }
     }
 
@@ -161,6 +157,19 @@ internal constructor(
             mediaViewHolder.actionPlayPause.imageTintList = onPrimaryColorList
             mediaViewHolder.seamlessText.setTextColor(onPrimaryColor)
             mediaViewHolder.seamlessIcon.imageTintList = onPrimaryColorList
+        }
+    }
+
+    private val outlineColor: AnimatingColorTransition by lazy {
+        animatingColorTransitionFactory(outlineDefault, ::outlineFromScheme) { outlineColor ->
+            if (enableSuggestedDeviceUi()) {
+                (mediaViewHolder.deviceSuggestionButton.background as? RippleDrawable)?.let {
+                    val shape = it.findDrawableByLayerId(R.id.background)
+                    if (shape is GradientDrawable) {
+                        shape.setStroke(buttonStrokeWidth, outlineColor)
+                    }
+                }
+            }
         }
     }
 
@@ -181,7 +190,7 @@ internal constructor(
     }
 
     private fun getColorTransitions(): Array<AnimatingColorTransition> {
-        return arrayOf(backgroundColor, primaryColor, onPrimaryColor)
+        return arrayOf(backgroundColor, primaryColor, onPrimaryColor, outlineColor)
     }
 
     fun updateColorScheme(colorScheme: ColorScheme?): Boolean {

@@ -160,7 +160,7 @@ class ColorSchemeTransitionTest : SysuiTestCase() {
     @Test
     fun testColorSchemeTransition_update() {
         colorSchemeTransition.updateColorScheme(colorScheme)
-        verify(mockAnimatingTransition, times(3)).updateColorScheme(colorScheme)
+        verify(mockAnimatingTransition, times(4)).updateColorScheme(colorScheme)
         verify(gutsViewHolder).setColors(colorScheme)
         verify(multiRippleController).updateColor(anyInt())
         verify(turbulenceNoiseController).updateNoiseColor(anyInt())
