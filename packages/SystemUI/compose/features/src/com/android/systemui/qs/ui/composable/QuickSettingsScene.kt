@@ -40,12 +40,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
@@ -194,7 +196,13 @@ private fun ContentScope.QuickSettingsScene(
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
 ) {
-    Box(modifier.fillMaxSize()) {
+    val targetBlur by
+        remember(layoutState) {
+            derivedStateOf { viewModel.calculateBlur(layoutState.transitionState) }
+        }
+    val animatedBlurRadiusPx: Float by
+        animateFloatAsState(targetValue = targetBlur, label = "QS-blurRadius")
+    Box(modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }).fillMaxSize()) {
         // This is the background for the whole scene, as the elements don't necessarily provide
         // a background that extends to the edges.
         ShadePanelScrim(viewModel.isTransparencyEnabled)
