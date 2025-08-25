@@ -5117,9 +5117,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     }
                     return;
                 }
-                widget.event.merge(event);
+                widget.eventBuilder.merge(event);
                 if (mWidgetEventsReportIntervalMs <= 0) {
-                    widget.reportWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
+                    widget.saveWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
                 }
             }
         }
@@ -5661,16 +5661,16 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     }
 
     /**
-     * Reports any pending widget events to UsageStatsManager.
+     * Saves any pending widget events to UsageStatsService and FrameworkStatsLog.
      */
-    private void reportWidgetEventsToUsageStats() {
+    private void saveWidgetEvents() {
         if (DEBUG) {
-            Slog.i(TAG, "reportWidgetEventsToUsageStats");
+            Slog.i(TAG, "saveWidgetEvents");
         }
         synchronized (mLock) {
             final int widgetCount = mWidgets.size();
             for (int i = 0; i < widgetCount; i++) {
-                mWidgets.get(i).reportWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
+                mWidgets.get(i).saveWidgetEventIfNeededLocked(mUsageStatsManagerInternal);
             }
         }
     }
@@ -6489,7 +6489,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         SparseLongArray updateSequenceNos = new SparseLongArray(2);
         boolean trackingUpdate = false;
         boolean isFirstConfigActivityPending = false;
-        final AppWidgetEvent.Builder event = new AppWidgetEvent.Builder();
+        final AppWidgetEvent.Builder eventBuilder = new AppWidgetEvent.Builder();
 
         @Override
         public String toString() {
@@ -6515,23 +6515,51 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         /**
-         * Reports a widget event to UsageStatsManager if there is event data to report.
+         * If the eventBuilder is not empty, saves the pending widget event to UsageStatsService and
+         * FrameworkStatsLog.
          */
-        public void reportWidgetEventIfNeededLocked(
+        public void saveWidgetEventIfNeededLocked(
                 @NonNull UsageStatsManagerInternal usageStatsManager) {
             // Each event must have a non-zero duration.
-            if (event.isEmpty()) {
+            if (eventBuilder.isEmpty() || provider == null) {
                 return;
             }
 
+            AppWidgetEvent event = eventBuilder.build();
             usageStatsManager.reportUserInteractionEvent(
                     provider.id.componentName.getPackageName(),
-                    UserHandle.getUserId(provider.id.uid), event.build().toBundle());
-            if (DEBUG) {
-                Slog.i(TAG, "Reported widget interaction usage event: " + event.build());
-            }
+                    UserHandle.getUserId(provider.id.uid), event.toBundle());
 
-            event.clear();
+            int hostUid = host != null ? host.id.uid : -1;
+            String providerComponent =
+                    provider.info != null ? provider.info.provider.flattenToString() : null;
+            int left, top, right, bottom;
+            if (event.getPosition() != null) {
+                left = event.getPosition().left;
+                top = event.getPosition().top;
+                right = event.getPosition().right;
+                bottom = event.getPosition().bottom;
+            } else {
+                left = -1;
+                top = -1;
+                right = -1;
+                bottom = -1;
+            }
+            FrameworkStatsLog.write(FrameworkStatsLog.WIDGET_INTERACTION_EVENT,
+                    /* hostUid= */ hostUid,
+                    /* provider= */ providerComponent,
+                    /* start= */ event.getStart().toEpochMilli(),
+                    /* end= */ event.getEnd().toEpochMilli(),
+                    /* visibleDuration= */ event.getVisibleDuration().toMillis(),
+                    /* rectLeft= */ left,
+                    /* rectTop= */ top,
+                    /* rectRight= */ right,
+                    /* rectBottom= */ bottom);
+
+            if (DEBUG) {
+                Slog.i(TAG, "Reported widget interaction usage event: " + event);
+            }
+            eventBuilder.clear();
         }
     }
 
@@ -7393,8 +7421,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         @Override
-        public void reportWidgetEventsToUsageStats() {
-            AppWidgetServiceImpl.this.reportWidgetEventsToUsageStats();
+        public void saveWidgetEvents() {
+            AppWidgetServiceImpl.this.saveWidgetEvents();
         }
     }
 }
