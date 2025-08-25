@@ -70,6 +70,8 @@ public class CollapsingToolbarBaseActivity extends FragmentActivity implements
         EdgeToEdgeUtils.enable(this);
         super.onCreate(savedInstanceState);
 
+        getToolbarDelegate().registerToolbarCollapseBehavior(this);
+
         if (SettingsThemeHelper.isExpressiveTheme(this)) {
             setTheme(com.android.settingslib.widget.theme.R.style.Theme_SubSettingsBase_Expressive);
         }
