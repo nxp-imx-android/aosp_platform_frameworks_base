@@ -18,7 +18,7 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,9 +37,9 @@ fun PreShareUI(
     recentTaskViewModelFactory: RecentTaskViewModel.Factory,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.size(800.dp, 600.dp),
+        modifier = Modifier.width(560.dp),
     ) {
         PreShareToolbar(
             preShareToolbarViewModel = preShareToolbarViewModel,

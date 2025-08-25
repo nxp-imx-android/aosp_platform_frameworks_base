@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -52,21 +51,31 @@ fun ShareContentSelector(
 ) {
     val selectedRecentTaskViewModel = shareContentListViewModel.selectedRecentTaskViewModel
 
-    Surface(color = MaterialTheme.colorScheme.surfaceBright, shape = RoundedCornerShape(28.dp)) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Text(text = "Share an app", modifier = Modifier.padding(12.dp, 8.dp).fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.padding(8.dp)) {
+    Surface(color = MaterialTheme.colorScheme.surfaceBright, shape = RoundedCornerShape(20.dp)) {
+        Column(
+            modifier =
+                Modifier.width(560.dp)
+                    .padding(start = 10.dp, top = 14.dp, end = 10.dp, bottom = 2.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = "Share an app",
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp).height(24.dp).fillMaxWidth(),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(start = 4.dp, end = 4.dp),
+            ) {
                 // The sharing content item list.
                 ShareContentList(
                     viewModel = shareContentListViewModel,
                     recentTaskViewModelFactory = recentTaskViewModelFactory,
                     selectedRecentTaskViewModel = selectedRecentTaskViewModel,
                 )
-                Spacer(modifier = Modifier.width(10.dp))
                 ItemPreview(
                     preview = selectedRecentTaskViewModel?.thumbnail?.getOrNull()?.asImageBitmap(),
-                    modifier = Modifier.weight(1f).height(120.dp),
+                    modifier = Modifier.weight(1f).height(140.dp),
                 )
             }
             DisclaimerText()
@@ -80,7 +89,7 @@ private fun ItemPreview(preview: ImageBitmap?, modifier: Modifier = Modifier) {
     Box(
         modifier =
             modifier
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,
     ) {
@@ -102,8 +111,8 @@ private fun DisclaimerText() {
             "Disclaimer When you’re sharing your entire screen, anything shown on your screen" +
                 " is recorded. So be careful with things like passwords, payment details," +
                 " messages, photos, and audio & video.",
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(12.dp, 8.dp).fillMaxWidth(),
+        style = MaterialTheme.typography.labelMedium,
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp).fillMaxWidth(),
     )
 }
 
@@ -115,7 +124,7 @@ private fun AudioSwitch(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.padding(12.dp, 0.dp).fillMaxWidth(),
+        modifier = Modifier.padding(4.dp, bottom = 12.dp).height(24.dp).fillMaxWidth(),
     ) {
         Text(text = "Share audio", style = MaterialTheme.typography.labelMedium)
         Switch(
@@ -123,7 +132,6 @@ private fun AudioSwitch(
             onCheckedChange = {
                 audioSwitchViewModel.audioSwitchChecked = !audioSwitchViewModel.audioSwitchChecked
             },
-            modifier = Modifier.height(24.dp),
             enabled = selectedRecentTaskViewModel != null,
         )
     }

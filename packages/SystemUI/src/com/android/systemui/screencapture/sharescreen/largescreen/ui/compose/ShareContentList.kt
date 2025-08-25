@@ -19,9 +19,9 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -61,26 +61,31 @@ fun ShareContentList(
     selectedRecentTaskViewModel: RecentTaskViewModel?,
 ) {
     val recentTasks by viewModel.recentTasks.collectAsStateWithLifecycle(initialValue = null)
-
-    LazyColumn(modifier = modifier.height(120.dp).width(148.dp)) {
-        // Use the real list of recent tasks, handling the nullable case.
-        recentTasks?.let { tasks ->
-            items(items = tasks) { task ->
-                val currentRecentTaskViewModel: RecentTaskViewModel =
-                    rememberViewModel(
-                        traceName = "ShareContentListItemViewModel#${task.taskId}",
-                        key = task,
-                    ) {
-                        recentTaskViewModelFactory.create(task)
-                    }
-                SelectorItem(
-                    currentRecentTaskViewModel = currentRecentTaskViewModel,
-                    isSelected =
-                        currentRecentTaskViewModel.task == selectedRecentTaskViewModel?.task,
-                    onItemSelected = {
-                        viewModel.selectedRecentTaskViewModel = currentRecentTaskViewModel
-                    },
-                )
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceBright,
+        modifier = modifier.height(224.dp).width(286.dp),
+    ) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            // Use the real list of recent tasks, handling the nullable case.
+            recentTasks?.let { tasks ->
+                items(items = tasks) { task ->
+                    val currentRecentTaskViewModel: RecentTaskViewModel =
+                        rememberViewModel(
+                            traceName = "ShareContentListItemViewModel#${task.taskId}",
+                            key = task,
+                        ) {
+                            recentTaskViewModelFactory.create(task)
+                        }
+                    SelectorItem(
+                        currentRecentTaskViewModel = currentRecentTaskViewModel,
+                        isSelected =
+                            currentRecentTaskViewModel.task == selectedRecentTaskViewModel?.task,
+                        onItemSelected = {
+                            viewModel.selectedRecentTaskViewModel = currentRecentTaskViewModel
+                        },
+                    )
+                }
             }
         }
     }
@@ -105,19 +110,21 @@ private fun SelectorItem(
     val label = currentRecentTaskViewModel.label?.getOrNull()
 
     Surface(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(4.dp),
         color =
             if (isSelected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.width(148.dp),
     ) {
         Row(
-            modifier = Modifier.padding(12.dp).clickable(onClick = onItemSelected),
+            modifier =
+                Modifier.padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                    .clickable(onClick = onItemSelected),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
         ) {
             Box(
                 modifier =
-                    Modifier.size(16.dp)
+                    Modifier.size(24.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
@@ -125,7 +132,6 @@ private fun SelectorItem(
                     Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = label?.toString() ?: "Title",
                 style = MaterialTheme.typography.labelMedium,
