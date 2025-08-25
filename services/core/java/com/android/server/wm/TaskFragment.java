@@ -3389,15 +3389,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     @Override
     void prepareSurfaces() {
-        if (asTask() != null) {
-            super.prepareSurfaces();
-            return;
-        }
-
         mDimmer.resetDimStates();
         super.prepareSurfaces();
 
-        if (mDimmer.updateDims(getSyncTransaction())) {
+        if (mDimmer.hasDimState() && mDimmer.updateDims(getSyncTransaction())) {
             scheduleAnimation();
         }
     }
