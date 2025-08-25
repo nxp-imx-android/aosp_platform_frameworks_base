@@ -64,7 +64,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.requiredWidthIn
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -78,6 +77,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.verticalScroll
@@ -119,6 +119,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isSpecified
@@ -211,6 +212,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridSnapshotViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.shared.model.groupAndSort
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -1220,8 +1222,13 @@ private fun LazyGridItemScope.TileGridCell(
                         customActions = actions
                     }
                 }
+                .borderOnFocus(
+                    MaterialTheme.colorScheme.secondary,
+                    CornerSize(InactiveCornerRadius),
+                )
                 .thenIf(isSelectable) { draggableModifier }
                 .tileBackground { backgroundColor }
+                .clickable { selectionState.onTap(cell.tile.tileSpec) }
                 .thenIf(isSelectable) { selectableModifier }
         ) {
             EditTile(
@@ -1315,6 +1322,10 @@ private fun AvailableTileGridCell(
             Box(
                 Modifier.then(draggableModifier)
                     .fillMaxSize()
+                    .borderOnFocus(
+                        MaterialTheme.colorScheme.secondary,
+                        CornerSize(InactiveCornerRadius),
+                    )
                     .tileBackground { colors.background }
                     .clickable(
                         enabled = !cell.isCurrent,
@@ -1336,6 +1347,7 @@ private fun AvailableTileGridCell(
                 contentDescription = clickLabel,
                 enabled = !cell.isCurrent,
                 onClick = onClick,
+                modifier = Modifier.focusProperties { canFocus = false },
             )
         }
         Box(Modifier.fillMaxSize()) {

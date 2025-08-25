@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Remove
@@ -86,6 +87,7 @@ import com.android.systemui.qs.panels.ui.compose.selection.TileState.None
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Placeable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Removable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Selected
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -221,10 +223,15 @@ fun StaticTileBadge(
     contentDescription: String?,
     enabled: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val offset = with(LocalDensity.current) { Offset(BadgeXOffset.toPx(), BadgeYOffset.toPx()) }
     val alpha by animateFloatAsState(if (enabled) 1f else 0f)
-    MinimumInteractiveSizeComponent(angle = { BADGE_ANGLE_RAD }, offset = { offset }) {
+    MinimumInteractiveSizeComponent(
+        angle = { BADGE_ANGLE_RAD },
+        offset = { offset },
+        modifier = modifier,
+    ) {
         Box(
             Modifier.fillMaxSize()
                 .graphicsLayer { this.alpha = alpha }
@@ -276,7 +283,8 @@ private fun MinimumInteractiveSizeComponent(
                 }
                 .thenIf(excludeSystemGesture) {
                     Modifier.systemGestureExclusion { Rect(Offset.Zero, it.size.toSize()) }
-                },
+                }
+                .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(50)),
         content = content,
     )
 }
