@@ -29,7 +29,7 @@
     <string name="title_update" msgid="1747328630716712391">"앱을 업데이트하시겠습니까?"</string>
     <string name="title_update_ownership_change" msgid="6628818356381453406">"<xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>을(를) 사용하여 이 앱을 업데이트하시겠습니까?"</string>
     <string name="title_updating" msgid="5449073288264173554">"업데이트 중…"</string>
-    <string name="title_updated" msgid="3286125118804971449">"앱 업데이트됨"</string>
+    <string name="title_updated" msgid="3286125118804971449">"앱이 업데이트됨"</string>
     <string name="title_cant_install_app" msgid="8683361719005005686">"앱을 설치할 수 없음"</string>
     <string name="title_install_failed_blocked" msgid="4864724257000850526">"설치가 차단됨"</string>
     <string name="title_install_failed_incompatible" msgid="9153043742028690470">"앱이 호환되지 않음"</string>
@@ -66,7 +66,7 @@
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"태블릿과 개인 정보는 알 수 없는 앱의 공격에 더욱 취약합니다. 이 앱을 설치하면 앱 사용으로 인해 발생할 수 있는 모든 태블릿 손상이나 데이터 손실에 사용자가 책임을 진다는 것에 동의하게 됩니다."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"TV와 개인 정보는 알 수 없는 앱의 공격에 더욱 취약합니다. 이 앱을 설치하면 앱 사용으로 인해 발생할 수 있는 모든 TV 손상이나 데이터 손실에 사용자가 책임을 진다는 것에 동의하게 됩니다."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"이 앱은 설치가 차단되었습니다."</string>
-    <string name="message_install_failed_conflict" msgid="1707670432024473123">"이 앱은 기기에 이미 있는 앱과 충돌합니다."</string>
+    <string name="message_install_failed_conflict" msgid="1707670432024473123">"이 앱이 기기에 이미 있는 앱과 충돌합니다."</string>
     <string name="message_install_failed_incompatible" msgid="184079710727317076">"기기와 호환되지 않는 앱입니다."</string>
     <string name="message_install_failed_invalid" msgid="6607567121196588310">"이 앱의 설치 파일에 문제가 있습니다."</string>
     <string name="message_install_failed_less_storage" msgid="5263281541675717769">"이 앱을 설치하려면 저장공간을 확보한 후 다시 시도하세요."</string>
@@ -76,7 +76,7 @@
     <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"이 앱의 클론도 있으며 삭제될 예정입니다."</string>
     <string name="message_delete_clone_app" msgid="6632017049227330363">"이 앱은 <xliff:g id="APP_LABEL">%1$s</xliff:g>의 클론입니다."</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"이 앱이 초기 버전으로 대체됩니다. 모든 앱 데이터가 삭제됩니다."</string>
-    <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"이 앱은 기기의 모든 사용자를 대상으로 초기 버전으로 대체됩니다. 모든 앱 데이터가 삭제됩니다."</string>
+    <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"기기의 모든 사용자를 대상으로 앱이 초기 버전으로 대체됩니다. 모든 앱 데이터가 삭제됩니다."</string>
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"직장 프로필에서 이 앱이 제거됩니다."</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"비공개 스페이스에서 이 앱이 제거됩니다."</string>
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"이 앱이 설치된 앱 목록에 없거나 이미 제거되었습니다."</string>
@@ -95,15 +95,23 @@
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"이 앱을 복원하려면 설정에서 설치 프로그램(<xliff:g id="INSTALLERNAME">%1$s</xliff:g>)을 사용 설정해야 합니다."</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"이 앱을 복원하려면 설치 프로그램(<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>)을 설치해야 합니다."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"이 앱을 복원하려고 시도하던 중 문제가 발생했습니다."</string>
-    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> 활동은 <xliff:g id="APP_NAME">%2$s</xliff:g> 앱의 일부입니다."</string>
-    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;이 앱은 차단되었습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;이 앱은 설치되지 않았습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 연결 상태를 확인한 후 앱을 다시 설치해 보세요. &lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;이 앱은 업데이트되지 않았습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있습니다.&lt;/p&gt; &lt;p&gt;앱 개발자를 인증하려면 인터넷 연결이 필요합니다. 연결 상태를 확인한 후 앱을 다시 업데이트해 보세요. &lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 앱은 안전하지 않을 수 있으므로 앱이 설치되지 않았습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;이 앱의 개발자를 인증하는 중에 문제가 발생했습니다. 인증되지 않은 개발자의 업데이트는 안전하지 않을 수 있으므로 앱이 업데이트되지 않았습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 차단되었습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 앱만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;개발자를 인증하는 중에 문제가 발생하여 이 앱이 업데이트되지 않았습니다. 기기 및 데이터를 안전하게 보호할 수 있도록 인증된 개발자의 업데이트만 설치할 수 있습니다.&lt;/p&gt; &lt;a href=&gt;개발자 인증에 대해 자세히 알아보기&lt;/a&gt;"</string>
+    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>은(는) <xliff:g id="APP_NAME">%2$s</xliff:g> 앱의 일부입니다."</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"인증하지 않고 앱을 설치하는 경우, 인증되지 않은 개발자의 앱으로 인해 기기와 데이터가 위험에 노출될 수 있다는 점에 유의하시기 바랍니다."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"인증하지 않고 업데이트하는 경우, 인증되지 않은 개발자의 업데이트로 인해 기기 및 데이터가 위험에 처할 수 있다는 점에 유의하시기 바랍니다."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"앱 개발자가 인증되지 않음"</string>
