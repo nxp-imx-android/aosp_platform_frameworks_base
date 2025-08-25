@@ -365,8 +365,7 @@ class DragDropController {
                 mDragState.endDragLocked(consumed, relinquishDragSurfaceToDropTarget);
 
                 final Task droppedWindowTask = callingWin.getTask();
-                if (com.android.window.flags.Flags.delegateUnhandledDrags()
-                        && mGlobalDragListener != null && droppedWindowTask != null && consumed
+                if (mGlobalDragListener != null && droppedWindowTask != null && consumed
                         && isCrossWindowDrag) {
                     try {
                         mGlobalDragListener.onCrossWindowDrop(droppedWindowTask.getTaskInfo());
@@ -408,8 +407,7 @@ class DragDropController {
                 (mDragState.mFlags & (DRAG_FLAG_GLOBAL_SAME_APPLICATION | DRAG_FLAG_GLOBAL)) == 0;
         final boolean shouldDelegateUnhandledDrag =
                 (mDragState.mFlags & DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG) != 0;
-        if (!com.android.window.flags.Flags.delegateUnhandledDrags()
-                || mGlobalDragListener == null
+        if (mGlobalDragListener == null
                 || !shouldDelegateUnhandledDrag
                 || isLocalDrag) {
             // Skip if the flag is disabled, there is no unhandled-drag listener, or if this is a
