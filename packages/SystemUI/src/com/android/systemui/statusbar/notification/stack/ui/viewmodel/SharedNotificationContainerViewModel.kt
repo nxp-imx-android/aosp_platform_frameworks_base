@@ -81,6 +81,7 @@ import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -143,6 +144,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val sceneInteractor: SceneInteractor,
     private val bouncerInteractor: BouncerInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
@@ -704,15 +706,12 @@ constructor(
     }
 
     fun keyguardAlpha(viewState: ViewStateAccessor, scope: CoroutineScope): Flow<Float> {
-        val isKeyguardOccluded =
-            keyguardTransitionInteractor.transitionValue(OCCLUDED).map { it == 1f }
-
         val isKeyguardNotVisibleInState =
             if (SceneContainerFlag.isEnabled) {
-                isKeyguardOccluded
+                sceneInteractor.currentScene.map { it == Scenes.Occluded }
             } else {
                 anyOf(
-                    isKeyguardOccluded,
+                    keyguardTransitionInteractor.transitionValue(OCCLUDED).map { it == 1f },
                     keyguardTransitionInteractor
                         .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                         .map { it == 1f },
