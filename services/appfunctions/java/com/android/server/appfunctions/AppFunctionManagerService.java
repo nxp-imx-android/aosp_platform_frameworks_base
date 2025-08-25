@@ -96,4 +96,9 @@ public class AppFunctionManagerService extends SystemService {
     public void onUserStopping(@NonNull TargetUser user) {
         mServiceImpl.onUserStopping(user);
     }
+
+    @Override
+    public void onUserStarting(@NonNull TargetUser user) {
+        mServiceImpl.onUserStarting(user);
+    }
 }

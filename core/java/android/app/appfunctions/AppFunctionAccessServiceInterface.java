@@ -57,4 +57,7 @@ public interface AppFunctionAccessServiceInterface {
     /** @see AppFunctionManager#getValidTargets(String) () */
     @NonNull
     List<String> getValidTargets(int userId);
+
+    /** Should be called whenever a user starts */
+    void onUserStarting(int userId);
 }
