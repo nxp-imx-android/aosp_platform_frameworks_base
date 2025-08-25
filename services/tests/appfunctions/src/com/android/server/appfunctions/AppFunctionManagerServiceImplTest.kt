@@ -16,10 +16,13 @@
 
 package com.android.server.appfunctions
 
+import android.Manifest
+import android.annotation.RequiresPermission
 import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.flags.Flags
 import android.content.pm.PackageManagerInternal
+import android.content.pm.Signature
 import android.content.pm.SignedPackage
 import android.content.pm.UserInfo
 import android.os.IBinder
@@ -32,6 +35,8 @@ import android.provider.DeviceConfig
 import android.testing.TestableContext
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity
+import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.internal.R
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
@@ -42,11 +47,15 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -74,6 +83,8 @@ class AppFunctionManagerServiceImplTest {
     private val appFunctionAccessService = mock<AppFunctionAccessServiceInterface>()
     private val agentAllowlistStorage = mock<AppFunctionAgentAllowlistStorage>()
     private val multiUserAccessHistory = mock<MultiUserAppFunctionAccessHistory>()
+    private val agentAllowlistCaptor = argumentCaptor<Set<SignedPackage>>()
+    private var allowlistWasEnabled: Boolean = true
 
     private val serviceImpl =
         AppFunctionManagerServiceImpl(
@@ -90,9 +101,30 @@ class AppFunctionManagerServiceImplTest {
             MoreExecutors.directExecutor(),
         )
 
+    @Before
+    fun setup() {
+        allowlistWasEnabled = callWithShellPermissionIdentity {
+            serviceImpl.isAgentAllowlistEnabled()
+        }
+        if (!allowlistWasEnabled) {
+            runWithShellPermissionIdentity {
+                serviceImpl.setAgentAllowlistEnabled(true)
+                clearInvocations(appFunctionAccessService)
+            }
+        }
+    }
+
     @After
-    fun clear() {
+    fun clearState() {
+        if (!allowlistWasEnabled) {
+            runWithShellPermissionIdentity {
+                serviceImpl.setAgentAllowlistEnabled(false)
+                clearInvocations(appFunctionAccessService)
+            }
+        }
         clearDeviceSettingPackages()
+        clearPreloadedAllowlist()
+        setDeviceConfigAllowlist(null)
     }
 
     @Test
@@ -290,23 +322,17 @@ class AppFunctionManagerServiceImplTest {
         assertThat(validTargets).containsExactly("android", nonDeviceSettingPackage)
     }
 
-    @Test
     @RequiresFlagsEnabled(
         FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
         FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
     )
+    @Test
     fun onBootPhase_writeAllowlistToStorage_whenDeviceConfigValid() {
         val signatureString = "com.example.test1:abcdef0123456789"
-        whenever(
-                DeviceConfig.getString(
-                    eq("machine_learning"),
-                    eq("allowlisted_app_functions_agents"),
-                    any(),
-                )
-            )
-            .thenReturn(signatureString)
+        setDeviceConfigAllowlist(signatureString)
 
         serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
         verify(agentAllowlistStorage).writeCurrentAllowlist(signatureString)
     }
 
@@ -317,23 +343,117 @@ class AppFunctionManagerServiceImplTest {
     @Test
     fun onBootPhase_readPreviousAllowlist_whenDeviceConfigInvalid() {
         val validPackages = listOf(SignedPackage("com.valid.package", byteArrayOf()))
-
         val invalidSignatureString = "com.example.test1:invalid_certificate_string"
-        whenever(
-                DeviceConfig.getString(
-                    eq("machine_learning"),
-                    eq("allowlisted_app_functions_agents"),
-                    any(),
-                )
-            )
-            .thenReturn(invalidSignatureString)
-
+        setDeviceConfigAllowlist(invalidSignatureString)
         whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(validPackages)
 
         serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
 
         verify(agentAllowlistStorage).readPreviousValidAllowlist()
         verify(agentAllowlistStorage, never()).writeCurrentAllowlist(invalidSignatureString)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    @RequiresPermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
+    fun onBootPhase_initiateAgentAllowlistToDeviceConfig_whenDeviceConfigHasValue() {
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+        setDeviceConfigAllowlist("com.example.device1:aaaaaa;com.example.device2:bbbbbb")
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackage1 =
+            SignedPackage("com.example.device1", Signature("aaaaaa").toByteArray())
+        val expectedPackage2 =
+            SignedPackage("com.example.device2", Signature("bbbbbb").toByteArray())
+        assertThat(capturedSet).containsAtLeast(expectedPackage1, expectedPackage2)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun onBootPhase_initiateAgentAllowlistToStored_whenDeviceConfigInvalid() {
+        setDeviceConfigAllowlist("invalid-pkg:invalid_certificate_string")
+        val stored = SignedPackageParser.parseList("com.example.test2:abcdef0123456789")
+        whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(stored)
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackage =
+            SignedPackage("com.example.test2", Signature("abcdef0123456789").toByteArray())
+        assertThat(capturedSet).contains(expectedPackage)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun onBootPhase_initiateAgentAllowlistToStored_whenDeviceConfigNull() {
+        setDeviceConfigAllowlist(null)
+        val stored = SignedPackageParser.parseList("com.example.test2:abcdef0123456789")
+        whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(stored)
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackages =
+            SignedPackage("com.example.test2", Signature("abcdef0123456789").toByteArray())
+        assertThat(capturedSet).contains(expectedPackages)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun onBootPhase_initiateAgentAllowlistToPreload_whenDeviceConfigNullNoStored() {
+        setDeviceConfigAllowlist(null)
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+        whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(null)
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackage1 =
+            SignedPackage("com.example.preload1", Signature("111111").toByteArray())
+        val expectedPackage2 =
+            SignedPackage("com.example.preload2", Signature("222222").toByteArray())
+        assertThat(capturedSet).containsAtLeast(expectedPackage1, expectedPackage2)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun onBootPhase_initiateAgentAllowlistToPreload_whenDeviceConfigInvalidAndNoStored() {
+        setDeviceConfigAllowlist("invalid-pkg:invalid_certificate_string")
+        whenever(agentAllowlistStorage.readPreviousValidAllowlist()).thenReturn(null)
+        setPreloadedAllowlist(arrayOf("com.example.preload1:111111", "com.example.preload2:222222"))
+
+        serviceImpl.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY)
+
+        verify(appFunctionAccessService).setAgentAllowlist(agentAllowlistCaptor.capture())
+        val capturedSet = agentAllowlistCaptor.firstValue
+        val expectedPackage1 =
+            SignedPackage("com.example.preload1", Signature("111111").toByteArray())
+        val expectedPackage2 =
+            SignedPackage("com.example.preload2", Signature("222222").toByteArray())
+        assertThat(capturedSet).containsAtLeast(expectedPackage1, expectedPackage2)
     }
 
     @RequiresFlagsEnabled(
@@ -374,5 +494,29 @@ class AppFunctionManagerServiceImplTest {
         context.orCreateTestableResources.removeOverride(
             R.array.config_appFunctionDeviceSettingsPackages
         )
+    }
+
+    private fun setPreloadedAllowlist(allowlist: Array<String>) {
+        context.orCreateTestableResources.addOverride(
+            com.android.internal.R.array.config_defaultAppFunctionAgentAllowlist,
+            allowlist,
+        )
+    }
+
+    private fun clearPreloadedAllowlist() {
+        context.orCreateTestableResources.removeOverride(
+            com.android.internal.R.array.config_defaultAppFunctionAgentAllowlist
+        )
+    }
+
+    private fun setDeviceConfigAllowlist(allowlist: String?) {
+        whenever(
+                DeviceConfig.getString(
+                    eq("machine_learning"),
+                    eq("allowlisted_app_functions_agents"),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(allowlist)
     }
 }
