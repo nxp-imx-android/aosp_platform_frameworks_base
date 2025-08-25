@@ -29,10 +29,10 @@ import android.annotation.UserIdInt;
 import android.content.Context;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.util.ExceptionUtils;
 import android.view.WindowManager;
-import android.window.ImeOnBackInvokedDispatcher;
 
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.inputmethod.DirectBootAwareness;
@@ -299,7 +299,7 @@ final class IInputMethodManagerGlobalInvoker {
             @Nullable IRemoteInputConnection remoteInputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
+            @NonNull ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return -1;
@@ -308,7 +308,8 @@ final class IInputMethodManagerGlobalInvoker {
             service.startInputOrWindowGainedFocus(startInputReason, client, windowToken,
                     startInputFlags, softInputMode, windowFlags, editorInfo, remoteInputConnection,
                     remoteAccessibilityInputConnection, unverifiedTargetSdkVersion, userId,
-                    imeDispatcher, imeRequestedVisible, advanceAngGetStartInputSequenceNumber());
+                    imeBackCallbackReceiver, imeRequestedVisible,
+                    advanceAngGetStartInputSequenceNumber());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -94,8 +94,13 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     private static final boolean PREDICTIVE_BACK_FALLBACK_WINDOW_ATTRIBUTE =
             SystemProperties.getInt("persist.wm.debug.predictive_back_fallback_window_attribute", 0)
                     != 0;
+
+    /**
+     * {@link ImeBackCallbackSender} used in IME processes. This is only initialized within
+     * IME processes. In non-IME processes, this is null.
+     */
     @Nullable
-    private ImeOnBackInvokedDispatcher mImeDispatcher;
+    private ImeBackCallbackSender mImeBackCallbackSender;
 
     @Nullable
     private ImeBackAnimationController mImeBackAnimationController;
@@ -207,8 +212,8 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     public void registerOnBackInvokedCallbackUnchecked(
             @NonNull OnBackInvokedCallback callback, @Priority int priority) {
         synchronized (mLock) {
-            if (mImeDispatcher != null) {
-                mImeDispatcher.registerOnBackInvokedCallback(priority, callback);
+            if (mImeBackCallbackSender != null) {
+                mImeBackCallbackSender.registerOnBackInvokedCallback(priority, callback);
                 return;
             }
             if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER
@@ -221,8 +226,8 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 registerSystemNavigationObserverCallback(callback);
                 return;
             }
-            if (callback instanceof ImeOnBackInvokedDispatcher.ImeOnBackInvokedCallback) {
-                if (callback instanceof ImeOnBackInvokedDispatcher.DefaultImeOnBackAnimationCallback
+            if (callback instanceof ImeBackCallbackProxy.ImeOnBackInvokedCallback) {
+                if (callback instanceof ImeBackCallbackProxy.DefaultImeOnBackAnimationCallback
                         && mImeBackAnimationController != null) {
                     // register ImeBackAnimationController instead to play predictive back animation
                     callback = mImeBackAnimationController;
@@ -274,8 +279,8 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     @Override
     public void unregisterOnBackInvokedCallback(@NonNull OnBackInvokedCallback callback) {
         synchronized (mLock) {
-            if (mImeDispatcher != null) {
-                mImeDispatcher.unregisterOnBackInvokedCallback(callback);
+            if (mImeBackCallbackSender != null) {
+                mImeBackCallbackSender.unregisterOnBackInvokedCallback(callback);
                 return;
             }
             if (multipleSystemNavigationObserverCallbacks()) {
@@ -289,7 +294,7 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                     return;
                 }
             }
-            if (callback instanceof ImeOnBackInvokedDispatcher.DefaultImeOnBackAnimationCallback) {
+            if (callback instanceof ImeBackCallbackProxy.DefaultImeOnBackAnimationCallback) {
                 callback = mImeBackAnimationController;
             }
             if (!mAllCallbacks.containsKey(callback)) {
@@ -381,9 +386,9 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     /** Clears all registered callbacks on the instance. */
     public void clear() {
         synchronized (mLock) {
-            if (mImeDispatcher != null) {
-                mImeDispatcher.clear();
-                mImeDispatcher = null;
+            if (mImeBackCallbackSender != null) {
+                mImeBackCallbackSender.clear();
+                mImeBackCallbackSender = null;
             }
             if (!mAllCallbacks.isEmpty()) {
                 if (predictiveBackCallbackCancellationFix()) {
@@ -543,15 +548,19 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         writer.println(prefix + "WindowOnBackDispatcher:");
         synchronized (mLock) {
             if (mAllCallbacks.isEmpty()) {
-                writer.println(prefix + "<None>");
-                return;
+                writer.println(innerPrefix + "Callbacks: []");
+            } else {
+                writer.println(innerPrefix + "Top Callback: " + getTopCallback());
+                writer.println(innerPrefix + "Callbacks: ");
+                mAllCallbacks.forEach((callback, priority) -> {
+                    writer.println(
+                            innerPrefix + "  Callback: " + callback + " Priority=" + priority);
+                });
             }
 
-            writer.println(innerPrefix + "Top Callback: " + getTopCallback());
-            writer.println(innerPrefix + "Callbacks: ");
-            mAllCallbacks.forEach((callback, priority) -> {
-                writer.println(innerPrefix + "  Callback: " + callback + " Priority=" + priority);
-            });
+            if (mImeBackCallbackSender != null) {
+                mImeBackCallbackSender.dump(innerPrefix, writer);
+            }
         }
     }
 
@@ -671,7 +680,7 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         private boolean consumedByOnKeyPreIme() {
             final OnBackInvokedCallback callback = mCallback.get();
             if (callback instanceof ImeBackAnimationController
-                    || callback instanceof ImeOnBackInvokedDispatcher.ImeOnBackInvokedCallback) {
+                    || callback instanceof ImeBackCallbackProxy.ImeOnBackInvokedCallback) {
                 // call onKeyPreIme API if the current callback is an IME callback and the app has
                 // not set enableOnBackInvokedCallback="true"
                 try {
@@ -725,16 +734,20 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                         () -> originalContext);
     }
 
-    @Override
-    public void setImeOnBackInvokedDispatcher(
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
-        mImeDispatcher = imeDispatcher;
-        mImeDispatcher.setHandler(mHandler);
+    /**
+     * Sets an {@link ImeBackCallbackSender} to forward {@link OnBackInvokedCallback}s from IME
+     * to the app process to be registered on the app window.
+     *
+     * This should only be called on the IME window.
+     */
+    public void setImeBackCallbackSender(@NonNull ImeBackCallbackSender imeBackCallbackSender) {
+        mImeBackCallbackSender = imeBackCallbackSender;
+        mImeBackCallbackSender.setHandler(mHandler);
     }
 
-    /** Returns true if a non-null {@link ImeOnBackInvokedDispatcher} has been set. **/
-    public boolean hasImeOnBackInvokedDispatcher() {
-        return mImeDispatcher != null;
+    /** Returns true if a non-null {@link ImeBackCallbackSender} has been set. **/
+    public boolean hasImeBackCallbackSender() {
+        return mImeBackCallbackSender != null;
     }
 
     /**

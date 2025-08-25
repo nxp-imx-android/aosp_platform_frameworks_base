@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package android.window;
 
+import static android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT;
+import static android.window.OnBackInvokedDispatcher.PRIORITY_SYSTEM;
+
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
-import static com.android.window.flags.Flags.imeBackCallbackLeakPrevention;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.util.Log;
@@ -36,22 +36,27 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
 /**
- * A {@link OnBackInvokedDispatcher} for IME that forwards {@link OnBackInvokedCallback}
- * registrations from the IME process to the app process to be registered on the app window.
- * <p>
- * The app process creates and propagates an instance of {@link ImeOnBackInvokedDispatcher}
- * to the IME to be set on the IME window's {@link WindowOnBackInvokedDispatcher}.
- * <p>
- * @see WindowOnBackInvokedDispatcher#setImeOnBackInvokedDispatcher
+ * A handler (on the app process side) for IME back callbacks.
  *
+ * See {@link ImeOnBackInvokedDispatcher} for the counterpart of this class on the IME process side.
+ *
+ * This class lives in the app process and handles back callback registrations from the IME process.
+ * Whenever it receives a callback registration through its ResultReceiver, it registers the
+ * callback at the correct receiving dispatcher inside the app process.
+ * <p>
+ * The app process creates an instance of {@link ImeBackCallbackProxy} in
+ * {@link android.view.inputmethod.InputMethodManager}. This class` {@link ResultReceiver} is
+ * sent to the IME process. The IME process then uses the provided ResultReceiver to send callback
+ * registrations and unregistrations to the app process.
+ *
+ * @see ImeOnBackInvokedDispatcher
  * @hide
  */
-public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parcelable {
+public class ImeBackCallbackProxy {
 
-    private static final String TAG = "ImeBackDispatcher";
+    private static final String TAG = "ImeBackCallbackProxy";
     static final String RESULT_KEY_ID = "id";
     static final String RESULT_KEY_CALLBACK = "callback";
     static final String RESULT_KEY_PRIORITY = "priority";
@@ -59,14 +64,9 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
     static final int RESULT_CODE_UNREGISTER = 1;
     @NonNull
     private final ResultReceiver mResultReceiver;
-    // The handler to run callbacks on. This should be on the same thread
-    // the ViewRootImpl holding IME's WindowOnBackInvokedDispatcher is created on.
-    private Handler mHandler;
     private final ArrayDeque<Pair<Integer, Bundle>> mQueuedReceive = new ArrayDeque<>();
-    private final ArrayDeque<Pair<Integer, OnBackInvokedCallback>> mNonSystemCallbacks =
-            new ArrayDeque<>();
-    private OnBackInvokedCallback mRegisteredSystemCallback = null;
-    public ImeOnBackInvokedDispatcher(Handler handler) {
+
+    public ImeBackCallbackProxy(Handler handler) {
         mResultReceiver = new ResultReceiver(handler) {
             @Override
             public void onReceiveResult(int resultCode, Bundle resultData) {
@@ -80,26 +80,12 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         };
     }
 
-    /**
-     * Transfers the non-system callbacks from another {@link ImeOnBackInvokedDispatcher}.
-     * This is used when the target IME dispatcher changes.
-     */
-    public void transferNonSystemCallbacksFrom(@NonNull ImeOnBackInvokedDispatcher other) {
-        mNonSystemCallbacks.addAll(other.mNonSystemCallbacks);
-        other.mNonSystemCallbacks.clear();
-    }
-
     /** Set receiving dispatcher to consume queued receiving events. */
     public void updateReceivingDispatcher(@NonNull WindowOnBackInvokedDispatcher dispatcher) {
         while (!mQueuedReceive.isEmpty()) {
             final Pair<Integer, Bundle> queuedMessage = mQueuedReceive.poll();
             receive(queuedMessage.first, queuedMessage.second, dispatcher);
         }
-    }
-
-
-    void setHandler(@NonNull Handler handler) {
-        mHandler = handler;
     }
 
     /**
@@ -111,96 +97,10 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         return null;
     }
 
-    ImeOnBackInvokedDispatcher(Parcel in) {
-        mResultReceiver = in.readTypedObject(ResultReceiver.CREATOR);
-    }
-
-    @Override
-    public void registerOnBackInvokedCallback(
-            @OnBackInvokedDispatcher.Priority int priority,
-            @NonNull OnBackInvokedCallback callback) {
-        if (!imeBackCallbackLeakPrevention()) {
-            registerOnBackInvokedCallbackAtTarget(priority, callback);
-            return;
-        }
-        if (priority == PRIORITY_SYSTEM || callback instanceof CompatOnBackInvokedCallback) {
-            registerOnBackInvokedCallbackAtTarget(priority, callback);
-            mRegisteredSystemCallback = callback;
-            // Register all pending non-system callbacks.
-            for (Pair<Integer, OnBackInvokedCallback> pair : mNonSystemCallbacks) {
-                registerOnBackInvokedCallbackAtTarget(pair.first, pair.second);
-            }
-        } else {
-            mNonSystemCallbacks.removeIf(pair -> pair.second.equals(callback));
-            mNonSystemCallbacks.add(new Pair<>(priority, callback));
-            if (mRegisteredSystemCallback != null) {
-                registerOnBackInvokedCallbackAtTarget(priority, callback);
-            }
-        }
-    }
-
-    private void registerOnBackInvokedCallbackAtTarget(
-            @OnBackInvokedDispatcher.Priority int priority,
-            @NonNull OnBackInvokedCallback callback) {
-        final Bundle bundle = new Bundle();
-        // Always invoke back for ime without checking the window focus.
-        // We use strong reference in the binder wrapper to avoid accidentally GC the callback.
-        // This is necessary because the callback is sent to and registered from
-        // the app process, which may treat the IME callback as weakly referenced. This will not
-        // cause a memory leak because the app side already clears the reference correctly.
-        final IOnBackInvokedCallback iCallback = new ImeOnBackInvokedCallbackWrapper(callback);
-        bundle.putBinder(RESULT_KEY_CALLBACK, iCallback.asBinder());
-        bundle.putInt(RESULT_KEY_PRIORITY, priority);
-        bundle.putInt(RESULT_KEY_ID, callback.hashCode());
-        mResultReceiver.send(RESULT_CODE_REGISTER, bundle);
-    }
-
-    @Override
-    public void unregisterOnBackInvokedCallback(@NonNull OnBackInvokedCallback callback) {
-        if (!imeBackCallbackLeakPrevention()) {
-            unregisterOnBackInvokedCallbackAtTarget(callback);
-            return;
-        }
-        if (callback == mRegisteredSystemCallback) {
-            // Unregister all non-system callbacks first.
-            for (Pair<Integer, OnBackInvokedCallback> nonSystemCallback : mNonSystemCallbacks) {
-                unregisterOnBackInvokedCallbackAtTarget(nonSystemCallback.second);
-            }
-            // Unregister the system callback.
-            unregisterOnBackInvokedCallbackAtTarget(callback);
-        } else {
-            if (mNonSystemCallbacks.removeIf(pair -> pair.second.equals(callback))) {
-                unregisterOnBackInvokedCallbackAtTarget(callback);
-            }
-        }
-    }
-
-    private  void unregisterOnBackInvokedCallbackAtTarget(@NonNull OnBackInvokedCallback callback) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(RESULT_KEY_ID, callback.hashCode());
-        mResultReceiver.send(RESULT_CODE_UNREGISTER, bundle);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeTypedObject(mResultReceiver, flags);
-    }
-
     @NonNull
-    public static final Parcelable.Creator<ImeOnBackInvokedDispatcher> CREATOR =
-            new Parcelable.Creator<ImeOnBackInvokedDispatcher>() {
-                public ImeOnBackInvokedDispatcher createFromParcel(Parcel in) {
-                    return new ImeOnBackInvokedDispatcher(in);
-                }
-                public ImeOnBackInvokedDispatcher[] newArray(int size) {
-                    return new ImeOnBackInvokedDispatcher[size];
-                }
-            };
+    public ResultReceiver getResultReceiver() {
+        return mResultReceiver;
+    }
 
     private final ArrayList<ImeOnBackInvokedCallback> mImeCallbacks = new ArrayList<>();
 
@@ -317,23 +217,16 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
      * @param p      printer to write the dump to
      */
     public void dump(@NonNull Printer p, @NonNull String prefix) {
+        p.println(prefix + TAG + ":");
+        String innerPrefix = prefix + "  ";
         if (mImeCallbacks.isEmpty()) {
-            p.println(prefix + TAG + " mImeCallbacks: []");
+            p.println(innerPrefix + "mImeCallbacks: []");
         } else {
-            p.println(prefix + TAG + " mImeCallbacks:");
+            p.println(innerPrefix + "mImeCallbacks:");
             for (ImeOnBackInvokedCallback callback : mImeCallbacks) {
-                p.println(prefix + "  " + callback);
+                p.println(innerPrefix + "  " + callback);
             }
         }
-        if (mNonSystemCallbacks.isEmpty()) {
-            p.println(prefix + "mNonSystemCallbacks: []");
-        } else {
-            p.println(prefix + "mNonSystemCallbacks:");
-            for (Pair<Integer, OnBackInvokedCallback> pair : mNonSystemCallbacks) {
-                p.println(prefix + "  " + pair.second + " (priority=" + pair.first + ")");
-            }
-        }
-        p.println(prefix + "mRegisteredSystemCallback: " + mRegisteredSystemCallback);
     }
 
     @VisibleForTesting(visibility = PACKAGE)
@@ -348,7 +241,7 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
         private final int mPriority;
 
         ImeOnBackInvokedCallback(@NonNull IOnBackInvokedCallback iCallback, int id,
-                @Priority int priority) {
+                @OnBackInvokedDispatcher.Priority int priority) {
             mIOnBackInvokedCallback = iCallback;
             mId = id;
             mPriority = priority;
@@ -440,57 +333,6 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
             if (current != null) {
                 current.getOnBackInvokedDispatcher().registerOnBackInvokedCallbackUnchecked(
                         imeCallback, imeCallback.mPriority);
-            }
-        }
-    }
-
-    /**
-     * Wrapper class that wraps an OnBackInvokedCallback. This is used when a callback is sent from
-     * the IME process to the app process.
-     */
-    private class ImeOnBackInvokedCallbackWrapper extends IOnBackInvokedCallback.Stub {
-
-        private final OnBackInvokedCallback mCallback;
-
-        ImeOnBackInvokedCallbackWrapper(@NonNull OnBackInvokedCallback callback) {
-            mCallback = callback;
-        }
-
-        @Override
-        public void onBackStarted(BackMotionEvent backMotionEvent) {
-            maybeRunOnAnimationCallback((animationCallback) -> animationCallback.onBackStarted(
-                    BackEvent.fromBackMotionEvent(backMotionEvent)));
-        }
-
-        @Override
-        public void onBackProgressed(BackMotionEvent backMotionEvent) {
-            maybeRunOnAnimationCallback((animationCallback) -> animationCallback.onBackProgressed(
-                    BackEvent.fromBackMotionEvent(backMotionEvent)));
-        }
-
-        @Override
-        public void onBackCancelled() {
-            maybeRunOnAnimationCallback(OnBackAnimationCallback::onBackCancelled);
-        }
-
-        @Override
-        public void onBackInvoked() {
-            mHandler.post(mCallback::onBackInvoked);
-        }
-
-        @Override
-        public void setTriggerBack(boolean triggerBack) {
-            // no-op
-        }
-
-        @Override
-        public void setHandoffHandler(IBackAnimationHandoffHandler handoffHandler) {
-            // no-op
-        }
-
-        private void maybeRunOnAnimationCallback(Consumer<OnBackAnimationCallback> block) {
-            if (mCallback instanceof OnBackAnimationCallback) {
-                mHandler.post(() -> block.accept((OnBackAnimationCallback) mCallback));
             }
         }
     }

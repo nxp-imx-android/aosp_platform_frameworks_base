@@ -97,7 +97,7 @@ interface IInputMethodManager {
             in @nullable EditorInfo editorInfo, in @nullable IRemoteInputConnection inputConnection,
             in @nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, int userId,
-            in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            in ResultReceiver imeBackCallbackReceiver, boolean imeRequestedVisible,
             int startInputSeq);
 
     oneway void showInputMethodPickerFromClient(in IInputMethodClient client,
