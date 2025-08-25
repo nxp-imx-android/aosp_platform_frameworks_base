@@ -96,6 +96,8 @@ public final class MessageQueue {
     private native static boolean nativeIsPolling(long ptr);
     @RavenwoodRedirect
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
+    @RavenwoodRedirect
+    private native static void nativeSetSkipEpollWaitForZeroTimeout(long ptr);
 
     MessageQueue(boolean quitAllowed) {
         mQuitAllowed = quitAllowed;
@@ -118,6 +120,10 @@ public final class MessageQueue {
             nativeDestroy(mPtr);
             mPtr = 0;
         }
+    }
+
+    static boolean getUseConcurrent() {
+        return false;
     }
 
     /**
