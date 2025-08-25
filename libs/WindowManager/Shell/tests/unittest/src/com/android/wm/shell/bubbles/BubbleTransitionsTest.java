@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
+import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
@@ -1122,5 +1123,27 @@ public class BubbleTransitionsTest extends ShellTestCase {
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
 
         assertThat(mBubbleTransitions.getClosingBubbleTask(info)).isEqualTo(closingBubble);
+    }
+
+    @Test
+    public void testGetClosingBubbleTask_excludeChangeAndToBack() {
+        final SurfaceControl leash = new SurfaceControl.Builder().setName("testLeash").build();
+        final ActivityManager.RunningTaskInfo taskInfo0 = setupAppBubble();
+        final ActivityManager.RunningTaskInfo taskInfo1 = setupAppBubble();
+
+        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        final TransitionInfo.Change openingBubble = new TransitionInfo.Change(
+                taskInfo0.token, leash);
+        openingBubble.setTaskInfo(taskInfo0);
+        openingBubble.setMode(TRANSIT_CHANGE);
+        final TransitionInfo.Change closingBubble = new TransitionInfo.Change(
+                taskInfo1.token, leash);
+        closingBubble.setTaskInfo(taskInfo1);
+        closingBubble.setMode(TRANSIT_TO_BACK);
+        info.addChange(openingBubble);
+        info.addChange(closingBubble);
+        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+
+        assertThat(mBubbleTransitions.getClosingBubbleTask(info)).isNull();
     }
 }

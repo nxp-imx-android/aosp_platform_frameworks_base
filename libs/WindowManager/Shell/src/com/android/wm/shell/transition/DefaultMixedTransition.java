@@ -481,7 +481,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             // The trigger Task is no longer in Bubble (Case 1/2/4)
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " No bubbling task found");
 
-            if (bubbleTransitions.containsNonBubbledExpandedTaskInStack(info)) {
+            if (bubbleTransitions.containsExpandedBubbledTaskNoLongerBubbled(info)) {
                 // The expanded Bubbled Task is no longer Bubbled (Case 2)
                 ProtoLog.w(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " An activity launch converted the expanded Bubbled Task to non-Bubbled");
