@@ -1357,8 +1357,10 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                         + "): " + reason, info.uid);
             }
             // Since the process is getting killed, reset the freezable related state.
-            mOptRecord.setPendingFreeze(false);
-            mOptRecord.setFrozen(false);
+            synchronized (mProcLock) {
+                mOptRecord.setPendingFreeze(false);
+                mOptRecord.setFrozen(false);
+            }
             if (mPid > 0) {
                 mService.mProcessList.noteAppKill(this, reasonCode, subReason, description);
                 EventLog.writeEvent(EventLogTags.AM_KILL,
