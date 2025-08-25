@@ -16,6 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -141,6 +142,50 @@ public final class ComputerControlSession implements AutoCloseable {
     @Nullable
     public Image getScreenshot() {
         return mImageReader == null ? null : mImageReader.acquireLatestImage();
+    }
+
+    /**
+     * Sends a tap event to the computer control session at the given location.
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
+            @FloatRange(from = 0.0, to = 1.0) float y) {
+        if (x < 0 || x > 1 || y < 0 || y > 1) {
+            throw new IllegalArgumentException("Tap coordinates must be in range [0, 1]");
+        }
+        try {
+            mSession.tap(x, y);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sends a swipe event to the computer control session for the given coordinates.
+     *
+     * <p>To avoid misinterpreting the swipe as a fling, the individual touches are throttled, so
+     * the entire action will take ~500ms. However, this is done in the background and this method
+     * returns immediately. Any ongoing swipe will be canceled if a new swipe is requested.</p>
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void swipe(
+            @FloatRange(from = 0.0, to = 1.0) float fromX,
+            @FloatRange(from = 0.0, to = 1.0) float fromY,
+            @FloatRange(from = 0.0, to = 1.0) float toX,
+            @FloatRange(from = 0.0, to = 1.0) float toY) {
+        if (fromX < 0 || fromX > 1 || fromY < 0 || fromY > 1
+                || toX < 0 || toX > 1 || toY < 0 || toY > 1) {
+            throw new IllegalArgumentException("Swipe coordinates must be in range [0, 1]");
+        }
+        try {
+            mSession.swipe(fromX, fromY, toX, toY);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /** Returns the ID of the single trusted virtual display for this session. */

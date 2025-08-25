@@ -128,6 +128,18 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void tap_taps() throws Exception {
+        mSession.tap(0.1f, 0.2f);
+        verify(mIComputerControlSession).tap(eq(0.1f), eq(0.2f));
+    }
+
+    @Test
+    public void swipe_swipes() throws Exception {
+        mSession.swipe(0.1f, 0.2f, 0.3f, 0.4f);
+        verify(mIComputerControlSession).swipe(eq(0.1f), eq(0.2f), eq(0.3f), eq(0.4f));
+    }
+
+    @Test
     public void sendKeyEvent_sendsKeyEvent() throws Exception {
         KeyEvent event = new KeyEvent.Builder()
                                  .setKeyCode(android.view.KeyEvent.KEYCODE_A)

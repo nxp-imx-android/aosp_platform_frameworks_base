@@ -23,7 +23,10 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,29 +35,27 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.content.AttributionSource;
-import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
-import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplayConfig;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
+import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
 import android.platform.test.annotations.Presubmit;
-import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-
-import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -66,17 +67,20 @@ public class ComputerControlSessionTest {
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
 
     private static final int VIRTUAL_DISPLAY_ID = 42;
+    private static final int DISPLAY_WIDTH = 600;
+    private static final int DISPLAY_HEIGHT = 1000;
+    private static final int DISPLAY_DPI = 480;
 
-    @Mock
-    private PackageManager mPackageManager;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
-    private WindowManagerInternal mWindowManagerInternal;
+    private ComputerControlSessionImpl.Injector mInjector;
     @Mock
     private ComputerControlSessionImpl.OnClosedListener mOnClosedListener;
     @Mock
     private IVirtualDevice mVirtualDevice;
+    @Mock
+    private IVirtualInputDevice mVirtualTouchscreen;
     @Captor
     private ArgumentCaptor<VirtualDeviceParams> mVirtualDeviceParamsArgumentCaptor;
     @Captor
@@ -101,14 +105,21 @@ public class ComputerControlSessionTest {
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
 
-        when(mPackageManager.getPermissionControllerPackageName())
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.logicalWidth = DISPLAY_WIDTH;
+        displayInfo.logicalHeight = DISPLAY_HEIGHT;
+        displayInfo.logicalDensityDpi = DISPLAY_DPI;
+        when(mInjector.getDisplayInfo(anyInt())).thenReturn(displayInfo);
+
+        when(mInjector.getPermissionControllerPackageName())
                 .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
         when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(VIRTUAL_DISPLAY_ID);
+        when(mVirtualDevice.createVirtualTouchscreen(any(), any())).thenReturn(mVirtualTouchscreen);
         mSession = new ComputerControlSessionImpl(mAppToken, mParams,
-                AttributionSource.myAttributionSource(), mPackageManager, mVirtualDeviceFactory,
-                mWindowManagerInternal, mOnClosedListener);
+                AttributionSource.myAttributionSource(), mVirtualDeviceFactory, mOnClosedListener,
+                mInjector);
     }
 
     @After
@@ -136,13 +147,9 @@ public class ComputerControlSessionTest {
         VirtualDisplayConfig virtualDisplayConfig = mVirtualDisplayConfigArgumentCaptor.getValue();
         assertThat(virtualDisplayConfig.getName()).contains(mParams.getName());
 
-        Display display =
-                DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
-        DisplayInfo displayInfo = new DisplayInfo();
-        display.getDisplayInfo(displayInfo);
-        assertThat(virtualDisplayConfig.getDensityDpi()).isEqualTo(displayInfo.logicalDensityDpi);
-        assertThat(virtualDisplayConfig.getHeight()).isEqualTo(displayInfo.logicalHeight);
-        assertThat(virtualDisplayConfig.getWidth()).isEqualTo(displayInfo.logicalWidth);
+        assertThat(virtualDisplayConfig.getDensityDpi()).isEqualTo(DISPLAY_DPI);
+        assertThat(virtualDisplayConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
+        assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_WIDTH);
         assertThat(virtualDisplayConfig.getSurface()).isNull();
 
         int expectedDisplayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
@@ -171,8 +178,8 @@ public class ComputerControlSessionTest {
         VirtualTouchscreenConfig virtualTouchscreenConfig =
                 mVirtualTouchscreenConfigArgumentCaptor.getValue();
         assertThat(virtualTouchscreenConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
-        assertThat(virtualTouchscreenConfig.getWidth()).isEqualTo(displayInfo.logicalWidth);
-        assertThat(virtualTouchscreenConfig.getHeight()).isEqualTo(displayInfo.logicalHeight);
+        assertThat(virtualTouchscreenConfig.getWidth()).isEqualTo(DISPLAY_WIDTH);
+        assertThat(virtualTouchscreenConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
         assertThat(virtualTouchscreenConfig.getInputDeviceName()).contains(mParams.getName());
     }
 
@@ -191,7 +198,68 @@ public class ComputerControlSessionTest {
 
     @Test
     public void createSession_disablesAnimationsOnDisplay() {
-        verify(mWindowManagerInternal).setAnimationsDisabledForDisplay(eq(VIRTUAL_DISPLAY_ID),
-                eq(true));
+        verify(mInjector).disableAnimationsForDisplay(VIRTUAL_DISPLAY_ID);
+    }
+
+    @Test
+    public void tap_sendsTouchscreenEvents() throws Exception {
+        mSession.tap(0.1f, 0.2f);
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_DOWN)));
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_UP)));
+    }
+
+    @Test
+    public void swipe_sendsTouchscreenEvents() throws Exception {
+        mSession.swipe(0.1f, 0.2f, 0.3f, 0.4f);
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_DOWN)));
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_MOVE)));
+        verify(mVirtualTouchscreen,
+                timeout(ComputerControlSessionImpl.SWIPE_EVENT_DELAY_MS
+                        * (ComputerControlSessionImpl.SWIPE_STEPS))
+                        .times(ComputerControlSessionImpl.SWIPE_STEPS))
+                .sendTouchEvent(argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_MOVE)));
+        verify(mVirtualTouchscreen, timeout(ComputerControlSessionImpl.SWIPE_EVENT_DELAY_MS))
+                .sendTouchEvent(argThat(
+                        new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_MOVE)));
+        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
+                new MatchesTouchEvent(180, 400, VirtualTouchEvent.ACTION_UP)));
+    }
+
+    private static class MatchesTouchEvent implements ArgumentMatcher<VirtualTouchEvent> {
+
+        private final int mX;
+        private final int mY;
+        private final int mAction;
+
+        MatchesTouchEvent(int action) {
+            mX = -1;
+            mY = -1;
+            mAction = action;
+        }
+
+        MatchesTouchEvent(int x, int y, int action) {
+            mX = x;
+            mY = y;
+            mAction = action;
+        }
+
+        @Override
+        public boolean matches(VirtualTouchEvent event) {
+            if (event.getMajorAxisSize() != 1
+                    || event.getPointerId() != 4
+                    || event.getPressure() != 255
+                    || event.getToolType() != VirtualTouchEvent.TOOL_TYPE_FINGER
+                    || event.getAction() != mAction) {
+                return false;
+            }
+            if (mX == -1 || mY == -1) {
+                return true;
+            }
+            return mX == event.getX() && mY == event.getY();
+        }
     }
 }
