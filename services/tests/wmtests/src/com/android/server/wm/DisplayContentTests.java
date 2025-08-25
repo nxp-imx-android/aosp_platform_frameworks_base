@@ -1742,6 +1742,7 @@ public class DisplayContentTests extends WindowTestsBase {
         spyOn(mWm.mAppCompatConfiguration);
         doReturn(false).when(mWm.mAppCompatConfiguration).isTranslucentLetterboxingEnabled();
         makeDisplayPortrait(mDisplayContent);
+        mDisplayContent.setIgnoreOrientationRequest(false);
         final ActivityRecord nonTopVisible = new ActivityBuilder(mAtm)
                 .setScreenOrientation(SCREEN_ORIENTATION_PORTRAIT)
                 .setCreateTask(true).build();
@@ -1789,6 +1790,7 @@ public class DisplayContentTests extends WindowTestsBase {
         doReturn(false).when(mWm.mAppCompatConfiguration).isTranslucentLetterboxingEnabled();
         setReverseDefaultRotation(mDisplayContent, false);
         makeDisplayPortrait(mDisplayContent);
+        mDisplayContent.setIgnoreOrientationRequest(false);
         final ActivityRecord nonTopVisible = new ActivityBuilder(mAtm).setCreateTask(true)
                 .setScreenOrientation(SCREEN_ORIENTATION_LANDSCAPE).setVisible(false).build();
         new ActivityBuilder(mAtm).setCreateTask(true)
