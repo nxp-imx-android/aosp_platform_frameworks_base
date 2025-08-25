@@ -66,7 +66,7 @@ constructor(@Assisted context: Context, interactor: AudioVolumeInteractor) :
     private fun Boolean.toUiState(): Icon? =
         if (this) {
             Icon.Resource(
-                res = R.drawable.ic_speaker_mute,
+                resId = R.drawable.ic_speaker_mute,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_ringer_silent),
             )

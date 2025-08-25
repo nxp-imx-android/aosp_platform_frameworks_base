@@ -176,7 +176,7 @@ class ModesTileMapperTest : SysuiTestCase() {
 
     @Test
     fun state_modelHasIconResId_includesIconResId() {
-        val icon = TestStubDrawable("res123").asIcon(res = 123)
+        val icon = TestStubDrawable("res123").asIcon(resId = 123)
         val model =
             ModesTileModel(
                 isActivated = false,

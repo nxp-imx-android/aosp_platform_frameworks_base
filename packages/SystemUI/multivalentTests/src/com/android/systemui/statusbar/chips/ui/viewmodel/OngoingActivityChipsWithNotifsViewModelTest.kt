@@ -2017,7 +2017,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.ChipIcon.SingleColorIcon::class.java)
             val singleColorIcon = icon as OngoingActivityChipModel.ChipIcon.SingleColorIcon
             val resourceIcon = singleColorIcon.impl as Icon.Resource
-            assertThat(resourceIcon.res).isEqualTo(changeFirstChipIconRefiner.newIconRes)
+            assertThat(resourceIcon.resId).isEqualTo(changeFirstChipIconRefiner.newIconRes)
             assertThat(resourceIcon.contentDescription?.loadContentDescription(context))
                 .isEqualTo(changeFirstChipIconRefiner.newIconDesc)
         }

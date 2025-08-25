@@ -56,7 +56,7 @@ constructor(
                     R.drawable.ic_volume_media_bt
                 }
             val drawable = withContext(uiBackgroundContext) { context.getDrawable(iconRes)!! }
-            emit(Icon.Loaded(drawable = drawable, contentDescription = null, res = iconRes))
+            emit(Icon.Loaded(drawable = drawable, contentDescription = null, resId = iconRes))
         }
     }
 
@@ -69,7 +69,7 @@ constructor(
                     SettingsR.drawable.ic_volume_remote
                 }
             val drawable = withContext(uiBackgroundContext) { context.getDrawable(iconRes)!! }
-            emit(Icon.Loaded(drawable = drawable, contentDescription = null, res = iconRes))
+            emit(Icon.Loaded(drawable = drawable, contentDescription = null, resId = iconRes))
         }
     }
 
@@ -102,7 +102,7 @@ constructor(
                         ringerMode,
                     )
                 val drawable = withContext(uiBackgroundContext) { context.getDrawable(iconRes)!! }
-                Icon.Loaded(drawable = drawable, contentDescription = null, res = iconRes)
+                Icon.Loaded(drawable = drawable, contentDescription = null, resId = iconRes)
             }
         }
     }

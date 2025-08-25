@@ -413,7 +413,7 @@ private fun FooterIcon(icon: Icon, modifier: Modifier = Modifier, tint: Color) {
         is Icon.Loaded -> {
             Icon(icon.drawable.toBitmap().asImageBitmap(), contentDescription, modifier, tint)
         }
-        is Icon.Resource -> Icon(painterResource(icon.res), contentDescription, modifier, tint)
+        is Icon.Resource -> Icon(painterResource(icon.resId), contentDescription, modifier, tint)
     }
 }
 

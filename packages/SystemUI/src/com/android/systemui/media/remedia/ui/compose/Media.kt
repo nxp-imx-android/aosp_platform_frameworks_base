@@ -1297,7 +1297,7 @@ private fun ContentScope.PlayPauseAction(
                                 rememberAnimatedVectorPainter(
                                     animatedImageVector =
                                         AnimatedImageVector.animatedVectorResource(
-                                            id = viewModel.icon.res
+                                            id = viewModel.icon.resId
                                         ),
                                     atEnd = viewModel.state == MediaSessionState.Playing,
                                 )
@@ -1367,7 +1367,7 @@ private fun SecondaryActionContent(
                         modifier = sharedModifier.sysuiResTag(resId),
                         enabled = viewModel.onClick != null,
                         colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
-                        iconResource = viewModel.icon.res,
+                        iconResource = viewModel.icon.resId,
                         contentDescription = viewModel.icon.contentDescription?.load(),
                     )
 

@@ -113,25 +113,25 @@ class VpnIconViewModelTest : SysuiTestCase() {
 
         private val EXPECTED_ICON_STANDARD_VALIDATED =
             Icon.Resource(
-                res = R.drawable.stat_sys_vpn_ic,
+                resId = R.drawable.stat_sys_vpn_ic,
                 contentDescription = BASE_CONTENT_DESCRIPTION,
             )
 
         private val EXPECTED_ICON_STANDARD_NOT_VALIDATED =
             Icon.Resource(
-                res = R.drawable.stat_sys_no_internet_vpn_ic,
+                resId = R.drawable.stat_sys_no_internet_vpn_ic,
                 contentDescription = BASE_CONTENT_DESCRIPTION,
             )
 
         private val EXPECTED_ICON_BRANDED_VALIDATED =
             Icon.Resource(
-                res = R.drawable.stat_sys_branded_vpn,
+                resId = R.drawable.stat_sys_branded_vpn,
                 contentDescription = BASE_CONTENT_DESCRIPTION,
             )
 
         private val EXPECTED_ICON_BRANDED_NOT_VALIDATED =
             Icon.Resource(
-                res = R.drawable.stat_sys_no_internet_branded_vpn,
+                resId = R.drawable.stat_sys_no_internet_branded_vpn,
                 contentDescription = BASE_CONTENT_DESCRIPTION,
             )
     }

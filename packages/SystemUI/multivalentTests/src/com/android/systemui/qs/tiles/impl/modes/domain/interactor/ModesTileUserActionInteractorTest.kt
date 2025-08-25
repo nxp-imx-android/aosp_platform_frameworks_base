@@ -197,7 +197,7 @@ class ModesTileUserActionInteractorTest : SysuiTestCase() {
                     ModesTileModel.ActiveMode(it, it)
                 else ModesTileModel.ActiveMode(null, it)
             },
-            TestStubDrawable("icon").asIcon(res = 123),
+            TestStubDrawable("icon").asIcon(resId = 123),
             quickMode,
         )
     }

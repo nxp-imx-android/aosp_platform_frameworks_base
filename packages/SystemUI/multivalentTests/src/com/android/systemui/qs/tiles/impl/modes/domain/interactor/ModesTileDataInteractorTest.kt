@@ -27,8 +27,8 @@ import com.android.internal.R
 import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.andSceneContainer
@@ -162,30 +162,34 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             // Tile starts with the generic Modes icon.
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(MODES_DRAWABLE_ID)
 
             // Add an inactive mode -> Still modes icon
             zenModeRepository.addMode(id = "Mode", active = false)
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(MODES_DRAWABLE_ID)
 
             // Add an active mode with a default icon: icon should be the mode icon, and the
             // iconResId is also populated, because we know it's a system icon.
             zenModeRepository.addMode(
-                id = "Bedtime with default icon",
-                type = AutomaticZenRule.TYPE_BEDTIME,
-                active = true,
+                TestModeBuilder()
+                    .setId("Bedtime with default icon")
+                    .setName(BEDTIME_NAME)
+                    .setType(AutomaticZenRule.TYPE_BEDTIME)
+                    .setActive(true)
+                    .build()
             )
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(BEDTIME_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(BEDTIME_DRAWABLE_ID)
 
             // Add another, less-prioritized mode that has a *custom* icon: for now, icon should
             // remain the first mode icon
             zenModeRepository.addMode(
                 TestModeBuilder()
                     .setId("Driving with custom icon")
+                    .setName(CUSTOM_NAME)
                     .setType(AutomaticZenRule.TYPE_DRIVING)
                     .setPackage(CUSTOM_PACKAGE)
                     .setIconResId(CUSTOM_DRAWABLE_ID)
@@ -194,20 +198,18 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             )
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(BEDTIME_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(BEDTIME_DRAWABLE_ID)
 
             // Deactivate more important mode: icon should be the less important, still active mode
-            // And because it's a package-provided icon, iconResId is not populated.
             zenModeRepository.deactivateMode("Bedtime with default icon")
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(CUSTOM_ICON)
-            assertThat(tileData?.icon!!.res).isNull()
 
             // Deactivate remaining mode: back to the default modes icon
             zenModeRepository.deactivateMode("Driving with custom icon")
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
-            assertThat(tileData?.icon!!.res).isEqualTo(MODES_DRAWABLE_ID)
+            assertThat(tileData?.icon!!.resId).isEqualTo(MODES_DRAWABLE_ID)
         }
 
     @Test
@@ -230,6 +232,7 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             zenModeRepository.addMode(
                 TestModeBuilder()
                     .setId("Manual Mode 1")
+                    .setName(BEDTIME_NAME)
                     .setManualInvocationAllowed(true)
                     .setPackage("android")
                     .setIconResId(BEDTIME_DRAWABLE_ID)
@@ -238,6 +241,7 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             zenModeRepository.addMode(
                 TestModeBuilder()
                     .setId("Manual Mode 2")
+                    .setName(THEATER_NAME)
                     .setManualInvocationAllowed(true)
                     .setPackage("android")
                     .setIconResId(THEATER_DRAWABLE_ID)
@@ -261,9 +265,12 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
 
             // With an active mode -> the icon of the active mode, regardless of past activations
             zenModeRepository.addMode(
-                id = "Active automatic mode",
-                type = AutomaticZenRule.TYPE_BEDTIME,
-                active = true,
+                TestModeBuilder()
+                    .setId("Active automatic mode")
+                    .setName(BEDTIME_NAME)
+                    .setType(AutomaticZenRule.TYPE_BEDTIME)
+                    .setActive(true)
+                    .build()
             )
             runCurrent()
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
@@ -283,6 +290,7 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             zenModeRepository.addMode(
                 TestModeBuilder()
                     .setId("mode1")
+                    .setName(BEDTIME_NAME)
                     .setManualInvocationAllowed(true)
                     .setPackage("android")
                     .setIconResId(BEDTIME_DRAWABLE_ID)
@@ -424,9 +432,35 @@ class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
         val THEATER_DRAWABLE = TestStubDrawable("theater")
         val CUSTOM_DRAWABLE = TestStubDrawable("custom")
 
-        val MODES_ICON = Icon.Loaded(MODES_DRAWABLE, null, MODES_DRAWABLE_ID)
-        val BEDTIME_ICON = Icon.Loaded(BEDTIME_DRAWABLE, null, BEDTIME_DRAWABLE_ID)
-        val THEATER_ICON = Icon.Loaded(THEATER_DRAWABLE, null, THEATER_DRAWABLE_ID)
-        val CUSTOM_ICON = CUSTOM_DRAWABLE.asIcon()
+        // The names are used for the icon's content description
+        const val BEDTIME_NAME = "Bedtime"
+        const val THEATER_NAME = "Theater"
+        const val CUSTOM_NAME = "Custom"
+
+        val MODES_ICON =
+            Icon.Loaded(
+                drawable = MODES_DRAWABLE,
+                contentDescription = null,
+                resId = MODES_DRAWABLE_ID,
+            )
+        val BEDTIME_ICON =
+            Icon.Loaded(
+                drawable = BEDTIME_DRAWABLE,
+                contentDescription = ContentDescription.Loaded(BEDTIME_NAME),
+                resId = BEDTIME_DRAWABLE_ID,
+            )
+        val THEATER_ICON =
+            Icon.Loaded(
+                drawable = THEATER_DRAWABLE,
+                contentDescription = ContentDescription.Loaded(THEATER_NAME),
+                resId = THEATER_DRAWABLE_ID,
+            )
+        val CUSTOM_ICON =
+            Icon.Loaded(
+                drawable = CUSTOM_DRAWABLE,
+                contentDescription = ContentDescription.Loaded(CUSTOM_NAME),
+                packageName = CUSTOM_PACKAGE,
+                resId = CUSTOM_DRAWABLE_ID,
+            )
     }
 }

@@ -931,21 +931,21 @@ class MobileIconViewModelTest : SysuiTestCase() {
 
             // Level 0 -> no connection
             assertThat(latest).isNotNull()
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_0)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_0)
 
             // 1-2 -> 1 bar
             repository.satelliteLevel.value = 1
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_1)
 
             repository.satelliteLevel.value = 2
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_1)
 
             // 3-4 -> 2 bars
             repository.satelliteLevel.value = 3
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_2)
 
             repository.satelliteLevel.value = 4
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_2)
         }
 
     @Test
@@ -962,21 +962,21 @@ class MobileIconViewModelTest : SysuiTestCase() {
 
             // Level 0 -> no connection
             assertThat(latest).isNotNull()
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_0)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_0)
 
             // 1-2 -> 1 bar
             repository.satelliteLevel.value = 1
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_1)
 
             repository.satelliteLevel.value = 2
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_1)
 
             // 3-4 -> 2 bars
             repository.satelliteLevel.value = 3
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_2)
 
             repository.satelliteLevel.value = 4
-            assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
+            assertThat(latest!!.icon.resId).isEqualTo(R.drawable.ic_satellite_connected_2)
         }
 
     private fun createAndSetViewModel() {

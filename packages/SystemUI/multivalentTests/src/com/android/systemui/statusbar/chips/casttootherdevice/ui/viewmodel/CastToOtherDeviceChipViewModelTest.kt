@@ -153,7 +153,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_cast_connected)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_cast_connected)
             assertThat((icon.contentDescription as ContentDescription.Resource).res)
                 .isEqualTo(R.string.cast_screen_to_other_device_chip_accessibility_label)
         }
@@ -178,7 +178,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_cast_connected)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_cast_connected)
             // This content description is just generic "Casting", not "Casting screen"
             assertThat((icon.contentDescription as ContentDescription.Resource).res)
                 .isEqualTo(R.string.accessibility_casting)
@@ -202,7 +202,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_cast_connected)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_cast_connected)
             assertThat((icon.contentDescription as ContentDescription.Resource).res)
                 .isEqualTo(R.string.cast_screen_to_other_device_chip_accessibility_label)
         }
@@ -244,7 +244,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_cast_connected)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_cast_connected)
             // This content description is just generic "Casting", not "Casting screen"
             assertThat((icon.contentDescription as ContentDescription.Resource).res)
                 .isEqualTo(R.string.accessibility_casting)
@@ -278,7 +278,7 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
                     .impl as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_cast_connected)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_cast_connected)
             // MediaProjection == screen casting, so this content description reflects that we're
             // using the MediaProjection information.
             assertThat((icon.contentDescription as ContentDescription.Resource).res)

@@ -22,8 +22,6 @@ import android.provider.Settings.ACTION_AUTOMATIC_ZEN_RULE_SETTINGS
 import android.provider.Settings.EXTRA_AUTOMATIC_ZEN_RULE_ID
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.settingslib.notification.modes.ZenModeDescriptions
-import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
@@ -87,7 +85,7 @@ constructor(
                 modesList.map { mode ->
                     ModeTileViewModel(
                         id = mode.id,
-                        icon = getIcon(mode),
+                        icon = zenModeInteractor.getModeIcon(mode),
                         text = mode.name,
                         subtext = getTileSubtext(mode),
                         subtextDescription =
@@ -124,25 +122,6 @@ constructor(
                 }
             }
             .flowOn(bgDispatcher)
-
-    /**
-     * Get the icon of the [ZenMode] from the cache, cloning the drawable to prevent state sharing
-     * (otherwise, the modes tile will be tinted the same way as the items in the dialog).
-     */
-    private suspend fun getIcon(mode: ZenMode): Icon.Loaded {
-        val cachedIcon = zenModeInteractor.getModeIcon(mode)
-        val iconDrawable =
-            cachedIcon.drawable.constantState?.newDrawable(context.resources)
-                ?: cachedIcon.drawable.mutate()
-        return iconDrawable.asIcon(
-            res =
-                if (cachedIcon.key.resPackage == null) {
-                    cachedIcon.key.resId
-                } else {
-                    null
-                }
-        )
-    }
 
     private fun openSettings(mode: ZenMode) {
         dialogEventLogger.logModeSettings(mode)

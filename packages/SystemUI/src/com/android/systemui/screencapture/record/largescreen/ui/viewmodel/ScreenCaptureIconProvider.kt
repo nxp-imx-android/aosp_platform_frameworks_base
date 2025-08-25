@@ -77,6 +77,6 @@ constructor(
     @SuppressLint("UseCompatLoadingForDrawables")
     private suspend fun loadIcon(@DrawableRes resourceId: Int): Icon.Loaded {
         val drawable = withContext(uiBackgroundContext) { context.getDrawable(resourceId)!! }
-        return Icon.Loaded(drawable = drawable, res = resourceId, contentDescription = null)
+        return Icon.Loaded(drawable = drawable, resId = resourceId, contentDescription = null)
     }
 }

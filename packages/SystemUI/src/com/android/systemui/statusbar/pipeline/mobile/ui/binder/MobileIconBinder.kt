@@ -208,10 +208,10 @@ object MobileIconBinder {
                     // Set the network type background
                     launch {
                         viewModel.networkTypeBackground.collect { background ->
-                            networkTypeContainer.setBackgroundResource(background?.res ?: 0)
+                            networkTypeContainer.setBackgroundResource(background?.resId ?: 0)
 
                             // Tint will invert when this bit changes
-                            if (background?.res != null) {
+                            if (background?.resId != null) {
                                 networkTypeContainer.backgroundTintList =
                                     ColorStateList.valueOf(iconTint.value.tint)
                                 networkTypeView.imageTintList =

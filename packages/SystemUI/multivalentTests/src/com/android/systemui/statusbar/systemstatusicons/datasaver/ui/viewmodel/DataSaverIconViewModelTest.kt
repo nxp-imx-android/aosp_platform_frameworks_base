@@ -82,7 +82,7 @@ class DataSaverIconViewModelTest : SysuiTestCase() {
     companion object {
         private val expectedDataSaverIcon =
             Icon.Resource(
-                res = R.drawable.ic_data_saver,
+                resId = R.drawable.ic_data_saver,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_data_saver_on),
             )
