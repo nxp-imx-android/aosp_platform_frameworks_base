@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.keygesture.ui
 
+import android.annotation.StringRes
 import android.hardware.input.KeyGestureEvent
 import android.text.Annotation
 import android.text.Spanned
@@ -91,25 +92,8 @@ constructor(
             return
         }
 
-        val negativeButtonTextId =
-            if (
-                keyGestureConfirmInfo.keyGestureType ==
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
-            ) {
-                R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
-            } else {
-                android.R.string.cancel
-            }
-
-        val positiveButtonTextId =
-            if (
-                keyGestureConfirmInfo.keyGestureType ==
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
-            ) {
-                R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
-            } else {
-                R.string.accessibility_key_gesture_dialog_positive_button_text
-            }
+        val negativeButtonTextId = getNegativeButtonTextId(keyGestureConfirmInfo.keyGestureType)
+        val positiveButtonTextId = getPositiveButtonTextId(keyGestureConfirmInfo.keyGestureType)
 
         currentDialog =
             dialogFactory.create { dialog ->
@@ -157,6 +141,36 @@ constructor(
                 currentDialog = null
             }
             dialog.show()
+        }
+    }
+
+    @StringRes
+    private fun getNegativeButtonTextId(keyGestureType: Int): Int {
+        return when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION -> {
+                R.string.accessibility_key_gesture_magnification_dialog_negative_button_text
+            }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
+                R.string.accessibility_key_gesture_voice_access_dialog_negative_button_text
+            }
+            else -> {
+                android.R.string.cancel
+            }
+        }
+    }
+
+    @StringRes
+    private fun getPositiveButtonTextId(keyGestureType: Int): Int {
+        return when (keyGestureType) {
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION -> {
+                R.string.accessibility_key_gesture_magnification_dialog_positive_button_text
+            }
+            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
+                R.string.accessibility_key_gesture_voice_access_dialog_positive_button_text
+            }
+            else -> {
+                R.string.accessibility_key_gesture_dialog_positive_button_text
+            }
         }
     }
 
