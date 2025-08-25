@@ -66,6 +66,9 @@ per-file CarUserSwitchingDialog.java = file:platform/packages/services/Car:/OWNE
 # Activity Security
 per-file ActivityManager* = file:/ACTIVITY_SECURITY_OWNERS
 
+#App Lock
+per-file AppLockLocalService = file:/core/java/android/content/pm/APP_LOCK_OWNERS
+
 # Native Application
 per-file *NativeApplication* = file:/libs/native_activity_thread/OWNERS
 
