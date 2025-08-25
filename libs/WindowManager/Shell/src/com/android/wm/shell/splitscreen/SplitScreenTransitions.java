@@ -265,6 +265,7 @@ class SplitScreenTransitions {
         }
 
         startTransaction.apply();
+        finishTransaction.apply();
         onFinish(null /* wct */);
     }
 
