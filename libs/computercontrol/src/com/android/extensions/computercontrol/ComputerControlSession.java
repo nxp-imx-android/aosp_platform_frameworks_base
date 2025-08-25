@@ -17,6 +17,7 @@
 package com.android.extensions.computercontrol;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.FloatRange;
 import android.app.ActivityOptions;
 import android.companion.virtual.computercontrol.InteractiveMirrorDisplay;
 import android.content.Context;
@@ -109,6 +110,35 @@ public final class ComputerControlSession implements AutoCloseable {
     @Nullable
     public Image getScreenshot() {
         return mSession.getScreenshot();
+    }
+
+    /**
+     * Sends a tap event to the computer control session at the given location.
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
+            @FloatRange(from = 0.0, to = 1.0) float y) {
+        mSession.tap(x, y);
+    }
+
+    /**
+     * Sends a swipe event to the computer control session for the given coordinates.
+     *
+     * <p>To avoid misinterpreting the swipe as a fling, the individual touches are throttled, so
+     * the entire action will take ~500ms. However, this is done in the background and this method
+     * returns immediately. Any ongoing swipe will be canceled if a new swipe is requested.</p>
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void swipe(
+            @FloatRange(from = 0.0, to = 1.0) float fromX,
+            @FloatRange(from = 0.0, to = 1.0) float fromY,
+            @FloatRange(from = 0.0, to = 1.0) float toX,
+            @FloatRange(from = 0.0, to = 1.0) float toY) {
+        mSession.swipe(fromX, fromY, toX, toY);
     }
 
     /**

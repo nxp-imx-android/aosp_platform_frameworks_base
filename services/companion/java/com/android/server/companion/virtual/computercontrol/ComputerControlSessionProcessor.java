@@ -36,7 +36,6 @@ import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,9 +51,7 @@ import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
-import com.android.server.wm.WindowManagerInternal;
 
 /**
  * Handles creation and lifecycle of {@link ComputerControlSession}s.
@@ -71,11 +68,9 @@ public class ComputerControlSessionProcessor {
     static final int MAXIMUM_CONCURRENT_SESSIONS = 5;
 
     private final Context mContext;
-    private final PackageManager mPackageManager;
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
-    private final WindowManagerInternal mWindowManagerInternal;
     private final PendingIntentFactory mPendingIntentFactory;
 
     /** The binders of all currently active sessions. */
@@ -98,10 +93,8 @@ public class ComputerControlSessionProcessor {
         mContext = context;
         mVirtualDeviceFactory = virtualDeviceFactory;
         mPendingIntentFactory = pendingIntentFactory;
-        mPackageManager = context.getPackageManager();
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
-        mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
     }
 
     /**
@@ -181,9 +174,9 @@ public class ComputerControlSessionProcessor {
             }
             Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
             session = new ComputerControlSessionImpl(
-                    callback.asBinder(), params, attributionSource, mPackageManager,
-                    mVirtualDeviceFactory, mWindowManagerInternal,
-                    new OnSessionClosedListener(params.getName(), callback));
+                    callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
+                    new OnSessionClosedListener(params.getName(), callback),
+                    new ComputerControlSessionImpl.Injector(mContext.getPackageManager()));
             mSessions.add(session.asBinder());
         }
 
