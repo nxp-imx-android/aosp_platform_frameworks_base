@@ -40,6 +40,7 @@ import com.android.settingslib.spaprivileged.tests.testutils.FakeRestrictionsPro
 import com.android.settingslib.spaprivileged.tests.testutils.TestTogglePermissionAppListModel
 import com.android.settingslib.spaprivileged.tests.testutils.TestTogglePermissionAppListProvider
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -148,7 +149,7 @@ class TogglePermissionAppInfoPageTest {
     }
 
     @Test
-    fun infoPage_whenNotAllowed_switchIsOff() {
+    fun infoPage_whenNotAllowed_switchIsOff() = runBlocking {
         val listModel = TestTogglePermissionAppListModel(isAllowed = false)
 
         setTogglePermissionAppInfoPage(listModel)
@@ -170,7 +171,7 @@ class TogglePermissionAppInfoPageTest {
     }
 
     @Test
-    fun infoPage_whenNotChangeableAndClick() {
+    fun infoPage_whenNotChangeableAndClick() = runBlocking {
         val listModel = TestTogglePermissionAppListModel(isAllowed = false, isChangeable = false)
         val switchTitle = context.getString(listModel.switchTitleResId)
 
