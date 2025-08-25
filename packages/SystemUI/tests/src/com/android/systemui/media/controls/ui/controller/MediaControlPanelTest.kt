@@ -1218,6 +1218,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
         assertThat(deviceSuggestionText.text)
             .isEqualTo(mContext.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.VISIBLE)
@@ -1240,6 +1242,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
         assertThat(deviceSuggestionText.text)
             .isEqualTo(mContext.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.GONE)
@@ -1262,6 +1266,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
         assertThat(deviceSuggestionText.text)
             .isEqualTo(mContext.getString(R.string.media_suggestion_failure_text))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.VISIBLE)
@@ -1283,6 +1289,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
     }
 
     @Test
@@ -1294,6 +1302,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
     }
 
     @Test
@@ -1312,6 +1322,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+        assertThat(deviceSuggestionContainer.importantForAccessibility)
+            .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
     }
 
     /* ***** Guts tests for the player ***** */
