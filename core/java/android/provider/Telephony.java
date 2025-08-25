@@ -25,6 +25,7 @@ import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.app.admin.DevicePolicyManager;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -430,11 +431,23 @@ public final class Telephony {
          * Determine whether a given method should be checked for an OTP
          * @hide
          */
-        public static boolean shouldCheckForOtp(String message) {
-            if (!Flags.redactOtpSms()) {
+        public static boolean shouldCheckForOtp(Context context, String message) {
+            if (!isOtpRedactionEnabled(context)) {
                 return false;
             }
             return CONTAINS_NUMBER.reset(message).find();
+        }
+
+        /**
+         * Checks if OTP redaction in SMS is enabled
+         * @hide
+         */
+        public static boolean isOtpRedactionEnabled(Context context) {
+            if (!Flags.redactOtpSms()) {
+                return false;
+            }
+            DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+            return dpm == null || !dpm.isDeviceManaged();
         }
 
         /**

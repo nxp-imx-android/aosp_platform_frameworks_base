@@ -108,7 +108,7 @@ fun MobileIcon(viewModel: MobileIconViewModelCommon, modifier: Modifier = Modifi
             val height = with(LocalDensity.current) { MobileIconDimensions.IconHeightSp.toDp() }
             Box(modifier = Modifier.height(height), contentAlignment = Alignment.Center) {
                 Image(
-                    painter = painterResource(networkIcon.res),
+                    painter = painterResource(networkIcon.resId),
                     contentDescription = networkIcon.contentDescription?.load(),
                     modifier = Modifier.height(height),
                     colorFilter = ColorFilter.tint(contentColor, BlendMode.SrcIn),

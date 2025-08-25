@@ -70,7 +70,12 @@ public class InstallStart extends Activity {
             piaV2.putExtra(InstallLaunch.EXTRA_CALLING_PKG_NAME, getLaunchedFromPackage());
             piaV2.putExtra(InstallLaunch.EXTRA_CALLING_PKG_UID, getLaunchedFromUid());
             piaV2.setClass(this, InstallLaunch.class);
-            piaV2.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+            int flags = Intent.FLAG_ACTIVITY_FORWARD_RESULT;
+            if ((piaV2.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0) {
+                flags = flags | Intent.FLAG_GRANT_READ_URI_PERMISSION;
+            }
+
+            piaV2.setFlags(flags);
             startActivity(piaV2);
             finish();
             return;

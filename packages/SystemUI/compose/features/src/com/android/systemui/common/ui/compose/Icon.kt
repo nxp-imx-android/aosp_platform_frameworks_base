@@ -42,7 +42,7 @@ fun Icon(icon: Icon, modifier: Modifier = Modifier, tint: Color = LocalContentCo
             Icon(rememberDrawablePainter(icon.drawable), contentDescription, modifier, tint)
         }
         is Icon.Resource -> {
-            Icon(painterResource(icon.res), contentDescription, modifier, tint)
+            Icon(painterResource(icon.resId), contentDescription, modifier, tint)
         }
     }
 }
@@ -71,7 +71,7 @@ fun Icon(icon: Icon, tint: (() -> Color)?, modifier: Modifier = Modifier) {
         }
         is Icon.Resource -> {
             Icon(
-                painterResource(icon.res),
+                painterResource(icon.resId),
                 tint ?: { localContentColor },
                 contentDescription,
                 modifier,

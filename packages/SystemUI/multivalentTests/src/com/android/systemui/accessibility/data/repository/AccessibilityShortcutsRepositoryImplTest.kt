@@ -115,9 +115,9 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             // compare its value here.
             assertThat(contentText?.toString())
                 .isEqualTo(
-                    "Action icon + Alt + M is the keyboard shortcut to use Magnification." +
-                        " This allows you to quickly zoom in on the screen to make content larger." +
-                        " Press Action icon + Alt and \"+\" or \"-\" to adjust zoom."
+                    "Action icon + Alt + M is the keyboard shortcut to use Magnification. This" +
+                            " allows you to quickly zoom in on the screen to make content larger." +
+                            " Press Action icon + Alt and \"+\" or \"-\" to adjust zoom."
                 )
         }
     }
@@ -148,8 +148,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
             val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
 
-            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("Voice access"))
-            whenever(a11yServiceInfo.loadIntro(any())).thenReturn("Voice access default Intro.")
+            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("Voice Access"))
             whenever(
                     accessibilityManager.getInstalledServiceInfoWithComponentName(
                         ComponentName.unflattenFromString(getTargetNameByType(type))
@@ -166,15 +165,15 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 )
 
             assertThat(titleToContent).isNotNull()
-            assertThat(titleToContent?.first).isEqualTo("Turn on Voice access?")
+            assertThat(titleToContent?.first).isEqualTo("Turn on Voice Access keyboard shortcut?")
             val contentText = titleToContent?.second
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
             // The intro should be the string below instead of the intro from
             // AccessibilityServiceInfo.
             assertThat(contentText?.toString())
                 .isEqualTo(
-                    "Action icon + Alt + V is the keyboard shortcut to use Voice access." +
-                        " Voice access lets you control your device hands-free."
+                    "Pressing Action icon + Alt + V turns on Voice Access, an accessibility" +
+                            " feature. This lets you control your device hands-free."
                 )
         }
     }

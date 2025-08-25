@@ -233,7 +233,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         // Map any SecurityModel into a non-null SecurityButtonConfig.
         val buttonConfig =
             SecurityButtonConfig(
-                icon = Icon.Resource(res = 0, contentDescription = null),
+                icon = Icon.Resource(resId = 0, contentDescription = null),
                 text = "foo",
                 isClickable = true,
             )
@@ -321,7 +321,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
             qsSecurityFooterUtils,
             securityToConfig = {
                 SecurityButtonConfig(
-                    icon = Icon.Resource(res = 0, contentDescription = null),
+                    icon = Icon.Resource(resId = 0, contentDescription = null),
                     text = "foo",
                     isClickable = true,
                 )
@@ -518,7 +518,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
                         Icon.Loaded(
                             drawable = context.getDrawable(config.uiConfig.iconRes)!!,
                             contentDescription = null,
-                            res = config.uiConfig.iconRes,
+                            resId = config.uiConfig.iconRes,
                         ),
                 )
             )

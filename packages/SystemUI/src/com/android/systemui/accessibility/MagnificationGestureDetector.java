@@ -19,6 +19,7 @@ package com.android.systemui.accessibility;
 import android.annotation.DisplayContext;
 import android.annotation.NonNull;
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.view.Display;
@@ -56,36 +57,32 @@ class MagnificationGestureDetector {
          * @param offsetY The Y offset in screen coordinate.
          * @return {@code true} if this gesture is handled.
          */
-        boolean onDrag(View view, float offsetX, float offsetY);
+        boolean onDrag(View view, int offsetX, int offsetY);
 
         /**
          * Notified when a tap occurs with the down {@link MotionEvent} that triggered it. This will
          * be triggered immediately for every down event. All other events should be preceded by
          * this.
          *
-         * @param x The X coordinate of the down event.
-         * @param y The Y coordinate of the down event.
          * @return {@code true} if the down event is handled, otherwise the events won't be sent to
          * the view.
          */
-        boolean onStart(float x, float y);
+        boolean onStart();
 
         /**
          * Called when the detection is finished. In other words, it is called when up/cancel {@link
-         * MotionEvent} is received. It will be triggered after single-tap
+         * MotionEvent} is received. It will be triggered after single-tap.
          *
-         * @param x The X coordinate on the screen of the up event or the cancel event.
-         * @param y The Y coordinate on the screen of the up event or the cancel event.
          * @return {@code true} if the event is handled.
          */
-        boolean onFinish(float x, float y);
+        boolean onFinish();
     }
 
-    private final MotionAccumulator mAccumulator = new MotionAccumulator();
+    @NonNull
+    private final MotionAccumulator mAccumulator;
     private final Handler mHandler;
     private final Runnable mCancelTapGestureRunnable;
     private final OnGestureListener mOnGestureListener;
-    private final int mTouchSlopSquare;
     // Assume the gesture default is a single-tap. Set it to false if the gesture couldn't be a
     // single-tap anymore.
     private boolean mDetectSingleTap = true;
@@ -98,8 +95,7 @@ class MagnificationGestureDetector {
      */
     MagnificationGestureDetector(@DisplayContext Context context, @NonNull Handler handler,
             @NonNull OnGestureListener listener) {
-        final int touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        mTouchSlopSquare = touchSlop * touchSlop;
+        mAccumulator = new MotionAccumulator(ViewConfiguration.get(context).getScaledTouchSlop());
         mHandler = handler;
         mOnGestureListener = listener;
         mCancelTapGestureRunnable = () -> mDetectSingleTap = false;
@@ -113,15 +109,13 @@ class MagnificationGestureDetector {
      * @return {@code True} if the {@link OnGestureListener} consumes the event, else false.
      */
     boolean onTouch(View view, MotionEvent event) {
-        final float rawX = event.getRawX();
-        final float rawY = event.getRawY();
         mAccumulator.onMotionEvent(event);
         boolean handled = false;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mHandler.postAtTime(mCancelTapGestureRunnable,
                         event.getDownTime() + ViewConfiguration.getLongPressTimeout());
-                handled |= mOnGestureListener.onStart(rawX, rawY);
+                handled |= mOnGestureListener.onStart();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 stopSingleTapDetection();
@@ -137,7 +131,7 @@ class MagnificationGestureDetector {
                 }
                 // Fall through
             case MotionEvent.ACTION_CANCEL:
-                handled |= mOnGestureListener.onFinish(rawX, rawY);
+                handled |= mOnGestureListener.onFinish();
                 reset();
                 break;
         }
@@ -149,14 +143,7 @@ class MagnificationGestureDetector {
             return;
         }
 
-        final float deltaX = mAccumulator.getDeltaX();
-        final float deltaY = mAccumulator.getDeltaY();
-        if (Float.isNaN(deltaX) || Float.isNaN(deltaY)) {
-            return;
-        }
-
-        final float distanceSquare = (deltaX * deltaX) + (deltaY * deltaY);
-        if (distanceSquare > mTouchSlopSquare) {
+        if (mAccumulator.isDraggingDetected()) {
             mDraggingDetected = true;
             stopSingleTapDetection();
         }
@@ -171,10 +158,8 @@ class MagnificationGestureDetector {
         if (!mDraggingDetected) {
             return false;
         }
-        final float deltaX = mAccumulator.getDeltaX();
-        final float deltaY = mAccumulator.getDeltaY();
-        mAccumulator.consumeDelta();
-        return mOnGestureListener.onDrag(view, deltaX, deltaY);
+        final Point delta = mAccumulator.getAndConsumeDelta();
+        return mOnGestureListener.onDrag(view, delta.x, delta.y);
     }
 
     private void reset() {
@@ -184,12 +169,40 @@ class MagnificationGestureDetector {
         mDraggingDetected = false;
     }
 
+    /**
+     * A helper class to accumulate raw motion events and determine if a dragging gesture is
+     * happening. It provides the delta between events for the client to perform dragging actions.
+     *
+     * <p>For dragging actions, the UI uses integer values for pixel offsets. This class accumulates
+     * the gesture's relative offset as a floating-point value. To avoid accumulated errors from
+     * float-to-int conversions, the class keeps the fractional part of the offset internally. It
+     * only reports the integer part of the offset to event handlers via {@link #getDeltaX()} and
+     * {@link #getDeltaY()}, and the consumed integer offset is then subtracted from the internal
+     * accumulated offset (see b/436696444).
+     */
     private static class MotionAccumulator {
         private final PointF mAccumulatedDelta = new PointF(Float.NaN, Float.NaN);
         private final PointF mLastLocation = new PointF(Float.NaN, Float.NaN);
+        private final int mTouchSlopSquare;
 
-        // Start or accumulate the motion event location.
-        public void onMotionEvent(MotionEvent event) {
+        /**
+         * @param touchSlop Distance a touch can wander before becoming a drag.
+         */
+        MotionAccumulator(int touchSlop) {
+            mTouchSlopSquare = touchSlop * touchSlop;
+        }
+
+        /**
+         * Processes a {@link MotionEvent} to accumulate the gesture's deltas.
+         *
+         * <p>This method tracks the movement difference between events. For touch events, it's the
+         * change in raw screen coordinates. For mouse events, it uses the relative motion axes
+         * ({@link MotionEvent#AXIS_RELATIVE_X} and {@link MotionEvent#AXIS_RELATIVE_Y}) to support
+         * dragging even when the pointer is at the screen edge.
+         *
+         * @param event The motion event to process.
+         */
+        void onMotionEvent(MotionEvent event) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     mAccumulatedDelta.set(0, 0);
@@ -219,23 +232,64 @@ class MagnificationGestureDetector {
             }
         }
 
-        // Get delta X of accumulated motions, or NaN if no motion is added.
-        public float getDeltaX() {
-            return mAccumulatedDelta.x;
+        /**
+         * Gets the delta X of accumulated motions, or zero if no motion is added.
+         *
+         * <p>Please note, when reporting delta offset, it uses casting so that the offset is always
+         * truncated and the fractional part could be accumulated and used with future moves.
+         *
+         * @return The X offset of the accumulated motions.
+         */
+        int getDeltaX() {
+            return (int) mAccumulatedDelta.x;
         }
 
-        // Get delta Y of accumulated motions, or NaN if no motion is added.
-        public float getDeltaY() {
-            return mAccumulatedDelta.y;
+        /**
+         * Gets the delta Y of accumulated motions, or zero if no motion is added.
+         *
+         * <p>Please note, when reporting delta offset, it uses casting so that the offset is always
+         * truncated and the fractional part could be accumulated and used with future moves.
+         *
+         * @return The Y offset of the accumulated motions.
+         */
+        int getDeltaY() {
+            return (int) mAccumulatedDelta.y;
         }
 
-        // Consume the accumulated motions, and restart accumulation from the last added motion.
-        public void consumeDelta() {
-            mAccumulatedDelta.set(0, 0);
+        /**
+         * Returns whether a dragging gesture has been detected.
+         *
+         * @return {@code true} if a drag has been detected, {@code false} otherwise.
+         */
+        boolean isDraggingDetected() {
+            if (Float.isNaN(mAccumulatedDelta.x) || Float.isNaN(mAccumulatedDelta.y)) {
+                return false;
+            }
+
+            final float distanceSquare = (mAccumulatedDelta.x * mAccumulatedDelta.x)
+                    + (mAccumulatedDelta.y * mAccumulatedDelta.y);
+            if (distanceSquare > mTouchSlopSquare) {
+                return true;
+            }
+
+            return false;
         }
 
-        // Reset the state.
-        public void reset() {
+        /**
+         * Gets the integer part of the accumulated motion delta and consumes it, leaving the
+         * fractional part for the next calculation.
+         *
+         * @return A {@link Point} containing the (x, y) integer delta.
+         */
+        @NonNull
+        Point getAndConsumeDelta() {
+            final Point delta = new Point(getDeltaX(), getDeltaY());
+            mAccumulatedDelta.offset(-delta.x, -delta.y);
+            return delta;
+        }
+
+        /** Resets the accumulator to its initial state. */
+        void reset() {
             resetPointF(mAccumulatedDelta);
             resetPointF(mLastLocation);
         }

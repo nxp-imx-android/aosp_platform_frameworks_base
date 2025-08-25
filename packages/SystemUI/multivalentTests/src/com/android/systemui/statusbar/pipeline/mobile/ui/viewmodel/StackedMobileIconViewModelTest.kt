@@ -98,7 +98,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
                 .value =
                 SignalIconModel.Satellite(
                     level = 0,
-                    icon = Icon.Resource(res = 0, contentDescription = null),
+                    icon = Icon.Resource(resId = 0, contentDescription = null),
                 )
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
             assertThat(underTest.dualSim).isNull()

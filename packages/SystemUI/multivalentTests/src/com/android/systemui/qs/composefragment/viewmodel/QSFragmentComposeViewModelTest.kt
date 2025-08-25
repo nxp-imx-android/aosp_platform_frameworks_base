@@ -28,6 +28,7 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.domain.pipeline.legacyMediaDataManagerImpl
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
@@ -237,6 +238,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaHost_initializedCorrectly() =
         with(kosmos) {
@@ -250,6 +252,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qsMediaHost_initializedCorrectly() =
         with(kosmos) {
@@ -362,6 +365,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaExpansion_collapsedMediaInLandscape() =
         with(kosmos) {
@@ -378,6 +382,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaExpansion_notCollapsedMediaInLandscape_alwaysExpanded() =
         with(kosmos) {
@@ -394,6 +399,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaExpansion_reactsToChangesInCollapsedMediaInLandscape() =
         with(kosmos) {
@@ -410,6 +416,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun applyQsScrollPositionForClipping() =
         with(kosmos) {
@@ -427,6 +434,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun shouldUpdateMediaSquishiness_inSplitShadeFalse_mediaSquishinessSet() =
         with(kosmos) {
@@ -446,6 +454,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun inSplitShade_differentStatusBarState_mediaSquishinessSet() =
         with(kosmos) {
@@ -468,6 +477,7 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun disappearParams() =
         with(kosmos) {

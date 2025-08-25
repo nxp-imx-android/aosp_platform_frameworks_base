@@ -78,13 +78,12 @@ constructor(
                         Icon.Loaded(drawable = it, contentDescription = contentDescription)
                     }
                         ?: Icon.Resource(
-                            res = com.android.internal.R.drawable.ic_audio_media,
+                            resId = com.android.internal.R.drawable.ic_audio_media,
                             contentDescription = contentDescription,
                         )
                 }
                 is MediaControlChipModel.Compose -> model.appIcon
             }
-
         return PopupChipModel.Shown(
             chipId = PopupChipId.MediaControl,
             icons = listOf(ChipIcon(icon = defaultIcon)),

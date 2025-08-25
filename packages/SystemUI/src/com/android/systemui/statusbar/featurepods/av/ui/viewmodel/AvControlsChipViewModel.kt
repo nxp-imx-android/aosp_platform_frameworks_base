@@ -98,7 +98,7 @@ constructor(
                 listOf(CAMERA_DRAWABLE, MICROPHONE_DRAWABLE)
         }.map {
             // TODO(b/414566470): Add content description for accessibility.
-            ChipIcon(Icon.Resource(res = it, contentDescription = null))
+            ChipIcon(Icon.Resource(resId = it, contentDescription = null))
         }
 
     @AssistedFactory

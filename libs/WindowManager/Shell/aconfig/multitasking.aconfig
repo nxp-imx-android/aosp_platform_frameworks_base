@@ -322,3 +322,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_exit_split_on_enter_bubble"
+    namespace: "multitasking"
+    description: "Fixes a bug where split screen remains active if one of the tasks moves to bubble via a trampoline task."
+    bug: "440647718"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

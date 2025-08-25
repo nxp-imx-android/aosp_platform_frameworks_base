@@ -75,7 +75,7 @@ constructor(
                 flowOf(
                     InternetTileModel.Active(
                         secondaryTitle = secondary,
-                        icon = InternetTileIconModel.ResourceId(wifiIcon.icon.res),
+                        icon = InternetTileIconModel.ResourceId(wifiIcon.icon.resId),
                         stateDescription = wifiIcon.contentDescription,
                         contentDescription = ContentDescription.Loaded("$internetLabel,$secondary"),
                     )
@@ -191,7 +191,7 @@ constructor(
                 flowOf(
                     InternetTileModel.Active(
                         secondaryLabel = secondary?.toText(),
-                        icon = InternetTileIconModel.ResourceId(it.res),
+                        icon = InternetTileIconModel.ResourceId(it.resId),
                         stateDescription = null,
                         contentDescription = secondary,
                     )

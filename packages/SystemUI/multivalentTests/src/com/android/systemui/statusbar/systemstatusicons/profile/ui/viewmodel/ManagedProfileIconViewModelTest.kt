@@ -126,7 +126,7 @@ class ManagedProfileIconViewModelTest : SysuiTestCase() {
 
         private val expectedManagedProfileIcon =
             Icon.Resource(
-                res = TEST_ICON_RES_ID,
+                resId = TEST_ICON_RES_ID,
                 contentDescription = ContentDescription.Loaded(TEST_ACCESSIBILITY_STRING),
             )
     }

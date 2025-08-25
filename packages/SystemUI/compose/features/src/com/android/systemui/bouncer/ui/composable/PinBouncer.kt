@@ -123,7 +123,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         ActionButton(
             icon =
                 Icon.Resource(
-                    res =
+                    resId =
                         if (backspaceButtonAppearance == ActionButtonAppearance.Shown) {
                             R.drawable.pin_bouncer_delete_outline
                         } else {
@@ -153,7 +153,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         ActionButton(
             icon =
                 Icon.Resource(
-                    res = R.drawable.pin_bouncer_confirm,
+                    resId = R.drawable.pin_bouncer_confirm,
                     contentDescription =
                         ContentDescription.Resource(R.string.keyboardview_keycode_enter),
                 ),

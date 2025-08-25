@@ -73,9 +73,9 @@ class LoadIconTest : SysuiTestCase() {
             composeTestRule.waitForIdle()
 
             assertThat(loadedIcons.size).isEqualTo(2)
-            assertThat(loadedIcons[0]!!.res).isEqualTo(1)
+            assertThat(loadedIcons[0]!!.resId).isEqualTo(1)
             assertThat(loadedIcons[0]!!.drawable).isEqualTo(testDrawable1)
-            assertThat(loadedIcons[1]!!.res).isEqualTo(2)
+            assertThat(loadedIcons[1]!!.resId).isEqualTo(2)
             assertThat(loadedIcons[1]!!.drawable).isEqualTo(testDrawable2)
         }
 }

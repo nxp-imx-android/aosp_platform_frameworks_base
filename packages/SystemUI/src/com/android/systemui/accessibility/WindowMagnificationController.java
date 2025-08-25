@@ -1470,11 +1470,11 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     }
 
     @Override
-    public boolean onDrag(View view, float offsetX, float offsetY) {
+    public boolean onDrag(View view, int offsetX, int offsetY) {
         if (mEditSizeEnable) {
             return changeWindowSize(view, offsetX, offsetY);
         } else {
-            move((int) offsetX, (int) offsetY);
+            move(offsetX, offsetY);
         }
         return true;
     }
@@ -1521,7 +1521,7 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         }
     }
 
-    private boolean changeWindowSize(View view, float offsetX, float offsetY) {
+    private boolean changeWindowSize(View view, int offsetX, int offsetY) {
         if (view == mLeftDrag) {
             changeMagnificationFrameSize(offsetX, 0, 0, 0);
         } else if (view == mRightDrag) {
@@ -1546,8 +1546,7 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     }
 
     private void changeMagnificationFrameSize(
-            float leftOffset, float topOffset, float rightOffset,
-            float bottomOffset) {
+            int leftOffset, int topOffset, int rightOffset, int bottomOffset) {
         boolean bRTL = isRTL(mContext);
         final int initSize = Math.min(mWindowBounds.width(), mWindowBounds.height()) / 3;
 
@@ -1573,14 +1572,14 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         tempRect.set(mMagnificationFrame);
 
         if (bRTL) {
-            tempRect.left += (int) (rightOffset);
-            tempRect.right += (int) (leftOffset);
+            tempRect.left += rightOffset;
+            tempRect.right += leftOffset;
         } else {
-            tempRect.right += (int) (rightOffset);
-            tempRect.left += (int) (leftOffset);
+            tempRect.right += rightOffset;
+            tempRect.left += leftOffset;
         }
-        tempRect.top += (int) (topOffset);
-        tempRect.bottom += (int) (bottomOffset);
+        tempRect.top += topOffset;
+        tempRect.bottom += bottomOffset;
 
         if (tempRect.width() < initSize || tempRect.height() < initSize
                 || tempRect.width() > maxWidthSize || tempRect.height() > maxHeightSize) {
@@ -1604,13 +1603,13 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     }
 
     @Override
-    public boolean onStart(float x, float y) {
+    public boolean onStart() {
         mIsDragging = true;
         return true;
     }
 
     @Override
-    public boolean onFinish(float x, float y) {
+    public boolean onFinish() {
         maybeRepositionButton();
         mIsDragging = false;
         return false;

@@ -34,6 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:layout_marginTop="@dimen/dialog_inter_element_margin"
+            android:textAlignment="viewStart"
             android:visibility="gone" />
 
         <include layout="@layout/keep_data_option_layout" />

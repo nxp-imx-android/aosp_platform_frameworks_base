@@ -2613,6 +2613,9 @@ public class Instrumentation {
         }
         public void run() {
             try {
+                // We have historically always done this in a way that does not propagate to
+                // Java-created child threads. It is unclear whether this is really necessary
+                // or useful, but it is less risky than a change.
                 Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY);
             } catch (RuntimeException e) {
                 Log.w(TAG, "Exception setting priority of instrumentation thread "

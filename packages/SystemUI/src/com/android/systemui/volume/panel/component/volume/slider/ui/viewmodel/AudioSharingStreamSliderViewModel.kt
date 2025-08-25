@@ -60,7 +60,7 @@ constructor(
         Icon.Loaded(
             drawable = context.getDrawable(R.drawable.ic_volume_media_bt)!!,
             contentDescription = null,
-            res = R.drawable.ic_volume_media_bt,
+            resId = R.drawable.ic_volume_media_bt,
         )
     override val slider: StateFlow<SliderState> =
         combine(

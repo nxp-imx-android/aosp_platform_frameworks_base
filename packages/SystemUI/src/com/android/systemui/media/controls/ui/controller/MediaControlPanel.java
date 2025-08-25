@@ -624,6 +624,7 @@ public class MediaControlPanel {
             return;
         }
         View deviceSuggestionButton = mMediaViewHolder.getDeviceSuggestionButton();
+        View deviceSuggestionContainer = mMediaViewHolder.getDeviceSuggestionContainer();
         TextView deviceText = mMediaViewHolder.getSeamlessText();
         @Nullable SuggestionData suggestionData = data.getSuggestionData();
         if (suggestionData != null) {
@@ -640,10 +641,16 @@ public class MediaControlPanel {
                 setSuggestionText(suggestionDeviceData);
                 setSuggestionIcon(suggestionDeviceData);
                 deviceSuggestionButton.setVisibility(View.VISIBLE);
+                deviceSuggestionContainer.setImportantForAccessibility(
+                        View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
                 return;
             }
         }
         deviceSuggestionButton.setVisibility(View.GONE);
+        // Change the importantForAccessibility attribute instead of visibility since the latter
+        // is manipulated by the TransitionLayout and the Guts animation logic.
+        deviceSuggestionContainer.setImportantForAccessibility(
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         deviceText.setVisibility(View.VISIBLE);
         return;
     }

@@ -100,7 +100,7 @@ class ConnectedDisplayIconViewModelTest : SysuiTestCase() {
     companion object {
         private val expectedConnectedDisplayIcon =
             Icon.Resource(
-                res = R.drawable.stat_sys_connected_display,
+                resId = R.drawable.stat_sys_connected_display,
                 contentDescription =
                     ContentDescription.Resource(R.string.connected_display_icon_desc),
             )

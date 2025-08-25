@@ -399,7 +399,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             val icon =
                 ((latest.icon) as OngoingActivityChipModel.ChipIcon.SingleColorIcon).impl
                     as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_screenrecord)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_screenrecord)
         }
 
         fun assertIsShareToAppChip(latest: OngoingActivityChipModel?) {
@@ -409,7 +409,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             val icon =
                 ((latest.icon) as OngoingActivityChipModel.ChipIcon.SingleColorIcon).impl
                     as Icon.Resource
-            assertThat(icon.res).isEqualTo(R.drawable.ic_present_to_all)
+            assertThat(icon.resId).isEqualTo(R.drawable.ic_present_to_all)
         }
 
         fun assertIsCallChip(

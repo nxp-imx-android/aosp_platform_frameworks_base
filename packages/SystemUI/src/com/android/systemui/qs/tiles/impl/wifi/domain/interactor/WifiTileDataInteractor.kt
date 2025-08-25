@@ -72,7 +72,7 @@ constructor(
                 val secondary = removeDoubleQuotes(it.ssid)
                 flowOf(
                     WifiTileModel.Active(
-                        icon = WifiTileIconModel(wifiIcon.icon.res),
+                        icon = WifiTileIconModel(wifiIcon.icon.resId),
                         secondaryLabel = secondary,
                     )
                 )

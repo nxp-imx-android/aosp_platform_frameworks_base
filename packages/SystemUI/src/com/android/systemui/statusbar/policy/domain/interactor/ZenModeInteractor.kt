@@ -26,10 +26,11 @@ import android.service.notification.ZenPolicy.VISUAL_EFFECT_NOTIFICATION_LIST
 import android.util.Log
 import androidx.concurrent.futures.await
 import com.android.settingslib.notification.data.repository.ZenModeRepository
-import com.android.settingslib.notification.modes.ZenIcon
 import com.android.settingslib.notification.modes.ZenIconLoader
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.settingslib.volume.shared.model.AudioStream
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository
@@ -199,8 +200,18 @@ constructor(
             .distinctUntilChanged()
     }
 
-    suspend fun getModeIcon(mode: ZenMode): ZenIcon {
-        return iconLoader.getIcon(context, mode).await()
+    suspend fun getModeIcon(mode: ZenMode): Icon.Loaded {
+        val zenIcon = iconLoader.getIcon(context, mode).await()
+        val drawable = zenIcon.drawable
+        // Return a copy of the icon, to prevent callers from making changes that will be reflected
+        // everywhere.
+        val drawableCopy = drawable.constantState?.newDrawable()?.mutate() ?: drawable.mutate()
+        return Icon.Loaded(
+            drawable = drawableCopy,
+            contentDescription = ContentDescription.Loaded(mode.name),
+            packageName = zenIcon.key.resPackage,
+            resId = zenIcon.key.resId,
+        )
     }
 
     fun activateMode(zenMode: ZenMode) {
@@ -211,7 +222,7 @@ constructor(
                         Log.e(
                             TAG,
                             "Interactor cannot handle showing the zen duration prompt. " +
-                                "Please use EnableZenModeDialog when this setting is active.",
+                                    "Please use EnableZenModeDialog when this setting is active.",
                         )
                         null
                     }

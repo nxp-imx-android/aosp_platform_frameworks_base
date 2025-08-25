@@ -72,7 +72,7 @@ constructor(@Assisted private val context: Context, interactor: ManagedProfileIn
                 )
 
         return Icon.Resource(
-            res = iconResId,
+            resId = iconResId,
             contentDescription = ContentDescription.Loaded(contentDescriptionString),
         )
     }

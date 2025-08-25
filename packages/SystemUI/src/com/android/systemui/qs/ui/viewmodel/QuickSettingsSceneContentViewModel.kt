@@ -19,8 +19,10 @@ package com.android.systemui.qs.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.qs.FooterActionsController
@@ -59,6 +61,7 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     @Main private val mainDispatcher: CoroutineDispatcher,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    private val blurConfig: BlurConfig,
 ) : ExclusiveActivatable() {
     val qsContainerViewModel =
         qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
@@ -81,6 +84,21 @@ constructor(
         )
 
     private val footerActionsControllerInitialized = AtomicBoolean(false)
+
+    /**
+     * Calculates the blur radius to apply to the scene UI.
+     *
+     * @param transitionState The current transition state of the scene (from its `ContentScope`)
+     * @return The blur radius to apply to the scene UI, in pixels.
+     */
+    fun calculateBlur(transitionState: TransitionState): Float {
+        return when {
+            !isTransparencyEnabled -> 0f
+            Scenes.QuickSettings != transitionState.currentScene -> 0f
+            Overlays.Bouncer in transitionState.currentOverlays -> blurConfig.maxBlurRadiusPx
+            else -> 0f
+        }
+    }
 
     fun getFooterActionsViewModel(lifecycleOwner: LifecycleOwner): FooterActionsViewModel {
         if (footerActionsControllerInitialized.compareAndSet(false, true)) {

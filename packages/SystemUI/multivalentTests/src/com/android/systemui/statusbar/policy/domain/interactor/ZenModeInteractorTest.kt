@@ -367,17 +367,17 @@ class ZenModeInteractorTest : SysuiTestCase() {
 
             zenModeRepository.activateMode("Other")
             assertThat(mainActiveMode?.name).isEqualTo("Mode Other")
-            assertThat(mainActiveMode?.icon?.key?.resId)
+            assertThat(mainActiveMode?.icon?.resId)
                 .isEqualTo(R.drawable.ic_zen_mode_type_other)
 
             zenModeRepository.activateMode("Bedtime")
             assertThat(mainActiveMode?.name).isEqualTo("Mode Bedtime")
-            assertThat(mainActiveMode?.icon?.key?.resId)
+            assertThat(mainActiveMode?.icon?.resId)
                 .isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
 
             zenModeRepository.deactivateMode("Other")
             assertThat(mainActiveMode?.name).isEqualTo("Mode Bedtime")
-            assertThat(mainActiveMode?.icon?.key?.resId)
+            assertThat(mainActiveMode?.icon?.resId)
                 .isEqualTo(R.drawable.ic_zen_mode_type_bedtime)
 
             zenModeRepository.deactivateMode("Bedtime")

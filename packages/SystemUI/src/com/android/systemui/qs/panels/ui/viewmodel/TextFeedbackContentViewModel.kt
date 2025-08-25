@@ -78,7 +78,7 @@ constructor(
                                     }
                                 },
                                 contentDescription = null,
-                                res = iconResId,
+                                resId = iconResId,
                             ),
                     )
                 is TextFeedbackModel.LoadedTextFeedback ->

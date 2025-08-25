@@ -303,10 +303,6 @@ public class DesktopModeVisualIndicator {
     private IndicatorType getIndicatorLargeTablet(PointF inputCoordinates) {
         // TODO(b/401596837): cache the regions to avoid recalculating on each motion event
         final DisplayLayout layout = mDisplayController.getDisplayLayout(mTaskInfo.displayId);
-        // Perform a quick check first: any input off the left edge of the display should be split
-        // left, and split right for the right edge. This is universal across all drag event types.
-        if (inputCoordinates.x < 0) return TO_SPLIT_LEFT_INDICATOR;
-        if (inputCoordinates.x > layout.width()) return TO_SPLIT_RIGHT_INDICATOR;
         // If we are in freeform, we don't want a visible indicator in the "freeform" drag zone.
         // In drags not originating on a freeform caption, we should default to a TO_DESKTOP
         // indicator.
@@ -318,11 +314,20 @@ public class DesktopModeVisualIndicator {
         // Because drags in freeform use task position for indicator calculation, we need to
         // account for the possibility of the task going off the top of the screen by captionHeight
         final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
+        final int transitionAreaTop = getTransitionAreaTop(captionHeight);
+        // Perform a quick check first: any input off the left edge of the display should be split
+        // left, and split right for the right edge. This is universal across all drag event types.
+        if (inputCoordinates.x < 0 && inputCoordinates.y >= transitionAreaTop) {
+            return TO_SPLIT_LEFT_INDICATOR;
+        }
+        if (inputCoordinates.x > layout.width() && inputCoordinates.y >= transitionAreaTop) {
+            return TO_SPLIT_RIGHT_INDICATOR;
+        }
         final Region fullscreenRegion = calculateFullscreenRegion(layout, captionHeight);
-        final Rect splitLeftRegion = calculateSplitLeftRegion(layout, transitionAreaWidth,
-                captionHeight);
-        final Rect splitRightRegion = calculateSplitRightRegion(layout, transitionAreaWidth,
-                captionHeight);
+        final Rect splitLeftRegion =
+                calculateSplitLeftRegion(layout, transitionAreaWidth, captionHeight);
+        final Rect splitRightRegion =
+                calculateSplitRightRegion(layout, transitionAreaWidth, captionHeight);
         final int x = (int) inputCoordinates.x;
         final int y = (int) inputCoordinates.y;
         if (fullscreenRegion.contains(x, y)) {
@@ -394,26 +399,20 @@ public class DesktopModeVisualIndicator {
     }
 
     @VisibleForTesting
-    Rect calculateSplitLeftRegion(DisplayLayout layout,
-            int transitionEdgeWidth, int captionHeight) {
-        // In freeform, keep the top corners clear.
-        int transitionHeight = mDragStartState == DragStartState.FROM_FREEFORM
-                ? mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.desktop_mode_split_from_desktop_height) :
-                -captionHeight;
-        return new Rect(0, transitionHeight, transitionEdgeWidth, layout.height());
+    Rect calculateSplitLeftRegion(
+            DisplayLayout layout, int transitionEdgeWidth, int captionHeight) {
+        return new Rect(
+                0, getTransitionAreaTop(captionHeight), transitionEdgeWidth, layout.height());
     }
 
     @VisibleForTesting
-    Rect calculateSplitRightRegion(DisplayLayout layout,
-            int transitionEdgeWidth, int captionHeight) {
-        // In freeform, keep the top corners clear.
-        int transitionHeight = mDragStartState == DragStartState.FROM_FREEFORM
-                ? mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.desktop_mode_split_from_desktop_height) :
-                -captionHeight;
-        return new Rect(layout.width() - transitionEdgeWidth, transitionHeight,
-                layout.width(), layout.height());
+    Rect calculateSplitRightRegion(
+            DisplayLayout layout, int transitionEdgeWidth, int captionHeight) {
+        return new Rect(
+                layout.width() - transitionEdgeWidth,
+                getTransitionAreaTop(captionHeight),
+                layout.width(),
+                layout.height());
     }
 
     @VisibleForTesting
@@ -495,5 +494,14 @@ public class DesktopModeVisualIndicator {
         // default to fullscreen
         result.add(new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR));
         return result;
+    }
+
+    // Calculates the top y coordinate of snap to side drag zone.
+    private int getTransitionAreaTop(int captionHeight) {
+        return mDragStartState == DragStartState.FROM_FREEFORM
+                ? mContext.getResources()
+                        .getDimensionPixelSize(
+                                com.android.wm.shell.R.dimen.desktop_mode_split_from_desktop_height)
+                : -captionHeight;
     }
 }
