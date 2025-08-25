@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 @RequiresFlagsEnabled(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionParamsTest {
@@ -43,6 +45,10 @@ public class ComputerControlSessionParamsTest {
     private static final boolean DISPLAY_ALWAYS_UNLOCKED = true;
     private static final boolean DISPLAY_ALWAYS_NOT_UNLOCKED = false;
     private static final Surface SURFACE = new Surface();
+    private static final String TARGET_PACKAGE_1 = "com.android.foo";
+    private static final String TARGET_PACKAGE_2 = "com.android.bar";
+    private static final List<String> TARGET_PACKAGE_NAMES =
+            List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
 
     private final Context mContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -58,6 +64,8 @@ public class ComputerControlSessionParamsTest {
     public void tearDown() throws Exception {
         mMockitoSession.close();
     }
+
+    // TODO(b/437849228): Test that targetPackageNames must be set.
 
     @Test
     public void builder_setDisplaySurface_withIncorrectArguments_throwsException() {
@@ -145,6 +153,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSession.Params params =
                 new ComputerControlSession.Params.Builder(mContext)
                         .setName(NAME)
+                        .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setDisplaySurface(SURFACE)
                         .setDisplayWidthPx(WIDTH)
                         .setDisplayHeightPx(HEIGHT)
@@ -153,6 +162,7 @@ public class ComputerControlSessionParamsTest {
                         .build();
 
         assertThat(params.getName()).isEqualTo(NAME);
+        assertThat(params.getTargetPackageNames()).isEqualTo(TARGET_PACKAGE_NAMES);
         assertThat(params.getDisplayDpi()).isEqualTo(DPI);
         assertThat(params.getDisplayHeightPx()).isEqualTo(HEIGHT);
         assertThat(params.getDisplayWidthPx()).isEqualTo(WIDTH);

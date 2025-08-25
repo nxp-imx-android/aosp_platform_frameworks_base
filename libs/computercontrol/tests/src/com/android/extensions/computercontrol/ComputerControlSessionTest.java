@@ -62,6 +62,7 @@ import org.mockito.MockitoAnnotations;
 public class ComputerControlSessionTest {
     private static final int TIMEOUT_MS = 2_000;
     private static final String SESSION_NAME = "test";
+    private static final String TARGET_PACKAGE = "com.android.foo";
     private final Context mContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
 
@@ -125,6 +126,12 @@ public class ComputerControlSessionTest {
         mSession.close();
         verify(mIAccessibilityManager, times(1)).unregisterProxyForDisplay(mVirtualDisplayId);
         verify(mIComputerControlSession, times(1)).close();
+    }
+
+    @Test
+    public void launchApplication_launchesApplication() throws Exception {
+        mSession.launchApplication(TARGET_PACKAGE);
+        verify(mIComputerControlSession).launchApplication(eq(TARGET_PACKAGE));
     }
 
     @Test

@@ -87,6 +87,7 @@ public class ComputerControlExtensions {
         ComputerControlSessionParams sessionParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
+                        .setTargetPackageNames(params.getTargetPackageNames())
                         .setDisplayWidthPx(params.getDisplayWidthPx())
                         .setDisplayHeightPx(params.getDisplayHeightPx())
                         .setDisplayDpi(params.getDisplayDpi())

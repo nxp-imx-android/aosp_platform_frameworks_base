@@ -30,6 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionParamsTest {
 
@@ -37,6 +39,10 @@ public class ComputerControlSessionParamsTest {
     private static final int DISPLAY_WIDTH = 1920;
     private static final int DISPLAY_HEIGHT = 1080;
     private static final int DISPLAY_DPI = 480;
+    private static final String TARGET_PACKAGE_1 = "com.android.foo";
+    private static final String TARGET_PACKAGE_2 = "com.android.bar";
+    private static final List<String> TARGET_PACKAGE_NAMES =
+            List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
 
     private Surface mSurface;
 
@@ -49,6 +55,7 @@ public class ComputerControlSessionParamsTest {
     public void parcelable_shouldRecreateSuccessfully() {
         ComputerControlSessionParams originalParams = new ComputerControlSessionParams.Builder()
                 .setName(COMPUTER_CONTROL_SESSION_NAME)
+                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                 .setDisplayWidthPx(DISPLAY_WIDTH)
                 .setDisplayHeightPx(DISPLAY_HEIGHT)
                 .setDisplayDpi(DISPLAY_DPI)
@@ -61,6 +68,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
         assertThat(params.getName()).isEqualTo(COMPUTER_CONTROL_SESSION_NAME);
+        assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
         assertThat(params.getDisplayWidthPx()).isEqualTo(DISPLAY_WIDTH);
         assertThat(params.getDisplayHeightPx()).isEqualTo(DISPLAY_HEIGHT);
         assertThat(params.getDisplayDpi()).isEqualTo(DISPLAY_DPI);
@@ -76,6 +84,8 @@ public class ComputerControlSessionParamsTest {
                         .setDisplaySurface(mSurface)
                         .build());
     }
+
+    // TODO(b/437849228): Test that targetPackageNames must be set.
 
     @Test
     public void build_setSurface_nonPositiveDisplayDimensions_throwsException() {

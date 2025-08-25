@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertThrows;
 
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
@@ -60,6 +61,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionTest {
@@ -70,6 +73,11 @@ public class ComputerControlSessionTest {
     private static final int DISPLAY_WIDTH = 600;
     private static final int DISPLAY_HEIGHT = 1000;
     private static final int DISPLAY_DPI = 480;
+    private static final String TARGET_PACKAGE_1 = "com.android.foo";
+    private static final String TARGET_PACKAGE_2 = "com.android.bar";
+    private static final List<String> TARGET_PACKAGE_NAMES =
+            List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
+    private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
 
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
@@ -98,6 +106,7 @@ public class ComputerControlSessionTest {
     private final IBinder mAppToken = new Binder();
     private final ComputerControlSessionParams mParams = new ComputerControlSessionParams.Builder()
             .setName(ComputerControlSessionTest.class.getSimpleName())
+            .setTargetPackageNames(TARGET_PACKAGE_NAMES)
             .build();
     private ComputerControlSessionImpl mSession;
 
@@ -199,6 +208,19 @@ public class ComputerControlSessionTest {
     @Test
     public void createSession_disablesAnimationsOnDisplay() {
         verify(mInjector).disableAnimationsForDisplay(VIRTUAL_DISPLAY_ID);
+    }
+
+    @Test
+    public void launchApplication_launchesApplication() {
+        mSession.launchApplication(TARGET_PACKAGE_1);
+        verify(mInjector).launchApplicationOnDisplayAsUser(
+                eq(TARGET_PACKAGE_1), eq(VIRTUAL_DISPLAY_ID), any());
+    }
+
+    @Test
+    public void launchApplication_undeclaredPackage_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.launchApplication(UNDECLARED_TARGET_PACKAGE));
     }
 
     @Test
