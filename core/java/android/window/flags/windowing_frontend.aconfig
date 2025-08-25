@@ -510,3 +510,13 @@ flag {
     description: "Use seq-id for all client config changes (wearOS)"
     bug: "385976595"
 }
+
+flag {
+    name: "ime_back_callback_leak_prevention"
+    namespace: "input_method"
+    description: "Prevents custom ime back callbacks from remaining registered in app process after IME hide"
+    bug: "420870283"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
