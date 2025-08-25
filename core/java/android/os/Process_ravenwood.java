@@ -36,16 +36,27 @@ public class Process_ravenwood {
      */
     public static void setThreadPriority(int tid, int priority) {
         if (Process.myTid() == tid) {
-            boolean backgroundOk = sThreadPriority.get().second;
-            if (priority >= Process.THREAD_PRIORITY_BACKGROUND && !backgroundOk) {
-                throw new IllegalArgumentException(
-                        "Priority " + priority + " blocked by setCanSelfBackground()");
-            }
-            sThreadPriority.set(Pair.create(priority, backgroundOk));
+            setThreadPriority(priority);
         } else {
             throw new UnsupportedOperationException(
                     "Cross-thread priority management not yet available in Ravenwood");
         }
+    }
+
+    /**
+     * Called by {@link Process#setThreadPriority(int)}
+     * The real implementation uses an Android-specific API.
+     */
+    public static void setThreadPriority(int priority) {
+        boolean backgroundOk = getCanSelfBackground();
+        if (priority >= Process.THREAD_PRIORITY_BACKGROUND && !backgroundOk) {
+            throw new IllegalArgumentException(
+                    "Priority " + priority + " blocked by setCanSelfBackground()");
+        }
+        if (priority < -20 || priority > 19) {
+            throw new IllegalArgumentException("Priority/niceness " + priority + " is invalid");
+        }
+        sThreadPriority.set(Pair.create(priority, backgroundOk));
     }
 
     /**
@@ -54,6 +65,13 @@ public class Process_ravenwood {
     public static void setCanSelfBackground(boolean backgroundOk) {
         int priority = sThreadPriority.get().first;
         sThreadPriority.set(Pair.create(priority, backgroundOk));
+    }
+
+    /**
+     * Called by {@link Process#getCanSelfBackground(int)}
+     */
+    public static boolean getCanSelfBackground() {
+        return sThreadPriority.get().second;
     }
 
     /**
