@@ -49,6 +49,7 @@ public class ComputerControlSessionTest {
     private static final int DISPLAY_ID = 42;
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
+    private static final String TARGET_PACKAGE = "com.android.foo";
 
     @Mock
     private IComputerControlSession mMockSession;
@@ -126,6 +127,12 @@ public class ComputerControlSessionTest {
     public void close_closesSession() throws RemoteException {
         mSession.close();
         verify(mMockSession).close();
+    }
+
+    @Test
+    public void launchApplication_launchesApplication() throws RemoteException {
+        mSession.launchApplication(TARGET_PACKAGE);
+        verify(mMockSession).launchApplication(eq(TARGET_PACKAGE));
     }
 
     @Test

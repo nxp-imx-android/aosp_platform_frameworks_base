@@ -24,6 +24,7 @@ import android.annotation.FloatRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
@@ -33,6 +34,8 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
 import android.content.AttributionSource;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
@@ -216,6 +219,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mVirtualDisplayToken;
     }
 
+    public void launchApplication(@NonNull String packageName) {
+        if (!mParams.getTargetPackageNames().contains(Objects.requireNonNull(packageName))) {
+            throw new IllegalArgumentException(
+                    "Package " + packageName + " is not allowed to be launched in this session.");
+        }
+        final UserHandle user = UserHandle.of(UserHandle.getUserId(Binder.getCallingUid()));
+        Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
+                packageName, mVirtualDisplayId, user));
+    }
+
     @Override
     public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
             @FloatRange(from = 0.0, to = 1.0) float y) throws RemoteException {
@@ -356,16 +369,29 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @VisibleForTesting
     public static class Injector {
+        private final Context mContext;
         private final PackageManager mPackageManager;
         private final WindowManagerInternal mWindowManagerInternal;
 
-        Injector(PackageManager packageManager) {
-            mPackageManager = packageManager;
+        Injector(Context context) {
+            mContext = context;
+            mPackageManager = mContext.getPackageManager();
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
         }
 
         public String getPermissionControllerPackageName() {
             return mPackageManager.getPermissionControllerPackageName();
+        }
+
+        public void launchApplicationOnDisplayAsUser(String packageName, int displayId,
+                UserHandle user) {
+            Intent intent = mPackageManager.getLaunchIntentForPackage(packageName);
+            if (intent == null) {
+                throw new IllegalArgumentException(
+                        "Package " + packageName + " does not have a launcher activity.");
+            }
+            mContext.startActivityAsUser(intent,
+                    ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(), user);
         }
 
         public DisplayInfo getDisplayInfo(int displayId) {

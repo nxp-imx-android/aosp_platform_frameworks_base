@@ -131,6 +131,22 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Launches an application's launcher activity in the computer control session.
+     *
+     * <p>The application with the given package name must have a launcher activity and the
+     * package name must have been declared during the session creation.</p>
+     *
+     * @see ComputerControlSessionParams#getTargetPackageNames()
+     */
+    public void launchApplication(@NonNull String packageName) {
+        try {
+            mSession.launchApplication(packageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Screenshot the current display content.
      *
      * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any

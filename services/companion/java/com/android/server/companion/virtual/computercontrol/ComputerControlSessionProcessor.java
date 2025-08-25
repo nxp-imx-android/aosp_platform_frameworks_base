@@ -176,7 +176,7 @@ public class ComputerControlSessionProcessor {
             session = new ComputerControlSessionImpl(
                     callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
                     new OnSessionClosedListener(params.getName(), callback),
-                    new ComputerControlSessionImpl.Injector(mContext.getPackageManager()));
+                    new ComputerControlSessionImpl.Injector(mContext));
             mSessions.add(session.asBinder());
         }
 

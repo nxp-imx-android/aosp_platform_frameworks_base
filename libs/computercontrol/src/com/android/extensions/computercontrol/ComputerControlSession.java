@@ -41,6 +41,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.extensions.computercontrol.input.KeyEvent;
 import com.android.extensions.computercontrol.input.TouchEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -95,6 +96,18 @@ public final class ComputerControlSession implements AutoCloseable {
                 ActivityOptions.makeBasic().setLaunchDisplayId(mVirtualDisplayId).toBundle();
         context.startActivity(intent, activityOptionsBundle);
         mAccessibilityProxy.resetStabilityState();
+    }
+
+    /**
+     * Launches an application's launcher activity in the computer control session.
+     *
+     * <p>The application with the given package name must have a launcher activity and the
+     * package name must have been included during the session creation.</p>
+     *
+     * @see Params#getTargetPackageNames()
+     */
+    public void launchApplication(@NonNull String packageName) {
+        mSession.launchApplication(Objects.requireNonNull(packageName));
     }
 
     /**
@@ -263,17 +276,20 @@ public final class ComputerControlSession implements AutoCloseable {
     public static class Params {
         @NonNull private final Context mContext;
         @NonNull private final String mName;
+        @NonNull private final List<String> mTargetPackageNames;
         private final int mDisplayWidthPx;
         private final int mDisplayHeightPx;
         private final int mDisplayDpi;
         @Nullable private final Surface mDisplaySurface;
         private final boolean mIsDisplayAlwaysUnlocked;
 
-        private Params(@NonNull Context context, @NonNull String name, int displayWidthPx,
+        private Params(@NonNull Context context, @NonNull String name,
+                @NonNull List<String> targetPackageNames, int displayWidthPx,
                 int displayHeightPx, int displayDpi, @Nullable Surface displaySurface,
                 boolean isDisplayAlwaysUnlocked) {
             mContext = context;
             mName = name;
+            mTargetPackageNames = targetPackageNames;
             mDisplayWidthPx = displayWidthPx;
             mDisplayHeightPx = displayHeightPx;
             mDisplayDpi = displayDpi;
@@ -297,6 +313,16 @@ public final class ComputerControlSession implements AutoCloseable {
         @NonNull
         public String getName() {
             return mName;
+        }
+
+        /**
+         * Returns the package names of the applications that may be automated during this session.
+         *
+         * @see Builder#setTargetPackageNames(List)
+         */
+        @Nullable  // TODO(b/437849228): Should be non-null
+        public List<String> getTargetPackageNames() {
+            return mTargetPackageNames;
         }
 
         /**
@@ -351,6 +377,8 @@ public final class ComputerControlSession implements AutoCloseable {
         public static class Builder {
             @NonNull private final Context mContext;
             @Nullable private String mName;
+            @Nullable  // TODO(b/437849228): Should be non-null
+            private List<String> mTargetPackageNames = new ArrayList<>();
             private int mDisplayWidthPx;
             private int mDisplayHeightPx;
             private int mDisplayDpi;
@@ -372,6 +400,15 @@ public final class ComputerControlSession implements AutoCloseable {
             @NonNull
             public Builder setName(@Nullable String name) {
                 mName = name;
+                return this;
+            }
+
+           /**
+             * Set all application package names that may be automated during this session.
+             */
+            @NonNull
+            public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {
+                mTargetPackageNames = targetPackageNames;
                 return this;
             }
 
@@ -458,8 +495,8 @@ public final class ComputerControlSession implements AutoCloseable {
                     }
                 }
 
-                return new Params(mContext, mName, mDisplayWidthPx, mDisplayHeightPx, mDisplayDpi,
-                        mDisplaySurface, mIsDisplayAlwaysUnlocked);
+                return new Params(mContext, mName, mTargetPackageNames, mDisplayWidthPx,
+                        mDisplayHeightPx, mDisplayDpi, mDisplaySurface, mIsDisplayAlwaysUnlocked);
             }
         }
     }
