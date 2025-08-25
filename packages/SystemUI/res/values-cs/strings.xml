@@ -146,37 +146,24 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Opakovat"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Upravit"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Smazat"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Přehrát"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Pozastavit"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Ztlumit"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Zapnout zvuk"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Pořídit snímek celé obrazovky"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Nahrát celou obrazovku"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Pořídit snímek vybrané oblasti"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Nahrát vybranou oblast"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Snímek obrazovky"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nahrát"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Sdílet"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Pořídit snímek obrazovky okna"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Zaznamenat okno"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Pořídit snímek vybrané oblasti"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Nahrát vybranou oblast"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Pořídit snímek celé obrazovky"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Nahrát celou obrazovku"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Nastavení záznamu obrazovky"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sdílení obrazovky"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Sdílení obsahu"</string>
@@ -406,7 +393,7 @@
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Automatické otáčení obrazovky"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Poloha"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Spořič obrazovky"</string>
-    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Fotoaparát"</string>
+    <string name="quick_settings_camera_label" msgid="5612076679385269339">"Přístup k fotoaparátu"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"Přístup k mikrofonu"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Dostupné"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"Blokováno"</string>
@@ -1011,7 +998,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otevřít digitálního asistenta"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Uzamknout obrazovku"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Vytvořit poznámku"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Zavřít aktuální okno"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Použít rozdělenou obrazovku s aplikací vpravo"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Použít rozdělenou obrazovku s aplikací vlevo"</string>
@@ -1025,6 +1011,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Přesunout okno doprava"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximalizovat okno"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimalizovat okno"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Přecházet mezi plochami"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Vstup"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Přepnout na další jazyk"</string>
@@ -1089,7 +1077,7 @@
     <string name="right_icon" msgid="1103955040645237425">"Ikona vpravo"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Dlaždice přidáte podržením a přetažením"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Dlaždice můžete uspořádat podržením a přetažením"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Vyberte dlaždice, jejichž pozici a velikost chcete změnit"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Vyberte dlaždice, jejichž pozici a velikost chcete změnit."</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Klepnutím odstraníte dlaždice"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Změna velikosti a uspořádání rozvržení"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Upravit"</string>
@@ -1098,7 +1086,7 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Přetažením sem dlaždice odstraníte"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Potřebujete alespoň tento počet dlaždic: <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Upravit"</string>
-    <string name="qs_edit_tiles" msgid="2105215324060865035">"Upravit dlaždice"</string>
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Úprava dlaždic"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Změnit velikost dlaždic Rychlého nastavení"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Nastavení"</string>
     <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Možnosti"</string>
@@ -1148,14 +1136,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> je čtečka obrazovky, která umožňuje nechat si hlasově oznamovat položky. Může pomoct lidem, kteří nevidí na displej."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> umožňuje ovládat zařízení handsfree."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Zapnout"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Klávesová zkratka <xliff:g id="ID_1">%1$s</xliff:g> je zapnutá"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Akční klávesa "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_3">^3</xliff:g>. Umožňuje rychle přiblížit obrazovku a zvětšit tak obsah. Stiskněte akční klávesu "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> a upravte přiblížení pomocí tlačítek + nebo -."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Vypnout zkratku"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ponechat zapnutou"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Obrazovka uzamčení"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Vypínání…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Zobrazit pokyny, co dělat"</string>

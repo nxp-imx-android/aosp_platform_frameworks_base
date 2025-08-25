@@ -158,8 +158,7 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"තෝරා ගත් ප්‍රදේශයේ තිර රුවක් ගන්න"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"තෝරාගත් ප්‍රදේශය පටිගත කරන්න"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"තිර රුව"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"පටිගත කරන්න"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"බෙදා ගන්න"</string>
@@ -1002,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ඩිජිටල් සහායක විවෘත කරන්න"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"තිරය අගුළු දමන්න"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"සටහනක් ගන්න"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"වත්මන් කවුළුව වසන්න"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"බහුකාර්ය"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"දකුණේ යෙදුම සමග බෙදීම් තිරය භාවිතා කරන්න"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"වම් පැත්තේ යෙදුම සමග බෙදීම් තිරය භාවිතා කරන්න"</string>
@@ -1016,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"කවුළුව දකුණට ගෙන යන්න"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"කවුළුව විහිදන්න"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"කවුළුව කුඩා කරන්න"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ඩෙස්ක්ටොප් අතර මාරු වන්න"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ආදානය"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"මීළඟ භාෂාවට මාරු වන්න"</string>

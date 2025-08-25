@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"ಪ್ಲೇ ಮಾಡಿ"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"ವಿರಾಮಗೊಳಿಸಿ"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"ಮ್ಯೂಟ್ ಮಾಡಿ"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ಇಡೀ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್"</string>
@@ -824,7 +819,7 @@
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"ವೈಬ್ರೇಟ್‌"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> ನಲ್ಲಿ ಪ್ಲೇ ಆಗು..."</string>
     <string name="media_output_title_without_playing" msgid="3825663683169305013">"ಇದರಲ್ಲಿ ಪ್ಲೇ ಆಗುತ್ತದೆ"</string>
-    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"ಕರೆ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
+    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"ಕರೆಯಲ್ಲಿದ್ದೀರಿ"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"ಸಿಸ್ಟಂ UI ಟ್ಯೂನರ್"</string>
     <string name="status_bar" msgid="4357390266055077437">"ಸ್ಥಿತಿ ಪಟ್ಟಿ"</string>
     <string name="demo_mode" msgid="263484519766901593">"ಸಿಸ್ಟಂ UI ಡೆಮೋ ಮೋಡ್"</string>
@@ -1001,7 +996,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ಡಿಜಿಟಲ್ ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ಟಿಪ್ಪಣಿಯನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"ಪ್ರಸ್ತುತ ವಿಂಡೋವನ್ನು ಮುಚ್ಚಿ"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ಮಲ್ಟಿಟಾಸ್ಕಿಂಗ್"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ಬಲಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ಎಡಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
@@ -1015,6 +1009,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ವಿಂಡೋವನ್ನು ಬಲಕ್ಕೆ ಸರಿಸಿ"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ವಿಂಡೋವನ್ನು ಮ್ಯಾಕ್ಸಿಮೈಸ್ ಮಾಡಿ"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ವಿಂಡೋವನ್ನು ಮಿನಿಮೈಸ್ ಮಾಡಿ"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗಳ ನಡುವೆ ಸರಿಸಿ"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ಇನ್‌ಪುಟ್"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"ಮುಂದಿನ ಭಾಷೆಗೆ ಬದಲಿಸಿ"</string>
