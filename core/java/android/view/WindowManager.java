@@ -1663,7 +1663,6 @@ public interface WindowManager extends ViewManager {
      * &lt;/activity&gt;
      * </pre>
      */
-    @FlaggedApi(Flags.FLAG_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI)
     public static final String PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI =
             "android.window.PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI";
 
