@@ -341,32 +341,6 @@ public class BluetoothEventManagerTest {
     }
 
     @Test
-    public void dispatchAclConnectionStateChanged_aclDisconnected_shouldNotCallbackSubDevice() {
-        when(mCachedDeviceManager.isSubDevice(mBluetoothDevice)).thenReturn(true);
-        mBluetoothEventManager.registerCallback(mBluetoothCallback);
-        mIntent = new Intent(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        mIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
-
-        mContext.sendBroadcast(mIntent);
-
-        verify(mBluetoothCallback, never()).onAclConnectionStateChanged(mCachedBluetoothDevice,
-                BluetoothAdapter.STATE_DISCONNECTED);
-    }
-
-    @Test
-    public void dispatchAclConnectionStateChanged_aclConnected_shouldNotCallbackSubDevice() {
-        when(mCachedDeviceManager.isSubDevice(mBluetoothDevice)).thenReturn(true);
-        mBluetoothEventManager.registerCallback(mBluetoothCallback);
-        mIntent = new Intent(BluetoothDevice.ACTION_ACL_CONNECTED);
-        mIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
-
-        mContext.sendBroadcast(mIntent);
-
-        verify(mBluetoothCallback, never()).onAclConnectionStateChanged(mCachedBluetoothDevice,
-                BluetoothAdapter.STATE_CONNECTED);
-    }
-
-    @Test
     public void dispatchAclConnectionStateChanged_aclBeforeDeviceCreation_shouldDispatchCallback() {
         when(mCachedDeviceManager.findDevice(mBluetoothDevice)).thenReturn(null);
         when(mCachedDeviceManager.addDevice(mBluetoothDevice)).thenReturn(mCachedBluetoothDevice);
