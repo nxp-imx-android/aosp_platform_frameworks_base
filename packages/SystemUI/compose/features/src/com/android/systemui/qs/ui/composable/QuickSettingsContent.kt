@@ -51,15 +51,20 @@ fun ContentScope.QuickSettingsContent(
     QuickSettingsPanelLayout(
         brightness =
             @Composable {
-                BrightnessSliderContainer(
-                    viewModel.brightnessSliderViewModel,
-                    containerColors =
-                        ContainerColors(Color.Transparent, ContainerColors.defaultContainerColor),
-                    modifier =
-                        Modifier.padding(
-                            vertical = dimensionResource(id = R.dimen.qs_brightness_margin_top)
-                        ),
-                )
+                if (viewModel.isBrightnessSliderVisible) {
+                    BrightnessSliderContainer(
+                        viewModel.brightnessSliderViewModel,
+                        containerColors =
+                            ContainerColors(
+                                Color.Transparent,
+                                ContainerColors.defaultContainerColor,
+                            ),
+                        modifier =
+                            Modifier.padding(
+                                vertical = dimensionResource(id = R.dimen.qs_brightness_margin_top)
+                            ),
+                    )
+                }
             },
         tiles =
             @Composable {
