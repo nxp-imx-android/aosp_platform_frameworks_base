@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restaurar esta aplicación, tendrás que instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"No se ha podido restaurar esta aplicación"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> forma parte de esta aplicación: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Esta app se ha bloqueado. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Esta app no se ha actualizado. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Esta app no se ha instalado. Las apps de desarrolladores no verificados pueden ser peligrosas.&lt;/p&gt; &lt;p&gt;Se necesita una conexión a Internet para verificar al desarrollador de la app. Comprueba tu conexión e intenta instalar la app de nuevo. &lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Esta app no se ha actualizado. Las actualizaciones de desarrolladores no verificados pueden no ser seguras.&lt;/p&gt; &lt;p&gt;Se necesita una conexión a Internet para verificar al desarrollador de la app. Comprueba tu conexión e intenta actualizar la app de nuevo. &lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;No se ha podido verificar el desarrollador de esta app. Las apps de desarrolladores no verificados pueden ser peligrosas, por lo que no se ha instalado la app.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;No se ha podido verificar el desarrollador de esta app. Las actualizaciones de desarrolladores no verificados pueden no ser seguras, por lo que la app no se ha actualizado.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Esta app se ha bloqueado porque ha habido un problema al verificar al desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Esta app no se ha actualizado porque ha habido un problema al verificar al desarrollador. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar actualizaciones de desarrolladores verificados.&lt;/p&gt; &lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si instalas la app sin verificar, ten en cuenta que las apps de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si actualizas la aplicación sin verificar, ten en cuenta que las actualizaciones de desarrolladores no verificados pueden poner en riesgo tu dispositivo y tus datos."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desarrollador de apps no verificado"</string>
@@ -125,7 +133,7 @@
     <string name="button_manage_apps" msgid="957735904821659812">"Gestionar apps"</string>
     <string name="button_archive" msgid="2719647830439699121">"Archivar"</string>
     <string name="button_restore" msgid="4388317532933866637">"Restaurar"</string>
-    <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalar actualizaciones"</string>
+    <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Desinstalar"</string>
     <string name="button_settings" msgid="3837571366246132287">"Ajustes"</string>
     <string name="button_retry" msgid="6736082260813816198">"Reintentar"</string>
     <string name="string_cloned_app_label" msgid="3596634458716024562">"Clon de <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>"</string>
