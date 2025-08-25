@@ -47,6 +47,7 @@
 #include <utils/Trace.h>
 
 #include <algorithm>
+#include <optional>
 
 using android::base::StringPrintf;
 using android::base::WriteStringToFile;
@@ -429,11 +430,11 @@ static void compactProcess(int pid, int compactionFlags) {
     compactProcess(pid, vmaToAdviseFunc);
 }
 
-static void compactMemcg(int uid, int pid, int compactionFlags) {
+static std::string profileFromCompactionFlags(int compactionFlags) {
     const bool compactAnon = compactionFlags & COMPACT_ACTION_ANON_FLAG;
     const bool compactFile = compactionFlags & COMPACT_ACTION_FILE_FLAG;
 
-    if (!compactAnon && !compactFile) return;
+    if (!compactAnon && !compactFile) return {};
     std::string profile;
     if (compactAnon && compactFile)
         profile = "CompactFull";
@@ -442,7 +443,11 @@ static void compactMemcg(int uid, int pid, int compactionFlags) {
     else if (compactFile)
         profile = "CompactFile";
 
-    if (isProfileValidForProcess(profile, uid, pid)) {
+    return profile;
+}
+
+static void compactMemcg(int uid, int pid, int compactionFlags) {
+    if (std::string profile = profileFromCompactionFlags(compactionFlags); !profile.empty()) {
         SetProcessProfiles(uid, pid, {profile});
     }
 }
@@ -529,6 +534,28 @@ static void com_android_server_am_CachedAppOptimizer_compactNativeProcess(JNIEnv
     compactProcess(pid, compactionFlags);
 }
 
+static jboolean com_android_server_am_CachedAppOptimizer_compactionFlagsValidForMemcg(
+        JNIEnv* env, jobject, jint compactionFlags) {
+    static std::array<std::optional<bool>, 3> valid;
+
+    if (compactionFlags >= valid.size() || compactionFlags < 0) {
+        jniThrowException(env, "java/lang/IllegalArgumentException", "Invalid compaction flags");
+        return false;
+    }
+
+    if (!valid[compactionFlags]) {
+        std::string profile = profileFromCompactionFlags(compactionFlags);
+        if (profile.empty()) {
+            valid[compactionFlags] = true; // NONE is a no-op
+        } else {
+            // Only call this once per flag combo, per boot, since it's not exactly cheap
+            valid[compactionFlags] = isProfileValidForProcess(profile, getuid(), getpid());
+        }
+    }
+
+    return *valid[compactionFlags];
+}
+
 static const JNINativeMethod sMethods[] = {
         /* name, signature, funcPtr */
         {"cancelCompaction", "()V",
@@ -547,6 +574,8 @@ static const JNINativeMethod sMethods[] = {
          (void*)com_android_server_am_CachedAppOptimizer_compactProcessWithMemcg},
         {"compactNativeProcess", "(II)V",
          (void*)com_android_server_am_CachedAppOptimizer_compactNativeProcess},
+        {"compactionFlagsValidForMemcg", "(I)Z",
+         (void*)com_android_server_am_CachedAppOptimizer_compactionFlagsValidForMemcg},
 };
 
 int register_android_server_am_CachedAppOptimizer(JNIEnv* env)
