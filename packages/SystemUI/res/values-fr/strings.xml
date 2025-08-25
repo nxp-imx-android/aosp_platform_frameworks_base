@@ -158,25 +158,17 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Faire une capture d\'écran de la zone sélectionnée"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Enregistrer la zone sélectionnée"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Capture d\'écran"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Faire une capture d\'écran de la fenêtre"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Faire une capture d\'écran de la zone sélectionnée"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Enregistrer la zone sélectionnée"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Faire une capture de tout l\'écran"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Enregistrer tout l\'écran"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Paramètres de capture d\'écran"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Partage de l\'écran…"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Partage de contenu"</string>
@@ -832,7 +824,7 @@
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"vibreur"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"Diffusion de <xliff:g id="LABEL">%s</xliff:g> sur"</string>
     <string name="media_output_title_without_playing" msgid="3825663683169305013">"Lecture audio sur"</string>
-    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"Appel défini sur"</string>
+    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"Appel sur"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"System UI Tuner"</string>
     <string name="status_bar" msgid="4357390266055077437">"Barre d\'état"</string>
     <string name="demo_mode" msgid="263484519766901593">"Mode démo de l\'UI du système"</string>
@@ -1009,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Ouvrir l\'assistant numérique"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Verrouiller l\'écran"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Créer une note"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Fermer la fenêtre actuelle"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitâche"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utiliser l\'écran partagé avec l\'appli sur la droite"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utiliser l\'écran partagé avec l\'appli sur la gauche"</string>
@@ -1023,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Déplacer la fenêtre vers la droite"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Agrandir la fenêtre"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Réduire la fenêtre"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Passer d\'un bureau à l\'autre"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Saisie"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Passer à la langue suivante"</string>
@@ -1146,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre des éléments prononcés à voix haute. Cet outil est conçu pour les personnes qui ont du mal à voir l\'écran."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> vous permet de contrôler votre appareil en mode mains libres."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activer"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Raccourci clavier <xliff:g id="ID_1">%1$s</xliff:g> activé"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"L\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_3">^3</xliff:g>. Cela vous permet de faire un zoom avant rapide sur l\'écran pour agrandir le contenu. Appuyez sur l\'icône Action "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g> et sur \"+\" ou \"-\" pour ajuster le zoom."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Laisser activé"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Afficher les étapes d\'entretien"</string>

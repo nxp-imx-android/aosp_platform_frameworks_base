@@ -162,20 +162,13 @@
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ସ୍କ୍ରିନସଟ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ରେକର୍ଡ କରନ୍ତୁ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ସେୟାର କରନ୍ତୁ"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ୱିଣ୍ଡୋର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ୱିଣ୍ଡୋ ରେକର୍ଡ କରନ୍ତୁ"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ଚୟନିତ ଏରିଆର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"ଚୟନିତ ଏରିଆ ରେକର୍ଡ କରନ୍ତୁ"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ ରେକର୍ଡ କରନ୍ତୁ"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ସ୍କ୍ରିନ କେପଚର ସେଟିଂସ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ସ୍କ୍ରିନ ସେୟାର କରାଯାଉଛି"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ବିଷୟବସ୍ତୁ ସେୟାର କରାଯାଉଛି"</string>
@@ -1008,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ଡିଜିଟାଲ ଆସିଷ୍ଟାଣ୍ଟ ଖୋଲନ୍ତୁ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ଏକ ନୋଟ ଲେଖନ୍ତୁ"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"ବର୍ତ୍ତମାନର ୱିଣ୍ଡୋକୁ ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ମଲ୍ଟିଟାସ୍କିଂ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ଡାହାଣରେ ଆପ ସହିତ ସ୍ପ୍ଲିଟ ସ୍କ୍ରିନକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ବାମରେ ଆପ ସହିତ ସ୍ପ୍ଲିଟ ସ୍କ୍ରିନକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
@@ -1022,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ୱିଣ୍ଡୋକୁ ଡାହାଣକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ୱିଣ୍ଡୋକୁ ବଡ଼ କରନ୍ତୁ"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ୱିଣ୍ଡୋକୁ ଛୋଟ କରନ୍ତୁ"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ଡେସ୍କଟପଗୁଡ଼ିକ ମଧ୍ୟରେ ମୁଭ କରନ୍ତୁ"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ଇନପୁଟ"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"ପରବର୍ତ୍ତୀ ଭାଷାକୁ ସୁଇଚ କରନ୍ତୁ"</string>
@@ -1145,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ହେଉଛି ଏକ ସ୍କ୍ରିନ ରିଡର ଯାହା ଆପଣଙ୍କୁ ବଡ଼ ପାଟିରେ ଆଇଟମଗୁଡ଼ିକୁ ଶୁଣିବାକୁ ଅନୁମତି ଦିଏ। ସ୍କ୍ରିନ ଦେଖିବାରେ ଅସୁବିଧାର ସମ୍ମୁଖୀନ ହେଉଥିବା ଲୋକମାନଙ୍କ ପାଇଁ ଏହା ଉପଯୋଗୀ ହୋଇପାରିବ।"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> ଆପଣଙ୍କୁ ଆପଣଙ୍କ ଡିଭାଇସକୁ ହେଣ୍ଡ୍ସ ଫ୍ରି ଭାବରେ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଦିଏ।"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ଚାଲୁ କରନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> କୀବୋର୍ଡ ସର୍ଟକଟ ଚାଲୁ କରାଯାଇଛି"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"କାର୍ଯ୍ୟ "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ହେଉଛି <xliff:g id="ID_3">^3</xliff:g> ବ୍ୟବହାର କରିବା ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟ। ଏହା ଆପଣଙ୍କୁ ବିଷୟବସ୍ତୁକୁ ଆହୁରି ବଡ଼ କରିବା ପାଇଁ ସ୍କ୍ରିନରେ ଶୀଘ୍ର ଜୁମ ଇନ କରିବାକୁ ଅନୁମତି ଦିଏ। ଜୁମ ଆଡଜଷ୍ଟ କରିବା ପାଇଁ କାର୍ଯ୍ୟ "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ଏବଂ \"+\" କିମ୍ବା \"-\" ଦବାନ୍ତୁ।"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ସର୍ଟକଟ ବନ୍ଦ କରନ୍ତୁ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ଚାଲୁ ରଖନ୍ତୁ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ବନ୍ଦ କରାଯାଉଛି…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ଯତ୍ନ ନେବା ପାଇଁ ଷ୍ଟେପଗୁଡ଼ିକ ଦେଖନ୍ତୁ"</string>

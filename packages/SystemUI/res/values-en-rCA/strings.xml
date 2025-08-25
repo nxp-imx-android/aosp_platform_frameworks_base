@@ -996,7 +996,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Open digital assistant"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lock screen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Take a note"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Close current window"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Use split screen with app on the right"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Use split screen with app on the left"</string>
@@ -1010,6 +1009,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Move window to the right"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximize window"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimize window"</string>
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Close current window"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Move between desktops"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Input"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Switch to next language"</string>

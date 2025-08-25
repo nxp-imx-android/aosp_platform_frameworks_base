@@ -158,25 +158,17 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Vytvoriť snímku vybranej oblasti obrazovky"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Nahrávať vybranú oblasť"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Snímka obrazovky"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nahrať"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Zdieľať"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Vytvoriť snímku okna"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Okno nahrávania"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Vytvoriť snímku vybranej oblasti obrazovky"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Nahrávať vybranú oblasť"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Vytvoriť snímku celej obrazovky"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Nahrávať celú obrazovku"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Nastavenia snímania obrazovky"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Zdieľa sa obrazovka"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Obsah sa zdieľa"</string>
@@ -832,7 +824,7 @@
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"vibrovať"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> sa prehráva v:"</string>
     <string name="media_output_title_without_playing" msgid="3825663683169305013">"Zvuk sa prehrá cez"</string>
-    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"Volanie je zapnuté"</string>
+    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"Volanie prebieha na:"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"Tuner používateľského rozhrania systému"</string>
     <string name="status_bar" msgid="4357390266055077437">"Stavový riadok"</string>
     <string name="demo_mode" msgid="263484519766901593">"Ukážka používateľského rozhrania systému"</string>
@@ -1009,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otvoriť digitálneho asistenta"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Zamknúť obrazovku"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Napísanie poznámky"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Zavretie aktuálneho okna"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Rozdeliť obrazovku, aktuálna aplikácia vpravo"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Rozdeliť obrazovku, aktuálna aplikácia vľavo"</string>
@@ -1023,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Presun okna doprava"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximalizovanie okna"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimalizovanie okna"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Prechádzanie medzi plochami"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Vstup"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Prepnúť na ďalší jazyk"</string>
@@ -1146,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> je čítačka obrazovky, ktorá vám umožňuje vypočuť si predčítavané položky. Môže to byť užitočné pre ľudí, ktorí nevidia dobre obrazovku."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> vám umožňuje ovládať zariadenie handsfree."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Zapnúť"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Klávesová skratka <xliff:g id="ID_1">%1$s</xliff:g> je zapnutá"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Ak chcete použiť <xliff:g id="ID_3">^3</xliff:g>, stlačte klávesovú skratku "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. Umožňuje vám to rýchlo priblížiť obrazovku a zväčšiť tak obsah. Ak chcete priblíženie upraviť, stlačte "<annotation id="action_key_icon">"ikonu"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> a + alebo -."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Vypnúť skratku"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Nechať zapnuté"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Uzamknutá obrazovka"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Vypína sa…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Zobraziť opatrenia"</string>
@@ -1526,7 +1515,7 @@
     <string name="keyguard_affordance_enablement_dialog_notes_app_action" msgid="6821710209675089470">"Výber aplikácie"</string>
     <string name="keyguard_affordance_press_too_short" msgid="8145437175134998864">"Pridržte skratku"</string>
     <string name="rear_display_bottom_sheet_cancel" msgid="3461468855493357248">"Zrušiť"</string>
-    <string name="rear_display_bottom_sheet_confirm" msgid="1507591562761552899">"Prepnite obrazovky"</string>
+    <string name="rear_display_bottom_sheet_confirm" msgid="1507591562761552899">"Prepnúť obrazovku"</string>
     <string name="rear_display_folded_bottom_sheet_title" msgid="3930008746560711990">"Rozloženie telefónu"</string>
     <string name="rear_display_unfolded_bottom_sheet_title" msgid="6291111173057304055">"Chcete prepnúť obrazovky?"</string>
     <string name="rear_display_folded_bottom_sheet_description" msgid="6842767125783222695">"Ak chcete vyššie rozlíšenie, použite zadnú kameru"</string>

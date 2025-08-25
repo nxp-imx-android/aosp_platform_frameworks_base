@@ -1001,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Abrir o asistente dixital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Pantalla de bloqueo"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Crear nota"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Pechar a ventá actual"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitarefa"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Usar pantalla dividida coa aplicación na dereita"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Usar pantalla dividida coa aplicación na esquerda"</string>
@@ -1015,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Mover ventá á dereita"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximizar ventá"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimizar ventá"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Alternar escritorios"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Entrada"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Cambiar ao seguinte idioma"</string>

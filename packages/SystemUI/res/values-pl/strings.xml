@@ -158,8 +158,7 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Zrób zrzut ekranu obejmujący zaznaczony obszar"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Nagrywaj wybrany obszar"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Zrzut ekranu"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nagrywaj"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Udostępnij"</string>
@@ -1002,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otwórz asystenta cyfrowego"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Zablokuj ekran"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Zanotuj"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Zamknij bieżące okno"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Wielozadaniowość"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Podziel ekran z aplikacją widoczną po prawej"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Podziel ekran z aplikacją widoczną po lewej"</string>
@@ -1016,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Przenieś okno w prawo"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maksymalizuj okno"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimalizuj okno"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Przechodź między pulpitami"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Wprowadzanie"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Przełącz na następny język"</string>
@@ -1140,7 +1140,7 @@
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> umożliwia obsługę urządzenia bez użycia rąk."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Włącz"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Włączono skrót klawiszowy <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Klawisz działania "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> to skrót klawiszowy, który włącza <xliff:g id="ID_3">^3</xliff:g>. Możesz w ten sposób szybko powiększać zawartość ekranu. Naciśnij klawisz działania "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> i „+” lub „–”, aby dostosować powiększenie."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Klawisz działania "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> to skrót klawiszowy, który włącza <xliff:g id="ID_3">^3</xliff:g>. Możesz w ten sposób szybko powiększać zawartość ekranu. Naciśnij klawisz działania "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> i „+” lub „-”, aby dostosować powiększenie."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Wyłącz skrót"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Nie wyłączaj"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekran blokady"</string>

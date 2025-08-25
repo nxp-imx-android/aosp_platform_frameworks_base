@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"വീണ്ടും എടുക്കുക"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ഇല്ലാതാക്കുക"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"പ്ലേ ചെയ്യുക"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"താൽക്കാലികമായി നിർത്തുക"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"മ്യൂട്ട് ചെയ്യുക"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"അൺമ്യൂട്ട് ചെയ്യുക"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"മുഴുവൻ സ്ക്രീനിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"സ്ക്രീൻ പൂർണ്ണമായി റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"തിരഞ്ഞെടുത്ത ഭാഗത്തിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"തിരഞ്ഞെടുത്ത ഭാഗം റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"സ്ക്രീൻഷോട്ട്"</string>
@@ -1001,7 +996,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ഡിജിറ്റൽ അസിസ്‌റ്റന്റ് തുറക്കുക"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ഒരു കുറിപ്പെടുക്കുക"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"നിലവിലെ വിൻഡോ അടയ്‌ക്കുക"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"വലതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ഇടതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
@@ -1015,6 +1009,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"വിൻഡോ വലത്തേക്ക് നീക്കുക"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"വിൻഡോ വലുതാക്കുക"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"വിൻഡോ ചെറുതാക്കുക"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ഡെസ്‌ക്‌ടോപ്പുകൾക്കിടയിൽ നീക്കുക"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ഇൻപുട്ട്"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"അടുത്ത ഭാഷയിലേക്ക് മാറുക"</string>
