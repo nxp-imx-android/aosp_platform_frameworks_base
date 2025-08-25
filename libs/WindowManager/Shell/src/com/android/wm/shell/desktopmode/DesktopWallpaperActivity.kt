@@ -75,7 +75,9 @@ class DesktopWallpaperActivity : FragmentActivity() {
             }
 
             override fun onDisplayChanged(displayId: Int) {
-                // No-op
+                // If the display can no longer host tasks, remove this to ensure
+                // core does not move it to the front of another display.
+                if (displayId == initialDisplayId && !display.canHostTasks()) finish()
             }
         }
 
