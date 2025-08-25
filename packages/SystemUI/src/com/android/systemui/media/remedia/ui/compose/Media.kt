@@ -535,12 +535,10 @@ private fun ContentScope.CardForegroundContent(
                 modifier =
                     Modifier.align(Alignment.TopEnd)
                         // Output switcher chip must be limited to at most 40% of the maximum
-                        // width
-                        // of the card.
+                        // width of the card.
                         //
                         // This saves the maximum possible width of the card so it can be
-                        // referred
-                        // to by child custom layout code below.
+                        // referred to by child custom layout code below.
                         //
                         // The assumption is that the row can be as wide as the entire card.
                         .layout { measurable, constraints ->
@@ -610,7 +608,7 @@ private fun ContentScope.CardForegroundContent(
             // Second row.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
             ) {
                 Metadata(
                     title = viewModel.title,
@@ -619,19 +617,17 @@ private fun ContentScope.CardForegroundContent(
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
 
-                val playPauseSize = DpSize(width = 48.dp, height = 48.dp)
                 if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
                     AnimatedVisibility(visible = viewModel.playPauseAction != null) {
                         PlayPauseAction(
                             viewModel = viewModel.playPauseAction,
-                            buttonSize = playPauseSize,
                             buttonColor = colorScheme.primary,
                             iconColor = colorScheme.onPrimary,
                             buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
                         )
                     }
                 } else {
-                    Spacer(Modifier.size(playPauseSize))
+                    Spacer(Modifier.size(width = 0.dp, height = 48.dp))
                 }
             }
 
@@ -640,8 +636,7 @@ private fun ContentScope.CardForegroundContent(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp),
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                 ) {
                     Navigation(
                         viewModel = viewModel.navigation,
@@ -667,7 +662,7 @@ private fun ContentScope.CardForegroundContent(
             // Bottom row.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 16.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             ) {
                 Metadata(
                     title = viewModel.title,
@@ -701,19 +696,17 @@ private fun ContentScope.CardForegroundContent(
                     }
                 }
 
-                val playPauseSize = DpSize(width = 48.dp, height = 48.dp)
                 if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
                     AnimatedVisibility(visible = viewModel.playPauseAction != null) {
                         PlayPauseAction(
                             viewModel = viewModel.playPauseAction,
-                            buttonSize = playPauseSize,
                             buttonColor = colorScheme.primary,
                             iconColor = colorScheme.onPrimary,
                             buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
                         )
                     }
                 } else {
-                    Spacer(Modifier.size(playPauseSize))
+                    Spacer(Modifier.size(width = 0.dp, height = 48.dp))
                 }
             }
         }
@@ -775,7 +768,6 @@ private fun ContentScope.CompactCardForeground(
         AnimatedVisibility(visible = viewModel.playPauseAction != null) {
             PlayPauseAction(
                 viewModel = viewModel.playPauseAction,
-                buttonSize = DpSize(width = 72.dp, height = 48.dp),
                 buttonColor = MaterialTheme.colorScheme.primaryContainer,
                 iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 24.dp },
@@ -1113,9 +1105,9 @@ private fun CardGuts(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier =
-                Modifier.align(Alignment.BottomCenter)
+                Modifier.align(Alignment.Center)
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 32.dp, bottom = 40.dp),
+                    .padding(start = 16.dp, end = 32.dp, top = 16.dp),
         ) {
             Text(
                 text = viewModel.text,
@@ -1219,7 +1211,7 @@ private fun DeviceChip(
                 color = Color.Transparent,
                 shape = RoundedCornerShape(12.dp),
             ),
-        modifier = modifier.padding(top = 16.dp, bottom = 8.dp),
+        modifier = modifier.padding(top = 16.dp, bottom = 0.dp),
         useModifierBasedImplementation = true,
     ) {
         Box(
@@ -1280,7 +1272,6 @@ private fun DeviceChip(
 @Composable
 private fun ContentScope.PlayPauseAction(
     viewModel: MediaPlayPauseActionViewModel?,
-    buttonSize: DpSize,
     buttonColor: Color,
     iconColor: Color,
     buttonCornerRadius: (isPlaying: Boolean) -> Dp,
@@ -1288,6 +1279,7 @@ private fun ContentScope.PlayPauseAction(
 ) {
     if (viewModel == null) return
 
+    val buttonSize = DpSize(width = 72.dp, height = 48.dp)
     val cornerRadius: Dp by
         animateDpAsState(
             targetValue = buttonCornerRadius(viewModel.state != MediaSessionState.Paused),
