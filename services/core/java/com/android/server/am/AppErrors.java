@@ -555,7 +555,7 @@ class AppErrors {
             }
         }
 
-        mService.mOomAdjuster.mCachedAppOptimizer.unfreezeProcess(initialPid,
+        mService.getCachedAppOptimizer().unfreezeProcess(initialPid,
                 CachedAppOptimizer.UNFREEZE_REASON_PROCESS_END);
         proc.scheduleCrashLocked(message, exceptionTypeId, extras);
         if (force) {

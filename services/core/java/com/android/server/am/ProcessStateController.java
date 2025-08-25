@@ -78,11 +78,10 @@ public class ProcessStateController {
 
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
-            CachedAppOptimizer cachedAppOptimizer, Object lock, Object procLock,
-            Consumer<ProcessRecord> topChangeCallback, ProcessLruUpdater lruUpdater,
-            OomAdjuster.Injector oomAdjInjector) {
+            Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
+            ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
-                mGlobalState, cachedAppOptimizer, oomAdjInjector);
+                mGlobalState, oomAdjInjector);
 
         mLock = lock;
         mProcLock = procLock;
@@ -1174,7 +1173,6 @@ public class ProcessStateController {
         private final ActiveUids mActiveUids;
 
         private ServiceThread mHandlerThread = null;
-        private CachedAppOptimizer mCachedAppOptimizer = null;
         private Object mLock = null;
         private Consumer<ProcessRecord> mTopChangeCallback = null;
         private ProcessLruUpdater mProcessLruUpdater = null;
@@ -1192,9 +1190,6 @@ public class ProcessStateController {
         public ProcessStateController build() {
             if (mHandlerThread == null) {
                 mHandlerThread = OomAdjuster.createAdjusterThread();
-            }
-            if (mCachedAppOptimizer == null) {
-                mCachedAppOptimizer = new CachedAppOptimizer(mAms);
             }
             if (mLock == null) {
                 mLock = new Object();
@@ -1214,8 +1209,7 @@ public class ProcessStateController {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mCachedAppOptimizer, mLock, mAms.mProcLock, mTopChangeCallback,
-                    mProcessLruUpdater, mOomAdjInjector);
+                    mLock, mAms.mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector);
         }
 
         /**
@@ -1224,15 +1218,6 @@ public class ProcessStateController {
         @VisibleForTesting
         public Builder setHandlerThread(ServiceThread handlerThread) {
             mHandlerThread = handlerThread;
-            return this;
-        }
-
-        /**
-         * For Testing Purposes. Set the CachedAppOptimzer used by OomAdjuster.
-         */
-        @VisibleForTesting
-        public Builder setCachedAppOptimizer(CachedAppOptimizer cachedAppOptimizer) {
-            mCachedAppOptimizer = cachedAppOptimizer;
             return this;
         }
 

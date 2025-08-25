@@ -8361,7 +8361,7 @@ public final class ActiveServices {
     protected boolean dumpService(FileDescriptor fd, PrintWriter pw, String name, int[] users,
             String[] args, int opti, boolean dumpAll) {
         try {
-            mAm.mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+            mAm.getCachedAppOptimizer().enableFreezer(false);
             final ArrayList<ServiceRecord> services = new ArrayList<>();
 
             final Predicate<ServiceRecord> filter = DumpUtils.filterRecord(name);
@@ -8404,7 +8404,7 @@ public final class ActiveServices {
             }
             return true;
         } finally {
-            mAm.mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+            mAm.getCachedAppOptimizer().enableFreezer(true);
         }
     }
 

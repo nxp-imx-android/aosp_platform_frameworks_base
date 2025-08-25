@@ -635,6 +635,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     private static final DateTimeFormatter DROPBOX_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSZ");
 
+    /** Service for optimizing resource usage from background apps. */
+    private CachedAppOptimizer mCachedAppOptimizer;
     OomAdjuster mOomAdjuster;
     @GuardedBy("this")
     ProcessStateController mProcessStateController;
@@ -2134,13 +2136,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             try {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(false);
 
                 if (!DumpUtils.checkDumpAndUsageStatsPermission(mActivityManagerService.mContext,
                         "meminfo", pw)) return;
                 PriorityDump.dump(mPriorityDumper, fd, pw, args);
             } finally {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(true);
             }
         }
     }
@@ -2154,13 +2156,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             try {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(false);
 
                 if (!DumpUtils.checkDumpAndUsageStatsPermission(mActivityManagerService.mContext,
                         "gfxinfo", pw)) return;
                 mActivityManagerService.dumpGraphicsHardwareUsage(fd, pw, args);
             } finally {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(true);
             }
         }
     }
@@ -2174,13 +2176,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             try {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(false);
 
                 if (!DumpUtils.checkDumpAndUsageStatsPermission(mActivityManagerService.mContext,
                         "dbinfo", pw)) return;
                 mActivityManagerService.dumpDbInfo(fd, pw, args);
             } finally {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(true);
             }
         }
     }
@@ -2195,7 +2197,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             try {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(false);
 
                 if (!DumpUtils.checkDumpAndUsageStatsPermission(mActivityManagerService.mContext,
                         "cacheinfo", pw)) {
@@ -2204,7 +2206,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
                 mActivityManagerService.dumpBinderCacheContents(fd, pw, args);
             } finally {
-                mActivityManagerService.mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+                mActivityManagerService.mCachedAppOptimizer.enableFreezer(true);
             }
         }
     }
@@ -2420,6 +2422,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mProcessList.init(this, activeUids, mPlatformCompat);
         mAppProfiler = new AppProfiler(this, BackgroundThread.getHandler().getLooper(), null);
         mPhantomProcessList = new PhantomProcessList(this);
+
+        mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
                 .setHandlerThread(handlerThread)
                 .build();
@@ -2488,6 +2492,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 new LowMemDetector(this));
         mPhantomProcessList = new PhantomProcessList(this);
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
+        mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
@@ -2548,7 +2553,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             Process.setThreadGroupAndCpuset(BackgroundThread.get().getThreadId(),
                     Process.THREAD_GROUP_SYSTEM);
             Process.setThreadGroupAndCpuset(
-                    mOomAdjuster.mCachedAppOptimizer.mCachedAppOptimizerThread.getThreadId(),
+                    mCachedAppOptimizer.mCachedAppOptimizerThread.getThreadId(),
                     Process.THREAD_GROUP_SYSTEM);
         } catch (Exception e) {
             Slog.w(TAG, "Setting background thread cpuset failed");
@@ -8900,7 +8905,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             if (!disableSystemCompaction()) {
                 // Compact all non-zygote processes to freshen up the page cache.
-                mOomAdjuster.mCachedAppOptimizer.compactAllSystem();
+                mCachedAppOptimizer.compactAllSystem();
             }
 
             mLastIdleTime = now;
@@ -10462,7 +10467,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         synchronized(this) {
             mConstants.dump(pw);
-            mOomAdjuster.dumpCachedAppOptimizerSettings(pw);
+            mCachedAppOptimizer.dump(pw);
             pw.println();
             if (dumpAll) {
                 pw.println(
@@ -10978,7 +10983,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     mConstants.dump(pw);
                 }
             } else if ("cao".equals(cmd)) {
-                mOomAdjuster.dumpCachedAppOptimizerSettings(pw);
+                mCachedAppOptimizer.dump(pw);
             } else if ("timers".equals(cmd)) {
                 AnrTimer.dump(pw, true);
             } else if ("services".equals(cmd) || "s".equals(cmd)) {
@@ -13558,7 +13563,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     fromBinderDied || app.isolated /* unlinkDeath */);
 
             // Cancel pending frozen task and clean up frozen record if there is any.
-            mOomAdjuster.mCachedAppOptimizer.onCleanupApplicationRecordLocked(app);
+            mCachedAppOptimizer.onCleanupApplicationRecordLocked(app);
         }
         mAppProfiler.onCleanupApplicationRecordLocked(app);
         mBroadcastQueue.onApplicationCleanupLocked(app);
@@ -16066,16 +16071,13 @@ public class ActivityManagerService extends IActivityManager.Stub
 
                 enforceDebuggable(proc);
 
-                mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+                mCachedAppOptimizer.enableFreezer(false);
 
                 final RemoteCallback intermediateCallback = new RemoteCallback(
-                        new RemoteCallback.OnResultListener() {
-                        @Override
-                        public void onResult(Bundle result) {
+                        result -> {
                             finishCallback.sendResult(result);
-                            mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
-                        }
-                    }, null);
+                            mCachedAppOptimizer.enableFreezer(true);
+                        }, null);
 
                 thread.dumpHeap(managed, mallocInfo, runGc, dumpBitmaps,
                                 path, fd, intermediateCallback);
@@ -16177,7 +16179,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         try {
-            mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+            mCachedAppOptimizer.enableFreezer(false);
 
             for (int i = procs.size() - 1; i >= 0; i--) {
                 ProcessRecord r = procs.get(i);
@@ -16208,7 +16210,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         } finally {
-            mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+            mCachedAppOptimizer.enableFreezer(true);
             proto.flush();
         }
     }
@@ -16629,8 +16631,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     app = mPidsSelfLocked.get(pid);
                 }
                 if (app != null) {
-                    mOomAdjuster.mCachedAppOptimizer.addFrozenProcessListener(app, executor,
-                            listener);
+                    mCachedAppOptimizer.addFrozenProcessListener(app, executor, listener);
                 }
             }
         }
@@ -17904,7 +17905,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             // sends to the activity. After this race issue between WM/ATMS and AMS is solved, this
             // workaround can be removed. (b/213288355)
             if (isNewPending) {
-                mOomAdjuster.mCachedAppOptimizer.unfreezeProcess(pid, OOM_ADJ_REASON_ACTIVITY);
+                mCachedAppOptimizer.unfreezeProcess(pid, OOM_ADJ_REASON_ACTIVITY);
             }
             // We need to update the network rules for the app coming to the top state so that
             // it can access network when the device or the app is in a restricted state
@@ -18496,7 +18497,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         final ProcessRecord app = apps.valueAt(iApp);
                         final IApplicationThread thread = app.getOnewayThread();
                         if (thread != null) {
-                            mOomAdjuster.mCachedAppOptimizer.unfreezeTemporarily(app,
+                            mCachedAppOptimizer.unfreezeTemporarily(app,
                                     CachedAppOptimizer.UNFREEZE_REASON_PING);
                             pingCount.incrementAndGet();
                             try {
@@ -18584,7 +18585,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public boolean isProcessFrozen(int pid) {
         enforceCallingPermission(permission.DUMP, "isProcessFrozen()");
-        return mOomAdjuster.mCachedAppOptimizer.isProcessFrozen(pid);
+        return mCachedAppOptimizer.isProcessFrozen(pid);
     }
 
     @Override
@@ -19322,9 +19323,18 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    CachedAppOptimizer getCachedAppOptimizer() {
+        return mCachedAppOptimizer;
+    }
+
+    @VisibleForTesting
+    void setCachedAppOptimizer(CachedAppOptimizer cachedAppOptimizer) {
+        mCachedAppOptimizer = cachedAppOptimizer;
+    }
+
     @Override
     public boolean isAppFreezerEnabled() {
-        return mOomAdjuster.mCachedAppOptimizer.useFreezer();
+        return mCachedAppOptimizer.useFreezer();
     }
 
     /**
@@ -19344,7 +19354,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // Only system can toggle the freezer state
         if (callerUid == SYSTEM_UID || Build.IS_DEBUGGABLE) {
-            return mOomAdjuster.mCachedAppOptimizer.enableFreezer(enable);
+            return mCachedAppOptimizer.enableFreezer(enable);
         } else {
             throw new SecurityException("Caller uid " + callerUid + " cannot set freezer state ");
         }
@@ -19440,7 +19450,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         synchronized (mPidsSelfLocked) {
             app = mPidsSelfLocked.get(debugPid);
         }
-        mOomAdjuster.mCachedAppOptimizer.binderError(debugPid, app, code, flags, err);
+        mCachedAppOptimizer.binderError(debugPid, app, code, flags, err);
     }
 
     @GuardedBy("this")
