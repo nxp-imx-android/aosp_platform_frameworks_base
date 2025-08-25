@@ -73,6 +73,12 @@ import java.util.stream.Stream;
     private static final float VOLUME_KEY_PRESS_STEP = 0.05f;
 
     /**
+     * The maximum duration during which a routing session volume change is considered the result of
+     * a volume key press.
+     */
+    private static final long SHOW_UI_FOR_VOLUME_CHANGE_TIMEOUT_MS = 3000;
+
+    /**
      * The minimum {@link ActivityManager.RunningAppProcessInfo package importance} that an app must
      * hold for its media to be re-routed.
      *
@@ -87,6 +93,7 @@ import java.util.stream.Stream;
 
     private final PackageManager mPackageManager;
     private final ActivityManager mActivityManager;
+    private final Runnable mClearShouldShowVolumeUiFlagRunnable = this::clearShouldShowVolumeUiFlag;
 
     @GuardedBy("mLock")
     private MediaRoute2ProviderInfo mLastSystemProviderInfo;
@@ -117,6 +124,14 @@ import java.util.stream.Stream;
     @GuardedBy("mLock")
     private final LongSparseArray<SystemMediaSessionCallbackImpl> mPendingSessionCreations =
             new LongSparseArray<>();
+
+    /**
+     * Holds the original id of a session that has recently received a volume adjustment request due
+     * to a volume key press.
+     */
+    @GuardedBy("mLock")
+    @Nullable
+    private String mRecentRecipientOfVolumeKeyPressOriginalId = null;
 
     private static final ComponentName COMPONENT_NAME =
             new ComponentName(
@@ -347,6 +362,10 @@ import java.util.stream.Stream;
             return;
         }
         synchronized (mLock) {
+            if (TextUtils.equals(sessionOriginalId, mRecentRecipientOfVolumeKeyPressOriginalId)) {
+                mHandler.removeCallbacks(mClearShouldShowVolumeUiFlagRunnable);
+                mRecentRecipientOfVolumeKeyPressOriginalId = null;
+            }
             var sessionRecord = mSessionOriginalIdToSessionRecord.get(sessionOriginalId);
             if (sessionRecord != null) {
                 sessionRecord.removeSelfFromSessionMaps();
@@ -566,6 +585,11 @@ import java.util.stream.Stream;
                                 currentSessionInfo.getVolumeMax(),
                                 currentSessionInfo.getOwnerPackageName());
                 Log.i(TAG, logMessage);
+                mHandler.removeCallbacks(mClearShouldShowVolumeUiFlagRunnable);
+                mHandler.postDelayed(
+                        mClearShouldShowVolumeUiFlagRunnable, SHOW_UI_FOR_VOLUME_CHANGE_TIMEOUT_MS);
+                mRecentRecipientOfVolumeKeyPressOriginalId =
+                        volumeAdjustmentTargetSessionRecord.mOriginalId;
                 proxyRecord.mProxy.setSessionVolume(
                         requestId,
                         volumeAdjustmentTargetSessionRecord.getServiceSessionId(),
@@ -584,6 +608,12 @@ import java.util.stream.Stream;
         }
     }
 
+    private void clearShouldShowVolumeUiFlag() {
+        synchronized (mLock) {
+            mRecentRecipientOfVolumeKeyPressOriginalId = null;
+        }
+    }
+
     private void onSessionOverrideUpdated(RoutingSessionInfo sessionInfo) {
         // TODO: b/362507305 - Consider adding routes from other provider services. This is not a
         // trivial change because a provider1-route to provider2-route transfer has seemingly two
@@ -593,16 +623,23 @@ import java.util.stream.Stream;
         // which there will be two overlapping routing policies asking for the exact same media
         // stream.
         var builder = new RoutingSessionInfo.Builder(sessionInfo);
-        mLastSystemProviderInfo.getRoutes().stream()
+        MediaRoute2ProviderInfo providerInfo;
+        boolean shouldShowVolumeUi;
+        synchronized (mLock) {
+            providerInfo = mLastSystemProviderInfo;
+            shouldShowVolumeUi =
+                    TextUtils.equals(
+                            sessionInfo.getOriginalId(),
+                            mRecentRecipientOfVolumeKeyPressOriginalId);
+        }
+        providerInfo.getRoutes().stream()
                 .map(MediaRoute2Info::getOriginalId)
                 .forEach(builder::addTransferableRoute);
-        // TODO: b/396394220 - Pass shouldShowVolumeUi = true if the session update is the result
-        // of a HW volume key press.
         mCallback.onSessionUpdated(
                 /* provider= */ this,
                 builder.build(),
                 /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
-                /* shouldShowVolumeUi= */ false);
+                shouldShowVolumeUi);
     }
 
     /**
