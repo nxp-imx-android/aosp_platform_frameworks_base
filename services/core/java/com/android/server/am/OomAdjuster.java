@@ -2677,6 +2677,23 @@ public abstract class OomAdjuster {
 
         // TODO: b/425766486 - Consider how to pass ProcessRecordInternal to CachedAppOptimizer.
         if (freezePolicy) {
+            if (Flags.cpuTimeCapabilityBasedFreezePolicy()
+                    && app.getCurAdj() < CACHED_APP_MIN_ADJ) {
+                Slog.wtfStack(TAG, "Non-cached process may get frozen soon: "
+                        + " name: " + app.processName
+                        + " curAdj: " + app.getCurAdj()
+                        + " oldOomAdj: " + oldOomAdj
+                        + " curRawAdj: " + app.getCurRawAdj()
+                        + " maxAdj: " + app.getMaxAdj()
+                        + " adjType: " + app.getAdjType()
+                        + " adjTarget: " + app.getAdjTarget()
+                        + " adjSource: " + app.getAdjSource()
+                        + " adjSourcePrcState: " + app.getAdjSourceProcState()
+                        + " serviceB: " + app.isServiceB()
+                        + " curProcState: " + app.getCurProcState()
+                        + " curRawProcState: " + app.getCurRawProcState()
+                        + " curSchedGroup: " + app.getCurrentSchedulingGroup());
+            }
             // This process should be frozen.
             if (immediate && !app.isFrozen()) {
                 // And it will be frozen immediately.
