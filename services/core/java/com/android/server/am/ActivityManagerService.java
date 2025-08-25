@@ -2854,9 +2854,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             // During startup, bound applications will always attempt registration of a
             // ContentCaptureOptions listener with the ContentCaptureManager service. Seeding
             // applications with the service handle avoids an unnecessary ServiceManager hop.
-            if (Flags.cacheContentCaptureService()) {
-                addServiceToMap(mAppBindArgs, Context.CONTENT_CAPTURE_MANAGER_SERVICE);
-            }
+            addServiceToMap(mAppBindArgs, Context.CONTENT_CAPTURE_MANAGER_SERVICE);
         }
         return mAppBindArgs;
     }
