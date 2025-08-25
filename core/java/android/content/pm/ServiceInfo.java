@@ -379,7 +379,6 @@ public class ServiceInfo extends ComponentInfo
                 HealthPermissions.READ_OXYGEN_SATURATION,
             }
     )
-    @FlaggedApi(android.permission.flags.Flags.FLAG_REPLACE_BODY_SENSOR_PERMISSION_ENABLED)
     public static final int FOREGROUND_SERVICE_TYPE_HEALTH = 1 << 8;
 
     /**
