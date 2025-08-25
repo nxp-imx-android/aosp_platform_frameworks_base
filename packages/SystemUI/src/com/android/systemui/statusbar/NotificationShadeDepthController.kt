@@ -137,6 +137,8 @@ constructor(
     // Shade expansion offset that happens when pulling down on a HUN.
     var panelPullDownMinFraction = 0f
 
+    var existingStatusBarState: Int? = null
+
     var shadeAnimation = DepthAnimation()
 
     @VisibleForTesting var brightnessMirrorSpring = DepthAnimation()
@@ -416,6 +418,16 @@ constructor(
     private val statusBarStateCallback =
         object : StatusBarStateController.StateListener {
             override fun onStateChanged(newState: Int) {
+                if (Flags.noShadeBlurOnDreamStart()) {
+                    if (existingStatusBarState == StatusBarState.KEYGUARD
+                        && newState == StatusBarState.SHADE
+                        && keyguardInteractor.isDreaming.value) {
+                        return
+                    }
+                }
+
+                existingStatusBarState = newState
+
                 updateShadeAnimationBlur(
                     shadeExpansion,
                     prevTracking,
@@ -653,7 +665,7 @@ constructor(
 
         // Do not blur or zoom out the wallpaper if the blurred wallpaper is not supported.
         if (!windowRootViewBlurInteractor.isBlurredWallpaperSupported) {
-            return;
+            return
         }
 
         if (Flags.bouncerUiRevamp() || Flags.glanceableHubBlurredBackground()) {

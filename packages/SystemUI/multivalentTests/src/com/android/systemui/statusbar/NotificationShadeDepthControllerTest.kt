@@ -106,6 +106,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private val maxBlur = 150
     private lateinit var notificationShadeDepthController: NotificationShadeDepthController
 
+    private val dreamingFlow = MutableStateFlow(false)
+
     @Before
     fun setup() {
         // Constructs kosmos.windowRootViewBlurInteractor after test starts to avoid the error that
@@ -130,6 +132,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         `when`(blurUtils.maxBlurRadius).thenReturn(maxBlur.toFloat())
         `when`(windowRootViewBlurInteractor.isBlurCurrentlySupported)
             .thenReturn(MutableStateFlow(true))
+        `when`(keyguardInteractor.isDreaming).thenReturn(dreamingFlow)
 
         notificationShadeDepthController =
             NotificationShadeDepthController(
@@ -247,6 +250,22 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         statusBarState = StatusBarState.KEYGUARD
         statusBarStateListener.onStateChanged(statusBarState)
         verify(shadeAnimation).animateTo(eq(0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NO_SHADE_BLUR_ON_DREAM_START)
+    fun onStateChanged_noBlurEvaluation_ifShadeAndDreaming() {
+        onPanelExpansionChanged_apliesBlur_ifShade()
+        clearInvocations(choreographer)
+        statusBarState = StatusBarState.KEYGUARD
+        statusBarStateListener.onStateChanged(statusBarState)
+        verify(shadeAnimation).animateTo(eq(0))
+
+        clearInvocations(shadeAnimation)
+        statusBarState = StatusBarState.SHADE
+        dreamingFlow.value = true
+        statusBarStateListener.onStateChanged(statusBarState)
+        verify(shadeAnimation, never()).animateTo(anyInt())
     }
 
     @Test
