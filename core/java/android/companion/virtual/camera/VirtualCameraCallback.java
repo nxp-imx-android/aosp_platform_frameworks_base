@@ -83,6 +83,10 @@ public interface VirtualCameraCallback {
      * <p>
      * This corresponds to the client calling
      * {@link android.hardware.camera2.CameraDevice#createCaptureSession(SessionConfiguration)}
+     * <p>
+     * The {@code streamId} corresponds to the index at which the stream was added when calling
+     * {@link VirtualCameraConfig.Builder#addStreamConfig(int, int, int, int)} (e.g. first added
+     * stream has id 0, second added stream has id 1, etc.).
      *
      * @param streamId The id of the configured stream
      * @param surface The surface to write data into for this stream

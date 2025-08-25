@@ -307,6 +307,7 @@ public final class VirtualCameraConfig implements Parcelable {
         private int mLensFacing = LENS_FACING_UNKNOWN;
         private boolean mPerFrameCameraMetadataEnabled = false;
         private CameraCharacteristics mCameraCharacteristics = null;
+        private int mStreamIndex = 0;
 
         /**
          * Creates a new instance of {@link Builder}.
@@ -321,6 +322,11 @@ public final class VirtualCameraConfig implements Parcelable {
          * Adds a supported input stream configuration for this {@link VirtualCamera}.
          *
          * <p>At least one {@link VirtualCameraStreamConfig} must be added.
+         *
+         * <p> Each stream will be assigned an id corresponding to the index at which it was
+         * added (e.g. first added stream has id 0, second added stream has id 1, etc.) allowing
+         * the caller to identify this stream when
+         * {@link VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int)} is called.
          *
          * @param width The width of the stream.
          * @param height The height of the stream.
@@ -358,7 +364,7 @@ public final class VirtualCameraConfig implements Parcelable {
                                 + VirtualCameraStreamConfig.MAX_FPS_UPPER_LIMIT);
             }
             mStreamConfigurations.add(new VirtualCameraStreamConfig(width, height, format,
-                    maximumFramesPerSecond));
+                    maximumFramesPerSecond, mStreamIndex++));
             return this;
         }
 
