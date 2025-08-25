@@ -19,6 +19,7 @@ package com.android.server.adb;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 
 import static com.android.internal.util.dump.DumpUtils.writeStringIfNotNull;
+import static com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler.MSG_START_ADB_WIFI;
 import static com.android.server.adb.AdbService.ADBD;
 
 import android.annotation.NonNull;
@@ -71,6 +72,7 @@ import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.server.FgThread;
+import com.android.server.adb.AdbDebuggingManager.AdbDebuggingThread.OnConnectionCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -218,6 +220,11 @@ public class AdbDebuggingManager {
 
     @VisibleForTesting
     static class AdbDebuggingThread extends Thread {
+        interface OnConnectionCallback {
+            void onConnected(AdbDebuggingThread thread);
+        }
+
+        private final OnConnectionCallback mOnConnectionCallback;
         private LocalSocket mSocket;
         private OutputStream mOutputStream;
         private InputStream mInputStream;
@@ -226,8 +233,9 @@ public class AdbDebuggingManager {
         private boolean mConnected = false;
 
         @VisibleForTesting
-        AdbDebuggingThread() {
+        AdbDebuggingThread(OnConnectionCallback onConnectionCallback) {
             super(TAG);
+            mOnConnectionCallback = onConnectionCallback;
         }
 
         @VisibleForTesting
@@ -244,6 +252,7 @@ public class AdbDebuggingManager {
                         mConnected = false;
                         openSocketLocked();
                         mConnected = true;
+                        mOnConnectionCallback.onConnected(this);
                     }
 
                     listenToSocket();
@@ -594,7 +603,7 @@ public class AdbDebuggingManager {
         AdbDebuggingHandler(Looper looper, AdbDebuggingThread thread) {
             super(looper);
             if (thread == null) {
-                thread = new AdbDebuggingThread();
+                thread = new AdbDebuggingThread(new StartAdbWifiConnectionCallback());
                 thread.setHandler(this);
             }
             mThread = thread;
@@ -1576,5 +1585,14 @@ public class AdbDebuggingManager {
     @VisibleForTesting
     interface Ticker {
         long currentTimeMillis();
+    }
+
+    private class StartAdbWifiConnectionCallback implements OnConnectionCallback {
+        @Override
+        public void onConnected(AdbDebuggingThread thread) {
+            if (isAdbWifiEnabled() && wifiLifeCycleOverAdbdauthSupported()) {
+                thread.sendResponse(MSG_START_ADB_WIFI);
+            }
+        }
     }
 }
