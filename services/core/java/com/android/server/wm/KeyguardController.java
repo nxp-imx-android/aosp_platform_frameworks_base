@@ -613,6 +613,14 @@ class KeyguardController {
         KeyguardDisplayState state = mDisplayStates.get(displayId);
         if (state == null) {
             state = new KeyguardDisplayState(mService, displayId);
+            if (displayId != DEFAULT_DISPLAY) {
+                final KeyguardDisplayState defaultState = mDisplayStates.get(DEFAULT_DISPLAY);
+                if (defaultState != null) {
+                    state.mKeyguardShowing = defaultState.mKeyguardShowing;
+                    state.mAodShowing = defaultState.mAodShowing;
+                    state.mKeyguardGoingAway = defaultState.mKeyguardGoingAway;
+                }
+            }
             mDisplayStates.append(displayId, state);
         }
         return state;
