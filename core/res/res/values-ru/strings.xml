@@ -338,8 +338,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Перейти в рабочий профиль"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Открыть <xliff:g id="APP_NAME">%1$s</xliff:g> в личном профиле"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Открыть <xliff:g id="APP_NAME">%1$s</xliff:g> в рабочем профиле"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Контакты"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"доступ к контактам"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"Местоположение"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"доступ к данным о местоположении устройства"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Календарь"</string>
@@ -1980,7 +1982,7 @@
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Клонировать <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> (частный профиль)"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Запрашивать PIN-код"</string>
-    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Запрашивать графический ключ"</string>
+    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Запрашивать графический ключ, прежде чем откреплять"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Запрашивать пароль"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Установлено администратором.\nЧтобы посмотреть предоставленные разрешения, перейдите в настройки."</string>
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Обновлено администратором.\nЧтобы посмотреть предоставленные разрешения, перейдите в настройки."</string>
@@ -2594,10 +2596,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Нажмите, чтобы посмотреть советы о том, как разблокировать экран."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Без мигания"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Чтобы выключить телевизор, нажмите и удерживайте кнопку питания."</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Оповещения о системных ресурсах"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Перерасход ресурсов"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" использует слишком много ресурсов."</string>
 </resources>

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"కార్యాలయ ప్రొఫైల్‌కి మార్చు"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"వ్యక్తిగత <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు మార్చండి"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"వర్క్ <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు మార్చండి"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"కాంటాక్ట్‌లు"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"మీ కాంటాక్ట్‌లను యాక్సెస్ చేయడానికి"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"కాంటాక్ట్‌లు, ఖాతాలు"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"మీ కాంటాక్ట్‌లను యాక్సెస్ చేయండి, ఈ డివైజ్‌లో కాంటాక్ట్‌లను సేవ్ చేయగల మీ ఖాతాలకు సంబంధించిన లిస్ట్‌ను చూడండి"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"లొకేషన్"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ఈ పరికర లొకేషన్‌ను యాక్సెస్ చేయడానికి"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"క్యాలెండర్"</string>

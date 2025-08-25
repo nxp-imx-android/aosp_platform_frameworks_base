@@ -338,8 +338,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Přepnout na pracovní profil"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Přepnout na osobní verzi aplikace <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Přepnout na pracovní verzi aplikace <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Kontakty"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"přístup ke kontaktům"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"Poloha"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"přístup k poloze tohoto zařízení"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalendář"</string>
@@ -2020,7 +2022,7 @@
     <string name="zen_mode_trigger_summary_range_symbol_combination" msgid="1804900738798069619">"<xliff:g id="START">%1$s</xliff:g>–<xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"<xliff:g id="START">%1$s</xliff:g> – <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
-    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"V libovolném kalendáři"</string>
+    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Libovolný kalendář"</string>
     <string name="muted_by" msgid="91464083490094950">"Hodinky <xliff:g id="THIRD_PARTY">%1$s</xliff:g> některé zvuky vypínají."</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"V zařízení došlo k internímu problému. Dokud neprovedete obnovení továrních dat, může být nestabilní."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"V zařízení došlo k internímu problému. Další informace vám sdělí výrobce."</string>
@@ -2594,10 +2596,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Klepnutím zobrazíte tipy pro snazší odemykání"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Neblikat"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Televizi vypnete dlouhým podržením vypínače"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozornění na systémové zdroje"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Nadměrné využití zdrojů"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> využívá příliš mnoho zdrojů."</string>
 </resources>

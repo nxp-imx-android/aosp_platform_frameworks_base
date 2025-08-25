@@ -337,8 +337,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Canvia al perfil de treball"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Canvia al perfil personal a <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Canvia al perfil de treball a <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Contactes"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"accedir als contactes"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Contactes i comptes"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"accedir als teus contactes i veure la llista dels teus comptes que poden desar contactes en aquest dispositiu"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Ubicació"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"accedir a la ubicació del dispositiu"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendari"</string>
@@ -2593,10 +2593,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toca per revisar consells i millorar l\'experiència de desbloqueig"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"No parpellegis"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Mantén premut el botó d\'engegada per apagar la TV"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertes de recursos del sistema"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Ús excessiu de recursos"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"L\'aplicació <xliff:g id="APP_NAME">%1$s</xliff:g> està utilitzant massa recursos."</string>
 </resources>

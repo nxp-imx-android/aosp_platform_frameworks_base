@@ -336,8 +336,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"직장 프로필로 전환"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"개인 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 전환"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"직장 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 전환"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"연락처"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"연락처에 액세스"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"위치"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"이 기기의 위치정보에 액세스"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"캘린더"</string>
@@ -2592,10 +2594,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"잠금 해제 환경을 개선하기 위한 도움말을 검토하려면 탭하세요."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"깜박이지 않음"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"TV를 끄려면 전원 버튼을 길게 누르세요."</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"시스템 리소스 알림"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"리소스 초과 사용"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> 앱이 너무 많은 리소스를 사용합니다.\'"</string>
 </resources>

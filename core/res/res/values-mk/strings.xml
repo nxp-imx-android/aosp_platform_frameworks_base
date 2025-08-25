@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Префрли се на работен профил"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Префрлете се на личната апликација <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Префрлете се на работната апликација <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Контакти"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"пристапува до контактите"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Контакти и сметки"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"да пристапува до вашите контакти и да го гледа списокот со сметките што може да зачувуваат контакти на уредов"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Локација"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"пристапува до локацијата на овој уред"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Календар"</string>

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"切換至工作設定檔"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"轉去個人應用程式「<xliff:g id="APP_NAME">%1$s</xliff:g>」"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"轉去工作應用程式「<xliff:g id="APP_NAME">%1$s</xliff:g>」"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"通訊錄"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"存取你的通訊錄"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"聯絡人和帳戶"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"存取你的聯絡人，以及查看可以儲存此裝置上的聯絡人的帳戶清單"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"位置"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"存取此裝置的位置"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"日曆"</string>
@@ -2087,7 +2087,7 @@
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"撥打緊急電話"</string>
     <string name="set_up_screen_lock_title" msgid="8346083801616474030">"設定螢幕鎖定"</string>
     <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"設定螢幕鎖定"</string>
-    <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"如要使用私人空間，請在此裝置上設定螢幕鎖定功能"</string>
+    <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"如要使用私人空間，請在此裝置上設定螢幕鎖定方式"</string>
     <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"如要刪除私人空間，請在此裝置上設定螢幕鎖定功能"</string>
     <string name="app_blocked_title" msgid="7353262160455028160">"無法使用應用程式"</string>
     <string name="app_blocked_message" msgid="542972921087873023">"目前無法使用「<xliff:g id="APP_NAME">%1$s</xliff:g>」。"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕按即可查看關於改善解鎖體驗的貼士"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不要閃動"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"長按開關按鈕即可關閉電視"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"系統資源警示"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"過量使用資源"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"應用程式「<xliff:g id="APP_NAME">%1$s</xliff:g>」使用太多資源。"</string>
 </resources>

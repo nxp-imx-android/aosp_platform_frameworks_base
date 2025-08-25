@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"কৰ্মস্থানৰ প্ৰ’ফাইললৈ সলনি কৰক"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"ব্যক্তিগত <xliff:g id="APP_NAME">%1$s</xliff:g>লৈ সলনি কৰক"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"কৰ্মস্থানৰ <xliff:g id="APP_NAME">%1$s</xliff:g>লৈ সলনি কৰক"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"সম্পর্কসূচী"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"আপোনাৰ সম্পৰ্কসূচী চাব পাৰে"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"সম্পৰ্ক আৰু একাউণ্ট"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"আপোনাৰ সম্পৰ্কসমূহ এক্সেছ কৰক আৰু এই ডিভাইচটোত সম্পৰ্ক ছেভ কৰিব পৰা আপোনাৰ একাউণ্টসমূহৰ সূচীখন চাওক"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"অৱস্থান"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"এই ডিভাইচৰ অৱস্থান ব্যৱহাৰ কৰিব পাৰে"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপুনি আনলক কৰাৰ অভিজ্ঞতা উন্নত কৰাৰ পৰামৰ্শসমূহ পৰ্যালোচনা কৰিবলৈ টিপক"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ব্লিংক নকৰিব"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"টিভিটো অফ কৰিবলৈ পাৱাৰ বুটামটো দীঘলীয়াকৈ টিপক"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ছিষ্টেমৰ সম্পদৰ সতৰ্কবাৰ্তা"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"সম্পদৰ অতি ব্যৱহাৰ"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"’<xliff:g id="APP_NAME">%1$s</xliff:g> এপে অতি বেছি সম্পদ ব্যৱহাৰ কৰি আছে।\""</string>
 </resources>
