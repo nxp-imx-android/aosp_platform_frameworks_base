@@ -99,16 +99,16 @@ class SoftwareRateLimiter {
                 /* 7 */ Duration.ofMinutes(15),
                 /* 8 */ Duration.ofMinutes(30),
                 /* 9 */ Duration.ofMinutes(90),
-                /* 10 */ Duration.ofMinutes(243), // This and the rest are 3^(n-5) minutes.
-                /* 11 */ Duration.ofMinutes(729),
-                /* 12 */ Duration.ofMinutes(2187),
-                /* 13 */ Duration.ofMinutes(6561),
-                /* 14 */ Duration.ofMinutes(19683),
-                /* 15 */ Duration.ofMinutes(59049),
-                /* 16 */ Duration.ofMinutes(177147),
-                /* 17 */ Duration.ofMinutes(531441),
-                /* 18 */ Duration.ofMinutes(1594323),
-                /* 19 */ Duration.ofMinutes(4782969),
+                /* 10 */ Duration.ofHours(4),
+                /* 11 */ Duration.ofHours(12),
+                /* 12 */ Duration.ofHours(36),
+                /* 13 */ Duration.ofDays(4),
+                /* 14 */ Duration.ofDays(13),
+                /* 15 */ Duration.ofDays(41),
+                /* 16 */ Duration.ofDays(123),
+                /* 17 */ Duration.ofDays(365),
+                /* 18 */ Duration.ofDays(365 * 3),
+                /* 19 */ Duration.ofDays(365 * 9),
             };
 
     private final Injector mInjector;
