@@ -1631,15 +1631,15 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                             mTempPointerProperties,
                             mTempPointerCoords,
                             mMetaState,
-                            BUTTON_PRIMARY,
+                            /* buttonState= */ 0,
                             /* xPrecision= */ 1.0f,
                             /* yPrecision= */ 1.0f,
                             mLastMotionEvent.getDeviceId(),
                             /* edgeFlags= */ 0,
                             mLastMotionEvent.getSource(),
                             mLastMotionEvent.getFlags());
-            releaseEvent.setActionButton(BUTTON_PRIMARY);
             MotionEvent upEvent = MotionEvent.obtain(releaseEvent);
+            releaseEvent.setActionButton(BUTTON_PRIMARY);
             upEvent.setAction(MotionEvent.ACTION_UP);
             AutoclickController.super.onMotionEvent(releaseEvent, releaseEvent,
                     mEventPolicyFlags);
