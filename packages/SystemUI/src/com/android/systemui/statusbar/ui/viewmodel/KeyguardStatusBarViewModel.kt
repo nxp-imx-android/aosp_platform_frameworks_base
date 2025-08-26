@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.ui.viewmodel
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -57,6 +58,7 @@ class KeyguardStatusBarViewModel
 constructor(
     @Application scope: CoroutineScope,
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
+    desktopInteractor: DesktopInteractor,
     sceneInteractor: SceneInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
@@ -74,12 +76,19 @@ constructor(
     /** True if this view should be visible and false otherwise. */
     val isVisible: StateFlow<Boolean> =
         combine(
+                desktopInteractor.isDesktopFeatureSetEnabled,
                 sceneInteractor.currentScene,
                 sceneInteractor.currentOverlays,
                 keyguardInteractor.isDozing,
                 showingHeadsUpStatusBar,
-            ) { currentScene, currentOverlays, isDozing, showHeadsUpStatusBar ->
-                currentScene == Scenes.Lockscreen &&
+            ) {
+                desktopFeatureSetEnabled,
+                currentScene,
+                currentOverlays,
+                isDozing,
+                showHeadsUpStatusBar ->
+                !desktopFeatureSetEnabled &&
+                    currentScene == Scenes.Lockscreen &&
                     Overlays.NotificationsShade !in currentOverlays &&
                     Overlays.QuickSettingsShade !in currentOverlays &&
                     Overlays.Bouncer !in currentOverlays &&

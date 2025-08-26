@@ -17,6 +17,7 @@
 package com.android.extensions.computercontrol;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.FloatRange;
 import android.app.ActivityOptions;
 import android.companion.virtual.computercontrol.InteractiveMirrorDisplay;
 import android.content.Context;
@@ -40,6 +41,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.extensions.computercontrol.input.KeyEvent;
 import com.android.extensions.computercontrol.input.TouchEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -97,6 +99,18 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Launches an application's launcher activity in the computer control session.
+     *
+     * <p>The application with the given package name must have a launcher activity and the
+     * package name must have been included during the session creation.</p>
+     *
+     * @see Params#getTargetPackageNames()
+     */
+    public void launchApplication(@NonNull String packageName) {
+        mSession.launchApplication(Objects.requireNonNull(packageName));
+    }
+
+    /**
      * Screenshot the current display content.
      *
      * <p>The behavior is similar to {@link android.media.ImageReader#acquireLatestImage}, meaning
@@ -109,6 +123,35 @@ public final class ComputerControlSession implements AutoCloseable {
     @Nullable
     public Image getScreenshot() {
         return mSession.getScreenshot();
+    }
+
+    /**
+     * Sends a tap event to the computer control session at the given location.
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
+            @FloatRange(from = 0.0, to = 1.0) float y) {
+        mSession.tap(x, y);
+    }
+
+    /**
+     * Sends a swipe event to the computer control session for the given coordinates.
+     *
+     * <p>To avoid misinterpreting the swipe as a fling, the individual touches are throttled, so
+     * the entire action will take ~500ms. However, this is done in the background and this method
+     * returns immediately. Any ongoing swipe will be canceled if a new swipe is requested.</p>
+     *
+     * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
+     * display.</p>
+     */
+    public void swipe(
+            @FloatRange(from = 0.0, to = 1.0) float fromX,
+            @FloatRange(from = 0.0, to = 1.0) float fromY,
+            @FloatRange(from = 0.0, to = 1.0) float toX,
+            @FloatRange(from = 0.0, to = 1.0) float toY) {
+        mSession.swipe(fromX, fromY, toX, toY);
     }
 
     /**
@@ -233,17 +276,20 @@ public final class ComputerControlSession implements AutoCloseable {
     public static class Params {
         @NonNull private final Context mContext;
         @NonNull private final String mName;
+        @NonNull private final List<String> mTargetPackageNames;
         private final int mDisplayWidthPx;
         private final int mDisplayHeightPx;
         private final int mDisplayDpi;
         @Nullable private final Surface mDisplaySurface;
         private final boolean mIsDisplayAlwaysUnlocked;
 
-        private Params(@NonNull Context context, @NonNull String name, int displayWidthPx,
+        private Params(@NonNull Context context, @NonNull String name,
+                @NonNull List<String> targetPackageNames, int displayWidthPx,
                 int displayHeightPx, int displayDpi, @Nullable Surface displaySurface,
                 boolean isDisplayAlwaysUnlocked) {
             mContext = context;
             mName = name;
+            mTargetPackageNames = targetPackageNames;
             mDisplayWidthPx = displayWidthPx;
             mDisplayHeightPx = displayHeightPx;
             mDisplayDpi = displayDpi;
@@ -267,6 +313,16 @@ public final class ComputerControlSession implements AutoCloseable {
         @NonNull
         public String getName() {
             return mName;
+        }
+
+        /**
+         * Returns the package names of the applications that may be automated during this session.
+         *
+         * @see Builder#setTargetPackageNames(List)
+         */
+        @Nullable  // TODO(b/437849228): Should be non-null
+        public List<String> getTargetPackageNames() {
+            return mTargetPackageNames;
         }
 
         /**
@@ -321,6 +377,8 @@ public final class ComputerControlSession implements AutoCloseable {
         public static class Builder {
             @NonNull private final Context mContext;
             @Nullable private String mName;
+            @Nullable  // TODO(b/437849228): Should be non-null
+            private List<String> mTargetPackageNames = new ArrayList<>();
             private int mDisplayWidthPx;
             private int mDisplayHeightPx;
             private int mDisplayDpi;
@@ -342,6 +400,15 @@ public final class ComputerControlSession implements AutoCloseable {
             @NonNull
             public Builder setName(@Nullable String name) {
                 mName = name;
+                return this;
+            }
+
+           /**
+             * Set all application package names that may be automated during this session.
+             */
+            @NonNull
+            public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {
+                mTargetPackageNames = targetPackageNames;
                 return this;
             }
 
@@ -428,8 +495,8 @@ public final class ComputerControlSession implements AutoCloseable {
                     }
                 }
 
-                return new Params(mContext, mName, mDisplayWidthPx, mDisplayHeightPx, mDisplayDpi,
-                        mDisplaySurface, mIsDisplayAlwaysUnlocked);
+                return new Params(mContext, mName, mTargetPackageNames, mDisplayWidthPx,
+                        mDisplayHeightPx, mDisplayDpi, mDisplaySurface, mIsDisplayAlwaysUnlocked);
             }
         }
     }

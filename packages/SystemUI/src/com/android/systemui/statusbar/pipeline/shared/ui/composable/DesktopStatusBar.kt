@@ -121,7 +121,8 @@ fun DesktopStatusBar(
 
         Row(
             horizontalArrangement =
-                Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.End)
+                Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             val chipsVisibilityModel = viewModel.ongoingActivityChips
             if (chipsVisibilityModel.areChipsAllowed) {

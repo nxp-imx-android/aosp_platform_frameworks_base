@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"કાર્યાલયની પ્રોફાઇલ પર સ્વિચ કરો"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"વ્યક્તિગત <xliff:g id="APP_NAME">%1$s</xliff:g> પર સ્વિચ કરો"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"ઑફિસની <xliff:g id="APP_NAME">%1$s</xliff:g> પર સ્વિચ કરો"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"સંપર્કો"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"તમારા સંપર્કોને ઍક્સેસ કરવાની"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"સંપર્કો અને એકાઉન્ટ"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"તમારા સંપર્કો ઍક્સેસ કરવા અને આ ડિવાઇસ પર સંપર્કો સાચવી શકતા હોય તેવા તમારા એકાઉન્ટની સૂચિ જોવી"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"લોકેશન"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"આ ઉપકરણના સ્થાનને ઍક્સેસ કરવાની"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"કૅલેન્ડર"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"તમારા અનલૉકિંગના અનુભવને બહેતર બનાવવા માટેની ટિપનો રિવ્યૂ કરવા માટે ટૅપ કરો"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"બ્લિંક ન કરો"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ટીવી બંધ કરવા માટે પાવર બટનને થોડીવાર દબાવી રાખો"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"સિસ્ટમ સંસાધન સંબંધિત અલર્ટ"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"સંસાધનનો વધુ પડતો ઉપયોગ"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ઍપ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ઘણા બધા સંસાધનોનો ઉપયોગ કરી રહી છે.\""</string>
 </resources>

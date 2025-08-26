@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"仕事用プロファイルに切り替える"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"個人用の <xliff:g id="APP_NAME">%1$s</xliff:g> に切り替える"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"仕事用の <xliff:g id="APP_NAME">%1$s</xliff:g> に切り替える"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"連絡先"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"連絡先へのアクセス"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"連絡先とアカウント"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"連絡先にアクセスして、このデバイスで連絡先を保存できるアカウントの一覧を表示する"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"位置情報"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"このデバイスの位置情報へのアクセス"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"カレンダー"</string>

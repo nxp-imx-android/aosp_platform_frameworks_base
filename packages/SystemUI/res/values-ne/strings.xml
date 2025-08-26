@@ -158,25 +158,17 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"चयन गरिएको भागको स्क्रिनसट लिनुहोस्"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"चयन गरिएको क्षेत्र रेकर्ड गर्नुहोस्"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"स्क्रिनसट"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकर्ड गर्नुहोस्"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"सेयर गर्नुहोस्"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विन्डोको स्क्रिनसट लिनुहोस्"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विन्डो रेकर्ड गर्नुहोस्"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"चयन गरिएको भागको स्क्रिनसट लिनुहोस्"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"चयन गरिएको भाग रेकर्ड गर्नुहोस्"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"सम्पूर्ण स्क्रिनको स्क्रिनसट लिनुहोस्"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"सम्पूर्ण स्क्रिन रेकर्ड गर्नुहोस्"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"स्क्रिन क्याप्चरसम्बन्धी सेटिङ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रिन सेयर गरिँदै छ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"सामग्री सेयर गरिँदै छ"</string>
@@ -1009,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल एसिस्टेन्ट खोल्नुहोस्"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रिन लक गर्नुहोस्"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोट लेख्नुहोस्"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"हालको विन्डो बन्द गर्नुहोस्"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टिटास्किङ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"हालको एप दायाँ भागमा पारेर स्प्लिट स्क्रिन प्रयोग गर्नुहोस्"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"हालको एप बायाँ भागमा पारेर स्प्लिट स्क्रिन प्रयोग गर्नुहोस्"</string>
@@ -1023,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"विन्डो सारेर दायाँतिर लैजानुहोस्"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"विन्डो म्याक्सिमाइज गर्नुहोस्"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"विन्डो मिनिमाइज गर्नुहोस्"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"एउटा डेस्कटपबाट अर्को डेस्कटपमा जानुहोस्"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"इनपुट"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"अर्को भाषा प्रयोग गर्नुहोस्"</string>
@@ -1146,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> भनेको विभिन्न वस्तुहरू ठुलो आवाजमा पढेर सुनाउने स्क्रिन रिडर हो। स्क्रिनमा भएको कुरा देख्न गाह्रो हुने मान्छेहरूका लागि यो सुविधा उपयोगी हुन सक्छ।"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"तपाईं <xliff:g id="ID_1">%1$s</xliff:g> प्रयोग गरेर आफ्नो डिभाइस ह्यान्ड्सफ्री तरिकाले नियन्त्रण गर्न सक्नुहुन्छ।"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"अन गर्नुहोस्"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> किबोर्डको सर्टकट अन गरिएको छ"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। तपाईं यसका सहायताले स्क्रिनमा तुरुन्तै जुम इन गरेर त्यसमा भएको कन्टेन्ट अझ ठुलो बनाउन सक्नुहुन्छ। जुम मिलाउन एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> र \"+\" वा \"-\" थिच्नुहोस्।"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"सर्टकट अफ गर्नुहोस्"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"अन राखिरहनुहोस्"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"डिभाइसको हेरचाह गर्ने तरिका हेर्नुहोस्"</string>

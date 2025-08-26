@@ -458,7 +458,7 @@ public abstract class WMShellBaseModule {
             ShellCommandHandler shellCommandHandler
     ) {
         return new MultiInstanceHelper(context, context.getPackageManager(),
-                shellInit, shellCommandHandler, Flags.supportsMultiInstanceSystemUi());
+                shellInit, shellCommandHandler);
     }
 
     //

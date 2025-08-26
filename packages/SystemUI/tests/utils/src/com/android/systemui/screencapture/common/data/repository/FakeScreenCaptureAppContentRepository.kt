@@ -24,8 +24,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 
 class FakeScreenCaptureAppContentRepository : ScreenCaptureAppContentRepository {
 
-    private val appContentChannel =
-        Channel<Result<List<MediaProjectionAppContent>>>(Channel.CONFLATED)
+    private val appContentChannels =
+        mutableMapOf<Pair<String, UserHandle>, Channel<Result<List<MediaProjectionAppContent>>>>()
 
     val appContentsForCalls = mutableListOf<AppContentsForCall>()
 
@@ -38,24 +38,42 @@ class FakeScreenCaptureAppContentRepository : ScreenCaptureAppContentRepository 
         appContentsForCalls.add(
             AppContentsForCall(packageName, user, thumbnailWidthPx, thumbnailHeightPx)
         )
-        return appContentChannel.receiveAsFlow()
+        return channelFor(packageName, user).receiveAsFlow()
     }
 
-    fun setAppContent(appContent: Result<List<MediaProjectionAppContent>>) {
-        appContentChannel.trySend(appContent)
+    fun setAppContent(
+        packageName: String,
+        user: UserHandle,
+        appContent: Result<List<MediaProjectionAppContent>>,
+    ) {
+        channelFor(packageName, user).trySend(appContent)
     }
 
-    fun setAppContentSuccess(appContent: List<MediaProjectionAppContent>) {
-        setAppContent(Result.success(appContent))
+    fun setAppContentSuccess(
+        packageName: String,
+        user: UserHandle,
+        appContent: List<MediaProjectionAppContent>,
+    ) {
+        setAppContent(packageName, user, Result.success(appContent))
     }
 
-    fun setAppContentSuccess(vararg appContent: MediaProjectionAppContent) {
-        setAppContentSuccess(appContent.toList())
+    fun setAppContentSuccess(
+        packageName: String,
+        user: UserHandle,
+        vararg appContent: MediaProjectionAppContent,
+    ) {
+        setAppContentSuccess(packageName, user, appContent.toList())
     }
 
-    fun setAppContentFailure(throwable: Throwable) {
-        setAppContent(Result.failure(throwable))
+    fun setAppContentFailure(packageName: String, user: UserHandle, throwable: Throwable) {
+        setAppContent(packageName, user, Result.failure(throwable))
     }
+
+    private fun channelFor(
+        packageName: String,
+        user: UserHandle,
+    ): Channel<Result<List<MediaProjectionAppContent>>> =
+        appContentChannels.computeIfAbsent(packageName to user) { Channel(Channel.CONFLATED) }
 
     data class AppContentsForCall(
         val packageName: String,

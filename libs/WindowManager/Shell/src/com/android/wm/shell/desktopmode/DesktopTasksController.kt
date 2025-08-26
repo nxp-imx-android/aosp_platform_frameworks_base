@@ -1023,6 +1023,10 @@ class DesktopTasksController(
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
+        // Preserve focus state on reconnect, regardless if focused task is restored or not.
+        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
+            focusTransitionObserver.globallyFocusedTaskId
+        )
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -1075,6 +1079,9 @@ class DesktopTasksController(
                         )
                     )
                 }
+            }
+            globallyFocusedTask?.let {
+                wct.reorder(it.token, /* onTop= */ true, /* includingParents= */ true)
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
             tilingReconnectHandler.activationBinder = transition
@@ -2688,7 +2695,13 @@ class DesktopTasksController(
         currentDragBounds: Rect,
         motionEvent: MotionEvent,
     ) {
-        if (isTaskMaximized(taskInfo, displayController)) {
+        val displayId = taskInfo.displayId
+        val displayLayout = displayController.getDisplayLayout(displayId)
+        if (displayLayout == null)  {
+            logW("Display %d is not found, task displayId might be stale", displayId)
+            return
+        }
+        if (isTaskMaximized(taskInfo, displayLayout)) {
             // Handle the case where we attempt to drag-to-maximize when already maximized: the task
             // position won't need to change but we want to animate the surface going back to the
             // maximized position.
@@ -3241,10 +3254,11 @@ class DesktopTasksController(
                 shouldEndUpAtHome,
             )
         }
-        if (
-            !skipWallpaperAndHomeOrdering ||
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        val shouldHandleWallpaperAndHome =
+            (!skipWallpaperAndHomeOrdering ||
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) &&
+                !desktopState.shouldShowHomeBehindDesktop
+        if (shouldHandleWallpaperAndHome) {
             if (ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER.isTrue) {
                 moveWallpaperActivityToBack(wct, displayId)
             } else {

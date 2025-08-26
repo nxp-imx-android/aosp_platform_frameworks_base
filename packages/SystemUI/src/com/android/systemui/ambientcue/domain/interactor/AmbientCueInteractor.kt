@@ -18,8 +18,8 @@ package com.android.systemui.ambientcue.domain.interactor
 
 import android.graphics.Rect
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepository
-import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.plugins.cuebar.ActionModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow

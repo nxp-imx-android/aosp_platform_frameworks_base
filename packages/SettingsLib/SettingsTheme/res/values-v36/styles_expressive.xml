@@ -457,4 +457,13 @@
         <item name="backgroundTint">@color/settingslib_materialColorOutlineVariant</item>
         <item name="android:textColor">@color/settingslib_materialColorPrimary</item>
     </style>
+
+    <style name="SettingslibSliderStyle.Expressive" parent="">
+        <item name="trackColorActive">@color/settingslib_expressive_color_slider_track_active</item>
+        <item name="trackColorInactive">@color/settingslib_expressive_color_slider_track_inactive</item>
+        <item name="thumbColor">@color/settingslib_expressive_color_slider_thumb</item>
+        <item name="tickColorActive">@color/settingslib_expressive_color_slider_track_inactive</item>
+        <item name="tickColorInactive">@color/settingslib_expressive_color_slider_track_active</item>
+        <item name="haloColor">@android:color/transparent</item>
+    </style>
 </resources>

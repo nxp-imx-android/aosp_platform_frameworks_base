@@ -20,26 +20,26 @@
     <string name="title_unknown_source_blocked" msgid="50770689337399043">"Permissão necessária"</string>
     <string name="title_install_blocked" msgid="8292546042865448054">"Instalação bloqueada"</string>
     <string name="title_install_staging" msgid="6207460764383813714">"Preparando o app…"</string>
-    <string name="title_install" msgid="6806728682404990326">"Instalar esse app?"</string>
+    <string name="title_install" msgid="6806728682404990326">"Instalar este app?"</string>
     <string name="title_installing" msgid="3738380766257176010">"Instalando…"</string>
     <string name="title_installed" msgid="6551855346109302601">"App instalado"</string>
     <string name="title_reinstall" msgid="1750856338036455388">"Reinstalar esse app?"</string>
     <string name="title_reinstalling" msgid="8194821341725321638">"Reinstalando…"</string>
     <string name="title_reinstalled" msgid="4805694558041089418">"App reinstalado"</string>
-    <string name="title_update" msgid="1747328630716712391">"Atualizar esse app?"</string>
-    <string name="title_update_ownership_change" msgid="6628818356381453406">"Atualizar esse app usando <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
+    <string name="title_update" msgid="1747328630716712391">"Atualizar este app?"</string>
+    <string name="title_update_ownership_change" msgid="6628818356381453406">"Atualizar este app usando <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
     <string name="title_updating" msgid="5449073288264173554">"Atualizando…"</string>
     <string name="title_updated" msgid="3286125118804971449">"O app foi atualizado"</string>
     <string name="title_cant_install_app" msgid="8683361719005005686">"Não foi possível instalar o app"</string>
     <string name="title_install_failed_blocked" msgid="4864724257000850526">"Instalação bloqueada"</string>
-    <string name="title_install_failed_incompatible" msgid="9153043742028690470">"O app não é aceito"</string>
+    <string name="title_install_failed_incompatible" msgid="9153043742028690470">"O app não é compatível"</string>
     <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"Pacote inválido"</string>
     <string name="title_install_failed_less_storage" msgid="4854855960405469248">"Armazenamento insuficiente"</string>
     <string name="title_install_failed_not_installed" msgid="8014023519071426269">"App não instalado"</string>
     <string name="title_uninstall" msgid="428653424812685605">"Você quer desinstalar este app?"</string>
-    <string name="title_uninstall_clone" msgid="7974889929002929136">"Excluir esse clone do app?"</string>
-    <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Desinstalar atualizações desse app?"</string>
-    <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Desinstalar atualizações desse app para todos os usuários?"</string>
+    <string name="title_uninstall_clone" msgid="7974889929002929136">"Excluir clone do app?"</string>
+    <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Desinstalar atualizações do app?"</string>
+    <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Desinstalar atualizações do app para todos os usuários?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Desinstalar esse app para todos os usuários?"</string>
     <string name="title_uninstall_other_user" msgid="2271467467800640363">"Desinstalar esse app para o usuário \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App não encontrado"</string>
@@ -57,7 +57,7 @@
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Algo deu errado"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Esse app costuma receber atualizações de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Ao usar uma fonte diferente, as próximas atualizações poderão ser feitas com qualquer fonte no tablet. A funcionalidade do app pode mudar."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Esse app costuma receber atualizações de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Ao usar uma fonte diferente, as próximas atualizações poderão ser feitas de qualquer fonte na TV. A funcionalidade do app pode mudar."</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"Esse app costuma receber atualizações de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Ao atualizar usando uma fonte diferente, as próximas atualizações poderão ser feitas com qualquer fonte no celular. A funcionalidade do app pode mudar."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"O app costuma receber atualizações da &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Ao usar uma fonte diferente, as próximas atualizações poderão ser feitas de qualquer fonte no celular. A funcionalidade do app pode mudar."</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"Para sua segurança, o tablet não tem permissão para instalar apps desconhecidos dessa fonte. Você pode mudar isso nas Configurações."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Para sua segurança, a TV não tem permissão para instalar apps desconhecidos dessa fonte. Você pode mudar isso nas Configurações."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Para sua segurança, o relógio não tem permissão para instalar apps desconhecidos dessa fonte. Você pode mudar isso nas Configurações."</string>
@@ -77,8 +77,8 @@
     <string name="message_delete_clone_app" msgid="6632017049227330363">"Esse app é um clone de <xliff:g id="APP_LABEL">%1$s</xliff:g>"</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Esse app será substituído pela versão original. Todos os dados do app serão removidos."</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Esse app será substituído pela versão original para todos os usuários do dispositivo. Todos os dados do app serão removidos."</string>
-    <string name="message_uninstall_work_profile" msgid="224587253086750763">"Esse app será desinstalado do seu perfil de trabalho"</string>
-    <string name="message_uninstall_private_space" msgid="2815872500665141251">"Esse app será desinstalado do seu Espaço Privado"</string>
+    <string name="message_uninstall_work_profile" msgid="224587253086750763">"O app será desinstalado do seu perfil de trabalho"</string>
+    <string name="message_uninstall_private_space" msgid="2815872500665141251">"O app será desinstalado do seu espaço privado"</string>
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Esse app não foi encontrado na lista de apps instalados ou ele já foi desinstalado"</string>
     <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"O usuário atual não tem permissão para fazer a desinstalação"</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"Não foi possível desinstalar o app"</string>
@@ -95,15 +95,23 @@
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Para restaurar o app, ative <xliff:g id="INSTALLERNAME">%1$s</xliff:g> nas Configurações"</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restaurar o app, instale <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Ocorreu um problema ao tentar restaurar esse app"</string>
-    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> é parte desse app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Este app foi bloqueado. Para proteger seu dispositivo e seus dados, só é possível instalar apps de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Este app não foi atualizado. Para proteger seu dispositivo e seus dados, só é possível instalar atualizações de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Este app não foi instalado. Apps de desenvolvedores não verificados podem não ser seguros.&lt;/p&gt; &lt;p&gt;É necessário ter uma conexão de Internet para verificar o desenvolvedor. Verifique sua conexão e tente instalar o app de novo. &lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Este app não foi atualizado. As atualizações de desenvolvedores não verificados podem não ser seguras.&lt;/p&gt; &lt;p&gt;É necessário ter uma conexão de Internet para verificar o desenvolvedor do app. Verifique sua conexão e tente atualizar o app de novo. &lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Ocorreu um problema ao verificar o desenvolvedor do app. Os apps de desenvolvedores não verificados podem ser perigosos. Por isso, a instalação não foi feita.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Ocorreu um problema ao verificar o desenvolvedor do app. As atualizações de desenvolvedores não verificados podem ser perigosas. Por isso, a atualização não foi feita.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Este app foi bloqueado porque houve um problema ao verificar o desenvolvedor. Para proteger seu dispositivo e seus dados, só é possível instalar apps de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Este app não foi atualizado porque houve um problema ao verificar o desenvolvedor. Para proteger seu dispositivo e seus dados, só é possível instalar atualizações de desenvolvedores verificados.&lt;/p&gt; &lt;a href=&gt;Saiba mais sobre a verificação de desenvolvedores&lt;/a&gt;"</string>
+    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> é parte do app <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Se você instalar sem verificar, não se esqueça de que apps de desenvolvedores não verificados podem colocar seu dispositivo e seus dados em risco."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Se você atualizar sem verificar, não se esqueça de que as atualizações de desenvolvedores não verificados podem colocar seu dispositivo e seus dados em risco."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desenvolvedor do app não verificado"</string>

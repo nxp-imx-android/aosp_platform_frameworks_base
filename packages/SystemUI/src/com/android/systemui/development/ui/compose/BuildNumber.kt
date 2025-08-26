@@ -48,6 +48,15 @@ fun BuildNumber(
 ) {
     val viewModel = rememberViewModel(traceName = "BuildNumber") { viewModelFactory.create() }
 
+    BuildNumber(viewModel, modifier, textColor)
+}
+
+@Composable
+fun BuildNumber(
+    viewModel: BuildNumberViewModel,
+    modifier: Modifier,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+) {
     val buildNumber = viewModel.buildNumber
 
     if (buildNumber != null) {

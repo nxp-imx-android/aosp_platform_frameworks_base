@@ -337,8 +337,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Comută la profilul de serviciu"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Comută la <xliff:g id="APP_NAME">%1$s</xliff:g> personal"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Comută la <xliff:g id="APP_NAME">%1$s</xliff:g> pentru serviciu"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Agendă"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"să acceseze agenda"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"Locație"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"să acceseze locația acestui dispozitiv"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
@@ -1979,7 +1981,7 @@
     <string name="clone_profile_label_badge" msgid="1871997694718793964">"Clonă pentru <xliff:g id="LABEL">%1$s</xliff:g>"</string>
     <string name="private_profile_label_badge" msgid="1712086003787839183">"<xliff:g id="LABEL">%1$s</xliff:g> privat"</string>
     <string name="lock_to_app_unlock_pin" msgid="3890940811866290782">"Solicită codul PIN înainte de a anula fixarea"</string>
-    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicită mai întâi modelul pentru deblocare"</string>
+    <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicită modelul înainte de a anula fixarea"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Solicită parola înainte de a anula fixarea"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalat de administrator.\nAccesează setările ca să vezi permisiunile acordate."</string>
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Instalat de administrator.\nAccesează setările ca să vezi permisiunile acordate"</string>
@@ -2593,10 +2595,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Atinge pentru a vedea sfaturi pentru îmbunătățirea experienței de deblocare"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Fără clipire"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Apasă lung butonul de pornire ca să stingi TV-ul"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alerte privind resursele de sistem"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Suprasolicitarea resurselor"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplicația <xliff:g id="APP_NAME">%1$s</xliff:g> folosește prea multe resurse."</string>
 </resources>

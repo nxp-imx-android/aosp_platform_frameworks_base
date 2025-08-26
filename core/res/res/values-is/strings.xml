@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Skipta yfir í vinnusnið"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Skipta yfir í einkasnið <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Skipta yfir í vinnusnið <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Tengiliðir"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"fá aðgang að tengiliðunum þínum"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Tengiliðir og reikningar"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"fá aðgang að tengiliðunum þínum og sjá lista yfir reikningana þína sem geta vistað tengiliði í þessu tæki"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Staðsetning"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"fá aðgang að staðsetningu þessa tækis"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Dagatal"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Ýttu til að sjá ábendingar um hvernig þú getur bætt ferlið við að taka tækið úr lás"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ekki blikka"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Haltu aflrofanum inni til að slökkva á sjónvarpinu"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Viðvaranir vegna kerfistilfanga"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Ofnotkun tilfanga"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Forritið <xliff:g id="APP_NAME">%1$s</xliff:g> er að nota of mörg tilföng."</string>
 </resources>

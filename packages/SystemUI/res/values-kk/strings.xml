@@ -158,25 +158,17 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Таңдалған аймақтың скриншотын жасау"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Таңдалған аймақты жазу"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Скриншот"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Жазу"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Бөлісу"</string>
-    <!-- no translation found for screen_capture_toolbar_app_window_button_screenshot_a11y (1357560392667941303) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_app_window_button_record_a11y (8984966592912823394) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_screenshot_a11y (2102262602357521192) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_region_button_record_a11y (6829009792885846867) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_screenshot_a11y (8699983355979869210) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_fullscreen_button_record_a11y (852148867883959158) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_settings_button_a11y (8014446956996739704) -->
-    <skip />
+    <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Терезенің скриншотын жасау"</string>
+    <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Терезені жазу"</string>
+    <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Таңдалған аймақтың скриншотын жасау"</string>
+    <string name="screen_capture_toolbar_region_button_record_a11y" msgid="6829009792885846867">"Таңдалған аймақты жазу"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Бүкіл экранның скриншотын жасау"</string>
+    <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Бүкіл экранды жазу"</string>
+    <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Экран жазбасы параметрлері"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Экранды бөлісіп жатыр."</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Контент бөлісіліп жатыр"</string>
@@ -1009,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Цифрлық көмекшіні ашу"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Экранды құлыптау"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Ескертпе жазу"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Ағымдағы терезені жабу"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Мультитаскинг"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Қолданбаны бөлінген экранның оң жағынан пайдалану"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Қолданбаны бөлінген экранның сол жағынан пайдалану"</string>
@@ -1023,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Терезені оң жаққа жылжыту"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Терезені ұлғайту"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Терезені кішірейту"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Жұмыс үстелдері арасында ауысу"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Енгізу"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Келесі тілге ауысу"</string>
@@ -1146,14 +1139,10 @@
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> – элементтердің дауыстап оқылғанын тыңдауға мүмкіндік беретін экран оқу құралы. Ол экранды нашар көретін адамдар үшін пайдалы."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> құрылғыны дауыспен басқаруға мүмкіндік береді."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Қосу"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_title (5770691510738701250) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (7575802369763469379) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_negative_button_text (8393469413785600834) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_positive_button_text (895076240681888057) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> пернелер тіркесімі қосылды"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Әрекет "<annotation id="action_key_icon">"белгішесі"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – <xliff:g id="ID_3">^3</xliff:g> функциясын пайдалануға арналған пернелер тіркесімі. Бұл функция экрандағы контентті жылдам ұлғайтуға мүмкіндік береді. Масштабты түзету үшін \"Әрекет\" "<annotation id="action_key_icon">"белгішесін"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> және \"+\" немесе \"-\" таңбасын басыңыз."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Пернелер тіркесімін өшіру"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Қосулы қалдыру"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Құлыптаулы экран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Өшіріліп жатыр…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Пайдалану нұсқаулығын қараңыз"</string>
@@ -1694,7 +1683,7 @@
     <string name="accessibility_deprecate_extra_dim_dialog_description" msgid="4453123359258743230">"Экранның жарықтық деңгейін көбірек төмендету арқылы оны қарайта аласыз.\n\nБұл функция енді жарықтық жүгірткісіне қосылғандықтан, экранды қарайту жылдам пәрмендері өшіріліп жатыр."</string>
     <string name="accessibility_deprecate_extra_dim_dialog_button" msgid="3947537827396916005">"Экранды қарайту жылдам пәрмендерін өшіру"</string>
     <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"Экранды қарайту жылдам пәрмендері өшірілді."</string>
-    <string name="qs_edit_mode_category_connectivity" msgid="4559726936546032672">"Қосылу мүмкіндігі"</string>
+    <string name="qs_edit_mode_category_connectivity" msgid="4559726936546032672">"Байланыс"</string>
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Арнайы мүмкіндіктер"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Утилиталар"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Құпиялық"</string>

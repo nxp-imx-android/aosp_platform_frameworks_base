@@ -16,6 +16,8 @@
 
 package com.android.server;
 
+import java.util.concurrent.Executor;
+
 /**
  * UiModeManager local system service interface.
  *
@@ -36,4 +38,15 @@ public abstract class UiModeManagerInternal {
 
     /** Returns the UI mode for the given display. */
     public abstract int getDisplayUiMode(int displayId);
+
+    /** Returns contrast level for the given user. */
+    public abstract float getContrast(int userId);
+
+    public interface ContrastListenerInternal {
+        /** Called when the contrast level changes. */
+        void onContrastChange(int userId, float contrastLevel);
+    }
+
+    /** Adds a contrast listener for all users. */
+    public abstract void addContrastListener(ContrastListenerInternal listener, Executor executor);
 }

@@ -75,6 +75,12 @@ public class BubbleLogger {
         @UiEvent(doc = "Bubble session ended.")
         BUBBLE_SESSION_ENDED(2423),
 
+        @UiEvent(doc = "The newly selected bubble while expanded.")
+        BUBBLE_SESSION_SWITCHED_TO(2427),
+
+        @UiEvent(doc = "The previously selected bubble while expanded.")
+        BUBBLE_SESSION_SWITCHED_FROM(2428),
+
         // endregion
 
         // region bubble bar events
@@ -174,6 +180,12 @@ public class BubbleLogger {
 
         @UiEvent(doc = "Bubble Bar session ended.")
         BUBBLE_BAR_SESSION_ENDED(2425),
+
+        @UiEvent(doc = "The newly selected bubble bar bubble while expanded.")
+        BUBBLE_BAR_SESSION_SWITCHED_TO(2429),
+
+        @UiEvent(doc = "The previously selected bubble bar bubble while expanded.")
+        BUBBLE_BAR_SESSION_SWITCHED_FROM(2430),
 
         // endregion
         ;

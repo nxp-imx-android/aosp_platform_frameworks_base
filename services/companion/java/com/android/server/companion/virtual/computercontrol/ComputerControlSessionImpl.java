@@ -20,9 +20,11 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
+import android.annotation.FloatRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
@@ -32,6 +34,8 @@ import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
 import android.content.AttributionSource;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
@@ -54,9 +58,15 @@ import android.view.DisplayInfo;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -65,6 +75,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         implements IBinder.DeathRecipient {
+
+    // Throttle swipe events to avoid misinterpreting them as a fling. Each swipe will
+    // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
+    @VisibleForTesting
+    static final int SWIPE_STEPS = 10;
+    @VisibleForTesting
+    static final long SWIPE_EVENT_DELAY_MS = 50L;
 
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
@@ -76,20 +93,29 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final IVirtualInputDevice mVirtualDpad;
     private final IVirtualInputDevice mVirtualKeyboard;
     private final AtomicInteger mMirrorDisplayCounter = new AtomicInteger(0);
+    private final ScheduledExecutorService mScheduler =
+            Executors.newSingleThreadScheduledExecutor();
+
+    private final Injector mInjector;
+
+    private int mDisplayWidth;
+    private int mDisplayHeight;
+    private ScheduledFuture<?> mSwipeFuture;
 
     ComputerControlSessionImpl(IBinder appToken, ComputerControlSessionParams params,
-            AttributionSource attributionSource, PackageManager packageManager,
+            AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            WindowManagerInternal windowManagerInternal, OnClosedListener onClosedListener) {
+            OnClosedListener onClosedListener, Injector injector) {
         mAppToken = appToken;
         mParams = params;
         mOnClosedListener = onClosedListener;
+        mInjector = injector;
+
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
                 .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
                 .build();
-        final String permissionControllerPackage =
-                packageManager.getPermissionControllerPackageName();
+        final String permissionControllerPackage = mInjector.getPermissionControllerPackageName();
         final ActivityPolicyExemption permissionController =
                 new ActivityPolicyExemption.Builder()
                         .setPackageName(permissionControllerPackage)
@@ -112,20 +138,24 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // If the client didn't provide a surface, use the default display dimensions and enable
         // the screenshot API.
         // TODO(b/439774796): Do not allow client-provided surface and dimensions.
-        final DisplayInfo defaultDisplayInfo =
-                params.getDisplaySurface() == null ? getDisplayInfo(Display.DEFAULT_DISPLAY) : null;
         final VirtualDisplayConfig virtualDisplayConfig;
-        if (defaultDisplayInfo != null) {
+        if (params.getDisplaySurface() == null) {
             displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
+            final DisplayInfo defaultDisplayInfo =
+                    mInjector.getDisplayInfo(Display.DEFAULT_DISPLAY);
+            mDisplayWidth = defaultDisplayInfo.logicalWidth;
+            mDisplayHeight = defaultDisplayInfo.logicalHeight;
             virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                    mParams.getName() + "-display", defaultDisplayInfo.logicalWidth,
-                    defaultDisplayInfo.logicalHeight, defaultDisplayInfo.logicalDensityDpi)
+                    mParams.getName() + "-display", mDisplayWidth, mDisplayHeight,
+                    defaultDisplayInfo.logicalDensityDpi)
                     .setFlags(displayFlags)
                     .build();
         } else {
+            mDisplayWidth = mParams.getDisplayWidthPx();
+            mDisplayHeight = mParams.getDisplayHeightPx();
             virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                    mParams.getName() + "-display", mParams.getDisplayWidthPx(),
-                    mParams.getDisplayHeightPx(), mParams.getDisplayDpi())
+                    mParams.getName() + "-display", mDisplayWidth, mDisplayHeight,
+                    mParams.getDisplayDpi())
                     .setSurface(mParams.getDisplaySurface())
                     .setFlags(displayFlags)
                     .build();
@@ -140,8 +170,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mVirtualDisplayId = Binder.withCleanCallingIdentity(() -> {
                 int displayId = mVirtualDevice.createVirtualDisplay(virtualDisplayConfig,
                         mVirtualDisplayToken);
-                windowManagerInternal.setAnimationsDisabledForDisplay(displayId,
-                        true /* disabled */);
+                mInjector.disableAnimationsForDisplay(displayId);
                 return displayId;
             });
 
@@ -167,22 +196,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     virtualKeyboardConfig, new Binder(keyboardName));
 
             final String touchscreenName = mParams.getName() + "-touchscreen";
-            final VirtualTouchscreenConfig virtualTouchscreenConfig;
-            if (defaultDisplayInfo != null) {
-                virtualTouchscreenConfig =
-                        new VirtualTouchscreenConfig.Builder(
-                                defaultDisplayInfo.logicalWidth, defaultDisplayInfo.logicalHeight)
-                                .setAssociatedDisplayId(mVirtualDisplayId)
-                                .setInputDeviceName(touchscreenName)
-                                .build();
-            } else {
-                virtualTouchscreenConfig =
-                        new VirtualTouchscreenConfig.Builder(
-                                mParams.getDisplayWidthPx(), mParams.getDisplayHeightPx())
-                                .setAssociatedDisplayId(mVirtualDisplayId)
-                                .setInputDeviceName(touchscreenName)
-                                .build();
-            }
+            final VirtualTouchscreenConfig virtualTouchscreenConfig =
+                    new VirtualTouchscreenConfig.Builder(mDisplayWidth, mDisplayHeight)
+                            .setAssociatedDisplayId(mVirtualDisplayId)
+                            .setInputDeviceName(touchscreenName)
+                            .build();
             mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(
                     virtualTouchscreenConfig, new Binder(touchscreenName));
 
@@ -199,6 +217,37 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     IVirtualDisplayCallback getVirtualDisplayToken() {
         return mVirtualDisplayToken;
+    }
+
+    public void launchApplication(@NonNull String packageName) {
+        if (!mParams.getTargetPackageNames().contains(Objects.requireNonNull(packageName))) {
+            throw new IllegalArgumentException(
+                    "Package " + packageName + " is not allowed to be launched in this session.");
+        }
+        final UserHandle user = UserHandle.of(UserHandle.getUserId(Binder.getCallingUid()));
+        Binder.withCleanCallingIdentity(() -> mInjector.launchApplicationOnDisplayAsUser(
+                packageName, mVirtualDisplayId, user));
+    }
+
+    @Override
+    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
+            @FloatRange(from = 0.0, to = 1.0) float y) throws RemoteException {
+        mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
+        mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
+    }
+
+    @Override
+    public void swipe(
+            @FloatRange(from = 0.0, to = 1.0) float fromX,
+            @FloatRange(from = 0.0, to = 1.0) float fromY,
+            @FloatRange(from = 0.0, to = 1.0) float toX,
+            @FloatRange(from = 0.0, to = 1.0) float toY) throws RemoteException {
+        if (mSwipeFuture != null) {
+            mSwipeFuture.cancel(false);
+        }
+        mVirtualTouchscreen.sendTouchEvent(
+                createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
+        performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0);
     }
 
     @Override
@@ -220,7 +269,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
             int width, int height, @NonNull Surface surface) throws RemoteException {
         Objects.requireNonNull(surface);
-        DisplayInfo displayInfo = getDisplayInfo(mVirtualDisplayId);
+        DisplayInfo displayInfo = mInjector.getDisplayInfo(mVirtualDisplayId);
         if (displayInfo == null) {
             // The display we're trying to mirror is gone; likely the session is already closed.
             return null;
@@ -253,14 +302,43 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    private DisplayInfo getDisplayInfo(int displayId) {
-        final Display display = DisplayManagerGlobal.getInstance().getRealDisplay(displayId);
-        if (display == null) {
-            return null;
+    VirtualTouchEvent createTouchEvent(float x, float y, @VirtualTouchEvent.Action int action) {
+        return new VirtualTouchEvent.Builder()
+                .setX(x * mDisplayWidth)
+                .setY(y * mDisplayHeight)
+                .setAction(action)
+                .setPointerId(4)
+                .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
+                .setPressure(255)
+                .setMajorAxisSize(1)
+                .build();
+    }
+
+    private void performSwipeStep(float fromX, float fromY, float toX, float toY, int step) {
+        final float fraction = ((float) step) / SWIPE_STEPS;
+        // This makes the movement distance smaller towards the end.
+        final float easedFraction = (float) Math.sin(fraction * Math.PI / 2);
+        final float currentX = fromX + (toX - fromX) * easedFraction;
+        final float currentY = fromY + (toY - fromY) * easedFraction;
+        final int nextStep = step + 1;
+
+        try {
+            mVirtualTouchscreen.sendTouchEvent(
+                    createTouchEvent(currentX, currentY, VirtualTouchEvent.ACTION_MOVE));
+
+            if (nextStep > SWIPE_STEPS) {
+                mVirtualTouchscreen.sendTouchEvent(
+                        createTouchEvent(toX, toY, VirtualTouchEvent.ACTION_UP));
+                mSwipeFuture = null;
+                return;
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
-        final DisplayInfo displayInfo = new DisplayInfo();
-        display.getDisplayInfo(displayInfo);
-        return displayInfo;
+
+        mSwipeFuture = mScheduler.schedule(
+                () -> performSwipeStep(fromX, fromY, toX, toY, nextStep),
+                SWIPE_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
     }
 
     private static class ComputerControlActivityListener
@@ -287,5 +365,47 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     /** Interface for listening for closing of sessions. */
     interface OnClosedListener {
         void onClosed(IBinder token);
+    }
+
+    @VisibleForTesting
+    public static class Injector {
+        private final Context mContext;
+        private final PackageManager mPackageManager;
+        private final WindowManagerInternal mWindowManagerInternal;
+
+        Injector(Context context) {
+            mContext = context;
+            mPackageManager = mContext.getPackageManager();
+            mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
+        }
+
+        public String getPermissionControllerPackageName() {
+            return mPackageManager.getPermissionControllerPackageName();
+        }
+
+        public void launchApplicationOnDisplayAsUser(String packageName, int displayId,
+                UserHandle user) {
+            Intent intent = mPackageManager.getLaunchIntentForPackage(packageName);
+            if (intent == null) {
+                throw new IllegalArgumentException(
+                        "Package " + packageName + " does not have a launcher activity.");
+            }
+            mContext.startActivityAsUser(intent,
+                    ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(), user);
+        }
+
+        public DisplayInfo getDisplayInfo(int displayId) {
+            final Display display = DisplayManagerGlobal.getInstance().getRealDisplay(displayId);
+            if (display == null) {
+                return null;
+            }
+            final DisplayInfo displayInfo = new DisplayInfo();
+            display.getDisplayInfo(displayInfo);
+            return displayInfo;
+        }
+
+        public void disableAnimationsForDisplay(int displayId) {
+            mWindowManagerInternal.setAnimationsDisabledForDisplay(displayId, /* disabled= */ true);
+        }
     }
 }

@@ -158,8 +158,7 @@
     <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
     <skip />
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ఎంచుకున్న ప్రాంతానికి స్క్రీన్‌షాట్ తీయండి"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ఎంచుకున్న ఏరియాను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"స్క్రీన్‌షాట్"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"రికార్డ్ చేయండి"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"షేర్ చేయండి"</string>
@@ -1002,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"డిజిటల్ అసిస్టెంట్‌ను తెరవండి"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"లాక్ స్క్రీన్"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"నోట్‌ను రాయండి"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"ప్రస్తుత విండోను మూసివేయండి"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"మల్టీ-టాస్కింగ్"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"కుడి వైపు ప్రస్తుత యాప్‌తో స్ప్లిట్ స్క్రీన్‌ను ఉపయోగించండి"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ఎడమ వైపు ప్రస్తుత యాప్‌తో స్ప్లిట్ స్క్రీన్‌ను ఉపయోగించండి"</string>
@@ -1016,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"విండోను కుడి వైపునకు తరలించండి"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"విండోను విస్తరించండి"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"విండోను కుదించండి"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"డెస్క్‌టాప్‌ల మధ్య మారండి"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ఇన్‌పుట్"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"తర్వాతి భాషకు మారండి"</string>
@@ -1080,7 +1080,7 @@
     <string name="right_icon" msgid="1103955040645237425">"కుడివైపు ఉన్న చిహ్నం"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"టైల్స్‌ను జోడించడానికి పట్టుకుని, లాగండి"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"టైల్స్‌ను వేరే క్రమంలో అమర్చడానికి వాటిని పట్టుకుని, లాగండి"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"క్రమాన్ని, సైజ్‌ను మార్చడానికి టైల్స్‌ను ఎంచుకోండి"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"టైల్స్ కనబడే క్రమాన్ని, సైజ్‌ను మార్చడానికి వాటిని ఎంచుకోండి"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"టైల్స్‌ను తీసివేయడానికి ట్యాప్ చేయండి"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"లేఅవుట్ సైజ్‌ను మార్చి, మళ్లీ ఆర్డర్‌లో ఉంచండి"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"ఎడిట్ చేయండి"</string>

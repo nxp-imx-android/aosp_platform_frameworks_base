@@ -360,6 +360,7 @@ constructor(
                 )
 
             val wct = windowContainerTransactionSupplier.invoke()
+            val oldDecorationSurface = decorationContainerSurface
             relayout(relayoutParams, startT, finishT, wct, taskSurface)
 
             // After this line, [WindowDecoration2.taskInfo] is up-to-date and should be
@@ -389,7 +390,9 @@ constructor(
                 Trace.endSection()
             }
 
-            decorationContainerSurface?.let { updateDragResizeListenerIfNeeded(it) }
+            decorationContainerSurface?.let {
+                updateDragResizeListenerIfNeeded(oldDecorationSurface)
+            }
         }
 
     private fun getRelayoutParams(
@@ -653,7 +656,7 @@ constructor(
         return showCaption
     }
 
-    private fun updateDragResizeListenerIfNeeded(containerSurface: SurfaceControl) {
+    private fun updateDragResizeListenerIfNeeded(containerSurface: SurfaceControl?) {
         val taskPositionChanged = !taskInfo.positionInParent.equals(taskPositionInParent)
         if (!taskInfo.isDragResizable(inFullImmersive)) {
             if (taskPositionChanged) {
@@ -671,7 +674,7 @@ constructor(
     }
 
     private fun updateDragResizeListener(
-        containerSurface: SurfaceControl,
+        containerSurface: SurfaceControl?,
         onUpdateFinished: (Boolean) -> Unit,
     ) {
         val containerSurfaceChanged = containerSurface != decorationContainerSurface
@@ -693,7 +696,7 @@ constructor(
                     handler,
                     choreographer,
                     checkNotNull(display?.displayId) { "expected non-null display" },
-                    decorationContainerSurface,
+                    checkNotNull(decorationContainerSurface),
                     dragPositioningCallback,
                     surfaceControlBuilderSupplier,
                     surfaceControlTransactionSupplier,

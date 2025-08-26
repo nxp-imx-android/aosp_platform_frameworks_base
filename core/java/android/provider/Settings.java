@@ -2543,7 +2543,6 @@ public final class Settings {
      *
      * @hide
      */
-    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_ACTION_SIM_PREFERENCE_SETTINGS)
     @SystemApi
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_SIM_PREFERENCE_SETTINGS =

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"वर्क प्रोफाइलमा बदल्नुहोस्"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"<xliff:g id="APP_NAME">%1$s</xliff:g> को व्यक्तिगत प्रोफाइल प्रयोग गर्नुहोस्"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"<xliff:g id="APP_NAME">%1$s</xliff:g> को वर्क प्रोफाइल प्रयोग गर्नुहोस्"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"कन्ट्याक्टहरू"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"तपाईँको सम्पर्कमाथि पहुँच गर्नुहोस्"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"कन्ट्याक्ट तथा खाताहरू"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"तपाईंका कन्ट्याक्टहरू एक्सेस गर्ने र यो डिभाइसमा कन्ट्याक्टहरू सेभ गर्न सक्ने तपाईंका खाताहरूको सूची हेर्ने"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"लोकेसन"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"यस डिभाइसको स्थानमाथि पहुँच"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"पात्रो"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिभाइस अनलक गर्ने सुविधाको गुणस्तरमा सुधार ल्याउने तरिकासम्बन्धी सुझावहरू हेर्न ट्याप गर्नुहोस्"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"पिलिक पिलिक गर्ने सुविधा अफ गर्नुहोस्"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"टिभी अफ गर्न पावर बटन केही बेरसम्म थिच्नुहोस्"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टमको स्रोतसम्बन्धी अलर्टहरू"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"स्रोतको अत्यधिक प्रयोग"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"एप <xliff:g id="APP_NAME">%1$s</xliff:g> ले अत्यन्तै धेरै स्रोतहरू प्रयोग गरिरहेको छ।"</string>
 </resources>

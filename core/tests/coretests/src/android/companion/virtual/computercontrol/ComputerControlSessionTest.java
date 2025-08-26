@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertThrows;
 
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
@@ -48,6 +49,7 @@ public class ComputerControlSessionTest {
     private static final int DISPLAY_ID = 42;
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
+    private static final String TARGET_PACKAGE = "com.android.foo";
 
     @Mock
     private IComputerControlSession mMockSession;
@@ -125,5 +127,51 @@ public class ComputerControlSessionTest {
     public void close_closesSession() throws RemoteException {
         mSession.close();
         verify(mMockSession).close();
+    }
+
+    @Test
+    public void launchApplication_launchesApplication() throws RemoteException {
+        mSession.launchApplication(TARGET_PACKAGE);
+        verify(mMockSession).launchApplication(eq(TARGET_PACKAGE));
+    }
+
+    @Test
+    public void tap_taps() throws RemoteException {
+        mSession.tap(0.1f, 0.2f);
+        verify(mMockSession).tap(eq(0.1f), eq(0.2f));
+    }
+
+    @Test
+    public void tapNotInRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> mSession.tap(-0.1f, 0.2f));
+        assertThrows(IllegalArgumentException.class, () -> mSession.tap(1.1f, 0.2f));
+        assertThrows(IllegalArgumentException.class, () -> mSession.tap(0.1f, -0.2f));
+        assertThrows(IllegalArgumentException.class, () -> mSession.tap(0.1f, 1.2f));
+    }
+
+    @Test
+    public void swipe_swipes() throws RemoteException {
+        mSession.swipe(0.1f, 0.2f, 0.3f, 0.4f);
+        verify(mMockSession).swipe(eq(0.1f), eq(0.2f), eq(0.3f), eq(0.4f));
+    }
+
+    @Test
+    public void swipeNotInRange_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(-0.1f, 0.2f, 0.3f, 0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(1.1f, 0.2f, 0.3f, 0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(0.1f, -0.2f, 0.3f, 0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(0.1f, 1.2f, 0.3f, 0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(0.1f, 0.2f, -0.3f, 0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(0.1f, 0.2f, 1.3f, 0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(0.1f, 0.2f, 0.3f, -0.4f));
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.swipe(0.1f, 0.2f, 0.3f, 1.4f));
     }
 }

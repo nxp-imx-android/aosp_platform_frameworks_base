@@ -9064,6 +9064,7 @@ package android.app.appfunctions {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
+    method @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") @NonNull public android.content.Intent createRequestAccessIntent(@NonNull String);
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public int getAccessRequestState(@NonNull String);
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
@@ -10650,20 +10651,20 @@ package android.content {
     method public CharSequence coerceToText(android.content.Context);
     method public String getHtmlText();
     method public android.content.Intent getIntent();
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @Nullable public android.content.IntentSender getIntentSender();
+    method @Nullable public android.content.IntentSender getIntentSender();
     method public CharSequence getText();
     method @Nullable public android.view.textclassifier.TextLinks getTextLinks();
     method public android.net.Uri getUri();
   }
 
-  @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") public static final class ClipData.Item.Builder {
+  public static final class ClipData.Item.Builder {
     ctor public ClipData.Item.Builder();
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @NonNull public android.content.ClipData.Item build();
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @NonNull public android.content.ClipData.Item.Builder setHtmlText(@Nullable String);
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @NonNull public android.content.ClipData.Item.Builder setIntent(@Nullable android.content.Intent);
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @NonNull public android.content.ClipData.Item.Builder setIntentSender(@Nullable android.content.IntentSender);
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @NonNull public android.content.ClipData.Item.Builder setText(@Nullable CharSequence);
-    method @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") @NonNull public android.content.ClipData.Item.Builder setUri(@Nullable android.net.Uri);
+    method @NonNull public android.content.ClipData.Item build();
+    method @NonNull public android.content.ClipData.Item.Builder setHtmlText(@Nullable String);
+    method @NonNull public android.content.ClipData.Item.Builder setIntent(@Nullable android.content.Intent);
+    method @NonNull public android.content.ClipData.Item.Builder setIntentSender(@Nullable android.content.IntentSender);
+    method @NonNull public android.content.ClipData.Item.Builder setText(@Nullable CharSequence);
+    method @NonNull public android.content.ClipData.Item.Builder setUri(@Nullable android.net.Uri);
   }
 
   public class ClipDescription implements android.os.Parcelable {
@@ -55157,12 +55158,12 @@ package android.view {
     field public static final int DRAG_FLAG_GLOBAL = 256; // 0x100
     field public static final int DRAG_FLAG_GLOBAL_PERSISTABLE_URI_PERMISSION = 64; // 0x40
     field public static final int DRAG_FLAG_GLOBAL_PREFIX_URI_PERMISSION = 128; // 0x80
-    field @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") public static final int DRAG_FLAG_GLOBAL_SAME_APPLICATION = 4096; // 0x1000
+    field public static final int DRAG_FLAG_GLOBAL_SAME_APPLICATION = 4096; // 0x1000
     field public static final int DRAG_FLAG_GLOBAL_URI_READ = 1; // 0x1
     field public static final int DRAG_FLAG_GLOBAL_URI_WRITE = 2; // 0x2
     field @FlaggedApi("com.android.window.flags.supports_drag_assistant_to_multiwindow") public static final int DRAG_FLAG_HIDE_CALLING_TASK_ON_DRAG_START = 16384; // 0x4000
     field public static final int DRAG_FLAG_OPAQUE = 512; // 0x200
-    field @FlaggedApi("com.android.window.flags.delegate_unhandled_drags") public static final int DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG = 8192; // 0x2000
+    field public static final int DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG = 8192; // 0x2000
     field @Deprecated public static final int DRAWING_CACHE_QUALITY_AUTO = 0; // 0x0
     field @Deprecated public static final int DRAWING_CACHE_QUALITY_HIGH = 1048576; // 0x100000
     field @Deprecated public static final int DRAWING_CACHE_QUALITY_LOW = 524288; // 0x80000
@@ -56463,7 +56464,7 @@ package android.view {
     field @FlaggedApi("com.android.window.flags.app_compat_properties_api") public static final String PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE = "android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE";
     field public static final String PROPERTY_COMPAT_ENABLE_FAKE_FOCUS = "android.window.PROPERTY_COMPAT_ENABLE_FAKE_FOCUS";
     field public static final String PROPERTY_COMPAT_IGNORE_REQUESTED_ORIENTATION = "android.window.PROPERTY_COMPAT_IGNORE_REQUESTED_ORIENTATION";
-    field @FlaggedApi("com.android.window.flags.supports_multi_instance_system_ui") public static final String PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI = "android.window.PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI";
+    field public static final String PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI = "android.window.PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI";
     field @FlaggedApi("com.android.window.flags.screen_recording_callbacks") public static final int SCREEN_RECORDING_STATE_NOT_VISIBLE = 0; // 0x0
     field @FlaggedApi("com.android.window.flags.screen_recording_callbacks") public static final int SCREEN_RECORDING_STATE_VISIBLE = 1; // 0x1
   }

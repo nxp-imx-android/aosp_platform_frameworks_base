@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.stack.ui.viewbinder
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.TraceUtils.traceAsync
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.nano.MetricsProto
 import com.android.systemui.common.ui.ConfigurationState
@@ -37,6 +38,8 @@ import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.Summarization
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.SilentHeader
+import com.android.systemui.statusbar.notification.emptyshade.ui.shared.flag.ShowIconInEmptyShade
+import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeIconView
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView
 import com.android.systemui.statusbar.notification.emptyshade.ui.viewbinder.EmptyShadeViewBinder
 import com.android.systemui.statusbar.notification.emptyshade.ui.viewmodel.EmptyShadeViewModel
@@ -46,6 +49,7 @@ import com.android.systemui.statusbar.notification.footer.ui.viewbinder.FooterVi
 import com.android.systemui.statusbar.notification.footer.ui.viewmodel.FooterViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerShelfViewBinder
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.row.StackScrollerDecorView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import com.android.systemui.statusbar.notification.shelf.ui.viewbinder.NotificationShelfViewBinder
@@ -65,6 +69,8 @@ import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
@@ -74,9 +80,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
-import javax.inject.Provider
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** Binds a [NotificationStackScrollLayout] to its [view model][NotificationListViewModel]. */
 class NotificationListViewBinder
@@ -252,23 +255,39 @@ constructor(
     ) {
         // The empty shade needs to be re-inflated every time the theme or the font size
         // changes.
-        configuration
-            .inflateLayout<EmptyShadeView>(
-                R.layout.status_bar_no_notifications,
-                parentView,
-                attachToRoot = false,
-            )
-            .flowOn(inflationDispatcher)
-            .collectLatest { emptyShadeView: EmptyShadeView ->
-                traceAsync("bind EmptyShadeView") {
-                    parentView.setEmptyShadeView(emptyShadeView)
-                    bindEmptyShade(emptyShadeView, emptyShadeViewModel)
+        if (ShowIconInEmptyShade.isEnabled) {
+            configuration
+                .inflateLayout<EmptyShadeIconView>(
+                    R.layout.empty_shade_view,
+                    parentView,
+                    attachToRoot = false,
+                )
+                .flowOn(inflationDispatcher)
+                .collectLatest { emptyShadeView: EmptyShadeIconView ->
+                    traceAsync("bind EmptyShadeIconView") {
+                        parentView.setEmptyShadeView(emptyShadeView)
+                        bindEmptyShade(emptyShadeView, emptyShadeViewModel)
+                    }
                 }
-            }
+        } else {
+            configuration
+                .inflateLayout<EmptyShadeView>(
+                    R.layout.status_bar_no_notifications,
+                    parentView,
+                    attachToRoot = false,
+                )
+                .flowOn(inflationDispatcher)
+                .collectLatest { emptyShadeView: EmptyShadeView ->
+                    traceAsync("bind EmptyShadeView") {
+                        parentView.setEmptyShadeView(emptyShadeView)
+                        bindEmptyShade(emptyShadeView, emptyShadeViewModel)
+                    }
+                }
+        }
     }
 
     private suspend fun bindEmptyShade(
-        emptyShadeView: EmptyShadeView,
+        emptyShadeView: StackScrollerDecorView,
         emptyShadeViewModel: EmptyShadeViewModel,
     ): Unit = coroutineScope {
         launch {

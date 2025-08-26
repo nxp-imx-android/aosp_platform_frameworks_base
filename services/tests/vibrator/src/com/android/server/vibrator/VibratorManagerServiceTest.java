@@ -2152,7 +2152,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_withAdaptiveHaptics_appliesCorrectAdaptiveScales() throws Exception {
         // Keep user settings the same as device default so only adaptive scale is applied.
         setUserSetting(Settings.System.ALARM_VIBRATION_INTENSITY,
@@ -2195,10 +2194,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED,
-            Flags.FLAG_VENDOR_VIBRATION_EFFECTS,
-    })
+    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_withIntensitySettingsAndAdaptiveHaptics_appliesSettingsToVendorEffects()
             throws Exception {
         // Grant permission to vibrate with vendor effects
@@ -2730,7 +2726,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void onExternalVibration_withAdaptiveHaptics_returnsCorrectAdaptiveScales() {
         mHalHelper.setVibratorIds(new int[]{1});
         mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL,
@@ -2771,39 +2766,6 @@ public class VibratorManagerServiceTest {
 
         assertEquals(scale.adaptiveHapticsScale, 1f, 0);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationAdaptiveHapticScale(UID, 1f);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
-    public void onExternalVibration_withAdaptiveHapticsFlagDisabled_alwaysReturnScaleNone() {
-        mHalHelper.setVibratorIds(new int[]{1});
-        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL,
-                IVibrator.CAP_AMPLITUDE_CONTROL);
-        createSystemReadyService();
-
-        SparseArray<Float> vibrationScales = new SparseArray<>();
-        vibrationScales.put(ScaleParam.TYPE_ALARM, 0.7f);
-        vibrationScales.put(ScaleParam.TYPE_NOTIFICATION, 0.4f);
-
-        mVibratorControlService.setVibrationParams(
-                VibrationParamGenerator.generateVibrationParams(vibrationScales),
-                mFakeVibratorController);
-        ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS, mock(IExternalVibrationController.class));
-        ExternalVibrationScale scale =
-                mExternalVibratorService.onExternalVibrationStart(externalVibration);
-        mExternalVibratorService.onExternalVibrationStop(externalVibration);
-
-        assertEquals(scale.adaptiveHapticsScale, 1f, 0);
-
-        externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_NOTIFICATION_ATTRS, mock(IExternalVibrationController.class));
-        scale = mExternalVibratorService.onExternalVibrationStart(externalVibration);
-        mExternalVibratorService.onExternalVibrationStop(externalVibration);
-
-        assertEquals(scale.adaptiveHapticsScale, 1f, 0);
-        verify(mVibratorFrameworkStatsLoggerMock, times(2))
-                .logVibrationAdaptiveHapticScale(UID, 1f);
     }
 
     @Test

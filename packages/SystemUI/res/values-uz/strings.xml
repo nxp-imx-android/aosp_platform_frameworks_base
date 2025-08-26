@@ -996,7 +996,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Raqamli assistentni ochish"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ekran qulfi"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Qayd yaratish"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Joriy oynani yopish"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multi-vazifalilik"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Ekranni ajratib, joriy ilovani oʻngga joylash"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Ekranni ajratib, joriy ilovani chapga joylash"</string>
@@ -1010,6 +1009,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Oynani oʻngga surish"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Oynani yoyish"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Oynani kichraytirish"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Desktoplar orasida koʻchirish"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Kiritish"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Keyingi tilga almashtirish"</string>

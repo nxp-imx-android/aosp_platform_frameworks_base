@@ -23,6 +23,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.Surface;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,6 +35,7 @@ import java.util.Objects;
 public final class ComputerControlSessionParams implements Parcelable {
 
     private final String mName;
+    private final List<String> mTargetPackageNames;
     private final int mDisplayWidthPx;
     private final int mDisplayHeightPx;
     private final int mDisplayDpi;
@@ -41,12 +44,14 @@ public final class ComputerControlSessionParams implements Parcelable {
 
     private ComputerControlSessionParams(
             @NonNull String name,
+            @Nullable List<String> targetPackageNames,  // TODO(b/437849228): Should be non-null
             int displayWidthPx,
             int displayHeightPx,
             int displayDpi,
             @Nullable Surface displaySurface,
             boolean isDisplayAlwaysUnlocked) {
         mName = name;
+        mTargetPackageNames = targetPackageNames;
         mDisplayWidthPx = displayWidthPx;
         mDisplayHeightPx = displayHeightPx;
         mDisplayDpi = displayDpi;
@@ -56,6 +61,8 @@ public final class ComputerControlSessionParams implements Parcelable {
 
     private ComputerControlSessionParams(Parcel parcel) {
         mName = parcel.readString8();
+        mTargetPackageNames = new ArrayList<>();
+        parcel.readStringList(mTargetPackageNames);
         mDisplayWidthPx = parcel.readInt();
         mDisplayHeightPx = parcel.readInt();
         mDisplayDpi = parcel.readInt();
@@ -67,6 +74,12 @@ public final class ComputerControlSessionParams implements Parcelable {
     @NonNull
     public String getName() {
         return mName;
+    }
+
+    /** Returns the package names of the applications that can be automated during this session. */
+    @Nullable  // TODO(b/437849228): Should be non-null
+    public List<String> getTargetPackageNames() {
+        return mTargetPackageNames;
     }
 
     /** Returns the width of the display, in pixels. */
@@ -103,6 +116,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString8(mName);
+        dest.writeStringList(mTargetPackageNames);
         dest.writeInt(mDisplayWidthPx);
         dest.writeInt(mDisplayHeightPx);
         dest.writeInt(mDisplayDpi);
@@ -128,6 +142,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     /** Builder for {@link ComputerControlSessionParams}. */
     public static final class Builder {
         private String mName;
+        private List<String> mTargetPackageNames;
         private int mDisplayWidthPx;
         private int mDisplayHeightPx;
         private int mDisplayDpi;
@@ -146,6 +161,17 @@ public final class ComputerControlSessionParams implements Parcelable {
                 throw new IllegalArgumentException("Name must not be empty");
             }
             mName = name;
+            return this;
+        }
+
+
+        /**
+         * Set the package names of all applications that may be automated during this session.
+         */
+        @Nullable  // TODO(b/437849228): Should be non-null
+        public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {
+            // TODO(b/437849228): Check for null and non-empty
+            mTargetPackageNames = targetPackageNames;
             return this;
         }
 
@@ -230,6 +256,7 @@ public final class ComputerControlSessionParams implements Parcelable {
             if (mName == null || mName.isEmpty()) {
                 throw new IllegalArgumentException("Name must be set");
             }
+            // TODO(b/437849228): Do not allow for unset targetPackageNames
             if (mDisplaySurface != null) {
                 if (mDisplayWidthPx <= 0) {
                     throw new IllegalArgumentException(
@@ -246,6 +273,7 @@ public final class ComputerControlSessionParams implements Parcelable {
             }
             return new ComputerControlSessionParams(
                     mName,
+                    mTargetPackageNames,
                     mDisplayWidthPx,
                     mDisplayHeightPx,
                     mDisplayDpi,

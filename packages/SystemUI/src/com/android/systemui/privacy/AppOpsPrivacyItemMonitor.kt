@@ -137,6 +137,18 @@ constructor(
                             code in USER_INDEPENDENT_OPS
                     ) {
                         logger.logUpdatedItemFromAppOps(code, uid, packageName, active)
+
+                        val procInfo =
+                            (activityManager.runningAppProcesses
+                                ?: emptyList()).find { it.uid == uid }
+                        val importance = procInfo?.importance ?: -1 // Use -1 if process not found
+                        logger.logLocationAppOps(
+                            uid,
+                            packageName,
+                            importance,
+                            !isBackgroundApp(uid)
+                        )
+
                         dispatchOnPrivacyItemsChanged()
                     }
                 }
@@ -255,7 +267,7 @@ constructor(
                     .filter { item -> item.code == AppOpsManager.OP_FINE_LOCATION }
                     .distinct()
             val locationOpBySystem = locationOp.any { item -> isSystemApp(item) }
-            val locationOpByBackground = locationOp.any { item -> isBackgroundApp(item) }
+            val locationOpByBackground = locationOp.any { item -> isBackgroundApp(item.uid) }
             synchronized(lock) {
                 lastLocationIndicator = items.any { it.privacyType == PrivacyType.TYPE_LOCATION }
                 lastLocationIndicatorWithSystem = lastLocationIndicator || locationOpBySystem
@@ -378,7 +390,7 @@ constructor(
 
         if (item.code == AppOpsManager.OP_FINE_LOCATION) {
             val isSystem = isSystemApp(item)
-            val isBackground = isBackgroundApp(item)
+            val isBackground = isBackgroundApp(item.uid)
             if (isSystem) {
                 synchronized(lock) { hasSystemLocationAccess = true }
             }
@@ -444,9 +456,9 @@ constructor(
      * <p>TODO(b/422799135): refactor isSystemApp() and isBackgroundApp(). Before this is fixed,
      * make sure to update PermissionUsageHelper when changing this method.
      */
-    private fun isBackgroundApp(item: AppOpItem): Boolean {
+    private fun isBackgroundApp(uid: Int): Boolean {
         for (processInfo in activityManager.runningAppProcesses) {
-            if (processInfo.uid == item.uid) {
+            if (processInfo.uid == uid) {
                 return (processInfo.importance >
                     ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE)
             }

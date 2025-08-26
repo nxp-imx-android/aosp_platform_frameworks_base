@@ -667,6 +667,19 @@ class MediaRouter2ServiceImpl {
         }
     }
 
+    @NonNull
+    public List<AppId> getSystemSessionOverridesAppIds(@NonNull IMediaRouter2Manager manager) {
+        Objects.requireNonNull(manager, "manager must not be null");
+        final long token = Binder.clearCallingIdentity();
+        try {
+            synchronized (mLock) {
+                return getSystemSessionOverridesAppIdsLocked(manager);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
     @RequiresPermission(Manifest.permission.MEDIA_CONTENT_CONTROL)
     public void registerManager(@NonNull IMediaRouter2Manager manager,
             @NonNull String callerPackageName) {
@@ -1858,6 +1871,18 @@ class MediaRouter2ServiceImpl {
         return sessionInfos;
     }
 
+    @GuardedBy("mLock")
+    public List<AppId> getSystemSessionOverridesAppIdsLocked(
+            @NonNull IMediaRouter2Manager manager) {
+        IBinder binder = manager.asBinder();
+        ManagerRecord managerRecord = mAllManagerRecords.get(binder);
+        if (managerRecord == null) {
+            Slog.w(TAG, "getSystemSessionOverridesAppIdsLocked: Ignoring unknown manager");
+            return Collections.emptyList();
+        }
+        return managerRecord.mUserRecord.getAppsWithSystemOverridesLocked();
+    }
+
     @RequiresPermission(Manifest.permission.MEDIA_CONTENT_CONTROL)
     @GuardedBy("mLock")
     private void registerManagerLocked(
@@ -2402,7 +2427,8 @@ class MediaRouter2ServiceImpl {
         private final ArrayList<RouterRecord> mRouterRecords = new ArrayList<>();
         final ArrayList<ManagerRecord> mManagerRecords = new ArrayList<>();
 
-        private final Set<String> mLastPackagesWithSystemOverridesOnHandler = new ArraySet<>();
+        // @GuardedBy("mLock")
+        private final Set<String> mLastPackagesWithSystemOverridesLocked = new ArraySet<>();
 
         // @GuardedBy("mLock")
         private final Map<String, Map<String, List<SuggestedDeviceInfo>>> mDeviceSuggestions =
@@ -2453,6 +2479,19 @@ class MediaRouter2ServiceImpl {
                 }
             }
             return false;
+        }
+
+        @GuardedBy("mLock")
+        private List<AppId> getAppsWithSystemOverridesLocked() {
+            return mapPackageNamesToAppIdList(mLastPackagesWithSystemOverridesLocked);
+        }
+
+        /**
+         * Returns a list of {@link AppId app ids} corresponding to the given package names, created
+         * by associating each package name with {@link #mUserHandle}.
+         */
+        private List<AppId> mapPackageNamesToAppIdList(Collection<String> packageNames) {
+            return packageNames.stream().map(it -> new AppId(it, mUserHandle)).toList();
         }
 
         // @GuardedBy("mLock")
@@ -3839,19 +3878,19 @@ class MediaRouter2ServiceImpl {
                 boolean shouldShowVolumeUi) {
             List<ManagerRecord> managers = getManagerRecords();
             List<AppId> appsWithOverridesToReport = null;
-
             boolean isGlobalSession = TextUtils.isEmpty(sessionInfo.getClientPackageName());
-            if (isGlobalSession
-                    && !Objects.equals(
-                            mUserRecord.mLastPackagesWithSystemOverridesOnHandler,
-                            packageNamesWithRoutingSessionOverrides)) {
-                appsWithOverridesToReport =
-                        packageNamesWithRoutingSessionOverrides.stream()
-                                .map(it -> new AppId(it, mUserRecord.mUserHandle))
-                                .toList();
-                mUserRecord.mLastPackagesWithSystemOverridesOnHandler.clear();
-                mUserRecord.mLastPackagesWithSystemOverridesOnHandler.addAll(
-                        packageNamesWithRoutingSessionOverrides);
+            synchronized (mLock) {
+                if (isGlobalSession
+                        && !Objects.equals(
+                                mUserRecord.mLastPackagesWithSystemOverridesLocked,
+                                packageNamesWithRoutingSessionOverrides)) {
+                    appsWithOverridesToReport =
+                            mUserRecord.mapPackageNamesToAppIdList(
+                                    packageNamesWithRoutingSessionOverrides);
+                    mUserRecord.mLastPackagesWithSystemOverridesLocked.clear();
+                    mUserRecord.mLastPackagesWithSystemOverridesLocked.addAll(
+                            packageNamesWithRoutingSessionOverrides);
+                }
             }
             for (ManagerRecord manager : managers) {
                 if (Flags.enableMirroringInMediaRouter2()) {

@@ -29,6 +29,7 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge;
@@ -60,7 +61,6 @@ import android.os.Handler;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.util.Size;
-import android.util.Slog;
 import android.view.Choreographer;
 import android.view.Display;
 import android.view.InsetsState;
@@ -80,6 +80,7 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.policy.SystemBarUtils;
+import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -936,14 +937,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /** Update the view holder for app header. */
     private void updateAppHeaderViewHolder(boolean inFullImmersive, boolean hasGlobalFocus) {
         if (!isAppHeader(mWindowDecorViewHolder)) return;
-        if (mDisplayController.getDisplayLayout(mTaskInfo.displayId) == null) {
-            Slog.w(TAG, "Display" + mTaskInfo.displayId
-                    + " is not found, task displayId might be stale");
+        final int displayId = mTaskInfo.displayId;
+        final DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
+        if (displayLayout == null) {
+            ProtoLog.w(WM_SHELL_DESKTOP_MODE,
+                    "%s: Display %d is not found, task displayId might be stale", TAG, displayId);
             return;
         }
         asAppHeader(mWindowDecorViewHolder).bindData(new AppHeaderViewHolder.HeaderData(
                 mTaskInfo,
-                DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
+                DesktopModeUtils.isTaskMaximized(mTaskInfo, displayLayout),
                 inFullImmersive,
                 hasGlobalFocus,
                 /* maximizeHoverEnabled= */ canOpenMaximizeMenu(
@@ -1981,12 +1984,19 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     void setAnimatingTaskResizeOrReposition(boolean animatingTaskResizeOrReposition) {
         if (!isAppHeader(mWindowDecorViewHolder)) return;
+        final int displayId = mTaskInfo.displayId;
+        final DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
+        if (displayLayout == null)  {
+            ProtoLog.w(WM_SHELL_DESKTOP_MODE,
+                    "%s: Display %d is not found, task displayId might be stale", TAG, displayId);
+            return;
+        }
         final boolean inFullImmersive =
                 mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                         .isTaskInFullImmersiveState(mTaskInfo.taskId);
         asAppHeader(mWindowDecorViewHolder).bindData(new AppHeaderViewHolder.HeaderData(
                 mTaskInfo,
-                DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
+                DesktopModeUtils.isTaskMaximized(mTaskInfo, displayLayout),
                 inFullImmersive,
                 isFocused(),
                 /* maximizeHoverEnabled= */ canOpenMaximizeMenu(animatingTaskResizeOrReposition),

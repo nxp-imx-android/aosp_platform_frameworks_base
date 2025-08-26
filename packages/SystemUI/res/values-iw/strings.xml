@@ -146,20 +146,14 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"צילום חוזר"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"עריכה"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"מחיקה"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"הפעלה"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"השהיה"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"השתקה"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"ביטול ההשתקה"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"צילום מסך של כל המסך"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"הקלטה של כל המסך"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"צילום מסך של האזור שנבחר"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"הקלטת האזור שנבחר"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"צילום מסך"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"הקלטה"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"שיתוף"</string>
@@ -825,7 +819,7 @@
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"רטט"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"הפעלה של <xliff:g id="LABEL">%s</xliff:g> במכשיר"</string>
     <string name="media_output_title_without_playing" msgid="3825663683169305013">"איפה האודיו יופעל"</string>
-    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"מתבצעת שיחה במכשיר"</string>
+    <string name="media_output_title_ongoing_call" msgid="208426888064112006">"איפה השיחה מתבצעת"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"System UI Tuner"</string>
     <string name="status_bar" msgid="4357390266055077437">"שורת סטטוס"</string>
     <string name="demo_mode" msgid="263484519766901593">"מצב הדגמה בממשק המשתמש של המערכת"</string>
@@ -1002,7 +996,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"פתיחת העוזר האישי"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"נעילת המסך"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"כתיבת הערה"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"סגירת החלון הנוכחי"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ריבוי משימות"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"שימוש במסך מפוצל כשהאפליקציה בצד ימין"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"שימוש במסך מפוצל כשהאפליקציה בצד שמאל"</string>
@@ -1016,6 +1009,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"העברת החלון ימינה"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"הגדלת החלון"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"מזעור החלון"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"מעבר בין שולחנות עבודה"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"קלט"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"מעבר לשפה הבאה"</string>

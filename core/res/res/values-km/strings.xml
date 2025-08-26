@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"ប្តូរ​ទៅ​កម្រង​ព័ត៌មាន​ការងារ"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"ប្ដូរទៅ <xliff:g id="APP_NAME">%1$s</xliff:g> ផ្ទាល់ខ្លួន"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"ប្ដូរទៅ <xliff:g id="APP_NAME">%1$s</xliff:g> ការងារ"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"ទំនាក់ទំនង"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"ចូលប្រើទំនាក់ទំនងរបស់អ្នក"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"ទំនាក់ទំនង និងគណនី"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"ចូលប្រើទំនាក់ទំនងរបស់អ្នក និងមើលឃើញបញ្ជីគណនីរបស់អ្នកដែលអាចរក្សាទុកទំនាក់ទំនងនៅលើឧបករណ៍នេះ"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"ទីតាំង"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ចូលដំណើរការទីតាំងរបស់ឧបករណ៍នេះ"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"ប្រតិទិន"</string>

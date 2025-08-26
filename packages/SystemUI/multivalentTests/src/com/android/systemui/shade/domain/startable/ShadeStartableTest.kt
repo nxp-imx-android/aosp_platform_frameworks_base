@@ -51,7 +51,6 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.stack.notificationStackScrollLayoutController
 import com.android.systemui.statusbar.notificationShadeDepthController
-import com.android.systemui.statusbar.phone.scrimController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.max
@@ -226,7 +225,6 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(scrimController.clipQsScrim).isFalse()
             assertThat(isWideScreen).isFalse()
             assertThat(legacyUseSplitShade).isFalse()
         }
@@ -241,7 +239,6 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(scrimController.clipQsScrim).isFalse()
             assertThat(isWideScreen).isTrue()
             assertThat(legacyUseSplitShade).isTrue()
         }
@@ -256,7 +253,6 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
-            assertThat(scrimController.clipQsScrim).isFalse()
             assertThat(isWideScreen).isFalse()
             assertThat(legacyUseSplitShade).isFalse()
         }
@@ -271,7 +267,6 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
-            assertThat(scrimController.clipQsScrim).isFalse()
             assertThat(isWideScreen).isTrue()
             assertThat(legacyUseSplitShade).isTrue()
         }

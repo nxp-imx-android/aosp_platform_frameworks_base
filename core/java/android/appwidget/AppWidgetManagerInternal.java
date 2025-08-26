@@ -58,7 +58,7 @@ public abstract class AppWidgetManagerInternal {
             boolean updateFrameworkRes);
 
     /**
-     * Trigger reporting of widget usage events to UsageStatsService.
+     * Trigger saving of any pending widget usage events to UsageStatsService and FrameworkStatsLog.
      */
-    public abstract void reportWidgetEventsToUsageStats();
+    public abstract void saveWidgetEvents();
 }

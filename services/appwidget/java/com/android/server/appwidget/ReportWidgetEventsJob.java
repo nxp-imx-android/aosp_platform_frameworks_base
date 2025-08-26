@@ -68,7 +68,7 @@ public class ReportWidgetEventsJob extends JobService {
     public boolean onStartJob(JobParameters params) {
         BackgroundThread.getExecutor().execute(() -> {
             LocalServices.getService(AppWidgetManagerInternal.class)
-                    .reportWidgetEventsToUsageStats();
+                    .saveWidgetEvents();
             jobFinished(params, /* wantsReschedule= */ false);
         });
         // Return true to indicate that job is still running in another thread.

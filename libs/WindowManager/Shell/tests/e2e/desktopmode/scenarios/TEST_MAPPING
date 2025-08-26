@@ -73,6 +73,9 @@
       "name": "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-appcompat-ShowAppDialogInDesktopModeTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-exit-ExitDesktopToFullScreenWithAppHeaderMenuTest"
     },
     {
@@ -148,6 +151,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-TaskbarInDesktopModeTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-UnlockIntoDesktopFromLockScreenTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest"
     },
     {
@@ -191,6 +197,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-maximize-MaximizeUnfocusedAppWindowTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionResizeAndDragTest"

@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"İş profilinə keçin"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"<xliff:g id="APP_NAME">%1$s</xliff:g> üzrə şəxsi profilə keçin"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"<xliff:g id="APP_NAME">%1$s</xliff:g> üzrə iş profilinə keçin"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Kontaktlar"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"kontaktlarınıza daxil olun"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontaktlar və hesablar"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"kontaktlara daxil olun və bu cihazda kontaktları yadda saxlaya bilən hesablarınızı görün"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Məkan"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"cihazın yerini bilmək"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Təqvim"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Kiliddən çıxarma təcrübənizi təkmilləşdirmək üçün toxunaraq məsləhətləri nəzərdən keçirin"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Yanıb-sönməsin"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"TV-ni söndürmək üçün Enerji düyməsinə basıb saxlayın"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sistem resursları xəbərdarlıqları"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Resursların həddən artıq istifadəsi"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> tətbiqi həddən çox resurs istifadə edir."</string>
 </resources>

@@ -96,7 +96,6 @@ import android.app.admin.DevicePolicyManagerInternal;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.Disabled;
-import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
 import android.content.ComponentName;
 import android.content.Context;
@@ -413,15 +412,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private static final long THROW_EXCEPTION_COMMIT_WITH_IMMUTABLE_PENDING_INTENT = 240618202L;
-
-    /**
-     * Potentially notify the user about an incomplete / failed developer verification using a
-     * STATUS_PENDING_USER_ACTION status code if the installer has a target SDK higher than API
-     * {@link android.os.Build.VERSION_CODES#BAKLAVA}.
-     */
-    @ChangeId
-    @EnabledAfter(targetSdkVersion = VERSION_CODES.BAKLAVA)
-    private static final long NOTIFY_USER_FOR_DEVELOPER_VERIFICATION = 360130528L;
 
     /**
      * Configurable maximum number of pre-verified domains allowed to be added to the session.
@@ -3700,12 +3690,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      * </ul>
      * For other cases, the installer will receive a failure status code in its IntentSender
      */
+    @SuppressWarnings("AndroidFrameworkCompatChange")
     private boolean shouldSendUserActionForVerification(boolean blockingFailure) {
         final Computer snapshot = mPm.snapshotComputer();
-        final String installerPackageName;
-        synchronized (mLock) {
-            installerPackageName = mInstallSource.mInstallerPackageName;
-        }
+        final String installerPackageName = getInstallerPackageName();
         if (installerPackageName == null) {
             // This can only happen if the installer intentionally set the installer package
             // name of the session to be null.
@@ -3723,8 +3711,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             return true;
         }
 
-        final int installerUid = getInstallerUid();
-        if (CompatChanges.isChangeEnabled(NOTIFY_USER_FOR_DEVELOPER_VERIFICATION, installerUid)) {
+        // We directly check the target SDK of the installer instead of using CompatChange because
+        // we want to enable this check even when the current platform version is older than 37.
+        if (installerInfo.targetSdkVersion > Build.VERSION_CODES.BAKLAVA) {
             // Target SDK of the installer > 36, non blocking failures can be bypassed upon
             // user confirmation.
             return !blockingFailure;
@@ -3732,7 +3721,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Target SDK of the installer <= 36. Installers that do not have the
             // privileged installation permission will need to request for user action.
             return PackageManager.PERMISSION_GRANTED != snapshot.checkUidPermission(
-                    Manifest.permission.INSTALL_PACKAGES, installerUid);
+                    Manifest.permission.INSTALL_PACKAGES, installerInfo.uid);
         }
     }
 

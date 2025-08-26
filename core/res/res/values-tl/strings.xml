@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Lumipat sa profile sa trabaho"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Lumipat sa personal na <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Lumipat sa <xliff:g id="APP_NAME">%1$s</xliff:g> para sa trabaho"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Mga Contact"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"i-access ang iyong mga contact"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Mga contact at account"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"i-access ang iyong mga contact at tingnan ang listahan ng mga account mo na makakapag-save ng mga contact sa device na ito"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Lokasyon"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"i-access ang lokasyon ng device na ito"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalendaryo"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"I-tap para suriin ang mga tip para mapaganda ang iyong experience sa pag-unlock"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Huwag mag-blink"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Pindutin nang matagal ang Power button para i-off ang TV"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Mga Alerto sa Resource ng System"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Sobrang Paggamit ng Resource"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Gumagamit ang app na <xliff:g id="APP_NAME">%1$s</xliff:g> ng masyadong maraming resource.\""</string>
 </resources>

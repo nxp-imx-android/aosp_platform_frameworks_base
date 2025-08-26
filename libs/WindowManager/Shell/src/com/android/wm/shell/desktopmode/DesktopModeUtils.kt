@@ -298,17 +298,9 @@ fun calculateAspectRatio(taskInfo: TaskInfo): Float {
 }
 
 /** Returns whether the task is maximized. */
-fun isTaskMaximized(taskInfo: RunningTaskInfo, displayController: DisplayController): Boolean {
-    val displayLayout =
-        displayController.getDisplayLayout(taskInfo.displayId)
-            ?: error("Could not get display layout for display=${taskInfo.displayId}")
+fun isTaskMaximized(taskInfo: RunningTaskInfo, displayLayout: DisplayLayout): Boolean {
     val stableBounds = Rect()
     displayLayout.getStableBounds(stableBounds)
-    return isTaskMaximized(taskInfo, stableBounds)
-}
-
-/** Returns whether the task is maximized. */
-fun isTaskMaximized(taskInfo: RunningTaskInfo, stableBounds: Rect): Boolean {
     val currentTaskBounds = taskInfo.configuration.windowConfiguration.bounds
     return if (taskInfo.isResizeable) {
         isTaskBoundsEqual(currentTaskBounds, stableBounds)

@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Da biste vratili aplikaciju, instalirajte: <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Došlo je do problema s vraćanjem aplikacije"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je dio sljedeće aplikacije: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Aplikacija je blokirana. Radi zaštite vašeg uređaja i podataka mogu se instalirati samo aplikacije potvrđenih razvojnih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Ova aplikacija nije ažurirana. Da bi se zaštitili vaš uređaj i podaci, mogu se instalirati samo ažuriranja od potvrđenih razvojnih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Aplikacija nije instalirana. Aplikacije nepotvrđenih razvojnih programera možda nisu sigurne.&lt;/p&gt; &lt;p&gt;Za potvrdu razvojnog programera aplikacija potrebna je internetska veza. Provjerite vezu, a zatim pokušajte ponovo instalirati aplikaciju. &lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Ova aplikacija nije ažurirana. Ažuriranja od nepotvrđenih razvojnih programera možda nisu sigurna.&lt;/p&gt; &lt;p&gt;Za provjeru razvojnog programera aplikacije potrebna je internetska veza. Provjerite vezu, a zatim pokušajte ponovo ažurirati aplikaciju. &lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Došlo je do problema pri potvrđivanju razvojnog programera ove aplikacije. Aplikacije nepotvrđenih razvojnih programera možda nisu sigurne, pa aplikacija nije instalirana.&lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Došlo je do problema pri potvrđivanju razvojnog programera ove aplikacije. Ažuriranja od nepotvrđenih razvojnih programera možda nisu sigurna, pa aplikacija nije ažurirana.&lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Ova je aplikacija blokirana jer je došlo do problema pri potvrđivanju razvojnog programera. Radi zaštite vašeg uređaja i podataka mogu se instalirati samo aplikacije potvrđenih razvojnih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Ova aplikacija nije ažurirana jer je došlo do problema s potvrdom razvojnog programera. Da bi se zaštitili vaš uređaj i podaci, mogu se instalirati samo ažuriranja od potvrđenih razvojnih programera.&lt;/p&gt; &lt;a href=&gt;Saznajte više o potvrdi razvojnog programera&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ako instalirate bez potvrde, imajte na umu da aplikacije nepotvrđenih razvojnih programera mogu ugroziti vaš uređaj i podatke."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ako ažurirate bez potvrde, imajte na umu da ažuriranja od nepotvrđenih razvojnih programera mogu ugroziti vaš uređaj i podatke."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Razvojni programer aplikacija nije potvrđen"</string>

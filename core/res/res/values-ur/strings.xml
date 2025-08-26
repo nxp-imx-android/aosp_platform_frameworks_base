@@ -336,8 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"دفتری پروفائل پر سوئچ کریں"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"ذاتی <xliff:g id="APP_NAME">%1$s</xliff:g> پر سوئچ کریں"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"دفتری <xliff:g id="APP_NAME">%1$s</xliff:g> پر سوئچ کریں"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"رابطے"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"اپنے رابطوں تک رسائی حاصل کریں"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"روابط اور اکاؤنٹس"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"اپنے روابط تک رسائی حاصل کریں اور اپنے ان اکاؤنٹس کی فہرست دیکھیں جو اس آلے پر روابط محفوظ کر سکتے ہیں"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"مقام"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"اس آلہ کے مقام تک رسائی حاصل کریں"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"کیلنڈر"</string>
@@ -2592,10 +2592,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"اپنے اَن لاک کرنے کے تجربے کو بہتر بنانے کے لیے انگلیوں کے نقشے کا جائزہ لینے کے لیے تھپتھپائیں"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"کرسر بلنک نہیں کرتا ہے"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"‏‫TV کو آف کرنے کے لیے پاور بٹن کو دیر تک دبائیں"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"سسٹم کے وسیلے سے متعلق الرٹس"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"وسیلے کا زیادہ استعمال"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ایپ \"<xliff:g id="APP_NAME">%1$s</xliff:g> بہت زیادہ وسائل کا استعمال کر رہی ہے۔\""</string>
 </resources>

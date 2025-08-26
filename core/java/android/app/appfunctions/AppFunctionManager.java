@@ -827,6 +827,23 @@ public final class AppFunctionManager {
     }
 
     /**
+     * Creates an intent which can be used to request App Function access for the given target app.
+     * This intent MUST be used with {@link android.app.Activity#startActivityForResult}.The result
+     * code of the activity will be {@link android.app.Activity#RESULT_OK} if the request was
+     * granted, {@link android.app.Activity#RESULT_CANCELED} if not.
+     *
+     * @param targetPackageName The app access is being requested for.
+     * @return The created intent.
+     */
+    @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
+    public @NonNull Intent createRequestAccessIntent(@NonNull String targetPackageName) {
+        Intent intent = new Intent(ACTION_REQUEST_APP_FUNCTION_ACCESS);
+        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, targetPackageName);
+        intent.setPackage(mContext.getPackageManager().getPermissionControllerPackageName());
+        return intent;
+    }
+
+    /**
      * Gets the configured list of package names that should be grouped as Device Settings.
      *
      * <p>The list here is a configuration, the returned packages are not necessarily installed. The

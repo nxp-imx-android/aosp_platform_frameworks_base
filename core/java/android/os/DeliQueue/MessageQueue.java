@@ -134,6 +134,9 @@ public final class MessageQueue {
     private static final VarHandle sMptrRefCount;
     private volatile long mMptrRefCountValue = 0;
 
+    private static final VarHandle sSyncBarrier;
+    private volatile Message mSyncBarrier = null;
+
     static {
         try {
             // We need to use VarHandle rather than java.util.concurrent.atomic.*
@@ -147,6 +150,8 @@ public final class MessageQueue {
                     long.class);
             sMptrRefCount = l.findVarHandle(MessageQueue.class, "mMptrRefCountValue",
                     long.class);
+            sSyncBarrier = l.findVarHandle(MessageQueue.class, "mSyncBarrier",
+                    Message.class);
         } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -312,20 +317,33 @@ public final class MessageQueue {
             long waitState = mWaitState;
             long newWaitState;
             boolean needWake = false;
+            Message barrier = msg.isAsynchronous() ? null :
+                    (Message) sSyncBarrier.getVolatile(this);
+            boolean reCheckBarrier = false;
 
             if (WaitState.isCounter(waitState)) {
                 newWaitState = WaitState.incrementCounter(waitState);
             } else {
                 final long TSmillis = WaitState.getTSMillis(waitState);
-                if (msg.when < TSmillis
-                        && (!WaitState.hasSyncBarrier(waitState) || msg.isAsynchronous())) {
+                boolean weComeBeforeBarrier = barrier != null && msg.when <= barrier.when;
+                if (weComeBeforeBarrier || (msg.when < TSmillis
+                        && (!WaitState.hasSyncBarrier(waitState) || msg.isAsynchronous()))) {
                     newWaitState = WaitState.initCounter();
                     needWake = true;
                 } else {
                     newWaitState = WaitState.incrementDeadline(waitState);
+                    reCheckBarrier = true;
                 }
             }
             if (sWaitState.compareAndSet(this, waitState, newWaitState)) {
+                if (reCheckBarrier && barrier != (Message) sSyncBarrier.getVolatile(this)) {
+                    /*
+                     * If barrier state changed underneath us and we chose not to wake the
+                     * looper thread, we have to recheck to ensure that the barrier we saw was
+                     * actually in place while we did the CAS.
+                     */
+                    continue;
+                }
                 if (needWake) {
                     concurrentWake();
                 }
@@ -415,8 +433,7 @@ public final class MessageQueue {
             * the message.
             */
             Message next = null;
-
-            boolean waitingOnSyncBarrier = false;
+            Message syncBarrier = null;
             /*
             * If we have a barrier we should return the async node (if it exists and is ready)
             */
@@ -424,7 +441,7 @@ public final class MessageQueue {
                 if (asyncMsg != null && (returnEarliest || now >= asyncMsg.when)) {
                     found = asyncMsg;
                 } else {
-                    waitingOnSyncBarrier = true;
+                    syncBarrier = msg;
                     next = asyncMsg;
                 }
             } else { /* No barrier. */
@@ -512,12 +529,13 @@ public final class MessageQueue {
                 }
             }
 
+            sSyncBarrier.setVolatile(this, syncBarrier);
             /*
              * Try to swap waitstate back from a counter to a deadline. If we can't then that means
              * the counter was incremented and we need to loop back to pick up any new items.
              */
             if (!sWaitState.compareAndSet(this, oldWaitState,
-                    WaitState.composeDeadline(nextDeadline, waitingOnSyncBarrier))) {
+                    WaitState.composeDeadline(nextDeadline, syncBarrier != null))) {
                 continue;
             }
             if (found != null || nextDeadline != 0) {

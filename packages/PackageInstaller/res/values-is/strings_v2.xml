@@ -96,14 +96,22 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Þú þarft að setja upp <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> til að endurheimta þetta forrit"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Vandamál kom upp við að endurheimta þetta forrit"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> er hluti af þessu forriti: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <string name="cannot_install_app_blocked_summary" msgid="2712509801474290273">"&lt;p&gt;Þetta forrit var sett á bannlista. Til að tryggja öryggi tækisins og gagnanna er aðeins hægt að setja upp forrit frá staðfestum þróunaraðilum.&lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu þróunaraðila&lt;/a&gt;"</string>
-    <string name="cannot_update_app_blocked_summary" msgid="3440450480752915265">"&lt;p&gt;Þetta forrit var ekki uppfært. Til að tryggja öryggi tækisins og gagnanna er aðeins hægt að uppfæra forrit frá staðfestum þróunaraðilum.&lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu þróunaraðila&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_no_internet_summary" msgid="7724830883028720846">"&lt;p&gt;Ekki tókst að setja forritið upp. Forrit frá óstaðfestum þróunaraðilum geta verið óörugg.&lt;/p&gt; &lt;p&gt;Nettengingar er krafist til að staðfesta þróunaraðila forritsins. Athugaðu tenginguna þína og reyndu síðan að setja forritið aftur upp. &lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu á þróunaraðilum&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_no_internet_summary" msgid="1204784740944424893">"&lt;p&gt;Ekki tókst að uppfæra forritið. Uppfærslur frá óstaðfestum þróunaraðilum geta verið óöruggar.&lt;/p&gt; &lt;p&gt;Nettengingar er krafist til að staðfesta þróunaraðila forritsins. Athugaðu tenginguna þína og reyndu síðan að uppfæra forritið aftur. &lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu á þróunaraðilum&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2484702041510825332">"&lt;p&gt;Vandamál kom upp við að staðfesta þróunaraðila þessa forrits. Forrit frá óstaðfestum þróunaraðilum kunna að vera ótraust og því var forritið ekki uppsett.&lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu þróunaraðila&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_summary" msgid="314354415455227761">"&lt;p&gt;Vandamál kom upp við að staðfesta þróunaraðila þessa forrits. Uppfærslur frá óstaðfestum þróunaraðilum kunna að vera ótraustar svo forritið var ekki uppfært.&lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu þróunaraðila&lt;/a&gt;"</string>
-    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="757425632344179567">"&lt;p&gt;Lokað var á þetta forrit því að vandamál kom upp við að staðfesta þróunaraðila þess. Til að tryggja öryggi tækisins og gagnanna er aðeins hægt að setja upp forrit frá staðfestum þróunaraðilum.&lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu þróunaraðila&lt;/a&gt;"</string>
-    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="7020007697606511471">"&lt;p&gt;Þetta forrit var ekki uppfært því að vandamál kom upp við að staðfesta þróunaraðila þess. Til að tryggja öryggi tækisins og gagnanna er aðeins hægt að uppfæra forrit frá staðfestum þróunaraðilum.&lt;/p&gt; &lt;a href=&gt;Nánar um staðfestingu þróunaraðila&lt;/a&gt;"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
+    <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
+    <skip />
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ef þú setur forritið upp án staðfestingar skaltu hafa í huga að forrit frá óstaðfestum þróunaraðilum gætu verið hættuleg fyrir tækið og gögnin þín."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ef þú setur uppfærir forritið án staðfestingar skaltu hafa í huga að uppfærslur frá óstaðfestum þróunaraðilum gætu verið hættulegar fyrir tækið og gögnin þín."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Óstaðfestur þróunaraðili forrits"</string>

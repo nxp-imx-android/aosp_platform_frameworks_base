@@ -28,6 +28,15 @@ import android.view.Surface;
  */
 interface IComputerControlSession {
 
+    /** Launches an application on the trusted virtual display. */
+    void launchApplication(in String packageName);
+
+    /* Injects a tap event into the trusted virtual display. */
+    void tap(float x, float y);
+
+    /* Injects a swipe event into the trusted virtual display. */
+    void swipe(float fromX, float fromY, float toX, float toY);
+
     /** Returns the ID of the single trusted virtual display for this session. */
     int getVirtualDisplayId();
 

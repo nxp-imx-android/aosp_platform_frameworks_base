@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.ambientcue.shared.model
+package com.android.systemui.plugins.cuebar
 
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.graphics.drawable.Drawable
+import com.android.systemui.plugins.annotations.ProvidesInterface
 
+@ProvidesInterface(version = ActionModel.VERSION)
 data class ActionModel(
     val icon: IconModel,
     val label: String,
@@ -30,6 +32,15 @@ data class ActionModel(
     val actionType: String? = null,
     val oneTapEnabled: Boolean = false,
     val oneTapDelayMs: Long = 0L,
-)
+) {
+    companion object {
+        const val VERSION = 1
+    }
+}
 
-data class IconModel(val small: Drawable, val large: Drawable, val iconId: String)
+@ProvidesInterface(version = IconModel.VERSION)
+data class IconModel(val small: Drawable, val large: Drawable, val iconId: String) {
+    companion object {
+        const val VERSION = 1
+    }
+}

@@ -146,20 +146,14 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Repetir"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eliminar"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Ver"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Pausar"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Desativar som"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Reativar som"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Fazer captura de ecrã de todo o ecrã"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gravar ecrã inteiro"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Fazer captura de ecrã da área selecionada"</string>
-    <!-- no translation found for screen_capture_record_region_selection_button (3699353194755563053) -->
-    <skip />
+    <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Gravar área selecionada"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de ecrã"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Gravar"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partilhar"</string>
@@ -1002,7 +996,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Abrir assistente digital"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ecrã de bloqueio"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Tirar notas"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Fechar janela atual"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Execução de várias tarefas em simultâneo"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Use o ecrã dividido com a app à direita"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Use o ecrã dividido com a app à esquerda"</string>
@@ -1016,6 +1009,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Mover janela para a direita"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximizar janela"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimizar janela"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Alternar entre ambientes de trabalho"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Entrada"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Mudar para idioma seguinte"</string>
@@ -1547,7 +1542,7 @@
     <string name="assistant_attention_content_description" msgid="4166330881435263596">"Quando deteta a presença do utilizador"</string>
     <string name="set_default_notes_app_toast_content" msgid="2812374329662610753">"Predefina a app de notas nas Definições"</string>
     <string name="install_app" msgid="5066668100199613936">"Instalar app"</string>
-    <string name="dismissible_keyguard_swipe" msgid="8377597870094949432">"Deslize rapidamente para cima para continuar"</string>
+    <string name="dismissible_keyguard_swipe" msgid="8377597870094949432">"Deslizar rapidamente para cima para continuar"</string>
     <string name="connected_display_dialog_start_mirroring" msgid="6237895789920854982">"Espelhar para o ecrã externo?"</string>
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"O seu ecrã interior vai ser espelhado. O seu ecrã frontal vai ser desativado."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Espelhar ecrã"</string>

@@ -133,6 +133,7 @@ import static android.security.Flags.preventIntentRedirect;
 import static android.security.Flags.preventIntentRedirectCollectNestedKeysOnServerIfNotCollected;
 import static android.security.Flags.preventIntentRedirectShowToastIfNestedKeysNotCollectedRW;
 import static android.security.Flags.preventIntentRedirectThrowExceptionIfNestedKeysNotCollected;
+import static android.server.Flags.enableThemeService;
 import static android.util.FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS;
 import static android.view.Display.INVALID_DISPLAY;
 
@@ -5501,6 +5502,13 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     /** Checks whether the home launch delay feature is enabled. */
     private boolean isHomeLaunchDelayable() {
+        // ThemeManagerService is the long term solution to avoid Boot delays or regressions.
+        // It replaces ThemeOverlayController and calculates themes early in the server,
+        // not waiting for SystemUi
+        if (enableThemeService()) {
+            return false;
+        }
+
         // This feature is disabled on Auto since it seems to add an unacceptably long boot delay
         // without even solving the underlying issue (it merely hits the timeout).
         // This feature is disabled on TV since the ThemeOverlayController is currently not present

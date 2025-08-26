@@ -1001,7 +1001,6 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Öppna digital assistent"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lås skärmen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Anteckna"</string>
-    <string name="group_system_close_window" msgid="1506354809787837043">"Stäng aktuellt fönster"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multikörning"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Använd delad skärm med appen till höger"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Använd delad skärm med appen till vänster"</string>
@@ -1015,6 +1014,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Flytta fönstret åt höger"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximera fönstret"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimera fönstret"</string>
+    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
+    <skip />
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Flytta mellan skrivbord"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Inmatning"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Byt till nästa språk"</string>

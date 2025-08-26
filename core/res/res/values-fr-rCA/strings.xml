@@ -337,8 +337,10 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Passer au profil professionnel"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Passer à <xliff:g id="APP_NAME">%1$s</xliff:g> dans le profil personnel"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Passer à <xliff:g id="APP_NAME">%1$s</xliff:g> dans le profil professionnel"</string>
-    <string name="permgrouplab_contacts" msgid="4254143639307316920">"Contacts"</string>
-    <string name="permgroupdesc_contacts" msgid="9163927941244182567">"accéder à vos contacts"</string>
+    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
+    <skip />
     <string name="permgrouplab_location" msgid="1858277002233964394">"Localisation"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"accéder à la position de cet appareil"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Agenda"</string>
@@ -2019,7 +2021,7 @@
     <string name="zen_mode_trigger_summary_range_symbol_combination" msgid="1804900738798069619">"<xliff:g id="START">%1$s</xliff:g> – <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_range_words" msgid="7228261413029290750">"De <xliff:g id="START">%1$s</xliff:g> à <xliff:g id="END">%2$s</xliff:g>"</string>
     <string name="zen_mode_trigger_summary_combined" msgid="6492381546327807669">"<xliff:g id="DAYS">%1$s</xliff:g>, <xliff:g id="TIMES">%2$s</xliff:g>"</string>
-    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"N\'importe quel agenda"</string>
+    <string name="zen_mode_trigger_event_calendar_any" msgid="2086784607921121803">"Tout agenda"</string>
     <string name="muted_by" msgid="91464083490094950">"Des sons sont désactivés par : <xliff:g id="THIRD_PARTY">%1$s</xliff:g>"</string>
     <string name="system_error_wipe_data" msgid="5910572292172208493">"Un problème interne est survenu avec votre appareil. Il se peut qu\'il soit instable jusqu\'à ce que vous le réinitialisiez à ses paramètres par défaut."</string>
     <string name="system_error_manufacturer" msgid="703545241070116315">"Un problème interne est survenu avec votre appareil. Communiquez avec le fabricant pour obtenir plus de détails."</string>
@@ -2086,8 +2088,8 @@
     <string name="work_mode_off_title" msgid="6367463960165135829">"Réactiver les applis pros?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Réactiver"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Urgence"</string>
-    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Config. Verrouillage d\'écran"</string>
-    <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Config. Verrouillage d\'écran"</string>
+    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Config. verrouillage d\'écran"</string>
+    <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Config. verrouillage d\'écran"</string>
     <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Configurez verrouillage de l\'écran pour utiliser Espace privé"</string>
     <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Réglez le verrouillage de l\'écran pour supprimer l\'espace privé"</string>
     <string name="app_blocked_title" msgid="7353262160455028160">"L\'appli n\'est pas accessible"</string>
@@ -2593,10 +2595,7 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Touchez l\'écran pour consulter des conseils afin d\'améliorer votre expérience de déverrouillage"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ne pas faire clignoter"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Maintenez le doigt sur l\'interrupteur pour éteindre le téléviseur"</string>
-    <!-- no translation found for tv_watchdog_notification_channel_name (4936803270000103737) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_title (195239206215922517) -->
-    <skip />
-    <!-- no translation found for tv_watchdog_notification_content (6444873431710133936) -->
-    <skip />
+    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertes relatives aux ressources système"</string>
+    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Utilisation excessive des ressources"</string>
+    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"L\'appli « <xliff:g id="APP_NAME">%1$s</xliff:g> utilise trop de ressources »."</string>
 </resources>
