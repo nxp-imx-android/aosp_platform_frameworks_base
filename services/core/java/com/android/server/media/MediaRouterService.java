@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.media.AppId;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRoutesInfo;
 import android.media.AudioSystem;
@@ -603,6 +604,12 @@ public final class MediaRouterService extends IMediaRouterService.Stub
         }
         return mService2.getSystemSessionInfo(
                 callerPackageName, targetPackageName, setDeviceRouteSelected);
+    }
+
+    // Binder call
+    @Override
+    public List<AppId> getSystemSessionOverridesAppIds(IMediaRouter2Manager manager) {
+        return mService2.getSystemSessionOverridesAppIds(manager);
     }
 
     // Binder call
