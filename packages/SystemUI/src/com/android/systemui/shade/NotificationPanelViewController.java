@@ -1026,8 +1026,10 @@ public final class NotificationPanelViewController implements
             mQsController.updateResources();
             mNotificationsQSContainerController.updateResources();
             updateKeyguardStatusViewAlignment();
-            mKeyguardMediaController.refreshMediaPosition(
-                    "NotificationPanelViewController.updateResources");
+            if (!SceneContainerFlag.isEnabled()) {
+                mKeyguardMediaController.refreshMediaPosition(
+                        "NotificationPanelViewController.updateResources");
+            }
 
             if (splitShadeChanged) {
                 if (isPanelVisibleBecauseOfHeadsUp()) {
