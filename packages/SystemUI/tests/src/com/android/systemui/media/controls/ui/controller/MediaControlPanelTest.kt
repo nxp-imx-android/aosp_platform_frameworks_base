@@ -1326,6 +1326,44 @@ public class MediaControlPanelTest : SysuiTestCase() {
             .isEqualTo(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun onPanelFullyVisible_activeState_requestsSuggestion() {
+        player.attachPlayer(viewHolder)
+
+        val suggestionData =
+            SuggestionData(
+                suggestedMediaDeviceData = null,
+                onSuggestionSpaceVisible = mock(Runnable::class.java),
+            )
+        player.bindPlayer(
+            mediaData.copy(suggestionData = suggestionData, resumption = false),
+            PACKAGE,
+        )
+        player.onPanelFullyVisible()
+
+        verify(suggestionData.onSuggestionSpaceVisible).run()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun onPanelFullyVisible_resumptionState_doesNothing() {
+        player.attachPlayer(viewHolder)
+
+        val suggestionData =
+            SuggestionData(
+                suggestedMediaDeviceData = null,
+                onSuggestionSpaceVisible = mock(Runnable::class.java),
+            )
+        player.bindPlayer(
+            mediaData.copy(suggestionData = suggestionData, resumption = true),
+            PACKAGE,
+        )
+        player.onPanelFullyVisible()
+
+        verify(suggestionData.onSuggestionSpaceVisible, never()).run()
+    }
+
     /* ***** Guts tests for the player ***** */
 
     @Test

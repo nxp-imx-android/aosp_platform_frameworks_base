@@ -613,6 +613,9 @@ public class MediaControlPanel {
         if (!Flags.enableSuggestedDeviceUi()) {
             return;
         }
+        if (mMediaData.getResumption()) {
+            return;
+        }
         @Nullable Runnable onSuggestionVisibleRunnable = mOnSuggestionSpaceVisibleRunnable;
         if (onSuggestionVisibleRunnable != null) {
             onSuggestionVisibleRunnable.run();
