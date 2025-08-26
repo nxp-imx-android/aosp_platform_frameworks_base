@@ -1151,7 +1151,8 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             Slog.i(TAG, "Setting new display group " + groupId + " for display "
                     + displayId + ", from previous group: "
                     + (oldGroup != null ? oldGroup.getGroupId() : "null")
-                    + ", for reason: " + mDisplayGroupAllocator.getReason());
+                    + ", for reason: " + mDisplayGroupAllocator.getReason()
+                    + ", with flags: " + newGroup.getFlags());
         }
     }
 
