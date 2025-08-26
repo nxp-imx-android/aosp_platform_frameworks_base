@@ -699,6 +699,18 @@ object KeyGestureTestData {
                 isGestureHandlerRegistered = true,
             ),
             KeyGestureData(
+                "META + CTRL + S -> Take Partial Screenshot",
+                intArrayOf(
+                    KeyEvent.KEYCODE_META_LEFT,
+                    KeyEvent.KEYCODE_CTRL_LEFT,
+                    KeyEvent.KEYCODE_S,
+                ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_S),
+                KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
                 "SYSRQ -> Take Screenshot",
                 intArrayOf(KeyEvent.KEYCODE_SYSRQ),
                 KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,

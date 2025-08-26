@@ -19,9 +19,11 @@ package com.android.systemui.keyevent
 import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.util.Slog
+import com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut
 import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
@@ -61,11 +63,19 @@ constructor(
         if (enableQuickSettingsPanelShortcut()) {
             supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL)
         }
+        // TODO(b/420714826) Determine if this shortcut should be registered only for large screen
+        // devices.
+        if (enablePartialScreenshotKeyboardShortcut()) {
+            supportedGestures.add(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
+        }
         if (supportedGestures.isEmpty()) {
             return
         }
         inputManager.registerKeyGestureEventHandler(supportedGestures) { event, _ ->
             when (event.keyGestureType) {
+                KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT -> {
+                    // TODO(b/420714826) Launch pre-capture UI for partial screenshots.
+                }
                 KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL -> {
                     shadeDisplayPolicy.onNotificationPanelKeyboardShortcut()
                     commandQueue.toggleNotificationsPanel()

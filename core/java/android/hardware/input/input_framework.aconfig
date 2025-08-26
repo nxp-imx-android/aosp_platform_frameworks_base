@@ -257,6 +257,13 @@ flag {
 }
 
 flag {
+    name: "enable_partial_screenshot_keyboard_shortcut"
+    namespace: "input"
+    description: "Enables keyboard shortcut for taking partial screenshots via large screen capture UI"
+    bug: "420714826"
+}
+
+flag {
   name: "keyboard_backlight_shortcuts"
   namespace: "desktop_input"
   description: "Enables new keyboard shortcuts to adjust keyboard backlight"
