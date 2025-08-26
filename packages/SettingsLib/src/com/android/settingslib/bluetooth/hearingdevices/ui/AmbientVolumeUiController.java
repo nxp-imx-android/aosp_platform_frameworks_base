@@ -351,7 +351,10 @@ public class AmbientVolumeUiController implements
         mAmbientLayout.setControlExpandable(mSideToDeviceMap.size() >  1);
         mAmbientLayout.setupSliders(mSideToDeviceMap.keySet());
         if (mStarted) {
-            refresh();
+            // We have to check if we need to expand the controls by getting all remote
+            // device's ambient value, delay for a while to wait all remote devices connected and
+            // updated to the latest value to avoid unnecessary expand action.
+            postDelayedOnMainThread(this::refresh, 1200L);
         }
     }
 
