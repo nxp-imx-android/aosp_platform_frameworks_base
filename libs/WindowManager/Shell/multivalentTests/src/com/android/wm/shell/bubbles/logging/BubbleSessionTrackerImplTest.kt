@@ -25,8 +25,13 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.bubbles.BubbleLogger
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_FROM
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_ENDED
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_STARTED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_SWITCHED_FROM
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_SWITCHED_TO
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -50,9 +55,13 @@ class BubbleSessionTrackerImplTest {
 
     @Test
     fun startSession_logsNewSessionId() {
-        bubbleSessionTracker.startBubbleBar()
-        bubbleSessionTracker.stopBubbleBar()
-        bubbleSessionTracker.startBubbleBar()
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package")
+        )
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = true))
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package")
+        )
 
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(3)
         val firstSessionStart = uiEventLoggerFake.logs.first()
@@ -64,8 +73,10 @@ class BubbleSessionTrackerImplTest {
 
     @Test
     fun endSession_logsSameSessionId() {
-        bubbleSessionTracker.startBubbleBar()
-        bubbleSessionTracker.stopBubbleBar()
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package")
+        )
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = true))
 
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
         val sessionStart = uiEventLoggerFake.logs.first()
@@ -76,26 +87,85 @@ class BubbleSessionTrackerImplTest {
     }
 
     @Test
-    fun logCorrectEventId() {
-        bubbleSessionTracker.startBubbleBar()
-        bubbleSessionTracker.stopBubbleBar()
-        bubbleSessionTracker.startFloating()
-        bubbleSessionTracker.stopFloating()
+    fun switchedBubble() {
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "initial.package")
+        )
+        bubbleSessionTracker.log(
+            SessionEvent.SwitchedBubble(forBubbleBar = true, toBubblePackage = "new.package")
+        )
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = true))
 
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
+
+        with (uiEventLoggerFake.logs[0]) {
+            assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
+            assertThat(packageName).isEqualTo("initial.package")
+        }
+
+        with (uiEventLoggerFake.logs[1]) {
+            assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_SWITCHED_FROM.id)
+            assertThat(packageName).isEqualTo("initial.package")
+        }
+
+        with (uiEventLoggerFake.logs[2]) {
+            assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_SWITCHED_TO.id)
+            assertThat(packageName).isEqualTo("new.package")
+        }
+
+        with (uiEventLoggerFake.logs[3]) {
+            assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_ENDED.id)
+            assertThat(packageName).isEqualTo("new.package")
+        }
+
+        val loggedInstanceIds = uiEventLoggerFake.logs.map { it.instanceId }.toSet()
+        assertThat(loggedInstanceIds).hasSize(1)
+    }
+
+    @Test
+    fun logCorrectEventId() {
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package")
+        )
+        bubbleSessionTracker.log(
+            SessionEvent.SwitchedBubble(forBubbleBar = true, toBubblePackage = "other.app.package")
+        )
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = true))
+        bubbleSessionTracker.log(
+            SessionEvent.Started(forBubbleBar = false, selectedBubblePackage = "app.package")
+        )
+        bubbleSessionTracker.log(
+            SessionEvent.SwitchedBubble(forBubbleBar = false, toBubblePackage = "other.app.package")
+        )
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = false))
+
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(8)
         assertThat(uiEventLoggerFake.logs.map { it.eventId })
             .containsExactly(
                 BUBBLE_BAR_SESSION_STARTED.id,
+                BUBBLE_BAR_SESSION_SWITCHED_FROM.id,
+                BUBBLE_BAR_SESSION_SWITCHED_TO.id,
                 BUBBLE_BAR_SESSION_ENDED.id,
                 BUBBLE_SESSION_STARTED.id,
+                BUBBLE_SESSION_SWITCHED_FROM.id,
+                BUBBLE_SESSION_SWITCHED_TO.id,
                 BUBBLE_SESSION_ENDED.id
             )
             .inOrder()
     }
 
     @Test
-    fun stopSession_noActiveSession_shouldNotLog() {
-        bubbleSessionTracker.stopBubbleBar()
+    fun sessionEnded_noActiveSession_shouldNotLog() {
+        bubbleSessionTracker.log(SessionEvent.Ended(forBubbleBar = true))
+
+        assertThat(uiEventLoggerFake.logs).isEmpty()
+    }
+
+    @Test
+    fun switchedBubble_noActiveSession_shouldNotLog() {
+        bubbleSessionTracker.log(
+            SessionEvent.SwitchedBubble(forBubbleBar = true, toBubblePackage = "app.package")
+        )
 
         assertThat(uiEventLoggerFake.logs).isEmpty()
     }

@@ -24,6 +24,7 @@ import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.wm.shell.bubbles.BubblePositioner.NUM_VISIBLE_WHEN_RESTING;
 import static com.android.wm.shell.bubbles.BubblePositioner.StackPinnedEdge.LEFT;
 import static com.android.wm.shell.bubbles.BubblePositioner.StackPinnedEdge.RIGHT;
+import static com.android.wm.shell.bubbles.logging.BubbleSessionTracker.getBubblePackageForLogging;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
@@ -92,6 +93,8 @@ import com.android.wm.shell.bubbles.animation.ExpandedViewAnimationController;
 import com.android.wm.shell.bubbles.animation.ExpandedViewAnimationControllerImpl;
 import com.android.wm.shell.bubbles.animation.PhysicsAnimationLayout;
 import com.android.wm.shell.bubbles.animation.StackAnimationController;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.TypefaceUtils;
@@ -235,6 +238,7 @@ public class BubbleStackView extends FrameLayout
     private final BubbleStackViewManager mManager;
     private final BubbleData mBubbleData;
     private final Bubbles.SysuiProxy.Provider mSysuiProxyProvider;
+    private final BubbleSessionTracker mSessionTracker;
     private StackViewState mStackViewState = new StackViewState();
 
     private final ValueAnimator mDismissBubbleAnimator;
@@ -981,7 +985,8 @@ public class BubbleStackView extends FrameLayout
             @Nullable SurfaceSynchronizer synchronizer,
             FloatingContentCoordinator floatingContentCoordinator,
             Bubbles.SysuiProxy.Provider sysuiProxyProvider,
-            ShellExecutor mainExecutor) {
+            ShellExecutor mainExecutor,
+            BubbleSessionTracker sessionTracker) {
         super(context);
 
         mMainExecutor = mainExecutor;
@@ -989,6 +994,7 @@ public class BubbleStackView extends FrameLayout
         mPositioner = bubblePositioner;
         mBubbleData = data;
         mSysuiProxyProvider = sysuiProxyProvider;
+        mSessionTracker = sessionTracker;
 
         Resources res = getResources();
         mBubbleSize = res.getDimensionPixelSize(R.dimen.bubble_size);
@@ -2521,6 +2527,9 @@ public class BubbleStackView extends FrameLayout
                             FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__COLLAPSED);
                     logBubbleEvent(bubbleToSelect,
                             FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__EXPANDED);
+                    SessionEvent event = SessionEvent.SwitchedBubble.forFloatingBubble(
+                            getBubblePackageForLogging(bubbleToSelect));
+                    mSessionTracker.log(event);
                     notifyExpansionChanged(previouslySelected, false /* expanded */);
                     notifyExpansionChanged(bubbleToSelect, true /* expanded */);
                 });
@@ -2595,12 +2604,15 @@ public class BubbleStackView extends FrameLayout
                 showManageMenu(false);
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__COLLAPSED);
+                mSessionTracker.log(SessionEvent.Ended.forFloatingBubble());
             } else {
                 expand(animateExpansion);
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__EXPANDED);
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__STACK_EXPANDED);
+                mSessionTracker.log(SessionEvent.Started.forFloatingBubble(
+                        getBubblePackageForLogging(mExpandedBubble)));
                 mManager.checkNotificationPanelExpandedState(notifPanelExpanded -> {
                     if (!notifPanelExpanded && mIsExpanded) {
                         startMonitoringSwipeUpGesture();

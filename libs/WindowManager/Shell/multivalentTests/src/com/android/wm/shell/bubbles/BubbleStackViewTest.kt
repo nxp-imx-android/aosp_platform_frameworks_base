@@ -34,6 +34,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.launcher3.icons.BubbleIconFactory
@@ -43,6 +44,8 @@ import com.android.wm.shell.bubbles.BubbleStackView.SurfaceSynchronizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.common.FloatingContentCoordinator
 import com.android.wm.shell.common.TestShellExecutor
 import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils
@@ -72,6 +75,7 @@ class BubbleStackViewTest {
     @get:Rule val animatorTestRule: AnimatorTestRule = AnimatorTestRule(this)
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    private val uiEventLoggerFake = UiEventLoggerFake()
     private lateinit var positioner: BubblePositioner
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var iconFactory: BubbleIconFactory
@@ -83,7 +87,8 @@ class BubbleStackViewTest {
     private lateinit var bubbleData: BubbleData
     private lateinit var bubbleStackViewManager: FakeBubbleStackViewManager
     private lateinit var surfaceSynchronizer: FakeSurfaceSynchronizer
-    private var sysuiProxy = mock<SysuiProxy>()
+    private lateinit var sessionTracker: BubbleSessionTracker
+    private val sysuiProxy = mock<SysuiProxy>()
 
     @Before
     fun setUp() {
@@ -91,7 +96,7 @@ class BubbleStackViewTest {
         // Disable protolog tool when running the tests from studio
         ProtoLog.REQUIRE_PROTOLOGTOOL = false
         shellExecutor = TestShellExecutor()
-        windowManager = context.getSystemService(WindowManager::class.java)
+        windowManager = context.getSystemService(WindowManager::class.java)!!
         iconFactory =
             BubbleIconFactory(
                 context,
@@ -103,7 +108,9 @@ class BubbleStackViewTest {
                 )
             )
         positioner = BubblePositioner(context, windowManager)
-        bubbleLogger = BubbleLogger(UiEventLoggerFake())
+        bubbleLogger = BubbleLogger(uiEventLoggerFake)
+        val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
+        sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
         bubbleData =
             BubbleData(
                 context,
@@ -126,7 +133,8 @@ class BubbleStackViewTest {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 { sysuiProxy },
-                shellExecutor
+                shellExecutor,
+                sessionTracker,
             )
 
         context
@@ -191,6 +199,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -214,6 +223,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -247,6 +257,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -277,6 +288,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -305,6 +317,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -353,6 +366,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -398,6 +412,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -427,6 +442,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
         }
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -682,7 +698,8 @@ class BubbleStackViewTest {
                         null,
                         FloatingContentCoordinator(),
                         { sysuiProxy },
-                        shellExecutor
+                        shellExecutor,
+                        sessionTracker,
                 )
 
         assertThat(bubbleData.overflowBubbles).isEmpty()
@@ -709,7 +726,8 @@ class BubbleStackViewTest {
                         null,
                         FloatingContentCoordinator(),
                         { sysuiProxy },
-                        shellExecutor
+                        shellExecutor,
+                        sessionTracker,
                 )
         val bubbleOverflow = bubbleData.overflow
         assertThat(bubbleStackView.getBubbleIndex(bubbleOverflow)).isGreaterThan(-1)
@@ -728,7 +746,8 @@ class BubbleStackViewTest {
                             null,
                             FloatingContentCoordinator(),
                             { sysuiProxy },
-                            shellExecutor
+                            shellExecutor,
+                            sessionTracker,
                     )
         }
         assertThat(bubbleData.overflowBubbles).isEmpty()
@@ -1020,7 +1039,8 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble1)
             bubbleStackView.addBubble(bubble2)
-            bubbleStackView.setExpanded(true)
+            bubbleStackView.setSelectedBubble(bubble2)
+            bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -1061,6 +1081,7 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble1)
             bubbleStackView.addBubble(bubble2)
+            bubbleStackView.setSelectedBubble(bubble2)
             bubbleStackView.setExpanded(true)
             shellExecutor.flushAll()
         }
@@ -1099,7 +1120,8 @@ class BubbleStackViewTest {
         val bubble = createAndInflateBubble()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
-            bubbleStackView.setExpanded(true)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -1134,7 +1156,8 @@ class BubbleStackViewTest {
         val bubble = createAndInflateBubble()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
-            bubbleStackView.setExpanded(true)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -1155,6 +1178,9 @@ class BubbleStackViewTest {
             // Add the same bubble back
             bubbleData.notificationEntryUpdated(bubble, false, true)
             bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
+            // let the scrim animation finish
+            animatorTestRule.advanceTimeBy(300)
             shellExecutor.flushAll()
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -1168,6 +1194,56 @@ class BubbleStackViewTest {
         assertThat(bubble.iconView!!.scaleX).isEqualTo(1)
         assertThat(bubble.iconView!!.scaleY).isEqualTo(1)
         assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+    }
+
+    @Test
+    fun sessionEventsLogged() {
+        val bubble1 = createAndInflateChatBubble("key1")
+        val bubble2 = createAndInflateChatBubble("key2")
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble1)
+            bubbleStackView.addBubble(bubble2)
+            bubbleStackView.setSelectedBubble(bubble2)
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        val sessionStartEvent = uiEventLoggerFake.logs.single {
+            it.eventId == BubbleLogger.Event.BUBBLE_SESSION_STARTED.id
+        }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.setSelectedBubble(bubble1)
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        val sessionSwitchedFromEvent = uiEventLoggerFake.logs.single {
+            it.eventId == BubbleLogger.Event.BUBBLE_SESSION_SWITCHED_FROM.id
+        }
+        val sessionSwitchedToEvent = uiEventLoggerFake.logs.single {
+            it.eventId == BubbleLogger.Event.BUBBLE_SESSION_SWITCHED_TO.id
+        }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.isExpanded = false
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        val sessionEndEvent = uiEventLoggerFake.logs.single {
+            it.eventId == BubbleLogger.Event.BUBBLE_SESSION_ENDED.id
+        }
+
+        val sessionInstanceIds =
+            setOf(
+                sessionStartEvent.instanceId,
+                sessionSwitchedFromEvent.instanceId,
+                sessionSwitchedToEvent.instanceId,
+                sessionEndEvent.instanceId
+            )
+        assertThat(sessionInstanceIds).hasSize(1)
     }
 
     private fun createAndInflateChatBubble(key: String): Bubble {

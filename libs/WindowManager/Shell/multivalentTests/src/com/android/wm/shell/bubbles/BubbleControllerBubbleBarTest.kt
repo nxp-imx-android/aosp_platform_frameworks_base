@@ -271,11 +271,15 @@ class BubbleControllerBubbleBarTest {
         }
         // Log bubble dismissed via drag and there's a switch event
         assertThat(bubbleData.selectedBubbleKey).isEqualTo("key1")
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
-        assertThat(uiEventLoggerFake.eventId(0))
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_DISMISSED_DRAG_BUBBLE.id)
-        assertThat(uiEventLoggerFake.eventId(1))
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED.id)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
+        assertThat(uiEventLoggerFake.logs.map { it.eventId })
+            .containsExactly(
+                BubbleLogger.Event.BUBBLE_BAR_BUBBLE_DISMISSED_DRAG_BUBBLE.id,
+                BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_FROM.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO.id
+            )
+            .inOrder()
     }
 
     @Test
@@ -350,28 +354,41 @@ class BubbleControllerBubbleBarTest {
 
         expandAndSelectBubble("key")
 
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
-        assertThat(uiEventLoggerFake.eventId(0))
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+        assertThat(uiEventLoggerFake.logs.map { it.eventId })
+            .containsExactly(
+                BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED.id
+            )
+            .inOrder()
         uiEventLoggerFake.logs.clear()
 
         getInstrumentation().runOnMainSync {
             bubbleController.collapseStack()
         }
 
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
-        assertThat(uiEventLoggerFake.eventId(0))
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_COLLAPSED.id)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+        assertThat(uiEventLoggerFake.logs.map { it.eventId })
+            .containsExactly(
+                BubbleLogger.Event.BUBBLE_BAR_COLLAPSED.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED.id
+            )
+            .inOrder()
     }
 
     @Test
     fun testEventLogging_bubbleBar_autoExpandingBubble() {
         addBubble("key", autoExpand = true)
 
-        // 2 events: add bubble + expand
+        // 3 events: add bubble + expand + session started
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(3)
-        assertThat(uiEventLoggerFake.eventId(1))
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id)
+        assertThat(uiEventLoggerFake.logs.map { it.eventId })
+            .containsExactly(
+                BubbleLogger.Event.BUBBLE_BAR_BUBBLE_POSTED.id,
+                BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED.id
+            )
+            .inOrder()
     }
 
     @Test
@@ -385,9 +402,14 @@ class BubbleControllerBubbleBarTest {
         // Select the next bubble
         expandAndSelectBubble("key1")
 
-        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
-        assertThat(uiEventLoggerFake.eventId(0))
-            .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED.id)
+        assertThat(uiEventLoggerFake.numLogs()).isEqualTo(3)
+        assertThat(uiEventLoggerFake.logs.map { it.eventId })
+            .containsExactly(
+                BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_FROM.id,
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO.id
+            )
+            .inOrder()
     }
 
     @Test

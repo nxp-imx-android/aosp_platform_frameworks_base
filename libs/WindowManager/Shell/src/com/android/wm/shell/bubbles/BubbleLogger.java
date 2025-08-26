@@ -224,8 +224,9 @@ public class BubbleLogger {
     }
 
     /** Log a UiEvent for the specified {@code sessionId}. */
-    public void logWithSessionId(UiEventLogger.UiEventEnum e, InstanceId sessionId) {
-        mUiEventLogger.log(e, sessionId);
+    public void logWithSessionId(UiEventLogger.UiEventEnum e, String packageName,
+            InstanceId sessionId) {
+        mUiEventLogger.logWithInstanceId(e, /* uid= */ 0, packageName, sessionId);
     }
 
     /**

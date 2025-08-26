@@ -123,6 +123,7 @@ class BubbleViewInfoTest : ShellTestCase() {
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }
         bubbleAppInfoProvider = PackageManagerBubbleAppInfoProvider()
 
+        val bubbleSessionTracker = mock<BubbleSessionTracker>()
         bubbleController =
             BubbleController(
                 context,
@@ -160,7 +161,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 { Optional.empty() },
                 Optional.empty(),
                 { false },
-                mock<BubbleSessionTracker>(),
+                bubbleSessionTracker,
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)
@@ -173,7 +174,8 @@ class BubbleViewInfoTest : ShellTestCase() {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 bubbleController,
-                mainExecutor
+                mainExecutor,
+                bubbleSessionTracker,
             )
         bubbleBarLayerView = BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger)
     }

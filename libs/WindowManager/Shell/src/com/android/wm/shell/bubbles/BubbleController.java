@@ -36,6 +36,7 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_NO_LONGER_BUBBLE;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_PACKAGE_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_SHORTCUT_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_CHANGED;
+import static com.android.wm.shell.bubbles.logging.BubbleSessionTracker.getBubblePackageForLogging;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
@@ -110,6 +111,7 @@ import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
 import com.android.wm.shell.bubbles.fold.BubblesUnfoldListener;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent;
 import com.android.wm.shell.bubbles.shortcut.BubbleShortcutHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -1084,7 +1086,8 @@ public class BubbleController implements ConfigurationChangeListener,
                         BubbleStackViewManager.fromBubbleController(this);
                 mStackView = new BubbleStackView(
                         mContext, bubbleStackViewManager, mBubblePositioner, mBubbleData,
-                        mSurfaceSynchronizer, mFloatingContentCoordinator, this, mMainExecutor);
+                        mSurfaceSynchronizer, mFloatingContentCoordinator, this, mMainExecutor,
+                        mSessionTracker);
                 mStackView.onOrientationChanged();
                 if (mExpandListener != null) {
                     mStackView.setExpandListener(mExpandListener);
@@ -1559,10 +1562,16 @@ public class BubbleController implements ConfigurationChangeListener,
             showExpandedViewForBubbleBar();
             if (bubbleKey.equals(selectedBubbleKey)) {
                 // We dragged the selected bubble to dismiss, log switch event
-                if (mBubbleData.getSelectedBubble() instanceof Bubble) {
+                BubbleViewProvider b = mBubbleData.getSelectedBubble();
+                if (b instanceof Bubble) {
                     // Log only bubbles as overflow can't be dragged
-                    mLogger.log((Bubble) mBubbleData.getSelectedBubble(),
-                            BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
+                    mLogger.log((Bubble) b, BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
+                }
+
+                if (b != null) {
+                    SessionEvent event = SessionEvent.SwitchedBubble.forBubbleBar(
+                            getBubblePackageForLogging(b));
+                    mSessionTracker.log(event);
                 }
             }
         }
@@ -1630,8 +1639,14 @@ public class BubbleController implements ConfigurationChangeListener,
             mLayerView.showExpandedView(b);
             if (wasExpanded) {
                 mLogger.log(b, BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
+                SessionEvent event = SessionEvent.SwitchedBubble.forBubbleBar(
+                        getBubblePackageForLogging(b));
+                mSessionTracker.log(event);
             } else {
                 mLogger.log(b, BubbleLogger.Event.BUBBLE_BAR_EXPANDED);
+                SessionEvent event =
+                        SessionEvent.Started.forBubbleBar(getBubblePackageForLogging(b));
+                mSessionTracker.log(event);
             }
         } else if (mBubbleData.hasOverflowBubbleWithKey(b.getKey())) {
             // TODO: (b/271468319) handle overflow
@@ -2638,6 +2653,16 @@ public class BubbleController implements ConfigurationChangeListener,
             } else {
                 mLogger.log(event);
             }
+
+            if (selectedBubble != null) {
+                if (isExpanded) {
+                    mSessionTracker.log(
+                            SessionEvent.Started.forBubbleBar(
+                                    getBubblePackageForLogging(selectedBubble)));
+                } else {
+                    mSessionTracker.log(SessionEvent.Ended.forBubbleBar());
+                }
+            }
         }
 
         @Override
@@ -2645,10 +2670,15 @@ public class BubbleController implements ConfigurationChangeListener,
             // Only need to update the layer view if we're currently expanded for selection changes.
             if (mLayerView != null && mLayerView.isExpanded()) {
                 mLayerView.showExpandedView(selectedBubble);
+
                 if (selectedBubble instanceof Bubble) {
                     mLogger.log((Bubble) selectedBubble,
                             BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
                 }
+
+                SessionEvent event = SessionEvent.SwitchedBubble.forBubbleBar(
+                        getBubblePackageForLogging(selectedBubble));
+                mSessionTracker.log(event);
             }
         }
 
@@ -2803,20 +2833,6 @@ public class BubbleController implements ConfigurationChangeListener,
                 // Some updates aren't relevant to the bubble bar so check first.
                 if (bubbleBarUpdate.anythingChanged() && mBubbleStateListener != null) {
                     mBubbleStateListener.onBubbleStateChange(bubbleBarUpdate);
-                }
-            }
-
-            if (update.expandedChanged) {
-                if (update.expanded) {
-                    if (isShowingAsBubbleBar()) {
-                        mSessionTracker.startBubbleBar();
-                    } else {
-                        mSessionTracker.startFloating();
-                    }
-                } else if (isShowingAsBubbleBar()) {
-                    mSessionTracker.stopBubbleBar();
-                } else {
-                    mSessionTracker.stopFloating();
                 }
             }
         }
