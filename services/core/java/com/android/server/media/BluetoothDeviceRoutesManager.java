@@ -69,6 +69,11 @@ import java.util.stream.Collectors;
 
     private static final String HEARING_AID_ROUTE_ID_PREFIX = "HEARING_AID_";
     private static final String LE_AUDIO_ROUTE_ID_PREFIX = "LE_AUDIO_";
+    private static final List<Integer> BT_DEVICE_TYPES =
+            List.of(
+                    MediaRoute2Info.TYPE_BLE_HEADSET,
+                    MediaRoute2Info.TYPE_HEARING_AID,
+                    MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
 
     /** Interface for receiving events about Bluetooth routes changes. */
     interface BluetoothRoutesUpdatedListener {
@@ -301,19 +306,27 @@ import java.util.stream.Collectors;
         mBluetoothProfileMonitor.stopBroadcast();
     }
 
+    /** Returns whether {@link MediaRoute2Info} is info of Bluetooth route. */
+    protected boolean isBtRoute(@NonNull MediaRoute2Info mediaRoute2Info) {
+        return BT_DEVICE_TYPES.contains(mediaRoute2Info.getType());
+    }
+
     /**
-     * Trigger {@link BluetoothProfileMonitor} to stop the broadcast, optionally making a new LEA
+     * Trigger {@link BluetoothProfileMonitor} to stop the broadcast, optionally making a new BT
      * device active.
      *
-     * @param routeId id of the LEA Bluetooth route to be set as active after broadcast stops.
+     * @param routeId id of the Bluetooth route to be set as active after broadcast stops.
      */
     protected void stopBroadcast(@Nullable String routeId) {
+        Slog.d(TAG, "stopBroadcast: for route id " + routeId);
         BluetoothDevice bluetoothDevice =
-                mBluetoothRoutes.values().stream()
-                        .filter(routeInfo -> routeInfo.mRoute.getId().equals(routeId))
-                        .findFirst()
-                        .map(routeInfo -> routeInfo.mBtDevice)
-                        .orElse(null);
+                routeId == null
+                        ? null
+                        : mBluetoothRoutes.values().stream()
+                                .filter(routeInfo -> routeInfo.mRoute.getId().equals(routeId))
+                                .findFirst()
+                                .map(routeInfo -> routeInfo.mBtDevice)
+                                .orElse(null);
         mBluetoothProfileMonitor.stopBroadcast(bluetoothDevice);
     }
 
