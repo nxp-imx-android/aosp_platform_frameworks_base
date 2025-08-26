@@ -67,7 +67,8 @@ class InstallViewModel(application: Application, val repository: InstallReposito
 
     fun preprocessIntent(intent: Intent, callerInfo: InstallRepository.CallerInfo) {
         val stage = repository.performPreInstallChecks(intent, callerInfo)
-        if (stage.stageCode == InstallStage.STAGE_ABORTED) {
+        if (stage.stageCode == InstallStage.STAGE_ABORTED
+            || stage.stageCode == InstallStage.STAGE_VERIFICATION_FAILURE) {
             _currentInstallStage.value = stage
         } else {
             repository.stageForInstall()
