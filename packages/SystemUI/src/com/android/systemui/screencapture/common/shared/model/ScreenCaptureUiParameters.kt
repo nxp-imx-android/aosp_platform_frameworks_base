@@ -22,9 +22,9 @@ import android.os.UserHandle
 
 data class ScreenCaptureUiParameters(
     val screenCaptureType: ScreenCaptureType,
-    val isUserConsentRequired: Boolean,
-    val resultReceiver: ResultReceiver?,
-    val mediaProjection: IBinder?,
-    val hostAppUserHandle: UserHandle,
-    val hostAppUid: Int,
+    val isUserConsentRequired: Boolean = false,
+    val resultReceiver: ResultReceiver? = null,
+    val mediaProjection: IBinder? = null,
+    val hostAppUserHandle: UserHandle = UserHandle.CURRENT,
+    val hostAppUid: Int = 0,
 )
