@@ -31,6 +31,8 @@ import android.content.Context;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -39,6 +41,7 @@ import android.os.Process;
 import android.platform.test.annotations.EnableFlags;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -165,6 +168,20 @@ public class NotificationCustomContentMemoryVerifierTest extends SysuiTestCase {
                 NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(inflatedView, entry)
         )
                 .isTrue();
+    }
+
+    /**
+     * You can create a view with `BitmapDrawable` that has a null Bitmap.
+     */
+    @Test
+    @EnableCompatChanges({
+            NotificationCustomContentCompat.CHECK_SIZE_OF_INFLATED_CUSTOM_VIEWS})
+    public void computeViewHierarchyImageViewSize_nullableBitmapDrawable_doesntCrash() {
+        ImageView iv = new ImageView(getContext());
+        iv.setImageDrawable(new BitmapDrawable(getContext().getResources(), (Bitmap) null));
+        assertThat(
+                NotificationCustomContentMemoryVerifier.computeViewHierarchyImageViewSize(iv)
+        ).isEqualTo(0);
     }
 
     @Test
