@@ -4562,7 +4562,7 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
      *
      * We follow the rules below:
      * 1) If sub id of the event is invalid, phone id should be used.
-     * 2) If record's phoneId is also invalid then allow phone 0 notifications
+     * 2) If record's phoneId is also invalid then allow valid phone 0/1 notifications
      * 3) The event on default sub should be notified to the records
      * which register the default sub id.
      * 4) Sub id should be exactly matched for all other cases.
@@ -4571,20 +4571,28 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
     boolean idMatchRelaxed(Record r, int subId, int phoneId) {
         if (subId < 0) {
             // Invalid case, we need compare phoneId.
-            // If the record does not have a valid phone Id send phone 0 notifications.
+            // If the record does not have a valid phone Id send phone 0/1 notifications.
             // A record's phoneId can get invalid if there is no SIM or modem was restarting
             // when caller registered.
             if (r.phoneId == INVALID_SIM_SLOT_INDEX) {
-                return (phoneId == 0);
+                if(Flags.useRelaxedPhoneIdMatch()) {
+                   return validatePhoneId(phoneId);
+                } else {
+                   return phoneId == 0;
+                }
             } else {
                 return (r.phoneId == phoneId);
             }
         }
 
         if (r.subId == SubscriptionManager.DEFAULT_SUBSCRIPTION_ID) {
-            // if the registered record does not have a valid phoneId then use the phone 0
+            // if the registered record does not have a valid phoneId then use the phone 0/1
             if (r.phoneId == INVALID_SIM_SLOT_INDEX) {
-                return (phoneId == 0);
+                if(Flags.useRelaxedPhoneIdMatch()) {
+                   return validatePhoneId(phoneId);
+                } else {
+                   return phoneId == 0;
+                }
             }
             return (subId == mDefaultSubId);
         } else {
