@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 class ReusableWindowDecorViewHost(
     private val context: Context,
     @ShellMainThread private val mainScope: CoroutineScope,
-    display: Display,
+    private val display: Display,
     val id: Int,
     @VisibleForTesting
     val viewHostAdapter: SurfaceControlViewHostAdapter =
@@ -74,6 +74,9 @@ class ReusableWindowDecorViewHost(
 
     override val surfaceControl: SurfaceControl
         get() = viewHostAdapter.rootSurface
+
+    override val displayId: Int
+        get() = display.displayId
 
     override fun warmUp() {
         if (viewHostAdapter.isInitialized()) {

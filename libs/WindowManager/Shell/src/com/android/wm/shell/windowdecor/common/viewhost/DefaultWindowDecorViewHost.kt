@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 class DefaultWindowDecorViewHost(
     context: Context,
     @ShellMainThread private val mainScope: CoroutineScope,
-    display: Display,
+    private val display: Display,
     @VisibleForTesting
     val viewHostAdapter: SurfaceControlViewHostAdapter =
         SurfaceControlViewHostAdapter(context, display),
@@ -47,6 +47,9 @@ class DefaultWindowDecorViewHost(
 
     override val surfaceControl: SurfaceControl
         get() = viewHostAdapter.rootSurface
+
+    override val displayId: Int
+        get() = display.displayId
 
     override fun updateView(
         view: View,
