@@ -25,6 +25,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DefaultEdgeDetector
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.fakeFalsingManager
+import com.android.systemui.desktop.domain.interactor.enableDesktopFeatureSet
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
@@ -429,5 +430,22 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
             assertThat(underTest.swipeSourceDetector)
                 .isInstanceOf(SceneContainerSwipeDetector::class.java)
+        }
+
+    @Test
+    fun onEmptySpaceMotionEvent_hidesDualShadeOverlays_onDesktopMode() =
+        kosmos.runTest {
+            // GIVEN a device in desktop mode with dual shade enabled and an overlay present
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            enableDualShade()
+            enableDesktopFeatureSet()
+            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
+            assertThat(currentOverlays).isNotEmpty()
+
+            // WHEN a touch event occurs outside the shade window
+            underTest.onEmptySpaceMotionEvent(MotionEvent.obtain(0, 0, ACTION_OUTSIDE, 0f, 0f, 0))
+
+            // THEN the overlay is hidden
+            assertThat(currentOverlays).isEmpty()
         }
 }
