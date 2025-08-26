@@ -141,6 +141,7 @@ import static com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
+import static com.android.server.wm.WindowContainer.SYNC_STATE_WAITING_FOR_DRAW;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_INPUT_METHOD;
@@ -2431,7 +2432,12 @@ public class WindowManagerService extends IWindowManager.Stub
                 return false;
             }
 
-            return win.cancelAndRedraw(seqId);
+            final boolean cancel = win.cancelAndRedraw(seqId);
+            if (cancel && Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.instant(TRACE_TAG_WINDOW_MANAGER, "cancelDraw clientSeqId=" + seqId
+                        + " serverSeqId=" + win.mSyncSeqId + " bufferSeqId=" + win.mBufferSeqId);
+            }
+            return cancel;
         }
     }
 
@@ -2480,6 +2486,11 @@ public class WindowManagerService extends IWindowManager.Stub
                 // The client has reported the sync draw, but we haven't finished it yet.
                 // Don't let the client perform a non-sync draw at this time.
                 result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
+                if (mAlwaysSeqId && Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                    Trace.instant(TRACE_TAG_WINDOW_MANAGER, "earlyCancelDraw clientSeqId="
+                            + syncSeqId + " serverSeqId=" + win.mSyncSeqId
+                            + " bufferSeqId=" + win.mBufferSeqId);
+                }
             }
 
             final DisplayContent displayContent = win.getDisplayContent();
@@ -2854,12 +2865,37 @@ public class WindowManagerService extends IWindowManager.Stub
                             : -1;
                     win.markRedrawForSyncReported();
                 } else {
-                    if (mAlwaysSeqId && win.cancelAndRedraw(syncSeqId)) {
+                    outRelayoutResult.syncSeqId = -1;
+                    if (mAlwaysSeqId && (result & RELAYOUT_RES_CANCEL_AND_REDRAW) == 0
+                            && win.cancelAndRedraw(syncSeqId)) {
                         // Surface-placement has resulted in a new configuration or a new sync,
                         // so this current layout is invalid until subsequent reportResized.
-                        result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
+
+                        // However, make a targeted optimization to let the client draw early if the
+                        // relayout result won't change even after the client receives the new
+                        // configuration. If there is an explicit sync, though, the user-perceived
+                        // latency will be worse due to the client drawing content that won't be
+                        // presented; so, don't "optimize" in that case.
+                        final boolean inExplicitSync = syncSeqId <= win.mBufferSeqId
+                                || win.mSyncState == SYNC_STATE_WAITING_FOR_DRAW;
+                        if (!inExplicitSync && win.layoutIgnoresClientConfig()) {
+                            // Returning a seqId indicates, to the client, that it can use this
+                            // result even though it's configuration is out-dated.
+                            outRelayoutResult.syncSeqId = win.mSyncSeqId;
+                            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                                Trace.instant(TRACE_TAG_WINDOW_MANAGER, "ignoreCancelDraw seqId="
+                                        + win.mSyncSeqId);
+                            }
+                        } else {
+                            result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
+                            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                                Trace.instant(TRACE_TAG_WINDOW_MANAGER, "lateCancelDraw "
+                                        + " clientSeqId=" + syncSeqId
+                                        + " serverSeqId=" + win.mSyncSeqId
+                                        + " bufferSeqId=" + win.mBufferSeqId);
+                            }
+                        }
                     }
-                    outRelayoutResult.syncSeqId = -1;
                 }
             }
 
