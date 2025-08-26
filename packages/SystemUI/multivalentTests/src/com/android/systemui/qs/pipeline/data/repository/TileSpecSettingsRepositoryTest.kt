@@ -27,6 +27,7 @@ import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.res.R
 import com.android.systemui.retail.data.repository.FakeRetailModeRepository
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserModeFake
 import com.android.systemui.util.settings.FakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -46,11 +47,8 @@ class TileSpecSettingsRepositoryTest : SysuiTestCase() {
 
     private lateinit var secureSettings: FakeSettings
     private lateinit var retailModeRepository: FakeRetailModeRepository
-    private val defaultTilesRepository =
-        object : DefaultTilesRepository {
-            override val defaultTiles: List<TileSpec>
-                get() = DEFAULT_TILES.toTileSpecs()
-        }
+    private val hsum = HeadlessSystemUserModeFake()
+    private val defaultTilesRepository = FakeDefaultTilesRepository(DEFAULT_TILES.toTileSpecs())
 
     @Mock private lateinit var logger: QSPipelineLogger
 
@@ -61,6 +59,7 @@ class TileSpecSettingsRepositoryTest : SysuiTestCase() {
                     userId,
                     defaultTilesRepository,
                     secureSettings,
+                    hsum,
                     logger,
                     testScope.backgroundScope,
                     testDispatcher,
