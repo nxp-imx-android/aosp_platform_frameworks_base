@@ -32,10 +32,10 @@ interface IComputerControlSession {
     void launchApplication(in String packageName);
 
     /* Injects a tap event into the trusted virtual display. */
-    void tap(float x, float y);
+    void tap(int x, int y);
 
     /* Injects a swipe event into the trusted virtual display. */
-    void swipe(float fromX, float fromY, float toX, float toY);
+    void swipe(int fromX, int fromY, int toX, int toY);
 
     /** Returns the ID of the single trusted virtual display for this session. */
     int getVirtualDisplayId();

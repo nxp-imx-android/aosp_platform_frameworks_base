@@ -20,7 +20,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
-import android.annotation.FloatRange;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -230,18 +230,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
-    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
-            @FloatRange(from = 0.0, to = 1.0) float y) throws RemoteException {
+    public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) throws RemoteException {
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
     }
 
     @Override
     public void swipe(
-            @FloatRange(from = 0.0, to = 1.0) float fromX,
-            @FloatRange(from = 0.0, to = 1.0) float fromY,
-            @FloatRange(from = 0.0, to = 1.0) float toX,
-            @FloatRange(from = 0.0, to = 1.0) float toY) throws RemoteException {
+            @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
+            @IntRange(from = 0) int toX, @IntRange(from = 0) int  toY) throws RemoteException {
         if (mSwipeFuture != null) {
             mSwipeFuture.cancel(false);
         }
@@ -302,10 +299,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    VirtualTouchEvent createTouchEvent(float x, float y, @VirtualTouchEvent.Action int action) {
+    VirtualTouchEvent createTouchEvent(int x, int y, @VirtualTouchEvent.Action int action) {
         return new VirtualTouchEvent.Builder()
-                .setX(x * mDisplayWidth)
-                .setY(y * mDisplayHeight)
+                .setX(x)
+                .setY(y)
                 .setAction(action)
                 .setPointerId(4)
                 .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
@@ -314,12 +311,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .build();
     }
 
-    private void performSwipeStep(float fromX, float fromY, float toX, float toY, int step) {
-        final float fraction = ((float) step) / SWIPE_STEPS;
+    private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step) {
+        final double fraction = ((double) step) / SWIPE_STEPS;
         // This makes the movement distance smaller towards the end.
-        final float easedFraction = (float) Math.sin(fraction * Math.PI / 2);
-        final float currentX = fromX + (toX - fromX) * easedFraction;
-        final float currentY = fromY + (toY - fromY) * easedFraction;
+        final double easedFraction = Math.sin(fraction * Math.PI / 2);
+        final int currentX = (int) (fromX + (toX - fromX) * easedFraction);
+        final int currentY = (int) (fromY + (toY - fromY) * easedFraction);
         final int nextStep = step + 1;
 
         try {

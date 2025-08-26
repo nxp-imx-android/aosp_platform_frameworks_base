@@ -225,7 +225,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void tap_sendsTouchscreenEvents() throws Exception {
-        mSession.tap(0.1f, 0.2f);
+        mSession.tap(60, 200);
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(
                 new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_DOWN)));
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(
@@ -234,7 +234,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void swipe_sendsTouchscreenEvents() throws Exception {
-        mSession.swipe(0.1f, 0.2f, 0.3f, 0.4f);
+        mSession.swipe(60, 200, 180, 400);
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(
                 new MatchesTouchEvent(60, 200, VirtualTouchEvent.ACTION_DOWN)));
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(

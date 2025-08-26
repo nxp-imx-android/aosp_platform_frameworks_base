@@ -25,7 +25,6 @@ import android.view.Surface;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Parameters for creating a {@link ComputerControlSession}.
@@ -183,9 +182,6 @@ public final class ComputerControlSessionParams implements Parcelable {
          */
         @NonNull
         public Builder setDisplayWidthPx(@IntRange(from = 1) int displayWidthPx) {
-            if (displayWidthPx <= 0) {
-                throw new IllegalArgumentException("Display width must be positive");
-            }
             mDisplayWidthPx = displayWidthPx;
             return this;
         }
@@ -198,9 +194,6 @@ public final class ComputerControlSessionParams implements Parcelable {
          */
         @NonNull
         public Builder setDisplayHeightPx(@IntRange(from = 1) int displayHeightPx) {
-            if (displayHeightPx <= 0) {
-                throw new IllegalArgumentException("Display height must be positive");
-            }
             mDisplayHeightPx = displayHeightPx;
             return this;
         }
@@ -213,9 +206,6 @@ public final class ComputerControlSessionParams implements Parcelable {
          */
         @NonNull
         public Builder setDisplayDpi(@IntRange(from = 1) int displayDpi) {
-            if (displayDpi <= 0) {
-                throw new IllegalArgumentException("Display DPI must be positive");
-            }
             mDisplayDpi = displayDpi;
             return this;
         }
@@ -228,7 +218,7 @@ public final class ComputerControlSessionParams implements Parcelable {
          */
         @NonNull
         public Builder setDisplaySurface(@NonNull Surface displaySurface) {
-            mDisplaySurface = Objects.requireNonNull(displaySurface);
+            mDisplaySurface = displaySurface;
             return this;
         }
 

@@ -136,14 +136,14 @@ public class ComputerControlSessionTest {
 
     @Test
     public void tap_taps() throws Exception {
-        mSession.tap(0.1f, 0.2f);
-        verify(mIComputerControlSession).tap(eq(0.1f), eq(0.2f));
+        mSession.tap(1, 2);
+        verify(mIComputerControlSession).tap(eq(1), eq(2));
     }
 
     @Test
     public void swipe_swipes() throws Exception {
-        mSession.swipe(0.1f, 0.2f, 0.3f, 0.4f);
-        verify(mIComputerControlSession).swipe(eq(0.1f), eq(0.2f), eq(0.3f), eq(0.4f));
+        mSession.swipe(1, 2, 3, 4);
+        verify(mIComputerControlSession).swipe(eq(1), eq(2), eq(3), eq(4));
     }
 
     @Test
