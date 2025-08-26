@@ -796,7 +796,7 @@
     <!-- Label indicating network has been manually marked as unmetered -->
     <string name="wifi_unmetered_label">Unmetered</string>
     <!-- UI debug setting: limit size of Android logger buffers -->
-    <string name="select_logd_size_title">Logger buffer sizes</string>
+    <string name="select_logd_size_title">Logger buffer size</string>
     <!-- UI debug setting: limit size of Android logger buffers [CHAR LIMIT=59] -->
     <string name="select_logd_size_dialog_title">Select Logger sizes per log buffer</string>
     <!-- UI debug setting: store logs persistently -->
