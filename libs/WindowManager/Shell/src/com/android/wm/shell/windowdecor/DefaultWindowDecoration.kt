@@ -453,6 +453,8 @@ constructor(
                     insetSourceFlags = insetSourceFlags or FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR
                 }
             }
+            inputFeatures =
+                inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE
         }
 
         // The configuration used to layout the window decoration. A copy is made instead of using
