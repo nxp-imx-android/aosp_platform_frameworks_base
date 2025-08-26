@@ -60,8 +60,9 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.animation.scene.mechanics.TileRevealFlag
+import com.android.compose.gesture.gesturesDisabled
+import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
@@ -164,7 +165,12 @@ constructor(
 
         LaunchedEffectWithLifecycle(key1 = Unit) { contentViewModel.detectShadeModeChanges() }
 
-        Box(modifier = modifier.graphicsLayer { alpha = contentAlphaFromBrightnessMirror }) {
+        Box(
+            modifier =
+                modifier
+                    .graphicsLayer { alpha = contentAlphaFromBrightnessMirror }
+                    .thenIf(showBrightnessMirror) { Modifier.gesturesDisabled() }
+        ) {
             OverlayShade(
                 panelElement = QuickSettingsShade.Elements.Panel,
                 alignmentOnWideScreens = Alignment.TopEnd,

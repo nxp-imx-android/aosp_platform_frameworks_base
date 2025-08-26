@@ -66,6 +66,7 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
@@ -162,7 +163,10 @@ constructor(
             viewModel = viewModel,
             headerViewModel = viewModel.qsContainerViewModel.shadeHeaderViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-            modifier = modifier.graphicsLayer { alpha = contentAlpha },
+            modifier =
+                modifier
+                    .graphicsLayer { alpha = contentAlpha }
+                    .thenIf(brightnessMirrorShowing) { Modifier.gesturesDisabled() },
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
         )

@@ -35,6 +35,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -74,6 +75,7 @@ constructor(
     dumpManager: DumpManager,
     private val stackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val lockscreenAppearanceInteractor: LockscreenNotificationDisplayConfigInteractor,
+    brightnessMirrorShowingInteractorLazy: Lazy<BrightnessMirrorShowingInteractor>,
     shadeInteractor: ShadeInteractor,
     shadeModeInteractor: ShadeModeInteractor,
     bouncerInteractor: BouncerInteractor,
@@ -249,12 +251,23 @@ constructor(
             flowOf(0f)
         }
 
+    private val brightnessMirrorShowing: Flow<Boolean> =
+        if (SceneContainerFlag.isEnabled) {
+            brightnessMirrorShowingInteractorLazy.get().isShowing
+        } else {
+            flowOf(false)
+        }
+
     /**
      * Whether the Notifications are interactive for touches, accessibility, and focus. When false,
      * scene container will handle touches.
      */
     val interactive: Flow<Boolean> =
-        blurFraction.map { it != 1f }.distinctUntilChanged().dumpWhileCollecting("interactive")
+        combine(blurFraction, brightnessMirrorShowing) { blurFraction, brightnessMirrorShowing ->
+                blurFraction != 1f && !brightnessMirrorShowing
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("interactive")
 
     /** Whether we should close any open notification guts. */
     val shouldCloseGuts: Flow<Boolean> = stackAppearanceInteractor.shouldCloseGuts

@@ -66,6 +66,7 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
@@ -103,6 +104,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 
 object Shade {
@@ -431,7 +433,13 @@ private fun ContentScope.SplitShade(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize().graphicsLayer { alpha = contentAlpha }) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .graphicsLayer { alpha = contentAlpha }
+                .thenIf(brightnessMirrorShowing) { Modifier.gesturesDisabled() }
+    ) {
         ShadePanelScrim(viewModel.isTransparencyEnabled)
 
         Column(modifier = Modifier.fillMaxSize()) {
