@@ -68,6 +68,8 @@ import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
 import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.development.ui.compose.BuildNumber
+import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
@@ -259,6 +261,7 @@ private fun ContentScope.QuickSettingsContainer(
                 QuickSettingsLayout(
                     qsContainerViewModel = containerViewModel,
                     toolbarViewModelFactory = contentViewModel.toolbarViewModelFactory,
+                    buildNumberViewModelFactory = contentViewModel.buildNumberViewModelFactory,
                     isTransparencyEnabled = contentViewModel.isTransparencyEnabled,
                     volumeSliderViewModel = contentViewModel.volumeSliderViewModel,
                     audioDetailsViewModelFactory = contentViewModel.audioDetailsViewModelFactory,
@@ -274,6 +277,7 @@ private fun ContentScope.QuickSettingsContainer(
 private fun ContentScope.QuickSettingsLayout(
     qsContainerViewModel: QuickSettingsContainerViewModel,
     toolbarViewModelFactory: ToolbarViewModel.Factory,
+    buildNumberViewModelFactory: BuildNumberViewModel.Factory,
     isTransparencyEnabled: Boolean,
     volumeSliderViewModel: AudioStreamSliderViewModel?,
     audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
@@ -398,6 +402,21 @@ private fun ContentScope.QuickSettingsLayout(
                 modifier = Modifier.fillMaxWidth(),
                 enableRevealEffect = TileRevealFlag.isEnabled,
             )
+
+            val buildNumberViewModel =
+                rememberViewModel("QuickSettingsShadeOverlay.BuildNumber") {
+                    buildNumberViewModelFactory.create()
+                }
+
+            if (buildNumberViewModel.buildNumber != null) {
+                VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
+                BuildNumber(
+                    viewModel = buildNumberViewModel,
+                    modifier =
+                        Modifier.align(Alignment.Start)
+                            .padding(start = QuickSettingsShade.Dimensions.Padding),
+                )
+            }
 
             VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
         }
