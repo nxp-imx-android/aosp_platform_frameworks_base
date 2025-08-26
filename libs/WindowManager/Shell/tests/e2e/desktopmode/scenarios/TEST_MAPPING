@@ -199,6 +199,9 @@
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-maximize-MaximizeUnfocusedAppWindowTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionResizeAndDragTest"
     },
     {

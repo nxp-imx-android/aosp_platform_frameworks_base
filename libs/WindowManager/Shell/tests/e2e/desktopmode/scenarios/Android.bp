@@ -131,6 +131,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
+        "com.android.wm.shell.functional.maximize.MaximizeUnfocusedAppWindowTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionResizeAndDragTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionWithMaxDesktopWindowsTest",
         "com.android.wm.shell.functional.mediaprojection.StartScreenMediaProjectionWithMaxDesktopWindowsTest",
@@ -590,6 +591,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-maximize-MaximizeUnfocusedAppWindowTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.maximize.MaximizeUnfocusedAppWindowTest"],
 }
 
 test_module_config {
