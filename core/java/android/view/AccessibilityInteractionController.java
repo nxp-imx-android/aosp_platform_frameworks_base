@@ -33,7 +33,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -1302,11 +1301,11 @@ public final class AccessibilityInteractionController {
 
     private boolean handleClickableSpanActionUiThread(
             View view, int virtualDescendantId, Bundle arguments) {
-        Parcelable span = arguments.getParcelable(ACTION_ARGUMENT_ACCESSIBLE_CLICKABLE_SPAN);
-        if (!(span instanceof AccessibilityClickableSpan)) {
+        AccessibilityClickableSpan span = arguments.getParcelable(
+                ACTION_ARGUMENT_ACCESSIBLE_CLICKABLE_SPAN, AccessibilityClickableSpan.class);
+        if (span == null) {
             return false;
         }
-
         // Find the original ClickableSpan if it's still on the screen
         AccessibilityNodeInfo infoWithSpan = null;
         AccessibilityNodeProvider provider = view.getAccessibilityNodeProvider();
@@ -1320,7 +1319,7 @@ public final class AccessibilityInteractionController {
         }
 
         // Click on the corresponding span
-        ClickableSpan clickableSpan = ((AccessibilityClickableSpan) span).findClickableSpan(
+        ClickableSpan clickableSpan = span.findClickableSpan(
                 infoWithSpan.getOriginalText());
         if (clickableSpan != null) {
             clickableSpan.onClick(view);
