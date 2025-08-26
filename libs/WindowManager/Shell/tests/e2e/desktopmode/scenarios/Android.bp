@@ -92,6 +92,7 @@ test_module_config {
         "com.android.wm.shell.functional.UnmaximizeAppWindowTest",
         "com.android.wm.shell.functional.UnminimizeAppFromAllAppsTest",
         "com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest",
+        "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest",
         "com.android.wm.shell.functional.exit.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.exit.ExitDesktopToSplitScreenWithAppHeaderMenuTest",
@@ -300,6 +301,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-appcompat-ResizeActivityEmbeddedAppToMinimumWindowTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest"],
 }
 
 test_module_config {
