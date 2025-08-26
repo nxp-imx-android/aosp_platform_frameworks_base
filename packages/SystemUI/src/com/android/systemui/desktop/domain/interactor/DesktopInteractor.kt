@@ -21,6 +21,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.onConfigChanged
 import javax.inject.Inject
@@ -51,4 +52,9 @@ constructor(
                 SharingStarted.WhileSubscribed(),
                 resources.getBoolean(R.bool.config_enableDesktopFeatureSet),
             )
+
+    // TODO(441100057): This should support Connected Displays.
+    val isNotificationShadeOnTopEnd: Boolean =
+        resources.getBoolean(R.bool.config_notificationShadeOnTopEnd) &&
+            StatusBarForDesktop.isEnabled
 }

@@ -18,10 +18,12 @@ package com.android.systemui.notifications.ui.viewmodel
 
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
 import android.content.res.Configuration
+import android.content.res.mainResources
 import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -31,13 +33,19 @@ import com.android.systemui.authentication.data.repository.FakeAuthenticationRep
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
+import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -50,12 +58,17 @@ import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
+import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
+import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.update
@@ -107,6 +120,32 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         testScope.runTest {
             setEnableDesktopFeatureSet(true)
             assertThat(underTest.showHeader).isTrue()
+        }
+
+    @Test
+    @DisableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun alignmentOnWideScreens_statusBarForDesktopDisabled_topStart() =
+        testScope.runTest {
+            assertThat(kosmos.createTestInstance().alignmentOnWideScreens)
+                .isEqualTo(Alignment.TopStart)
+        }
+
+    @Test
+    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun alignmentOnWideScreens_configDisabled_statusBarForDesktopEnabled_topStart() =
+        testScope.runTest {
+            overrideConfig(R.bool.config_notificationShadeOnTopEnd, false)
+            assertThat(kosmos.createTestInstance().alignmentOnWideScreens)
+                .isEqualTo(Alignment.TopStart)
+        }
+
+    @Test
+    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun alignmentOnWideScreens_configEnabled_statusBarForDesktopEnabled_topEnd() =
+        testScope.runTest {
+            overrideConfig(R.bool.config_notificationShadeOnTopEnd, true)
+            assertThat(kosmos.createTestInstance().alignmentOnWideScreens)
+                .isEqualTo(Alignment.TopEnd)
         }
 
     @Test
@@ -259,11 +298,34 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     }
 
     private fun setEnableDesktopFeatureSet(enable: Boolean) {
-        kosmos.testableContext.orCreateTestableResources.addOverride(
-            R.bool.config_enableDesktopFeatureSet,
-            enable,
-        )
+        overrideConfig(R.bool.config_enableDesktopFeatureSet, enable)
         kosmos.configurationController.onConfigurationChanged(Configuration())
+    }
+
+    private fun overrideConfig(configId: Int, value: Boolean) {
+        kosmos.testableContext.orCreateTestableResources.addOverride(configId, value)
+    }
+
+    private fun Kosmos.createTestInstance(): NotificationsShadeOverlayContentViewModel {
+        val desktopInteractor =
+            DesktopInteractor(
+                resources = mainResources,
+                scope = backgroundScope,
+                configurationController = configurationController,
+            )
+        return NotificationsShadeOverlayContentViewModel(
+            mainDispatcher = testDispatcher,
+            shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
+            notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
+            sceneInteractor = sceneInteractor,
+            shadeInteractor = shadeInteractor,
+            shadeModeInteractor = shadeModeInteractor,
+            disableFlagsInteractor = disableFlagsInteractor,
+            mediaCarouselInteractor = mediaCarouselInteractor,
+            windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+            desktopInteractor = desktopInteractor,
+            mediaViewModelFactory = mediaViewModelFactory,
+        )
     }
 
     private suspend fun TestScope.unlockDevice() {

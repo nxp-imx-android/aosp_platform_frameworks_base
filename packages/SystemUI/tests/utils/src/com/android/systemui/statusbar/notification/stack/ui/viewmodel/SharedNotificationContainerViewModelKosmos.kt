@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -115,6 +116,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         primaryBouncerTransitions = fakeBouncerTransitions,
         aodBurnInViewModel = aodBurnInViewModel,
         communalSceneInteractor = communalSceneInteractor,
+        desktopInteractor = desktopInteractor,
         headsUpNotificationInteractor = { headsUpNotificationInteractor },
         largeScreenHeaderHelperLazy = { largeScreenHeaderHelper },
         unfoldTransitionInteractor = unfoldTransitionInteractor,

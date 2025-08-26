@@ -17,17 +17,25 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.content.applicationContext
+import android.content.res.mainResources
+import android.content.testableContext
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX
+import com.android.systemui.Flags.FLAG_STATUS_BAR_FOR_DESKTOP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
+import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
+import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.BrokenWithSceneContainer
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -37,6 +45,7 @@ import com.android.systemui.flags.parameterizeSceneContainerFlag
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BurnInModel
 import com.android.systemui.keyguard.shared.model.KeyguardState.ALTERNATE_BOUNCER
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
@@ -52,9 +61,40 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
+import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToGoneTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToGlanceableHubTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToGoneTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToOccludedTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.dozingToGlanceableHubTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.dozingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.dozingToOccludedTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.dozingToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.dreamingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToAodTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.goneToAodTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.goneToDozingTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.goneToDreamingTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.goneToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardRootViewModel
+import com.android.systemui.keyguard.ui.viewmodel.lockscreenToDreamingTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGlanceableHubTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGoneTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.lockscreenToOccludedTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.lockscreenToPrimaryBouncerTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.occludedToAodTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.occludedToGoneTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.occludedToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.offToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.primaryBouncerToGoneTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.primaryBouncerToLockscreenTransitionViewModel
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
@@ -72,13 +112,21 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.largeScreenHeaderHelper
 import com.android.systemui.shade.mockLargeScreenHeaderHelper
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
+import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.sharedNotificationContainerInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel.HorizontalPosition
+import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
+import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 import com.android.systemui.window.ui.viewmodel.fakeBouncerTransitions
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
@@ -164,6 +212,25 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
+    @EnableSceneContainer
+    @EnableFlags(FLAG_STATUS_BAR_FOR_DESKTOP)
+    fun validateMarginStart_dualShade_isNotificationShadeOnTopEnd() =
+        kosmos.runTest {
+            testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_notificationShadeOnTopEnd,
+                true,
+            )
+            enableDualShade(wideLayout = true)
+
+            val underTest = createTestInstance()
+            val dimens by collectLastValue(underTest.configurationBasedDimensions)
+
+            fakeConfigurationRepository.onAnyConfigurationChange()
+
+            assertThat(checkNotNull(dimens).marginStart).isEqualTo(0)
+        }
+
+    @Test
     @DisableSceneContainer
     fun validateHorizontalPosition_singleShade() =
         kosmos.runTest {
@@ -239,6 +306,26 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
+    @EnableSceneContainer
+    @EnableFlags(FLAG_STATUS_BAR_FOR_DESKTOP)
+    fun validateHorizontalPosition_dualShade_isNotificationShadeOnTopEnd() =
+        kosmos.runTest {
+            testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_notificationShadeOnTopEnd,
+                true,
+            )
+            enableDualShade(wideLayout = true)
+            overrideDimensionPixelSize(R.dimen.shade_panel_width, 200)
+
+            val underTest = createTestInstance()
+            val dimens by collectLastValue(underTest.configurationBasedDimensions)
+
+            val horizontalPosition = checkNotNull(dimens).horizontalPosition
+            assertIs<HorizontalPosition.MiddleToEdge>(horizontalPosition)
+            assertThat(horizontalPosition.maxWidth).isEqualTo(200)
+        }
+
+    @Test
     fun validatePaddingTop_splitShade_usesLargeHeaderHelper() =
         kosmos.runTest {
             enableSplitShade()
@@ -295,6 +382,26 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             fakeConfigurationRepository.onAnyConfigurationChange()
 
             assertThat(dimens!!.marginEnd).isEqualTo(50)
+        }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(FLAG_STATUS_BAR_FOR_DESKTOP)
+    fun validateMarginEnd_dualShade_isNotificationShadeOnTopEnd() =
+        kosmos.runTest {
+            testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_notificationShadeOnTopEnd,
+                true,
+            )
+            enableDualShade(wideLayout = true)
+            overrideResource(R.dimen.shade_panel_margin_horizontal, 50)
+
+            val underTest = createTestInstance()
+            val dimens by collectLastValue(underTest.configurationBasedDimensions)
+
+            fakeConfigurationRepository.onAnyConfigurationChange()
+
+            assertThat(checkNotNull(dimens).marginEnd).isEqualTo(50)
         }
 
     @Test
@@ -1640,5 +1747,71 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
     private fun Kosmos.overrideDimensionPixelSize(id: Int, pixelSize: Int) {
         overrideResource(id, pixelSize)
         fakeConfigurationRepository.setDimensionPixelSize(id, pixelSize)
+    }
+
+    private fun Kosmos.createTestInstance(): SharedNotificationContainerViewModel {
+        val desktopInteractor =
+            DesktopInteractor(
+                resources = mainResources,
+                scope = backgroundScope,
+                configurationController = configurationController,
+            )
+        return SharedNotificationContainerViewModel(
+            interactor = sharedNotificationContainerInteractor,
+            dumpManager = dumpManager,
+            applicationScope = applicationCoroutineScope,
+            context = applicationContext,
+            configurationInteractor = configurationInteractor,
+            keyguardInteractor = keyguardInteractor,
+            keyguardTransitionInteractor = keyguardTransitionInteractor,
+            shadeInteractor = shadeInteractor,
+            sceneInteractor = sceneInteractor,
+            bouncerInteractor = bouncerInteractor,
+            shadeModeInteractor = shadeModeInteractor,
+            notificationStackAppearanceInteractor = notificationStackAppearanceInteractor,
+            alternateBouncerToGoneTransitionViewModel = alternateBouncerToGoneTransitionViewModel,
+            alternateBouncerToPrimaryBouncerTransitionViewModel =
+                alternateBouncerToPrimaryBouncerTransitionViewModel,
+            aodToGoneTransitionViewModel = aodToGoneTransitionViewModel,
+            aodToLockscreenTransitionViewModel = aodToLockscreenTransitionViewModel,
+            aodToOccludedTransitionViewModel = aodToOccludedTransitionViewModel,
+            aodToPrimaryBouncerTransitionViewModel = aodToPrimaryBouncerTransitionViewModel,
+            dozingToGlanceableHubTransitionViewModel = dozingToGlanceableHubTransitionViewModel,
+            dozingToLockscreenTransitionViewModel = dozingToLockscreenTransitionViewModel,
+            dozingToOccludedTransitionViewModel = dozingToOccludedTransitionViewModel,
+            dozingToPrimaryBouncerTransitionViewModel = dozingToPrimaryBouncerTransitionViewModel,
+            dreamingToLockscreenTransitionViewModel = dreamingToLockscreenTransitionViewModel,
+            goneToAodTransitionViewModel = goneToAodTransitionViewModel,
+            goneToDozingTransitionViewModel = goneToDozingTransitionViewModel,
+            goneToDreamingTransitionViewModel = goneToDreamingTransitionViewModel,
+            goneToLockscreenTransitionViewModel = goneToLockscreenTransitionViewModel,
+            glanceableHubToLockscreenTransitionViewModel =
+                glanceableHubToLockscreenTransitionViewModel,
+            lockscreenToDreamingTransitionViewModel = lockscreenToDreamingTransitionViewModel,
+            lockscreenToGlanceableHubTransitionViewModel =
+                lockscreenToGlanceableHubTransitionViewModel,
+            lockscreenToGoneTransitionViewModel = lockscreenToGoneTransitionViewModel,
+            lockscreenToOccludedTransitionViewModel = lockscreenToOccludedTransitionViewModel,
+            lockscreenToPrimaryBouncerTransitionViewModel =
+                lockscreenToPrimaryBouncerTransitionViewModel,
+            occludedToAodTransitionViewModel = occludedToAodTransitionViewModel,
+            occludedToGoneTransitionViewModel = occludedToGoneTransitionViewModel,
+            occludedToLockscreenTransitionViewModel = occludedToLockscreenTransitionViewModel,
+            offToLockscreenTransitionViewModel = offToLockscreenTransitionViewModel,
+            primaryBouncerToGoneTransitionViewModel = primaryBouncerToGoneTransitionViewModel,
+            primaryBouncerToLockscreenTransitionViewModel =
+                primaryBouncerToLockscreenTransitionViewModel,
+            primaryBouncerTransitions = fakeBouncerTransitions,
+            aodBurnInViewModel = aodBurnInViewModel,
+            communalSceneInteractor = communalSceneInteractor,
+            desktopInteractor = desktopInteractor,
+            headsUpNotificationInteractor = { headsUpNotificationInteractor },
+            largeScreenHeaderHelperLazy = { largeScreenHeaderHelper },
+            unfoldTransitionInteractor = unfoldTransitionInteractor,
+            glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
+            aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
+            activeNotificationsInteractor = activeNotificationsInteractor,
+            mediaDataManager = legacyMediaDataManagerImpl,
+        )
     }
 }
