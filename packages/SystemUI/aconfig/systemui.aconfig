@@ -60,6 +60,13 @@ flag {
 }
 
 flag {
+  name: "show_icon_in_empty_shade"
+  namespace: "systemui"
+  description: "Show a representative icon when there are no notifications in the shade."
+  bug: "388472403"
+}
+
+flag {
    name: "notification_row_is_removed_fix"
    namespace: "systemui"
    description: "Fix incorrect isRemoved value in ExpandableNotificationRow"

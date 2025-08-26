@@ -112,6 +112,8 @@ import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
+import com.android.systemui.statusbar.notification.emptyshade.ui.shared.flag.ShowIconInEmptyShade;
+import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeIconView;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimationEvent;
@@ -303,7 +305,7 @@ public class NotificationStackScrollLayout
     private boolean mShouldShowShelfOnly;
     protected boolean mScrollingEnabled;
     protected FooterView mFooterView;
-    protected EmptyShadeView mEmptyShadeView;
+    protected StackScrollerDecorView mEmptyShadeView;
     private boolean mClearAllInProgress;
     private boolean mFlingAfterUpEvent;
     /**
@@ -5155,7 +5157,11 @@ public class NotificationStackScrollLayout
         }
 
         if (mEmptyShadeView != null) {
-            mEmptyShadeView.setTextColors(onSurface, onSurfaceVariant);
+            if (ShowIconInEmptyShade.isEnabled()) {
+                ((EmptyShadeIconView) mEmptyShadeView).setContentColor(onSurface);
+            } else {
+                ((EmptyShadeView) mEmptyShadeView).setTextColors(onSurface, onSurfaceVariant);
+            }
         }
     }
 
@@ -5281,7 +5287,8 @@ public class NotificationStackScrollLayout
         addView(mFooterView, index);
     }
 
-    public void setEmptyShadeView(EmptyShadeView emptyShadeView) {
+    /** Bind the {@link EmptyShadeView} to the NSSL. */
+    public void setEmptyShadeView(StackScrollerDecorView emptyShadeView) {
         int index = -1;
         if (mEmptyShadeView != null) {
             index = indexOfChild(mEmptyShadeView);

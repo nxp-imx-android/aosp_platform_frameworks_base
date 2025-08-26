@@ -1721,6 +1721,9 @@
         }
     </string>
 
+    <!-- The text to show in the notifications shade when there are no notifications [CHAR LIMIT=100] -->
+    <string name="caught_up_shade_text">You\'re all caught up!</string>
+
     <!-- Media projection permission dialog action text. [CHAR LIMIT=60] -->
     <string name="media_projection_action_text">Start now</string>
 

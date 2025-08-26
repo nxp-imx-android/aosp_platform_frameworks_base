@@ -66,21 +66,23 @@ sealed class Icon {
         }
 
         override fun equals(other: Any?): Boolean {
-            val that = other as? Loaded ?: return false
+            if (other !is Loaded) {
+                return false
+            }
 
             // If both icons provide a resId, only use package+resId for identification, so that
             // drawable copies or mutations of the same base resource are considered equal.
-            if (this.resId != null && that.resId != null) {
-                return this.resId == that.resId &&
-                    this.packageName == that.packageName &&
-                    this.contentDescription == that.contentDescription
+            if (this.resId != null && other.resId != null) {
+                return this.resId == other.resId &&
+                    this.packageName == other.packageName &&
+                    this.contentDescription == other.contentDescription
             }
 
             // Otherwise, compare everything.
-            return this.resId == that.resId &&
-                this.packageName == that.packageName &&
-                this.drawable == that.drawable &&
-                this.contentDescription == that.contentDescription
+            return this.resId == other.resId &&
+                this.packageName == other.packageName &&
+                this.drawable == other.drawable &&
+                this.contentDescription == other.contentDescription
         }
 
         override fun hashCode(): Int {
