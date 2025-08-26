@@ -2735,6 +2735,23 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
     }
 
     @GuardedBy("mLock")
+    @NonNull
+    private List<IBinder> getAllNonFinishingContainerTokens() {
+        final List<IBinder> tokens = new ArrayList<>();
+        for (int i = 0; i < mTaskContainers.size(); i++) {
+            final TaskContainer taskContainer = mTaskContainers.valueAt(i);
+            final List<IBinder> tokensPerTask = taskContainer
+                    .getTaskFragmentContainers()
+                    .stream()
+                    .filter(c -> !c.isFinished())
+                    .map(TaskFragmentContainer::getTaskFragmentToken)
+                    .toList();
+            tokens.addAll(tokensPerTask);
+        }
+        return tokens;
+    }
+
+    @GuardedBy("mLock")
     private boolean isAssociatedWithOverlay(@NonNull Activity activity) {
         final TaskContainer taskContainer = getTaskContainer(getTaskId(activity));
         if (taskContainer == null) {
@@ -3086,9 +3103,15 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
      */
     @VisibleForTesting
     class ActivityStartMonitor extends Instrumentation.ActivityMonitor {
+
+        /**
+         * Keeps track of the current starting activity Intent if it is also used to create a new
+         * TaskFragment as {@link TaskFragmentContainer#getPendingAppearedIntent()}.
+         */
         @VisibleForTesting
+        @Nullable
         @GuardedBy("mLock")
-        Intent mCurrentIntent;
+        Intent mCurrentPendingAppearedIntent;
 
         @Override
         public Instrumentation.ActivityResult onStartActivity(@NonNull Context who,
@@ -3109,9 +3132,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
             // TODO(b/295993745): Use KEY_LAUNCH_TASK_FRAGMENT_TOKEN after WM Jetpack migrates to
             // bundle. This is still needed to support #setLaunchingActivityStack.
             if (options.getBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN) != null) {
-                synchronized (mLock) {
-                    mCurrentIntent = intent;
-                }
                 return super.onStartActivity(who, intent, options);
             }
 
@@ -3142,6 +3162,10 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                         .startNewTransaction();
                 transactionRecord.setOriginType(TASK_FRAGMENT_TRANSIT_OPEN);
                 final WindowContainerTransaction wct = transactionRecord.getTransaction();
+
+                // Track the existing TFs before the operation.
+                final List<IBinder> allExistingTFTokens = getAllNonFinishingContainerTokens();
+
                 final TaskFragmentContainer launchedInTaskFragment;
                 if (launchingActivity != null) {
                     final String overlayTag = options.getString(KEY_OVERLAY_TAG);
@@ -3171,12 +3195,18 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                     // Amend the request to let the WM know that the activity should be placed in
                     // the dedicated container.
                     // TODO(b/229680885): skip override launching TaskFragment token by split-rule
-                    options.putBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN,
-                            launchedInTaskFragment.getTaskFragmentToken());
+                    final IBinder tfToken = launchedInTaskFragment.getTaskFragmentToken();
+                    options.putBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN, tfToken);
                     if (activityEmbeddingDelayTaskFragmentFinishForActivityLaunch()) {
                         launchedInTaskFragment.setActivityLaunchHint();
                     }
-                    mCurrentIntent = intent;
+                    if (!allExistingTFTokens.contains(tfToken)) {
+                        // When we are creating a new TaskFragment for this Intent, keep track of it
+                        // in case the startActivity fails, so that we can cleanup early.
+                        // If the TF is an existing one, this Intent will not be kept as a pending
+                        // appeared Intent.
+                        mCurrentPendingAppearedIntent = intent;
+                    }
                 } else {
                     transactionRecord.abort();
                 }
@@ -3189,18 +3219,19 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
         public void onStartActivityResult(int result, @NonNull Bundle bOptions) {
             super.onStartActivityResult(result, bOptions);
             synchronized (mLock) {
-                if (mCurrentIntent != null && result != START_SUCCESS) {
+                if (mCurrentPendingAppearedIntent != null && result != START_SUCCESS) {
                     // Clear the pending appeared intent if the activity was not started
                     // successfully.
                     final IBinder token = bOptions.getBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN);
                     if (token != null) {
                         final TaskFragmentContainer container = getContainer(token);
                         if (container != null) {
-                            container.clearPendingAppearedIntentIfNeeded(mCurrentIntent);
+                            container.clearPendingAppearedIntentIfNeeded(
+                                    mCurrentPendingAppearedIntent);
                         }
                     }
                 }
-                mCurrentIntent = null;
+                mCurrentPendingAppearedIntent = null;
             }
         }
     }
