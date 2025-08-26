@@ -17,12 +17,15 @@
 package com.android.settingslib.bluetooth.hearingdevices.metrics;
 
 import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.CONNECTED_HISTORY_EXPIRED_DAY;
-import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARABLE_DEVICES_CONNECTED;
-import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARABLE_DEVICES_PAIRED;
-import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARING_DEVICES_CONNECTED;
-import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARING_DEVICES_PAIRED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARABLE_CONNECTED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARABLE_PAIRED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARING_CONNECTED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_HEARING_PAIRED;
 import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_LE_HEARABLE_CONNECTED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_LE_HEARABLE_PAIRED;
 import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_LE_HEARING_CONNECTED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_LE_HEARING_PAIRED;
+import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.HistoryType.TYPE_UNKNOWN;
 import static com.android.settingslib.bluetooth.hearingdevices.metrics.HearingDeviceStatsLogUtils.PAIRED_HISTORY_EXPIRED_DAY;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -44,6 +47,7 @@ import com.android.settingslib.bluetooth.HeadsetProfile;
 import com.android.settingslib.bluetooth.HearingAidProfile;
 import com.android.settingslib.bluetooth.LeAudioProfile;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,7 +68,7 @@ import java.util.concurrent.TimeUnit;
 public class HearingDeviceStatsLogUtilsTest {
 
     private static final String TEST_DEVICE_ADDRESS = "00:A1:A1:A1:A1:A1";
-    private static final int TEST_HISTORY_TYPE = TYPE_HEARING_DEVICES_CONNECTED;
+    private static final int TEST_HISTORY_TYPE = TYPE_HEARING_CONNECTED;
 
     @Rule
     public final MockitoRule mockito = MockitoJUnit.rule();
@@ -74,10 +78,13 @@ public class HearingDeviceStatsLogUtilsTest {
     @Mock
     private CachedBluetoothDevice mCachedBluetoothDevice;
 
+    @Before
+    public void setUp() {
+        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_DEVICE_ADDRESS);
+    }
+
     @Test
     public void setBondEntryForDevice_addsEntryToDeviceAddressToBondEntryMap() {
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_DEVICE_ADDRESS);
-
         HearingDeviceStatsLogUtils.setBondEntryForDevice(
                 FrameworkStatsLog.HEARING_AID_INFO_REPORTED__BOND_ENTRY__BLUETOOTH,
                 mCachedBluetoothDevice);
@@ -91,8 +98,6 @@ public class HearingDeviceStatsLogUtilsTest {
 
     @Test
     public void logHearingAidInfo_removesEntryFromDeviceAddressToBondEntryMap() {
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_DEVICE_ADDRESS);
-
         HearingDeviceStatsLogUtils.setBondEntryForDevice(
                 FrameworkStatsLog.HEARING_AID_INFO_REPORTED__BOND_ENTRY__BLUETOOTH,
                 mCachedBluetoothDevice);
@@ -149,12 +154,12 @@ public class HearingDeviceStatsLogUtilsTest {
 
     @Test
     public void getUserCategory_hearingDevices() {
-        prepareConnectedHistory(TYPE_HEARING_DEVICES_CONNECTED);
+        prepareConnectedHistory(TYPE_HEARING_CONNECTED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_HEARING_DEVICES);
 
-        preparePairedHistory(TYPE_HEARING_DEVICES_PAIRED);
+        preparePairedHistory(TYPE_HEARING_PAIRED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_NEW_HEARING_DEVICES);
@@ -162,12 +167,12 @@ public class HearingDeviceStatsLogUtilsTest {
 
     @Test
     public void getUserCategory_hearableDevices() {
-        prepareConnectedHistory(TYPE_HEARABLE_DEVICES_CONNECTED);
+        prepareConnectedHistory(TYPE_HEARABLE_CONNECTED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_HEARABLE_DEVICES);
 
-        preparePairedHistory(TYPE_HEARABLE_DEVICES_PAIRED);
+        preparePairedHistory(TYPE_HEARABLE_PAIRED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_NEW_HEARABLE_DEVICES);
@@ -175,13 +180,13 @@ public class HearingDeviceStatsLogUtilsTest {
 
     @Test
     public void getUserCategory_leHearingDevices() {
-        prepareConnectedHistory(TYPE_HEARING_DEVICES_CONNECTED);
+        prepareConnectedHistory(TYPE_HEARING_CONNECTED);
         prepareConnectedHistory(TYPE_LE_HEARING_CONNECTED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_LE_HEARING_DEVICES);
 
-        preparePairedHistory(TYPE_HEARING_DEVICES_PAIRED);
+        preparePairedHistory(TYPE_LE_HEARING_PAIRED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_NEW_LE_HEARING_DEVICES);
@@ -189,13 +194,13 @@ public class HearingDeviceStatsLogUtilsTest {
 
     @Test
     public void getUserCategory_leHearableDevices() {
-        prepareConnectedHistory(TYPE_HEARABLE_DEVICES_CONNECTED);
+        prepareConnectedHistory(TYPE_HEARABLE_CONNECTED);
         prepareConnectedHistory(TYPE_LE_HEARABLE_CONNECTED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_LE_HEARABLE_DEVICES);
 
-        preparePairedHistory(TYPE_HEARABLE_DEVICES_PAIRED);
+        preparePairedHistory(TYPE_LE_HEARABLE_PAIRED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_NEW_LE_HEARABLE_DEVICES);
@@ -203,8 +208,8 @@ public class HearingDeviceStatsLogUtilsTest {
 
     @Test
     public void getUserCategory_bothHearingAndHearableDevices_returnHearingDevicesUser() {
-        prepareConnectedHistory(TYPE_HEARING_DEVICES_CONNECTED);
-        prepareConnectedHistory(TYPE_HEARABLE_DEVICES_CONNECTED);
+        prepareConnectedHistory(TYPE_HEARING_CONNECTED);
+        prepareConnectedHistory(TYPE_HEARABLE_CONNECTED);
 
         assertThat(HearingDeviceStatsLogUtils.getUserCategory(mContext)).isEqualTo(
                 HearingDeviceStatsLogUtils.CATEGORY_HEARING_DEVICES);
@@ -218,7 +223,7 @@ public class HearingDeviceStatsLogUtilsTest {
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 ashaProfile, BluetoothProfile.STATE_CONNECTED);
 
-        assertHistorySize(TYPE_HEARING_DEVICES_CONNECTED, 1);
+        assertHistorySize(TYPE_HEARING_CONNECTED, 1);
     }
 
     @Test
@@ -240,7 +245,7 @@ public class HearingDeviceStatsLogUtilsTest {
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 leAudioProfile, BluetoothProfile.STATE_CONNECTED);
 
-        assertHistorySize(TYPE_HEARING_DEVICES_CONNECTED, 0);
+        assertHistorySize(TYPE_HEARING_CONNECTED, 0);
         assertHistorySize(TYPE_LE_HEARING_CONNECTED, 0);
 
     }
@@ -256,7 +261,7 @@ public class HearingDeviceStatsLogUtilsTest {
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 hapClientProfile, BluetoothProfile.STATE_CONNECTED);
 
-        assertHistorySize(TYPE_HEARING_DEVICES_CONNECTED, 0);
+        assertHistorySize(TYPE_HEARING_CONNECTED, 0);
         assertHistorySize(TYPE_LE_HEARING_CONNECTED, 1);
     }
 
@@ -268,18 +273,90 @@ public class HearingDeviceStatsLogUtilsTest {
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 a2dpProfile, BluetoothProfile.STATE_CONNECTED);
 
-        assertHistorySize(TYPE_HEARABLE_DEVICES_CONNECTED, 1);
+        assertHistorySize(TYPE_HEARABLE_CONNECTED, 1);
     }
 
     @Test
-    public void updateHistoryIfNeeded_hearableDevice_leAudioConnected_historyCorrect() {
-        prepareHearableDevice();
+    public void updateHistoryIfNeeded_leHearableDevice_leAudioConnected_historyCorrect() {
+        prepareLeHearableDevice();
 
         LeAudioProfile leAudioProfile = mock(LeAudioProfile.class);
         HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
                 leAudioProfile, BluetoothProfile.STATE_CONNECTED);
 
         assertHistorySize(TYPE_LE_HEARABLE_CONNECTED, 1);
+    }
+
+    @Test
+    public void updateHistoryIfNeeded_ashaHearingDevice_justBonded_historyCorrect() {
+        prepareAshaHearingDevice();
+        HearingDeviceStatsLogUtils.addToJustBonded(TEST_DEVICE_ADDRESS);
+
+        HearingAidProfile ashaProfile = mock(HearingAidProfile.class);
+        HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
+                ashaProfile, BluetoothProfile.STATE_CONNECTED);
+
+        assertHistorySize(TYPE_HEARING_PAIRED, 1);
+        assertHistorySize(TYPE_HEARING_CONNECTED, 1);
+    }
+
+    @Test
+    public void updateHistoryIfNeeded_leAudioHearingDevice_justBonded_historyCorrect() {
+        prepareLeAudioHearingDevice();
+        HearingDeviceStatsLogUtils.addToJustBonded(TEST_DEVICE_ADDRESS);
+
+        HapClientProfile hapClientProfile = mock(HapClientProfile.class);
+        HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
+                hapClientProfile, BluetoothProfile.STATE_CONNECTED);
+
+        assertHistorySize(TYPE_LE_HEARING_PAIRED, 1);
+        assertHistorySize(TYPE_LE_HEARING_CONNECTED, 1);
+    }
+
+    @Test
+    public void updateHistoryIfNeeded_hearableDevice_justBonded_historyCorrect() {
+        prepareHearableDevice();
+        HearingDeviceStatsLogUtils.addToJustBonded(TEST_DEVICE_ADDRESS);
+
+        A2dpProfile a2dpProfile = mock(A2dpProfile.class);
+        HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
+                a2dpProfile, BluetoothProfile.STATE_CONNECTED);
+
+        assertHistorySize(TYPE_HEARABLE_PAIRED, 1);
+        assertHistorySize(TYPE_HEARABLE_CONNECTED, 1);
+    }
+
+    @Test
+    public void updateHistoryIfNeeded_leHearableDevice_justBonded_historyCorrect() {
+        prepareLeHearableDevice();
+        HearingDeviceStatsLogUtils.addToJustBonded(TEST_DEVICE_ADDRESS);
+
+        LeAudioProfile leAudioProfile = mock(LeAudioProfile.class);
+        HearingDeviceStatsLogUtils.updateHistoryIfNeeded(mContext, mCachedBluetoothDevice,
+                leAudioProfile, BluetoothProfile.STATE_CONNECTED);
+
+        assertHistorySize(TYPE_LE_HEARABLE_PAIRED, 1);
+        assertHistorySize(TYPE_LE_HEARABLE_CONNECTED, 1);
+    }
+
+    @Test
+    public void getLatestHistoryType_multipleHistory_returnLatestType() {
+        final long todayStartOfDay = convertToStartOfDayTime(System.currentTimeMillis());
+        HearingDeviceStatsLogUtils.addToHistory(mContext, TYPE_HEARING_CONNECTED,
+                todayStartOfDay);
+        HearingDeviceStatsLogUtils.addToHistory(mContext, TYPE_LE_HEARABLE_PAIRED,
+                todayStartOfDay + 1);
+        HearingDeviceStatsLogUtils.addToHistory(mContext, TYPE_LE_HEARING_CONNECTED,
+                todayStartOfDay + 2);
+
+        assertThat(HearingDeviceStatsLogUtils.getLatestHistoryType(mContext)).isEqualTo(
+                TYPE_LE_HEARING_CONNECTED);
+    }
+
+    @Test
+    public void getLatestHistoryType_noHistory_typeUnknown() {
+        assertThat(HearingDeviceStatsLogUtils.getLatestHistoryType(mContext)).isEqualTo(
+                TYPE_UNKNOWN);
     }
 
     private long convertToStartOfDayTime(long timestamp) {
@@ -312,8 +389,12 @@ public class HearingDeviceStatsLogUtilsTest {
     }
 
     private void prepareHearableDevice() {
-        doReturn(List.of(mock(A2dpProfile.class), mock(HeadsetProfile.class),
-                mock(LeAudioProfile.class))).when(mCachedBluetoothDevice).getProfiles();
+        doReturn(List.of(mock(A2dpProfile.class), mock(HeadsetProfile.class))).when(
+                mCachedBluetoothDevice).getProfiles();
+    }
+
+    private void prepareLeHearableDevice() {
+        doReturn(List.of(mock(LeAudioProfile.class))).when(mCachedBluetoothDevice).getProfiles();
     }
 
     private void assertHistorySize(int type, int size) {
