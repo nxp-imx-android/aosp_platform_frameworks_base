@@ -344,7 +344,7 @@
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"ចូលប្រើប្រិតិទិនរបស់អ្នក"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"សារ SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"ផ្ញើ និងមើលសារ SMS"</string>
-    <string name="permgrouplab_storage" msgid="17339216290379241">"ឯកសារ"</string>
+    <string name="permgrouplab_storage" msgid="17339216290379241">"Files"</string>
     <string name="permgroupdesc_storage" msgid="5378659041354582769">"ចូលប្រើ​ប្រាស់ឯកសារ​នៅលើ​ឧបករណ៍​របស់អ្នក"</string>
     <string name="permgrouplab_readMediaAural" msgid="1858331312624942053">"តន្រ្តី និងសំឡេង"</string>
     <string name="permgroupdesc_readMediaAural" msgid="7565467343667089595">"ចូលប្រើតន្ត្រី និងសំឡេងនៅលើឧបករណ៍របស់អ្នក"</string>
@@ -2573,7 +2573,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"ប្រតិទិន"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"ម៉ាស៊ីនគិតលេខ"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"ផែនទី"</string>
-    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"ឯកសារ"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"កម្មវិធី"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"លែងអាចសម្គាល់ស្នាមម្រាមដៃរបស់អ្នកបានទៀតហើយ។ សូមរៀបចំការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃម្ដងទៀត។"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"សុវត្ថិភាព និងឯកជនភាព"</string>

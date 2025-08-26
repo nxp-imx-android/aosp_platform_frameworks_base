@@ -336,10 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Zum Arbeitsprofil wechseln"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Zum privaten Profil in <xliff:g id="APP_NAME">%1$s</xliff:g> wechseln"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Zum Arbeitsprofil in <xliff:g id="APP_NAME">%1$s</xliff:g> wechseln"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontakte und Konten"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"auf deine Kontakte zugreifen und die Liste deiner Konten sehen, die Kontakte auf diesem Gerät speichern können"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Standort"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"auf den Standort deines Geräts zugreifen"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalender"</string>

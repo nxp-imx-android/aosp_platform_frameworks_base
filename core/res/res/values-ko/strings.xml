@@ -336,10 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"직장 프로필로 전환"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"개인 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 전환"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"직장 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 전환"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"연락처 및 계정"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"연락처에 액세스하고, 이 기기에 연락처를 저장할 수 있는 계정 목록을 확인합니다."</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"위치"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"이 기기의 위치정보에 액세스"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"캘린더"</string>

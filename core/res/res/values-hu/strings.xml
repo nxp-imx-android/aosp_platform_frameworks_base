@@ -336,10 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Váltás munkaprofilra"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Váltás személyes <xliff:g id="APP_NAME">%1$s</xliff:g>-profilra"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Váltás munkahelyi <xliff:g id="APP_NAME">%1$s</xliff:g>-profilra"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Névjegyek és fiókok"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"hozzáférhet a névjegyeihez, és megtekintheti azon fiókok listáját, amelyek névjegyeket menthetnek erre az eszközre"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Helyadatok"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"hozzáférés az eszköz földrajzi helyéhez"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Naptár"</string>
