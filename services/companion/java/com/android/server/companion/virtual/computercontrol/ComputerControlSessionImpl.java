@@ -18,6 +18,7 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
 import android.annotation.IntRange;
@@ -32,11 +33,13 @@ import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -62,6 +65,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -115,11 +120,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .setName(mParams.getName())
                 .setDevicePolicy(POLICY_TYPE_RECENTS, DEVICE_POLICY_CUSTOM)
                 .build();
-        final String permissionControllerPackage = mInjector.getPermissionControllerPackageName();
-        final ActivityPolicyExemption permissionController =
-                new ActivityPolicyExemption.Builder()
-                        .setPackageName(permissionControllerPackage)
-                        .build();
 
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
@@ -164,7 +164,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
                     virtualDeviceParams, new ComputerControlActivityListener());
-            mVirtualDevice.addActivityPolicyExemption(permissionController);
+
+            applyActivityPolicy();
 
             // Create the display with a clean identity so it can be trusted.
             mVirtualDisplayId = Binder.withCleanCallingIdentity(() -> {
@@ -207,6 +208,32 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mAppToken.linkToDeath(this, 0);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
+        }
+    }
+
+    private void applyActivityPolicy() throws RemoteException {
+        String permissionControllerPackage = mInjector.getPermissionControllerPackageName();
+
+        List<String> exemptedPackageNames = new ArrayList<>();
+        if (Flags.computerControlActivityPolicyStrict()) {
+            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
+
+            exemptedPackageNames.addAll(mParams.getTargetPackageNames());
+            exemptedPackageNames.remove(permissionControllerPackage);
+        } else if (Flags.computerControlActivityPolicyRelaxed()) {
+            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
+
+            exemptedPackageNames.addAll(mParams.getTargetPackageNames());
+            exemptedPackageNames.addAll(mInjector.getAllApplicationsWithoutLauncherActivity());
+            exemptedPackageNames.remove(permissionControllerPackage);
+        } else {
+            exemptedPackageNames.add(permissionControllerPackage);
+        }
+        for (String allowedPackageName : exemptedPackageNames) {
+            mVirtualDevice.addActivityPolicyExemption(
+                    new ActivityPolicyExemption.Builder()
+                            .setPackageName(allowedPackageName)
+                            .build());
         }
     }
 
@@ -378,6 +405,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         public String getPermissionControllerPackageName() {
             return mPackageManager.getPermissionControllerPackageName();
+        }
+
+        public List<String> getAllApplicationsWithoutLauncherActivity() {
+            List<String> result = new ArrayList<>();
+            List<ApplicationInfo> installedApplications =
+                    mPackageManager.getInstalledApplications(0);
+            for (int i = 0; i < installedApplications.size(); i++) {
+                ApplicationInfo applicationInfo = installedApplications.get(i);
+                if (mPackageManager.getLaunchIntentForPackage(applicationInfo.packageName)
+                        == null) {
+                    result.add(applicationInfo.packageName);
+                }
+            }
+            return result;
         }
 
         public void launchApplicationOnDisplayAsUser(String packageName, int displayId,
