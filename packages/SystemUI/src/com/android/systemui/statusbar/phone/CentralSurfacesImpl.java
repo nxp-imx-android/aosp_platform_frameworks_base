@@ -292,7 +292,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 public void onKeyguardShowingChanged() {
                     boolean occluded = mKeyguardStateController.isOccluded();
                     mStatusBarHideIconsForBouncerManager.setIsOccludedAndTriggerUpdate(occluded);
-                    mScrimController.setKeyguardOccluded(occluded);
+                    if (!SceneContainerFlag.isEnabled()) {
+                        mScrimController.setKeyguardOccluded(occluded);
+                    }
                 }
             };
 
@@ -667,7 +669,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             Lazy<NotificationActivityStarter> notificationActivityStarterLazy,
             NotificationLaunchAnimatorControllerProvider notifTransitionAnimatorControllerProvider,
             DozeParameters dozeParameters,
-            ScrimController scrimController,
+            Lazy<ScrimController> scrimController,
             Lazy<BiometricUnlockController> biometricUnlockControllerLazy,
             AuthRippleController authRippleController,
             DozeServiceHost dozeServiceHost,
@@ -778,7 +780,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mDozeServiceHost = dozeServiceHost;
         mPowerManager = powerManager;
         mDozeParameters = dozeParameters;
-        mScrimController = scrimController;
+        mScrimController = SceneContainerFlag.isEnabled() ? null : scrimController.get();
         mDozeScrimController = dozeScrimController;
         mBiometricUnlockControllerLazy = biometricUnlockControllerLazy;
         mAuthRippleController = authRippleController;
@@ -1279,10 +1281,12 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 .findViewById(R.id.scrim_notifications);
         ScrimView scrimInFront = getNotificationShadeWindowView().findViewById(R.id.scrim_in_front);
 
-        mScrimController.setScrimVisibleListener(scrimsVisible -> {
-            mNotificationShadeWindowController.setScrimsVisibility(scrimsVisible);
-        });
-        mScrimController.attachViews(scrimBehind, notificationsScrim, scrimInFront);
+        if (!SceneContainerFlag.isEnabled()) {
+            mScrimController.setScrimVisibleListener(scrimsVisible -> {
+                mNotificationShadeWindowController.setScrimsVisibility(scrimsVisible);
+            });
+            mScrimController.attachViews(scrimBehind, notificationsScrim, scrimInFront);
+        }
 
         mLightRevealScrim.setScrimOpaqueChangedListener((opaque) -> {
             Runnable updateOpaqueness = () -> {
@@ -2314,7 +2318,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     @Override
     public void finishKeyguardFadingAway() {
         mKeyguardStateController.notifyKeyguardDoneFading();
-        mScrimController.setExpansionAffectsAlpha(true);
+        if (!SceneContainerFlag.isEnabled()) {
+            mScrimController.setExpansionAffectsAlpha(true);
+        }
 
         // If the device was re-locked while unlocking, we might have a pending lock that was
         // delayed because the keyguard was in the middle of going away.
@@ -2325,22 +2331,24 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
      * Switches theme from light to dark and vice-versa.
      */
     protected void updateTheme() {
-        // Set additional scrim only if the lock and system wallpaper are different to prevent
-        // applying the dimming effect twice.
-        mUiBgExecutor.execute(() -> {
-            float dimAmount = 0f;
-            // Note that access to WallpaperManager APIs should be guarded by a check into
-            // WallpaperManager#isWallpaperSupported. Form factors that do not use wallpaper
-            // may crash SysUI during improper access. ref: b/355307617
-            if (!mWallpaperSupported || mWallpaperManager.lockScreenWallpaperExists()) {
-                dimAmount = mWallpaperManager.getWallpaperDimAmount();
-            }
-            final float scrimDimAmount = dimAmount;
-            mMainExecutor.execute(() -> {
-                mScrimController.setAdditionalScrimBehindAlphaKeyguard(scrimDimAmount);
-                mScrimController.applyCompositeAlphaOnScrimBehindKeyguard();
+        if (!SceneContainerFlag.isEnabled()) {
+            // Set additional scrim only if the lock and system wallpaper are different to prevent
+            // applying the dimming effect twice.
+            mUiBgExecutor.execute(() -> {
+                float dimAmount = 0f;
+                // Note that access to WallpaperManager APIs should be guarded by a check into
+                // WallpaperManager#isWallpaperSupported. Form factors that do not use wallpaper
+                // may crash SysUI during improper access. ref: b/355307617
+                if (!mWallpaperSupported || mWallpaperManager.lockScreenWallpaperExists()) {
+                    dimAmount = mWallpaperManager.getWallpaperDimAmount();
+                }
+                final float scrimDimAmount = dimAmount;
+                mMainExecutor.execute(() -> {
+                    mScrimController.setAdditionalScrimBehindAlphaKeyguard(scrimDimAmount);
+                    mScrimController.applyCompositeAlphaOnScrimBehindKeyguard();
+                });
             });
-        });
+        }
 
         // Lock wallpaper defines the color of the majority of the views, hence we'll use it
         // to set our default theme.
@@ -2394,7 +2402,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
      */
     @Override
     public boolean shouldKeyguardHideImmediately() {
-        return mScrimController.getState() == ScrimState.BOUNCER_SCRIMMED;
+        return !SceneContainerFlag.isEnabled()
+                && mScrimController.getState() == ScrimState.BOUNCER_SCRIMMED;
     }
 
     private void showBouncerOrLockScreenIfKeyguard() {
@@ -2702,7 +2711,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         @Override
         public void onScreenTurnedOn() {
             if (SceneContainerFlag.isEnabled()) {
-                // Already handled in ScrimStartable when the scene framework is enabled.
+                // Scrims handled in Compose when the scene framework is enabled.
                 return;
             }
 
@@ -2773,7 +2782,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
      */
     @Override
     public void setPrimaryBouncerHiddenFraction(float expansion) {
-        mScrimController.setBouncerHiddenFraction(expansion);
+        if (!SceneContainerFlag.isEnabled()) {
+            mScrimController.setBouncerHiddenFraction(expansion);
+        }
     }
 
     @Override

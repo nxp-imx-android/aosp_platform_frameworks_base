@@ -111,7 +111,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
         mKosmos = new KosmosJavaAdapter(this);
         mDozeServiceHost = new DozeServiceHost(mDozeLog, mPowerManager, mWakefullnessLifecycle,
                 mStatusBarStateController, mDeviceProvisionedController,
-                mHeadsUpManager, mBatteryController, mScrimController,
+                mHeadsUpManager, mBatteryController, () -> mScrimController,
                 () -> mBiometricUnlockController, () -> mAssistManager, mDozeScrimController,
                 mKeyguardUpdateMonitor, mPulseExpansionHandler, mNotificationShadeWindowController,
                 mNotificationWakeUpCoordinator, mAuthController,

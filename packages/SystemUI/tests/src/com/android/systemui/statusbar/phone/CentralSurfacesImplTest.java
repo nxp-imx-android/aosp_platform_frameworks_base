@@ -140,7 +140,6 @@ import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor;
-import com.android.systemui.scene.domain.startable.ScrimStartable;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.settings.brightness.BrightnessSliderController;
@@ -604,7 +603,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 (Lazy<NotificationActivityStarter>) () -> mNotificationActivityStarter,
                 mNotifTransitionAnimControllerProvider,
                 mDozeParameters,
-                mScrimController,
+                () -> mScrimController,
                 mBiometricUnlockControllerLazy,
                 mAuthRippleController,
                 mDozeServiceHost,
@@ -1196,25 +1195,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableSceneContainer
-    public void brightnesShowingChanged_sceneContainerFlagEnabled_ScrimControllerNotified() {
-        final ScrimStartable scrimStartable = mKosmos.getScrimStartable();
-        scrimStartable.start();
-
-        mBrightnessMirrorShowingRepository.setMirrorShowing(true);
-        mTestScope.getTestScheduler().runCurrent();
-        verify(mScrimController, atLeastOnce()).transitionTo(ScrimState.BRIGHTNESS_MIRROR);
-
-        mBrightnessMirrorShowingRepository.setMirrorShowing(false);
-        mTestScope.getTestScheduler().runCurrent();
-        ArgumentCaptor<ScrimState> captor = ArgumentCaptor.forClass(ScrimState.class);
-        // The default is to call the one with the callback argument
-        verify(mScrimController, atLeastOnce()).transitionTo(captor.capture());
-        assertThat(captor.getValue()).isNotEqualTo(ScrimState.BRIGHTNESS_MIRROR);
-    }
-
-    @Test
-    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
+    @DisableSceneContainer // Scrims updated elsewhere when the scene framework is enabled.
     @EnableFlags(QSComposeFragment.FLAG_NAME)
     public void brightnesShowingChanged_qsUiRefactorFlagEnabled_ScrimControllerNotified() {
         mBrightnessMirrorShowingRepository.setMirrorShowing(true);
@@ -1231,7 +1212,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
+    @DisableSceneContainer // Scrims updated elsewhere when the scene framework is enabled.
     @DisableFlags(QSComposeFragment.FLAG_NAME)
     public void brightnesShowingChanged_flagsDisabled_ScrimControllerNotified() {
         mBrightnessMirrorShowingRepository.setMirrorShowing(true);

@@ -134,7 +134,7 @@ public final class DozeServiceHost implements DozeHost {
             SysuiStatusBarStateController statusBarStateController,
             DeviceProvisionedController deviceProvisionedController,
             HeadsUpManager headsUpManager, BatteryController batteryController,
-            ScrimController scrimController,
+            Lazy<ScrimController> scrimController,
             Lazy<BiometricUnlockController> biometricUnlockControllerLazy,
             Lazy<AssistManager> assistManagerLazy,
             DozeScrimController dozeScrimController, KeyguardUpdateMonitor keyguardUpdateMonitor,
@@ -157,7 +157,7 @@ public final class DozeServiceHost implements DozeHost {
         mDeviceProvisionedController = deviceProvisionedController;
         mHeadsUpManager = headsUpManager;
         mBatteryController = batteryController;
-        mScrimController = scrimController;
+        mScrimController = SceneContainerFlag.isEnabled() ? null : scrimController.get();
         mBiometricUnlockControllerLazy = biometricUnlockControllerLazy;
         mAssistManagerLazy = assistManagerLazy;
         mDozeScrimController = dozeScrimController;
@@ -310,7 +310,7 @@ public final class DozeServiceHost implements DozeHost {
             return;
         }
 
-        if (reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
+        if (mScrimController != null && reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
             mScrimController.setWakeLockScreenSensorActive(true);
         }
 
@@ -333,7 +333,9 @@ public final class DozeServiceHost implements DozeHost {
                 mPulsing = false;
                 callback.onPulseFinished(); // requestState(DozeMachine.State.DOZE_PULSE_DONE)
                 mCentralSurfaces.updateNotificationPanelTouchState();
-                mScrimController.setWakeLockScreenSensorActive(false);
+                if (mScrimController != null) {
+                    mScrimController.setWakeLockScreenSensorActive(false);
+                }
                 setPulsing(false);
             }
 
@@ -408,7 +410,7 @@ public final class DozeServiceHost implements DozeHost {
 
     @Override
     public void extendPulse(int reason) {
-        if (reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
+        if (mScrimController != null && reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
             mScrimController.setWakeLockScreenSensorActive(true);
         }
         if (mDozeScrimController.isPulsing() && mHeadsUpManager.hasNotifications()) {
@@ -504,7 +506,7 @@ public final class DozeServiceHost implements DozeHost {
     public void cancelGentleSleep() {
         mPendingScreenOffCallback = null;
         mHasPendingScreenOffCallbackChangeListener.onHasPendingScreenOffCallbackChanged(false);
-        if (mScrimController.getState() == ScrimState.OFF) {
+        if (mScrimController != null && mScrimController.getState() == ScrimState.OFF) {
             mCentralSurfaces.updateScrimController();
         }
     }
