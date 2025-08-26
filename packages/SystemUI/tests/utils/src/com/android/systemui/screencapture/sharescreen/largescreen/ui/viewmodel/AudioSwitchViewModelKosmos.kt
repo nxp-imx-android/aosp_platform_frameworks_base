@@ -18,11 +18,12 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 
 val Kosmos.audioSwitchViewModelFactory by Fixture {
     object : AudioSwitchViewModel.Factory {
         override fun create(): AudioSwitchViewModel {
-            return AudioSwitchViewModel()
+            return AudioSwitchViewModel(drawableLoaderViewModelImpl)
         }
     }
 }
