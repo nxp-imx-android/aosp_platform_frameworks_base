@@ -2974,8 +2974,8 @@ public final class JobStatus {
                     TimeUtils.formatDuration(job.getTriggerContentMaxDelay(), pw);
                     pw.println();
                 }
-                pw.print("Has media backup exemption", mHasMediaBackupExemption).println();
             }
+            pw.print("Has media backup exemption", mHasMediaBackupExemption).println();
             if (job.getExtras() != null && !job.getExtras().isDefinitelyEmpty()) {
                 pw.print("Extras: ");
                 pw.println(job.getExtras().toShortString());
