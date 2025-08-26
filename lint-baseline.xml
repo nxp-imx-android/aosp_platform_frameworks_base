@@ -3952,28 +3952,6 @@
 
     <issue
         id="FlaggedApi"
-        message="Field `BIOMETRIC_NO_AUTHENTICATION` is a flagged API and should be inside an `if (Flags.lastAuthenticationTime())` check (or annotate the surrounding method `getLastAuthTime` with `@FlaggedApi(Flags.FLAG_LAST_AUTHENTICATION_TIME) to transfer requirement to caller`)"
-        errorLine1="            return BiometricConstants.BIOMETRIC_NO_AUTHENTICATION;"
-        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/keystore/java/android/security/KeyStoreAuthorization.java"
-            line="139"
-            column="39"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="Field `BIOMETRIC_NO_AUTHENTICATION` is a flagged API and should be inside an `if (Flags.lastAuthenticationTime())` check (or annotate the surrounding method `getLastAuthTime` with `@FlaggedApi(Flags.FLAG_LAST_AUTHENTICATION_TIME) to transfer requirement to caller`)"
-        errorLine1="            return BiometricConstants.BIOMETRIC_NO_AUTHENTICATION;"
-        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/keystore/java/android/security/KeyStoreAuthorization.java"
-            line="145"
-            column="39"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
         message="Field `PERSISTENT_DATA_BLOCK_SERVICE` is a flagged API and should be inside an `if (Flags.frpEnforcement())` check (or annotate the surrounding method `createConfirmFactoryResetCredentialIntent` with `@FlaggedApi(Flags.FLAG_FRP_ENFORCEMENT) to transfer requirement to caller`)"
         errorLine1="                    ServiceManager.getService(Context.PERSISTENT_DATA_BLOCK_SERVICE));"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
