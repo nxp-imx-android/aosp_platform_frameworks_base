@@ -1011,11 +1011,6 @@ class TaskFragmentContainer {
     }
 
     @NonNull
-    IBinder getToken() {
-        return mParcelableData.mToken;
-    }
-
-    @NonNull
     ParcelableTaskFragmentContainerData getParcelableData() {
         return mParcelableData;
     }
