@@ -2259,12 +2259,7 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
     }
 
     @Override
-    public void onWindowSizeIsChanging(Rect newBounds, boolean fullscreen, Rect systemInsets,
-            Rect stableInsets) {}
-
-    @Override
-    public void onWindowDragResizeStart(Rect initialBounds, boolean fullscreen, Rect systemInsets,
-            Rect stableInsets) {
+    public void onWindowDragResizeStart() {
         if (mWindow.isDestroyed()) {
             // If the owner's window is gone, we should not be able to come here anymore.
             return;
