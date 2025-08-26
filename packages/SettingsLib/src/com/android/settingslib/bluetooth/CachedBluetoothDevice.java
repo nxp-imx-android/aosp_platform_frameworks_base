@@ -1090,7 +1090,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                     "onUuidChanged: Time since last connect/manual disconnect="
                             + (SystemClock.elapsedRealtime() - lastConnectAttempted)
                             + ", last connect attempt: "
-                            + mConnectAttempted);
+                            + mConnectAttempted
+                            + ", device: "
+                            + mDevice.getAnonymizedAddress());
         }
 
         /*
@@ -2544,6 +2546,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         final short tmpRssi = mRssi;
         final boolean tmpJustDiscovered = mJustDiscovered;
         final HearingAidInfo tmpHearingAidInfo = mHearingAidInfo;
+        final long tmpConnectAttempted = mConnectAttempted;
+        final boolean tmpIsAclConnectedBrEdr = mIsAclConnectedBrEdr;
+        final boolean tmpIsAclConnectedLe = mIsAclConnectedLe;
 
         // Set main device from sub device
         release();
@@ -2558,6 +2563,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         mRssi = newMainDevice.mRssi;
         mJustDiscovered = newMainDevice.mJustDiscovered;
         mHearingAidInfo = newMainDevice.mHearingAidInfo;
+        mConnectAttempted = newMainDevice.mConnectAttempted;
+        mIsAclConnectedBrEdr = newMainDevice.mIsAclConnectedBrEdr;
+        mIsAclConnectedLe = newMainDevice.mIsAclConnectedLe;
         fillData();
 
         // Set sub device from backup
@@ -2566,6 +2574,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         newMainDevice.mRssi = tmpRssi;
         newMainDevice.mJustDiscovered = tmpJustDiscovered;
         newMainDevice.mHearingAidInfo = tmpHearingAidInfo;
+        newMainDevice.mConnectAttempted = tmpConnectAttempted;
+        newMainDevice.mIsAclConnectedBrEdr = tmpIsAclConnectedBrEdr;
+        newMainDevice.mIsAclConnectedLe = tmpIsAclConnectedLe;
         newMainDevice.fillData();
 
         // Add the sub device back into mMemberDevices with correct hash
