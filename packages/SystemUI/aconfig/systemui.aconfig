@@ -981,13 +981,6 @@ flag {
 }
 
 flag {
-    name: "qs_edit_mode_tabs"
-    namespace: "systemui"
-    description: "Splits the Quick Settings edit mode in tabs. This feature is for the compose version of Quick Settings."
-    bug: "416236871"
-}
-
-flag {
     name: "qs_edit_mode_v2"
     namespace: "systemui"
     description: "Updates the removal process of tiles and improves tiles selection."

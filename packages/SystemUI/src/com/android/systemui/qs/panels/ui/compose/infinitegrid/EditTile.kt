@@ -169,7 +169,6 @@ import com.android.systemui.common.ui.compose.load
 import com.android.systemui.common.ui.icons.MoreVert
 import com.android.systemui.common.ui.icons.Undo
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.DragAndDropState
 import com.android.systemui.qs.panels.ui.compose.DragType
@@ -200,11 +199,9 @@ import com.android.systemui.qs.panels.ui.compose.selection.TileState
 import com.android.systemui.qs.panels.ui.compose.selection.rememberResizingState
 import com.android.systemui.qs.panels.ui.compose.selection.rememberSelectionState
 import com.android.systemui.qs.panels.ui.compose.selection.selectableTile
-import com.android.systemui.qs.panels.ui.compose.tabs.EditModeTabs
 import com.android.systemui.qs.panels.ui.model.GridCell
 import com.android.systemui.qs.panels.ui.model.SpacerGridCell
 import com.android.systemui.qs.panels.ui.model.TileGridCell
-import com.android.systemui.qs.panels.ui.viewmodel.EditModeTabViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModelConstants.APP_ICON_INLINE_CONTENT_ID
 import com.android.systemui.qs.panels.ui.viewmodel.EditTopBarActionViewModel
@@ -462,68 +459,37 @@ fun DefaultEditTileGrid(
                 }
             }
 
-            if (QsEditModeTabs.isEnabled) {
-                val editModeTabViewModel = remember { EditModeTabViewModel() }
-                EditModeScrollableColumnWithTabs(
+            EditModeScrollableColumn(
+                listState = listState,
+                selectionState = selectionState,
+                innerPadding = innerPadding,
+                scrollState = scrollState,
+                onEditAction = onEditAction,
+            ) {
+                CurrentTilesGridHeader(
+                    listState,
+                    selectionState,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                )
+
+                CurrentTilesGrid(
                     listState = listState,
                     selectionState = selectionState,
-                    innerPadding = innerPadding,
-                    scrollState = scrollState,
                     onEditAction = onEditAction,
-                    editModeTabViewModel = editModeTabViewModel,
-                ) {
-                    CurrentTilesGrid(
-                        listState = listState,
-                        selectionState = selectionState,
-                        canRemoveTiles = editModeTabViewModel.selectedTab.isTilesEditingAllowed,
-                        canLayoutTiles = editModeTabViewModel.selectedTab.isTilesLayoutAllowed,
-                        onEditAction = onEditAction,
-                    )
+                )
 
-                    AnimatedAvailableTilesGrid(
-                        allTiles = allTiles,
-                        listState = listState,
-                        selectionState = selectionState,
-                        onEditAction = onEditAction,
-                        canLayoutTile = editModeTabViewModel.selectedTab.isTilesLayoutAllowed,
-                        showAvailableTiles = editModeTabViewModel.selectedTab.isTilesEditingAllowed,
-                    )
-                }
-            } else {
-                EditModeScrollableColumn(
+                // Only show available tiles when a drag or placement isn't in progress, OR the
+                // drag is within the current tiles grid
+                AnimatedAvailableTilesGrid(
+                    allTiles = allTiles,
                     listState = listState,
                     selectionState = selectionState,
-                    innerPadding = innerPadding,
-                    scrollState = scrollState,
                     onEditAction = onEditAction,
-                ) {
-                    CurrentTilesGridHeader(
-                        listState,
-                        selectionState,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    )
-
-                    CurrentTilesGrid(
-                        listState = listState,
-                        selectionState = selectionState,
-                        canRemoveTiles = true,
-                        canLayoutTiles = true,
-                        onEditAction = onEditAction,
-                    )
-
-                    // Only show available tiles when a drag or placement isn't in progress, OR the
-                    // drag is within the current tiles grid
-                    AnimatedAvailableTilesGrid(
-                        allTiles = allTiles,
-                        listState = listState,
-                        selectionState = selectionState,
-                        onEditAction = onEditAction,
-                        canLayoutTile = true,
-                        showAvailableTiles =
-                            !(listState.dragInProgress || selectionState.placementEnabled) ||
-                                listState.dragType == DragType.Move,
-                    )
-                }
+                    canLayoutTile = true,
+                    showAvailableTiles =
+                        !(listState.dragInProgress || selectionState.placementEnabled) ||
+                            listState.dragType == DragType.Move,
+                )
             }
         }
     }
@@ -561,64 +527,6 @@ private fun EditModeScrollableColumn(
                 },
     ) {
         content()
-
-        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
-    }
-}
-
-@Composable
-private fun EditModeScrollableColumnWithTabs(
-    listState: EditTileListState,
-    selectionState: MutableSelectionState,
-    innerPadding: PaddingValues,
-    scrollState: ScrollState,
-    onEditAction: (EditAction) -> Unit,
-    editModeTabViewModel: EditModeTabViewModel,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
-        modifier =
-            modifier
-                .fillMaxSize()
-                // Apply top padding before the scroll so the scrollable doesn't show under
-                // the top bar
-                .padding(top = innerPadding.calculateTopPadding()),
-    ) {
-        Column(
-            verticalArrangement =
-                spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
-            modifier =
-                Modifier.weight(1f)
-                    .fillMaxWidth()
-                    .clipScrollableContainer(Orientation.Vertical)
-                    .clip(RoundedCornerShape(GridBackgroundCornerRadius))
-                    .verticalScroll(scrollState)
-                    .dragAndDropRemoveZone(listState) { spec, removalEnabled ->
-                        if (removalEnabled) {
-                            // If removal is enabled, remove the tile
-                            onEditAction(EditAction.RemoveTile(spec))
-                        } else {
-                            // Otherwise submit the new tile ordering
-                            onEditAction(EditAction.SetTiles(listState.tileSpecs()))
-                            selectionState.select(spec)
-                        }
-                    },
-        ) {
-            TabGridHeader(
-                editModeTabViewModel.selectedTab.headerResId,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            )
-
-            content()
-        }
-
-        // Disable tab selection while a drag is in progress
-        EditModeTabs(editModeTabViewModel, enabled = !listState.dragInProgress) {
-            selectionState.unSelect()
-        }
 
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
     }
@@ -757,8 +665,6 @@ private fun EditGridCenteredText(text: String, modifier: Modifier = Modifier) {
 private fun CurrentTilesGrid(
     listState: EditTileListState,
     selectionState: MutableSelectionState,
-    canRemoveTiles: Boolean,
-    canLayoutTiles: Boolean,
     onEditAction: (EditAction) -> Unit,
 ) {
     val currentListState by rememberUpdatedState(listState)
@@ -805,8 +711,6 @@ private fun CurrentTilesGrid(
             listState = listState,
             selectionState = selectionState,
             gridState = gridState,
-            canRemoveTiles = canRemoveTiles,
-            canLayoutTiles = canLayoutTiles,
             coroutineScope = coroutineScope,
             onRemoveTile = { onEditAction(EditAction.RemoveTile(it)) },
         ) { resizingOperation ->
@@ -986,8 +890,6 @@ private fun GridCell.key(index: Int): Any {
  * @param listState the [EditTileListState] for this grid
  * @param selectionState the [MutableSelectionState] for this grid
  * @param gridState the [LazyGridState] for this grid
- * @param canRemoveTiles whether tiles can be removed from this grid
- * @param canLayoutTiles whether tiles can be reordered/resized
  * @param coroutineScope the [CoroutineScope] to be used for the tiles
  * @param onRemoveTile the callback when a tile is removed from this grid
  * @param onResize the callback when a tile has a new [ResizeOperation]
@@ -996,8 +898,6 @@ fun LazyGridScope.EditTiles(
     listState: EditTileListState,
     selectionState: MutableSelectionState,
     gridState: LazyGridState,
-    canRemoveTiles: Boolean,
-    canLayoutTiles: Boolean,
     coroutineScope: CoroutineScope,
     onRemoveTile: (TileSpec) -> Unit,
     onResize: (operation: ResizeOperation) -> Unit,
@@ -1028,8 +928,6 @@ fun LazyGridScope.EditTiles(
                         dragAndDropState = listState,
                         selectionState = selectionState,
                         gridState = gridState,
-                        canRemoveTile = canRemoveTiles,
-                        canLayoutTile = canLayoutTiles,
                         onResize = onResize,
                         onRemoveTile = onRemoveTile,
                         coroutineScope = coroutineScope,
@@ -1050,14 +948,12 @@ fun LazyGridScope.EditTiles(
 private fun rememberTileState(
     tile: EditTileViewModel,
     selectionState: MutableSelectionState,
-    canRemoveTile: Boolean,
 ): State<TileState> {
     val tileState = remember { mutableStateOf(TileState.None) }
-    val canShowRemovalBadge = canRemoveTile && tile.isRemovable
 
-    LaunchedEffect(selectionState.selection, selectionState.placementEnabled, canShowRemovalBadge) {
+    LaunchedEffect(selectionState.selection, selectionState.placementEnabled, tile.isRemovable) {
         tileState.value =
-            selectionState.tileStateFor(tile.tileSpec, tileState.value, canShowRemovalBadge)
+            selectionState.tileStateFor(tile.tileSpec, tileState.value, tile.isRemovable)
     }
 
     return tileState
@@ -1070,8 +966,6 @@ private fun LazyGridItemScope.TileGridCell(
     dragAndDropState: DragAndDropState,
     selectionState: MutableSelectionState,
     gridState: LazyGridState,
-    canRemoveTile: Boolean,
-    canLayoutTile: Boolean,
     onResize: (operation: ResizeOperation) -> Unit,
     onRemoveTile: (TileSpec) -> Unit,
     coroutineScope: CoroutineScope,
@@ -1079,7 +973,7 @@ private fun LazyGridItemScope.TileGridCell(
     modifier: Modifier = Modifier,
 ) {
     val stateDescription = stringResource(id = R.string.accessibility_qs_edit_position, index + 1)
-    val tileState by rememberTileState(cell.tile, selectionState, canRemoveTile)
+    val tileState by rememberTileState(cell.tile, selectionState)
     val resizingState = rememberResizingState(cell.tile.tileSpec, cell.isIcon)
     val progress: () -> Float = {
         if (tileState == TileState.Selected) {
@@ -1167,8 +1061,8 @@ private fun LazyGridItemScope.TileGridCell(
         // usually happens when resizing a tile multiple times. We can fix this by applying the
         // draggable modifier after the first frame
         var isSelectable by remember { mutableStateOf(false) }
-        LaunchedEffect(canLayoutTile, dragAndDropState.dragInProgress) {
-            isSelectable = canLayoutTile && !dragAndDropState.dragInProgress
+        LaunchedEffect(dragAndDropState.dragInProgress) {
+            isSelectable = !dragAndDropState.dragInProgress
         }
         val selectableModifier = Modifier.selectableTile(cell.tile.tileSpec, selectionState)
         val draggableModifier =
