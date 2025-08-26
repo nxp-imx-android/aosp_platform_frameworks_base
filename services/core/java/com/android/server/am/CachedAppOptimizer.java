@@ -2024,7 +2024,7 @@ public class CachedAppOptimizer {
          */
         @GuardedBy({"mAm"})
         private void freezeProcess(final ProcessRecord proc) {
-            int pid = proc.getPid(); // Unlocked intentionally
+            final int pid;
             final String name = proc.processName;
             final long unfrozenDuration;
             final boolean frozen;
@@ -2046,7 +2046,7 @@ public class CachedAppOptimizer {
                     return;
                 }
 
-                if (opt.shouldNotFreeze()) {
+                if (opt.shouldNotFreeze() && !Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                     if (DEBUG_FREEZER) {
                         Slog.d(TAG_AM, "Skipping freeze because process is marked "
                                 + "should not be frozen");
