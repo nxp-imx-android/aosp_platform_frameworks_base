@@ -20,6 +20,7 @@ import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.service.notification.Flags.splitSoundVibrationForNotificationBreakthrough;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -83,6 +84,7 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.notification.NotificationChannelGroupsHelper;
+import com.android.internal.util.ArrayUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -2571,6 +2573,19 @@ public class NotificationManager {
                 PRIORITY_CATEGORY_CONVERSATIONS,
         };
 
+        /**
+         * @hide
+         */
+        public static final int ALL_PRIORITY_CATEGORIES_MASK = buildAllCategoriesMask();
+
+        private static int buildAllCategoriesMask() {
+            int mask = 0;
+            for (int category : ALL_PRIORITY_CATEGORIES) {
+                mask |= category;
+            }
+            return mask;
+        }
+
         /** @hide */
         @IntDef(prefix = { "PRIORITY_SENDERS_" }, value = {
                 PRIORITY_SENDERS_ANY,
@@ -2746,6 +2761,37 @@ public class NotificationManager {
          */
         public final int state;
 
+        /** @hide */
+        public static final int ALLOWED_INTERRUPTION_TYPE_UNSET = -1;
+
+        /**
+         * The priority categories whose sound is allowed in Do Not Disturb mode.
+         * Bitmask of PRIORITY_CATEGORIES_* constants. Use this
+         * with{@link allowVibrationForPriorityCategory} to achieve a granular control over the
+         * bypass dnd effect for selected categories.
+         *
+         * <p>
+         *      Note: Currently only the following categories respect this mask:
+         *      {@link PRIORITY_CATEGORY_ALARMS}
+         *
+         * @hide
+         */
+        public final int allowSoundForPriorityCategory;
+
+        /**
+         * The priority categories whose vibration is allowed in Do Not Disturb mode.
+         * Bitmask of PRIORITY_CATEGORIES_* constants. Use this with
+         * {@link allowSoundForPriorityCategory} to achieve a granular control over the bypass
+         * dnd effect for selected categories.
+         *
+         * <p>
+         *      Note: Currently only the following categories respect this mask:
+         *      {@link PRIORITY_CATEGORY_ALARMS}
+         *
+         * @hide
+         */
+        public final int allowVibrationForPriorityCategory;
+
         /**
          * Constructs a policy for Do Not Disturb priority mode behavior.
          *
@@ -2850,13 +2896,94 @@ public class NotificationManager {
             this.suppressedVisualEffects = suppressedVisualEffects;
             this.state = state;
             this.priorityConversationSenders = priorityConversationSenders;
+            this.allowSoundForPriorityCategory = ALLOWED_INTERRUPTION_TYPE_UNSET;
+            this.allowVibrationForPriorityCategory = ALLOWED_INTERRUPTION_TYPE_UNSET;
         }
 
+        /**
+         * Constructs a policy for Do Not Disturb priority mode behavior.
+         *
+         * <p>
+         *      This is the only constructor that allows setting
+         *      {@link #allowSoundForPriorityCategory} and
+         *      {@link #allowVibrationForPriorityCategory}.
+         * <p>
+         *      When these bitmasks are set (i.e., they are not
+         *      {@link #ALLOWED_INTERRUPTION_TYPE_UNSET}), they explicitly determine whether sound
+         *      or vibration can bypass Do Not Disturb for the specified priority categories.
+         * <p>
+         *      If {@link #allowSoundForPriorityCategory} and
+         *      {@link #allowVibrationForPriorityCategory} are set (i.e., not
+         *      {@link #ALLOWED_INTERRUPTION_TYPE_UNSET}), the {@code priorityCategories} bitmask
+         *      must equal the logical inclusive OR of the sound and vibration bitmasks. Otherwise,
+         *      an {@link IllegalArgumentException} will be thrown.
+         *
+         * @param priorityCategories bitmask of categories of notifications that can bypass DND.
+         * @param priorityCallSenders which callers can bypass DND.
+         * @param priorityMessageSenders which message senders can bypass DND.
+         * @param suppressedVisualEffects which visual interruptions should be suppressed from
+         *                                notifications that are filtered by DND.
+         * @param state the internal state of the policy.
+         * @param priorityConversationSenders which conversation senders can bypass DND.
+         * @param allowSoundForPriorityCategory bitmask of categories of notifications that can
+         *                                      bypass DND with sound.
+         * @param allowVibrationForPriorityCategory bitmask of categories of notifications that can
+         *                                          bypass DND with vibration.
+         * @hide
+         */
+        @FlaggedApi(android.service.notification.Flags
+                .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+        public Policy(
+                int priorityCategories,
+                int priorityCallSenders,
+                int priorityMessageSenders,
+                int suppressedVisualEffects,
+                int state,
+                int priorityConversationSenders,
+                int allowSoundForPriorityCategory,
+                int allowVibrationForPriorityCategory) {
+            this.priorityCategories = priorityCategories;
+            this.priorityCallSenders = priorityCallSenders;
+            this.priorityMessageSenders = priorityMessageSenders;
+            this.suppressedVisualEffects = suppressedVisualEffects;
+            this.state = state;
+            this.priorityConversationSenders = priorityConversationSenders;
+            this.allowSoundForPriorityCategory = allowSoundForPriorityCategory;
+            this.allowVibrationForPriorityCategory = allowVibrationForPriorityCategory;
+            validate();
+        }
 
-        /** @hide */
-        public Policy(Parcel source) {
-            this(source.readInt(), source.readInt(), source.readInt(), source.readInt(),
-                    source.readInt(), source.readInt());
+        private void validate() {
+            boolean soundUnset = allowSoundForPriorityCategory
+                    == ALLOWED_INTERRUPTION_TYPE_UNSET;
+            boolean vibrationUnset = allowVibrationForPriorityCategory
+                    == ALLOWED_INTERRUPTION_TYPE_UNSET;
+
+            if (soundUnset != vibrationUnset) {
+                throw new IllegalArgumentException(
+                        "Cannot define policy -- allowSound and allowVibration must both "
+                                + "be initialized or unset");
+            }
+
+            if (!splitSoundVibrationForNotificationBreakthrough() || soundUnset) {
+                return;
+            }
+
+            for (int category : ALL_PRIORITY_CATEGORIES) {
+                boolean allowed = (category & priorityCategories) != 0;
+                boolean soundAllowed = (category & allowSoundForPriorityCategory) != 0;
+                boolean vibrationAllowed = (category & allowVibrationForPriorityCategory) != 0;
+                if ((vibrationAllowed || soundAllowed) != allowed) {
+                    throw new IllegalArgumentException(
+                            "Cannot define policy with priority categories: "
+                                    + priorityCategoriesToString(priorityCategories)
+                                    + ", allowed sound: "
+                                    + priorityCategoriesToString(allowSoundForPriorityCategory)
+                                    + ", allowed vibration: "
+                                    + priorityCategoriesToString(
+                                            allowVibrationForPriorityCategory));
+                }
+            }
         }
 
         @Override
@@ -2867,6 +2994,10 @@ public class NotificationManager {
             dest.writeInt(suppressedVisualEffects);
             dest.writeInt(state);
             dest.writeInt(priorityConversationSenders);
+            if (splitSoundVibrationForNotificationBreakthrough()) {
+                dest.writeInt(allowSoundForPriorityCategory);
+                dest.writeInt(allowVibrationForPriorityCategory);
+            }
         }
 
         @Override
@@ -2876,8 +3007,15 @@ public class NotificationManager {
 
         @Override
         public int hashCode() {
-            return Objects.hash(priorityCategories, priorityCallSenders, priorityMessageSenders,
-                    suppressedVisualEffects, state, priorityConversationSenders);
+            return Objects.hash(
+                        priorityCategories,
+                        priorityCallSenders,
+                        priorityMessageSenders,
+                        suppressedVisualEffects,
+                        state,
+                        priorityConversationSenders,
+                        allowSoundForPriorityCategory,
+                        allowVibrationForPriorityCategory);
         }
 
         @Override
@@ -2888,10 +3026,13 @@ public class NotificationManager {
             return other.priorityCategories == priorityCategories
                     && other.priorityCallSenders == priorityCallSenders
                     && other.priorityMessageSenders == priorityMessageSenders
-                    && suppressedVisualEffectsEqual(suppressedVisualEffects,
-                    other.suppressedVisualEffects)
+                    && suppressedVisualEffectsEqual(
+                            suppressedVisualEffects, other.suppressedVisualEffects)
                     && other.state == this.state
-                    && other.priorityConversationSenders == this.priorityConversationSenders;
+                    && other.priorityConversationSenders == this.priorityConversationSenders
+                    && other.allowSoundForPriorityCategory == this.allowSoundForPriorityCategory
+                    && other.allowVibrationForPriorityCategory
+                    == this.allowVibrationForPriorityCategory;
         }
 
         private boolean suppressedVisualEffectsEqual(int suppressedEffects,
@@ -2949,7 +3090,8 @@ public class NotificationManager {
 
         @Override
         public String toString() {
-            return new StringBuilder().append("NotificationManager.Policy[")
+            return new StringBuilder()
+                    .append("NotificationManager.Policy[")
                     .append("priorityCategories=")
                     .append(priorityCategoriesToString(priorityCategories))
                     .append(",priorityCallSenders=")
@@ -2961,15 +3103,30 @@ public class NotificationManager {
                     .append(",suppressedVisualEffects=")
                     .append(suppressedEffectsToString(suppressedVisualEffects))
                     .append(",hasPriorityChannels=")
-                    .append((state == STATE_UNSET
-                            ? "unset"
-                            : ((state & STATE_HAS_PRIORITY_CHANNELS) != 0)
-                                    ? "true"
-                                    : "false"))
+                    .append(
+                            (state == STATE_UNSET
+                                    ? "unset"
+                                    : ((state & STATE_HAS_PRIORITY_CHANNELS) != 0)
+                                            ? "true"
+                                            : "false"))
                     .append(",allowPriorityChannels=")
-                    .append((state == STATE_UNSET
-                            ? "unset"
-                            : (allowPriorityChannels() ? "true" : "false")))
+                    .append(
+                            (state == STATE_UNSET
+                                    ? "unset"
+                                    : (allowPriorityChannels() ? "true" : "false")))
+                    .append(
+                            allowSoundForPriorityCategory != ALLOWED_INTERRUPTION_TYPE_UNSET
+                                    ? ",allowSoundFor="
+                                            + priorityCategoriesToString(
+                                                    allowSoundForPriorityCategory)
+                                    : "")
+                    .append(
+                            allowVibrationForPriorityCategory
+                                            != ALLOWED_INTERRUPTION_TYPE_UNSET
+                                    ? ",allowVibrationFor="
+                                            + priorityCategoriesToString(
+                                                    allowVibrationForPriorityCategory)
+                                    : "")
                     .append("]")
                     .toString();
         }
@@ -3138,7 +3295,16 @@ public class NotificationManager {
                 = new Parcelable.Creator<Policy>() {
             @Override
             public Policy createFromParcel(Parcel in) {
-                return new Policy(in);
+                return (splitSoundVibrationForNotificationBreakthrough())
+                        ?  new Policy(
+                            in.readInt(), in.readInt(), in.readInt(),
+                            in.readInt(), in.readInt(), in.readInt(),
+                            in.readInt(), in.readInt()
+                        )
+                        : new Policy(
+                            in.readInt(), in.readInt(), in.readInt(),
+                            in.readInt(), in.readInt(), in.readInt()
+                        );
             }
 
             @Override
@@ -3190,6 +3356,28 @@ public class NotificationManager {
         /** @hide **/
         public boolean allowReminders() {
             return (priorityCategories & PRIORITY_CATEGORY_REMINDERS) != 0;
+        }
+
+        /** @hide **/
+        public boolean allowSoundFor(int priorityCategory) {
+            if (!ArrayUtils.contains(ALL_PRIORITY_CATEGORIES, priorityCategory)) {
+                throw new IllegalArgumentException("Invalid priorityCategory");
+            }
+
+            return (priorityCategories & priorityCategory) != 0
+                    && (allowSoundForPriorityCategory == ALLOWED_INTERRUPTION_TYPE_UNSET
+                    || (allowSoundForPriorityCategory & priorityCategory) != 0);
+        }
+
+        /** @hide **/
+        public boolean allowVibrationFor(int priorityCategory) {
+            if (!ArrayUtils.contains(ALL_PRIORITY_CATEGORIES, priorityCategory)) {
+                throw new IllegalArgumentException("Invalid priorityCategory");
+            }
+
+            return (priorityCategories & priorityCategory) != 0
+                    && (allowVibrationForPriorityCategory == ALLOWED_INTERRUPTION_TYPE_UNSET
+                    || (allowVibrationForPriorityCategory & priorityCategory) != 0);
         }
 
         /** @hide **/
@@ -3280,7 +3468,7 @@ public class NotificationManager {
             try {
                 writeToParcel(parcel, 0);
                 parcel.setDataPosition(0);
-                return new Policy(parcel);
+                return CREATOR.createFromParcel(parcel);
             } finally {
                 parcel.recycle();
             }

@@ -16,6 +16,7 @@
 
 package com.android.server.notification;
 
+import static android.app.NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET;
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
 import static android.Manifest.permission.POST_PROMOTED_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
@@ -133,6 +134,7 @@ import static android.service.notification.Flags.notificationRegroupOnClassifica
 import static android.service.notification.Flags.redactSensitiveNotificationsBigTextStyle;
 import static android.service.notification.Flags.redactSensitiveNotificationsFromUntrustedListeners;
 import static android.service.notification.Flags.reportNlsStartAndEnd;
+import static android.service.notification.Flags.splitSoundVibrationForNotificationBreakthrough;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_CONVERSATIONS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ONGOING;
@@ -7085,7 +7087,7 @@ public class NotificationManagerService extends SystemService {
                 }
 
                 int newVisualEffects = calculateSuppressedVisualEffects(
-                            policy, currPolicy, applicationInfo.targetSdkVersion);
+                        policy, currPolicy, applicationInfo.targetSdkVersion);
 
                 // 1. Callers should not modify STATE_CHANNELS_BYPASSING_DND, which is
                 // internally calculated and only indicates whether channels that want to bypass
@@ -7101,9 +7103,49 @@ public class NotificationManagerService extends SystemService {
                             currPolicy.hasPriorityChannels(),
                             policy.allowPriorityChannels());
                 }
-                policy = new Policy(policy.priorityCategories,
-                        policy.priorityCallSenders, policy.priorityMessageSenders,
-                        newVisualEffects, newState, policy.priorityConversationSenders);
+
+                final int priorityCategories = policy.priorityCategories;
+                if (splitSoundVibrationForNotificationBreakthrough()) {
+                    int allowSound;
+                    int allowVibration;
+
+                    if (policy.allowSoundForPriorityCategory == ALLOWED_INTERRUPTION_TYPE_UNSET
+                            || policy.allowVibrationForPriorityCategory
+                            == ALLOWED_INTERRUPTION_TYPE_UNSET) {
+                        // Caller did not specify granular control. So, we preserve the existing
+                        // granular settings if the new setting does not change the corresponding
+                        // priority bit and we discard the granular settings if the corresponding
+                        // priority bit is changed.
+
+                        // if new priority bit is 0, we disable both sound and vibration.
+                        allowSound = currPolicy.allowSoundForPriorityCategory
+                                & priorityCategories;
+                        allowVibration = currPolicy.allowVibrationForPriorityCategory
+                                & priorityCategories;
+
+                        // if new priority bit is switched from 0 -> 1, we enable both sound
+                        // and vibration.
+                        int newlyAllowedCategories =
+                                (priorityCategories ^ currPolicy.priorityCategories)
+                                        & priorityCategories;
+                        allowSound |= newlyAllowedCategories;
+                        allowVibration |= newlyAllowedCategories;
+                    } else {
+                        // Caller specified granular control. So, the passed-in policy's allow mask
+                        // will override the existing setting.
+                        allowSound = policy.allowSoundForPriorityCategory;
+                        allowVibration = policy.allowVibrationForPriorityCategory;
+                    }
+
+                    policy = new Policy(priorityCategories,
+                            policy.priorityCallSenders, policy.priorityMessageSenders,
+                            newVisualEffects, newState, policy.priorityConversationSenders,
+                            allowSound, allowVibration);
+                } else {
+                    policy = new Policy(priorityCategories,
+                            policy.priorityCallSenders, policy.priorityMessageSenders,
+                            newVisualEffects, newState, policy.priorityConversationSenders);
+                }
 
                 if (shouldApplyAsImplicitRule) {
                     mZenModeHelper.applyGlobalPolicyAsImplicitZenRule(zenUser, pkg, callingUid,

@@ -108,6 +108,13 @@ flag {
   }
 }
 
+flag {
+  name: "split_sound_vibration_for_notification_breakthrough"
+  namespace: "wear_frameworks"
+  description: "Splits sound and vibration for notification breakthrough"
+  bug: "416305811"
+}
+
 # Start: API flags
 
 flag {

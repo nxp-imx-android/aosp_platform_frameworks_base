@@ -127,6 +127,7 @@ import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG;
 import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS;
+import static android.service.notification.Flags.splitSoundVibrationForNotificationBreakthrough;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_CONVERSATIONS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ONGOING;
@@ -648,7 +649,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf();
+        return FlagsParameterization.allCombinationsOf(android.service.notification.Flags
+                .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH);
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
@@ -12714,7 +12716,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 .thenReturn(true);
         when(zenModeHelper.getActivityInfo(any())).thenReturn(new ActivityInfo());
         when(zenModeHelper.getServiceInfo(any())).thenReturn(new ServiceInfo());
+        if (splitSoundVibrationForNotificationBreakthrough()) {
+            when(zenModeHelper.getNotificationPolicy(any())).thenReturn(
+                    getSplitSoundVibrationNotificationPolicy()
+            );
+        }
         return zenModeHelper;
+    }
+
+    private Policy getSplitSoundVibrationNotificationPolicy() {
+        return new NotificationManager.Policy(
+                0, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                0, 0 // sound and vibration
+        );
     }
 
     @Test
@@ -18249,11 +18266,33 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         ZenModeHelper zenModeHelper = setUpMockZenTest();
 
-        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+        NotificationManager.Policy policy = (splitSoundVibrationForNotificationBreakthrough())
+                ? getSplitSoundVibrationNotificationPolicy()
+                : new NotificationManager.Policy(0, 0, 0);
         mBinderService.setNotificationPolicy("package", policy, false);
 
         verify(zenModeHelper).applyGlobalPolicyAsImplicitZenRule(any(), eq("package"), anyInt(),
                 eq(policy));
+    }
+
+    @Test
+    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void setNotificationPolicy_mappedToImplicitRule_splitSoundVibration_defaultCtor()
+            throws RemoteException {
+        mService.setCallerIsNormalPackage();
+        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
+
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+
+        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+        mBinderService.setNotificationPolicy("package", policy, false);
+
+        NotificationManager.Policy expectedPolicy = getSplitSoundVibrationNotificationPolicy();
+
+        verify(zenModeHelper).applyGlobalPolicyAsImplicitZenRule(any(), eq("package"), anyInt(),
+                eq(expectedPolicy));
     }
 
     @Test
@@ -18263,7 +18302,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.isSystemUid = true;
         when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
 
-        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+        NotificationManager.Policy policy = (splitSoundVibrationForNotificationBreakthrough())
+                ? getSplitSoundVibrationNotificationPolicy()
+                : new NotificationManager.Policy(0, 0, 0);
         mBinderService.setNotificationPolicy("package", policy, false);
 
         verify(zenModeHelper).setNotificationPolicy(any(), eq(policy), anyInt(), anyInt());
@@ -18271,10 +18312,40 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_systemCaller_setsGlobalPolicy_splitSoundVibration_defaultCtor()
+            throws RemoteException {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        mService.isSystemUid = true;
+        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
+
+        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+        mBinderService.setNotificationPolicy("package", policy, false);
+
+        NotificationManager.Policy expectedPolicy = getSplitSoundVibrationNotificationPolicy();
+        verify(zenModeHelper).setNotificationPolicy(any(), eq(expectedPolicy), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
     public void setNotificationPolicy_watchCompanionApp_setsGlobalPolicy()
             throws RemoteException {
         setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_WATCH, true);
+                AssociationRequest.DEVICE_PROFILE_WATCH, true,
+                splitSoundVibrationForNotificationBreakthrough());
+    }
+
+    @Test
+    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_watchCompanionApp_setsGlobalPolicy_splitSoundVibration_defaultCtor()
+            throws RemoteException {
+        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
+                AssociationRequest.DEVICE_PROFILE_WATCH, true, false);
     }
 
     @Test
@@ -18282,7 +18353,19 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void setNotificationPolicy_autoCompanionApp_setsGlobalPolicy()
             throws RemoteException {
         setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, true);
+                AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, true,
+                splitSoundVibrationForNotificationBreakthrough());
+    }
+
+    @Test
+    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_autoCompanionApp_setsGlobalPolicy_splitSoundVibration_defaultCtor()
+            throws RemoteException {
+        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
+                AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, true, false);
     }
 
     @Test
@@ -18290,11 +18373,24 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     public void setNotificationPolicy_otherCompanionApp_doesNotSetGlobalPolicy()
             throws RemoteException {
         setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, false);
+                AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, false,
+                splitSoundVibrationForNotificationBreakthrough());
+    }
+
+    @Test
+    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_otherCompanionApp_doesNotSetGlobalPolicy_splitSoundVibration_defaultCtor()
+            throws RemoteException {
+        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
+                AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, false, false);
     }
 
     private void setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-            @AssociationRequest.DeviceProfile String deviceProfile, boolean canSetGlobalPolicy)
+            @AssociationRequest.DeviceProfile String deviceProfile, boolean canSetGlobalPolicy,
+            boolean splitSoundVibrationPolicy)
             throws RemoteException {
         mService.setCallerIsNormalPackage();
         ZenModeHelper zenModeHelper = setUpMockZenTest();
@@ -18306,14 +18402,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                                 .build()));
         when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
 
-        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+        NotificationManager.Policy policy = (splitSoundVibrationPolicy)
+                ? getSplitSoundVibrationNotificationPolicy()
+                : new Policy(0, 0, 0);
         mBinderService.setNotificationPolicy("package", policy, false);
 
+        NotificationManager.Policy expectedPolicy =
+                (splitSoundVibrationForNotificationBreakthrough())
+                    ? getSplitSoundVibrationNotificationPolicy()
+                    : new Policy(0, 0, 0);
+
         if (canSetGlobalPolicy) {
-            verify(zenModeHelper).setNotificationPolicy(any(), eq(policy), anyInt(), anyInt());
+            verify(zenModeHelper).setNotificationPolicy(any(), eq(expectedPolicy), anyInt(),
+                    anyInt());
         } else {
             verify(zenModeHelper).applyGlobalPolicyAsImplicitZenRule(any(), anyString(), anyInt(),
-                    eq(policy));
+                    eq(expectedPolicy));
         }
     }
 
@@ -18326,10 +18430,33 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
 
-        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+        NotificationManager.Policy policy = (splitSoundVibrationForNotificationBreakthrough())
+                ? getSplitSoundVibrationNotificationPolicy()
+                : new NotificationManager.Policy(0, 0, 0);
         mBinderService.setNotificationPolicy("package", policy, false);
 
         verify(zenModeHelper).setNotificationPolicy(any(), eq(policy), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_withoutCompat_setsGlobalPolicy_splitSoundVibration_defaultCtor()
+            throws RemoteException {
+        mService.setCallerIsNormalPackage();
+
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+
+        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
+
+        NotificationManager.Policy policy = new Policy(0, 0, 0);
+        mBinderService.setNotificationPolicy("package", policy, false);
+
+        NotificationManager.Policy expectedPolicy = getSplitSoundVibrationNotificationPolicy();
+
+        verify(zenModeHelper).setNotificationPolicy(any(), eq(expectedPolicy), anyInt(), anyInt());
     }
 
     @Test
@@ -18553,6 +18680,94 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mBinderService.getNotificationPolicy(mPkg).priorityCategories).isEqualTo(1);
         assertThat(mBinderService.getNotificationPolicy(mPkg).state).isEqualTo(
                 Policy.policyState(true, true));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void setNotificationPolicy_splitSoundVibration_overwritesGranularSoundAndVibration()
+            throws Exception {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        int priorityCategories = Policy.PRIORITY_CATEGORY_ALARMS | Policy.PRIORITY_CATEGORY_CALLS;
+        // current policy -- only allow vibration for alarms
+        Policy currentUserPolicy = new Policy(
+                priorityCategories, 0, 0, 0, 0, 0,
+                PRIORITY_CATEGORY_CALLS, priorityCategories);
+        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(currentUserPolicy);
+
+        // new policy -- allow all breakthrough for both alarms and calls
+        Policy appPolicy = new Policy(
+                priorityCategories, 0, 0, 0, 0, 0,
+                priorityCategories, priorityCategories);
+        mBinderService.setNotificationPolicy(mPkg, appPolicy, false);
+
+        ArgumentCaptor<Policy> policyCaptor = ArgumentCaptor.forClass(Policy.class);
+        verify(zenModeHelper).setNotificationPolicy(any(), policyCaptor.capture(), anyInt(),
+                anyInt());
+
+        Policy resultingPolicy = policyCaptor.getValue();
+        assertThat(resultingPolicy.allowSoundForPriorityCategory).isEqualTo(priorityCategories);
+        assertThat(resultingPolicy.allowVibrationForPriorityCategory).isEqualTo(priorityCategories);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_splitSoundVibration_enable_preservesGranularSoundAndVibration()
+            throws Exception {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        int priorityCategories = Policy.PRIORITY_CATEGORY_ALARMS | Policy.PRIORITY_CATEGORY_CALLS;
+        // current policy -- only allow vibration for alarms
+        Policy currentUserPolicy = new Policy(
+                priorityCategories, 0, 0, 0, 0, 0,
+                PRIORITY_CATEGORY_CALLS, priorityCategories);
+        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(currentUserPolicy);
+
+        // new policy -- no granular settings
+        Policy appPolicy = new Policy(priorityCategories, 0, 0, 0, 0);
+        mBinderService.setNotificationPolicy(mPkg, appPolicy, false);
+
+        ArgumentCaptor<Policy> policyCaptor = ArgumentCaptor.forClass(Policy.class);
+        verify(zenModeHelper).setNotificationPolicy(any(), policyCaptor.capture(), anyInt(),
+                anyInt());
+
+        Policy resultingPolicy = policyCaptor.getValue();
+        assertThat(resultingPolicy.allowSoundForPriorityCategory).isEqualTo(
+                PRIORITY_CATEGORY_CALLS);
+        assertThat(resultingPolicy.allowVibrationForPriorityCategory)
+                .isEqualTo(priorityCategories);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void
+    setNotificationPolicy_splitSoundVibration_disable_overwritesGranularSoundAndVibration()
+            throws Exception {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        int priorityCategories = Policy.PRIORITY_CATEGORY_ALARMS | Policy.PRIORITY_CATEGORY_CALLS;
+        // current policy -- only allow vibration for calls
+        Policy currentUserPolicy = new Policy(
+                priorityCategories, 0, 0, 0, 0, 0,
+                Policy.PRIORITY_CATEGORY_ALARMS, priorityCategories);
+        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(currentUserPolicy);
+
+        // new policy -- no granular settings
+        int newPriorityCategories =
+                Policy.PRIORITY_CATEGORY_CALLS | Policy.PRIORITY_CATEGORY_REMINDERS;
+        Policy appPolicy = new Policy(newPriorityCategories, 0, 0, 0, 0);
+        mBinderService.setNotificationPolicy(mPkg, appPolicy, false);
+
+        ArgumentCaptor<Policy> policyCaptor = ArgumentCaptor.forClass(Policy.class);
+        verify(zenModeHelper).setNotificationPolicy(any(), policyCaptor.capture(), anyInt(),
+                anyInt());
+
+        Policy resultingPolicy = policyCaptor.getValue();
+        assertThat(resultingPolicy.allowSoundForPriorityCategory).isEqualTo(
+                Policy.PRIORITY_CATEGORY_REMINDERS);
+        assertThat(resultingPolicy.allowVibrationForPriorityCategory).isEqualTo(
+                newPriorityCategories);
     }
 
     /** Prepares for a zen-related test that uses the real {@link ZenModeHelper}. */
