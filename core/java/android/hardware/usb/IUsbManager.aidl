@@ -231,4 +231,7 @@ interface IUsbManager
             "@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_USB)")
     void unregisterForDisplayPortEvents(IDisplayPortAltModeInfoListener listener);
 
+    /* Enable/disable PCI tunnels for USB4 and Thunderbolt connections. */
+    @EnforcePermission("MANAGE_USB")
+    void enablePciTunnels(boolean enable);
 }
