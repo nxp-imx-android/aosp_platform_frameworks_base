@@ -2602,12 +2602,14 @@ public class DisplayPolicy {
     }
 
     void updateSystemBarAttributes() {
+        // The focused window always needs to be sent to System UI regardless of filling
+        // display when the remote insets controller is controlling system bars.
+        final boolean isRemoteControlling = isRemoteInsetsControllerControllingSystemBars();
         // If there is no window focused, there will be nobody to handle the events
         // anyway, so just hang on in whatever state we're in until things settle down.
         WindowState winCandidate =
-                mFocusedWindow != null && fillsDisplayWindowingMode(mFocusedWindow)
-                        ? mFocusedWindow
-                        : mTopFullscreenOpaqueWindowState;
+                mFocusedWindow != null && (isRemoteControlling || fillsDisplayWindowingMode(
+                        mFocusedWindow)) ? mFocusedWindow : mTopFullscreenOpaqueWindowState;
 
         // Immersive mode confirmation should never affect the system bar visibility, otherwise
         // it will unhide the navigation bar and hide itself.
@@ -2617,7 +2619,7 @@ public class DisplayPolicy {
                 // Let notification shade control the system bar visibility.
                 winCandidate = mNotificationShade;
             } else if (mLastFocusedWindow != null && mLastFocusedWindow.canReceiveKeys()
-                    && fillsDisplayWindowingMode(mLastFocusedWindow)) {
+                    && (isRemoteControlling || fillsDisplayWindowingMode(mLastFocusedWindow))) {
                 // Immersive mode confirmation took the focus from mLastFocusedWindow which was
                 // controlling the system bar visibility. Let it keep controlling the visibility.
                 winCandidate = mLastFocusedWindow;
@@ -2627,7 +2629,8 @@ public class DisplayPolicy {
         }
         if (winCandidate == null) {
             final ActivityRecord focusedApp = mDisplayContent.mFocusedApp;
-            if (focusedApp == null || fillsDisplayWindowingMode(focusedApp)) {
+            if (focusedApp == null
+                    || (isRemoteControlling || fillsDisplayWindowingMode(focusedApp))) {
                 // Don't change the system UI controlling window when the new one is not ready.
                 return;
             }

@@ -38,16 +38,22 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import android.app.StatusBarManager;
+import android.content.ComponentName;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.IDisplayWindowInsetsController;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
@@ -168,6 +174,29 @@ public class InsetsPolicyTest extends WindowTestsBase {
 
         // The non fullscreen multi window app window must not control any system bars.
         assertNull(controls);
+    }
+
+    @Test
+    public void testControlsForDispatch_nonFullscreenMultiWindowTaskVisible_remoteInsetControl()
+            throws RemoteException {
+        addStatusBar();
+        addNavigationBar();
+        final IDisplayWindowInsetsController insetsController = spy(
+                createDisplayWindowInsetsController());
+        mDisplayContent.setRemoteInsetsController(insetsController);
+        mDisplayContent.getDisplayPolicy().setRemoteInsetsControllerControlsSystemBars(true);
+
+        final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).setDisplay(
+                mDisplayContent).build();
+        final ComponentName component = win.mActivityRecord.mActivityComponent;
+        assertNotNull(component);
+        win.getTask().setBounds(new Rect(1, 1, 10, 10));
+        final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
+
+        // The remote insets controller should control the system bars.
+        assertNull(controls);
+        verify(insetsController).topFocusedWindowChanged(eq(component), anyInt());
     }
 
     @Test
