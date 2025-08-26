@@ -19,7 +19,6 @@ package com.android.settingslib.widget;
 import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Parcel;
@@ -56,10 +55,6 @@ public class SliderPreference extends Preference {
 
     private int mTextStartId;
     private int mTextEndId;
-    private final ColorStateList mTrackActiveColor;
-    private final ColorStateList mTrackInactiveColor;
-    private final ColorStateList mThumbColor;
-    private final ColorStateList mHaloColor;
     private final int mTrackHeight;
     private final int mTrackInsideCornerSize;
     private final int mTrackStopIndicatorSize;
@@ -212,14 +207,6 @@ public class SliderPreference extends Preference {
                 R.styleable.SliderPreference_iconEndContentDescription,
                 /* defValue= */ 0);
         a.recycle();
-
-        mTrackActiveColor = context.getColorStateList(
-                R.color.settingslib_expressive_color_slider_track_active);
-        mTrackInactiveColor = context.getColorStateList(
-                R.color.settingslib_expressive_color_slider_track_inactive);
-        mThumbColor = context.getColorStateList(
-                R.color.settingslib_expressive_color_slider_thumb);
-        mHaloColor = context.getColorStateList(R.color.settingslib_expressive_color_slider_halo);
 
         Resources res = context.getResources();
         mTrackHeight = res.getDimensionPixelSize(
@@ -387,15 +374,6 @@ public class SliderPreference extends Preference {
         mSlider.addOnChangeListener(mChangeListener);
         mSlider.setEnabled(isEnabled());
         mSlider.setClickable(isSelectable());
-
-        // Set up slider color
-        mSlider.setTrackActiveTintList(mTrackActiveColor);
-        mSlider.setTrackInactiveTintList(mTrackInactiveColor);
-        mSlider.setThumbTintList(mThumbColor);
-        mSlider.setThumbStrokeColor(mThumbColor);
-        mSlider.setHaloTintList(mHaloColor);
-        mSlider.setTickActiveTintList(mTrackInactiveColor);
-        mSlider.setTickInactiveTintList(mTrackActiveColor);
 
         // Set up slider size
         if (SettingsThemeHelper.isExpressiveTheme(getContext())) {

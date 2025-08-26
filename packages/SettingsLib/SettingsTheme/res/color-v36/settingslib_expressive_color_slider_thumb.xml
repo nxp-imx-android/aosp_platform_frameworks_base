@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright (C) 2024 The Android Open Source Project
+  Copyright (C) 2025 The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
   limitations under the License.
   -->
 
-<resources>
-    <color name="settingslib_expressive_color_slider_track_active">@color/settingslib_materialColorPrimary</color>
-    <color name="settingslib_expressive_color_slider_track_inactive">@color/settingslib_materialColorSurfaceContainerHighest</color>
-    <color name="settingslib_expressive_color_slider_thumb">@color/settingslib_materialColorPrimary</color>
-    <color name="settingslib_expressive_color_slider_halo">@android:color/transparent</color>
-</resources>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- State Disabled -->
+    <item
+        android:alpha="0.38"
+        android:color="@color/settingslib_materialColorOnSurface"
+        android:state_enabled="false"/>
+
+    <item android:color="@color/settingslib_materialColorPrimary" />
+</selector>
