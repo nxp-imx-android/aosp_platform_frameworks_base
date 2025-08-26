@@ -920,16 +920,6 @@ flag {
 }
 
 flag {
-   name: "register_new_wallet_card_in_background"
-   namespace: "systemui"
-   description: "Decide whether the call to registerNewWalletCards method should be issued on background thread."
-   bug: "322506838"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "update_user_switcher_background"
     namespace: "systemui"
     description: "Decide whether to update user switcher in background thread."
