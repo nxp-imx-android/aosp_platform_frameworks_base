@@ -38,6 +38,7 @@ import com.android.systemui.common.ui.view.ChoreographerUtils
 import com.android.systemui.common.ui.view.ChoreographerUtilsImpl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.res.R
@@ -399,6 +400,18 @@ object ShadeDisplayAwareWindowWithoutShadeModule {
             override val pendingDisplayId: StateFlow<Int> =
                 MutableStateFlow(Display.DEFAULT_DISPLAY)
         }
+
+    /**
+     * [QuickSettingsController] is needed by [SysUIKeyEventHandler] dependencies.
+     * [SysUIKeyEventHandler] is used from [ConnectedDisplayConstraintLayoutKeyguardPresentation],
+     * that seems to be injected also in the Wear sysui variant. Ideally Wear code should be
+     * restructured to remove this dep from their dagger graph, but in the meantime this allows the
+     * target to compile.
+     */
+    @Provides
+    @SysUISingleton
+    fun providesQuickSettingsControllerNoOp(): QuickSettingsController =
+        NoOpQuickSettingsController()
 }
 
 /**
