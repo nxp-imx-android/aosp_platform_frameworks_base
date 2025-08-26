@@ -23,10 +23,6 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /** A data class representing a banner preference. */
@@ -34,25 +30,24 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
     private final String mTitle;
     private final String mMessage;
     private final DeviceSettingIcon mIcon;
-    private final ImmutableList<ButtonInfo> mButtonInfos;
+    private final ButtonInfo mPositiveButtonInfo;
+    private final ButtonInfo mNegativeButtonInfo;
     private final Bundle mExtras;
 
     BannerPreference(
             @NonNull String title,
             @NonNull String message,
             @Nullable DeviceSettingIcon icon,
-            @Nullable List<ButtonInfo> buttonInfos,
+            @Nullable ButtonInfo positiveButtonInfo,
+            @Nullable ButtonInfo negativeButtonInfo,
             Bundle extras) {
         super(DeviceSettingType.DEVICE_SETTING_TYPE_BANNER);
         validate(title, message);
         mTitle = title;
         mMessage = message;
         mIcon = Objects.requireNonNullElseGet(icon, () -> DeviceSettingIcon.NO_ICON);
-        if (buttonInfos == null) {
-            mButtonInfos = ImmutableList.of();
-        } else {
-            mButtonInfos = ImmutableList.copyOf(buttonInfos);
-        }
+        mPositiveButtonInfo = positiveButtonInfo;
+        mNegativeButtonInfo = negativeButtonInfo;
         mExtras = extras;
     }
 
@@ -71,10 +66,16 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
         String title = in.readString();
         String message = in.readString();
         DeviceSettingIcon icon = DeviceSettingIcon.readFromParcel(in);
-        List<ButtonInfo> buttonInfos = new ArrayList<>();
-        in.readTypedList(buttonInfos, ButtonInfo.CREATOR);
+        ButtonInfo positiveButtonInfo = in.readParcelable(ButtonInfo.class.getClassLoader());
+        ButtonInfo negativeButtonInfo = in.readParcelable(ButtonInfo.class.getClassLoader());
         Bundle extras = in.readBundle(Bundle.class.getClassLoader());
-        return new BannerPreference(title, message, icon, buttonInfos, extras);
+        return new BannerPreference(
+                title,
+                message,
+                icon,
+                positiveButtonInfo,
+                negativeButtonInfo,
+                extras);
     }
 
     public static final Creator<BannerPreference> CREATOR =
@@ -104,7 +105,8 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
         dest.writeString(mTitle);
         dest.writeString(mMessage);
         mIcon.writeToParcel(dest, flags);
-        dest.writeTypedList(mButtonInfos, flags);
+        dest.writeParcelable(mPositiveButtonInfo, flags);
+        dest.writeParcelable(mNegativeButtonInfo, flags);
         dest.writeBundle(mExtras);
     }
 
@@ -113,8 +115,8 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
         private String mTitle;
         private String mMessage;
         private DeviceSettingIcon mIcon;
-        private final ImmutableList.Builder<ButtonInfo> mButtonInfos =
-                new ImmutableList.Builder<>();
+        private ButtonInfo mPositiveButtonInfo;
+        private ButtonInfo mNegativeButtonInfo;
         private Bundle mExtras = Bundle.EMPTY;
 
         /**
@@ -154,14 +156,26 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
         }
 
         /**
-         * Adds a button in the preference.
+         * Sets the positive button in the preference.
          *
-         * @param buttonInfo The button to add.
+         * @param buttonInfo The button to set.
          * @return Returns the Builder object.
          */
         @NonNull
-        public Builder addButtonInfo(@NonNull ButtonInfo buttonInfo) {
-            mButtonInfos.add(buttonInfo);
+        public Builder setPositiveButtonInfo(@NonNull ButtonInfo buttonInfo) {
+            mPositiveButtonInfo = buttonInfo;
+            return this;
+        }
+
+        /**
+         * Sets the negative button in the preference.
+         *
+         * @param buttonInfo The button to set.
+         * @return Returns the Builder object.
+         */
+        @NonNull
+        public Builder setNegativeButtonInfo(@NonNull ButtonInfo buttonInfo) {
+            mNegativeButtonInfo = buttonInfo;
             return this;
         }
 
@@ -183,7 +197,13 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
          */
         @NonNull
         public BannerPreference build() {
-            return new BannerPreference(mTitle, mMessage, mIcon, mButtonInfos.build(), mExtras);
+            return new BannerPreference(
+                    mTitle,
+                    mMessage,
+                    mIcon,
+                    mPositiveButtonInfo,
+                    mNegativeButtonInfo,
+                    mExtras);
         }
     }
 
@@ -217,13 +237,23 @@ public class BannerPreference extends DeviceSettingPreference implements Parcela
     }
 
     /**
-     * Gets the button list in the preference.
+     * Gets the positive button in the preference.
      *
-     * @return the button list.
+     * @return the positive button.
      */
-    @NonNull
-    public List<ButtonInfo> getButtonInfos() {
-        return mButtonInfos;
+    @Nullable
+    public ButtonInfo getPositiveButtonInfo() {
+        return mPositiveButtonInfo;
+    }
+
+    /**
+     * Gets the negative button in the preference.
+     *
+     * @return the negative button.
+     */
+    @Nullable
+    public ButtonInfo getNegativeButtonInfo() {
+        return mNegativeButtonInfo;
     }
 
     /**
