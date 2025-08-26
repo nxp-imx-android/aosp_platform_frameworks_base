@@ -304,7 +304,7 @@ public class BubbleTransitions {
         for (int i = 0; i < info.getChanges().size(); i++) {
             final TransitionInfo.Change chg = info.getChanges().get(i);
             final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
-            // Exclude activity transition scenarios.
+            // Exclude non-standard activity transition scenarios.
             if (taskInfo == null || taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
                 continue;
             }
@@ -330,7 +330,7 @@ public class BubbleTransitions {
         for (int i = 0; i < info.getChanges().size(); i++) {
             final TransitionInfo.Change chg = info.getChanges().get(i);
             final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
-            // Exclude activity transition scenarios.
+            // Exclude non-standard activity transition scenarios.
             if (taskInfo == null || taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
                 continue;
             }
@@ -351,7 +351,7 @@ public class BubbleTransitions {
      * Whether the transition contains any Task that is changed from expanded App Bubbled to
      * non-Bubbled.
      */
-    public boolean containsNonBubbledExpandedTaskInStack(@NonNull TransitionInfo info) {
+    public boolean containsExpandedBubbledTaskNoLongerBubbled(@NonNull TransitionInfo info) {
         if (!mBubbleData.isExpanded() || mBubbleData.getSelectedBubble() == null) {
             // No expanded.
             return false;
