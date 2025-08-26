@@ -301,7 +301,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_singleWaveformWithAdaptiveHapticsScaling_scalesAmplitudesProperly() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -328,7 +327,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_withVibrationParamsRequestStalling_timeoutRequestAndApplyNoScaling() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,

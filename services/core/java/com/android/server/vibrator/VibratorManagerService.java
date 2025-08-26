@@ -1199,8 +1199,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             DeviceAdapter deviceAdapter, boolean isInSession) {
         CompletableFuture<Void> requestVibrationParamsFuture = null;
 
-        if (Flags.adaptiveHapticsEnabled()
-                && mVibratorControlService.shouldRequestVibrationParams(
+        if (mVibratorControlService.shouldRequestVibrationParams(
                 vib.callerInfo.attrs.getUsage())) {
             requestVibrationParamsFuture =
                     mVibratorControlService.triggerVibrationParamsRequest(
