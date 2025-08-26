@@ -24,7 +24,7 @@ import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
 import static android.security.Flags.shouldTrustManagerListenForPrimaryAuth;
 
-import static com.android.internal.widget.flags.Flags.useDefaultVisibilityForSensitiveInputs;
+import static com.android.internal.widget.flags.Flags.enableDefaultVisibilityForSensitiveInputs;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -1069,7 +1069,7 @@ public class LockPatternUtils {
     @UnsupportedAppUsage
     public boolean isVisiblePatternEnabled(int userId) {
         boolean defaultValue = true;
-        if (useDefaultVisibilityForSensitiveInputs()) {
+        if (enableDefaultVisibilityForSensitiveInputs()) {
             defaultValue =
                     mContext.getResources()
                             .getBoolean(
@@ -1094,7 +1094,7 @@ public class LockPatternUtils {
      */
     public boolean isPinEnhancedPrivacyEnabled(int userId) {
         boolean defaultValue = false;
-        if (useDefaultVisibilityForSensitiveInputs()) {
+        if (enableDefaultVisibilityForSensitiveInputs()) {
             defaultValue =
                     mContext.getResources()
                             .getBoolean(
