@@ -807,9 +807,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (displayLayout == null) {
             return null;
         }
-        final Rect stableBounds = new Rect();
-        displayLayout.getStableBounds(stableBounds);
-        boolean isMaximized = DesktopModeUtils.isTaskMaximized(taskInfo, stableBounds);
+        boolean isMaximized = DesktopModeUtils.isTaskMaximized(taskInfo, displayLayout);
 
         return new ToggleTaskSizeInteraction(
                 isMaximized
