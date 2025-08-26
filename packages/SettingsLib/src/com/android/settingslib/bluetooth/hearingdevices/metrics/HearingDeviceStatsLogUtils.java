@@ -268,9 +268,9 @@ public final class HearingDeviceStatsLogUtils {
         }
         if (history.peekLast() != null && isSameDay(timestamp, history.peekLast())) {
             if (DEBUG) {
-                Log.w(TAG, "Skip record of history type=" + type + ", it's same day record");
+                Log.w(TAG, "Remove the earlier same day record of history type=" + type);
             }
-            return;
+            history.remove(history.peekLast());
         }
         history.add(timestamp);
         SharedPreferences.Editor editor = getSharedPreferences(context).edit();

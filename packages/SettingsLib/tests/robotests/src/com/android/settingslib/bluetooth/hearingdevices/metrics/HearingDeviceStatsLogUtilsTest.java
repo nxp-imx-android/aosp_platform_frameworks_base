@@ -117,17 +117,19 @@ public class HearingDeviceStatsLogUtilsTest {
         assertThat(history.size()).isEqualTo(2);
     }
     @Test
-    public void addCurrentTimeToHistory_skipSameDateData() {
+    public void addCurrentTimeToHistory_replaceSameDateData() {
         final long todayStartOfDay = convertToStartOfDayTime(System.currentTimeMillis());
         HearingDeviceStatsLogUtils.addToHistory(mContext, TEST_HISTORY_TYPE, todayStartOfDay);
 
-        HearingDeviceStatsLogUtils.addCurrentTimeToHistory(mContext, TEST_HISTORY_TYPE);
+        final long newerTodayStartOfDay = todayStartOfDay + 1;
+        HearingDeviceStatsLogUtils.addToHistory(mContext, TEST_HISTORY_TYPE,
+                newerTodayStartOfDay);
 
         LinkedList<Long> history = HearingDeviceStatsLogUtils.getHistory(mContext,
                 TEST_HISTORY_TYPE);
         assertThat(history).isNotNull();
         assertThat(history.size()).isEqualTo(1);
-        assertThat(history.getFirst()).isEqualTo(todayStartOfDay);
+        assertThat(history.getFirst()).isEqualTo(newerTodayStartOfDay);
     }
 
     @Test
