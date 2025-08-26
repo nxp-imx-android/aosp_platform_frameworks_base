@@ -213,7 +213,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun updateRegionBox_updatesState() =
+    fun updateRegionBoxBounds_updatesState() =
         kosmos.runTest {
             setupViewModel()
 
@@ -221,7 +221,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(viewModel.regionBox).isNull()
 
             val regionBox = Rect(0, 0, 100, 100)
-            viewModel.updateRegionBox(regionBox)
+            viewModel.updateRegionBoxBounds(regionBox)
 
             assertThat(viewModel.regionBox).isEqualTo(regionBox)
         }
@@ -255,7 +255,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
 
             val regionBox = Rect(0, 0, 100, 100)
-            viewModel.updateRegionBox(regionBox)
+            viewModel.updateRegionBoxBounds(regionBox)
 
             whenever(kosmos.mockImageCapture.captureDisplay(any(), eq(regionBox)))
                 .thenReturn(mockBitmap)
@@ -402,5 +402,49 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.closeUi()
 
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+
+    @Test
+    fun updateToolbarOpacityForRegionBox_isInteracting_opacityIsZero() =
+        kosmos.runTest {
+            setupViewModel()
+            viewModel.updateToolbarOpacityForRegionBox(isInteracting = true)
+
+            assertThat(viewModel.toolbarOpacity).isEqualTo(0f)
+        }
+
+    @Test
+    fun updateToolbarOpacityForRegionBox_notInteracting_noOverlap_opacityIsOne() =
+        kosmos.runTest {
+            setupViewModel()
+            viewModel.updateToolbarBounds(Rect(0, 0, 100, 100))
+            viewModel.updateRegionBoxBounds(Rect(200, 200, 300, 300))
+
+            viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
+
+            assertThat(viewModel.toolbarOpacity).isEqualTo(1f)
+        }
+
+    @Test
+    fun updateToolbarOpacityForRegionBox_notInteracting_overlap_opacityIsPoint15() =
+        kosmos.runTest {
+            setupViewModel()
+            viewModel.updateToolbarBounds(Rect(0, 0, 100, 100))
+            viewModel.updateRegionBoxBounds(Rect(50, 50, 150, 150))
+
+            viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
+
+            assertThat(viewModel.toolbarOpacity).isEqualTo(0.15f)
+        }
+
+    @Test
+    fun updateToolbarOpacityForRegionBox_notInteracting_noRegion_opacityIsOne() =
+        kosmos.runTest {
+            setupViewModel()
+            viewModel.updateToolbarBounds(Rect(0, 0, 100, 100))
+
+            viewModel.updateToolbarOpacityForRegionBox(isInteracting = false)
+
+            assertThat(viewModel.toolbarOpacity).isEqualTo(1f)
         }
 }

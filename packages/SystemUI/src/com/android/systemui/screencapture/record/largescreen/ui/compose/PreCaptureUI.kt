@@ -27,6 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -37,6 +40,7 @@ import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
+import kotlin.math.roundToInt
 
 /** Main component for the pre-capture UI. */
 @Composable
@@ -53,6 +57,19 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 viewModel = viewModel,
                 expanded = true,
                 onCloseClick = { viewModel.closeUi() },
+                modifier =
+                    Modifier.onGloballyPositioned {
+                            val boundsInWindow = it.boundsInWindow()
+                            viewModel.updateToolbarBounds(
+                                Rect(
+                                    boundsInWindow.left.roundToInt(),
+                                    boundsInWindow.top.roundToInt(),
+                                    boundsInWindow.right.roundToInt(),
+                                    boundsInWindow.bottom.roundToInt(),
+                                )
+                            )
+                        }
+                        .graphicsLayer { alpha = viewModel.toolbarOpacity },
             )
         }
 
@@ -115,8 +132,17 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                 }
                         ),
                     buttonIcon = icon,
-                    onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
+                    onRegionSelected = { regionBoxRect ->
+                        viewModel.updateRegionBoxBounds(regionBoxRect)
+                        viewModel.updateToolbarOpacityForRegionBox(
+                            isInteracting = false,
+                            regionBoxRect = regionBoxRect,
+                        )
+                    },
                     onCaptureClick = viewModel::beginCapture,
+                    onInteractionStateChanged = { isInteracting ->
+                        viewModel.updateToolbarOpacityForRegionBox(isInteracting)
+                    },
                 )
             }
 
