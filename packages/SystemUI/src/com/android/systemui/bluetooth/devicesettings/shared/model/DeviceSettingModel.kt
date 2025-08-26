@@ -32,6 +32,6 @@ fun DeviceSettingIcon.toSysUiIcon(context: Context, contentDescription: ContentD
                 contentDescription = contentDescription,
             )
         is DeviceSettingIcon.ResourceIcon ->
-            Icon.Resource(res = resId, contentDescription = contentDescription)
+            Icon.Resource(resId = resId, contentDescription = contentDescription)
     }
 }
