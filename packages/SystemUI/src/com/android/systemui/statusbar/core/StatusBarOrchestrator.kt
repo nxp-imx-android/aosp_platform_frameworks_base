@@ -20,6 +20,7 @@ import android.view.Display
 import android.view.View
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.demomode.DemoModeController
@@ -133,18 +134,34 @@ constructor(
                 statusBarWindowState != StatusBarWindowState.Hidden
         }
 
-    private val barModeUpdate =
+    private data class BarModeAppearance(
+        val animate: Boolean,
+        val barTransitions: PhoneStatusBarTransitions,
+        val statusBarMode: StatusBarMode,
+        val isTransientShown: Boolean,
+    )
+
+    private val barModeAppearance =
         combine(
-                shouldAnimateNextBarModeChange,
-                phoneStatusBarTransitions.filterNotNull(),
-                statusBarModeRepository.statusBarMode,
-                ::Triple,
-            )
-            .distinctUntilChangedBy { (_, barTransitions, statusBarMode) ->
-                // We only want to collect when either bar transitions or status bar mode
-                // changed.
-                Pair(barTransitions, statusBarMode)
-            }
+            shouldAnimateNextBarModeChange,
+            phoneStatusBarTransitions.filterNotNull(),
+            statusBarModeRepository.statusBarMode,
+            statusBarModeRepository.isTransientShown,
+            ::BarModeAppearance,
+        )
+
+    private val barModeUpdate =
+        barModeAppearance.distinctUntilChangedBy {
+            // We only want to collect when either bar transitions or status bar mode changed.
+            Pair(it.barTransitions, it.statusBarMode)
+        }
+
+    private val autoHideUpdate =
+        barModeAppearance.distinctUntilChangedBy {
+            // Update auto-hide whenever `isTransientShown` changes so that we always hide the
+            // transient status bar even if `statusBarMode` hasn't changed. See b/428659575.
+            Triple(it.barTransitions, it.statusBarMode, it.isTransientShown)
+        }
 
     /** Starts status bar orchestration. To be called when status bar is created. */
     fun start() {
@@ -168,9 +185,12 @@ constructor(
                     }
                     launch { statusBarVisible.collect { updateBubblesVisibility(it) } }
                     launch {
-                        barModeUpdate.collect { (animate, barTransitions, statusBarMode) ->
-                            updateBarMode(animate, barTransitions, statusBarMode)
+                        barModeUpdate.collect {
+                            updateBarMode(it.animate, it.barTransitions, it.statusBarMode)
                         }
+                    }
+                    if (Flags.statusBarAlwaysScheduleAutoHide()) {
+                        launch { autoHideUpdate.collect { autoHideController.touchAutoHide() } }
                     }
                 }
         createAndAddWindow()
@@ -238,7 +258,10 @@ constructor(
         if (!demoModeController.isInDemoMode) {
             barTransitions.transitionTo(barMode.toTransitionModeInt(), animate)
         }
-        autoHideController.touchAutoHide()
+
+        if (!Flags.statusBarAlwaysScheduleAutoHide()) {
+            autoHideController.touchAutoHide()
+        }
     }
 
     private fun updateBubblesVisibility(statusBarVisible: Boolean) {
