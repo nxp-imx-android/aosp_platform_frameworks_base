@@ -25,7 +25,6 @@ import android.os.SystemProperties
 import android.os.UserHandle
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.BundleEntry
@@ -264,46 +263,42 @@ constructor(
     @get:VisibleForTesting
     val bundleAppDataUpdater = OnBeforeRenderListListener { entries ->
         entries.forEachBundleEntry { bundleEntry ->
-            if (bundleEntry.bundleRepository.state?.currentScene == BundleHeader.Scenes.Expanded) {
-                bundleEntry.bundleRepository.appDataList.value = emptyList()
-            } else {
-                val appDataList = mutableListOf<AppData>()
+            val appDataList = mutableListOf<AppData>()
 
-                fun collectAppData(listEntries: List<ListEntry>) {
-                    for (listEntry in listEntries) {
-                        when (listEntry) {
-                            is NotificationEntry -> {
-                                appDataList.add(listEntry.toAppData())
-                            }
+            fun collectAppData(listEntries: List<ListEntry>) {
+                for (listEntry in listEntries) {
+                    when (listEntry) {
+                        is NotificationEntry -> {
+                            appDataList.add(listEntry.toAppData())
+                        }
 
-                            is GroupEntry -> {
-                                listEntry.representativeEntry?.let { summary ->
-                                    appDataList.add(summary.toAppData())
-                                }
-                                collectAppData(listEntry.children)
+                        is GroupEntry -> {
+                            listEntry.representativeEntry?.let { summary ->
+                                appDataList.add(summary.toAppData())
                             }
-                            else -> {
-                                error(
-                                    "bundleAppDataUpdater: unexpected ListEntry type: " +
-                                        "${listEntry::class.simpleName} while collecting " +
-                                        "AppData for BundleEntry (key: ${bundleEntry.key})"
-                                )
-                            }
+                            collectAppData(listEntry.children)
+                        }
+                        else -> {
+                            error(
+                                "bundleAppDataUpdater: unexpected ListEntry type: " +
+                                    "${listEntry::class.simpleName} while collecting " +
+                                    "AppData for BundleEntry (key: ${bundleEntry.key})"
+                            )
                         }
                     }
                 }
-                collectAppData(bundleEntry.children)
-
-                // Group by package name and user, then for each group, pick the AppData
-                // with the maximum (latest) non-zero timeAddedToBundle.
-                bundleEntry.bundleRepository.appDataList.value =
-                    appDataList
-                        .filter { it.timeAddedToBundle > 0L }
-                        .groupBy { Pair(it.packageName, it.user) }
-                        .mapNotNull { (_, appDataListForSameApp) ->
-                            appDataListForSameApp.maxByOrNull { it.timeAddedToBundle }
-                        }
             }
+            collectAppData(bundleEntry.children)
+
+            // Group by package name and user, then for each group, pick the AppData
+            // with the maximum (latest) non-zero timeAddedToBundle.
+            bundleEntry.bundleRepository.appDataList.value =
+                appDataList
+                    .filter { it.timeAddedToBundle > 0L }
+                    .groupBy { Pair(it.packageName, it.user) }
+                    .mapNotNull { (_, appDataListForSameApp) ->
+                        appDataListForSameApp.maxByOrNull { it.timeAddedToBundle }
+                    }
         }
     }
 
