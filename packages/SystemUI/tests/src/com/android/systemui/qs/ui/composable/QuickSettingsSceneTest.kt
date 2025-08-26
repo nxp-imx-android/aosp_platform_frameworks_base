@@ -30,7 +30,11 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
+import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -42,7 +46,8 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
-import org.junit.Ignore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,13 +58,14 @@ import org.mockito.Mockito.mock
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 class QuickSettingsSceneTest : SysuiTestCase() {
-    @get:Rule val composeTestRule = createComposeRule()
+    @get:Rule
+    val composeTestRule = createComposeRule()
 
     private val kosmos = testKosmos()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    @Ignore("http://b/425752706")
-    fun testViewHierarchy() {
+    fun testViewHierarchy() = kosmos.runTest {
         val shadeSession =
             object : SaveableSession, Session by Session(SessionStorage()) {
                 @Composable
@@ -71,22 +77,31 @@ class QuickSettingsSceneTest : SysuiTestCase() {
                 ): T = rememberSession(key, inputs = inputs, init = init)
             }
 
-        kosmos.usingMediaInComposeFragment = true
+        usingMediaInComposeFragment = true
+
+        currentTilesInteractor.setTiles(
+            listOf(
+                TileSpec.create("internet"),
+                TileSpec.create("bt"),
+            )
+        )
+
+        testScope.runCurrent()
 
         val scene =
             QuickSettingsScene(
                 shadeSession = shadeSession,
                 notificationStackScrollView = { mock(NotificationScrollView::class.java) },
                 notificationsPlaceholderViewModelFactory =
-                    kosmos.notificationsPlaceholderViewModelFactory,
-                actionsViewModelFactory = kosmos.quickSettingsUserActionsViewModelFactory,
-                contentViewModelFactory = kosmos.quickSettingsSceneContentViewModelFactory,
-                jankMonitor = kosmos.interactionJankMonitor,
+                    notificationsPlaceholderViewModelFactory,
+                actionsViewModelFactory = quickSettingsUserActionsViewModelFactory,
+                contentViewModelFactory = quickSettingsSceneContentViewModelFactory,
+                jankMonitor = interactionJankMonitor,
             )
 
         composeTestRule.setContent {
             PlatformTheme {
-                WithStatusIconContext(kosmos.tintedIconManagerFactory) {
+                WithStatusIconContext(tintedIconManagerFactory) {
                     with(scene) {
                         TestContentScope(currentScene = Scenes.QuickSettings) { Content(Modifier) }
                     }
@@ -99,7 +114,8 @@ class QuickSettingsSceneTest : SysuiTestCase() {
         // Verify that the brightness slider exists.
         composeTestRule.onNodeWithTag(resIdToTestTag("brightness_slider")).assertExists()
 
-        // Verify that the tile grid exists.
-        composeTestRule.onNodeWithTag(resIdToTestTag("quick_settings_panel")).assertExists()
+        // Verify that the tiles exist.
+        composeTestRule.onNodeWithTag("element:internet").assertExists()
+        composeTestRule.onNodeWithTag("element:bt").assertExists()
     }
 }
