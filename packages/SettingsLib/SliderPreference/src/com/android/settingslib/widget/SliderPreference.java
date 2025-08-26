@@ -354,11 +354,11 @@ public class SliderPreference extends Preference {
         }
         final CharSequence title = getTitle();
         if (!TextUtils.isEmpty(mSliderContentDescription)) {
-            mSlider.setContentDescription(mSliderContentDescription);
+            holder.itemView.setContentDescription(mSliderContentDescription);
         } else if (!TextUtils.isEmpty(title)) {
-            mSlider.setContentDescription(title);
+            holder.itemView.setContentDescription(title);
         } else {
-            mSlider.setContentDescription(null);
+            holder.itemView.setContentDescription(null);
         }
         if (!TextUtils.isEmpty(mSliderStateDescription)) {
             mSlider.setStateDescription(mSliderStateDescription);
@@ -580,8 +580,10 @@ public class SliderPreference extends Preference {
      * @see #getShowSliderValue()
      */
     public void setShowSliderValue(boolean showSliderValue) {
-        mShowSliderValue = showSliderValue;
-        notifyChanged();
+        if (showSliderValue != mShowSliderValue) {
+            mShowSliderValue = showSliderValue;
+            notifyChanged();
+        }
     }
 
     public void setLabelFormater(@Nullable LabelFormatter formater) {
@@ -613,9 +615,9 @@ public class SliderPreference extends Preference {
      * @param contentDescription The content description of the {@link Slider}
      */
     public void setSliderContentDescription(@Nullable CharSequence contentDescription) {
-        mSliderContentDescription = contentDescription;
-        if (mSlider != null) {
-            mSlider.setContentDescription(contentDescription);
+        if (!TextUtils.equals(contentDescription, mSliderContentDescription)) {
+            mSliderContentDescription = contentDescription;
+            notifyChanged();
         }
     }
 
