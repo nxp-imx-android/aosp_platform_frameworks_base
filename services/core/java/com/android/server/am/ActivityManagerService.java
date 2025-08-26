@@ -456,6 +456,7 @@ import com.android.server.ThreadPriorityBooster;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
@@ -2425,7 +2426,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mPhantomProcessList = new PhantomProcessList(this);
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
-        mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
+        mProcessStateController = new ProcessStateController
+                .Builder(this, mProcessList, activeUids, new OomAdjusterCallback())
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
@@ -2494,7 +2496,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mPhantomProcessList = new PhantomProcessList(this);
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
-        mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
+        mProcessStateController = new ProcessStateController
+                .Builder(this, mProcessList, activeUids, new OomAdjusterCallback())
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
@@ -7529,6 +7532,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 reportCurWakefulnessUsageEvent();
                 mActivityTaskManager.onScreenAwakeChanged(isAwake);
                 mProcessStateController.setWakefulness(wakefulness);
+                mCachedAppOptimizer.onWakefulnessChanged(wakefulness);
 
                 updateOomAdjLocked(OOM_ADJ_REASON_UI_VISIBILITY);
             }
@@ -19335,6 +19339,25 @@ public class ActivityManagerService extends IActivityManager.Stub
             Binder.restoreCallingIdentity(token);
         }
     }
+
+    /**
+     * The default implementation of {@link OomAdjuster.Callback}.
+     *
+     * <p>This class acts as a proxy for {@link ActivityManagerService}, providing
+     * {@link OomAdjuster} with access to functionalities that are external to the psc package.
+     * As the boundary between the `psc` and `am` packages, it consolidates all type casting from
+     * the `psc` internal record classes to their concrete counterparts. This type cast is safe
+     * because there is only one production implementation.
+     */
+    @VisibleForTesting
+    final class OomAdjusterCallback implements OomAdjuster.Callback {
+        @Override
+        @GuardedBy({"ActivityManagerService.this", "ActivityManagerService.this.mProcLock"})
+        public void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecordInternal app) {
+            mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, (ProcessRecord) app);
+        }
+    }
+
 
     CachedAppOptimizer getCachedAppOptimizer() {
         return mCachedAppOptimizer;

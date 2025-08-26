@@ -320,6 +320,7 @@ public abstract class OomAdjuster {
 
     protected final int[] mTmpSchedGroup = new int[1];
 
+    final Callback mCallback;
     final ActivityManagerService mService;
     final Injector mInjector;
     final GlobalState mGlobalState;
@@ -387,6 +388,15 @@ public abstract class OomAdjuster {
 
     static final int ALL_CPU_TIME_CAPABILITIES =
             PROCESS_CAPABILITY_CPU_TIME | PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+
+    /**
+     * Callback interface for {@link OomAdjuster} to interact with components outside the PSC
+     * package, abstracting away direct dependencies.
+     */
+    public interface Callback {
+        /** Notifies the client component when a process's OOM adjustment changes. */
+        void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecordInternal appInternal);
+    }
 
     @VisibleForTesting
     public static class Injector {
@@ -468,7 +478,9 @@ public abstract class OomAdjuster {
     }
 
     OomAdjuster(ActivityManagerService service, ProcessList processList, ActiveUids activeUids,
-            ServiceThread adjusterThread, GlobalState globalState, Injector injector) {
+            ServiceThread adjusterThread, GlobalState globalState, Injector injector,
+            Callback callback) {
+        mCallback = callback;
         mService = service;
         mGlobalState = globalState;
         mInjector = injector;
@@ -522,7 +534,6 @@ public abstract class OomAdjuster {
     }
 
     void initSettings() {
-        mService.getCachedAppOptimizer().init();
         if (mService.mConstants.KEEP_WARMING_SERVICES.size() > 0) {
             final IntentFilter filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
             mService.mContext.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -2060,10 +2071,6 @@ public abstract class OomAdjuster {
         mService.reportOomAdjMessageLocked(msg);
     }
 
-    void onWakefulnessChanged(int wakefulness) {
-        mService.getCachedAppOptimizer().onWakefulnessChanged(wakefulness);
-    }
-
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
     @GuardedBy({"mService", "mProcLock"})
     protected boolean applyOomAdjLSP(ProcessRecord app, boolean doingAll, long now,
@@ -2082,8 +2089,7 @@ public abstract class OomAdjuster {
         int changes = 0;
 
         if (state.getCurAdj() != state.getSetAdj()) {
-            mService.getCachedAppOptimizer().onOomAdjustChanged(state.getSetAdj(),
-                    state.getCurAdj(), app);
+            mCallback.onOomAdjustChanged(state.getSetAdj(), state.getCurAdj(), app);
         }
 
         final int oldOomAdj = state.getSetAdj();

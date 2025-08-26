@@ -35,7 +35,8 @@ public class ProcessStateControllerTest {
         ams.mAppProfiler = mock(AppProfiler.class);
         ams.mConstants = mock(ActivityManagerConstants.class);
         final ActiveUids au = new ActiveUids(null);
-        return new ProcessStateController.Builder(ams, ams.mProcessList, au).build();
+        final OomAdjuster.Callback callback = mock(OomAdjuster.Callback.class);
+        return new ProcessStateController.Builder(ams, ams.mProcessList, au, callback).build();
     }
 
     private static ConnectionRecord createConnectionRecord(long flags) {

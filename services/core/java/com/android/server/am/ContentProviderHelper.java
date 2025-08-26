@@ -1380,6 +1380,7 @@ public class ContentProviderHelper {
         mService.mActivityTaskManager.installSystemProviders();
         new DevelopmentSettingsObserver(); // init to observe developer settings enable/disable
         SettingsToPropertiesMapper.start(mService.mContext.getContentResolver());
+        mService.getCachedAppOptimizer().init();
         mService.mOomAdjuster.initSettings();
 
         // Now that the settings provider is published we can consider sending in a rescue party.

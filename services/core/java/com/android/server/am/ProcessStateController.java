@@ -83,9 +83,10 @@ public class ProcessStateController {
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
-            ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector) {
+            ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
+            OomAdjuster.Callback callback) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
-                mGlobalState, oomAdjInjector);
+                mGlobalState, oomAdjInjector, callback);
 
         mLock = lock;
         mProcLock = procLock;
@@ -376,7 +377,6 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     public void setWakefulness(int wakefulness) {
         mGlobalState.mIsAwake = (wakefulness == PowerManagerInternal.WAKEFULNESS_AWAKE);
-        mOomAdjuster.onWakefulnessChanged(wakefulness);
     }
 
     /**
@@ -1121,6 +1121,7 @@ public class ProcessStateController {
         private final ActivityManagerService mAms;
         private final ProcessList mProcessList;
         private final ActiveUids mActiveUids;
+        private final OomAdjuster.Callback mOomAdjCallback;
 
         private ServiceThread mHandlerThread = null;
         private Object mLock = null;
@@ -1128,10 +1129,12 @@ public class ProcessStateController {
         private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
-        public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids) {
+        public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids,
+                OomAdjuster.Callback oomAdjCallback) {
             mAms = ams;
             mProcessList = processList;
             mActiveUids = activeUids;
+            mOomAdjCallback = oomAdjCallback;
         }
 
         /**
@@ -1159,7 +1162,8 @@ public class ProcessStateController {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mLock, mAms.mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector);
+                    mLock, mAms.mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
+                    mOomAdjCallback);
         }
 
         /**
