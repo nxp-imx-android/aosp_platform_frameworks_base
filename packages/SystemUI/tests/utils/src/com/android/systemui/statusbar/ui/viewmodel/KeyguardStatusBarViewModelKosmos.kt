@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.ui.viewmodel
 
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -30,6 +31,7 @@ val Kosmos.keyguardStatusBarViewModel: KeyguardStatusBarViewModel by
         KeyguardStatusBarViewModel(
             applicationCoroutineScope,
             headsUpNotificationInteractor,
+            desktopInteractor,
             sceneInteractor,
             keyguardInteractor,
             keyguardStatusBarInteractor,
