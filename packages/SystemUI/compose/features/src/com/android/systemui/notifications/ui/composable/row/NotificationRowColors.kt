@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
+import com.android.compose.theme.LocalAndroidColorScheme
 
 @Composable
 @ReadOnlyComposable
@@ -55,4 +56,10 @@ private fun blendARGB(
         blue = color1.blue * inverseRatio + color2.blue * ratio,
         alpha = color1.alpha * inverseRatio + color2.alpha * ratio,
     )
+}
+
+@Composable
+@ReadOnlyComposable
+internal fun bundleHeaderIconBGColor(): Color {
+    return LocalAndroidColorScheme.current.surfaceEffect2
 }

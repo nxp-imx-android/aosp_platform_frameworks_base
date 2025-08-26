@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -67,13 +68,18 @@ object NotificationRowPrimitives {
 /** The Icon displayed at the start of any notification row. */
 @Composable
 fun BundleIcon(@DrawableRes drawable: Int?, large: Boolean, modifier: Modifier = Modifier) {
-    val iconBackground = notificationProtectionColor()
+    val iconBackground = bundleHeaderIconBGColor()
     Box(
         modifier =
             if (large) {
                 modifier.size(40.dp).background(color = iconBackground, shape = CircleShape)
             } else {
-                modifier.size(20.dp)
+                modifier
+                    .size(24.dp)
+                    .background(
+                        color = iconBackground,
+                        shape = RoundedCornerShape(24.dp, 24.dp, 24.dp, 24.dp),
+                    )
             }
     ) {
         if (drawable == null) return@Box
@@ -84,7 +90,7 @@ fun BundleIcon(@DrawableRes drawable: Int?, large: Boolean, modifier: Modifier =
                 if (large) {
                     Modifier.fillMaxSize(.5f).align(Alignment.Center)
                 } else {
-                    Modifier.padding(2.dp)
+                    Modifier.padding(2.dp).align(Alignment.Center)
                 },
             contentScale = ContentScale.Fit,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
