@@ -21,13 +21,13 @@ import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -119,7 +119,12 @@ private fun <T> ContentScope.ButtonGroupRow(
                             elementKey(sizedTile.tile),
                             Modifier.animateWidth(interactionSource)
                                 .weight(sizedTile.width.toFloat())
-                                .rowPadding(isFirst, onLastColumn, halfPadding),
+                                .rowPadding(
+                                    column,
+                                    column + sizedTile.width,
+                                    columns,
+                                    horizontalPadding,
+                                ),
                         ) {
                             tileContent(sizedTile, interactionSource)
                         }
@@ -133,12 +138,7 @@ private fun <T> ContentScope.ButtonGroupRow(
         val columnsLeft = columns - row.fastSumBy { it.width }
         if (columnsLeft > 0) {
             customItem(
-                buttonGroupContent = {
-                    Spacer(
-                        Modifier.weight(columnsLeft.toFloat())
-                            .rowPadding(isFirst = false, onLastColumn = true, halfPadding)
-                    )
-                },
+                buttonGroupContent = { Spacer(Modifier.weight(columnsLeft.toFloat())) },
                 menuContent = {},
             )
         }
@@ -151,20 +151,45 @@ private fun <T> ContentScope.ButtonGroupRow(
  * This modifier is useful for creating consistent spacing between items in a row, especially when
  * you want to avoid extra padding at the beginning or end of the row.
  *
- * @param isFirst True if this is the first item in the row. If true, no start padding is applied.
- * @param onLastColumn True if this item is in the last column of the row. The last element of a row
- *   may not be on the last column. If true, no end padding is applied.
- * @param horizontalPadding The amount of padding to apply to the start (if not first) and end (if
- *   not last) of the item.
+ * This is using the formulas:
+ * ```
+ * Start padding = startColumn * horizontalPadding / columns
+ * End padding = (columns - endColumn) * horizontalPadding / columns
+ * ```
+ *
+ * We can validate these formulas knowing that the horizontal padding between tiles is the sum of
+ * the end padding of the previous tile + the start padding of the next tile.
+ *
+ * For the tiles ending and starting at column C:
+ * ```
+ * padding = (columns - C) * padding / columns + C * padding/columns
+ * padding / (padding/columns) = columns - C + C
+ * padding * columns/padding = columns
+ * columns = columns
+ * ```
+ *
+ * Additionally, the first and last tiles will have respectively a start and end padding of 0
+ *
+ * @param startCol The starting column index (0-based) that this Composable starts at.
+ * @param endCol The ending column index (exclusive, 0-based) that this Composable ends before. For
+ *   an item spanning a single column `i`, `startCol` would be `i` and `endCol` would be `i+1`.
+ * @param columns The total number of columns in the row.
+ * @param horizontalPadding The padding to use for the horizontal arrangement.
  * @return A [Modifier] that applies the calculated padding.
  */
 private fun Modifier.rowPadding(
-    isFirst: Boolean,
-    onLastColumn: Boolean,
+    startCol: Int,
+    endCol: Int,
+    columns: Int,
     horizontalPadding: Dp,
 ): Modifier {
-    return padding(
-        start = if (isFirst) 0.dp else horizontalPadding,
-        end = if (onLastColumn) 0.dp else horizontalPadding,
-    )
+    return layout { measurable, constraints ->
+        val horizontalPaddingPx = horizontalPadding.roundToPx()
+        val startPadding = startCol * horizontalPadding.roundToPx() / columns
+        val endPadding = (columns - endCol) * horizontalPaddingPx / columns
+
+        val width = constraints.maxWidth - startPadding - endPadding
+        val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+        layout(constraints.maxWidth, placeable.height) { placeable.place(startPadding, 0) }
+    }
 }
