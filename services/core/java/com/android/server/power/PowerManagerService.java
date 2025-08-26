@@ -31,6 +31,7 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.wakefulnessToString;
 import static android.service.dreams.Flags.allowDreamWhenPostured;
 import static android.service.dreams.Flags.dreamsV2;
+import static android.service.dreams.Flags.napWhenDreamEnabled;
 
 import static com.android.internal.util.LatencyTracker.ACTION_TURN_ON_SCREEN;
 import static com.android.server.deviceidle.Flags.disableWakelocksInLightIdle;
@@ -3517,7 +3518,7 @@ public final class PowerManagerService extends SystemService
         if (!powerGroup.supportsSandmanLocked()) {
             return false;
         }
-        if (mDreamsActivateOnDockSetting
+        if ((!napWhenDreamEnabled() || mDreamsEnabledSetting) && mDreamsActivateOnDockSetting
                 && mDockState != Intent.EXTRA_DOCK_STATE_UNDOCKED) {
             return true;
         }
@@ -3528,8 +3529,9 @@ public final class PowerManagerService extends SystemService
             // charging.
             return false;
         }
-        return mDreamsActivateOnSleepSetting
-                || (mDreamsActivateWhilePosturedSetting && mDevicePostured);
+        return (!napWhenDreamEnabled() || mDreamsEnabledSetting)
+                && (mDreamsActivateOnSleepSetting
+                        || (mDreamsActivateWhilePosturedSetting && mDevicePostured));
     }
 
     /**

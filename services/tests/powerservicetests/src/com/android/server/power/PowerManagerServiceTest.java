@@ -3317,6 +3317,20 @@ public class PowerManagerServiceTest {
         assertThat(mService.getLocalServiceInstance().getLastWakeup()).isEqualTo(initialWakeData);
     }
 
+    @EnableFlags(android.service.dreams.Flags.FLAG_NAP_WHEN_DREAM_ENABLED)
+    @Test
+    public void testCanDreamLocked_dreamsDisabled() {
+        createService();
+        startSystem();
+        // Dreams are disabled.
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ENABLED, 0, UserHandle.USER_CURRENT);
+        mUserSwitchedReceiver.onReceive(mContextSpy, new Intent(Intent.ACTION_USER_SWITCHED));
+
+        forceSleep();
+        assertThat(mService.getGlobalWakefulnessLocked()).isNotEqualTo(WAKEFULNESS_DREAMING);
+    }
+
     @Test
     public void testMultiDisplay_onlyOneDisplaySleeps_onWakefulnessChangedEventsFire() {
         createService();
