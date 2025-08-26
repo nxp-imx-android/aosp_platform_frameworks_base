@@ -260,7 +260,7 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
     @Override
     public void setSliderEnabled(int side, boolean enabled) {
         AmbientVolumeSlider slider = mSideToSliderMap.get(side);
-        if (slider != null && slider.isEnabled() != enabled) {
+        if (slider != null) {
             slider.setEnabled(enabled);
             if (!enabled) {
                 slider.setValue(slider.getMin());
