@@ -84,6 +84,7 @@ import android.security.Flags;
 import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.internal.R;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.security.advancedprotection.AdvancedProtectionService;
@@ -101,6 +102,8 @@ import org.mockito.Spy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
+
+import java.util.Map;
 
 /**
  * Unit tests for {@link UsbDataAdvancedProtectionHook}.
@@ -125,6 +128,7 @@ public class UsbDataAdvancedProtectionHookTest {
                     .mockStatic(ActivityManager.class)
                     .mockStatic(SystemProperties.class)
                     .mockStatic(Settings.Secure.class)
+                    .mockStatic(FrameworkStatsLog.class)
                     .mockStatic(Intent.class)
                     .build();
 
@@ -339,7 +343,7 @@ public class UsbDataAdvancedProtectionHookTest {
         IntentFilter mainFilter = mIntentFilterCaptor.getAllValues().get(0);
         assertEquals(UserHandle.ALL, mUserHandleCaptor.getAllValues().get(0));
 
-        assertEquals(2, mainFilter.countActions());
+        assertEquals(6, mainFilter.countActions());
         assertTrue(mainFilter.hasAction(Intent.ACTION_LOCKED_BOOT_COMPLETED));
         assertTrue(mainFilter.hasAction(UsbManager.ACTION_USB_PORT_CHANGED));
 
@@ -697,6 +701,12 @@ public class UsbDataAdvancedProtectionHookTest {
         mUsbDataHook.onAdvancedProtectionChanged(false);
 
         verify(mUsbManagerInternal, times(3)).enableUsbDataSignal(eq(true), eq(1));
+        verify(() -> FrameworkStatsLog
+                .write(
+                        FrameworkStatsLog.ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
+                        true,
+                        2,
+                        AdvancedProtectionProtoEnums.USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
     }
 
     @Test
@@ -846,5 +856,42 @@ public class UsbDataAdvancedProtectionHookTest {
                         isNull(),
                         anyInt());
         return mBroadcastReceiverCaptor.getAllValues().get(0);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
+    public void unexpectedUsbEvent_logsError() throws RemoteException {
+        setupAndEnableFeature(false, true, true);
+        mApmRequestedUsbDataStatusBoolean.set(false);
+        BroadcastReceiver receiver = getAndCaptureReceiver();
+
+        for (Map.Entry<String, Integer> event :
+                Map.of(
+                                UsbManager.ACTION_USB_ACCESSORY_ATTACHED,
+                                AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_ACCESSORY_ATTACHED,
+                                UsbManager.ACTION_USB_DEVICE_ATTACHED,
+                                AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_DEVICE_ATTACHED,
+                                UsbManager.ACTION_USB_ACCESSORY_DETACHED,
+                                AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_ACCESSORY_DETACHED,
+                                UsbManager.ACTION_USB_DEVICE_DETACHED,
+                                AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_DEVICE_DETACHED)
+                        .entrySet()) {
+            Intent intent = new Intent(event.getKey());
+
+            receiver.onReceive(mContext, intent);
+
+            verify(
+                    () ->
+                            FrameworkStatsLog.write(
+                                    FrameworkStatsLog
+                                            .ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
+                                    false,
+                                    -1,
+                                    event.getValue()));
+        }
     }
 }
