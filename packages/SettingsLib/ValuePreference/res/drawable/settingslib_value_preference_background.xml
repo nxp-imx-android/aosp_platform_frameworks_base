@@ -15,9 +15,14 @@
   limitations under the License.
   -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="TextAppearance.SettingsLib.ValuePreferenceTitle"
-        parent="@style/TextAppearance.SettingsLib.DisplaySmall">
-        <item name="android:textColor">@color/settingslib_text_color_primary</item>
-    </style>
-</resources>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?android:colorControlHighlight">
+    <item>
+        <shape android:shape="rectangle">
+            <solid
+                android:color="@color/settingslib_materialColorSurfaceBright" />
+            <corners
+                android:radius="@dimen/settingslib_expressive_radius_large2" />
+        </shape>
+    </item>
+</ripple>
