@@ -144,7 +144,6 @@ public class NotificationChildrenContainer extends ViewGroup
     private boolean mIsMinimized;
     private OnClickListener mHeaderClickListener;
     private ViewGroup mCurrentHeader;
-    private boolean mIsConversation;
     private Path mChildClipPath = null;
     private final Path mHeaderPath = new Path();
     private boolean mShowGroupCountInExpander;
@@ -435,18 +434,15 @@ public class NotificationChildrenContainer extends ViewGroup
     /**
      * Re-create the Notification header view
      * @param listener OnClickListener of the header view
-     * @param isConversation if the notification group is a conversation group
      */
     public void recreateNotificationHeader(
-            OnClickListener listener,
-            boolean isConversation
+            OnClickListener listener
     ) {
         // We don't want to inflate headers from the main thread when async inflation enabled
         AsyncGroupHeaderViewInflation.assertInLegacyMode();
         // TODO(b/217799515): remove traces from this function in a follow-up change
         Trace.beginSection("NotifChildCont#recreateHeader");
         mHeaderClickListener = listener;
-        mIsConversation = isConversation;
         StatusBarNotification notification = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getSbn()
                 : mContainingNotification.getEntryLegacy().getSbn();
@@ -1660,7 +1656,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 removeView(mMinimizedGroupHeader);
                 mMinimizedGroupHeader = null;
             }
-            recreateNotificationHeader(listener, mIsConversation);
+            recreateNotificationHeader(listener);
 
             removeView(mOverflowNumber);
             mOverflowNumber = null;

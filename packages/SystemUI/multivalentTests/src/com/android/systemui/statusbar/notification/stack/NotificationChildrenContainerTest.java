@@ -186,7 +186,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @DisableFlags(AsyncGroupHeaderViewInflation.FLAG_NAME)
     public void testRecreateNotificationHeader_hasHeader() {
-        mChildrenContainer.recreateNotificationHeader(null, false);
+        mChildrenContainer.recreateNotificationHeader(null);
         Assert.assertNotNull("Children container must have a header after recreation",
                 mChildrenContainer.getCurrentHeaderView());
     }
