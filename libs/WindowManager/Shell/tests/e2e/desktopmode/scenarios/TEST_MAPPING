@@ -151,6 +151,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-TaskbarInDesktopModeTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-UnlockIntoDesktopFromLockScreenTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest"
     },
     {

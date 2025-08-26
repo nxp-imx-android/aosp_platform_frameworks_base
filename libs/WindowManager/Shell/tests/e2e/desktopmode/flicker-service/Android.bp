@@ -65,6 +65,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.SwitchToDesktopFromOverviewFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.UnlockIntoDesktopFromLockScreenFlickerTest",
         "com.android.wm.shell.flicker.immersive.EnterImmersiveViaHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeFlickerTest",
@@ -249,6 +250,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-fundamentals-UnlockIntoDesktopFromLockScreenFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.UnlockIntoDesktopFromLockScreenFlickerTest"],
 }
 
 test_module_config {
