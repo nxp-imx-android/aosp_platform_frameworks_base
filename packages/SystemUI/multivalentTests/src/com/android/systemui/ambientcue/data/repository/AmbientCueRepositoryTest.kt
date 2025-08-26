@@ -26,10 +26,10 @@ import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.app.smartspace.SmartspaceTarget
 import android.content.ComponentName
 import android.content.Intent
-import android.content.applicationContext
 import android.content.testableContext
 import android.os.Binder
 import android.os.Bundle
+import android.platform.test.annotations.EnableFlags
 import android.view.WindowManagerPolicyConstants
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
@@ -47,9 +47,9 @@ import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.MA_ACTION_TYPE_NAME
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.MR_ACTION_TYPE_NAME
 import com.android.systemui.ambientcue.shared.logger.ambientCueLogger
-import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.Flags.FLAG_AMBIENT_CUE_PLUGIN
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.backgroundScope
@@ -60,6 +60,11 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.navigationbar.NavigationModeController.ModeChangedListener
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.plugins.PluginListener
+import com.android.systemui.plugins.PluginManager
+import com.android.systemui.plugins.cuebar.ActionModel
+import com.android.systemui.plugins.cuebar.CuebarPlugin
+import com.android.systemui.plugins.cuebar.CuebarPlugin.OnNewActionsListener
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.shared.system.taskStackChangeListeners
@@ -73,6 +78,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -88,6 +94,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         mock<SmartspaceManager>() {
             on { createSmartspaceSession(any()) } doReturn smartSpaceSession
         }
+    private val pluginManager = mock<PluginManager>()
     val onTargetsAvailableListenerCaptor = argumentCaptor<OnTargetsAvailableListener>()
     val navigationModeChangeListenerCaptor = argumentCaptor<ModeChangedListener>()
     val launcherProxyListenerCaptor = argumentCaptor<LauncherProxyListener>()
@@ -106,6 +113,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             backgroundDispatcher = kosmos.testDispatcher,
             secureSettingsRepository = kosmos.secureSettingsRepository,
             ambientCueLogger = kosmos.ambientCueLogger,
+            pluginManager = pluginManager,
         )
 
     @Test
@@ -341,6 +349,61 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                 assertThat(lastAction.label).isEqualTo(TITLE_2)
                 assertThat(lastAction.attribution).isEqualTo(SUBTITLE_2)
             }
+        }
+
+    @Test
+    @EnableFlags(FLAG_AMBIENT_CUE_PLUGIN)
+    fun actions_whenPluginEmitsActions() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+
+            val pluginListenerCaptor = argumentCaptor<PluginListener<CuebarPlugin>>()
+            verify(pluginManager).addPluginListener(pluginListenerCaptor.capture(), any(), any())
+
+            val cuebarPlugin = mock<CuebarPlugin>()
+            whenever(cuebarPlugin.addOnNewActionsListener(any())).thenAnswer { invocation ->
+                val realListener = invocation.getArgument<OnNewActionsListener>(0)
+                realListener.onNewActions(validActions)
+            }
+
+            pluginListenerCaptor.firstValue.onPluginLoaded(cuebarPlugin, mock(), mock())
+            runCurrent()
+
+            assertThat(actions).isEqualTo(validActions)
+        }
+
+    @Test
+    @EnableFlags(FLAG_AMBIENT_CUE_PLUGIN)
+    fun actions_whenPluginFiltersActions() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+
+            val pluginListenerCaptor = argumentCaptor<PluginListener<CuebarPlugin>>()
+            verify(pluginManager).addPluginListener(pluginListenerCaptor.capture(), any(), any())
+
+            val filteredActions = validActions
+
+            val cuebarPlugin = mock<CuebarPlugin>()
+            whenever(cuebarPlugin.filterActions(any())).thenReturn(filteredActions)
+
+            pluginListenerCaptor.firstValue.onPluginLoaded(cuebarPlugin, mock(), mock())
+            runCurrent()
+
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(validTarget))
+            runCurrent()
+
+            val originalActionsCaptor = argumentCaptor<List<ActionModel>>()
+            verify(cuebarPlugin).filterActions(originalActionsCaptor.capture())
+
+            assertThat(originalActionsCaptor.firstValue).hasSize(2)
+            assertThat(originalActionsCaptor.firstValue.first().label).isEqualTo(TITLE_1)
+            assertThat(originalActionsCaptor.firstValue.last().label).isEqualTo(TITLE_2)
+
+            assertThat(actions).isEqualTo(filteredActions)
         }
 
     @Test
@@ -656,5 +719,12 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             }
 
         private val allTargets = listOf(validTarget, invalidTarget1)
+
+        private val validActions = listOf(
+            ActionModel(icon = mock(), label = TITLE_1,
+                attribution = SUBTITLE_1, onPerformAction = {}, onPerformLongClick = {}),
+            ActionModel(icon = mock(), label = TITLE_2,
+                attribution = SUBTITLE_2, onPerformAction = {}, onPerformLongClick = {})
+        )
     }
 }

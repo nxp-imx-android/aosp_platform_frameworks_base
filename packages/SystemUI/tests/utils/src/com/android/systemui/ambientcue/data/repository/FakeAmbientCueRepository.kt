@@ -17,7 +17,7 @@
 package com.android.systemui.ambientcue.data.repository
 
 import android.graphics.Rect
-import com.android.systemui.ambientcue.shared.model.ActionModel
+import com.android.systemui.plugins.cuebar.ActionModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
