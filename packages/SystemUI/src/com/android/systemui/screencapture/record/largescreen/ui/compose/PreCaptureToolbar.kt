@@ -44,6 +44,7 @@ fun PreCaptureToolbar(
                 isSelected = it.isSelected,
                 onClick = it.onClick,
                 contentDescription = it.contentDescription,
+                hasTooltip = it.hasTooltip,
             )
         }
 
@@ -54,6 +55,7 @@ fun PreCaptureToolbar(
                 isSelected = it.isSelected,
                 onClick = it.onClick,
                 contentDescription = it.contentDescription,
+                hasTooltip = it.hasTooltip,
             )
         }
 

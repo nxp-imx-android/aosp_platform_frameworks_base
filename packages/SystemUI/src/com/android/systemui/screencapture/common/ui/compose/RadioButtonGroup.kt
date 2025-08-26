@@ -23,13 +23,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonColors
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,9 +53,11 @@ data class RadioButtonGroupItem(
     val icon: IconModel? = null,
     val label: String? = null,
     val contentDescription: String? = null,
+    val hasTooltip: Boolean = false,
 )
 
 /** A group of N icon buttons where any single icon button is selected at a time. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RadioButtonGroup(
     items: List<RadioButtonGroupItem>,
@@ -66,31 +71,59 @@ fun RadioButtonGroup(
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
     ) {
         items.fastForEachIndexed { index, item ->
-            ToggleButton(
-                colors = colors,
-                shapes =
-                    when (index) {
-                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                        items.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                    },
-                checked = item.isSelected,
-                onCheckedChange = { item.onClick() },
-                modifier =
-                    Modifier.semantics {
-                        this.contentDescription = item.contentDescription ?: item.label ?: ""
-                    },
-            ) {
-                if (item.icon != null && item.label != null) {
-                    Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))
-                    Spacer(Modifier.size(8.dp))
-                    Text(item.label)
-                } else if (item.icon != null) {
-                    Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))
-                } else if (item.label != null) {
-                    Text(item.label)
+            val shapes =
+                when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    items.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                }
+
+            key(item.contentDescription) {
+                val radioButton: @Composable () -> Unit = {
+                    ToggleRadioButton(
+                        item = item,
+                        colors = colors,
+                        shapes = shapes,
+                        modifier = modifier,
+                    )
+                }
+
+                if (item.hasTooltip && item.contentDescription != null) {
+                    StyledTooltip(tooltipText = item.contentDescription) { radioButton() }
+                } else {
+                    radioButton()
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ToggleRadioButton(
+    item: RadioButtonGroupItem,
+    colors: ToggleButtonColors,
+    shapes: ToggleButtonShapes,
+    modifier: Modifier = Modifier,
+) {
+    ToggleButton(
+        colors = colors,
+        shapes = shapes,
+        checked = item.isSelected,
+        onCheckedChange = { item.onClick() },
+        modifier =
+            modifier.semantics {
+                this.contentDescription = item.contentDescription ?: item.label ?: ""
+            },
+    ) {
+        if (item.icon != null && item.label != null) {
+            Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))
+            Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+            Text(item.label)
+        } else if (item.icon != null) {
+            Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))
+        } else if (item.label != null) {
+            Text(item.label)
         }
     }
 }

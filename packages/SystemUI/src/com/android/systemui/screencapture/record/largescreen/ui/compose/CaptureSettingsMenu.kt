@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
+import com.android.systemui.screencapture.common.ui.compose.StyledTooltip
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 
@@ -56,14 +57,18 @@ fun CaptureSettingsMenu(viewModel: PreCaptureViewModel) {
 
     Box {
         var showMenu by remember { mutableStateOf(false) }
-        IconToggleButton(
-            checked = showMenu,
-            onCheckedChange = { showMenu = it },
-            shape = IconButtonDefaults.smallSquareShape,
-            modifier =
-                Modifier.semantics { this.contentDescription = settingsButtonContentDescription },
-        ) {
-            LoadingIcon(viewModel.icons?.moreOptions)
+        StyledTooltip(tooltipText = settingsButtonContentDescription) {
+            IconToggleButton(
+                checked = showMenu,
+                onCheckedChange = { showMenu = it },
+                shape = IconButtonDefaults.smallSquareShape,
+                modifier =
+                    Modifier.semantics {
+                        this.contentDescription = settingsButtonContentDescription
+                    },
+            ) {
+                LoadingIcon(viewModel.icons?.moreOptions)
+            }
         }
         DropdownMenu(
             expanded = showMenu,
