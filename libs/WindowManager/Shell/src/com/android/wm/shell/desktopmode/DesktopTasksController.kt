@@ -796,7 +796,6 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, destinationDisplayId)
             .invoke(transition)
-
         try {
             userRepositories.current.getExpandedTasksOrdered(disconnectedDisplayId).forEach {
                 logD("addOnDisplayDisconnect: taking a snapshot of=$it before disconnect")
@@ -878,15 +877,21 @@ class DesktopTasksController(
         occluded: Boolean,
         animatingDismiss: Boolean,
     ) {
+        logD(
+            "onKeyguardVisibilityChanged visible=%b, occluded=%b, animatingDismiss=%b",
+            visible,
+            occluded,
+            animatingDismiss,
+        )
         if (visible) return
         val displaysByUniqueId = displayController.allDisplaysByUniqueId ?: return
         for (displayIdByUniqueId in displaysByUniqueId) {
             val taskRepository = userRepositories.current
             if (taskRepository.hasPreservedDisplayForUniqueDisplayId(displayIdByUniqueId.key)) {
                 restoreDisplay(
-                    displayIdByUniqueId.value,
-                    displayIdByUniqueId.key,
-                    taskRepository.userId,
+                    displayId = displayIdByUniqueId.value,
+                    uniqueDisplayId = displayIdByUniqueId.key,
+                    userId = taskRepository.userId,
                 )
             }
         }
