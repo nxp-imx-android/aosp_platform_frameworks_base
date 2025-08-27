@@ -1374,7 +1374,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mLayerView,
                     mBubbleIconFactory,
                     mAppInfoProvider,
-                    false /* skipInflation */);
+                    true /* skipInflation */);
         }
     }
 

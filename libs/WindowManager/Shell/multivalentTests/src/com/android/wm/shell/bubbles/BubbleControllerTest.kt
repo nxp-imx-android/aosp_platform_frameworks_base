@@ -89,6 +89,7 @@ import com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import java.util.Optional
 import java.util.concurrent.Executor
@@ -423,8 +424,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -438,8 +439,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -452,8 +453,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -527,8 +528,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
-                true /* suppressFlyout */,
-                true /* showInShade= */,
+                true, /* suppressFlyout */
+                true, /* showInShade= */
             )
         }
 
@@ -857,6 +858,45 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.onAllBubblesAnimatedOut()
         }
         assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.INVISIBLE)
+    }
+
+    @Test
+    fun testOnThemeChanged_skipInflationForOverflowBubbles() {
+        val taskInfo1 = ActivityManager.RunningTaskInfo().apply {
+            taskId = 123
+            baseActivity = COMPONENT
+        }
+        val bubble = createAppBubble(taskInfo1)
+        val taskInfo2 = ActivityManager.RunningTaskInfo().apply {
+            taskId = 124
+            baseActivity = COMPONENT
+        }
+        val overflowBubble = createAppBubble(taskInfo2)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+            bubbleController.inflateAndAdd(
+                overflowBubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+            bubbleController.dismissBubble(overflowBubble, DISMISS_USER_GESTURE)
+        }
+
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubbleData.hasOverflowBubbles()).isTrue()
+        assertWithMessage("Overflow bubble should not be inflated since it's dismissed")
+            .that(overflowBubble.isInflated).isFalse()
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.onThemeChanged()
+        }
+
+        assertWithMessage("Overflow bubble should not be inflated even if #onThemeChanged")
+            .that(overflowBubble.isInflated).isFalse()
     }
 
     private fun createBubble(key: String, taskId: Int = 0): Bubble {
