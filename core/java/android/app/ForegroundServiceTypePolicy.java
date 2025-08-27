@@ -1328,6 +1328,13 @@ public abstract class ForegroundServiceTypePolicy {
             if (!android.app.Flags.systemDialerPhoneCallFgsGrant()) {
                 return PERMISSION_DENIED;
             }
+
+            final RoleManager roleManager = context.getSystemService(RoleManager.class);
+            if (!roleManager.isRoleAvailable(RoleManager.ROLE_DIALER)) {
+                // If the Dialer role does not exist on the device, then there will not be a system
+                // dialer which can use the phone call FGS type.
+                return PERMISSION_DENIED;
+            }
             final TelecomManager tm = context.getSystemService(TelecomManager.class);
             final String systemDialerPackage = tm.getSystemDialerPackage();
             return systemDialerPackage != null && systemDialerPackage.equals(packageName)
