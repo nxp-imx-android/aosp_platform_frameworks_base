@@ -469,7 +469,7 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    @EnableFlags(Flags.FLAG_ENABLE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
     public void isVisiblePatternEnabled_WhenConfigValueTrue() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         when(mResources.getBoolean(com.android.internal.R.bool.config_lockPatternVisibleDefault))
@@ -478,7 +478,7 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    @EnableFlags(Flags.FLAG_ENABLE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
     public void isVisiblePatternEnabled_WhenConfigValueFalse() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         when(mResources.getBoolean(com.android.internal.R.bool.config_lockPatternVisibleDefault))
@@ -487,14 +487,14 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    @DisableFlags(Flags.FLAG_ENABLE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
     public void isVisiblePatternEnabled_OldDefault() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         assertTrue(mLockPatternUtils.isVisiblePatternEnabled(USER_ID));
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    @EnableFlags(Flags.FLAG_ENABLE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
     public void isPinEnhancedPrivacyEnabled_WhenConfigValueTrue() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         when(mResources.getBoolean(
@@ -504,7 +504,7 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    @EnableFlags(Flags.FLAG_ENABLE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
     public void isPinEnhancedPrivacyEnabled_WhenConfigValueFalse() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         when(mResources.getBoolean(
@@ -514,7 +514,7 @@ public class LockPatternUtilsTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    @DisableFlags(Flags.FLAG_ENABLE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
     public void isPinEnhancedPrivacyEnabled_OldDefault() throws RemoteException {
         configureSensitiveInputVisibilityTest();
         assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
