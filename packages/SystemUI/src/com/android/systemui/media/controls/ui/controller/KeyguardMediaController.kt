@@ -200,12 +200,13 @@ constructor(
      * Attaches media container in single pane mode, situated at the top of the notifications list
      */
     fun attachSinglePaneContainer(mediaView: MediaContainerView?) {
-        singlePaneContainer = mediaView
         if (MediaControlsInComposeFlag.isEnabled) {
+            singlePaneContainer = mediaView
             reattachHostView()
             onMediaHostVisibilityChanged(isMediaVisibleOnLockscreen)
         } else {
             val needsListener = singlePaneContainer == null
+            singlePaneContainer = mediaView
             if (needsListener) {
                 // On reinflation we don't want to add another listener
                 mediaHost.addVisibilityChangeListener(this::onMediaHostVisibilityChanged)
@@ -218,7 +219,8 @@ constructor(
     }
 
     /** Called whenever the media hosts visibility changes */
-    private fun onMediaHostVisibilityChanged(visible: Boolean) {
+    @VisibleForTesting
+    fun onMediaHostVisibilityChanged(visible: Boolean) {
         refreshMediaPosition(reason = "onMediaHostVisibilityChanged")
 
         if (visible) {
