@@ -551,6 +551,7 @@ object TestShortcuts {
             simpleShortcutCategory(System, "System controls", "View notifications"),
             simpleShortcutCategory(System, "System controls", "View quick settings"),
             simpleShortcutCategory(System, "System controls", "Take screenshot"),
+            simpleShortcutCategory(System, "System controls", "Take partial screenshot"),
             simpleShortcutCategory(System, "System controls", "Go back"),
             simpleShortcutCategory(MultiTasking, "Split screen", "Use full screen"),
             simpleShortcutCategory(
@@ -586,6 +587,9 @@ object TestShortcuts {
             ),
             simpleInputGestureData(
                 keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT
+            ),
+            simpleInputGestureData(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
             ),
             simpleInputGestureData(keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_BACK),
             simpleInputGestureData(

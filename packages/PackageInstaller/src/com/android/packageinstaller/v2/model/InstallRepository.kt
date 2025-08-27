@@ -156,11 +156,13 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
 
         var callingAttributionTag: String? = null
 
+        val isConfirmDeveloperVerificationAction = (Flags.verificationService()
+                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == intent.action)
+
         isSessionInstall =
             PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL == intent.action
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
-                || (Flags.verificationService()
-                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == intent.action)
+                || isConfirmDeveloperVerificationAction
 
         sessionId = if (isSessionInstall)
             intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
@@ -196,6 +198,22 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             if (sessionId != SessionInfo.INVALID_ID)
                 packageInstaller.getSessionInfo(sessionId)
             else null
+
+        // This case is launching the extra intent that is included in the failure result received
+        // by the installer when the installation failed because of developer verification.
+        // For this case, the session is already finished so there is no valid SessionInfo.
+        // Only show the developer verification dialog without app snippet.
+        if (isConfirmDeveloperVerificationAction && sessionInfo == null) {
+            val failureReason = intent.getIntExtra(
+                PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
+                PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN
+            )
+            val packageName = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME)
+            val packageInfo = generateStubPackageInfo(packageName)
+            isAppUpdating = isAppUpdating(packageInfo)
+            return InstallVerificationFailure(failureReason, isAppUpdating)
+        }
+
         if (sessionInfo != null) {
             callingAttributionTag = sessionInfo.installerAttributionTag
             if (sessionInfo.originatingUid != Process.INVALID_UID) {

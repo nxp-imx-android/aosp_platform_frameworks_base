@@ -30,6 +30,8 @@ import static android.media.projection.ReviewGrantedConsentResult.UNKNOWN;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 
+import static com.android.server.media.projection.MediaProjectionStopController.STOP_REASON_DISPLAY_REMOVED;
+
 import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
@@ -179,6 +181,10 @@ public final class MediaProjectionManagerService extends SystemService
 
     private void maybeStopMediaProjection(int reason) {
         synchronized (mLock) {
+            if (Flags.stopOnDisplayRemoval() && reason == STOP_REASON_DISPLAY_REMOVED) {
+                mProjectionGrant.stop(StopReason.STOP_TARGET_REMOVED);
+                return;
+            }
             if (mMediaProjectionStopController.isExemptFromStopping(mProjectionGrant, reason)) {
                 return;
             }
@@ -337,6 +343,9 @@ public final class MediaProjectionManagerService extends SystemService
         }
         mProjectionToken = projection.asBinder();
         mProjectionGrant = projection;
+        if (Flags.stopOnDisplayRemoval()) {
+            mMediaProjectionStopController.setRecordedDisplay(projection.mDisplayId);
+        }
         dispatchStart(projection);
     }
 
@@ -352,6 +361,9 @@ public final class MediaProjectionManagerService extends SystemService
                         ? session.getTargetUid()
                         : ContentRecordingSession.TARGET_UID_UNKNOWN;
         mMediaProjectionMetricsLogger.logStopped(projection.uid, targetUid, stopReason);
+        if (Flags.stopOnDisplayRemoval()) {
+            mMediaProjectionStopController.clearRecordedDisplay();
+        }
         mProjectionToken = null;
         mProjectionGrant = null;
         dispatchStop(projection);

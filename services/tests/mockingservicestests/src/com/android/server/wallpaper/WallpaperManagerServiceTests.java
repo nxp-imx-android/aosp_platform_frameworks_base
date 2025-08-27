@@ -68,11 +68,15 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.os.TestLooperManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -1366,6 +1370,45 @@ public class WallpaperManagerServiceTests {
         // flag for wallpaper is disabled.
         assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
                 mService.mLastWallpaper.connection)).isTrue();
+    }
+
+    @Test
+    public void testOnColorsChangedListener() {
+        final int testUserId = USER_SYSTEM;
+        final WallpaperColors expectedColors = new WallpaperColors(Color.valueOf(Color.RED),
+                Color.valueOf(Color.GREEN), Color.valueOf(Color.BLUE));
+
+        mService.switchUser(testUserId, null);
+        WallpaperManagerInternal internal = LocalServices.getService(
+                WallpaperManagerInternal.class);
+
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
+        Looper looper = Looper.myLooper();
+        TestLooperManager testLooperManager = new TestLooperManager(looper);
+
+        final WallpaperColors[] capturedColors = new WallpaperColors[1];
+        final int[] capturedWhich = new int[1];
+        final int[] capturedUserId = new int[1];
+
+        internal.addOnColorsChangedListener((colors, which, displayId, userId, fromForeground) -> {
+            capturedColors[0] = colors;
+            capturedWhich[0] = which;
+            capturedUserId[0] = userId;
+        }, new Handler(looper));
+
+        mService.mLastWallpaper.primaryColors = expectedColors;
+        mService.notifyWallpaperColorsChanged(mService.mLastWallpaper);
+
+        Message message = testLooperManager.next();
+        assertNotNull(message);
+        testLooperManager.execute(message);
+
+        assertEquals(expectedColors, capturedColors[0]);
+        assertEquals(mService.mLastWallpaper.mWhich, capturedWhich[0]);
+        assertEquals(mService.mLastWallpaper.userId, capturedUserId[0]);
+        testLooperManager.release();
     }
 
     // Verify that after continue switch user from userId 0 to lastUserId, the wallpaper data for

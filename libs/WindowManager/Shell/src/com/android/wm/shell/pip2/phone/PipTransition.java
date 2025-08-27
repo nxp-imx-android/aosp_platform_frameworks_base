@@ -195,7 +195,7 @@ public class PipTransition extends PipTransitionController implements
         mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
                 pipBoundsState, pipBoundsAlgorithm,
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
-                splitScreenControllerOptional);
+                pipScheduler, splitScreenControllerOptional, displayController);
         mContentPipHandler = new ContentPipHandler(mContext, mPipSurfaceTransactionHelper,
                 pipTransitionState);
         mPipDisplayChangeObserver = new PipDisplayChangeObserver(pipTransitionState,
@@ -279,6 +279,14 @@ public class PipTransition extends PipTransitionController implements
             );
             return wct;
         }
+
+        final WindowContainerTransaction exitViaExpandWct = mExpandHandler.handleRequest(transition,
+                request);
+        if (exitViaExpandWct != null) {
+            mExitViaExpandTransition = transition;
+            return exitViaExpandWct;
+        }
+
         return null;
     }
 
@@ -439,7 +447,8 @@ public class PipTransition extends PipTransitionController implements
     @Override
     public boolean isEnteringPip(@NonNull TransitionInfo.Change change,
             @WindowManager.TransitionType int transitType) {
-        if (change.getTaskInfo() != null
+        if (mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP
+                && change.getTaskInfo() != null
                 && change.getTaskInfo().getWindowingMode() == WINDOWING_MODE_PINNED) {
             // TRANSIT_TO_FRONT, though uncommon with triggering PiP, should semantically also
             // be allowed to animate if the task in question is pinned already - see b/308054074.

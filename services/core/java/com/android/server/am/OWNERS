@@ -58,7 +58,7 @@ per-file *Oom* = file:/OOM_ADJUSTER_OWNERS
 per-file ProcessStateController* = file:/OOM_ADJUSTER_OWNERS
 
 # Miscellaneous
-per-file SettingsToPropertiesMapper.java = dzshen@google.com, zhidou@google.com, marybethfair@google.com
+per-file SettingsToPropertiesMapper.java = file:platform/packages/modules/ConfigInfrastructure:/OWNERS
 per-file CarUserSwitchingDialog.java = file:platform/packages/services/Car:/OWNERS
 
 # Activity Security

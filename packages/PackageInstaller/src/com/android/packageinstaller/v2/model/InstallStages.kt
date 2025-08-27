@@ -36,6 +36,7 @@ sealed class InstallStage(val stageCode: Int) {
         const val STAGE_SUCCESS = 5
         const val STAGE_FAILED = 6
         const val STAGE_VERIFICATION_CONFIRMATION_REQUIRED = 7
+        const val STAGE_VERIFICATION_FAILURE = 8
     }
 }
 
@@ -152,3 +153,8 @@ data class InstallAborted(
 
 class InstallVerificationConfirmationRequired :
     InstallStage(STAGE_VERIFICATION_CONFIRMATION_REQUIRED)
+
+class InstallVerificationFailure(
+    val failureReason: Int = PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN,
+    val isAppUpdating: Boolean = false,
+) : InstallStage(STAGE_VERIFICATION_FAILURE)

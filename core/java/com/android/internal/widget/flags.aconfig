@@ -16,8 +16,8 @@ flag {
 }
 
 flag {
-    name: "use_default_visibility_for_sensitive_inputs"
-    namespace: "input"
+    name: "enable_default_visibility_for_sensitive_inputs"
+    namespace: "systemui"
     description: "Allows setting default value for visibility of sensitive inputs (passowrd, pin and pattern)."
     bug: "339270220"
     metadata {

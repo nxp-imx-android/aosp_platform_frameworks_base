@@ -6,3 +6,4 @@ per-file BaseBroadcastQueueTest.java = file:/BROADCASTS_OWNERS
 per-file MockingOomAdjusterTests.java = file:/OOM_ADJUSTER_OWNERS
 per-file *Activity* = file:/ACTIVITY_MANAGER_OWNERS
 per-file *Service* = file:/ACTIVITY_MANAGER_OWNERS
+per-file SettingsToPropertiesMapperTest.java = file:platform/packages/modules/ConfigInfrastructure:/OWNERS

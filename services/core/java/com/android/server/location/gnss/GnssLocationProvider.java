@@ -1485,11 +1485,7 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
 
     private void restartLocationRequest() {
         if (DEBUG) Log.d(TAG, "restartLocationRequest");
-        if (Flags.fixNoSetPositionModeWhenHalRestarts()) {
-            stopNavigating();
-        } else {
-            setStarted(false);
-        }
+        stopNavigating();
         updateRequirements();
     }
 

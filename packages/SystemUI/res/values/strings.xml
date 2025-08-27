@@ -1708,9 +1708,6 @@
     <!-- Content description for accessibility: Tapping this button will open notifications settings [CHAR LIMIT=NONE] -->
     <string name="accessibility_notification_section_header_open_settings">Open notifications settings</string>
 
-    <!-- The text to show in the notifications shade when dnd is suppressing notifications. [CHAR LIMIT=100] -->
-    <string name="dnd_suppressing_shade_text">Notifications paused by Do Not Disturb</string>
-
     <!-- The text to show in the notifications shade when a mode is suppressing notifications. [CHAR LIMIT=100] -->
     <string name="modes_suppressing_shade_text">
         {count, plural, offset:1
@@ -2545,6 +2542,8 @@
     <string name="group_system_access_quick_settings_panel">View quick settings</string>
     <!-- User visible title for the keyboard shortcut that takes a full screenshot. [CHAR LIMIT=70] -->
     <string name="group_system_full_screenshot">Take screenshot</string>
+    <!-- User visible title for the keyboard shortcut that begins a partial screenshot. [CHAR LIMIT=70] -->
+    <string name="group_system_partial_screenshot">Take partial screenshot</string>
     <!-- User visible title for the keyboard shortcut that access list of system / apps shortcuts. [CHAR LIMIT=70] -->
     <string name="group_system_access_system_app_shortcuts">Show shortcuts</string>
     <!-- User visible title for the keyboard shortcut that goes back to previous state. [CHAR LIMIT=70] -->

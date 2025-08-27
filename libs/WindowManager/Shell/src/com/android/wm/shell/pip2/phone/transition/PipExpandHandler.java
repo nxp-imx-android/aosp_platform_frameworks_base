@@ -33,12 +33,14 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SP
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.Surface;
 import android.view.SurfaceControl;
+import android.window.DesktopExperienceFlags;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -46,6 +48,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
@@ -53,8 +56,10 @@ import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
+import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.transition.Transitions;
 
@@ -68,12 +73,20 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
     private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final PipDesktopState mPipDesktopState;
     private final PipInteractionHandler mPipInteractionHandler;
+    private final PipScheduler mPipScheduler;
     private final Optional<SplitScreenController> mSplitScreenControllerOptional;
+    private final DisplayController mDisplayController;
 
     @Nullable
     private Transitions.TransitionFinishCallback mFinishCallback;
     @Nullable
     private ValueAnimator mTransitionAnimator;
+
+    //
+    // Transition caches
+    //
+    @Nullable
+    @VisibleForTesting IBinder mExitViaExpandTransition;
 
     private PipExpandAnimatorSupplier mPipExpandAnimatorSupplier;
     private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
@@ -86,7 +99,9 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
             PipDisplayLayoutState pipDisplayLayoutState,
             PipDesktopState pipDesktopState,
             PipInteractionHandler pipInteractionHandler,
-            Optional<SplitScreenController> splitScreenControllerOptional) {
+            PipScheduler pipScheduler,
+            Optional<SplitScreenController> splitScreenControllerOptional,
+            DisplayController displayController) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
@@ -94,8 +109,10 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mPipDesktopState = pipDesktopState;
         mPipInteractionHandler = pipInteractionHandler;
+        mPipScheduler = pipScheduler;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
         mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
+        mDisplayController = displayController;
 
         mPipExpandAnimatorSupplier = PipExpandAnimator::new;
     }
@@ -108,8 +125,32 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
     @Override
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
-        // All Exit-via-Expand from PiP transitions are Shell initiated.
+        ActivityManager.RunningTaskInfo taskInfo = request.getTriggerTask();
+        if (taskInfo == null) {
+            return null;
+        }
+
+        // Launching the task while it's in PiP on another display
+        if (isLaunchingPipActivityFromDifferentDisplay(request, taskInfo)) {
+            mExitViaExpandTransition = transition;
+            return mPipScheduler.getExitPipViaExpandIntoDisplayTransaction(taskInfo.displayId);
+        }
         return null;
+    }
+
+    /** Whether the task that's currently in PiP is being launched on another display. */
+    private boolean isLaunchingPipActivityFromDifferentDisplay(
+            @NonNull TransitionRequestInfo request, ActivityManager.RunningTaskInfo taskInfo) {
+        if (mPipTransitionState.getPipTaskInfo() == null) {
+            return false;
+        }
+
+        return DesktopExperienceFlags.ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH.isTrue()
+                && TransitionUtil.isOpeningType(request.getType())
+                && mPipTransitionState.getPipTaskInfo().taskId == taskInfo.taskId
+                && mPipTransitionState.getPipTaskInfo().topActivity != null
+                && mPipTransitionState.getPipTaskInfo().topActivity.equals(taskInfo.topActivity)
+                && taskInfo.displayId != mPipDisplayLayoutState.getDisplayId();
     }
 
     @Override
@@ -125,6 +166,11 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
             case TRANSIT_EXIT_PIP_TO_SPLIT:
                 return startExpandToSplitAnimation(info, startTransaction, finishTransaction,
                         finishCallback);
+        }
+
+        if (transition == mExitViaExpandTransition) {
+            mExitViaExpandTransition = null;
+            return startExpandAnimation(info, startTransaction, finishTransaction, finishCallback);
         }
         return false;
     }

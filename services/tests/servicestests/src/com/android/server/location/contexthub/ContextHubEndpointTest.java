@@ -105,6 +105,8 @@ public class ContextHubEndpointTest {
     @Mock private IContextHubEndpointCallback mMockCallback;
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
 
+    private int mNumHalRestarts = 0;
+
     @Before
     public void setUp() throws RemoteException, InstantiationException {
         when(mMockContextHubWrapper.getHubs()).thenReturn(Collections.emptyList());
@@ -170,6 +172,13 @@ public class ContextHubEndpointTest {
         assertThat(statusCaptor.getValue().errorCode).isEqualTo(ErrorCode.DESTINATION_NOT_FOUND);
     }
 
+    private void restartHalAndVerifyHubRegistration() throws RemoteException {
+        mEndpointManager.onHalRestart();
+        mNumHalRestarts++;
+        verify(mMockContextHubWrapper, times(mNumHalRestarts + 1))
+                .registerEndpointHub(any(), any());
+    }
+
     @Test
     public void testHalRestart() throws RemoteException {
         IContextHubEndpoint endpoint = registerExampleEndpoint();
@@ -177,11 +186,38 @@ public class ContextHubEndpointTest {
         // Verify that the endpoint is still registered after a HAL restart
         HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
         HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
-        mEndpointManager.onHalRestart();
+        restartHalAndVerifyHubRegistration();
         ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);
         verify(mMockEndpointCommunications, times(2)).registerEndpoint(statusCaptor.capture());
         assertThat(statusCaptor.getValue().id.id).isEqualTo(assignedIdentifier.getEndpoint());
         assertThat(statusCaptor.getValue().id.hubId).isEqualTo(assignedIdentifier.getHub());
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testHalRestartCanOpenSession() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        // Verify that the endpoint is still registered after a HAL restart
+        HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
+        HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
+        restartHalAndVerifyHubRegistration();
+        ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);
+        verify(mMockEndpointCommunications, times(2)).registerEndpoint(statusCaptor.capture());
+        assertThat(statusCaptor.getValue().id.id).isEqualTo(assignedIdentifier.getEndpoint());
+        assertThat(statusCaptor.getValue().id.hubId).isEqualTo(assignedIdentifier.getHub());
+
+        // Verify that the endpoint can open a session after a HAL restart
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
+        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE - 1);
 
         unregisterExampleEndpoint(endpoint);
     }
@@ -201,8 +237,7 @@ public class ContextHubEndpointTest {
         mEndpointManager.onEndpointSessionOpenComplete(sessionId);
         assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE - 1);
 
-        mEndpointManager.onHalRestart();
-
+        restartHalAndVerifyHubRegistration();
         HubEndpointInfo assignedInfo = endpoint.getAssignedHubEndpointInfo();
         HubEndpointIdentifier assignedIdentifier = assignedInfo.getIdentifier();
         ArgumentCaptor<EndpointInfo> statusCaptor = ArgumentCaptor.forClass(EndpointInfo.class);

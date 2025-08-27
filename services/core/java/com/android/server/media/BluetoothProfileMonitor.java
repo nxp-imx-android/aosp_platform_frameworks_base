@@ -247,28 +247,29 @@ import java.util.concurrent.ThreadLocalRandom;
     }
 
     /**
-     * Stops the broadcast, optionally making a new BT device active.
+     * Stops the broadcast, optionally making a new LEA BT device active.
      *
-     * <p>This method is expected to use this ID to determine which unicast fallback group should be
-     * set the broadcast stops.
+     * <p>This method is expected to use the given device to determine which unicast fallback group
+     * should be set when the broadcast stops.
      *
-     * @param routeId id of the bluetooth route that should become active once the broadcast stops,
-     *     or null if no BT route should become active once broadcast stops.
+     * @param device LEA device that should become active once the broadcast stops, or null if no
+     *     LEA device should become active once broadcast stops.
      */
-    public synchronized void stopBroadcast(@Nullable String routeId) {
+    public synchronized void stopBroadcast(@Nullable BluetoothDevice device) {
         if (mBroadcastProfile == null) {
             Slog.e(TAG, "Fail to stop broadcast, LeBroadcast is null");
             return;
         }
-        if (routeId == null) {
-            if (mLeAudioProfile == null) {
-                Slog.e(TAG, "Fail to set fall back group, LeProfile is null");
-            } else {
-                // TODO: b/430200199 - Map the route id to group id if not null, so that
-                // the target BT route becomes active.
-                mLeAudioProfile.setBroadcastToUnicastFallbackGroup(
-                        BluetoothLeAudio.GROUP_ID_INVALID);
-            }
+        if (mLeAudioProfile == null) {
+            Slog.e(TAG, "Fail to set fall back group, LeProfile is null");
+        } else {
+            // if no valid group id, set the fallback to -1, no LEA BT device should become active
+            // once broadcast stops
+            int groupId =
+                    (device == null || !isProfileSupported(BluetoothProfile.LE_AUDIO, device))
+                            ? BluetoothLeAudio.GROUP_ID_INVALID
+                            : (int) getGroupId(BluetoothProfile.LE_AUDIO, device);
+            mLeAudioProfile.setBroadcastToUnicastFallbackGroup(groupId);
         }
         mBroadcastProfile.stopBroadcast(mBroadcastId);
     }

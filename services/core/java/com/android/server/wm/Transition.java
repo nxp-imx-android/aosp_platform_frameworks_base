@@ -888,7 +888,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         for (int i = task.getChildCount() - 1; i >= 0; --i) {
             final Task child = task.getChildAt(i).asTask();
             if (child == null) return;
-            if (child.getWindowConfiguration().isAlwaysOnTop()) continue;
+            if (child.getWindowConfiguration().isAlwaysOnTop()
+                    && (!com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
+                        || !child.isVisibleRequested())) {
+                continue;
+            }
             out.add(child);
             addOnTopTasks(child, out);
             break;

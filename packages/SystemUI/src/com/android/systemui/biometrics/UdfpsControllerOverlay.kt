@@ -25,6 +25,7 @@ import android.hardware.biometrics.BiometricRequestConstants.REASON_AUTH_KEYGUAR
 import android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_ENROLLING
 import android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_FIND_SENSOR
 import android.hardware.biometrics.BiometricRequestConstants.RequestReason
+import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UDFPS_ULTRASONIC
 import android.hardware.fingerprint.IUdfpsOverlayControllerCallback
 import android.os.Build
 import android.os.RemoteException
@@ -148,6 +149,12 @@ constructor(
         return show(params, null)
     }
 
+    private fun setHandleTouchesDisregardingUdfpsOverlayViewLifecycle(): Boolean {
+        return requestReason == REASON_AUTH_KEYGUARD &&
+            com.android.systemui.Flags.newDozingKeyguardStates() &&
+            overlayParams.sensorType == TYPE_UDFPS_ULTRASONIC
+    }
+
     /** Show the overlay or return false and do nothing if it is already showing. */
     @SuppressLint("ClickableViewAccessibility")
     fun show(params: UdfpsOverlayParams, attachListener: OnAttachStateChangeListener?): Boolean {
@@ -155,6 +162,15 @@ constructor(
             overlayParams = params
             overlayAttachStateListener = attachListener
             sensorBounds = Rect(params.sensorBounds)
+            val isSetHandleTouchesOutsideOfUdfpsViewLifecycle =
+                setHandleTouchesDisregardingUdfpsOverlayViewLifecycle()
+            if (isSetHandleTouchesOutsideOfUdfpsViewLifecycle) {
+                // doesn't use the overlayTouchView to handle the lifecycle of forwarding
+                // shouldHandleTouches to the HAL
+                udfpsOverlayInteractor.updateSetHandleTouchesForKeyguard(
+                    deviceEntryUdfpsTouchOverlayViewModel.get()
+                )
+            }
             try {
                 overlayTouchView =
                     (inflater.inflate(R.layout.udfps_touch_overlay, null, false)
@@ -173,7 +189,12 @@ constructor(
                                     UdfpsTouchOverlayBinder.bind(
                                         view = this,
                                         viewModel = deviceEntryUdfpsTouchOverlayViewModel.get(),
-                                        udfpsOverlayInteractor = udfpsOverlayInteractor,
+                                        udfpsOverlayInteractor =
+                                            if (isSetHandleTouchesOutsideOfUdfpsViewLifecycle) {
+                                                null
+                                            } else {
+                                                udfpsOverlayInteractor
+                                            },
                                     )
                                 REASON_AUTH_BP ->
                                     UdfpsTouchOverlayBinder.bind(
@@ -263,7 +284,7 @@ constructor(
     fun hide(): Boolean {
         val wasShowing = isShowing
         Log.d(TAG, "hideUdfpsControllerOverlay wasShowing=$wasShowing")
-
+        udfpsOverlayInteractor.stopSetHandleTouchesForKeyguard()
         udfpsDisplayModeProvider.disable(null)
         getTouchOverlay()?.apply {
             if (this.parent != null) {

@@ -22,6 +22,7 @@ import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.InputManager.KeyGestureEventListener
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TASKBAR
@@ -32,6 +33,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
@@ -56,6 +58,9 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @Mock private lateinit var inputManager: InputManager
     @Mock private lateinit var commandQueue: CommandQueue
     @Mock private lateinit var shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
+    @Mock
+    private lateinit var screenCaptureKeyboardShortcutInteractor:
+        ScreenCaptureKeyboardShortcutInteractor
     @Mock private lateinit var resources: Resources
     @Captor private lateinit var keyGestureEventsCaptor: ArgumentCaptor<List<Int>>
     @Captor
@@ -74,6 +79,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 inputManager,
                 commandQueue,
                 shadeDisplayPolicy,
+                screenCaptureKeyboardShortcutInteractor,
             )
     }
 
@@ -81,6 +87,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @EnableFlags(
         com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
     )
     fun start_flagEnabled_registerKeyGestureEvents() {
         underTest.start()
@@ -91,6 +98,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 .containsExactly(
                     KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                     KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                    KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
                 )
         }
     }
@@ -99,6 +107,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @DisableFlags(
         com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
     )
     fun start_flagDisabled_noRegisterKeyGestureEvents() {
         underTest.start()
@@ -140,6 +149,23 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
 
         verify(shadeDisplayPolicy).onQSPanelKeyboardShortcut()
         verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeTakePartialScreenshot_callsScreenCaptureInteractor() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(screenCaptureKeyboardShortcutInteractor).attemptPartialRegionScreenshot()
     }
 
     @Test

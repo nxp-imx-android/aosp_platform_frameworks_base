@@ -3296,7 +3296,7 @@ public final class TvInputManagerService extends SystemService {
                             : TunedInfo.APP_TYPE_NON_SYSTEM;
                 }
                 channelInfos.add(new TunedInfo(
-                        state.inputId,
+                        state.isRecordingSession ? state.inputId : mOnScreenInputId,
                         watchedProgramsAccess ? state.currentChannel : null,
                         state.isRecordingSession,
                         state.isVisible,

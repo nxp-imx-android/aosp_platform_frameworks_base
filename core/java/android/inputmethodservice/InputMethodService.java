@@ -58,6 +58,8 @@ import static android.view.inputmethod.Flags.FLAG_CONNECTIONLESS_HANDWRITING;
 import static android.view.inputmethod.Flags.FLAG_VERIFY_KEY_EVENT;
 import static android.view.inputmethod.Flags.ctrlShiftShortcut;
 
+import static com.android.window.flags.Flags.imeBackCallbackLeakPrevention;
+
 import android.annotation.CallSuper;
 import android.annotation.DrawableRes;
 import android.annotation.DurationMillisLong;
@@ -837,7 +839,12 @@ public class InputMethodService extends AbstractInputMethodService {
             // (if any) can be unregistered using the old dispatcher if {@link #doFinishInput()}
             // is called from {@link #startInput(InputConnection, EditorInfo)} or
             // {@link #restartInput(InputConnection, EditorInfo)}.
+            final ImeOnBackInvokedDispatcher oldDispatcher = mImeDispatcher;
             mImeDispatcher = params.imeDispatcher;
+            if (imeBackCallbackLeakPrevention() && oldDispatcher != null && mImeDispatcher != null
+                    && oldDispatcher != mImeDispatcher) {
+                mImeDispatcher.transferNonSystemCallbacksFrom(oldDispatcher);
+            }
             if (mWindow != null) {
                 mWindow.getOnBackInvokedDispatcher().setImeOnBackInvokedDispatcher(mImeDispatcher);
                 if (mDecorViewVisible && mShowInputRequested) {

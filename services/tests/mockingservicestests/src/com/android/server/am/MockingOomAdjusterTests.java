@@ -276,7 +276,6 @@ public class MockingOomAdjusterTests {
         doNothing().when(pr).enqueueProcessChangeItemLocked(anyInt(), anyInt(), anyInt(),
                 anyBoolean());
         mActiveUids = new ActiveUids(null);
-        mTestCachedAppOptimizer = new TestCachedAppOptimizer(mService);
         mActivityStateHandlerThread = new HandlerThread("ActivityStateThread");
         mActivityStateHandlerThread.start();
         mActivityStateHandler = new Handler(mActivityStateHandlerThread.getLooper());
@@ -295,9 +294,14 @@ public class MockingOomAdjusterTests {
                 lru.remove(app);
             }
         };
+
+        doCallRealMethod().when(mService).setCachedAppOptimizer(any(CachedAppOptimizer.class));
+        doCallRealMethod().when(mService).getCachedAppOptimizer();
+        mTestCachedAppOptimizer = new TestCachedAppOptimizer(mService);
+        mService.setCachedAppOptimizer(mTestCachedAppOptimizer);
+
         mProcessStateController = new ProcessStateController.Builder(mService,
                 mService.mProcessList, mActiveUids)
-                .setCachedAppOptimizer(mTestCachedAppOptimizer)
                 .setProcessLruUpdater(lruUpdater)
                 .setOomAdjusterInjector(mInjector)
                 .build();
@@ -323,6 +327,7 @@ public class MockingOomAdjusterTests {
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         mInjector.reset();
         mActivityStateHandlerThread.quitSafely();
+        mTestCachedAppOptimizer.mCachedAppOptimizerThread.quitSafely();
     }
 
     private static <T> void setFieldValue(Class clazz, Object obj, String fieldName, T val) {

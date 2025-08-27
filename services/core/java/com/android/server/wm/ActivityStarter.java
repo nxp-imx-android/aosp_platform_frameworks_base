@@ -1905,6 +1905,20 @@ class ActivityStarter {
                 transition.setReady(started, false);
             }
         }
+
+        if (android.multiuser.Flags.hsuAllowlistActivities()
+                && isStarted && started.mUserId == UserHandle.USER_SYSTEM) {
+            // TODO(b/412177078): for now we're just logging activities launched on HSU, but once
+            // the allowlist mechanism is in place, we'll need to change this call to log a
+            // successful launch, but also log when it's blocked earlier on (probably before the
+            // check for voice session on executeRequest(), as voice interaction is not supported
+            // on the HSU)
+            var umi = mService.getUserManagerInternal();
+            if (umi.isHeadlessSystemUserMode()) {
+                umi.logLaunchedHsuActivity(started.mActivityComponent);
+            }
+        }
+
         return startedActivityRootTask;
     }
 

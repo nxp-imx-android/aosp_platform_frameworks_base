@@ -12227,6 +12227,27 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .activateDesk(wct = eq(wct), deskId = eq(110006), skipReorder = any())
     }
 
+    @Test
+    fun isDesktopModeEnabledOnDisplay_cannotEnterDesktopMode_isFalse() {
+        desktopState.canEnterDesktopMode = false
+        clearInvocations(shellInit)
+        controller = createController()
+
+        assertThat(controller.asDesktopMode().isDisplayInDesktopMode(SECONDARY_DISPLAY_ID))
+            .isFalse()
+    }
+
+    @Test
+    fun isDesktopModeEnabledOnDisplay_displayNotDesktop_isFalse() {
+        assertThat(controller.asDesktopMode().isDisplayInDesktopMode(SECONDARY_DISPLAY_ID))
+            .isFalse()
+    }
+
+    @Test
+    fun isDesktopModeEnabledOnDisplay_displayIsDesktop_isTrue() {
+        assertThat(controller.asDesktopMode().isDisplayInDesktopMode(DEFAULT_DISPLAY)).isTrue()
+    }
+
     private class RunOnStartTransitionCallback : ((IBinder) -> Unit) {
         var invocations = 0
             private set

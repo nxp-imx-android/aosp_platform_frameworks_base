@@ -791,7 +791,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
             }
             queue.enqueueOutgoingBroadcast(r);
             mHistory.onBroadcastFrozenLocked(r);
-            mService.mOomAdjuster.mCachedAppOptimizer.freezeAppAsyncImmediateLSP(r.callerApp);
+            mService.getCachedAppOptimizer().freezeAppAsyncImmediateLSP(r.callerApp);
             return;
         }
         if (DEBUG_BROADCAST || r.debugLog()) {
@@ -1168,7 +1168,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     == PowerExemptionManager.TEMPORARY_ALLOW_LIST_TYPE_APP_FREEZING_DELAYED) {
                 // Only delay freezer, don't add to any temp allowlist
                 // TODO: Add a unit test
-                mService.mOomAdjuster.mCachedAppOptimizer.unfreezeTemporarily(app,
+                mService.getCachedAppOptimizer().unfreezeTemporarily(app,
                         CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER,
                         r.options.getTemporaryAppAllowlistDuration());
             } else {

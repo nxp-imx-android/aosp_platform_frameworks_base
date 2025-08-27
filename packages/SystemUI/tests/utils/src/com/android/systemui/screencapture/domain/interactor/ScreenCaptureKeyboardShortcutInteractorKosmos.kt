@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.cast
+package com.android.systemui.screencapture.domain.interactor
 
-import com.android.systemui.screencapture.common.CommonModule
-import com.android.systemui.screencapture.common.ScreenCaptureComponent
-import com.android.systemui.screencapture.common.ScreenCaptureScope
-import dagger.Subcomponent
+import com.android.systemui.kosmos.Kosmos
 
-/** Dagger subcomponent for Casting. */
-@ScreenCaptureScope
-@Subcomponent(modules = [CastModule::class, CommonModule::class])
-interface ScreenCaptureCastComponent : ScreenCaptureComponent {
-    @Subcomponent.Builder
-    interface Builder : ScreenCaptureComponent.Builder {
-        override fun build(): ScreenCaptureCastComponent
-    }
-}
+val Kosmos.screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor by
+    Kosmos.Fixture { ScreenCaptureKeyboardShortcutInteractor(screenCaptureUiInteractor) }

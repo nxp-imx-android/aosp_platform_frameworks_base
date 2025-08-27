@@ -262,3 +262,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "rollout_computer_control"
+    namespace: "core_experiments_team_internal"
+    description: "Rolls out the computer_control namespace."
+    bug: "436480687"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -28,14 +28,14 @@ import kotlinx.coroutines.CoroutineScope
  * Actual Subcomponents should extend this interface and be listed as a subcomponent in
  * [ScreenCaptureModule].
  */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 @Subcomponent(modules = [CommonModule::class, FallbackModule::class])
-interface ScreenCaptureComponent {
+interface ScreenCaptureUiComponent {
 
     val screenCaptureContent: ScreenCaptureContent
 
     /**
-     * Dagger Subcomponent Builder for [ScreenCaptureComponent].
+     * Dagger Subcomponent Builder for [ScreenCaptureUiComponent].
      *
      * Actual Subcomponent Builders should extend this interface and override [build] to return the
      * actual subcomponent type.
@@ -44,16 +44,16 @@ interface ScreenCaptureComponent {
     interface Builder {
 
         /** The [CoroutineScope] to use coroutines limited to Screen Capture sessions. */
-        @BindsInstance fun setScope(@ScreenCapture scope: CoroutineScope): Builder
+        @BindsInstance fun setScope(@ScreenCaptureUi scope: CoroutineScope): Builder
 
         /** [ScreenCaptureUiParameters] that has been used to start capture flow. */
         @BindsInstance
-        fun setParameters(@ScreenCapture parameters: ScreenCaptureUiParameters): Builder
+        fun setParameters(@ScreenCaptureUi parameters: ScreenCaptureUiParameters): Builder
 
         /**
-         * Builds this [ScreenCaptureComponent]. Actual Subcomponent Builders should override this
+         * Builds this [ScreenCaptureUiComponent]. Actual Subcomponent Builders should override this
          * method with their own version that returns the actual subcomponent type.
          */
-        fun build(): ScreenCaptureComponent
+        fun build(): ScreenCaptureUiComponent
     }
 }

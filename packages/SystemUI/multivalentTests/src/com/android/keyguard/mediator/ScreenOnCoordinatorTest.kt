@@ -24,6 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.shade.display.PendingDisplayChangeController
 import com.android.systemui.unfold.FoldAodAnimationController
 import com.android.systemui.unfold.FullscreenLightRevealAnimation
 import com.android.systemui.unfold.SysUIUnfoldComponent
@@ -57,6 +58,8 @@ class ScreenOnCoordinatorTest : SysuiTestCase() {
     private lateinit var fullscreenLightRevealAnimation: FullscreenLightRevealAnimation
     @Mock
     private lateinit var fullScreenLightRevealAnimations: Set<FullscreenLightRevealAnimation>
+    @Mock
+    private lateinit var pendingDisplayChangeController: PendingDisplayChangeController
     @Captor
     private lateinit var readyCaptor: ArgumentCaptor<Runnable>
 
@@ -78,7 +81,8 @@ class ScreenOnCoordinatorTest : SysuiTestCase() {
 
         screenOnCoordinator = ScreenOnCoordinator(
             Optional.of(unfoldComponent),
-            testHandler
+            testHandler,
+            pendingDisplayChangeController,
         )
     }
 
@@ -128,7 +132,8 @@ class ScreenOnCoordinatorTest : SysuiTestCase() {
         // Recreate with empty unfoldComponent
         screenOnCoordinator = ScreenOnCoordinator(
             Optional.empty(),
-            testHandler
+            testHandler,
+            pendingDisplayChangeController,
         )
         screenOnCoordinator.onScreenTurningOn(reason = SCREEN_TURNING_ON_REASON_UNKNOWN, runnable)
         waitHandlerIdle()
@@ -142,7 +147,8 @@ class ScreenOnCoordinatorTest : SysuiTestCase() {
         // Recreate with empty unfoldComponent
         screenOnCoordinator = ScreenOnCoordinator(
                 Optional.empty(),
-                testHandler
+                testHandler,
+                pendingDisplayChangeController,
         )
         screenOnCoordinator.onScreenTurningOn(reason = SCREEN_TURNING_ON_REASON_UNKNOWN, runnable)
 
@@ -156,7 +162,8 @@ class ScreenOnCoordinatorTest : SysuiTestCase() {
         // Recreate with empty unfoldComponent
         screenOnCoordinator = ScreenOnCoordinator(
                 Optional.empty(),
-                testHandler
+                testHandler,
+                pendingDisplayChangeController,
         )
         screenOnCoordinator.onScreenTurningOn(reason = SCREEN_TURNING_ON_REASON_UNKNOWN, runnable)
         // No need to wait for the handler to be idle, as it shouldn't be used

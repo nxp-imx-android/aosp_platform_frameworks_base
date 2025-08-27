@@ -240,6 +240,7 @@ class BubbleStackViewTest {
         assertThat(bubbleStackViewManager.onImeHidden).isNull()
     }
 
+    @DisableFlags(Flags.FLAG_FIX_BUBBLES_EXPANDED_SYSUI_FLAG)
     @Test
     fun expandStack_waitsForIme() {
         val bubble = createAndInflateBubble()
@@ -265,6 +266,34 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             onImeHidden!!.run()
             verify(sysuiProxy).onStackExpandChanged(true)
+            shellExecutor.flushAll()
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_FIX_BUBBLES_EXPANDED_SYSUI_FLAG)
+    @Test
+    fun expandStack_sysUiProxyNotifiedImmediately() {
+        val bubble = createAndInflateBubble()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+        }
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+
+        positioner.setImeVisible(true, 100)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            // simulate a request from the bubble data listener to expand the stack
+            bubbleStackView.isExpanded = true
+        }
+
+        val onImeHidden = bubbleStackViewManager.onImeHidden
+        assertThat(onImeHidden).isNotNull()
+        verify(sysuiProxy).onStackExpandChanged(true)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            onImeHidden!!.run()
             shellExecutor.flushAll()
         }
     }

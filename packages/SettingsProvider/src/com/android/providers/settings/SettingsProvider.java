@@ -6764,7 +6764,7 @@ public class SettingsProvider extends ContentProvider {
 
                 if (currentVersion == 230) {
                     if (com.android.internal.widget.flags.Flags
-                            .useDefaultVisibilityForSensitiveInputs()) {
+                            .enableDefaultVisibilityForSensitiveInputs()) {
                         if (systemSettings
                                 .getSettingLocked(Settings.System.TEXT_SHOW_PASSWORD)
                                 .isNull()) {

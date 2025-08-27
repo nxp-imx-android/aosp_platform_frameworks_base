@@ -19,6 +19,10 @@ package com.android.server.security.advancedprotection.features;
 import static android.app.Notification.EXTRA_SUBSTITUTE_APP_NAME;
 import static android.content.Intent.ACTION_LOCKED_BOOT_COMPLETED;
 import static android.hardware.usb.UsbManager.ACTION_USB_PORT_CHANGED;
+import static android.hardware.usb.UsbManager.ACTION_USB_ACCESSORY_ATTACHED;
+import static android.hardware.usb.UsbManager.ACTION_USB_ACCESSORY_DETACHED;
+import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_ATTACHED;
+import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_ENABLED;
@@ -80,6 +84,7 @@ import com.android.server.security.advancedprotection.AdvancedProtectionService;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -331,7 +336,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                 mLastUsbPortStatus = portStatus;
 
                                 if (Build.IS_DEBUGGABLE) {
-                                    dumpUsbDevices(portStatus);
+                                    dumpUsbDevices();
                                 }
 
                                 if (mKeyguardManager.isKeyguardLocked()) {
@@ -378,9 +383,52 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             // request dropped due to USB stack not being ready.
                             else if (ACTION_LOCKED_BOOT_COMPLETED.equals(intent.getAction())) {
                                 setUsbDataSignalIfPossible(false);
+                            } else if (Set.of(
+                                            ACTION_USB_ACCESSORY_ATTACHED,
+                                            ACTION_USB_DEVICE_ATTACHED,
+                                            ACTION_USB_ACCESSORY_DETACHED,
+                                            ACTION_USB_DEVICE_DETACHED)
+                                    .contains(intent.getAction())) {
+                                if (!mApmRequestedUsbDataStatus.get()) {
+                                    Slog.d(
+                                            TAG,
+                                            "Unexpected USB event when USB is disabled: "
+                                                    + intent.getAction());
+                                    logUnexpectedUsbEvent(intent.getAction());
+                                    dumpUsbDevices();
+                                }
                             }
                         } catch (Exception e) {
                             Slog.e(TAG, "USB Data protection failed with: " + e.getMessage());
+                        }
+                    }
+
+                    private void logUnexpectedUsbEvent(String usbEvent) {
+                        FrameworkStatsLog.write(
+                                FrameworkStatsLog
+                                        .ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
+                                //populating with default values as StatsLog cannot skip fields
+                                false,
+                                 -1,
+                                getAtomUsbErrorType(usbEvent));
+                    }
+
+                    private int getAtomUsbErrorType(String usbEvent) {
+                        switch (usbEvent) {
+                            case ACTION_USB_ACCESSORY_ATTACHED:
+                                return AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_ACCESSORY_ATTACHED;
+                            case ACTION_USB_DEVICE_ATTACHED:
+                                return AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_DEVICE_ATTACHED;
+                            case ACTION_USB_ACCESSORY_DETACHED:
+                                return AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_ACCESSORY_DETACHED;
+                            case ACTION_USB_DEVICE_DETACHED:
+                                return AdvancedProtectionProtoEnums
+                                        .USB_ERROR_TYPE_UNEXPECTED_DEVICE_DETACHED;
+                            default:
+                                return AdvancedProtectionProtoEnums.USB_ERROR_TYPE_UNKNOWN;
                         }
                     }
 
@@ -446,8 +494,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         }
                     }
 
-                    // TODO:(b/401540215) Remove this as part of pre-release cleanup
-                    private void dumpUsbDevices(UsbPortStatus portStatus) {
+                    private void dumpUsbDevices() {
                         Map<String, UsbDevice> portStatusMap = mUsbManager.getDeviceList();
                         for (UsbDevice device : portStatusMap.values()) {
                             Slog.d(TAG, "Device: " + device.getDeviceName());
@@ -649,7 +696,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 FrameworkStatsLog.write(
                         FrameworkStatsLog.ADVANCED_PROTECTION_USB_STATE_CHANGE_ERROR_REPORTED,
                         /* desired_signal_state */ status,
-                        /* retries_occurred */ usbChangeStateReattempts);
+                        /* retries_occurred */ usbChangeStateReattempts,
+                        AdvancedProtectionProtoEnums.USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED);
             }
             if (status) {
                 clearExistingNotification();
@@ -684,7 +732,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         final IntentFilter filter = new IntentFilter();
         filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
         filter.addAction(ACTION_LOCKED_BOOT_COMPLETED);
-        filter.addAction(UsbManager.ACTION_USB_PORT_CHANGED);
+        filter.addAction(ACTION_USB_PORT_CHANGED);
+        filter.addAction(ACTION_USB_ACCESSORY_ATTACHED);
+        filter.addAction(ACTION_USB_ACCESSORY_DETACHED);
+        filter.addAction(ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(ACTION_USB_DEVICE_DETACHED);
 
         mContext.registerReceiverAsUser(
                 mUsbProtectionBroadcastReceiver, UserHandle.ALL, filter, null, null);

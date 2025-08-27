@@ -49,6 +49,7 @@ import com.android.packageinstaller.v2.model.InstallInstalling;
 import com.android.packageinstaller.v2.model.InstallStage;
 import com.android.packageinstaller.v2.model.InstallSuccess;
 import com.android.packageinstaller.v2.model.InstallUserActionRequired;
+import com.android.packageinstaller.v2.model.InstallVerificationFailure;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
 import com.android.packageinstaller.v2.ui.UiUtil;
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel;
@@ -220,6 +221,9 @@ public class InstallationFragment extends DialogFragment {
             }
             case InstallStage.STAGE_USER_ACTION_REQUIRED -> {
                 updateUserActionRequiredUI(mDialog, (InstallUserActionRequired) installStage);
+            }
+            case InstallStage.STAGE_VERIFICATION_FAILURE -> {
+                updateVerificationFailureUI(mDialog, (InstallVerificationFailure) installStage);
             }
         }
 
@@ -675,6 +679,51 @@ public class InstallationFragment extends DialogFragment {
     public void setProgress(int progress) {
         if (mProgressBar != null) {
             mProgressBar.setProgress(progress);
+        }
+    }
+
+    private void updateVerificationFailureUI(Dialog dialog,
+            InstallVerificationFailure installStage) {
+        mAppSnippet.setVisibility(View.GONE);
+        mCustomMessageTextView.setVisibility(View.VISIBLE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+        // Disable clicking outside of the dialog
+        this.setCancelable(false);
+
+        final int verificationUserActionNeededReason = installStage.getFailureReason();
+        // For failure case, use strings for policy DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
+        final int verificationPolicy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+
+        // Set title and main message
+        int titleResId = getVerificationConfirmationTitleResourceId(
+                verificationUserActionNeededReason);
+        int msgResId = getVerificationConfirmationMessageResourceId(
+                verificationUserActionNeededReason, verificationPolicy,
+                installStage.isAppUpdating());
+        dialog.setTitle(titleResId);
+        mCustomMessageTextView.setText(
+                Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
+
+        // Set negative button
+        Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
+        if (negativeButton != null) {
+            negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setText(R.string.ok);
+            negativeButton.setFilterTouchesWhenObscured(true);
+            UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
+            negativeButton.setOnClickListener(view -> {
+                // Set clickable of the button to false to avoid the user clicks it
+                // more than once quickly
+                view.setClickable(false);
+                mInstallActionListener.onNegativeResponse(installStage.getStageCode());
+            });
+        }
+
+        // Hide the positive button
+        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
+        if (positiveButton != null) {
+            positiveButton.setVisibility(View.GONE);
         }
     }
 

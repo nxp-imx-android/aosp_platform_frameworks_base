@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.phone
 
 import android.app.ActivityManager
 import android.app.ActivityOptions
-import android.app.ActivityTaskManager
+import android.app.IActivityTaskManager
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.Context
@@ -97,6 +97,7 @@ constructor(
     private val deviceProvisionedController: DeviceProvisionedController,
     private val userTracker: UserTracker,
     private val activityIntentHelper: ActivityIntentHelper,
+    private val activityTaskManager: IActivityTaskManager,
     @Main private val mainExecutor: DelayableExecutor,
     @Application private val applicationScope: CoroutineScope,
     private val communalSceneInteractor: CommunalSceneInteractor,
@@ -257,21 +258,20 @@ constructor(
                 intent.collectExtraIntentKeys()
                 try {
                     result[0] =
-                        ActivityTaskManager.getService()
-                            .startActivityAsUser(
-                                null,
-                                context.basePackageName,
-                                context.attributionTag,
-                                intent,
-                                intent.resolveTypeIfNeeded(context.contentResolver),
-                                null,
-                                null,
-                                0,
-                                Intent.FLAG_ACTIVITY_NEW_TASK,
-                                null,
-                                activityOptions.toBundle(),
-                                userHandle.identifier,
-                            )
+                        activityTaskManager.startActivityAsUser(
+                            null,
+                            context.basePackageName,
+                            context.attributionTag,
+                            intent,
+                            intent.resolveTypeIfNeeded(context.contentResolver),
+                            null,
+                            null,
+                            0,
+                            Intent.FLAG_ACTIVITY_NEW_TASK,
+                            null,
+                            activityOptions.toBundle(),
+                            userHandle.identifier,
+                        )
                 } catch (e: RemoteException) {
                     Log.w(TAG, "Unable to start activity", e)
                 }

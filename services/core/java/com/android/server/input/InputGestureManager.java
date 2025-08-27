@@ -24,6 +24,7 @@ import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
+import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -336,6 +337,15 @@ final class InputGestureManager {
                             KeyEvent.KEYCODE_Q,
                             KeyEvent.META_META_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
+        }
+        if (enablePartialScreenshotKeyboardShortcut()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_S,
+                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
                             /* allowCaptureByFocusedWindow = */true
                     ));
         }

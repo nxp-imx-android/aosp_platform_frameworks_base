@@ -35,10 +35,10 @@ public final class BannerPreferenceTest {
                     null,
                     Bundle.EMPTY);
     private static final DeviceSettingAction ACTION = DeviceSettingAction.EMPTY_ACTION;
-    private static final ButtonInfo Button_INFO_1 =
-            new ButtonInfo.Builder().setLabel("label1").setAction(ACTION).build();
-    private static final ButtonInfo Button_INFO_2 =
-            new ButtonInfo.Builder().setLabel("label2").setAction(ACTION).build();
+    private static final ButtonInfo POSITIVE_BUTTON =
+            new ButtonInfo.Builder().setLabel("positive").setAction(ACTION).build();
+    private static final ButtonInfo NEGATIVE_BUTTON =
+            new ButtonInfo.Builder().setLabel("negative").setAction(ACTION).build();
 
     @Test
     public void build_withoutTitle_fail() {
@@ -49,8 +49,8 @@ public final class BannerPreferenceTest {
                             new BannerPreference.Builder()
                                     .setMessage("message")
                                     .setIcon(ICON)
-                                    .addButtonInfo(Button_INFO_1)
-                                    .addButtonInfo(Button_INFO_2)
+                                    .setPositiveButtonInfo(POSITIVE_BUTTON)
+                                    .setNegativeButtonInfo(NEGATIVE_BUTTON)
                                     .setExtras(buildBundle("key1", "value1"))
                                     .build();
                 });
@@ -65,8 +65,8 @@ public final class BannerPreferenceTest {
                             new BannerPreference.Builder()
                                     .setTitle("title")
                                     .setIcon(ICON)
-                                    .addButtonInfo(Button_INFO_1)
-                                    .addButtonInfo(Button_INFO_2)
+                                    .setPositiveButtonInfo(POSITIVE_BUTTON)
+                                    .setNegativeButtonInfo(NEGATIVE_BUTTON)
                                     .setExtras(buildBundle("key1", "value1"))
                                     .build();
                 });
@@ -78,8 +78,8 @@ public final class BannerPreferenceTest {
                 new BannerPreference.Builder()
                         .setTitle("title")
                         .setMessage("message")
-                        .addButtonInfo(Button_INFO_1)
-                        .addButtonInfo(Button_INFO_2)
+                        .setPositiveButtonInfo(POSITIVE_BUTTON)
+                        .setNegativeButtonInfo(NEGATIVE_BUTTON)
                         .setExtras(buildBundle("key1", "value1"))
                         .build();
     }
@@ -102,8 +102,8 @@ public final class BannerPreferenceTest {
                         .setTitle("title")
                         .setMessage("message")
                         .setIcon(ICON)
-                        .addButtonInfo(Button_INFO_1)
-                        .addButtonInfo(Button_INFO_2)
+                        .setPositiveButtonInfo(POSITIVE_BUTTON)
+                        .setNegativeButtonInfo(NEGATIVE_BUTTON)
                         .build();
     }
 
@@ -114,8 +114,8 @@ public final class BannerPreferenceTest {
                         .setTitle("title")
                         .setMessage("message")
                         .setIcon(ICON)
-                        .addButtonInfo(Button_INFO_1)
-                        .addButtonInfo(Button_INFO_2)
+                        .setPositiveButtonInfo(POSITIVE_BUTTON)
+                        .setNegativeButtonInfo(NEGATIVE_BUTTON)
                         .setExtras(buildBundle("key1", "value1"))
                         .build();
     }
@@ -127,16 +127,16 @@ public final class BannerPreferenceTest {
                         .setTitle("title")
                         .setMessage("message")
                         .setIcon(ICON)
-                        .addButtonInfo(Button_INFO_1)
-                        .addButtonInfo(Button_INFO_2)
+                        .setPositiveButtonInfo(POSITIVE_BUTTON)
+                        .setNegativeButtonInfo(NEGATIVE_BUTTON)
                         .setExtras(buildBundle("key1", "value1"))
                         .build();
 
         assertThat(preference.getTitle()).isEqualTo("title");
         assertThat(preference.getMessage()).isEqualTo("message");
         assertThat(preference.getIcon()).isEqualTo(ICON);
-        assertThat(preference.getButtonInfos().stream().map(ButtonInfo::getLabel).toList())
-                .containsExactly("label1", "label2");
+        assertThat(preference.getPositiveButtonInfo()).isEqualTo(POSITIVE_BUTTON);
+        assertThat(preference.getNegativeButtonInfo()).isEqualTo(NEGATIVE_BUTTON);
         assertThat(preference.getExtras().getString("key1")).isEqualTo("value1");
     }
 
@@ -147,8 +147,8 @@ public final class BannerPreferenceTest {
                         .setTitle("title")
                         .setMessage("message")
                         .setIcon(ICON)
-                        .addButtonInfo(Button_INFO_1)
-                        .addButtonInfo(Button_INFO_2)
+                        .setPositiveButtonInfo(POSITIVE_BUTTON)
+                        .setNegativeButtonInfo(NEGATIVE_BUTTON)
                         .setExtras(buildBundle("key1", "value1"))
                         .build();
 
@@ -157,8 +157,8 @@ public final class BannerPreferenceTest {
         assertThat(fromParcel.getTitle()).isEqualTo(preference.getTitle());
         assertThat(fromParcel.getMessage()).isEqualTo(preference.getMessage());
         assertThat(fromParcel.getIcon()).isEqualTo(preference.getIcon());
-        assertThat(fromParcel.getButtonInfos().stream().map(ButtonInfo::getLabel).toList())
-                .containsExactly("label1", "label2");
+        assertThat(preference.getPositiveButtonInfo()).isEqualTo(POSITIVE_BUTTON);
+        assertThat(preference.getNegativeButtonInfo()).isEqualTo(NEGATIVE_BUTTON);
         assertThat(fromParcel.getExtras().getString("key1"))
                 .isEqualTo(preference.getExtras().getString("key1"));
     }

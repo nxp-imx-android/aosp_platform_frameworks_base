@@ -17,7 +17,7 @@
 package com.android.systemui.screencapture.record.data.repository
 
 import android.view.Display
-import com.android.systemui.screencapture.common.ScreenCapture
+import com.android.systemui.screencapture.common.ScreenCaptureUi
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.record.shared.model.ScreenCaptureRecordParametersModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-@ScreenCapture
+@ScreenCaptureUi
 class ScreenCaptureRecordParametersRepository @Inject constructor() {
 
     private val _parameters =

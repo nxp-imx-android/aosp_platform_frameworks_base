@@ -96,6 +96,7 @@ import static android.os.Process.ROOT_UID;
 import static android.os.Process.SHELL_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_EMPTY;
+import static android.os.Process.ZYGOTE_POLICY_FLAG_NATIVE_PROCESS;
 
 import static com.android.internal.messages.nano.SystemMessageProto.SystemMessage.NOTE_FOREGROUND_SERVICE_BG_LAUNCH;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_START_API__FGSSTARTAPI_DELEGATE;
@@ -6043,8 +6044,12 @@ public final class ActiveServices {
                         hostingRecord, ZYGOTE_POLICY_FLAG_EMPTY, uid, r.sdkSandboxClientAppPackage);
                 r.isolationHostProc = app;
             } else {
-                app = mAm.startProcessLocked(procName, r.appInfo, true, intentFlags,
-                        hostingRecord, ZYGOTE_POLICY_FLAG_EMPTY, false, isolated);
+                int policy = ZYGOTE_POLICY_FLAG_EMPTY;
+                if (android.os.Flags.nativeFrameworkPrototype() && r.mIsNativeIsolated) {
+                    policy |= ZYGOTE_POLICY_FLAG_NATIVE_PROCESS;
+                }
+                app = mAm.startProcessLocked(procName, r.appInfo, true, intentFlags, hostingRecord,
+                        policy, false, isolated);
             }
             if (app == null) {
                 String msg = "Unable to launch app "
@@ -8361,7 +8366,7 @@ public final class ActiveServices {
     protected boolean dumpService(FileDescriptor fd, PrintWriter pw, String name, int[] users,
             String[] args, int opti, boolean dumpAll) {
         try {
-            mAm.mOomAdjuster.mCachedAppOptimizer.enableFreezer(false);
+            mAm.getCachedAppOptimizer().enableFreezer(false);
             final ArrayList<ServiceRecord> services = new ArrayList<>();
 
             final Predicate<ServiceRecord> filter = DumpUtils.filterRecord(name);
@@ -8404,7 +8409,7 @@ public final class ActiveServices {
             }
             return true;
         } finally {
-            mAm.mOomAdjuster.mCachedAppOptimizer.enableFreezer(true);
+            mAm.getCachedAppOptimizer().enableFreezer(true);
         }
     }
 

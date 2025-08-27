@@ -17,6 +17,7 @@
 package android.window;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
+import static com.android.window.flags.Flags.imeBackCallbackLeakPrevention;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -62,6 +63,9 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
     // the ViewRootImpl holding IME's WindowOnBackInvokedDispatcher is created on.
     private Handler mHandler;
     private final ArrayDeque<Pair<Integer, Bundle>> mQueuedReceive = new ArrayDeque<>();
+    private final ArrayDeque<Pair<Integer, OnBackInvokedCallback>> mNonSystemCallbacks =
+            new ArrayDeque<>();
+    private OnBackInvokedCallback mRegisteredSystemCallback = null;
     public ImeOnBackInvokedDispatcher(Handler handler) {
         mResultReceiver = new ResultReceiver(handler) {
             @Override
@@ -74,6 +78,15 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
                 }
             }
         };
+    }
+
+    /**
+     * Transfers the non-system callbacks from another {@link ImeOnBackInvokedDispatcher}.
+     * This is used when the target IME dispatcher changes.
+     */
+    public void transferNonSystemCallbacksFrom(@NonNull ImeOnBackInvokedDispatcher other) {
+        mNonSystemCallbacks.addAll(other.mNonSystemCallbacks);
+        other.mNonSystemCallbacks.clear();
     }
 
     /** Set receiving dispatcher to consume queued receiving events. */
@@ -106,6 +119,29 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
     public void registerOnBackInvokedCallback(
             @OnBackInvokedDispatcher.Priority int priority,
             @NonNull OnBackInvokedCallback callback) {
+        if (!imeBackCallbackLeakPrevention()) {
+            registerOnBackInvokedCallbackAtTarget(priority, callback);
+            return;
+        }
+        if (priority == PRIORITY_SYSTEM || callback instanceof CompatOnBackInvokedCallback) {
+            registerOnBackInvokedCallbackAtTarget(priority, callback);
+            mRegisteredSystemCallback = callback;
+            // Register all pending non-system callbacks.
+            for (Pair<Integer, OnBackInvokedCallback> pair : mNonSystemCallbacks) {
+                registerOnBackInvokedCallbackAtTarget(pair.first, pair.second);
+            }
+        } else {
+            mNonSystemCallbacks.removeIf(pair -> pair.second.equals(callback));
+            mNonSystemCallbacks.add(new Pair<>(priority, callback));
+            if (mRegisteredSystemCallback != null) {
+                registerOnBackInvokedCallbackAtTarget(priority, callback);
+            }
+        }
+    }
+
+    private void registerOnBackInvokedCallbackAtTarget(
+            @OnBackInvokedDispatcher.Priority int priority,
+            @NonNull OnBackInvokedCallback callback) {
         final Bundle bundle = new Bundle();
         // Always invoke back for ime without checking the window focus.
         // We use strong reference in the binder wrapper to avoid accidentally GC the callback.
@@ -120,8 +156,26 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
     }
 
     @Override
-    public void unregisterOnBackInvokedCallback(
-            @NonNull OnBackInvokedCallback callback) {
+    public void unregisterOnBackInvokedCallback(@NonNull OnBackInvokedCallback callback) {
+        if (!imeBackCallbackLeakPrevention()) {
+            unregisterOnBackInvokedCallbackAtTarget(callback);
+            return;
+        }
+        if (callback == mRegisteredSystemCallback) {
+            // Unregister all non-system callbacks first.
+            for (Pair<Integer, OnBackInvokedCallback> nonSystemCallback : mNonSystemCallbacks) {
+                unregisterOnBackInvokedCallbackAtTarget(nonSystemCallback.second);
+            }
+            // Unregister the system callback.
+            unregisterOnBackInvokedCallbackAtTarget(callback);
+        } else {
+            if (mNonSystemCallbacks.removeIf(pair -> pair.second.equals(callback))) {
+                unregisterOnBackInvokedCallbackAtTarget(callback);
+            }
+        }
+    }
+
+    private  void unregisterOnBackInvokedCallbackAtTarget(@NonNull OnBackInvokedCallback callback) {
         Bundle bundle = new Bundle();
         bundle.putInt(RESULT_KEY_ID, callback.hashCode());
         mResultReceiver.send(RESULT_CODE_UNREGISTER, bundle);
@@ -271,6 +325,15 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
                 p.println(prefix + "  " + callback);
             }
         }
+        if (mNonSystemCallbacks.isEmpty()) {
+            p.println(prefix + "mNonSystemCallbacks: []");
+        } else {
+            p.println(prefix + "mNonSystemCallbacks:");
+            for (Pair<Integer, OnBackInvokedCallback> pair : mNonSystemCallbacks) {
+                p.println(prefix + "  " + pair.second + " (priority=" + pair.first + ")");
+            }
+        }
+        p.println(prefix + "mRegisteredSystemCallback: " + mRegisteredSystemCallback);
     }
 
     @VisibleForTesting(visibility = PACKAGE)

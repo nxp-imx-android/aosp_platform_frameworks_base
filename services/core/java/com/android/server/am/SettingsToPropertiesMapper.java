@@ -20,6 +20,7 @@ import static com.android.aconfig_new_storage.Flags.enableAconfigStorageDaemon;
 import static com.android.aconfig_new_storage.Flags.enableAconfigdFromMainline;
 import static com.android.aconfig_new_storage.Flags.supportClearLocalOverridesImmediately;
 import static com.android.aconfig_new_storage.Flags.supportImmediateLocalOverrides;
+import static com.android.server.am.Flags.rolloutComputerControl;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
@@ -52,6 +53,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -93,6 +95,9 @@ public class SettingsToPropertiesMapper {
     // TODO(b/282593625): Move this constant to DeviceConfig module
     private static final String NAMESPACE_TETHERING_U_OR_LATER_NATIVE =
             "tethering_u_or_later_native";
+
+    private static final String NAMESPACE_COMPUTER_CONTROL =
+            "computer_control";
 
     // All the flags under the listed DeviceConfig scopes will be synced to native level.
     //
@@ -447,7 +452,7 @@ public class SettingsToPropertiesMapper {
         SettingsToPropertiesMapper mapper =  new SettingsToPropertiesMapper(
                 contentResolver,
                 sGlobalSettings,
-                sDeviceConfigScopes);
+                getDeviceConfigScopes());
         mapper.updatePropertiesFromSettings();
         return mapper;
     }
@@ -612,5 +617,15 @@ public class SettingsToPropertiesMapper {
     void updatePropertyFromSetting(String settingName, String propName) {
         String settingValue = Settings.Global.getString(mContentResolver, settingName);
         setProperty(propName, settingValue);
+    }
+
+    @VisibleForTesting
+    static String[] getDeviceConfigScopes() {
+        String[] deviceConfigScopes = sDeviceConfigScopes;
+        if (rolloutComputerControl()) {
+            deviceConfigScopes = Arrays.copyOf(sDeviceConfigScopes, sDeviceConfigScopes.length + 1);
+            deviceConfigScopes[sDeviceConfigScopes.length] = NAMESPACE_COMPUTER_CONTROL;
+        }
+        return deviceConfigScopes;
     }
 }

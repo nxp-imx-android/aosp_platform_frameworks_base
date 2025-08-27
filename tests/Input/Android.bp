@@ -34,7 +34,6 @@ android_test {
         "compatibility-device-util-axt",
         "cts-input-lib",
         "cts-wm-util",
-        "desktop-test-lib",
         "flag-junit",
         "frameworks-base-testutils",
         "hamcrest-library",

@@ -17,16 +17,16 @@
 package com.android.systemui.screencapture.record
 
 import com.android.systemui.screencapture.common.CommonModule
-import com.android.systemui.screencapture.common.ScreenCaptureComponent
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import dagger.Subcomponent
 
 /** Dagger subcomponent for Recording. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 @Subcomponent(modules = [CommonModule::class, RecordModule::class])
-interface ScreenCaptureRecordComponent : ScreenCaptureComponent {
+interface ScreenCaptureRecordUiComponent : ScreenCaptureUiComponent {
     @Subcomponent.Builder
-    interface Builder : ScreenCaptureComponent.Builder {
-        override fun build(): ScreenCaptureRecordComponent
+    interface Builder : ScreenCaptureUiComponent.Builder {
+        override fun build(): ScreenCaptureRecordUiComponent
     }
 }

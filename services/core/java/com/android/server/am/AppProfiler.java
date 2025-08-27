@@ -1446,7 +1446,7 @@ public class AppProfiler {
                 if (DEBUG_SWITCH || DEBUG_OOM_ADJ) {
                     Slog.v(TAG_OOM_ADJ, msg + app.processName + " to " + level);
                 }
-                mService.mOomAdjuster.mCachedAppOptimizer.unfreezeTemporarily(app,
+                mService.getCachedAppOptimizer().unfreezeTemporarily(app,
                         CachedAppOptimizer.UNFREEZE_REASON_TRIM_MEMORY);
                 thread.scheduleTrimMemory(level);
             } catch (RemoteException e) {

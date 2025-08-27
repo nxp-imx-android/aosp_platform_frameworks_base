@@ -30,8 +30,8 @@ import android.os.UserHandle
 import android.util.Log
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.kairos.awaitClose
-import com.android.systemui.screencapture.common.ScreenCapture
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -60,11 +60,11 @@ interface ScreenCaptureAppContentRepository {
  *
  * Fetches app content using [AppContentProjectionService].
  */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureAppContentRepositoryImpl
 @Inject
 constructor(
-    @ScreenCapture private val scope: CoroutineScope,
+    @ScreenCaptureUi private val scope: CoroutineScope,
     @Background private val bgContext: CoroutineContext,
     private val context: Context,
 ) : ScreenCaptureAppContentRepository {

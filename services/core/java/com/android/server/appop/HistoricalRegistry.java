@@ -238,7 +238,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         // migrate discrete ops from xml or sqlite to unified-schema sqlite database.
         if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
             Slog.i(TAG, "migrate discrete ops from xml to unified sqlite.");
-            DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
+            // We don't really need to use AppOpsService lock here as this is a one time migration.
+            Object lock = new Object();
+            DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(lock);
             DiscreteOpsMigrationHelper.migrateFromXmlToUnifiedSchemaSqlite(
                     xmlRegistry, mShortIntervalHistoryHelper);
         } else if (DiscreteOpsDbHelper.getDatabaseFile().exists()) {

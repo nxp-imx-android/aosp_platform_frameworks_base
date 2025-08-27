@@ -2207,81 +2207,6 @@ static uint64_t GetEffectiveCapabilityMask(JNIEnv* env) {
     return capdata[0].effective | (static_cast<uint64_t>(capdata[1].effective) << 32);
 }
 
-static jlong CalculateBoundingCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gids) {
-    jlong capabilities = 0;
-
-    /*
-     * Grant CAP_SYS_NICE to CapInh/CapPrm/CapBnd for processes that can spawn
-     * VMs.  This enables processes to execve on binaries with elevated
-     * capabilities if its file capability bits are set. This does not grant
-     * capability to the parent process(that spawns the VM) as the effective
-     * bits are not set.
-     */
-    if (MatchGid(env, gids, gid, AID_VIRTUALMACHINE)) {
-        capabilities |= (1LL << CAP_SYS_NICE);
-    }
-
-    return capabilities;
-}
-
-static jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gids,
-                                   bool is_child_zygote) {
-  jlong capabilities = 0;
-
-  /*
-   *  Grant the following capabilities to the Bluetooth user:
-   *    - CAP_WAKE_ALARM
-   *    - CAP_NET_ADMIN
-   *    - CAP_NET_RAW
-   *    - CAP_NET_BIND_SERVICE (for DHCP client functionality)
-   *    - CAP_SYS_NICE (for setting RT priority for audio-related threads)
-   */
-
-  if (multiuser_get_app_id(uid) == AID_BLUETOOTH) {
-    capabilities |= (1LL << CAP_WAKE_ALARM);
-    capabilities |= (1LL << CAP_NET_ADMIN);
-    capabilities |= (1LL << CAP_NET_RAW);
-    capabilities |= (1LL << CAP_NET_BIND_SERVICE);
-    capabilities |= (1LL << CAP_SYS_NICE);
-  }
-
-  if (multiuser_get_app_id(uid) == AID_NETWORK_STACK) {
-    capabilities |= (1LL << CAP_WAKE_ALARM);
-    capabilities |= (1LL << CAP_NET_ADMIN);
-    capabilities |= (1LL << CAP_NET_BROADCAST);
-    capabilities |= (1LL << CAP_NET_BIND_SERVICE);
-    capabilities |= (1LL << CAP_NET_RAW);
-  }
-
-  /*
-   * Grant CAP_BLOCK_SUSPEND to processes that belong to GID "wakelock"
-   */
-
-  if (MatchGid(env, gids, gid, AID_WAKELOCK)) {
-    capabilities |= (1LL << CAP_BLOCK_SUSPEND);
-  }
-
-  /*
-   * Grant child Zygote processes the following capabilities:
-   *   - CAP_SETUID (change UID of child processes)
-   *   - CAP_SETGID (change GID of child processes)
-   *   - CAP_SETPCAP (change capabilities of child processes)
-   */
-
-  if (is_child_zygote) {
-    capabilities |= (1LL << CAP_SETUID);
-    capabilities |= (1LL << CAP_SETGID);
-    capabilities |= (1LL << CAP_SETPCAP);
-  }
-
-  /*
-   * Containers run without some capabilities, so drop any caps that are not
-   * available.
-   */
-
-  return capabilities & GetEffectiveCapabilityMask(env);
-}
-
 /**
  * Adds the given information about a newly created unspecialized app
  * processes to the Zygote's USAP table.
@@ -2391,6 +2316,81 @@ static void UnmountStorageOnInit(JNIEnv* env) {
 }  // anonymous namespace
 
 namespace android {
+
+jlong zygote::CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gids,
+                                   bool is_child_zygote) {
+  jlong capabilities = 0;
+
+  /*
+   *  Grant the following capabilities to the Bluetooth user:
+   *    - CAP_WAKE_ALARM
+   *    - CAP_NET_ADMIN
+   *    - CAP_NET_RAW
+   *    - CAP_NET_BIND_SERVICE (for DHCP client functionality)
+   *    - CAP_SYS_NICE (for setting RT priority for audio-related threads)
+   */
+
+  if (multiuser_get_app_id(uid) == AID_BLUETOOTH) {
+    capabilities |= (1LL << CAP_WAKE_ALARM);
+    capabilities |= (1LL << CAP_NET_ADMIN);
+    capabilities |= (1LL << CAP_NET_RAW);
+    capabilities |= (1LL << CAP_NET_BIND_SERVICE);
+    capabilities |= (1LL << CAP_SYS_NICE);
+  }
+
+  if (multiuser_get_app_id(uid) == AID_NETWORK_STACK) {
+    capabilities |= (1LL << CAP_WAKE_ALARM);
+    capabilities |= (1LL << CAP_NET_ADMIN);
+    capabilities |= (1LL << CAP_NET_BROADCAST);
+    capabilities |= (1LL << CAP_NET_BIND_SERVICE);
+    capabilities |= (1LL << CAP_NET_RAW);
+  }
+
+  /*
+   * Grant CAP_BLOCK_SUSPEND to processes that belong to GID "wakelock"
+   */
+
+  if (MatchGid(env, gids, gid, AID_WAKELOCK)) {
+    capabilities |= (1LL << CAP_BLOCK_SUSPEND);
+  }
+
+  /*
+   * Grant child Zygote processes the following capabilities:
+   *   - CAP_SETUID (change UID of child processes)
+   *   - CAP_SETGID (change GID of child processes)
+   *   - CAP_SETPCAP (change capabilities of child processes)
+   */
+
+  if (is_child_zygote) {
+    capabilities |= (1LL << CAP_SETUID);
+    capabilities |= (1LL << CAP_SETGID);
+    capabilities |= (1LL << CAP_SETPCAP);
+  }
+
+  /*
+   * Containers run without some capabilities, so drop any caps that are not
+   * available.
+   */
+
+  return capabilities & GetEffectiveCapabilityMask(env);
+}
+
+jlong zygote::CalculateBoundingCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gids) {
+    jlong capabilities = 0;
+
+    /*
+     * Grant CAP_SYS_NICE to CapInh/CapPrm/CapBnd for processes that can spawn
+     * VMs.  This enables processes to execve on binaries with elevated
+     * capabilities if its file capability bits are set. This does not grant
+     * capability to the parent process(that spawns the VM) as the effective
+     * bits are not set.
+     */
+    if (MatchGid(env, gids, gid, AID_VIRTUALMACHINE)) {
+        capabilities |= (1LL << CAP_SYS_NICE);
+    }
+
+    return capabilities;
+}
 
 /**
  * A failure function used to report fatal errors to the managed runtime.  This
@@ -2586,8 +2586,8 @@ static jint com_android_internal_os_Zygote_nativeForkAndSpecialize(
         jstring instruction_set, jstring app_data_dir, jboolean is_top_app, jboolean use_fifo_ui,
         jobjectArray pkg_data_info_list, jobjectArray allowlisted_data_info_list,
         jboolean mount_data_dirs, jboolean mount_storage_dirs, jboolean mount_sysprop_overrides) {
-    jlong capabilities = CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
-    jlong bounding_capabilities = CalculateBoundingCapabilities(env, uid, gid, gids);
+    jlong capabilities = zygote::CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
+    jlong bounding_capabilities = zygote::CalculateBoundingCapabilities(env, uid, gid, gids);
 
     if (UNLIKELY(managed_fds_to_close == nullptr)) {
       zygote::ZygoteFailure(env, "zygote", nice_name,
@@ -2816,8 +2816,8 @@ static void com_android_internal_os_Zygote_nativeSpecializeAppProcess(
         jboolean is_top_app, jobjectArray pkg_data_info_list,
         jobjectArray allowlisted_data_info_list, jboolean mount_data_dirs,
         jboolean mount_storage_dirs, jboolean mount_sysprop_overrides) {
-    jlong capabilities = CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
-    jlong bounding_capabilities = CalculateBoundingCapabilities(env, uid, gid, gids);
+    jlong capabilities = zygote::CalculateCapabilities(env, uid, gid, gids, is_child_zygote);
+    jlong bounding_capabilities = zygote::CalculateBoundingCapabilities(env, uid, gid, gids);
 
     SpecializeCommon(env, uid, gid, gids, runtime_flags, rlimits, capabilities, capabilities,
                      bounding_capabilities, mount_external, se_info, nice_name, false,
@@ -3173,4 +3173,5 @@ int register_com_android_internal_os_Zygote(JNIEnv* env) {
 
   return JNI_OK;
 }
+
 }  // namespace android

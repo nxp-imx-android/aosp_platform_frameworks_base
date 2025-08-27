@@ -68,30 +68,6 @@ public class ComputerControlSessionParamsTest {
     // TODO(b/437849228): Test that targetPackageNames must be set.
 
     @Test
-    public void builder_setDisplaySurface_withIncorrectArguments_throwsException() {
-        assertThrows(NullPointerException.class,
-                () -> new ComputerControlSession.Params.Builder(mContext).setDisplaySurface(null));
-    }
-
-    @Test
-    public void builder_setDisplayDpi_withIncorrectArguments_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComputerControlSession.Params.Builder(mContext).setDisplayDpi(-1));
-    }
-
-    @Test
-    public void builder_setDisplayWidthPx_withIncorrectArguments_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComputerControlSession.Params.Builder(mContext).setDisplayWidthPx(-1));
-    }
-
-    @Test
-    public void builder_setDisplayHeightPx_withIncorrectArguments_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComputerControlSession.Params.Builder(mContext).setDisplayHeightPx(-1));
-    }
-
-    @Test
     public void builder_withMissingContextArg_throwsException() {
         assertThrows(NullPointerException.class,
                 () -> new ComputerControlSession.Params.Builder(null).build());

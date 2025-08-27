@@ -16,7 +16,6 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -39,6 +38,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.ElementType;
@@ -97,9 +97,11 @@ public final class ComputerControlSession implements AutoCloseable {
 
     @NonNull
     private final IComputerControlSession mSession;
-    // TODO(b/439774796): Make this non-nullable.
+    private final Object mLock = new Object();
+    @GuardedBy("mLock")
     @Nullable
-    private final ImageReader mImageReader;
+    private ImageReader mImageReader;
+
 
     /** @hide */
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
@@ -157,7 +159,9 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     @Nullable
     public Image getScreenshot() {
-        return mImageReader == null ? null : mImageReader.acquireLatestImage();
+        synchronized (mLock) {
+            return mImageReader == null ? null : mImageReader.acquireLatestImage();
+        }
     }
 
     /**
@@ -166,10 +170,9 @@ public final class ComputerControlSession implements AutoCloseable {
      * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
      * display.</p>
      */
-    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
-            @FloatRange(from = 0.0, to = 1.0) float y) {
-        if (x < 0 || x > 1 || y < 0 || y > 1) {
-            throw new IllegalArgumentException("Tap coordinates must be in range [0, 1]");
+    public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("Tap coordinates must be non-negative");
         }
         try {
             mSession.tap(x, y);
@@ -189,13 +192,10 @@ public final class ComputerControlSession implements AutoCloseable {
      * display.</p>
      */
     public void swipe(
-            @FloatRange(from = 0.0, to = 1.0) float fromX,
-            @FloatRange(from = 0.0, to = 1.0) float fromY,
-            @FloatRange(from = 0.0, to = 1.0) float toX,
-            @FloatRange(from = 0.0, to = 1.0) float toY) {
-        if (fromX < 0 || fromX > 1 || fromY < 0 || fromY > 1
-                || toX < 0 || toX > 1 || toY < 0 || toY > 1) {
-            throw new IllegalArgumentException("Swipe coordinates must be in range [0, 1]");
+            @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
+            @IntRange(from = 0) int toX, @IntRange(from = 0) int toY) {
+        if (fromX < 0 || fromY < 0 || toX < 0 || toY < 0) {
+            throw new IllegalArgumentException("Swipe coordinates must be non-negative");
         }
         try {
             mSession.swipe(fromX, fromY, toX, toY);
@@ -261,6 +261,15 @@ public final class ComputerControlSession implements AutoCloseable {
         }
     }
 
+    private void closeImageReader() {
+        synchronized (mLock) {
+            if (mImageReader != null) {
+                mImageReader.close();
+                mImageReader = null;
+            }
+        }
+    }
+
     /** Callback for computer control session events. */
     public interface Callback {
 
@@ -299,6 +308,7 @@ public final class ComputerControlSession implements AutoCloseable {
 
         private final Callback mCallback;
         private final Executor mExecutor;
+        private ComputerControlSession mSession;
 
         public CallbackProxy(@NonNull Executor executor, @NonNull Callback callback) {
             mExecutor = executor;
@@ -315,9 +325,9 @@ public final class ComputerControlSession implements AutoCloseable {
         @Override
         public void onSessionCreated(int displayId, IVirtualDisplayCallback displayToken,
                 IComputerControlSession session) {
+            mSession = new ComputerControlSession(displayId, displayToken, session);
             Binder.withCleanCallingIdentity(() ->
-                    mExecutor.execute(() -> mCallback.onSessionCreated(
-                            new ComputerControlSession(displayId, displayToken, session))));
+                    mExecutor.execute(() -> mCallback.onSessionCreated(mSession)));
         }
 
         @Override
@@ -328,6 +338,7 @@ public final class ComputerControlSession implements AutoCloseable {
 
         @Override
         public void onSessionClosed() {
+            mSession.closeImageReader();
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionClosed()));
         }

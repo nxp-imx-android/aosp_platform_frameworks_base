@@ -34,10 +34,12 @@ import android.view.KeyEvent.KEYCODE_S
 import android.view.KeyEvent.KEYCODE_SLASH
 import android.view.KeyEvent.KEYCODE_TAB
 import android.view.KeyEvent.META_ALT_ON
+import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.KeyEvent.META_SHIFT_ON
 import android.view.KeyboardShortcutGroup
 import android.view.KeyboardShortcutInfo
+import com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut
 import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
 import com.android.systemui.Flags.shortcutHelperKeyGlyph
 import com.android.systemui.dagger.qualifiers.Main
@@ -175,6 +177,17 @@ constructor(@Main private val resources: Resources, private val inputManager: In
                 command(META_META_ON, KEYCODE_S)
             }
         )
+        // TODO(b/420714826) Determine if this shortcut should be displayed only for large screen
+        // devices.
+        // Take a partial screenshot:
+        //  - Meta + Ctrl + S
+        if (enablePartialScreenshotKeyboardShortcut()) {
+            add(
+                shortcutInfo(resources.getString(R.string.group_system_partial_screenshot)) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_S)
+                }
+            )
+        }
         // Access list of system / apps shortcuts:
         //  - Meta + /
         add(

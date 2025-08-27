@@ -16,13 +16,13 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCapture
+import com.android.systemui.screencapture.common.ScreenCaptureUi
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.record.data.repository.ScreenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import javax.inject.Inject
 
-@ScreenCapture
+@ScreenCaptureUi
 class ScreenCaptureRecordParametersInteractor
 @Inject
 constructor(private val repository: ScreenCaptureRecordParametersRepository) {

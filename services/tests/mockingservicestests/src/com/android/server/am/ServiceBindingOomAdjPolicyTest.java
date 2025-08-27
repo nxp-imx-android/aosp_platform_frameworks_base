@@ -181,9 +181,14 @@ public final class ServiceBindingOomAdjPolicyTest {
         realAtm.initialize(null, null, realAms.mProcessStateController, mContext.getMainLooper());
         realAms.mActivityTaskManager = spy(realAtm);
         realAms.mAtmInternal = spy(realAms.mActivityTaskManager.getAtmInternal());
+
+        final CachedAppOptimizer cachedAppOptimizer = spy(realAms.getCachedAppOptimizer());
+        doReturn(true).when(cachedAppOptimizer).useFreezer();
+        doNothing().when(cachedAppOptimizer).freezeAppAsyncAtEarliestLSP(any());
+        realAms.setCachedAppOptimizer(cachedAppOptimizer);
         realAms.mProcessStateController = spy(realAms.mProcessStateController);
         realAms.mOomAdjuster = spy(realAms.mOomAdjuster);
-        realAms.mOomAdjuster.mCachedAppOptimizer = spy(realAms.mOomAdjuster.mCachedAppOptimizer);
+
         realAms.mPackageManagerInt = mPackageManagerInt;
         realAms.mUsageStatsService = mUsageStatsManagerInt;
         realAms.mAppProfiler = spy(realAms.mAppProfiler);
@@ -195,9 +200,6 @@ public final class ServiceBindingOomAdjPolicyTest {
         doReturn(true).when(mIntentFirewall).checkService(any(), any(), anyInt(), anyInt(), any(),
                 any());
         doReturn(false).when(mAms.mAtmInternal).hasSystemAlertWindowPermission(anyInt(), anyInt(),
-                any());
-        doReturn(true).when(mAms.mOomAdjuster.mCachedAppOptimizer).useFreezer();
-        doNothing().when(mAms.mOomAdjuster.mCachedAppOptimizer).freezeAppAsyncAtEarliestLSP(
                 any());
         doNothing().when(mAms.mAppProfiler).updateLowMemStateLSP(anyInt(), anyInt(),
                 anyInt(), anyLong());
@@ -700,9 +702,9 @@ public final class ServiceBindingOomAdjPolicyTest {
         clearInvocations(mAms.mProcessStateController);
 
         if (clientApp.isFreezable()) {
-            verify(mAms.mOomAdjuster.mCachedAppOptimizer, times(1))
+            verify(mAms.getCachedAppOptimizer(), times(1))
                     .freezeAppAsyncAtEarliestLSP(eq(clientApp));
-            clearInvocations(mAms.mOomAdjuster.mCachedAppOptimizer);
+            clearInvocations(mAms.getCachedAppOptimizer());
         }
 
         // Unbind the service.

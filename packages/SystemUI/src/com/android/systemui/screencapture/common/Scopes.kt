@@ -18,8 +18,8 @@ package com.android.systemui.screencapture.common
 
 import javax.inject.Scope
 
-/** Scope annotation for Screen Capture scoped items within the [ScreenCaptureComponent]. */
+/** Scope annotation for Screen Capture scoped items within the [ScreenCaptureUiComponent]. */
 @Scope
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
-annotation class ScreenCaptureScope
+annotation class ScreenCaptureUiScope

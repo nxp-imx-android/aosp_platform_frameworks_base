@@ -36,6 +36,7 @@ import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfi
 import static android.content.pm.PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE;
 import static android.content.pm.PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON;
 import static android.content.pm.PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED;
+import static android.content.pm.PackageInstaller.EXTRA_PACKAGE_NAME;
 import static android.content.pm.PackageInstaller.LOCATION_DATA_APP;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_OK;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_STATUS_UNSET;
@@ -3755,7 +3756,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
                 mDeveloperVerificationStatusInternal.isLiteVerification());
         if (includeExtraIntent) {
-            bundle.putParcelable(Intent.EXTRA_INTENT, getDeveloperVerificationUserActionIntent());
+            Intent extraIntent = getDeveloperVerificationUserActionIntent();
+            extraIntent.putExtra(EXTRA_PACKAGE_NAME, getPackageName());
+            extraIntent.putExtra(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
+                    verificationFailedReason);
+            bundle.putParcelable(Intent.EXTRA_INTENT, extraIntent);
         }
         setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, failedMessage);
         onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, failedMessage, bundle);

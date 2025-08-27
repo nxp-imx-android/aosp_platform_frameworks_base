@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.phone
 
 import android.app.ActivityOptions
+import android.app.IActivityTaskManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
@@ -25,6 +26,7 @@ import android.os.RemoteException
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.RemoteAnimationAdapter
 import android.view.View
 import android.widget.FrameLayout
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
@@ -44,6 +46,7 @@ import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.model.SysUiState
+import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeController
@@ -107,12 +110,14 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var statusBarStateController: SysuiStatusBarStateController
     @Mock private lateinit var keyguardUpdateMonitor: KeyguardUpdateMonitor
     @Mock private lateinit var deviceProvisionedController: DeviceProvisionedController
+    @Mock private lateinit var activityTaskManager: IActivityTaskManager
     @Mock private lateinit var userTracker: UserTracker
     @Mock private lateinit var activityIntentHelper: ActivityIntentHelper
     @Mock private lateinit var communalSceneInteractor: CommunalSceneInteractor
     @Mock private lateinit var communalSettingsInteractor: CommunalSettingsInteractor
     @Mock private lateinit var perDisplaySysUiStateRepository: PerDisplayRepository<SysUiState>
     @Mock private lateinit var sysUIState: SysUiState
+    @Mock private lateinit var remoteAnimationAdapter: RemoteAnimationAdapter
     private lateinit var underTest: LegacyActivityStarterInternalImpl
     private val kosmos = testKosmos()
     private val mainExecutor = FakeExecutor(FakeSystemClock())
@@ -147,6 +152,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
                 deviceProvisionedController = deviceProvisionedController,
                 userTracker = userTracker,
                 activityIntentHelper = activityIntentHelper,
+                activityTaskManager = activityTaskManager,
                 mainExecutor = mainExecutor,
                 applicationScope = kosmos.testScope,
                 communalSceneInteractor = communalSceneInteractor,
@@ -257,6 +263,46 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         verify(statusBarKeyguardViewManager, never()).addAfterKeyguardGoneRunnable(any())
         verify(activityTransitionAnimator)
             .startIntentWithAnimation(eq(null), eq(false), eq(null), eq(false), any())
+    }
+
+    @Test
+    fun startActivityDismissingKeyguard_includesDisplayLaunchId() {
+        val intent = mock(Intent::class.java)
+        val activityOptions = ActivityOptions.makeBasic().apply { launchDisplayId = 17 }
+
+        underTest.startActivityDismissingKeyguard(
+            ActivityStartOptions(intent, activityOptions = activityOptions)
+        )
+        mainExecutor.runAllReady()
+
+        val intentStarterCaptor = argumentCaptor<(RemoteAnimationAdapter?) -> Int>()
+        verify(activityTransitionAnimator)
+            .startIntentWithAnimation(
+                eq(null),
+                eq(false),
+                eq(null),
+                eq(false),
+                intentStarterCaptor.capture(),
+            )
+        intentStarterCaptor.lastValue(remoteAnimationAdapter)
+        val activityOptionsCaptor = argumentCaptor<Bundle>()
+        verify(activityTaskManager)
+            .startActivityAsUser(
+                eq(null),
+                any(),
+                eq(null),
+                eq(intent),
+                eq(null),
+                eq(null),
+                eq(null),
+                any(),
+                any(),
+                eq(null),
+                activityOptionsCaptor.capture(),
+                any(),
+            )
+        val calledActivityOptions = ActivityOptions.fromBundle(activityOptionsCaptor.lastValue)
+        assertThat(calledActivityOptions.launchDisplayId).isEqualTo(17)
     }
 
     @Test

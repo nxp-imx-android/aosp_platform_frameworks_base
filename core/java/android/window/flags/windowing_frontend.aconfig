@@ -104,15 +104,6 @@ flag {
 }
 
 flag {
-    name: "supports_drag_assistant_to_multiwindow"
-    is_exported: true
-    namespace: "multitasking"
-    description: "Enables support for dragging the assistant into multiwindow"
-    bug: "371206207"
-    is_fixed_read_only: true
-}
-
-flag {
   name: "do_not_force_wallpaper_for_freeform_task"
   namespace: "windowing_frontend"
   description: "Remove legacy condition to reduce overhead"
@@ -491,4 +482,14 @@ flag {
     namespace: "windowing_frontend"
     description: "Use seq-id for all client config changes (wearOS)"
     bug: "385976595"
+}
+
+flag {
+    name: "ime_back_callback_leak_prevention"
+    namespace: "input_method"
+    description: "Prevents custom ime back callbacks from remaining registered in app process after IME hide"
+    bug: "420870283"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
