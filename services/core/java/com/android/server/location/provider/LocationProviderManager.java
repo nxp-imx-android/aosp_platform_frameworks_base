@@ -456,11 +456,7 @@ public class LocationProviderManager extends
 
             // initialization order is important as there are ordering dependencies
             onLocationPermissionsChanged();
-            if (Flags.updateIsInEmergencyBeforeOnRegister()) {
-                onBypassLocationPermissionsChanged(mIsInEmergency);
-            } else {
-                onBypassLocationPermissionsChanged(mEmergencyHelper.isInEmergency(0));
-            }
+            onBypassLocationPermissionsChanged(mIsInEmergency);
             mForeground = mAppForegroundHelper.isAppForeground(getIdentity().getUid());
             mProviderLocationRequest = calculateProviderLocationRequest();
             mIsUsingHighPower = isUsingHighPower();
@@ -2077,9 +2073,7 @@ public class LocationProviderManager extends
 
     private <T> void registerAndHandleIdentity(T key, Registration registration,
                                                Runnable postRegistrationRunnable) {
-        if (Flags.updateIsInEmergencyBeforeOnRegister()) {
-            registration.updateIsInEmergency();
-        }
+        registration.updateIsInEmergency();
 
         synchronized (mMultiplexerLock) {
             Preconditions.checkState(mState != STATE_STOPPED);
