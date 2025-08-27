@@ -361,16 +361,6 @@ flag {
 }
 
 flag {
-    name: "enable_on_mode_changed_vsync_phase_offset"
-    namespace: "core_graphics"
-    description: "Flag to utilize vsync offset and presentation deadline from onModeChanged callback"
-    bug: "398872242"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_default_display_in_topology_switch"
     namespace: "lse_desktop_experience"
     description: "Add a switch that allows the user to include the default display in display topology. This is only used for projected mode."
