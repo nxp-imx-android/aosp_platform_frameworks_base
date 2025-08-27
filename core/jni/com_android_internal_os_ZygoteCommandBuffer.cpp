@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#define LOG_TAG "Zygote"
+#define ATRACE_TAG ATRACE_TAG_DALVIK
+
 #include "com_android_internal_os_Zygote.h"
 
 #include <algorithm>
