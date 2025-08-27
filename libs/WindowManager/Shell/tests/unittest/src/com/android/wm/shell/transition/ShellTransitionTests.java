@@ -383,6 +383,34 @@ public class ShellTransitionTests extends ShellTestCase {
     }
 
     @Test
+    public void testTransitionFilterCrossDisplayMove() {
+        TransitionFilter filter = new TransitionFilter();
+        filter.mRequirements =
+                new TransitionFilter.Requirement[]{new TransitionFilter.Requirement()};
+        filter.mRequirements[0].mIsCrossDisplayMove = true;
+        filter.mRequirements[0].mModes = new int[]{ TRANSIT_CHANGE };
+
+        final RunningTaskInfo taskInfo = createTaskInfo(1);
+        final TransitionInfo sameDisplay = new TransitionInfoBuilder(
+                        TRANSIT_CHANGE, /* flags= */ 0, /* asNoOp= */ false, /* displayId= */ 0)
+                .addChange(
+                        TRANSIT_CHANGE,
+                        taskInfo,
+                        /* endDisplayId= */ 0)
+                .build();
+        assertFalse(filter.matches(sameDisplay));
+
+        final TransitionInfo differentDisplays = new TransitionInfoBuilder(
+                        TRANSIT_CHANGE, /* flags= */ 0, /* asNoOp= */ false, /* displayId= */ 0)
+                .addChange(
+                        TRANSIT_CHANGE,
+                        taskInfo,
+                        /* endDisplayId= */ 1)
+                .build();
+        assertTrue(filter.matches(differentDisplays));
+    }
+
+    @Test
     public void testTransitionFilterMultiRequirement() {
         // filter that requires at-least one opening and one closing app
         TransitionFilter filter = new TransitionFilter();
