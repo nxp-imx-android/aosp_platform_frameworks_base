@@ -126,11 +126,11 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         pw.println("  get-main-user ");
         pw.println("    Displays main user id or message if there is no main user");
         pw.println();
-        pw.println("  set-user-admin <USER_ID>");
-        pw.println("    Sets the given user as an admin");
+        pw.println("  grant-admin <USER_ID>");
+        pw.println("    Grants admin privileges to the given user (requires adb root)");
         pw.println();
-        pw.println("  revoke-user-admin <USER_ID>");
-        pw.println("    Revokes the given user as an admin");
+        pw.println("  revoke-admin <USER_ID>");
+        pw.println("    Revokes admin privileges from the given user (requires adb root)");
         pw.println();
     }
 
@@ -162,10 +162,10 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                     return runCanSwitchToHeadlessSystemUser();
                 case "is-main-user-permanent-admin":
                     return runIsMainUserPermanentAdmin();
-                case "set-user-admin":
-                    return runSetUserAdmin();
-                case "revoke-user-admin":
-                    return runRevokeUserAdmin();
+                case "grant-admin":
+                    return runGrantAdmin();
+                case "revoke-admin":
+                    return runRevokeAdmin();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -570,15 +570,15 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return 0;
     }
 
-    private int runSetUserAdmin() throws RemoteException {
-        return setOrRevokeAdmin(/* set= */ true);
+    private int runGrantAdmin() throws RemoteException {
+        return grantOrRevokeAdmin(/* grant= */ true);
     }
 
-    private int runRevokeUserAdmin() throws RemoteException {
-        return setOrRevokeAdmin(/* set= */ false);
+    private int runRevokeAdmin() throws RemoteException {
+        return grantOrRevokeAdmin(/* grant= */ false);
     }
 
-    private int setOrRevokeAdmin(boolean set) {
+    private int grantOrRevokeAdmin(boolean grant) {
         if (!confirmBuildIsDebuggable() || !confirmIsCalledByRoot()) {
             return -1;
         }
@@ -586,15 +586,21 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         if (userId == UserHandle.USER_NULL) {
             return -1;
         }
-        if (set) {
+        boolean success;
+        if (grant) {
             Slogf.i(LOG_TAG, "Calling setUserAdmin(%d)", userId);
-            mService.setUserAdmin(userId);
+            success = mService.setUserAdminInternal(userId);
         } else {
             Slogf.i(LOG_TAG, "Calling revokeUserAdmin(%d)", userId);
-            mService.revokeUserAdmin(userId);
+            success = mService.revokeUserAdminInternal(userId);
         }
-        getOutPrintWriter().println("Success");
-        return 0;
+        if (success) {
+            getOutPrintWriter().println("Success");
+            return 0;
+        } else {
+            getOutPrintWriter().println("Failed");
+            return -1;
+        }
     }
 
     /**

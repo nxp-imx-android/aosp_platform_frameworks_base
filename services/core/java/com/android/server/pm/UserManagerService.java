@@ -2390,6 +2390,11 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public void setUserAdmin(@UserIdInt int userId) {
+        setUserAdminInternal(userId);
+    }
+
+    // NOTE: split in 2 methods because cmd user needs a boolean but the AIDL one doesn't
+    boolean setUserAdminInternal(@UserIdInt int userId) {
         checkManageUserAndAcrossUsersFullPermission("set user admin");
         if (Flags.unicornModeRefactoringForHsumReadOnly()) {
             checkAdminStatusChangeAllowed(userId);
@@ -2405,30 +2410,41 @@ public class UserManagerService extends IUserManager.Stub {
                     // Exit if no user found with that id,
                     mUserJourneyLogger.logNullUserJourneyError(USER_JOURNEY_GRANT_ADMIN,
                             currentUserId, userId, /* userType */ "", /* userFlags */ -1);
-                    return;
+                    Slogf.w(LOG_TAG, "setUserAdmin(%d) failed: user not found", userId);
+                    return false;
                 } else if (user.info.isAdmin()) {
                     // Exit if the user is already an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                         user.info, USER_JOURNEY_GRANT_ADMIN,
                         ERROR_CODE_USER_ALREADY_AN_ADMIN);
-                    return;
+                    Slogf.w(LOG_TAG, "setUserAdmin(%d): not changed, already admin", userId);
+                    return true;
                 } else if (user.info.isProfile() || user.info.isGuest()
                         || user.info.isRestricted()) {
                     // Profiles, guest users or restricted profiles cannot become an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                             user.info, USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
-                    return;
+                    Slogf.w(LOG_TAG, "setUserAdmin(%d) failed: profile, guest, and restricted users"
+                            + " cannot be admins (user: %s) ", userId, user.info.toFullString());
+                    return false;
                 }
                 user.info.flags ^= UserInfo.FLAG_ADMIN;
                 writeUserLP(user);
             }
         }
+        Slogf.i(LOG_TAG, "setUserAdmin(%d): succeeded", userId);
         mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                 USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_UNSPECIFIED);
+        return true;
     }
 
     @Override
     public void revokeUserAdmin(@UserIdInt int userId) {
+        revokeUserAdminInternal(userId);
+    }
+
+    // NOTE: split in 2 methods because cmd user needs a boolean but the AIDL one doesn't
+    boolean revokeUserAdminInternal(@UserIdInt int userId) {
         checkManageUserAndAcrossUsersFullPermission("revoke admin privileges");
         if (Flags.unicornModeRefactoringForHsumReadOnly()) {
             checkAdminStatusChangeAllowed(userId);
@@ -2444,23 +2460,27 @@ public class UserManagerService extends IUserManager.Stub {
                     // Exit if no user found with that id
                     mUserJourneyLogger.logNullUserJourneyError(
                             USER_JOURNEY_REVOKE_ADMIN, currentUserId, userId, "", -1);
-                    return;
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d) failed: user not found", userId);
+                    return false;
                 } else if (!user.info.isAdmin()) {
                     // Exit if user is not an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_USER_IS_NOT_AN_ADMIN);
-                    return;
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d): not changed, already not admin", userId);
+                    return true;
                 } else if ((user.info.flags & UserInfo.FLAG_SYSTEM) != 0) {
-                    // System user cannot lose its admin status.
+                      // System user cannot lose its admin status.
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d) failed: system user", userId);
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
-                    return;
+                    return false;
                 } else if (isNonRemovableLastAdminUserLU(user.info)) {
                     // This is the last admin user and this device requires that it not lose its
                     // admin status.
+                    Slogf.w(LOG_TAG, "revokeUserAdmin(%d) failed: user is last admin", userId);
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_USER_IS_LAST_ADMIN);
-                    return;
+                    return false;
                 }
                 user.info.flags ^= UserInfo.FLAG_ADMIN;
                 writeUserLP(user);
@@ -2468,6 +2488,8 @@ public class UserManagerService extends IUserManager.Stub {
         }
         mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                 USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_UNSPECIFIED);
+        Slogf.i(LOG_TAG, "revokeUserAdmin(%d): succeeded", userId);
+        return true;
     }
 
     /**

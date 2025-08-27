@@ -1780,9 +1780,9 @@ public final class UserManagerServiceMockedTest {
     public void testSetUserAdmin() {
         addSecondaryUser(USER_ID);
 
-        mUms.setUserAdmin(USER_ID);
+        expect.that(mUms.setUserAdminInternal(USER_ID)).isTrue();
 
-        assertThat(mUsers.get(USER_ID).info.isAdmin()).isTrue();
+        expect.that(mUsers.get(USER_ID).info.isAdmin()).isTrue();
     }
 
     @Test
@@ -1806,9 +1806,9 @@ public final class UserManagerServiceMockedTest {
     public void testSetUserAdminFailsForGuest() {
         addGuestUser(USER_ID);
 
-        mUms.setUserAdmin(USER_ID);
+        expect.that(mUms.setUserAdminInternal(USER_ID)).isFalse();
 
-        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+        expect.that(mUsers.get(USER_ID).info.isAdmin()).isFalse();
     }
 
     @Test
@@ -1816,34 +1816,34 @@ public final class UserManagerServiceMockedTest {
         addSecondaryUser(PARENT_USER_ID);
         addProfile(PROFILE_USER_ID, PARENT_USER_ID, USER_TYPE_PROFILE_MANAGED);
 
-        mUms.setUserAdmin(PROFILE_USER_ID);
+        expect.that(mUms.setUserAdminInternal(PROFILE_USER_ID)).isFalse();
 
-        assertThat(mUsers.get(PROFILE_USER_ID).info.isAdmin()).isFalse();
+        expect.that(mUsers.get(PROFILE_USER_ID).info.isAdmin()).isFalse();
     }
 
     @Test
     public void testSetUserAdminFailsForRestrictedProfile() {
         addRestrictedProfile(USER_ID);
 
-        mUms.setUserAdmin(USER_ID);
+        expect.that(mUms.setUserAdminInternal(USER_ID)).isFalse();
 
-        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+        expect.that(mUsers.get(USER_ID).info.isAdmin()).isFalse();
     }
 
     @Test
     public void testRevokeUserAdmin() {
         addAdminUser(USER_ID);
 
-        mUms.revokeUserAdmin(USER_ID);
+        expect.that(mUms.revokeUserAdminInternal(USER_ID)).isTrue();
 
-        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+        expect.that(mUsers.get(USER_ID).info.isAdmin()).isFalse();
     }
 
     @Test
     public void testRevokeUserAdminFromNonAdmin() {
         addSecondaryUser(USER_ID);
 
-        mUms.revokeUserAdmin(USER_ID);
+        expect.that(mUms.revokeUserAdminInternal(USER_ID)).isTrue();
 
         assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
     }
@@ -1868,16 +1868,41 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags(FLAG_HSU_NOT_ADMIN)
     public void testRevokeUserAdminFailsForSystemUser_nonHsum_hsuNotAdmin() {
-        testRevokeUserAdminFailsForSystemUser_nonHsum();
+        setSystemUserHeadless(false);
+        testRevokeAdminFromSystemUser(/* allowed= */ false);
     }
 
     @Test
     @DisableFlags(FLAG_HSU_NOT_ADMIN)
     public void testRevokeUserAdminFailsForSystemUser_nonHsum() {
         setSystemUserHeadless(false);
-        mUms.revokeUserAdmin(UserHandle.USER_SYSTEM);
+        testRevokeAdminFromSystemUser(/* allowed= */ false);
+    }
 
-        assertThat(mUsers.get(UserHandle.USER_SYSTEM).info.isAdmin()).isTrue();
+    @Test
+    @EnableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testRevokeUserAdminSucceedsForSystemUser_hsum_hsuNotAdmin() {
+        setSystemUserHeadless(true);
+        testRevokeAdminFromSystemUser(/* allowed= */ true);
+    }
+
+    @Test
+    @DisableFlags(FLAG_HSU_NOT_ADMIN)
+    public void testRevokeUserAdminFailsForSystemUser_hsum() {
+        setSystemUserHeadless(true);
+        testRevokeAdminFromSystemUser(/* allowed= */ false);
+    }
+
+    private void testRevokeAdminFromSystemUser(boolean allowed) {
+        UserInfo info = mUsers.get(UserHandle.USER_SYSTEM).info;
+        // Whether or not it's and admin depends on FLAG_HSU_NOT_ADMIN
+        boolean isAdminBefore = info.isAdmin();
+
+        boolean result = mUms.revokeUserAdminInternal(UserHandle.USER_SYSTEM);
+
+        expect.withMessage("revokeUserAdmin(USER_SYSTEM)").that(result).isEqualTo(allowed);
+        expect.withMessage("USER_SYSTEM.isAdmin() after revokeUserAdmin(...)")
+                .that(info.isAdmin()).isEqualTo(isAdminBefore);
     }
 
     @Test
