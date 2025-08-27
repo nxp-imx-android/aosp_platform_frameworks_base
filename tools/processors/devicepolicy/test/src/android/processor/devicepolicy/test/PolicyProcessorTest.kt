@@ -18,14 +18,13 @@ package android.processor.devicepolicy.test
 
 import android.processor.devicepolicy.PolicyProcessor
 import com.google.common.base.Charsets
-import com.google.common.io.ByteSource
 import com.google.common.io.Resources
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject.assertThat
 import com.google.testing.compile.Compiler
 import com.google.testing.compile.JavaFileObjects
 import java.io.IOException
-import javax.tools.StandardLocation
+import javax.tools.StandardLocation.SOURCE_OUTPUT
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
 
@@ -35,16 +34,25 @@ class PolicyProcessorTest {
     private val mCompiler = Compiler.javac().withProcessors(PolicyProcessor())
 
     private companion object {
-        const val POLICIES_JSON_LOCATION = "android/processor/devicepolicy/policies.json"
+        const val RESOURCE_ROOT = "test/resources/android/processor/devicepolicy/test"
 
-        const val POLICY_IDENTIFIER = "android/processor/devicepolicy/test/PolicyIdentifier"
+        const val POLICY_IDENTIFIER = "$RESOURCE_ROOT/PolicyIdentifier"
         const val POLICY_IDENTIFIER_JAVA = "$POLICY_IDENTIFIER.java"
         const val POLICY_IDENTIFIER_JSON = "$POLICY_IDENTIFIER.json"
 
-        const val OTHER_CLASS_JAVA = "android/processor/devicepolicy/test/OtherClass.java"
-        const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "android/processor/devicepolicy/test/invalidtype/PolicyIdentifier.java"
-        const val POLICY_IDENTIFIER_MISSING_METADATA_JAVA = "android/processor/devicepolicy/test/missingmetadata/PolicyIdentifier.java"
+        const val OTHER_CLASS_JAVA = "$RESOURCE_ROOT/OtherClass.java"
+        const val POLICY_IDENTIFIER_INVALID_TYPE_JAVA = "$RESOURCE_ROOT/invalidtype/PolicyIdentifier.java"
+        const val POLICY_IDENTIFIER_MISSING_METADATA_JAVA = "$RESOURCE_ROOT/missingmetadata/PolicyIdentifier.java"
 
+        /**
+         * Comes from the actual IntDef.java in the source, located in a different folder.
+         */
+        const val INT_DEF_JAVA = "android/annotation/IntDef.java"
+
+        /**
+         * Build path for the output.
+         */
+        const val POLICIES_JSON_LOCATION = "android/processor/devicepolicy/policies.json"
 
         fun loadTextResource(path: String): String {
             try {
@@ -63,11 +71,14 @@ class PolicyProcessorTest {
         val expectedOutput = loadTextResource(POLICY_IDENTIFIER_JSON)
 
         val compilation: Compilation =
-            mCompiler.compile(JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA))
+            mCompiler.compile(
+                JavaFileObjects.forResource(POLICY_IDENTIFIER_JAVA),
+                JavaFileObjects.forResource(INT_DEF_JAVA)
+            )
+
         assertThat(compilation).succeeded()
-        assertThat(compilation).generatedFile(
-            StandardLocation.SOURCE_OUTPUT, POLICIES_JSON_LOCATION
-        ).hasContents(ByteSource.wrap(expectedOutput.toByteArray()))
+        assertThat(compilation).generatedFile(SOURCE_OUTPUT,
+            POLICIES_JSON_LOCATION).contentsAsUtf8String().isEqualTo(expectedOutput)
     }
 
     @Test
@@ -113,7 +124,7 @@ class PolicyProcessorTest {
             assertThat(compilation).succeeded()
         }
 
-        checkCompileSucceeds(OTHER_CLASS_JAVA, POLICY_IDENTIFIER_JAVA)
+        checkCompileSucceeds(OTHER_CLASS_JAVA, POLICY_IDENTIFIER_JAVA, INT_DEF_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_INVALID_TYPE_JAVA)
         checkCompileSucceeds(POLICY_IDENTIFIER_MISSING_METADATA_JAVA)
     }
