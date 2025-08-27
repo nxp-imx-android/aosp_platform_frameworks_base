@@ -4597,9 +4597,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final SparseArray<InsetsSource> mergedLocalInsetsSources =
                 createMergedSparseArray(localInsetsSourcesFromParent, mLocalInsetsSources);
 
-        // Insets provided by the IME window can effect all the windows below it and hence it needs
-        // to be visited in the correct order. Because of which updateAboveInsetsState() can't be
-        // used here and instead forAllWindows() is used.
+        // ForAllWindows is the reliable way to visit the IME window and the windows within this
+        // WindowState in the correct order. updateAboveInsetsState doesn't take the real order of
+        // IME into account.
         forAllWindows(w -> {
             if (!w.mAboveInsetsState.equals(aboveInsetsState)) {
                 w.mAboveInsetsState.set(aboveInsetsState);
@@ -4607,8 +4607,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
 
             if (!mergedLocalInsetsSources.contentEquals(w.mMergedLocalInsetsSources)) {
-                w.mMergedLocalInsetsSources = mergedLocalInsetsSources;
-                insetsChangedWindows.add(w);
+                // The traversal will reach IME if this window is an IME target window. However, we
+                // should not copy the local insets to the IME window. The forAllWindow will reach
+                // all IME containers by the logic in {@link #applyImeWindowsIfNeeded}.
+                if (!w.mIsImWindow) {
+                    w.mMergedLocalInsetsSources = mergedLocalInsetsSources;
+                    insetsChangedWindows.add(w);
+                }
             }
 
             final SparseArray<InsetsSourceProvider> providers = w.mInsetsSourceProviders;
