@@ -141,12 +141,12 @@ class PresentationController implements DisplayManager.DisplayListener {
         }
 
         Task hostTask = null;
+        final Task globallyFocusedTask =
+                displayContent.mWmService.mRoot.getTopDisplayFocusedLeafTask();
         final Presentation presentation = getPresentation(win);
         if (presentation != null) {
             hostTask = presentation.mHostTask;
         } else if (win == null) {
-            final Task globallyFocusedTask =
-                    displayContent.mWmService.mRoot.getTopDisplayFocusedLeafTask();
             if (globallyFocusedTask != null && uid == globallyFocusedTask.effectiveUid) {
                 hostTask = globallyFocusedTask;
             }
@@ -170,7 +170,8 @@ class PresentationController implements DisplayManager.DisplayListener {
             // A presentation can't cover its own host task.
             return false;
         }
-        if (hostTask == null && displayContent.getDisplay().getType() == TYPE_INTERNAL) {
+        final boolean isHostGloballyFocused = hostTask != null && hostTask == globallyFocusedTask;
+        if (!isHostGloballyFocused && displayContent.getDisplay().getType() == TYPE_INTERNAL) {
             // A globally focused host task on a different display is needed to show a
             // presentation on an internal display.
             return false;
