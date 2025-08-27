@@ -20,7 +20,6 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 
 import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
 import static com.android.window.flags.Flags.predictiveBackCallbackCancellationFix;
-import static com.android.window.flags.Flags.predictiveBackSystemOverrideCallback;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -212,13 +211,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 mImeDispatcher.registerOnBackInvokedCallback(priority, callback);
                 return;
             }
-            if (predictiveBackSystemOverrideCallback()) {
-                if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER
-                        && callback instanceof SystemOverrideOnBackInvokedCallback) {
-                    Log.e(TAG, "System override callbacks cannot be registered to "
-                            + "NAVIGATION_OBSERVER");
-                    return;
-                }
+            if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER
+                    && callback instanceof SystemOverrideOnBackInvokedCallback) {
+                Log.e(TAG, "System override callbacks cannot be registered to "
+                        + "NAVIGATION_OBSERVER");
+                return;
             }
             if (priority == PRIORITY_SYSTEM_NAVIGATION_OBSERVER) {
                 registerSystemNavigationObserverCallback(callback);
