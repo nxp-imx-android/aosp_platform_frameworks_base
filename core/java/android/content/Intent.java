@@ -7152,8 +7152,9 @@ public class Intent implements Parcelable, Cloneable {
             "android.intent.extra.IS_RESTORE";
 
     /**
-     * Used as an int extra in {@link #ACTION_OPEN_EYE_DROPPER} results to hold the color picked in
-     * ARGB format (0xFFRRGGBB).
+     * An int extra to hold a color in ARGB format (0xAARRGGBB).
+     *
+     * @see #ACTION_OPEN_EYE_DROPPER
      */
     @FlaggedApi(com.android.eyedropper.Flags.FLAG_ENABLE_EYE_DROPPER_API)
     public static final String EXTRA_COLOR = "android.intent.extra.COLOR";
