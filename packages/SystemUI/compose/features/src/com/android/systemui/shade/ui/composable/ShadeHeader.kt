@@ -18,6 +18,8 @@
 package com.android.systemui.shade.ui.composable
 
 import android.view.ContextThemeWrapper
+import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.compose.animation.core.Animatable
@@ -38,6 +40,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -522,13 +525,22 @@ private fun ContentScope.Clock(
             AndroidView(
                 factory = { context ->
                     Clock(
-                        ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings_Header),
-                        null,
-                    )
+                            ContextThemeWrapper(
+                                context,
+                                R.style.Theme_SystemUI_QuickSettings_Header,
+                            ),
+                            null,
+                        )
+                        .apply {
+                            isSingleLine = true
+                            textDirection = View.TEXT_DIRECTION_LOCALE
+                            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                        }
                 },
                 update = { view -> textColor?.let { view.setTextColor(it.toArgb()) } },
                 modifier =
                     modifier
+                        .wrapContentWidth(unbounded = true)
                         // use graphicsLayer instead of Modifier.scale to anchor transform to the
                         // (start, top) corner
                         .graphicsLayer {
