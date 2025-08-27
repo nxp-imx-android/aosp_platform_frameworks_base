@@ -64,47 +64,47 @@ fun WithStatusIconContext(
     tintedIconManagerFactory: TintedIconManager.Factory,
     block: @Composable () -> Unit,
 ) {
-    val localContext = LocalContext.current
+    CompositionLocalProvider(
+        LocalStatusIconContext provides rememberStatusIconContext(tintedIconManagerFactory),
+        content = block,
+    )
+}
 
-    val statusIconContext =
-        remember(localContext, tintedIconManagerFactory) {
-            object : StatusIconContext {
-                private val iconContainerByContentKey =
-                    mutableMapOf<ContentKey, StatusIconContainer>()
-                private val iconManagerByContentKey = mutableMapOf<ContentKey, TintedIconManager>()
-                private val movableContentByIconManager =
-                    mutableMapOf<TintedIconManager, MovableSystemStatusIconLegacy>()
+@Composable
+fun rememberStatusIconContext(
+    tintedIconManagerFactory: TintedIconManager.Factory
+): StatusIconContext {
+    val context = LocalContext.current
 
-                override fun iconContainer(contentKey: ContentKey): StatusIconContainer {
-                    return iconContainerByContentKey.getOrPut(contentKey) {
-                        StatusIconContainer(
-                            ContextThemeWrapper(
-                                localContext,
-                                R.style.Theme_SystemUI_QuickSettings_Header,
-                            ),
-                            null,
-                        )
-                    }
+    return remember(context, tintedIconManagerFactory) {
+        object : StatusIconContext {
+            private val iconContainerByContentKey = mutableMapOf<ContentKey, StatusIconContainer>()
+            private val iconManagerByContentKey = mutableMapOf<ContentKey, TintedIconManager>()
+            private val movableContentByIconManager =
+                mutableMapOf<TintedIconManager, MovableSystemStatusIconLegacy>()
+
+            override fun iconContainer(contentKey: ContentKey): StatusIconContainer {
+                return iconContainerByContentKey.getOrPut(contentKey) {
+                    StatusIconContainer(
+                        ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings_Header),
+                        null,
+                    )
                 }
+            }
 
-                override fun iconManager(contentKey: ContentKey): TintedIconManager {
-                    return iconManagerByContentKey.getOrPut(contentKey) {
-                        tintedIconManagerFactory.create(
-                            iconContainer(contentKey),
-                            StatusBarLocation.QS,
-                        )
-                    }
+            override fun iconManager(contentKey: ContentKey): TintedIconManager {
+                return iconManagerByContentKey.getOrPut(contentKey) {
+                    tintedIconManagerFactory.create(iconContainer(contentKey), StatusBarLocation.QS)
                 }
+            }
 
-                override fun movableContent(
-                    tintedIconManager: TintedIconManager
-                ): MovableSystemStatusIconLegacy {
-                    return movableContentByIconManager.getOrPut(tintedIconManager) {
-                        movableSystemStatusIconsLegacyAndroidView(tintedIconManager)
-                    }
+            override fun movableContent(
+                tintedIconManager: TintedIconManager
+            ): MovableSystemStatusIconLegacy {
+                return movableContentByIconManager.getOrPut(tintedIconManager) {
+                    movableSystemStatusIconsLegacyAndroidView(tintedIconManager)
                 }
             }
         }
-
-    CompositionLocalProvider(LocalStatusIconContext provides statusIconContext, content = block)
+    }
 }

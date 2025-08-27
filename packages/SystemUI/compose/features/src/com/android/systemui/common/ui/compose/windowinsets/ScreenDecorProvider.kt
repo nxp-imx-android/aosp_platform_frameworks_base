@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.internal.policy.ScreenDecorationsUtils
 
@@ -48,21 +49,28 @@ val LocalScreenCornerRadius = staticCompositionLocalOf { 0.dp }
 
 @Composable
 fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable () -> Unit) {
+    CompositionLocalProvider(
+        LocalScreenCornerRadius provides rememberScreenCornerRadius(),
+        LocalDisplayCutout provides rememberDisplayCutout(windowInsets),
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun rememberScreenCornerRadius(): Dp {
     val context = LocalContext.current
     val screenCornerRadiusPx =
         remember(context.display.uniqueId) { ScreenDecorationsUtils.getWindowCornerRadius(context) }
-    val screenCornerRadiusDp = with(LocalDensity.current) { screenCornerRadiusPx.toDp() }
-    val cutout =
-        remember(windowInsets, context) {
-            val cutoutState = derivedStateOf { windowInsets().toCutout(context) }
-            ({ cutoutState.value })
-        }
+    return with(LocalDensity.current) { screenCornerRadiusPx.toDp() }
+}
 
-    CompositionLocalProvider(
-        LocalScreenCornerRadius provides screenCornerRadiusDp,
-        LocalDisplayCutout provides cutout,
-    ) {
-        content()
+@Composable
+fun rememberDisplayCutout(windowInsets: () -> WindowInsets?): () -> DisplayCutout {
+    val context = LocalContext.current
+    return remember(windowInsets, context) {
+        val cutoutState = derivedStateOf { windowInsets().toCutout(context) }
+        ({ cutoutState.value })
     }
 }
 
