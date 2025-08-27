@@ -53,6 +53,7 @@ import android.util.DebugUtils
 import android.util.IndentingPrintWriter
 import android.util.IntArray as GrowingIntArray
 import android.util.Slog
+import android.util.SparseArray
 import android.util.SparseBooleanArray
 import com.android.internal.annotations.GuardedBy
 import com.android.internal.compat.IPlatformCompat
@@ -137,7 +138,10 @@ class PermissionService(private val service: AccessCheckingService) :
 
     private var virtualDeviceManagerInternal: VirtualDeviceManagerInternal? = null
 
-    private lateinit var permissionControllerManager: PermissionControllerManager
+    /**
+     * Cache of PermissionControllerManager instances, keyed by user ID.
+     */
+    private val permissionControllerManagers = SparseArray<PermissionControllerManager>()
 
     /**
      * A permission backup might contain apps that are not installed. In this case we delay the
@@ -2040,7 +2044,7 @@ class PermissionService(private val service: AccessCheckingService) :
     override fun backupRuntimePermissions(userId: Int): ByteArray? {
         Preconditions.checkArgumentNonnegative(userId, "userId cannot be null")
         val backup = CompletableFuture<ByteArray>()
-        permissionControllerManager.getRuntimePermissionBackup(
+        getPermissionControllerManager(userId).getRuntimePermissionBackup(
             UserHandle.of(userId),
             PermissionThread.getExecutor(),
             backup::complete,
@@ -2068,7 +2072,7 @@ class PermissionService(private val service: AccessCheckingService) :
         synchronized(isDelayedPermissionBackupFinished) {
             isDelayedPermissionBackupFinished -= userId
         }
-        permissionControllerManager.stageAndApplyRuntimePermissionsBackup(
+        getPermissionControllerManager(userId).stageAndApplyRuntimePermissionsBackup(
             backup,
             UserHandle.of(userId),
         )
@@ -2083,7 +2087,7 @@ class PermissionService(private val service: AccessCheckingService) :
                 return
             }
         }
-        permissionControllerManager.applyStagedRuntimePermissionBackup(
+        getPermissionControllerManager(userId).applyStagedRuntimePermissionBackup(
             packageName,
             UserHandle.of(userId),
             PermissionThread.getExecutor(),
@@ -2096,6 +2100,14 @@ class PermissionService(private val service: AccessCheckingService) :
             }
         }
     }
+
+    private fun getPermissionControllerManager(userId: Int): PermissionControllerManager =
+        synchronized(permissionControllerManagers) {
+            permissionControllerManagers.getOrPut(userId) {
+                val userContext = context.createContextAsUser(UserHandle.of(userId), 0)
+                PermissionControllerManager(userContext, PermissionThread.getHandler())
+            }
+        }
 
     override fun dump(fd: FileDescriptor, pw: PrintWriter, args: Array<out String>?) {
         if (!DumpUtils.checkDumpPermission(context, LOG_TAG, pw)) {
@@ -2386,9 +2398,6 @@ class PermissionService(private val service: AccessCheckingService) :
         virtualDeviceManagerInternal?.registerPersistentDeviceIdRemovedListener { deviceId ->
             service.mutateState { with(devicePolicy) { onDeviceIdRemoved(deviceId) } }
         }
-
-        permissionControllerManager =
-            PermissionControllerManager(context, PermissionThread.getHandler())
     }
 
     override fun onUserCreated(userId: Int) {
