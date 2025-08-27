@@ -6130,6 +6130,17 @@ class DesktopTasksController(
             }
             mainExecutor.execute { desktopFirstListenerManager.get().unregisterListener(listener) }
         }
+
+        override fun isDisplayInDesktopMode(displayId: Int) =
+            with(this@DesktopTasksController) {
+                desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
+                    // TODO: b/440645027 - Simplify this call.
+                    userRepositories.current
+                        .getDeskDisplayStateForRemote()
+                        .filter { it.displayId == displayId }
+                        .filterNot { it.activeDeskId == INVALID_DISPLAY }
+                        .isNotEmpty()
+            }
     }
 
     /** The interface for calls from outside the host process. */
