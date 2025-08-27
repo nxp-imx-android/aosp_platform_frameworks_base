@@ -40,10 +40,9 @@ import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.AlwaysOnDisplayNotificationIconViewStore
@@ -78,20 +77,13 @@ constructor(
         override val context = this@AodNotificationIconsElementProvider.context
 
         @Composable
-        override fun ElementContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
-            AodNotificationIcons(factory, context)
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            AodNotificationIcons()
         }
     }
 
     @Composable
-    private fun ContentScope.AodNotificationIcons(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-        modifier: Modifier = Modifier,
-    ) {
+    private fun LockscreenScope<ContentScope>.AodNotificationIcons(modifier: Modifier = Modifier) {
         val isVisible by
             keyguardRootViewModel.isNotifIconContainerVisible.collectAsStateWithLifecycle()
         val transitionState = remember { MutableTransitionState(isVisible.value) }

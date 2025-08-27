@@ -35,12 +35,12 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.IndicationArea
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.Companion.LockscreenElement
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
@@ -62,42 +62,32 @@ constructor(
         override val context = this@LockscreenLowerRegionElementProvider.context
 
         @Composable
-        override fun ElementContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
-            with(factory) {
-                val viewModel =
-                    rememberViewModel("LockscreenLowerRegion") { viewModelFactory.create() }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier.navigationBarsPadding()
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal =
-                                    dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
-                            ),
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            val viewModel = rememberViewModel("LockscreenLowerRegion") { viewModelFactory.create() }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier.navigationBarsPadding()
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal =
+                                dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
+                        ),
+            ) {
+                Box(
+                    Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.start }
+                        .wrapContentHeight(Alignment.Bottom, unbounded = true)
                 ) {
-                    Box(
-                        Modifier
-                            .graphicsLayer { translationX = viewModel.unfoldTranslations.start }
-                            .wrapContentHeight(Alignment.Bottom, unbounded = true),
-                    ) {
-                        LockscreenElement(Shortcuts.Start, context, Modifier)
-                    }
+                    LockscreenElement(Shortcuts.Start)
+                }
 
-                    Box(Modifier.weight(1f)) {
-                        LockscreenElement(IndicationArea, context, Modifier)
-                    }
+                Box(Modifier.weight(1f)) { LockscreenElement(IndicationArea) }
 
-                    Box(
-                        Modifier
-                            .graphicsLayer { translationX = viewModel.unfoldTranslations.end }
-                            .wrapContentHeight(Alignment.Bottom, unbounded = true),
-                    ) {
-                        LockscreenElement(Shortcuts.End, context, Modifier)
-                    }
+                Box(
+                    Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }
+                        .wrapContentHeight(Alignment.Bottom, unbounded = true)
+                ) {
+                    LockscreenElement(Shortcuts.End)
                 }
             }
         }

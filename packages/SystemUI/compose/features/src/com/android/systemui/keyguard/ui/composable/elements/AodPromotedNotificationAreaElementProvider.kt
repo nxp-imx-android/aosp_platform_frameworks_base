@@ -36,10 +36,9 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
@@ -65,21 +64,16 @@ constructor(
         override val context = this@AodPromotedNotificationAreaElementProvider.context
 
         @Composable
-        override fun ElementContentScope.LockscreenElement(
-            factory: LockscreenElementFactory,
-            context: LockscreenElementContext,
-        ) {
+        override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
             if (PromotedNotificationUi.isEnabled) {
-                AodPromotedNotificationArea(factory, context)
+                AodPromotedNotificationArea()
             }
         }
     }
 
     @Composable
-    private fun ContentScope.AodPromotedNotificationArea(
-        factory: LockscreenElementFactory,
-        context: LockscreenElementContext,
-        modifier: Modifier = Modifier,
+    private fun LockscreenScope<ContentScope>.AodPromotedNotificationArea(
+        modifier: Modifier = Modifier
     ) {
         val isVisible by
             keyguardRootViewModel.isAodPromotedNotifVisible.collectAsStateWithLifecycle()
