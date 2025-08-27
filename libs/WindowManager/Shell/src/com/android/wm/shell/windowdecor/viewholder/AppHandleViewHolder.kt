@@ -151,7 +151,7 @@ class AppHandleViewHolder(
         isCaptionVisible: Boolean,
     ) {
         setVisibility(isCaptionVisible)
-        if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_ANIMATIONS.isTrue) {
+        if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_COLOR_ANIMATIONS.isTrue) {
             animator.animateColorChange(getCaptionHandleBarColor(taskInfo))
         } else {
             captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
