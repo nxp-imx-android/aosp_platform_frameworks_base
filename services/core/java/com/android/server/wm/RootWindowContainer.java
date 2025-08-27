@@ -2776,9 +2776,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     transition.setAllReady();
                     TransitionRequestInfo.DisplayChange displayChange =
                             new TransitionRequestInfo.DisplayChange(displayId);
-                    displayChange.setDisconnectReparentDisplay(
-                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser)
-                    );
+                    final int disconnectReparentDisplay =
+                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
+                    displayChange.setDisconnectReparentDisplay(disconnectReparentDisplay);
+                    transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
 
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
                             null /* remoteTransition */, displayChange);
@@ -2816,16 +2817,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (displayContent != null) {
                 displayContent.requestDisplayUpdate(
                         () -> {
+                            final boolean displayContentInReparentTransition =
+                                    mTransitionController.isCollecting()
+                                        && mTransitionController.getCollectingTransition()
+                                            .getDisconnectReparentDisplays().contains(displayId);
                             clearDisplayInfoCaches(displayId);
                             if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                                if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
-                                    Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
-                                            "onDisplayInfoChangeApplied, displayId=" + displayId);
-                                }
-                                try {
-                                    displayContent.onDisplayInfoChangeApplied();
-                                } finally {
-                                    Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                                // If the display content is in a transition, make the
+                                // transition responsible for calling this. Otherwise,
+                                // do it now.
+                                if (!displayContentInReparentTransition) {
+                                    displayContent.updateContentMode();
                                 }
                             }
                         });

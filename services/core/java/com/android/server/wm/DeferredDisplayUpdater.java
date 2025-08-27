@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 
@@ -35,6 +36,7 @@ import android.os.Message;
 import android.os.Trace;
 import android.util.Slog;
 import android.view.DisplayInfo;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerTransaction;
@@ -200,7 +202,7 @@ class DeferredDisplayUpdater {
                     "DeferredDisplayUpdater: deferring DisplayInfo(%d x %d) update",
                     displayInfo.logicalWidth, displayInfo.logicalHeight);
 
-            requestDisplayChangeTransition(physicalDisplayUpdated, () -> {
+            requestDisplayChangeTransition(displayInfo, physicalDisplayUpdated, () -> {
                 ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                         "DeferredDisplayUpdater: applying DisplayInfo(%d x %d) after deferring",
                         displayInfo.logicalWidth, displayInfo.logicalHeight);
@@ -221,12 +223,12 @@ class DeferredDisplayUpdater {
     /**
      * Requests a display change Shell transition
      *
+     * @param newDisplayInfo the DisplayInfo reflecting the changes made to the display
      * @param physicalDisplayUpdated if true also starts remote display change
      * @param onStartCollect         called when the Shell transition starts collecting
      */
-    private void requestDisplayChangeTransition(boolean physicalDisplayUpdated,
-            @NonNull Runnable onStartCollect) {
-
+    private void requestDisplayChangeTransition(@NonNull DisplayInfo newDisplayInfo,
+            boolean physicalDisplayUpdated, @NonNull Runnable onStartCollect) {
         final Transition transition = new Transition(TRANSIT_CHANGE,
                 /* flags= */ TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION,
                 mDisplayContent.mTransitionController,
@@ -265,6 +267,14 @@ class DeferredDisplayUpdater {
                     "dispChg", transition);
             mDisplayContent.mAtmService.deferWindowLayout();
             try {
+                final boolean willStopHostingTasks = !newDisplayInfo.canHostTasks
+                        && mLastWmDisplayInfo.canHostTasks
+                        && DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue();
+                if (willStopHostingTasks && !physicalDisplayUpdated) {
+                    // Collect the DisplayContent before running onStartCollect so callers
+                    // can refer against whether or not it is a participant.
+                    transition.collect(mDisplayContent);
+                }
                 onStartCollect.run();
 
                 if (physicalDisplayUpdated) {
@@ -272,8 +282,20 @@ class DeferredDisplayUpdater {
                 } else {
                     final TransitionRequestInfo.DisplayChange displayChange =
                             getCurrentDisplayChange(fromRotation, startBounds);
+                    // If the display has become unable to host tasks, identify a potential
+                    // reparent display.
+                    if (willStopHostingTasks) {
+                        final int reparentDisplay = chooseDisplayToReparentTo();
+                        displayChange.setDisconnectReparentDisplay(reparentDisplay);
+                        transition.addDisconnectReparentDisplay(reparentDisplay);
+                    }
                     mDisplayContent.mTransitionController.requestStartTransition(transition,
                             /* startTask= */ null, /* remoteTransition= */ null, displayChange);
+                    if (willStopHostingTasks) {
+                        mDisplayContent.mTransitionController.mStateValidators.add(() -> {
+                            mDisplayContent.updateContentMode();
+                        });
+                    }
                 }
             } finally {
                 // Run surface placement after requestStartTransition, so shell side can receive
@@ -282,6 +304,17 @@ class DeferredDisplayUpdater {
                 mDisplayContent.mAtmService.mChainTracker.end();
             }
         });
+    }
+
+    private int chooseDisplayToReparentTo() {
+        final ActivityTaskManagerService atmService = mDisplayContent.mAtmService;
+        int disconnectReparentDisplay = atmService.getUserManagerInternal()
+                .getMainDisplayAssignedToUser(atmService.getCurrentUserId());
+        if (disconnectReparentDisplay == INVALID_DISPLAY) {
+            disconnectReparentDisplay = atmService.mRootWindowContainer
+                .getDefaultDisplay().getDisplayId();
+        }
+        return disconnectReparentDisplay;
     }
 
     /**

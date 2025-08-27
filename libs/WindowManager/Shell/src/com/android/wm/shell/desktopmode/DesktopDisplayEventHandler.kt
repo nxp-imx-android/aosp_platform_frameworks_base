@@ -318,8 +318,8 @@ class DesktopDisplayEventHandler(
             logV(
                 "onDesktopModeEligibleChanged: keyguardLocked=%b, " +
                     "displayId=%d has become desktop eligible",
-                displayId,
                 keyguardLocked,
+                displayId,
             )
             // Do not create default desk if keyguard is locked. It will be handled on unlock.
             if (!handlePotentialReconnect(displayId) && !keyguardLocked) {

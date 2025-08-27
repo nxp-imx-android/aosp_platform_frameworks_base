@@ -143,7 +143,10 @@ class DesktopRepository(
         }
         val orderedDesks = desktopData.getOrderedDesks(displayId)
         // Do not preserve the display if there are no active tasks on it.
-        if (!orderedDesks.any { it.activeTasks.isNotEmpty() }) return
+        if (!orderedDesks.any { it.activeTasks.isNotEmpty() }) {
+            logD("No active tasks on display; aborting.")
+            return
+        }
         val preservedDisplay = DesktopDisplay(INVALID_DISPLAY)
         orderedDesks.mapTo(preservedDisplay.orderedDesks) { it.deepCopy() }
         preservedDisplay.activeDeskId = desktopData.getActiveDesk(displayId)?.deskId
