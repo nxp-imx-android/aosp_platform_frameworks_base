@@ -6614,6 +6614,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
+    fun handleRequest_newTaskLaunch_sameAsTopTransparentFullscreenTask_clearsTopTransparent() {
+        val transition = Binder()
+        val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        taskRepository.setTopTransparentFullscreenTaskData(DEFAULT_DISPLAY, topTransparentTask)
+
+        val task =
+            setUpFreeformTask(displayId = DEFAULT_DISPLAY, taskId = topTransparentTask.taskId)
+        controller.handleRequest(transition, createTransition(task))
+
+        assertThat(taskRepository.getTopTransparentFullscreenTaskData(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun handleRequest_desktopNotShowing_topTransparentFullscreenTask_returnNull() {
         taskRepository.setDeskInactive(deskId = 0)
@@ -12401,8 +12415,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         active: Boolean = true,
         background: Boolean = false,
         deskId: Int? = null,
+        taskId: Int? = null,
     ): RunningTaskInfo {
-        val task = createFreeformTask(displayId, bounds, taskRepository.userId)
+        val task = createFreeformTask(displayId, bounds, taskRepository.userId, taskId)
         val activityInfo = ActivityInfo()
         activityInfo.applicationInfo = ApplicationInfo()
         task.topActivityInfo = activityInfo

@@ -1024,9 +1024,8 @@ class DesktopTasksController(
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
-        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
-            focusTransitionObserver.globallyFocusedTaskId
-        )
+        val globallyFocusedTask =
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -2197,8 +2196,6 @@ class DesktopTasksController(
                     launchingNewIntent = launchingTaskId == null,
                 )
             }
-        val closingTopTransparentTaskId =
-            deskId?.let { repository.getTopTransparentFullscreenTaskData(it)?.taskId }
         val exitImmersiveResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = launchTransaction,
@@ -2239,9 +2236,15 @@ class DesktopTasksController(
             }
         }
         // Remove top transparent fullscreen task if needed.
-        deskId?.let {
-            closeTopTransparentFullscreenTask(wct = launchTransaction, deskId = it, userId = userId)
-        }
+        val closingTopTransparentTaskId =
+            deskId?.let {
+                closeTopTransparentFullscreenTask(
+                    wct = launchTransaction,
+                    deskId = it,
+                    launchingTaskId = launchingTaskId,
+                    userId = userId,
+                )
+            }
         val t =
             if (remoteTransition == null) {
                 logV("startLaunchTransition -- no remoteTransition -- wct = $launchTransaction")
@@ -2697,7 +2700,7 @@ class DesktopTasksController(
     ) {
         val displayId = taskInfo.displayId
         val displayLayout = displayController.getDisplayLayout(displayId)
-        if (displayLayout == null)  {
+        if (displayLayout == null) {
             logW("Display %d is not found, task displayId might be stale", displayId)
             return
         }
@@ -4065,8 +4068,12 @@ class DesktopTasksController(
             // flag
             val taskIdToMinimize = addAndGetMinimizeChanges(targetDeskId, wct, task.taskId)
             val closingTopTransparentTaskId =
-                repository.getTopTransparentFullscreenTaskData(targetDeskId)?.taskId
-            closeTopTransparentFullscreenTask(wct, targetDeskId, userId)
+                closeTopTransparentFullscreenTask(
+                    wct,
+                    targetDeskId,
+                    launchingTaskId = task.taskId,
+                    userId,
+                )
             addPendingAppLaunchTransition(
                 transition,
                 task.taskId,
@@ -4142,8 +4149,12 @@ class DesktopTasksController(
                             addPendingTaskLimitTransition(transition, deskId, task.taskId)
                             // Remove top transparent fullscreen task if needed.
                             val closingTopTransparentTaskId =
-                                repository.getTopTransparentFullscreenTaskData(deskId)?.taskId
-                            closeTopTransparentFullscreenTask(wct, deskId, userId)
+                                closeTopTransparentFullscreenTask(
+                                    wct,
+                                    deskId,
+                                    launchingTaskId = task.taskId,
+                                    userId,
+                                )
                             // Also track the pending launching task.
                             addPendingAppLaunchTransition(
                                 transition,
@@ -4861,8 +4872,12 @@ class DesktopTasksController(
                 if (newTask != null && addPendingLaunchTransition) {
                     // Remove top transparent fullscreen task if needed.
                     val closingTopTransparentTaskId =
-                        repository.getTopTransparentFullscreenTaskData(deskId)?.taskId
-                    closeTopTransparentFullscreenTask(wct, deskId, userId)
+                        closeTopTransparentFullscreenTask(
+                            wct,
+                            deskId,
+                            launchingTaskId = newTask.taskId,
+                            userId,
+                        )
                     addPendingAppLaunchTransition(
                         transition,
                         newTask.taskId,
@@ -4946,18 +4961,30 @@ class DesktopTasksController(
         }
     }
 
+    // returns the id of the task that was closed (if any)
     private fun closeTopTransparentFullscreenTask(
         wct: WindowContainerTransaction,
         deskId: Int,
+        launchingTaskId: Int?,
         userId: Int,
-    ) {
-        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return
+    ): Int? {
+        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return null
         val repository = userRepositories.getProfile(userId)
-        val data = repository.getTopTransparentFullscreenTaskData(deskId)
-        if (data != null) {
-            logD("closeTopTransparentFullscreenTask: taskId=%d, deskId=%d", data.taskId, deskId)
-            wct.removeTask(data.token)
+        val data = repository.getTopTransparentFullscreenTaskData(deskId) ?: return null
+
+        if (launchingTaskId != null && data.taskId == launchingTaskId) {
+            logD(
+                "closeTopTransparentFullscreenTask: task relaunching as freeform, not closing" +
+                    ", taskId=%d, deskId=%d",
+                data.taskId,
+                deskId,
+            )
+            repository.clearTopTransparentFullscreenTaskData(deskId)
+            return null
         }
+        logD("closeTopTransparentFullscreenTask: taskId=%d, deskId=%d", data.taskId, deskId)
+        wct.removeTask(data.token)
+        return data.taskId
     }
 
     /** Activates the desk at the given index if it exists. */
