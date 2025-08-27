@@ -414,14 +414,8 @@ public class TouchExplorer extends BaseEventStreamTransformation
             mSendTouchExplorationEndDelayed.forceSendAndRemove();
         }
 
-        if (!Flags.pointerUpMotionEventInTouchExploration()) {
-            // Announce the end of a new touch interaction.
+        if (mReceivedPointerTracker.getReceivedPointerDownCount() == 0) {
             mDispatcher.sendAccessibilityEvent(TYPE_TOUCH_INTERACTION_END);
-        } else {
-            // If there are no pointers left on screen, announce the end of the touch interaction.
-            if (mReceivedPointerTracker.getReceivedPointerDownCount() == 0) {
-                mDispatcher.sendAccessibilityEvent(TYPE_TOUCH_INTERACTION_END);
-            }
         }
         mSendTouchInteractionEndDelayed.cancel();
         // Try to use the standard accessibility API to click
@@ -660,11 +654,8 @@ public class TouchExplorer extends BaseEventStreamTransformation
                 handleActionUp(event, rawEvent, policyFlags);
                 break;
             case ACTION_POINTER_UP:
-                if (com.android.server.accessibility.Flags
-                        .pointerUpMotionEventInTouchExploration()) {
-                    if (mState.isServiceDetectingGestures()) {
-                        mAms.sendMotionEventToListeningServices(rawEvent);
-                    }
+                if (mState.isServiceDetectingGestures()) {
+                    mAms.sendMotionEventToListeningServices(rawEvent);
                 }
                 break;
             default:

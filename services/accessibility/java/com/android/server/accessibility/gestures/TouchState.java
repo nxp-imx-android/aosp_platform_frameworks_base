@@ -223,16 +223,11 @@ public class TouchState {
             case AccessibilityEvent.TYPE_TOUCH_INTERACTION_END:
                 // When interaction ends, check if there are still down pointers.
                 // If there are any down pointers, go directly to TouchExploring instead.
-                if (com.android.server.accessibility.Flags
-                        .pointerUpMotionEventInTouchExploration()) {
-                    if (mReceivedPointerTracker.mReceivedPointersDown > 0) {
-                        startTouchExploring();
-                    } else {
-                        setState(STATE_CLEAR);
-                        // We will clear when we actually handle the next ACTION_DOWN.
-                    }
+                if (mReceivedPointerTracker.mReceivedPointersDown > 0) {
+                    startTouchExploring();
                 } else {
                     setState(STATE_CLEAR);
+                    // We will clear when we actually handle the next ACTION_DOWN.
                 }
                 break;
             case AccessibilityEvent.TYPE_TOUCH_EXPLORATION_GESTURE_START:
