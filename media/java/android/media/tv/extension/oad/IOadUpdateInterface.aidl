@@ -16,26 +16,64 @@
 
 package android.media.tv.extension.oad;
 
+import android.os.Bundle;
+
 /**
  * @hide
  */
 interface IOadUpdateInterface {
-    // Enable or disable the OAD function.
+    /**
+     * Enables or disables the OAD (Over-the-Air Download) function.
+     *
+     * @param true to enable the OAD function, false to disable it.
+     */
     void setOadStatus(boolean enable);
-    // Get status of OAD function.
+    /**
+     * Gets the current status of the OAD function.
+     *
+     * @return true if the OAD function is enabled, false otherwise.
+     */
     boolean getOadStatus();
-    // Start OAD scan of all frequency in the program list.
+    /**
+     * Starts an OAD scan across all frequencies in the program list to search for updates.
+     * This API can be called after OAD is enabled.
+     */
     void startScan();
-    // Stop OAD scan of all frequency in the program list.
+    /**
+     * Stops an in-progress OAD scan. This API can be called after scan has started.
+     */
     void stopScan();
-    // Start OAD detect for the current channel.
+    /**
+     * Starts OAD detection on the currently tuned channel to check for an available update.
+     * This API can be called after OAD is enabled.
+     */
     void startDetect();
-    // Stop OAD detect for the current channel.
+    /*
+     * Stops the OAD detection process on the current channel.
+     * This API can be called detect has started.
+     */
     void stopDetect();
-    // Start OAD download after it has been detected or scanned.
+    /**
+     * Starts the OAD download process for an update that has been found via scan or detection.
+     */
     void startDownload();
-    // Stop OAD download.
+    /**
+     * Stops an in-progress OAD download. This API can be called after download has started.
+     */
     void stopDownload();
-    // Retrieves current OAD software version.
+    /**
+     * Retrieves the current OAD software version.
+     *
+     * @return An integer representing the current software version.
+     */
     int getSoftwareVersion();
+    /**
+     * Notify the upgrader APK to apply the OAD update after it is downloaded by the LiveTV app.
+     *
+     * @param url The file path of the OTA zip.
+     * @param offset The start position.
+     * @param size the num of bytes to read from the offset.
+     * @param properties a Bundle containing extra instructions, such as if reboot is needed.
+     */
+    oneway void applyUpgrade(String url, long offset, long size, in Bundle properties);
 }
