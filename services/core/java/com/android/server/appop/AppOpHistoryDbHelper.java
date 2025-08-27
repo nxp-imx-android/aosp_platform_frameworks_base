@@ -164,7 +164,8 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
 
     // Convert null back to default device.
     private @NonNull String getDeviceIdForDatabaseRead(@Nullable String deviceId) {
-        return deviceId == null ? VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT : deviceId;
+        return deviceId == null ?
+                VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT : deviceId.intern();
     }
 
     private int getDatabaseType(AggregationTimeWindow aggregationTimeWindow) {
@@ -323,7 +324,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         int totalRejectCount = statement.getColumnInt(13);
 
         return new AggregatedAppOpAccessEvent(uid,
-                packageName != null ? packageName.intern() : null, opCode, deviceId.intern(),
+                packageName != null ? packageName.intern() : null, opCode, deviceId,
                 attributionTag != null ? attributionTag.intern() : null,
                 opFlags, uidState, attributionFlags, attributionChainId, accessTime,
                 duration, totalDuration, totalAccessCount, totalRejectCount);
