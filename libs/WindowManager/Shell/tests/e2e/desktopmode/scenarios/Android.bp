@@ -137,6 +137,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.ExitImmersiveToDesktopWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.ToggleFullscreenViaFullscreenKeyTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.maximize.MaximizeUnfocusedAppWindowTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionResizeAndDragTest",

@@ -88,6 +88,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         device: UiDevice,
         motionEventHelper: MotionEventHelper = MotionEventHelper(getInstrumentation(), TOUCH),
         shouldUseDragToDesktop: Boolean = false,
+        isImmersiveApp: Boolean = false,
     ) {
         innerHelper.launchViaIntent(wmHelper)
         if (isInDesktopWindowingMode(wmHelper)) return
@@ -99,7 +100,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
                 motionEventHelper = motionEventHelper
             )
         } else {
-            enterDesktopModeFromAppHandleMenu(wmHelper, device)
+            enterDesktopModeFromAppHandleMenu(wmHelper, device, isImmersiveApp = isImmersiveApp)
         }
     }
 
@@ -287,11 +288,17 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             ?: error("Unable to find resource $HEADER_EMPTY_VIEW\n")
     }
 
-    /** Click on an existing window's header to bring it to the front. */
+    /** Click on an existing window to bring the app to the front. */
     fun bringToFront(wmHelper: WindowManagerStateHelper, device: UiDevice) {
-        val caption = getCaptionForTheApp(wmHelper, device)
-        val openHeaderView = getHeaderEmptyView(caption)
-        openHeaderView.click()
+        if (isInDesktopWindowingMode(wmHelper)) {
+            val caption = getCaptionForTheApp(wmHelper, device)
+            val openHeaderView = getHeaderEmptyView(caption)
+            openHeaderView.click()
+        } else {
+            // Caption and header exist only in desktop mode windows, so click the app handle
+            // coordinate instead.
+            clickAppHandle(wmHelper, device)
+        }
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
