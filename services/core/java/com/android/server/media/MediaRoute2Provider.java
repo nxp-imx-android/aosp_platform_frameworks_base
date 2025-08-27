@@ -43,9 +43,9 @@ abstract class MediaRoute2Provider {
     final String mUniqueId;
     final Object mLock = new Object();
 
-    Callback mCallback;
     public final boolean mIsSystemRouteProvider;
     private volatile MediaRoute2ProviderInfo mProviderInfo;
+    private Callback mCallback;
 
     @GuardedBy("mLock")
     final List<RoutingSessionInfo> mSessionInfos = new ArrayList<>();
@@ -120,9 +120,36 @@ abstract class MediaRoute2Provider {
         }
     }
 
-    void notifyProviderState() {
+    protected boolean haveCallback() {
+        return mCallback != null;
+    }
+
+    protected void notifyProviderStateChanged() {
         if (mCallback != null) {
             mCallback.onProviderStateChanged(this);
+        }
+    }
+
+    protected void notifySessionCreated(long requestId, @Nullable RoutingSessionInfo sessionInfo) {
+        if (mCallback != null) {
+            mCallback.onSessionCreated(this, requestId, sessionInfo);
+        }
+    }
+
+    protected void notifySessionUpdated(
+            @NonNull MediaRoute2Provider provider,
+            @NonNull RoutingSessionInfo sessionInfo,
+            Set<String> packageNamesWithRoutingSessionOverrides,
+            boolean shouldShowVolumeSystemUi) {
+        if (mCallback != null) {
+            mCallback.onSessionUpdated(this, sessionInfo,
+                    packageNamesWithRoutingSessionOverrides, shouldShowVolumeSystemUi);
+        }
+    }
+
+    protected void notifySessionReleased(@NonNull RoutingSessionInfo sessionInfo) {
+        if (mCallback != null) {
+            mCallback.onSessionReleased(this, sessionInfo);
         }
     }
 
@@ -135,7 +162,7 @@ abstract class MediaRoute2Provider {
 
     void setAndNotifyProviderState(MediaRoute2ProviderInfo providerInfo) {
         setProviderState(providerInfo);
-        notifyProviderState();
+        notifyProviderStateChanged();
     }
 
     public boolean hasComponentName(String packageName, String className) {

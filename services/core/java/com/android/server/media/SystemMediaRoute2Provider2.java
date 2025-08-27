@@ -417,7 +417,7 @@ import java.util.stream.Stream;
             updateProviderInfo();
         }
         updateSessionInfo();
-        notifyProviderState();
+        notifyProviderStateChanged();
         notifyGlobalSessionInfoUpdated();
     }
 
@@ -511,7 +511,7 @@ import java.util.stream.Stream;
 
     @Override
     /* package */ void notifyGlobalSessionInfoUpdated() {
-        if (mCallback == null) {
+        if (!haveCallback()) {
             return;
         }
 
@@ -525,7 +525,7 @@ import java.util.stream.Stream;
             sessionInfo = mSessionInfos.getFirst();
         }
 
-        mCallback.onSessionUpdated(
+        notifySessionUpdated(
                 this,
                 sessionInfo,
                 packageNamesWithRoutingSessionOverrides,
@@ -635,7 +635,7 @@ import java.util.stream.Stream;
         providerInfo.getRoutes().stream()
                 .map(MediaRoute2Info::getOriginalId)
                 .forEach(builder::addTransferableRoute);
-        mCallback.onSessionUpdated(
+        notifySessionUpdated(
                 /* provider= */ this,
                 builder.build(),
                 /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
