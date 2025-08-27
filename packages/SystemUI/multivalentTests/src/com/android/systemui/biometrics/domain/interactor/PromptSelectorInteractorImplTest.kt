@@ -469,6 +469,28 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             verifyUnset()
         }
 
+    @Test
+    fun resetPrompt_onlyResetsViewForCurrentRequestId() =
+        testScope.runTest {
+            setUserCredentialType(isPassword = true)
+            val currentView by collectLastValue(interactor.currentView)
+            val requestId by collectLastValue(promptRepository.requestId)
+
+            setPrompt(onSwitchToCredential = true)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
+            assertThat(requestId).isEqualTo(REQUEST_ID)
+
+            interactor.resetPrompt(0L)
+
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
+            assertThat(requestId).isEqualTo(REQUEST_ID)
+
+            interactor.resetPrompt(REQUEST_ID)
+
+            assertThat(currentView).isEqualTo(BiometricPromptView.BIOMETRIC)
+            verifyUnset()
+        }
+
     private fun setPrompt(
         info: PromptInfo = basicPromptInfo(),
         onSwitchToCredential: Boolean = false,
