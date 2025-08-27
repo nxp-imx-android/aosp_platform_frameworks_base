@@ -205,16 +205,6 @@ flag {
 }
 
 flag {
-  name: "skip_policy_access_nls_check"
-  namespace: "systemui"
-  description: "When querying whether a caller has Notification Policy Access, don't explicitly look in the NLSes list. All NLSes are also ConditionProviders so this is unnecessary."
-  bug: "390441924"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "random_conversation_ids"
   namespace: "systemui"
   description: "Use random ids for new conversation channels, instead of concatenating parent id and conversation id"
