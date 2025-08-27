@@ -32,18 +32,23 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.helpers.SimpleperfHelper;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Performance tests for {@link MessageQueue}.
- */
+/** Performance tests for {@link MessageQueue}. */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class MessageQueuePerfTest {
@@ -53,15 +58,53 @@ public class MessageQueuePerfTest {
     private static final int TOTAL_MESSAGE_COUNT = PER_THREAD_MESSAGE_COUNT * THREAD_COUNT;
     private static final int DEFAULT_MESSAGE_WHAT = 2;
 
+    private SimpleperfHelper mSimpleperfHelper = new SimpleperfHelper();
+    private boolean mEnableSimpleperf = true;
+
+    @Rule public TestName mTestName = new TestName();
+
+    /** Start simpleperf sampling. */
+    public void startSimpleperf(String subcommand, String arguments) {
+        if (!mSimpleperfHelper.startCollecting(subcommand, arguments)) {
+            Log.e(TAG, "Simpleperf did not start successfully.");
+        }
+    }
+
+    /** Stop simpleperf sampling and dump the collected file into the given path. */
+    private void stopSimpleperf(Path path) {
+        if (!mSimpleperfHelper.stopCollecting(path.toString())) {
+            Log.e(TAG, "Failed to collect the simpleperf output.");
+        }
+    }
+
     @Before
     public void setUp() {
         mHandlerThread = new HandlerThread("MessageQueuePerfTest");
         mHandlerThread.start();
+
+        Bundle arguments = androidx.test.platform.app.InstrumentationRegistry.getArguments();
+        if (arguments != null && arguments.getString("no-simpleperf") != null) {
+            mEnableSimpleperf = false;
+        }
+
+        if (mEnableSimpleperf) {
+            String args =
+                    "-o /data/local/tmp/perf.data -g -e cpu-cycles -p "
+                            + mSimpleperfHelper.getPID("com.android.perftests.core");
+            startSimpleperf("record", args);
+        }
     }
 
     @After
     public void tearDown() {
         mHandlerThread.quitSafely();
+
+        if (mEnableSimpleperf) {
+            final File outputDir = InstrumentationRegistry.getContext().getExternalFilesDir(null);
+            final Path outputPath =
+                    new File(outputDir, mTestName.getMethodName() + ".perf.data").toPath();
+            stopSimpleperf(outputPath);
+        }
     }
 
     static class EnqueueThread extends Thread {
@@ -73,8 +116,13 @@ public class MessageQueuePerfTest {
         long[] mDelays;
         ArrayList<Long> mResults;
 
-        EnqueueThread(CountDownLatch startLatch, CountDownLatch endLatch, Handler handler,
-                int startIdx, Message[] messages, long[] delays) {
+        EnqueueThread(
+                CountDownLatch startLatch,
+                CountDownLatch endLatch,
+                Handler handler,
+                int startIdx,
+                Message[] messages,
+                long[] delays) {
             super();
             mStartLatch = startLatch;
             mEndLatch = endLatch;
@@ -117,8 +165,12 @@ public class MessageQueuePerfTest {
         int mWhat;
         ArrayList<Long> mResults;
 
-        RemoveThread(CountDownLatch startLatch, CountDownLatch endLatch, Handler handler,
-                Thread blockingThread, int what) {
+        RemoveThread(
+                CountDownLatch startLatch,
+                CountDownLatch endLatch,
+                Handler handler,
+                Thread blockingThread,
+                int what) {
             super();
             mStartLatch = startLatch;
             mEndLatch = endLatch;
@@ -149,7 +201,6 @@ public class MessageQueuePerfTest {
             mResults.add(endTimeNS - startTimeNS);
             mEndLatch.countDown();
         }
-
     }
 
     class TestHandler extends Handler {
@@ -157,11 +208,15 @@ public class MessageQueuePerfTest {
             super(looper);
         }
 
-        public void handleMessage(Message msg) { }
+        public void handleMessage(Message msg) {}
     }
 
-    void reportPerf(String prefix, int threadCount, int perThreadMessageCount,
-            EnqueueThread[] enqueueThreads, RemoveThread[] removeThreads) {
+    void reportPerf(
+            String prefix,
+            int threadCount,
+            int perThreadMessageCount,
+            EnqueueThread[] enqueueThreads,
+            RemoveThread[] removeThreads) {
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
 
         // Accumulate enqueue/remove results.
@@ -211,7 +266,8 @@ public class MessageQueuePerfTest {
         fillMessagesArray(messages, DEFAULT_MESSAGE_WHAT, 0, messages.length);
     }
 
-    private void startTestAndWaitOnThreads(CountDownLatch threadStartLatch, CountDownLatch threadEndLatch) {
+    private void startTestAndWaitOnThreads(
+            CountDownLatch threadStartLatch, CountDownLatch threadEndLatch) {
         try {
             threadStartLatch.countDown();
             Log.e(TAG, "Test threads started");
@@ -225,13 +281,13 @@ public class MessageQueuePerfTest {
     /**
      * Benchmark for enqueueing messages at the front of the message queue.
      *
-     * <p> This benchmark adds messages to the front of the message queue from multiple threads. It
+     * <p>This benchmark adds messages to the front of the message queue from multiple threads. It
      * measures the latency of enqueue operations.
      */
     @Test
     public void benchmarkEnqueueAtFrontOfQueue() {
         CountDownLatch threadStartLatch = new CountDownLatch(1);
-        CountDownLatch threadEndLatch  = new CountDownLatch(THREAD_COUNT);
+        CountDownLatch threadEndLatch = new CountDownLatch(THREAD_COUNT);
         Message[] messages = new Message[TOTAL_MESSAGE_COUNT];
         fillMessagesArray(messages);
 
@@ -240,8 +296,14 @@ public class MessageQueuePerfTest {
         TestHandler handler = new TestHandler(mHandlerThread.getLooper());
         EnqueueThread[] enqueueThreads = new EnqueueThread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
-            EnqueueThread thread = new EnqueueThread(threadStartLatch, threadEndLatch, handler,
-                    i * PER_THREAD_MESSAGE_COUNT, messages, delays);
+            EnqueueThread thread =
+                    new EnqueueThread(
+                            threadStartLatch,
+                            threadEndLatch,
+                            handler,
+                            i * PER_THREAD_MESSAGE_COUNT,
+                            messages,
+                            delays);
             enqueueThreads[i] = thread;
             thread.start();
         }
@@ -251,9 +313,7 @@ public class MessageQueuePerfTest {
         reportPerf("enqueueAtFront", THREAD_COUNT, PER_THREAD_MESSAGE_COUNT, enqueueThreads, null);
     }
 
-    /**
-     * Fill array with random delays, for benchmarkEnqueueDelayed
-     */
+    /** Fill array with random delays, for benchmarkEnqueueDelayed */
     public long[] fillDelayArray() {
         long[] delays = new long[TOTAL_MESSAGE_COUNT];
         Random rand = new Random(0xDEADBEEF);
@@ -266,13 +326,13 @@ public class MessageQueuePerfTest {
     /**
      * Benchmark for enqueuing delayed messages to the message queue.
      *
-     * <p> This benchmark adds messages at random points in the message queue from multiple threads.
+     * <p>This benchmark adds messages at random points in the message queue from multiple threads.
      * It measures the latency of enqueue operations.
      */
     @Test
     public void benchmarkEnqueueDelayed() {
         CountDownLatch threadStartLatch = new CountDownLatch(1);
-        CountDownLatch threadEndLatch  = new CountDownLatch(THREAD_COUNT);
+        CountDownLatch threadEndLatch = new CountDownLatch(THREAD_COUNT);
         Message[] messages = new Message[TOTAL_MESSAGE_COUNT];
         fillMessagesArray(messages);
 
@@ -281,8 +341,14 @@ public class MessageQueuePerfTest {
         TestHandler handler = new TestHandler(mHandlerThread.getLooper());
         EnqueueThread[] enqueueThreads = new EnqueueThread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
-            EnqueueThread thread = new EnqueueThread(threadStartLatch, threadEndLatch, handler,
-                    i * PER_THREAD_MESSAGE_COUNT, messages, delays);
+            EnqueueThread thread =
+                    new EnqueueThread(
+                            threadStartLatch,
+                            threadEndLatch,
+                            handler,
+                            i * PER_THREAD_MESSAGE_COUNT,
+                            messages,
+                            delays);
             enqueueThreads[i] = thread;
             thread.start();
         }
@@ -295,7 +361,7 @@ public class MessageQueuePerfTest {
     /**
      * Benchmark for enqueuing delayed messages and removing them from the message queue.
      *
-     * <p> This benchmark adds messages at random points in the message queue from multiple threads,
+     * <p>This benchmark adds messages at random points in the message queue from multiple threads,
      * with each thread enqueuing messages with a different 'what' field. After a thread has
      * completed adding its messages, another thread removes them. This measures the latency of
      * enqueue and remove operations.
@@ -308,7 +374,7 @@ public class MessageQueuePerfTest {
 
         // We use taskThreadCount * 2 in case THREAD_COUNT is not an even number.
         CountDownLatch threadStartLatch = new CountDownLatch(1);
-        CountDownLatch threadEndLatch  = new CountDownLatch(taskThreadCount * 2);
+        CountDownLatch threadEndLatch = new CountDownLatch(taskThreadCount * 2);
 
         long[] delays = fillDelayArray();
         TestHandler handler = new TestHandler(mHandlerThread.getLooper());
@@ -316,76 +382,105 @@ public class MessageQueuePerfTest {
         // Fill with taskThreadCount blocks of PER_THREAD_MESSAGE_COUNT messages.
         Message[] messages = new Message[messageCount];
         for (int i = 0; i < taskThreadCount; i++) {
-            fillMessagesArray(messages,
-                    /* what = */ i, /* startIdx = */ i * PER_THREAD_MESSAGE_COUNT,
-                    /* endIdx = */ (i + 1) * PER_THREAD_MESSAGE_COUNT);
+            fillMessagesArray(
+                    messages,
+                    /* what= */ i,
+                    /* startIdx= */ i * PER_THREAD_MESSAGE_COUNT,
+                    /* endIdx= */ (i + 1) * PER_THREAD_MESSAGE_COUNT);
         }
 
         EnqueueThread[] enqueueThreads = new EnqueueThread[taskThreadCount];
         RemoveThread[] removeThreads = new RemoveThread[taskThreadCount];
 
         // Start by enqueuing the first block of messages.
-        enqueueThreads[0] = new EnqueueThread(threadStartLatch, threadEndLatch, handler,
-                /* startIdx = */ 0, messages, delays);
+        enqueueThreads[0] =
+                new EnqueueThread(
+                        threadStartLatch,
+                        threadEndLatch,
+                        handler,
+                        /* startIdx= */ 0,
+                        messages,
+                        delays);
         enqueueThreads[0].start();
 
         for (int i = 1; i < taskThreadCount; i++) {
             // Remove messages from the corresponding enqueue thread from the previous iteration.
-            removeThreads[i - 1] = new RemoveThread(
-                    threadStartLatch, threadEndLatch, handler, enqueueThreads[i - 1],
-                    /* what = */ i - 1);
+            removeThreads[i - 1] =
+                    new RemoveThread(
+                            threadStartLatch,
+                            threadEndLatch,
+                            handler,
+                            enqueueThreads[i - 1],
+                            /* what= */ i - 1);
             removeThreads[i - 1].start();
 
             // Concurrently enqueue the next set of messages.
-            enqueueThreads[i] = new EnqueueThread(threadStartLatch, threadEndLatch,
-                    handler, i * PER_THREAD_MESSAGE_COUNT, messages, delays);
+            enqueueThreads[i] =
+                    new EnqueueThread(
+                            threadStartLatch,
+                            threadEndLatch,
+                            handler,
+                            i * PER_THREAD_MESSAGE_COUNT,
+                            messages,
+                            delays);
             enqueueThreads[i].start();
         }
 
         // End by removing the last block of messages.
-        removeThreads[taskThreadCount - 1] = new RemoveThread(
-                threadStartLatch, threadEndLatch, handler, enqueueThreads[taskThreadCount - 1],
-                /* what = */ taskThreadCount - 1);
+        removeThreads[taskThreadCount - 1] =
+                new RemoveThread(
+                        threadStartLatch,
+                        threadEndLatch,
+                        handler,
+                        enqueueThreads[taskThreadCount - 1],
+                        /* what= */ taskThreadCount - 1);
         removeThreads[taskThreadCount - 1].start();
 
         startTestAndWaitOnThreads(threadStartLatch, threadEndLatch);
 
-        reportPerf("concurrentEnqueueDelayedAndRemove", THREAD_COUNT, PER_THREAD_MESSAGE_COUNT,
-                enqueueThreads, removeThreads);
+        reportPerf(
+                "concurrentEnqueueDelayedAndRemove",
+                THREAD_COUNT,
+                PER_THREAD_MESSAGE_COUNT,
+                enqueueThreads,
+                removeThreads);
     }
 
     /**
      * Benchmark for enqueueing and removing messages from a single thread.
      *
-     * <p> This benchmark measures the time it takes to enqueue a message, then remove it. This is
+     * <p>This benchmark measures the time it takes to enqueue a message, then remove it. This is
      * repeated multiple times.
      */
     @Test
     public void benchmarkSingleThreadedEnqueueAndRemove() throws InterruptedException {
-        final CountDownLatch threadEndLatch  = new CountDownLatch(1);
+        final CountDownLatch threadEndLatch = new CountDownLatch(1);
         final TestHandler handler = new TestHandler(mHandlerThread.getLooper());
 
-        Runnable runTest = new Runnable() {
-            @Override
-            public void run() {
-                // Can't make this an @Rule otherwise the multi threaded tests that don't use
-                // PerfStatusReporter will throw the error:
-                // "java.lang.IllegalStateException: The benchmark hasn't finished"
-                final PerfStatusReporter perfStatusReporter = new PerfStatusReporter();
-                final BenchmarkState state = perfStatusReporter.getBenchmarkState();
+        Runnable runTest =
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        // Can't make this an @Rule otherwise the multi threaded tests that don't
+                        // use
+                        // PerfStatusReporter will throw the error:
+                        // "java.lang.IllegalStateException: The benchmark hasn't finished"
+                        final PerfStatusReporter perfStatusReporter = new PerfStatusReporter();
+                        final BenchmarkState state = perfStatusReporter.getBenchmarkState();
 
-                while (state.keepRunning()) {
-                    Message m = handler.obtainMessage(DEFAULT_MESSAGE_WHAT);
-                    handler.sendMessageDelayed(m, 10_000);
-                    handler.removeMessages(DEFAULT_MESSAGE_WHAT);
-                }
+                        while (state.keepRunning()) {
+                            Message m = handler.obtainMessage(DEFAULT_MESSAGE_WHAT);
+                            handler.sendMessageDelayed(m, 10_000);
+                            handler.removeMessages(DEFAULT_MESSAGE_WHAT);
+                        }
 
-                state.sendFullStatusReport(InstrumentationRegistry.getInstrumentation(),
-                        "singleThreadedEnqueueAndRemove");
+                        state.sendFullStatusReport(
+                                InstrumentationRegistry.getInstrumentation(),
+                                "singleThreadedEnqueueAndRemove");
 
-                threadEndLatch.countDown();
-            }
-        };
+                        threadEndLatch.countDown();
+                    }
+                };
 
         handler.post(runTest);
 
