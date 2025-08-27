@@ -441,6 +441,7 @@ aconfig_declarations {
     name: "android.nfc.flags-aconfig",
     package: "android.nfc",
     container: "system",
+    exportable: true,
     srcs: ["nfc-non-updatable/flags/*.aconfig"],
 }
 
@@ -461,6 +462,7 @@ java_aconfig_library {
     name: "android.nfc.flags-aconfig-java",
     aconfig_declarations: "android.nfc.flags-aconfig",
     min_sdk_version: "34",
+    mode: "exported",
     apex_available: [
         "//apex_available:platform",
         "com.android.nfcservices",
