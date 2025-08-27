@@ -5272,18 +5272,19 @@ public class UserManagerService extends IUserManager.Stub {
         // 2025Q4 userVersion pathway.
         // TODO(b/419105275): Because trunk stable flags need to be reversible, and because the
         //  upgrades here actually are reversible, we temporarily "cheat" by triggering the upgrade
-        //  path on every reboot.
-        //  Once the flags have fully progressed, we can do this properly:
+        //  path even if we don't increment the version (by temporarily introducing forceWrite).
+        //  Once the flags have fully progressed, we can do this properly instead:
         //  check for userVersion < 11, set userVersion = 12, and set USER_VERSION = 12.
         // if (userVersion < 12) {
         Slog.i(LOG_TAG, "Forcing an upgrade due to flagged changes");
-        final boolean forceWrite = true; // treat as an upgrade no matter what to handle flagging
+        boolean forceWrite = false; // treat as an upgrade no matter what to handle flagging?
         if (android.multiuser.Flags.userRestrictionConfigWifiSharedPrivate()) {
             // DISALLOW_CONFIG_WIFI_SHARED replaced DISALLOW_CONFIG_WIFI as the guest restriction.
             if (mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI) &&
                     !mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED)) {
                 mGuestRestrictions.remove(UserManager.DISALLOW_CONFIG_WIFI);
                 mGuestRestrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true);
+                forceWrite = true;
             }
             final List<UserInfo> guestUsers = getGuestUsers();
             for (int i = 0; i < guestUsers.size(); i++) {
@@ -5293,6 +5294,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && !hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, guest.id)) {
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, false, guest.id);
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true, guest.id);
+                    forceWrite = true;
                 }
             }
         } else {
@@ -5301,6 +5303,7 @@ public class UserManagerService extends IUserManager.Stub {
                     mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED)) {
                 mGuestRestrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI, true);
                 mGuestRestrictions.remove(UserManager.DISALLOW_CONFIG_WIFI_SHARED);
+                forceWrite = true;
             }
             final List<UserInfo> guestUsers = getGuestUsers();
             for (int i = 0; i < guestUsers.size(); i++) {
@@ -5310,6 +5313,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, guest.id)) {
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, true, guest.id);
                     setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, false, guest.id);
+                    forceWrite = true;
                 }
             }
         }
@@ -5321,6 +5325,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && (sysData.info.flags & UserInfo.FLAG_ADMIN) != 0) {
                     sysData.info.flags &= ~UserInfo.FLAG_ADMIN;
                     userIdsToWrite.add(sysData.info.id);
+                    forceWrite = true;
                 }
             }
         } else {
@@ -5331,6 +5336,7 @@ public class UserManagerService extends IUserManager.Stub {
                         && (sysData.info.flags & UserInfo.FLAG_ADMIN) == 0) {
                     sysData.info.flags ^= UserInfo.FLAG_ADMIN;
                     userIdsToWrite.add(sysData.info.id);
+                    forceWrite = true;
                 }
             }
         }
