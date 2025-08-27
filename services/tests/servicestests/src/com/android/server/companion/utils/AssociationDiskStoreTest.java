@@ -17,6 +17,8 @@ package com.android.server.companion.utils;
 
 import static org.junit.Assert.assertEquals;
 
+import android.companion.AssociationInfo;
+import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
@@ -45,5 +47,40 @@ public class AssociationDiskStoreTest {
         Associations associations = AssociationDiskStore.readAssociationsFromInputStream(
                 0, legacyXmlStream, "state");
         assertEquals(2, associations.getAssociations().size());
+    }
+
+    @Test
+    public void readAssociationsFromFile_v1Schema() throws XmlPullParserException, IOException {
+        InputStream xmlStream = InstrumentationRegistry.getInstrumentation().getContext()
+                .getResources().openRawResource(R.raw.companion_associations_v1);
+
+        Associations associations = AssociationDiskStore.readAssociationsFromInputStream(
+                0, xmlStream, "state");
+
+        // Assert overall XML file fields.
+        assertEquals(2, associations.getAssociations().size());
+        assertEquals(3, associations.getMaxId());
+
+        // Assert individual fields for the second association.
+        AssociationInfo association = associations.getAssociations().get(1);
+        assertEquals(3, association.getId());
+        assertEquals("com.sample.companion.another.app", association.getPackageName());
+        assertEquals("John's Watch", association.getDisplayName());
+        assertEquals(true, association.isSelfManaged());
+        assertEquals(false, association.isNotifyOnDeviceNearby());
+        assertEquals(false, association.isRevoked());
+        assertEquals(1634641160229L, association.getTimeApprovedMs());
+        assertEquals(1634641160229L, association.getLastTimeConnectedMs());
+        assertEquals(1, association.getSystemDataSyncFlags());
+        assertEquals(0, association.getTransportFlags());
+        assertEquals("1234", association.getDeviceId().getCustomId());
+        assertEquals(2, association.getPackagesToNotify().size());
+
+        // Assert metadata fields.
+        PersistableBundle metadata = association.getMetadata();
+        assertEquals(2, metadata.size());
+        assertEquals(1, metadata.getPersistableBundle("feature1").getInt("version"));
+        assertEquals("test", metadata.getPersistableBundle("feature1").getString("data"));
+        assertEquals("test", metadata.getPersistableBundle("feature2").getString("data"));
     }
 }

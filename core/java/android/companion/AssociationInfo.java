@@ -22,10 +22,13 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
+import android.companion.CompanionDeviceManager.FeatureName;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
+import android.os.BaseBundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.PersistableBundle;
 
 import java.util.Date;
 import java.util.List;
@@ -44,6 +47,11 @@ public final class AssociationInfo implements Parcelable {
      * A String indicates the selfManaged device is not connected.
      */
     private static final String LAST_TIME_CONNECTED_NONE = "None";
+    /**
+     * Key for the reception timestamp of the metadata.
+     */
+    static final String METADATA_TIMESTAMP = "_timestamp_";
+
     /**
      * A unique ID of this Association record.
      * Disclosed to the clients (i.e. companion applications) for referring to this record (e.g. in
@@ -89,6 +97,11 @@ public final class AssociationInfo implements Parcelable {
     private final DeviceId mDeviceId;
     @Nullable
     private final List<String> mPackagesToNotify;
+    /**
+     * A map of metadata describing the device's data sync policies for each feature client.
+     */
+    @NonNull
+    private final PersistableBundle mMetadata;
 
     /**
      * A device icon displayed on a selfManaged association dialog.
@@ -106,7 +119,7 @@ public final class AssociationInfo implements Parcelable {
             boolean selfManaged, boolean notifyOnDeviceNearby, boolean revoked, boolean pending,
             long timeApprovedMs, long lastTimeConnectedMs, int systemDataSyncFlags,
             int transportFlags, @Nullable Icon deviceIcon, @Nullable DeviceId deviceId,
-            @Nullable List<String> packagesToNotify) {
+            @Nullable List<String> packagesToNotify, @Nullable PersistableBundle metadata) {
         if (id <= 0) {
             throw new IllegalArgumentException("Association ID should be greater than 0");
         }
@@ -133,6 +146,7 @@ public final class AssociationInfo implements Parcelable {
         mDeviceIcon = deviceIcon;
         mDeviceId = deviceId;
         mPackagesToNotify = packagesToNotify;
+        mMetadata = metadata;
     }
 
     /**
@@ -323,6 +337,47 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
+     * @return the metadata of the association.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @NonNull
+    public PersistableBundle getMetadata() {
+        return mMetadata;
+    }
+
+    /**
+     * @return the metadata of the association for a given feature name.
+     * If the metadata is not available, it returns a new empty bundle.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @NonNull
+    public PersistableBundle getMetadata(@NonNull @FeatureName String feature) {
+        if (METADATA_TIMESTAMP.equals(feature)) {
+            throw new IllegalArgumentException("Cannot get metadata for timestamp. "
+                    + "Use getMetadataTimestamp() instead to get the timestamp.");
+        }
+
+        PersistableBundle bundle = mMetadata.getPersistableBundle(feature);
+        if (bundle == null) {
+            return new PersistableBundle();
+        }
+        return bundle;
+    }
+
+    /**
+     * @return the timestamp at which the metadata was last received from the remote device.
+     * If the metadata was never set, then it returns 0.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public long getMetadataTimestamp() {
+        return mMetadata.getLong(METADATA_TIMESTAMP, 0L);
+    }
+
+    /**
      * Utility method for checking if the association represents a device with the given MAC
      * address.
      *
@@ -395,6 +450,7 @@ public final class AssociationInfo implements Parcelable {
                 + ", mTransportFlags=" + mTransportFlags
                 + ", mDeviceId=" + mDeviceId
                 + ", mPackagesToNotify=" + mPackagesToNotify
+                + ", mMetadata=" + mMetadata
                 + '}';
     }
 
@@ -421,7 +477,8 @@ public final class AssociationInfo implements Parcelable {
                 && mTransportFlags == that.mTransportFlags
                 && isSameIcon(mDeviceIcon, that.mDeviceIcon)
                 && Objects.equals(mDeviceId, that.mDeviceId)
-                && Objects.equals(mPackagesToNotify, that.mPackagesToNotify);
+                && Objects.equals(mPackagesToNotify, that.mPackagesToNotify)
+                && BaseBundle.kindofEquals(mMetadata, that.mMetadata);
     }
 
     private boolean isSameIcon(Icon iconA, Icon iconB) {
@@ -436,7 +493,7 @@ public final class AssociationInfo implements Parcelable {
         return Objects.hash(mId, mUserId, mPackageName, mDeviceMacAddress, mDisplayName,
                 mDeviceProfile, mAssociatedDevice, mSelfManaged, mNotifyOnDeviceNearby, mRevoked,
                 mPending, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
-                mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify);
+                mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata);
     }
 
     @Override
@@ -476,6 +533,7 @@ public final class AssociationInfo implements Parcelable {
         }
 
         dest.writeStringList(mPackagesToNotify);
+        dest.writePersistableBundle(mMetadata);
     }
 
     private AssociationInfo(@NonNull Parcel in) {
@@ -507,6 +565,7 @@ public final class AssociationInfo implements Parcelable {
             mDeviceId = null;
         }
         mPackagesToNotify = in.createStringArrayList();
+        mMetadata = in.readPersistableBundle();
     }
 
     @NonNull
@@ -548,6 +607,7 @@ public final class AssociationInfo implements Parcelable {
         private Icon mDeviceIcon;
         private DeviceId mDeviceId;
         private List<String> mPackagesToNotify;
+        private PersistableBundle mMetadata = new PersistableBundle(); // Empty bundle by default.
 
         /** @hide */
         @TestApi
@@ -578,6 +638,7 @@ public final class AssociationInfo implements Parcelable {
             mDeviceIcon = info.mDeviceIcon;
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
+            mMetadata = info.mMetadata;
         }
 
         /**
@@ -605,6 +666,7 @@ public final class AssociationInfo implements Parcelable {
             mDeviceIcon = info.mDeviceIcon;
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
+            mMetadata = info.mMetadata;
         }
 
         /** @hide */
@@ -749,6 +811,16 @@ public final class AssociationInfo implements Parcelable {
         /** @hide */
         @TestApi
         @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+        public Builder setMetadata(@NonNull PersistableBundle metadata) {
+            mMetadata = metadata;
+            return this;
+        }
+
+        /** @hide */
+        @TestApi
+        @NonNull
         public AssociationInfo build() {
             if (mId <= 0) {
                 throw new IllegalArgumentException("Association ID should be greater than 0");
@@ -756,6 +828,9 @@ public final class AssociationInfo implements Parcelable {
             if (mDeviceMacAddress == null && mDisplayName == null) {
                 throw new IllegalArgumentException("MAC address and the display name must NOT be "
                         + "null at the same time");
+            }
+            if (mMetadata == null) {
+                throw new IllegalArgumentException("Association metadata cannot be null");
             }
             return new AssociationInfo(
                     mId,
@@ -775,7 +850,8 @@ public final class AssociationInfo implements Parcelable {
                     mTransportFlags,
                     mDeviceIcon,
                     mDeviceId,
-                    mPackagesToNotify
+                    mPackagesToNotify,
+                    mMetadata
             );
         }
     }
