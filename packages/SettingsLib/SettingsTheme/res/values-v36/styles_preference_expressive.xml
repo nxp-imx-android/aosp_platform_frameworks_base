@@ -166,4 +166,55 @@
         <item name="android:layout_height">40dp</item>
         <item name="android:background">?android:attr/listDivider</item>
     </style>
+
+    <style name="ExpressivePreferenceCategoryTheme">
+        <item name="expressivePreferenceCategoryRootLayoutStyle">@style/ExpressivePreferenceCategoryRootLayoutStyle</item>
+        <item name="expressivePreferenceCategoryRelativeLayoutStyle">@style/ExpressivePreferenceCategoryRelativeLayoutStyle</item>
+        <item name="expressivePreferenceCategoryTitleStyle">@style/ExpressivePreferenceCategoryTitleStyle</item>
+        <item name="expressivePreferenceCategorySummaryStyle">@style/ExpressivePreferenceCategorySummaryStyle</item>
+    </style>
+
+    <style name="ExpressivePreferenceCategoryRootLayoutStyle">
+        <item name="android:paddingLeft">?android:attr/listPreferredItemPaddingLeft</item>
+        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
+        <item name="android:paddingRight">?android:attr/listPreferredItemPaddingRight</item>
+        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
+        <item name="android:paddingTop">@dimen/settingslib_expressive_space_small1</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:baselineAligned">false</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="ExpressivePreferenceCategoryRelativeLayoutStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:paddingStart">@dimen/settingslib_expressive_space_extrasmall4</item>
+        <item name="android:paddingTop">@dimen/settingslib_expressive_space_extrasmall4</item>
+        <item name="android:paddingBottom">@dimen/settingslib_expressive_space_extrasmall4</item>
+    </style>
+
+    <style
+        name="ExpressivePreferenceCategoryTitleStyle"
+        parent="@style/PreferenceCategoryTitleTextStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">start</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+
+    <style
+        name="ExpressivePreferenceCategorySummaryStyle"
+        parent="@style/PreferenceSummaryTextStyle">
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_below">@android:id/title</item>
+        <item name="android:layout_alignStart">@android:id/title</item>
+        <item name="android:layout_gravity">start</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:maxLines">10</item>
+    </style>
 </resources>

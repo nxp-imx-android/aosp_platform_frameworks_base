@@ -18,6 +18,8 @@ package com.android.settingslib.widget;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -57,7 +59,11 @@ public class FooterPreference extends Preference
     private FooterLearnMoreSpan mLearnMoreSpan;
 
     public FooterPreference(Context context, AttributeSet attrs) {
-        super(context, attrs, com.android.settingslib.widget.theme.R.attr.footerPreferenceStyle);
+        super(
+                applyExpressivePreferenceThemeOverlay(context),
+                attrs,
+                com.android.settingslib.widget.theme.R.attr.footerPreferenceStyle
+        );
         init();
     }
 
@@ -219,6 +225,20 @@ public class FooterPreference extends Preference
         }
         setSelectable(false);
         setPersistent(false);
+    }
+
+    @NonNull
+    private static Context applyExpressivePreferenceThemeOverlay(@NonNull Context context) {
+        TypedArray typedArray = context.obtainStyledAttributes(new int[] {
+                com.android.settingslib.widget.theme.R.attr
+                        .expressiveFooterPreferenceTheme});
+        // Since the context is shared, only try to apply the theme if it 's not resolved.
+        if (typedArray.getResourceId(0, Resources.ID_NULL) == Resources.ID_NULL) {
+            context.getTheme().applyStyle(
+                    R.style.ThemeOverlay_ExpressiveFooterPreference, false);
+        }
+        typedArray.recycle();
+        return context;
     }
 
     /** The builder is convenient to creat a dynamic FooterPreference. */
