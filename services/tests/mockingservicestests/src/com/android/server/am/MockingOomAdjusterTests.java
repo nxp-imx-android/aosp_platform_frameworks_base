@@ -3716,7 +3716,7 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
         doReturn(userOther).when(mService.mUserController).getCurrentUserId();
-        mService.mOomAdjuster.handleUserSwitchedLocked();
+        mService.mOomAdjuster.prewarmServicesIfNecessary();
 
         updateOomAdj();
         assertProcStates(app, PROCESS_STATE_SERVICE, cachedAdj1,
