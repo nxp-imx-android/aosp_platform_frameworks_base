@@ -101,9 +101,22 @@ public class ForwardingBackupAgent extends BackupAgent {
             String domain,
             String path,
             long mode,
-            long mtime)
+            long mtime,
+            long appVersionCode,
+            int transportFlags,
+            String contentVersion)
             throws IOException {
-        mBackupAgent.onRestoreFile(data, size, type, domain, path, mode, mtime);
+        mBackupAgent.onRestoreFile(
+                data,
+                size,
+                type,
+                domain,
+                path,
+                mode,
+                mtime,
+                appVersionCode,
+                transportFlags,
+                contentVersion);
     }
 
     @Override

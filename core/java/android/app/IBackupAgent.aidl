@@ -168,10 +168,19 @@ oneway interface IBackupAgent {
      *        contents.
      * @param callbackBinder Binder on which to indicate operation completion,
      *        passed here as a convenience to the agent.
+     * @param appVersionCode The android:versionCode attribute of the application
+     *        that created this data set.  This can help the agent distinguish among
+     *        various historical backup content possibilities.
+     * @param transportFlags Flags with additional information about the transport.
+     * @param contentVersion A string that may have been provided by the application
+     *        that created this data set. Typically used when appVersionCode was not
+     *        available (e.g. for a cross-platform transfer).  This can help the agent
+     *        decide how to interpret the backup content.
      */
     void doRestoreFile(in ParcelFileDescriptor data, long size,
             int type, String domain, String path, long mode, long mtime,
-            int token, IBackupManager callbackBinder);
+            int token, IBackupManager callbackBinder, long appVersionCode,
+            int transportFlags, String contentVersion);
 
     /**
      * Provide the app with a canonical "all data has been delivered" end-of-restore

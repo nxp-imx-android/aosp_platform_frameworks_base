@@ -526,7 +526,8 @@ public class SettingsBackupAgent extends BackupAgentHelper {
 
     @Override
     public void onRestoreFile(ParcelFileDescriptor data, long size,
-            int type, String domain, String relpath, long mode, long mtime)
+            int type, String domain, String relpath, long mode, long mtime,
+            long appVersionCode, int transportFlags, String contentVersion)
             throws IOException {
         if (DEBUG_BACKUP) Log.d(TAG, "onRestoreFile() invoked");
         // Our data is actually a blob of flattened settings data identical to that

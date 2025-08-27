@@ -193,7 +193,8 @@ public class SystemBackupAgent extends BackupAgentHelper {
      */
     @Override
     public void onRestoreFile(ParcelFileDescriptor data, long size,
-            int type, String domain, String path, long mode, long mtime)
+            int type, String domain, String path, long mode, long mtime,
+            long appVersionCode, int transportFlags, String contentVersion)
             throws IOException {
         Slog.i(TAG, "Restoring file domain=" + domain + " path=" + path);
 
