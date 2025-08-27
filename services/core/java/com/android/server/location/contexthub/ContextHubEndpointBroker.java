@@ -57,6 +57,8 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -92,7 +94,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     private final ScheduledExecutorService mSessionTimeoutExecutor;
 
     /** The proxy to talk to the Context Hub HAL for endpoint communication. */
-    private final IEndpointCommunication mHubInterface;
+    @GuardedBy("mRegistrationLock")
+    private IEndpointCommunication mHubInterface;
 
     /** The manager that registered this endpoint. */
     private final ContextHubEndpointManager mEndpointManager;
@@ -257,7 +260,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
     /* package */ ContextHubEndpointBroker(
             Context context,
-            IEndpointCommunication hubInterface,
+            @NonNull IEndpointCommunication hubInterface,
             ContextHubEndpointManager endpointManager,
             EndpointInfo halEndpointInfo,
             @NonNull IContextHubEndpointCallback callback,
@@ -311,8 +314,12 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         synchronized (mOpenSessionLock) {
             try {
                 mSessionMap.put(sessionId, new Session(destination, false));
-                mHubInterface.openEndpointSession(
-                        sessionId, halEndpointInfo.id, mHalEndpointInfo.id, serviceDescriptor);
+                getHubInterface()
+                        .openEndpointSession(
+                                sessionId,
+                                halEndpointInfo.id,
+                                mHalEndpointInfo.id,
+                                serviceDescriptor);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
                 Log.e(TAG, "Exception while calling HAL openEndpointSession", e);
                 cleanupSessionResources(sessionId);
@@ -350,7 +357,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
         }
         synchronized (mRegistrationLock) {
-            if (!isRegistered()) {
+            if (!mIsRegistered) {
                 Log.w(TAG, "Attempting to unregister when already unregistered");
                 return;
             }
@@ -360,8 +367,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException while calling HAL unregisterEndpoint", e);
             }
+            mEndpointManager.unregisterEndpoint(mEndpointInfo.getIdentifier().getEndpoint());
         }
-        mEndpointManager.unregisterEndpoint(mEndpointInfo.getIdentifier().getEndpoint());
         releaseWakeLockOnExit();
     }
 
@@ -376,7 +383,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         "openSessionRequestComplete for invalid session id=" + sessionId);
             }
             try {
-                mHubInterface.endpointSessionOpenComplete(sessionId);
+                getHubInterface().endpointSessionOpenComplete(sessionId);
                 info.cancelSessionOpenTimeoutFuture();
                 info.setSessionState(Session.SessionState.ACTIVE);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
@@ -404,7 +411,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             Message halMessage = ContextHubServiceUtil.createHalMessage(message);
             if (callback == null) {
                 try {
-                    mHubInterface.sendMessageToEndpoint(sessionId, halMessage);
+                    getHubInterface().sendMessageToEndpoint(sessionId, halMessage);
                 } catch (RemoteException e) {
                     Log.e(
                             TAG,
@@ -438,7 +445,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         };
                 ContextHubServiceTransaction transaction =
                         mTransactionManager.createSessionMessageTransaction(
-                                mHubInterface,
+                                getHubInterface(),
                                 sessionId,
                                 halMessage,
                                 mPackageName,
@@ -469,7 +476,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         status.messageSequenceNumber = messageSeqNumber;
         status.errorCode = errorCode;
         try {
-            mHubInterface.sendMessageDeliveryStatusToEndpoint(sessionId, status);
+            getHubInterface().sendMessageDeliveryStatusToEndpoint(sessionId, status);
         } catch (RemoteException e) {
             Log.w(
                     TAG,
@@ -553,12 +560,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
      */
     /* package */ void register() throws RemoteException {
         synchronized (mRegistrationLock) {
-            if (isRegistered()) {
-                Log.w(TAG, "Attempting to register when already registered");
-            } else {
-                mHubInterface.registerEndpoint(mHalEndpointInfo);
-                mIsRegistered = true;
-            }
+            registerLocked();
+        }
+    }
+
+    @GuardedBy("mRegistrationLock")
+    private void registerLocked() throws RemoteException {
+        if (mIsRegistered) {
+            Log.w(TAG, "Attempting to register when already registered");
+        } else {
+            mHubInterface.registerEndpoint(mHalEndpointInfo);
+            mIsRegistered = true;
         }
     }
 
@@ -630,19 +642,27 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         }
     }
 
-    /* package */ void onHalRestart() {
-        synchronized (mRegistrationLock) {
-            mIsRegistered = false;
-            try {
-                register();
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException while calling HAL registerEndpoint", e);
-            }
-        }
+    /**
+     * Handle the case where the underlying Context Hub HAL has restarted.
+     *
+     * @param hubInterface The new interface to the Context Hub HAL.
+     */
+    /* package */ void onHalRestart(@NonNull IEndpointCommunication hubInterface) {
         synchronized (mOpenSessionLock) {
             for (int i = mSessionMap.size() - 1; i >= 0; i--) {
                 int id = mSessionMap.keyAt(i);
                 onCloseEndpointSession(id, Reason.HUB_RESET);
+            }
+        }
+        synchronized (mRegistrationLock) {
+            if (mIsRegistered) {
+                mIsRegistered = false;
+                mHubInterface = hubInterface;
+                try {
+                    registerLocked();
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException while calling HAL registerEndpoint", e);
+                }
             }
         }
     }
@@ -900,5 +920,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         Log.d(TAG, "notifySessionClosedToBoth: sessionId=" + sessionId + ", reason=" + halReason);
         mEndpointManager.halCloseEndpointSessionNoThrow(sessionId, halReason);
         onCloseEndpointSession(sessionId, halReason);
+    }
+
+    private IEndpointCommunication getHubInterface() {
+        synchronized (mRegistrationLock) {
+            return mHubInterface;
+        }
     }
 }
