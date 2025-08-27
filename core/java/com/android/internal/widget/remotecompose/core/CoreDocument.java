@@ -66,11 +66,11 @@ public class CoreDocument implements Serializable {
 
     // Semantic version
     public static final int MAJOR_VERSION = 1;
-    public static final int MINOR_VERSION = 1;
+    public static final int MINOR_VERSION = 2;
     public static final int PATCH_VERSION = 0;
 
     // Internal version level
-    public static final int DOCUMENT_API_LEVEL = 7;
+    public static final int DOCUMENT_API_LEVEL = 8;
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD

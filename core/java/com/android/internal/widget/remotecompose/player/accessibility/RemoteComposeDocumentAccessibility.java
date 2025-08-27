@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
+
+
 import android.annotation.Nullable;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ import java.util.List;
  * provides methods to perform actions, retrieve state, and query the accessibility tree of the
  * remote Compose UI.
  */
+
 public interface RemoteComposeDocumentAccessibility {
     // Matches ExploreByTouchHelper.HOST_ID
     int RootId = View.NO_ID;

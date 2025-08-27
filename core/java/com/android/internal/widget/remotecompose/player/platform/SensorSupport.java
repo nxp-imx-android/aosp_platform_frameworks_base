@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
+
+
 import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -25,6 +27,7 @@ import android.hardware.SensorManager;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 
 /** Implements sensors management (used by RemoteComposePlayer) */
+
 public class SensorSupport {
     SensorManager mSensorManager;
     Sensor mAcc = null, mGyro = null, mMag = null, mLight = null;
@@ -87,7 +90,6 @@ public class SensorSupport {
     }
 
     private void registerListener() {
-        Sensor[] s = {mAcc, mGyro, mMag, mLight};
         if (mListener != null) {
             unregisterListener();
         }

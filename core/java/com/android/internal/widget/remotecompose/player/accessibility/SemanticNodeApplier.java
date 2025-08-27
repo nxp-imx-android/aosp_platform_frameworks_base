@@ -15,6 +15,9 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
+
+
+
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibilitySemantics;
 
@@ -37,6 +40,7 @@ import java.util.List;
  * @param <N> The type representing information about the node. This could be an Androidx
  *     `AccessibilityNodeInfoCompat`, or potentially a platform `AccessibilityNodeInfo`.
  */
+
 public interface SemanticNodeApplier<N> {
     /**
      * This method applies semantic information from a list of {@link AccessibilitySemantics} to a
