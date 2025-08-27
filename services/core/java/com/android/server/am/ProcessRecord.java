@@ -1226,6 +1226,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
+    public String getPackageName() {
+        return info.packageName;
+    }
+
+    @Override
+    public boolean isInstantApp() {
+        return info.isInstantApp();
+    }
+
+    @Override
     public long getLastPss() {
         return mProfile.getLastPss();
     }
