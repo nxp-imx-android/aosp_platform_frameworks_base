@@ -2510,7 +2510,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                 makeManifestReceiver(PACKAGE_BLUE, CLASS_BLUE),
                 makeManifestReceiver(PACKAGE_YELLOW, CLASS_YELLOW))));
         // Verify that we invoke the call to freeze the caller app.
-        verify(mAms.mOomAdjuster.mCachedAppOptimizer).freezeAppAsyncImmediateLSP(callerApp);
+        verify(mAms.getCachedAppOptimizer()).freezeAppAsyncImmediateLSP(callerApp);
 
         waitForIdle();
         verifyScheduleRegisteredReceiver(never(), receiverGreenApp, timeTick);
@@ -2542,8 +2542,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                     makeManifestReceiver(PACKAGE_BLUE, CLASS_BLUE))));
         }
         // Verify that we invoke the call to freeze the caller app.
-        verify(mAms.mOomAdjuster.mCachedAppOptimizer, atLeastOnce())
-                .freezeAppAsyncImmediateLSP(callerApp);
+        verify(mAms.getCachedAppOptimizer(), atLeastOnce()).freezeAppAsyncImmediateLSP(callerApp);
 
         // Verify that the caller process is killed
         assertTrue(callerApp.isKilled());

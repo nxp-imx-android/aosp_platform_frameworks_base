@@ -203,7 +203,7 @@ public abstract class BaseBroadcastQueueTest {
         realAms.mActivityTaskManager.initialize(null, null, realAms.mProcessStateController,
                 mContext.getMainLooper());
         realAms.mAtmInternal = spy(realAms.mActivityTaskManager.getAtmInternal());
-        realAms.mOomAdjuster.mCachedAppOptimizer = mock(CachedAppOptimizer.class);
+        realAms.setCachedAppOptimizer(mock(CachedAppOptimizer.class));
         realAms.mOomAdjuster = spy(realAms.mOomAdjuster);
         doNothing().when(() -> ProcessList.setOomAdj(anyInt(), anyInt(), anyInt()));
         realAms.mPackageManagerInt = mPackageManagerInt;

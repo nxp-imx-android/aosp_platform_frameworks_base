@@ -291,11 +291,6 @@ public abstract class OomAdjuster {
         }
     }
 
-    /**
-     * Service for optimizing resource usage from background apps.
-     */
-    CachedAppOptimizer mCachedAppOptimizer;
-
     ActivityManagerConstants mConstants;
 
     /**
@@ -483,8 +478,7 @@ public abstract class OomAdjuster {
     }
 
     OomAdjuster(ActivityManagerService service, ProcessList processList, ActiveUids activeUids,
-            ServiceThread adjusterThread, GlobalState globalState,
-            CachedAppOptimizer cachedAppOptimizer, Injector injector) {
+            ServiceThread adjusterThread, GlobalState globalState, Injector injector) {
         mService = service;
         mGlobalState = globalState;
         mInjector = injector;
@@ -493,7 +487,6 @@ public abstract class OomAdjuster {
         mActiveUids = activeUids;
 
         mConstants = mService.mConstants;
-        mCachedAppOptimizer = cachedAppOptimizer;
 
         mLogger = new OomAdjusterDebugLogger(this, mService.mConstants);
 
@@ -539,7 +532,7 @@ public abstract class OomAdjuster {
     }
 
     void initSettings() {
-        mCachedAppOptimizer.init();
+        mService.getCachedAppOptimizer().init();
         if (mService.mConstants.KEEP_WARMING_SERVICES.size() > 0) {
             final IntentFilter filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
             mService.mContext.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -2078,7 +2071,7 @@ public abstract class OomAdjuster {
     }
 
     void onWakefulnessChanged(int wakefulness) {
-        mCachedAppOptimizer.onWakefulnessChanged(wakefulness);
+        mService.getCachedAppOptimizer().onWakefulnessChanged(wakefulness);
     }
 
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
@@ -2099,7 +2092,8 @@ public abstract class OomAdjuster {
         int changes = 0;
 
         if (state.getCurAdj() != state.getSetAdj()) {
-            mCachedAppOptimizer.onOomAdjustChanged(state.getSetAdj(), state.getCurAdj(), app);
+            mService.getCachedAppOptimizer().onOomAdjustChanged(state.getSetAdj(),
+                    state.getCurAdj(), app);
         }
 
         final int oldOomAdj = state.getSetAdj();
@@ -2570,10 +2564,6 @@ public abstract class OomAdjuster {
                 + " mNewNumServiceProcs=" + mNewNumServiceProcs);
     }
 
-    void dumpCachedAppOptimizerSettings(PrintWriter pw) {
-        mCachedAppOptimizer.dump(pw);
-    }
-
     /**
      * Return whether or not a process should be frozen.
      */
@@ -2609,7 +2599,7 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     void updateAppFreezeStateLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason,
             boolean immediate, int oldOomAdj) {
-        if (!mCachedAppOptimizer.useFreezer()) {
+        if (!mService.getCachedAppOptimizer().useFreezer()) {
             return;
         }
 
@@ -2697,14 +2687,14 @@ public abstract class OomAdjuster {
             // This process should be frozen.
             if (immediate && !app.isFrozen()) {
                 // And it will be frozen immediately.
-                mCachedAppOptimizer.freezeAppAsyncAtEarliestLSP((ProcessRecord) app);
+                mService.getCachedAppOptimizer().freezeAppAsyncAtEarliestLSP((ProcessRecord) app);
             } else if (!app.isFrozen() && !app.isPendingFreeze()) {
-                mCachedAppOptimizer.freezeAppAsyncLSP((ProcessRecord) app);
+                mService.getCachedAppOptimizer().freezeAppAsyncLSP((ProcessRecord) app);
             }
         } else {
             // This process should not be frozen.
             if (app.isFrozen() || app.isPendingFreeze()) {
-                mCachedAppOptimizer.unfreezeAppLSP((ProcessRecord) app,
+                mService.getCachedAppOptimizer().unfreezeAppLSP((ProcessRecord) app,
                         CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(oomAdjReason));
             }
         }
@@ -2712,7 +2702,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy("mService")
     void unfreezeTemporarily(ProcessRecordInternal app, @OomAdjReason int reason) {
-        if (!mCachedAppOptimizer.useFreezer()) {
+        if (!mService.getCachedAppOptimizer().useFreezer()) {
             return;
         }
 
@@ -2737,7 +2727,7 @@ public abstract class OomAdjuster {
         for (int i = 0; i < size; i++) {
             // TODO: b/425766486 - Consider how to pass ProcessRecordInternal to CachedAppOptimizer.
             ProcessRecord proc = (ProcessRecord) processes.get(i);
-            mCachedAppOptimizer.unfreezeTemporarily(proc,
+            mService.getCachedAppOptimizer().unfreezeTemporarily(proc,
                     CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(reason));
         }
         processes.clear();
