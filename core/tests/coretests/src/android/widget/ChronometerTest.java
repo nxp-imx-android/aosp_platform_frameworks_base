@@ -16,10 +16,7 @@
 
 package android.widget;
 
-
 import static com.google.common.truth.Truth.assertThat;
-
-import static org.junit.Assert.assertArrayEquals;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -35,13 +32,9 @@ import com.android.frameworks.coretests.R;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * Test {@link Chronometer} counting up and down.
@@ -167,171 +160,6 @@ public class ChronometerTest extends ActivityInstrumentationTestCase2<Chronomete
         assertEquals("−00:07", ticks.get(9));
         assertEquals("−00:08", ticks.get(10));
         assertEquals("−00:09", ticks.get(11));
-    }
-
-    @UiThreadTest
-    public void testChronometerDisplaysAdaptiveTimeFormat() throws Throwable {
-        final List<String> expectedTicks = Arrays.asList(
-                "9h 4m",
-                "9h 4m",
-                "9h 4m",
-                "9h 4m",
-                "9h 4m"
-        );
-        final Instant systemNow = Instant.now();
-        testChronometerTicks(systemNow, expectedTicks, chronometer -> {
-            chronometer.setBase(systemNow.plus(9, ChronoUnit.HOURS)
-                    .plus(5, MINUTES));
-            chronometer.setCountDown(true);
-            chronometer.setUseAdaptiveFormat(true);
-        });
-    }
-
-    @UiThreadTest
-    public void testChronometerDisplaysCustomFormatting() throws Throwable {
-        final List<String> expectedTicks = Arrays.asList(
-                "Time elapsed: 00:01",
-                "Time elapsed: 00:02",
-                "Time elapsed: 00:03",
-                "Time elapsed: 00:04",
-                "Time elapsed: 00:05"
-        );
-
-        final Instant systemNow = Instant.now();
-        testChronometerTicks(systemNow, expectedTicks, chronometer -> {
-            chronometer.setFormat("Time elapsed: %s");
-            chronometer.setCountDown(false);
-            chronometer.setUseAdaptiveFormat(false); // Ensure adaptive format doesn't interfere.
-        });
-    }
-
-    @UiThreadTest
-    public void testChronometerAdaptiveTimeFormatSupportsCustomFormatting() throws Throwable {
-        final List<String> expectedTicks = Arrays.asList(
-                "Remaining time: 9h 4m",
-                "Remaining time: 9h 4m",
-                "Remaining time: 9h 4m",
-                "Remaining time: 9h 4m",
-                "Remaining time: 9h 4m"
-        );
-
-        final Instant systemNow = Instant.now();
-        testChronometerTicks(systemNow, expectedTicks, chronometer -> {
-            chronometer.setFormat("Remaining time: 9h 4m");
-            chronometer.setBase(systemNow.plus(9, ChronoUnit.HOURS)
-                    .plus(5, MINUTES));
-            chronometer.setCountDown(true);
-            chronometer.setUseAdaptiveFormat(true);
-        });
-    }
-
-    @UiThreadTest
-    public void testChronometerAdaptiveTimeFormatDisplaysNegativeTime() throws Throwable {
-        final List<String> expectedTicks = Arrays.asList(
-                "−1s",
-                "−2s",
-                "−3s",
-                "−4s",
-                "−5s"
-        );
-
-        final Instant systemNow = Instant.now();
-        testChronometerTicks(systemNow, expectedTicks, chronometer -> {
-            chronometer.setCountDown(true);
-            chronometer.setUseAdaptiveFormat(true);
-        });
-    }
-
-    @UiThreadTest
-    public void testChronometerAdaptiveFormatSignificantParts() {
-        Chronometer chronometer = new Chronometer(mActivity);
-        chronometer.setUseAdaptiveFormat(true);
-        chronometer.setCountDown(true);
-        mActivity.setContentView(chronometer);
-
-        // Days and Hours
-        chronometer.setPausedDuration(Duration.ofDays(2).plusHours(3).plusMinutes(4));
-        assertThat(chronometer.getText().toString()).isEqualTo("2d 3h");
-
-        // Hours and Minutes
-        chronometer.setPausedDuration(Duration.ofHours(3).plusMinutes(4).plusSeconds(5));
-        assertThat(chronometer.getText().toString()).isEqualTo("3h 4m");
-
-        // Minutes and Seconds
-        chronometer.setPausedDuration(Duration.ofMinutes(4).plusSeconds(30));
-        assertThat(chronometer.getText().toString()).isEqualTo("4m");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(4).plusSeconds(5));
-        assertThat(chronometer.getText().toString()).isEqualTo("4m");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(3).plusSeconds(5));
-        assertThat(chronometer.getText().toString()).isEqualTo("3m");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(2).plusSeconds(5));
-        assertThat(chronometer.getText().toString()).isEqualTo("2m 5s");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(2));
-        assertThat(chronometer.getText().toString()).isEqualTo("2m 0s");
-
-        // Only Seconds
-        chronometer.setPausedDuration(Duration.ofSeconds(5));
-        assertThat(chronometer.getText().toString()).isEqualTo("5s");
-
-        // Negative time
-        chronometer.setPausedDuration(Duration.ofSeconds(-5));
-        assertThat(chronometer.getText().toString()).isEqualTo("−5s");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(-1).plusSeconds(-5));
-        assertThat(chronometer.getText().toString()).isEqualTo("−1m 5s");
-
-        chronometer.setPausedDuration(Duration.ofHours(-1).plusMinutes(-5));
-        assertThat(chronometer.getText().toString()).isEqualTo("−1h 5m");
-
-        chronometer.setPausedDuration(Duration.ofDays(-1).plusHours(-5));
-        assertThat(chronometer.getText().toString()).isEqualTo("−1d 5h");
-
-        // Zero seconds
-        chronometer.setPausedDuration(Duration.ZERO);
-        assertThat(chronometer.getText().toString()).isEqualTo("0s");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(4));
-        assertThat(chronometer.getText().toString()).isEqualTo("4m");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(3));
-        assertThat(chronometer.getText().toString()).isEqualTo("3m");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(2));
-        assertThat(chronometer.getText().toString()).isEqualTo("2m 0s");
-
-        chronometer.setPausedDuration(Duration.ofMinutes(1));
-        assertThat(chronometer.getText().toString()).isEqualTo("1m 0s");
-    }
-
-    private void testChronometerTicks(
-            Instant clockSystemNow,
-            List<String> expectedTicks,
-            Consumer<Chronometer> chronometerConfigurator) throws Throwable {
-
-        var clocks = new Object() {
-            public Instant systemNow = clockSystemNow;
-            public long elapsedRealtime = 1000L;
-        };
-
-        final int tickCount = expectedTicks.size();
-        final ArrayList<String> actualTicks = new ArrayList<>();
-        Chronometer chronometer = new Chronometer(mActivity, () -> clocks.elapsedRealtime,
-                () -> clocks.systemNow, null, 0, 0);
-        chronometerConfigurator.accept(chronometer);
-        mActivity.setContentView(chronometer);
-
-        for (int i = 0; i < tickCount; i++) {
-            clocks.systemNow = clocks.systemNow.plus(1, ChronoUnit.SECONDS);
-            clocks.elapsedRealtime += 1000L;
-            chronometer.updateText();
-            actualTicks.add(chronometer.getText().toString());
-        }
-
-        assertArrayEquals(expectedTicks.toArray(), actualTicks.toArray());
     }
 
     private void runOnUiThread(Runnable runnable) throws InterruptedException {
