@@ -104,7 +104,7 @@ fun SceneContainer(
             viewModel.animateQsTilesViewModelFactory.create()
         }
     val sceneTransitions =
-        remember(hapticFeedback, shadeExpansionMotion) {
+        remember(hapticFeedback, shadeExpansionMotion, animateQsTilesViewModel) {
             transitionsBuilder.build(
                 shadeExpansionMotion,
                 viewModel.hapticsViewModel.getRevealHaptics(hapticFeedback),
