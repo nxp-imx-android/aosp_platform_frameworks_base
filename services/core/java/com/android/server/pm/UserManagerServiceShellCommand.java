@@ -18,6 +18,8 @@ package com.android.server.pm;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeNULL;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.IActivityManager;
@@ -124,6 +126,12 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         pw.println("  get-main-user ");
         pw.println("    Displays main user id or message if there is no main user");
         pw.println();
+        pw.println("  set-user-admin <USER_ID>");
+        pw.println("    Sets the given user as an admin");
+        pw.println();
+        pw.println("  revoke-user-admin <USER_ID>");
+        pw.println("    Revokes the given user as an admin");
+        pw.println();
     }
 
     @Override
@@ -151,9 +159,13 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                 case "get-main-user":
                     return runGetMainUserId();
                 case "can-switch-to-headless-system-user":
-                    return canSwitchToHeadlessSystemUser();
+                    return runCanSwitchToHeadlessSystemUser();
                 case "is-main-user-permanent-admin":
-                    return isMainUserPermanentAdmin();
+                    return runIsMainUserPermanentAdmin();
+                case "set-user-admin":
+                    return runSetUserAdmin();
+                case "revoke-user-admin":
+                    return runRevokeUserAdmin();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -305,7 +317,6 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return 0;
     }
 
-
     private int runSetSystemUserModeEmulation() {
         if (!confirmBuildIsDebuggable() || !confirmIsCalledByRoot()) {
             return -1;
@@ -435,17 +446,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                     return -1;
             }
         }
-        int userId = UserHandle.parseUserArg(getNextArgRequired());
-        switch (userId) {
-            case UserHandle.USER_ALL:
-            case UserHandle.USER_CURRENT_OR_SELF:
-            case UserHandle.USER_NULL:
-                pw.printf("invalid value (%d) for --user option\n", userId);
-                return -1;
-            case UserHandle.USER_CURRENT:
-                userId = ActivityManager.getCurrentUser();
-                break;
-        }
+        int userId = getRequiredUserIdNextArg();
 
         boolean isVisible;
         if (displayId != null) {
@@ -555,24 +556,51 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return 0;
     }
 
-    private int canSwitchToHeadlessSystemUser() {
+    private int runCanSwitchToHeadlessSystemUser() {
         PrintWriter pw = getOutPrintWriter();
         boolean canSwitchToHeadlessSystemUser = mService.canSwitchToHeadlessSystemUser();
         pw.println(canSwitchToHeadlessSystemUser);
         return 0;
     }
 
-    private int isMainUserPermanentAdmin() {
+    private int runIsMainUserPermanentAdmin() {
         PrintWriter pw = getOutPrintWriter();
         boolean isMainUserPermanentAdmin = mService.isMainUserPermanentAdmin();
         pw.println(isMainUserPermanentAdmin);
         return 0;
     }
 
+    private int runSetUserAdmin() throws RemoteException {
+        return setOrRevokeAdmin(/* set= */ true);
+    }
+
+    private int runRevokeUserAdmin() throws RemoteException {
+        return setOrRevokeAdmin(/* set= */ false);
+    }
+
+    private int setOrRevokeAdmin(boolean set) {
+        if (!confirmBuildIsDebuggable() || !confirmIsCalledByRoot()) {
+            return -1;
+        }
+        int userId = getRequiredUserIdNextArg();
+        if (userId == UserHandle.USER_NULL) {
+            return -1;
+        }
+        if (set) {
+            Slogf.i(LOG_TAG, "Calling setUserAdmin(%d)", userId);
+            mService.setUserAdmin(userId);
+        } else {
+            Slogf.i(LOG_TAG, "Calling revokeUserAdmin(%d)", userId);
+            mService.revokeUserAdmin(userId);
+        }
+        getOutPrintWriter().println("Success");
+        return 0;
+    }
+
     /**
      * Gets the {@link UserManager} associated with the context of the given user.
      */
-    private UserManager getUserManagerForUser(int userId) {
+    private UserManager getUserManagerForUser(@UserIdInt int userId) {
         UserHandle user = UserHandle.of(userId);
         Context context = mContext.createContextAsUser(user, /* flags= */ 0);
         return context.getSystemService(UserManager.class);
@@ -602,5 +630,34 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         }
         getErrPrintWriter().println("Command only available on root user");
         return false;
+    }
+
+    /**
+     * Gets a user id from the next argument, properly handling special cases like `cur`.
+     *
+     * @return the user id or {@code USER_NULL} if the user id could not be parsed (in which case it
+     * will also log an error).
+     */
+    @UserIdInt
+    @CanBeNULL
+    private int getRequiredUserIdNextArg() {
+        int userId;
+        try {
+            userId = UserHandle.parseUserArg(getNextArgRequired());
+        } catch (Exception e) {
+            getErrPrintWriter().printf("Exception (%s) parsing userId argument\n", e);
+            return UserHandle.USER_NULL;
+        }
+        switch (userId) {
+            case UserHandle.USER_ALL:
+            case UserHandle.USER_CURRENT_OR_SELF:
+            case UserHandle.USER_NULL:
+                getErrPrintWriter().printf("Invalid value (%d) for userId argument\n", userId);
+                return UserHandle.USER_NULL;
+            case UserHandle.USER_CURRENT:
+                return ActivityManager.getCurrentUser();
+            default:
+                return userId;
+        }
     }
 }
