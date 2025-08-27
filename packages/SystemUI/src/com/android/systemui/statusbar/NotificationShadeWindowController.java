@@ -186,6 +186,13 @@ public interface NotificationShadeWindowController extends RemoteInputController
     default void setLightRevealScrimOpaque(boolean opaque) {}
 
     /**
+     * If we have received a display change (e.g. a display resize), that might affect the look
+     * of the notification shade window
+     * @param pendingDisplayChange if there is a pending display change
+     */
+    default void setPendingDisplayChange(boolean pendingDisplayChange) {}
+
+    /**
      * Defer any application of window {@link WindowManager.LayoutParams} until {@code scope} is
      * fully applied.
      */
