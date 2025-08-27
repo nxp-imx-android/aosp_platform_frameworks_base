@@ -241,6 +241,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private final boolean mEnableUdcSysfsUsbStateUpdate;
     private String mUdcName = "";
 
+    private static final String DEVICE_UAOA_ENABLED_PROPERTY = "ro.usb.userspace.aoa.enabled";
     private boolean mEnableAoaUserspaceImplementation = false;
 
     /**
@@ -363,10 +364,15 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         }
         mControlFds.put(UsbManager.FUNCTION_PTP, ptpFd);
 
-      // TODO: b/440091110 - Add check for device property.
+        boolean deviceEnabledUserspaceAoa =
+                SystemProperties.getBoolean(DEVICE_UAOA_ENABLED_PROPERTY, false);
+        Slog.i(TAG, "Device enabled userspace AOA: " + deviceEnabledUserspaceAoa);
         mEnableAoaUserspaceImplementation =
                 android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()
+                        && deviceEnabledUserspaceAoa
                         && nativeCheckAccessoryFfsDirectories();
+
+        Slog.i(TAG, "Enabling userspace AOA: " + mEnableAoaUserspaceImplementation);
 
         if (mEnableAoaUserspaceImplementation) {
             if (!nativeOpenAccessoryControl()) {
