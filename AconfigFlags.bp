@@ -971,6 +971,7 @@ java_aconfig_library {
         "com.android.extservices",
         "com.android.nfcservices",
         "com.android.permission",
+        "com.android.tethering",
     ],
 }
 

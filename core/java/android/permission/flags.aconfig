@@ -622,3 +622,12 @@ flag {
     bug: "399850691"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "access_local_network_permission_enabled"
+    is_exported: true
+    is_fixed_read_only: true
+    namespace: "android_core_networking"
+    description: "This flag is used to enable the new ACCESS_LOCAL_NETWORK runtime permission. When enabled, this permission will be used for local network protection, replacing NEARBY_WIFI_DEVICES for this purpose."
+    bug: "388774939"
+}
