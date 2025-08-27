@@ -535,7 +535,7 @@ public class ContentProviderHelper {
                             if (mService.mProcessStateController.addPublishedProvider(proc,
                                     cpi.name, cpr)) {
                                 checkTime(startTime, "getContentProviderImpl: scheduling install");
-                                mService.mOomAdjuster.unfreezeTemporarily(proc,
+                                mService.unfreezeTemporarily(proc,
                                         CachedAppOptimizer.UNFREEZE_REASON_GET_PROVIDER);
                                 try {
                                     thread.scheduleInstallProvider(cpi);

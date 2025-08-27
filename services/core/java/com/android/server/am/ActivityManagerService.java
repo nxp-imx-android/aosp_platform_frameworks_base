@@ -165,6 +165,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_SERVICE;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_UID_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.am.CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason;
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
@@ -642,6 +643,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     OomAdjuster mOomAdjuster;
     @GuardedBy("this")
     ProcessStateController mProcessStateController;
+    /**
+     * Temporary list that are currently being processed for temporary unfreezing.
+     * @see #unfreezeTemporarily(ProcessRecord, int)
+     */
+    private final ArrayList<ProcessRecordInternal> mTmpProcessesToUnfreeze = new ArrayList<>();
 
     static final String EXTRA_TITLE = "android.intent.extra.TITLE";
     static final String EXTRA_DESCRIPTION = "android.intent.extra.DESCRIPTION";
@@ -19371,6 +19377,36 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public boolean isAppFreezerEnabled() {
         return mCachedAppOptimizer.useFreezer();
+    }
+
+    /**
+     * Temporarily unfreezes the given application process and any other processes it is associated
+     * with (i.e., reachable processes). This operation is only performed if the freezer is enabled
+     * and the application is currently in a frozen or pending-freeze state.
+     *
+     * @param app The application process to unfreeze.
+     * @param reason The {@link OomAdjReason} explaining why the process is being unfrozen.
+     */
+    @GuardedBy("this")
+    void unfreezeTemporarily(ProcessRecord app, @OomAdjReason int reason) {
+        if (!mCachedAppOptimizer.useFreezer()) {
+            return;
+        }
+        synchronized (mProcLock) {
+            if (!app.isFrozen() && !app.isPendingFreeze()) {
+                return;
+            }
+        }
+
+        final int unfrozenReason = getUnfreezeReasonCodeFromOomAdjReason(reason);
+        final ArrayList<ProcessRecordInternal> processesToUnfreeze = mTmpProcessesToUnfreeze;
+        processesToUnfreeze.clear();
+        mOomAdjuster.populateAllReachableProcessesLocked(app, processesToUnfreeze);
+        for (int i = 0; i < processesToUnfreeze.size(); i++) {
+            final ProcessRecord process = (ProcessRecord) processesToUnfreeze.get(i);
+            mCachedAppOptimizer.unfreezeTemporarily(process, unfrozenReason);
+        }
+        processesToUnfreeze.clear();
     }
 
     /**

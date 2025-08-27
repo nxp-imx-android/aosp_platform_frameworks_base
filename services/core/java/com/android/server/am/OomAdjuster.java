@@ -2696,37 +2696,26 @@ public abstract class OomAdjuster {
         }
     }
 
+    /**
+     * Collects the given application process and all other processes reachable from it
+     * (e.g., via service or content provider connections) into the provided list.
+     *
+     * @param app The initial application process from which to start collecting.
+     * @param processesOut The list to populate with the collected ProcessRecordInternal objects.
+     */
     @GuardedBy("mService")
-    void unfreezeTemporarily(ProcessRecordInternal app, @OomAdjReason int reason) {
-        if (!mService.getCachedAppOptimizer().useFreezer()) {
-            return;
-        }
-
-        if (!app.isFrozen() && !app.isPendingFreeze()) {
-            return;
-        }
-
-        final ArrayList<ProcessRecordInternal> processes = mTmpProcessList;
-
+    public void populateAllReachableProcessesLocked(ProcessRecordInternal app,
+            ArrayList<ProcessRecordInternal> processesOut) {
         if (Flags.consolidateCollectReachable()) {
-            processes.add(app);
+            processesOut.add(app);
             synchronized (mProcLock) {
-                collectReachableProcessesLSP(processes);
+                collectReachableProcessesLSP(processesOut);
             }
         } else {
             mTmpProcessSet.add(app);
-            collectReachableProcessesLocked(mTmpProcessSet, processes);
+            collectReachableProcessesLocked(mTmpProcessSet, processesOut);
             mTmpProcessSet.clear();
         }
-        // Now processes contains app's downstream and app
-        final int size = processes.size();
-        for (int i = 0; i < size; i++) {
-            // TODO: b/425766486 - Consider how to pass ProcessRecordInternal to CachedAppOptimizer.
-            ProcessRecord proc = (ProcessRecord) processes.get(i);
-            mService.getCachedAppOptimizer().unfreezeTemporarily(proc,
-                    CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(reason));
-        }
-        processes.clear();
     }
 
     @GuardedBy("mService")
