@@ -153,6 +153,14 @@ public class FakeSettingsProvider extends MockContentProvider {
         String value;
         final int userId = getUserId(table, extras);
 
+        if (!mDb.containsKey(table)) {
+            throw new UnsupportedOperationException("Unknown settings table, method=" + method);
+        }
+
+        if (arg == null) {
+            throw new UnsupportedOperationException("Null settings key, method=" + method);
+        }
+
         switch (op) {
             case "GET":
                 value = mDb.get(table).getOrDefault(userId, EMPTY_MAP).get(arg);
