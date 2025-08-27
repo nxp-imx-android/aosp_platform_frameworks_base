@@ -17,13 +17,13 @@
 package com.android.systemui.screencapture.common.domain.interactor
 
 import android.graphics.Bitmap
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import javax.inject.Inject
 
 /** Interactor for fetching app icons. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureIconInteractor
 @Inject
 constructor(private val repository: ScreenCaptureIconRepository) {

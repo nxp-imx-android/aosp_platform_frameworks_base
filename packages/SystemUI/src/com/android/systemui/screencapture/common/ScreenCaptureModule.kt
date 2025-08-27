@@ -19,11 +19,11 @@ package com.android.systemui.screencapture.common
 import android.app.Activity
 import com.android.systemui.CoreStartable
 import com.android.systemui.screencapture.ScreenCaptureUiStartable
-import com.android.systemui.screencapture.cast.ScreenCaptureCastComponent
+import com.android.systemui.screencapture.cast.ScreenCaptureCastUiComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
-import com.android.systemui.screencapture.record.ScreenCaptureRecordComponent
+import com.android.systemui.screencapture.record.ScreenCaptureRecordUiComponent
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
-import com.android.systemui.screencapture.sharescreen.ScreenCaptureShareScreenComponent
+import com.android.systemui.screencapture.sharescreen.ScreenCaptureShareScreenUiComponent
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
@@ -38,10 +38,10 @@ import dagger.multibindings.IntoMap
 @Module(
     subcomponents =
         [
-            ScreenCaptureCastComponent::class,
-            ScreenCaptureComponent::class,
-            ScreenCaptureRecordComponent::class,
-            ScreenCaptureShareScreenComponent::class,
+            ScreenCaptureCastUiComponent::class,
+            ScreenCaptureUiComponent::class,
+            ScreenCaptureRecordUiComponent::class,
+            ScreenCaptureShareScreenUiComponent::class,
         ]
 )
 interface ScreenCaptureModule {
@@ -49,22 +49,22 @@ interface ScreenCaptureModule {
     @IntoMap
     @ScreenCaptureTypeKey(ScreenCaptureType.CAST)
     fun bindCastComponentBuilder(
-        impl: ScreenCaptureCastComponent.Builder
-    ): ScreenCaptureComponent.Builder
+        impl: ScreenCaptureCastUiComponent.Builder
+    ): ScreenCaptureUiComponent.Builder
 
     @Binds
     @IntoMap
     @ScreenCaptureTypeKey(ScreenCaptureType.RECORD)
     fun bindRecordComponentBuilder(
-        impl: ScreenCaptureRecordComponent.Builder
-    ): ScreenCaptureComponent.Builder
+        impl: ScreenCaptureRecordUiComponent.Builder
+    ): ScreenCaptureUiComponent.Builder
 
     @Binds
     @IntoMap
     @ScreenCaptureTypeKey(ScreenCaptureType.SHARE_SCREEN)
     fun bindShareScreenComponentBuilder(
-        impl: ScreenCaptureShareScreenComponent.Builder
-    ): ScreenCaptureComponent.Builder
+        impl: ScreenCaptureShareScreenUiComponent.Builder
+    ): ScreenCaptureUiComponent.Builder
 
     @Binds
     @IntoMap

@@ -16,8 +16,8 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCapture
-import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureUi
+import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureAppContentRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
@@ -27,12 +27,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 /** Interactor for fetching app content info. */
-@ScreenCaptureScope
+@ScreenCaptureUiScope
 class ScreenCaptureAppContentInteractor
 @Inject
 constructor(
     private val repository: ScreenCaptureAppContentRepository,
-    @ScreenCapture private val parameters: ScreenCaptureUiParameters,
+    @ScreenCaptureUi private val parameters: ScreenCaptureUiParameters,
 ) {
     /**
      * Fetch app content info for the given [packageName].
