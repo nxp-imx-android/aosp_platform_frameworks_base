@@ -57,7 +57,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.media.controls.domain.pipeline.legacyMediaDataManagerImpl
-import com.android.systemui.media.controls.domain.pipeline.mediaDataManager
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.largeScreenHeaderHelper
@@ -78,6 +78,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         keyguardInteractor = keyguardInteractor,
         keyguardTransitionInteractor = keyguardTransitionInteractor,
         shadeInteractor = shadeInteractor,
+        sceneInteractor = sceneInteractor,
         bouncerInteractor = bouncerInteractor,
         shadeModeInteractor = shadeModeInteractor,
         notificationStackAppearanceInteractor = notificationStackAppearanceInteractor,
