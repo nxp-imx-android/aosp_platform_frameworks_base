@@ -639,6 +639,10 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Payagan ang app na tukuyin ang relatibong posisyon sa pagitan ng mga kalapit na Ultra-Wideband device"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"makipag-ugnayan sa mga kalapit na Wi‑Fi device"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Nagbibigay-daan sa app na i-advertise ang, kumonekta sa, at tukuyin ang nauugnay na posisyon ng mga kalapit na Wi‑Fi device"</string>
+    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
+    <skip />
+    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"alamin ang relative position sa kalapit na device"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Payagan ang app na alamin ang relatibong posisyon sa pagitan ng mga kalapit na device"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Impormasyon sa Gustong NFC na Serbisyo sa Pagbabayad"</string>
@@ -2585,7 +2589,7 @@
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Para sa mas mabilis na pag-charge o para masimulan ang koneksyon sa USB, nire-require ng Advanced na Proteksyon na ma-unlock ang iyong screen"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"I-mute"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Na-mute ang mga notification"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Hindi ka makakatanggap ng mga notification sa USB ng Advanced na Proteksyon hanggang sa i-restart mo ang iyong device"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"Hindi ka makakatanggap ng mga notification sa USB ng Advanced na Proteksyon hangga\'t hindi mo nire-restart ang iyong device"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Kahina-hinalang aktibidad sa USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="5772698072220844779">"Na-disable ang data signal ng USB"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Nagkakaproblema ka ba sa Pag-unlock Gamit ang Fingerprint?"</string>

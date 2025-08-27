@@ -641,6 +641,10 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Aplikaciji dovoli, da določi relativno oddaljenost med napravami UWB v bližini."</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"komunikacija z napravami Wi‑Fi v bližini"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Aplikaciji dovoljuje objavljanje in določanje relativnega položaja naprav Wi‑Fi v bližini ter povezovanje z njimi."</string>
+    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
+    <skip />
+    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"določanje relativne oddaljenosti med napravami v bližini"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Aplikaciji dovoli, da določi relativno oddaljenost med napravami v bližini"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Podatki o prednostni storitvi za plačevanje prek povezave NFC"</string>
