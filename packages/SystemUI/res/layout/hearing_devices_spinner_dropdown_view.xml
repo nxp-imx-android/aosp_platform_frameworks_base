@@ -17,7 +17,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/bluetooth_dialog_device_height"
+    android:layout_height="@dimen/hearing_devices_preset_spinner_height"
     android:paddingStart="@dimen/hearing_devices_preset_spinner_padding"
     android:paddingEnd="@dimen/hearing_devices_preset_spinner_padding"
     android:orientation="horizontal">
