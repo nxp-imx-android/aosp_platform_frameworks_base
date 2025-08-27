@@ -125,7 +125,7 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
 
     private void onAlwaysAllow(View view) {
         AppOpsManager appOpsManager = requireActivity().getSystemService(AppOpsManager.class);
-        appOpsManager.setMode(AppOpsManager.OP_AGENT_CONTROL, mAgentUid, mAgentPackageName,
+        appOpsManager.setMode(AppOpsManager.OP_COMPUTER_CONTROL, mAgentUid, mAgentPackageName,
                 AppOpsManager.MODE_ALLOWED);
         finish(Activity.RESULT_OK);
     }
