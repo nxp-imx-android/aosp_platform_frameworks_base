@@ -77,7 +77,18 @@ fun RecordDetailsSettings(
                 onCheckedChange = { viewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
-
+            RichSwitch(
+                icon =
+                    loadIcon(
+                        viewModel = drawableLoaderViewModel,
+                        resId = R.drawable.ic_selfie_expressive,
+                        contentDescription = null,
+                    ),
+                label = stringResource(R.string.screen_record_should_show_camera_label),
+                checked = viewModel.shouldShowFrontCamera == true,
+                onCheckedChange = { viewModel.setShouldShowFrontCamera(it) },
+                modifier = Modifier,
+            )
             RichSwitch(
                 icon =
                     loadIcon(
