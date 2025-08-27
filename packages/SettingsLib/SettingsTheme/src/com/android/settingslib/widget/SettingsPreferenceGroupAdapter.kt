@@ -17,6 +17,7 @@
 package com.android.settingslib.widget
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
@@ -178,26 +179,36 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
 
     /** handle roundCorner background */
     private fun updateBackground(holder: PreferenceViewHolder, position: Int) {
-        val context = holder.itemView.context
         val v = holder.itemView
-        if (SettingsThemeHelper.isExpressiveTheme(context)) {
-            val drawableStateLayout = holder.itemView as? DrawableStateLayout
-            if (drawableStateLayout != null) {
-                val iconFrame =
-                    holder.findViewById(androidx.preference.R.id.icon_frame)
-                        ?: holder.findViewById(android.R.id.icon_frame)
-                val hasIconSpace = iconFrame != null && iconFrame.visibility != View.GONE
-                drawableStateLayout.extraDrawableState =
-                    stateSetOf(mItemPositionStates[position], hasIconSpace)
-            } else {
-                val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
-                val (paddingStart, paddingEnd) = getStartEndPadding(position)
-                v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
-                v.clipToOutline = backgroundRes != 0
-                v.setBackgroundResource(backgroundRes)
+        val drawableStateLayout = holder.itemView as? DrawableStateLayout
+        if (drawableStateLayout != null && mItemPositionStates[position] != 0) {
+            val background = v.background
+            if (background != null) {
+                val backgroundPadding = Rect()
+                background.getPadding(backgroundPadding)
+                // We can't remove the padding set in XML because the same layout was also
+                // used when expressive theme isn't enabled, or when expressive theme is enabled
+                // but this adapter isn't used. Hence, we have to do setPaddingRelative() here
+                // to apply the padding from the background.
+                v.setPadding(
+                    backgroundPadding.left,
+                    backgroundPadding.top,
+                    backgroundPadding.right,
+                    backgroundPadding.bottom,
+                )
             }
+            val iconFrame =
+                holder.findViewById(androidx.preference.R.id.icon_frame)
+                    ?: holder.findViewById(android.R.id.icon_frame)
+            val hasIconSpace = iconFrame != null && iconFrame.visibility != View.GONE
+            drawableStateLayout.extraDrawableState =
+                stateSetOf(mItemPositionStates[position], hasIconSpace)
         } else {
-            v.setBackgroundResource(mLegacyBackgroundRes)
+            val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
+            val (paddingStart, paddingEnd) = getStartEndPadding(position)
+            v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
+            v.clipToOutline = backgroundRes != 0
+            v.setBackgroundResource(backgroundRes)
         }
     }
 

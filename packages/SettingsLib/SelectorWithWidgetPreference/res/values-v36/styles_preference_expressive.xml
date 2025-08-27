@@ -40,7 +40,7 @@
     </style>
 
     <style name="ExpressiveSelectorWithWidgetPreferenceRootLayoutStyle">
-        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:background">@drawable/settingslib_round_background_stateful</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
