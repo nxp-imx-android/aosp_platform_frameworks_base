@@ -41,7 +41,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class BatteryViewModelBasedOnSettingTest : SysuiTestCase() {
     val kosmos = testKosmos()
-    val Kosmos.underTest by Kosmos.Fixture { batteryViewModelBasedOnSetting }
+    val Kosmos.underTest by Kosmos.Fixture { batteryViewModelBasedOnSettingFactory.create() }
 
     @Before
     fun setUp() {

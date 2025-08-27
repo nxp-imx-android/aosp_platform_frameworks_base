@@ -39,7 +39,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class BatteryViewModelAlwaysShowPercentTest : SysuiTestCase() {
     val kosmos = testKosmos()
-    val Kosmos.underTest by Kosmos.Fixture { batteryViewModelAlwaysShowPercent }
+    val Kosmos.underTest by Kosmos.Fixture { batteryViewModelAlwaysShowPercentFactory.create() }
 
     @Before
     fun setUp() {
