@@ -166,14 +166,6 @@ public final class HintManagerService extends SystemService {
     @GuardedBy("mSessionSnapshotMapLock")
     private ArrayMap<Integer, ArrayMap<Integer, AppHintSessionSnapshot>> mSessionSnapshotMap;
 
-    /*
-     * App UID to Thread mapping.
-     * Thread is a sub class bookkeeping TID, thread mode (especially graphics pipeline mode)
-     * This is to bookkeep and track the thread usage.
-     */
-    @GuardedBy("mThreadsUsageObject")
-    private ArrayMap<Integer, ArraySet<ThreadUsageTracker>> mThreadsUsageMap;
-
     /** Lock to protect mActiveSessions and the UidObserver. */
     private final Object mLock = new Object();
 
@@ -188,9 +180,6 @@ public final class HintManagerService extends SystemService {
      * mSessionSnapshotMapLock first then mLock.
      */
     private final Object mSessionSnapshotMapLock = new Object();
-
-    /** Lock to protect mThreadsUsageMap. */
-    private final Object mThreadsUsageObject = new Object();
 
     @GuardedBy("mNonIsolatedTidsLock")
     private final Map<Integer, Set<Long>> mNonIsolatedTids;
@@ -327,7 +316,6 @@ public final class HintManagerService extends SystemService {
         mActiveSessions = new ArrayMap<>();
         mChannelMap = new ArrayMap<>();
         mSessionSnapshotMap = new ArrayMap<>();
-        mThreadsUsageMap = new ArrayMap<>();
         mNativeWrapper = injector.createNativeWrapper();
         mNativeWrapper.halInit();
         mHintSessionPreferredRate = mNativeWrapper.halGetHintSessionPreferredRate();
@@ -432,29 +420,6 @@ public final class HintManagerService extends SystemService {
         mEnforceCpuHeadroomUserModeCpuTimeCheck = true;
     }
 
-    private boolean tooManyPipelineThreads(int uid) {
-        synchronized (mThreadsUsageObject) {
-            ArraySet<ThreadUsageTracker> threadsSet = mThreadsUsageMap.get(uid);
-            int graphicsPipelineThreadCount = 0;
-            if (threadsSet != null) {
-                // We count the graphics pipeline threads that are
-                // *not* in this session, since those in this session
-                // will be replaced. Then if the count plus the new tids
-                // is over max available graphics pipeline threads we raise
-                // an exception.
-                for (ThreadUsageTracker t : threadsSet) {
-                    if (t.isGraphicsPipeline()) {
-                        graphicsPipelineThreadCount++;
-                    }
-                }
-                if (graphicsPipelineThreadCount > MAX_GRAPHICS_PIPELINE_THREADS_COUNT) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
     private ServiceThread createCleanUpThread() {
         final ServiceThread handlerThread = new ServiceThread(TAG,
                 Process.THREAD_PRIORITY_LOWEST, true /*allowIo*/);
@@ -473,36 +438,6 @@ public final class HintManagerService extends SystemService {
         }
         IActivityManager getIActivityManager() {
             return ActivityManager.getService();
-        }
-    }
-
-    private static class ThreadUsageTracker {
-        /*
-         * Thread object for tracking thread usage per UID
-         */
-        int mTid;
-        boolean mIsGraphicsPipeline;
-
-        ThreadUsageTracker(int tid) {
-            mTid = tid;
-            mIsGraphicsPipeline = false;
-        }
-
-        ThreadUsageTracker(int tid, boolean isGraphicsPipeline) {
-            mTid = tid;
-            mIsGraphicsPipeline = isGraphicsPipeline;
-        }
-
-        public int getTid() {
-            return mTid;
-        }
-
-        public boolean isGraphicsPipeline() {
-            return mIsGraphicsPipeline;
-        }
-
-        public void setGraphicsPipeline(boolean isGraphicsPipeline) {
-            mIsGraphicsPipeline = isGraphicsPipeline;
         }
     }
 
@@ -1555,16 +1490,6 @@ public final class HintManagerService extends SystemService {
                             && creationConfig.layerTokens.length > 0) {
                         hs.associateToLayers(creationConfig.layerTokens);
                     }
-
-                    synchronized (mThreadsUsageObject) {
-                        mThreadsUsageMap.computeIfAbsent(callingUid, k -> new ArraySet<>());
-                        ArraySet<ThreadUsageTracker> threadsSet = mThreadsUsageMap.get(callingUid);
-                        if (threadsSet != null) {
-                            for (int i = 0; i < tids.length; ++i) {
-                                threadsSet.add(new ThreadUsageTracker(tids[i], isGraphicsPipeline));
-                            }
-                        }
-                    }
                 }
 
                 if (Flags.adpf25q2Metrics()) {
@@ -1582,7 +1507,8 @@ public final class HintManagerService extends SystemService {
                 }
 
                 IHintManager.SessionCreationReturn out = new IHintManager.SessionCreationReturn();
-                out.pipelineThreadLimitExceeded = tooManyPipelineThreads(callingUid);
+                // TODO(b/441120571): Check if the thread limit should be re-implemented or removed
+                out.pipelineThreadLimitExceeded = false;
                 out.session = hs;
                 return out;
             } finally {
@@ -2350,24 +2276,6 @@ public final class HintManagerService extends SystemService {
                 sessionSnapshot.updateUponSessionClose();
             }
 
-            if (mGraphicsPipeline) {
-                synchronized (mThreadsUsageObject) {
-                    ArraySet<ThreadUsageTracker> threadsSet = mThreadsUsageMap.get(mUid);
-                    if (threadsSet == null) {
-                        Slogf.w(TAG, "Threads Set is null for uid " + mUid);
-                        return;
-                    }
-                    // remove all tids associated with this session
-                    for (int i = 0; i < threadsSet.size(); ++i) {
-                        if (contains(mThreadIds, threadsSet.valueAt(i).getTid())) {
-                            threadsSet.removeAt(i);
-                        }
-                    }
-                    if (threadsSet.isEmpty()) {
-                        mThreadsUsageMap.remove(mUid);
-                    }
-                }
-            }
             synchronized (mNonIsolatedTidsLock) {
                 final int[] tids = getTidsInternal();
                 for (int tid : tids) {
@@ -2413,11 +2321,6 @@ public final class HintManagerService extends SystemService {
 
         public void setThreads(@NonNull int[] tids) {
             setThreadsInternal(tids, true);
-            if (tooManyPipelineThreads(Binder.getCallingUid())) {
-                // This is technically a success but we are going to throw a fit anyway
-                throw new ServiceSpecificException(5,
-                                    "Not enough available graphics pipeline threads.");
-            }
         }
 
         private void setThreadsInternal(int[] tids, boolean checkTid) {
@@ -2481,23 +2384,6 @@ public final class HintManagerService extends SystemService {
                     }
                 }
                 mNativeWrapper.halSetThreads(mHalSessionPtr, tids);
-
-                synchronized (mThreadsUsageObject) {
-                    // replace old tids with new ones
-                    ArraySet<ThreadUsageTracker> threadsSet = mThreadsUsageMap.get(callingUid);
-                    if (threadsSet == null) {
-                        mThreadsUsageMap.put(callingUid, new ArraySet<ThreadUsageTracker>());
-                        threadsSet = mThreadsUsageMap.get(callingUid);
-                    }
-                    for (int i = 0; i < threadsSet.size(); ++i) {
-                        if (contains(mThreadIds, threadsSet.valueAt(i).getTid())) {
-                            threadsSet.removeAt(i);
-                        }
-                    }
-                    for (int tid : tids) {
-                        threadsSet.add(new ThreadUsageTracker(tid, mGraphicsPipeline));
-                    }
-                }
                 mThreadIds = tids;
                 mNewThreadIds = null;
                 // if the update is allowed but the session is force paused by tid clean up, then
