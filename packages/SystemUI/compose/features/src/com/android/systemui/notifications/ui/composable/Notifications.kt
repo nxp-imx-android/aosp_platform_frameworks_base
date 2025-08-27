@@ -31,6 +31,7 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -120,11 +121,11 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_CORNER_RADIUS
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_SCRIM_ALPHA
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
+import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.math.roundToInt
 
 object Notifications {
     object Elements {
@@ -570,6 +571,8 @@ fun ContentScope.NotificationScrollingStack(
         }
     }
 
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier =
             modifier
@@ -644,7 +647,11 @@ fun ContentScope.NotificationScrollingStack(
                     )
                 }
                 .thenIf(onEmptySpaceClick != null) {
-                    Modifier.clickable(onClick = { onEmptySpaceClick?.invoke() })
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null, // Prevent flicker on transition
+                        onClick = { onEmptySpaceClick?.invoke() },
+                    )
                 }
     ) {
         Spacer(
