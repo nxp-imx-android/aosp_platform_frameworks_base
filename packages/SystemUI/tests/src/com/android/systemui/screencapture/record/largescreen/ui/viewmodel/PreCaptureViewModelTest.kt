@@ -27,7 +27,10 @@ import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
@@ -37,7 +40,6 @@ import com.android.systemui.screencapture.data.repository.screenCaptureUiReposit
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,7 +73,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun initialState() =
-        testScope.runTest {
+        kosmos.runTest {
             // Assert that the initial values are as expected upon creation and activation.
             assertThat(viewModel.isShowingUi).isTrue()
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
@@ -80,21 +82,21 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun updateCaptureType_updatesState() =
-        testScope.runTest {
+        kosmos.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREEN_RECORD)
         }
 
     @Test
     fun updateCaptureRegion_updatesState() =
-        testScope.runTest {
+        kosmos.runTest {
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
         }
 
     @Test
     fun updateCaptureType_updatesSelectedCaptureTypeButtonViewModel() =
-        testScope.runTest {
+        kosmos.runTest {
             // Screenshot type is default selected
             val (screenRecordButton, screenshotButton) = viewModel.captureTypeButtonViewModels
             assertThat(screenRecordButton.isSelected).isFalse()
@@ -109,7 +111,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun updateCaptureType_usesCorrectIconWhenSelected() =
-        testScope.runTest {
+        kosmos.runTest {
             val (screenRecordButton, screenshotButton) = viewModel.captureTypeButtonViewModels
             assertThat(screenRecordButton.icon).isEqualTo(viewModel.icons?.screenRecord)
             // Screenshot is selected by default.
@@ -126,7 +128,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
     fun updateCaptureRegion_updatesSelectedCaptureRegionButton() =
-        testScope.runTest {
+        kosmos.runTest {
             // Default region is fullscreen
             val (appWindowButton, partialButton, fullscreenButton) =
                 viewModel.captureRegionButtonViewModels
@@ -153,7 +155,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun updateRegionBox_updatesState() =
-        testScope.runTest {
+        kosmos.runTest {
             // State is initially null.
             assertThat(viewModel.regionBox).isNull()
 
@@ -165,7 +167,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun beginCapture_forFullscreenScreenshot_makesCorrectRequest() =
-        testScope.runTest {
+        kosmos.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
 
@@ -183,7 +185,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun beginCapture_forPartialScreenshot_makesCorrectRequest() =
-        testScope.runTest {
+        kosmos.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
 
@@ -194,6 +196,10 @@ class PreCaptureViewModelTest : SysuiTestCase() {
                 .thenReturn(mockBitmap)
 
             viewModel.beginCapture()
+
+            // Account for the delay (temporary fix b/435225255)
+            advanceTimeBy(100)
+            runCurrent()
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockScreenshotHelper, times(1))
@@ -210,7 +216,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
     fun captureRegionButtonViewModels_excludesAppWindowWithFeatureDisabled() =
-        testScope.runTest {
+        kosmos.runTest {
             // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
             viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             assertThat(viewModel.captureRegionButtonViewModels.none { it.isSelected }).isTrue()
@@ -219,7 +225,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
     fun captureRegionButtonViewModels_includesAppWindowWithFeatureEnabled() =
-        testScope.runTest {
+        kosmos.runTest {
             // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
             viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             assertThat(viewModel.captureRegionButtonViewModels.count { it.isSelected }).isEqualTo(1)
@@ -228,7 +234,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
     fun captureRegionButtonViewModels_hasScreenshotContentDescriptions_byDefault() =
-        testScope.runTest {
+        kosmos.runTest {
             val (appWindowButton, partialButton, fullscreenButton) =
                 viewModel.captureRegionButtonViewModels
 
@@ -255,7 +261,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
     fun captureRegionButtonViewModels_hasRecordContentDescriptions_whenCaptureTypeIsRecord() =
-        testScope.runTest {
+        kosmos.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
 
             val (appWindowButton, partialButton, fullscreenButton) =
@@ -277,7 +283,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun hideUi_updatesState() =
-        testScope.runTest {
+        kosmos.runTest {
             viewModel.hideUi()
 
             assertThat(viewModel.isShowingUi).isFalse()
@@ -285,7 +291,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
     @Test
     fun closeUi_dismissesWindow() =
-        testScope.runTest {
+        kosmos.runTest {
             val uiState by
                 collectLastValue(
                     kosmos.screenCaptureUiRepository.uiState(
