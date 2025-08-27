@@ -37,6 +37,7 @@ import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBO
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.ActivityOptions;
 import android.app.RemoteAction;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -488,7 +489,9 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                             mActivityStarter.startActivityDismissingKeyguard(
                                     new ActivityStartOptions(intent, false, false, null,
                                             intent.getFlags(), null, null, false,
-                                            mUserTracker.getUserHandle(), null));
+                                            mUserTracker.getUserHandle(),
+                                            ActivityOptions.makeBasic()
+                                                    .setLaunchDisplayId(mContext.getDisplayId())));
                         } else {
                             mContext.startActivity(intent);
                         }
