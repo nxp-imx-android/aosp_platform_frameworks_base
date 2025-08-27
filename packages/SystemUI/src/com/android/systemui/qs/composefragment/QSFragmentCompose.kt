@@ -155,6 +155,7 @@ import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExc
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
 import com.android.systemui.util.LifecycleFragment
@@ -660,9 +661,21 @@ constructor(
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 var lastQqsHeight = -1
+                var lastQqsMediaVisible: Boolean? = null
                 this@QSFragmentCompose.view?.setSnapshotBinding {
                     scrollListener.value?.onQsPanelScrollChanged(scrollState.value)
-                    collapsedMediaVisibilityChangedListener.value?.accept(viewModel.qqsMediaVisible)
+                    if (ShadeWindowGoesAround.isEnabled) {
+                        if (lastQqsMediaVisible != viewModel.qqsMediaVisible) {
+                            lastQqsMediaVisible = viewModel.qqsMediaVisible
+                            collapsedMediaVisibilityChangedListener.value?.accept(
+                                viewModel.qqsMediaVisible
+                            )
+                        }
+                    } else {
+                        collapsedMediaVisibilityChangedListener.value?.accept(
+                            viewModel.qqsMediaVisible
+                        )
+                    }
                     if (lastQqsHeight != viewModel.qqsHeight) {
                         lastQqsHeight = viewModel.qqsHeight
                         qqsHeightListener.value?.onQqsHeightChanged()
