@@ -1216,6 +1216,9 @@ public final class ViewRootImpl implements ViewParent,
             new BLASTBufferQueue.CornerRadiiCallback() {
                 @Override
                 public void onCornerRadiiChanged(float[] cornerRadii) {
+                    if (!setClientDrawnCornerRadii()) {
+                        return;
+                    }
                     if (cornerRadii != null && cornerRadii.length == 4) {
                         CornerRadii newCornerRadii = new CornerRadii();
                         newCornerRadii.topLeft = cornerRadii[0];
