@@ -195,7 +195,7 @@ public class PipTransition extends PipTransitionController implements
         mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
                 pipBoundsState, pipBoundsAlgorithm,
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
-                splitScreenControllerOptional);
+                pipScheduler, splitScreenControllerOptional, displayController);
         mContentPipHandler = new ContentPipHandler(mContext, mPipSurfaceTransactionHelper,
                 pipTransitionState);
         mPipDisplayChangeObserver = new PipDisplayChangeObserver(pipTransitionState,
@@ -279,6 +279,14 @@ public class PipTransition extends PipTransitionController implements
             );
             return wct;
         }
+
+        final WindowContainerTransaction exitViaExpandWct = mExpandHandler.handleRequest(transition,
+                request);
+        if (exitViaExpandWct != null) {
+            mExitViaExpandTransition = transition;
+            return exitViaExpandWct;
+        }
+
         return null;
     }
 

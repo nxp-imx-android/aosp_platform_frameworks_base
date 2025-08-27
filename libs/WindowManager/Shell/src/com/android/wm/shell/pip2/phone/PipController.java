@@ -288,10 +288,16 @@ public class PipController implements ConfigurationChangeListener,
             public void onActivityRestartAttempt(ActivityManager.RunningTaskInfo task,
                     boolean homeTaskVisible, boolean clearedTask, boolean wasVisible) {
                 ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b",
-                        task.topActivity, wasVisible);
+                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b, displayId=%s, "
+                                + "pipDisplayLayoutState#displayId=%s",
+                        task.topActivity, wasVisible, task.displayId,
+                        mPipDisplayLayoutState.getDisplayId());
                 boolean keepPipFromLockscreen = !wasVisible && !Flags.dismissPipFromLockscreen();
-                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || keepPipFromLockscreen) {
+                boolean isPipLaunchingOnDifferentDisplay =
+                        DesktopExperienceFlags.ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH.isTrue()
+                                && task.displayId != mPipDisplayLayoutState.getDisplayId();
+                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || keepPipFromLockscreen
+                        || isPipLaunchingOnDifferentDisplay) {
                     return;
                 }
                 mPipScheduler.scheduleExitPipViaExpand(wasVisible);
