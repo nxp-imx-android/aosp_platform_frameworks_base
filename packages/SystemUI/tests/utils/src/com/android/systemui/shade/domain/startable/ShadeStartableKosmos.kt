@@ -30,6 +30,7 @@ import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeDisplayStateInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.transition.ScrimShadeTransitionController
 import com.android.systemui.statusbar.notification.stack.notificationStackScrollLayoutController
 import com.android.systemui.statusbar.notificationShadeDepthController
 import com.android.systemui.statusbar.policy.splitShadeStateController
@@ -50,6 +51,7 @@ val Kosmos.shadeStartable by Fixture {
         shadeInteractorProvider = { shadeInteractor },
         shadeModeInteractorProvider = { shadeModeInteractor },
         splitShadeStateController = splitShadeStateController,
+        scrimShadeTransitionController = mock<ScrimShadeTransitionController>(),
         sceneInteractorProvider = { sceneInteractor },
         shadeExpansionStateManager = shadeExpansionStateManager,
         pulseExpansionHandler = pulseExpansionHandler,
