@@ -16,7 +16,6 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -171,10 +170,9 @@ public final class ComputerControlSession implements AutoCloseable {
      * <p>The coordinates are in relative display space, e.g. (0.5, 0.5) is the center of the
      * display.</p>
      */
-    public void tap(@FloatRange(from = 0.0, to = 1.0) float x,
-            @FloatRange(from = 0.0, to = 1.0) float y) {
-        if (x < 0 || x > 1 || y < 0 || y > 1) {
-            throw new IllegalArgumentException("Tap coordinates must be in range [0, 1]");
+    public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) {
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("Tap coordinates must be non-negative");
         }
         try {
             mSession.tap(x, y);
@@ -194,13 +192,10 @@ public final class ComputerControlSession implements AutoCloseable {
      * display.</p>
      */
     public void swipe(
-            @FloatRange(from = 0.0, to = 1.0) float fromX,
-            @FloatRange(from = 0.0, to = 1.0) float fromY,
-            @FloatRange(from = 0.0, to = 1.0) float toX,
-            @FloatRange(from = 0.0, to = 1.0) float toY) {
-        if (fromX < 0 || fromX > 1 || fromY < 0 || fromY > 1
-                || toX < 0 || toX > 1 || toY < 0 || toY > 1) {
-            throw new IllegalArgumentException("Swipe coordinates must be in range [0, 1]");
+            @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
+            @IntRange(from = 0) int toX, @IntRange(from = 0) int toY) {
+        if (fromX < 0 || fromY < 0 || toX < 0 || toY < 0) {
+            throw new IllegalArgumentException("Swipe coordinates must be non-negative");
         }
         try {
             mSession.swipe(fromX, fromY, toX, toY);
