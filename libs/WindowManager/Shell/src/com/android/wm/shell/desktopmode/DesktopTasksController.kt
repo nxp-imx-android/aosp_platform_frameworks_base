@@ -21,6 +21,7 @@ import android.app.ActivityManager
 import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
+import android.app.ActivityTaskManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.AppOpsManager
 import android.app.KeyguardManager
@@ -44,6 +45,7 @@ import android.os.Binder
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
+import android.os.RemoteException
 import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
@@ -78,6 +80,7 @@ import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVI
 import android.window.DesktopModeFlags.ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS
 import android.window.RemoteTransition
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_ICON
+import android.window.TaskSnapshotManager
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
@@ -255,6 +258,7 @@ class DesktopTasksController(
     private val desktopConfig: DesktopConfig,
     private val visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler,
     private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
+    private val taskSnapshotManager: TaskSnapshotManager,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -792,6 +796,20 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, destinationDisplayId)
             .invoke(transition)
+
+        try {
+            userRepositories.current.getExpandedTasksOrdered(disconnectedDisplayId).forEach {
+                logD("addOnDisplayDisconnect: taking a snapshot of=$it before disconnect")
+                if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                    taskSnapshotManager.takeTaskSnapshot(it, true)
+                } else {
+                    ActivityTaskManager.getService().getTaskSnapshot(it, false)
+                }
+            }
+        } catch (e: RemoteException) {
+            logE("addOnDisplayDisconnect: failed to take task snapshot", e)
+        }
+
         return wct
     }
 

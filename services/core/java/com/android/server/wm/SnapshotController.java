@@ -124,8 +124,12 @@ class SnapshotController {
             // Note that if this task is being transiently hidden, the snapshot will be captured at
             // the end of the transient transition (see Transition#finishTransition()), because IME
             // won't move be moved during the transition and the tasks are still live.
+            // Also don't take the snapshot if there is a bounds change in a visible to invisible
+            // transition as the app won't redraw. This can happen when a task is moving from one
+            // display to another.
             if (task != null && !task.mCreatedByOrganizer && !task.isVisibleRequested()
-                    && !task.mTransitionController.isTransientHide(task)) {
+                    && !task.mTransitionController.isTransientHide(task)
+                    && task.getBounds().equals(info.mAbsoluteBounds)) {
                 mTaskSnapshotController.recordSnapshot(task, info);
             }
             // Won't need to capture activity snapshot in close transition.
