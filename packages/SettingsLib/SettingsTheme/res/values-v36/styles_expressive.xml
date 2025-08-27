@@ -464,6 +464,6 @@
         <item name="thumbColor">@color/settingslib_expressive_color_slider_thumb</item>
         <item name="tickColorActive">@color/settingslib_expressive_color_slider_track_inactive</item>
         <item name="tickColorInactive">@color/settingslib_expressive_color_slider_track_active</item>
-        <item name="haloColor">@android:color/transparent</item>
+        <item name="haloColor">@color/settingslib_expressive_color_slider_halo</item>
     </style>
 </resources>
