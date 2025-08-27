@@ -337,10 +337,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Passer au profil pro"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Passer à l\'application <xliff:g id="APP_NAME">%1$s</xliff:g> personnelle"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Passer à l\'application <xliff:g id="APP_NAME">%1$s</xliff:g> professionnelle"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Contacts et comptes"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"accéder à vos contacts et voir la liste de vos comptes pouvant enregistrer des contacts sur cet appareil"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Position"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"accéder à la position de l\'appareil"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Agenda"</string>

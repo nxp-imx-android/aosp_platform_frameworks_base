@@ -336,10 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Skakel oor na werkprofiel"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Skakel oor na persoonlike <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Skakel oor na werk-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontakte en rekeninge"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"gaan by jou kontakte in en sien die lys van jou rekeninge wat kontakte op hierdie toestel kan stoor"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Ligging"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"toegang te verkry tot hierdie toestel se ligging"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalender"</string>

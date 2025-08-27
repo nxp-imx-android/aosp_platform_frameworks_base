@@ -221,7 +221,7 @@
     <string name="network_logging_notification_title" msgid="554983187553845004">"Seade on hallatud"</string>
     <string name="network_logging_notification_text" msgid="1327373071132562512">"Teie organisatsioon haldab seda seadet ja võib jälgida võrguliiklust. Puudutage üksikasjade vaatamiseks."</string>
     <string name="location_changed_notification_title" msgid="3620158742816699316">"Rakendused pääsevad teie asukohale juurde"</string>
-    <string name="location_changed_notification_text" msgid="7158423339982706912">"Lisateabe saamiseks võtke ühendust IT-administraatoriga"</string>
+    <string name="location_changed_notification_text" msgid="7158423339982706912">"Lisateabe saamiseks võtke ühendust IT-administraatoriga."</string>
     <string name="geofencing_service" msgid="3826902410740315456">"Geotarastamise teenus"</string>
     <string name="country_detector" msgid="7023275114706088854">"Riigi tuvastaja"</string>
     <string name="location_service" msgid="2439187616018455546">"Asukohateenus"</string>
@@ -336,10 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Lülitu tööprofiilile"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Lülita <xliff:g id="APP_NAME">%1$s</xliff:g> isiklikule profiilile"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Lülita <xliff:g id="APP_NAME">%1$s</xliff:g> tööprofiilile"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontaktid ja kontod"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"Selle loaga rakendused pääsevad juurde teie kontaktidele ja näevad loendit kontodest, mis saavad salvestada sellesse seadmesse kontakte."</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Asukoht"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"Juurdepääs selle seadme asukohale"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalender"</string>

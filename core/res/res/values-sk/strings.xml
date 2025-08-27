@@ -338,10 +338,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Prepnúť na pracovný profil"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Prepnúť na osobnú verziu aplikácie <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Prepnúť na pracovnú verziu aplikácie <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Kontakty a účty"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"získavať prístup k vašim kontaktom a zobrazovať zoznam vašich účtov, ktoré môžu ukladať kontakty v tomto zariadení"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Poloha"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"prístup k polohe tohto zariadenia"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Kalendár"</string>

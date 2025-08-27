@@ -337,10 +337,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"Passa al profilo di lavoro"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"Passa all\'app <xliff:g id="APP_NAME">%1$s</xliff:g> personale"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"Passa all\'app <xliff:g id="APP_NAME">%1$s</xliff:g> di lavoro"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"Contatti e account"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"accedere ai tuoi contatti e visualizzare l\'elenco dei tuoi account che possono salvare contatti su questo dispositivo"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"Posizione"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"Possono accedere alla posizione di questo dispositivo"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendario"</string>
@@ -1819,7 +1817,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modalità a una mano"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Attenuazione extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Protesi uditive"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Clic automatico (tempo di interazione)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Clic automatico (dwell time)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Tasti mouse"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Disconnesso"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connesso"</string>
