@@ -365,6 +365,23 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     }
 
     @Test
+    public void showTaskView_whenSurfaceDestroyed_notHandled() {
+        assumeTrue(taskViewTransitionsRefactor());
+
+        // Simulate the surface being destroyed (e.g. a collapsed bubble being relaunched).
+        when(mTaskViewTaskController.prepareOpen(any(), any())).thenReturn(null);
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
+                .addChange(getTaskView(TRANSIT_TO_FRONT)).build();
+
+        final boolean handled = mTaskViewTransitions.startAnimation(mock(IBinder.class), info,
+                mStartTransaction, mFinishTransaction, mFinishCallback);
+
+        assertWithMessage("Handler should defer the transition when the surface is not ready")
+                .that(handled).isFalse();
+        verify(mFinishCallback, never()).onTransitionFinished(any());
+    }
+
+    @Test
     public void taskToTaskViewHandled() {
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
 

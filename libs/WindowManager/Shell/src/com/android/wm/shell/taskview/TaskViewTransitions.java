@@ -816,6 +816,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         }
 
         // Prepare taskViews for animation
+        boolean isReadyForAnimation = true;
         for (int i = 0; i < taskViews.size(); ++i) {
             final TransitionInfo.Change task = taskViews.get(i);
             final ActivityManager.RunningTaskInfo taskInfo = task.getTaskInfo();
@@ -849,11 +850,13 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                         // The task is being moved into taskView, so it is still "new" from
                         // TaskView's perspective (e.g. task being moved into a bubble)
                         stillNeedsMatchingLaunch = false;
-                        prepareOpenAnimation(pending.mTaskView, true /* isNewInTaskView */,
-                                startTransaction, finishTransaction, taskInfo, leash, wct);
+                        isReadyForAnimation &= prepareOpenAnimation(pending.mTaskView,
+                                true /* isNewInTaskView */, startTransaction, finishTransaction,
+                                taskInfo, leash, wct);
                     } else {
-                        prepareOpenAnimation(infoTv, false /* isNewInTaskView */,
-                                startTransaction, finishTransaction, taskInfo, leash, wct);
+                        isReadyForAnimation &= prepareOpenAnimation(infoTv,
+                                false /* isNewInTaskView */, startTransaction, finishTransaction,
+                                taskInfo, leash, wct);
                     }
                     break;
                 case TRANSIT_CHANGE:
@@ -879,6 +882,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                     break;
             }
         }
+        isReadyForAnimation &= (wct == null || taskViews.size() == info.getChanges().size());
 
         // Check for unexpected changes in transition
         for (int i = 0; i < alienChanges.size(); ++i) {
@@ -907,8 +911,10 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                     + "cleaning up the task view");
             // Didn't find a task so the task must have never launched
             pending.mTaskView.setTaskNotFound();
-        } else if (wct == null && pending == null && taskViews.size() != info.getChanges().size()) {
-            // Just some house-keeping, let another handler animate.
+        } else if (pending == null && !isReadyForAnimation) {
+            // Animation could not be fully prepared. The surface for one or more TaskViews was
+            // destroyed before the animation could start, let another handler animate.
+            Slog.w(TAG, "Animation not ready for all TaskViews, deferring to another handler.");
             return false;
         }
         if (changingDisplayId > -1) {
@@ -1092,8 +1098,21 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         return true;
     }
 
+    /**
+     * Prepares the TaskView for an open animation.
+     *
+     * @param taskView the {@link TaskViewTaskController} for the TaskView being opened.
+     * @param newTask whether the task is considered new within this {@link TaskView}.
+     * @param startTransaction the transaction to apply before the animation starts.
+     * @param finishTransaction the transaction to apply after the animation finishes.
+     * @param taskInfo information about the running task to animate.
+     * @param leash the surface leash representing the task's surface.
+     * @param wct a {@link WindowContainerTransaction} to apply changes.
+     * @return {@code true} if the TaskView's surface is created and ready for animation,
+     * {@code false} if the surface was destroyed and the animation should be deferred.
+     */
     @VisibleForTesting
-    public void prepareOpenAnimation(TaskViewTaskController taskView,
+    public boolean prepareOpenAnimation(TaskViewTaskController taskView,
             final boolean newTask,
             SurfaceControl.Transaction startTransaction,
             SurfaceControl.Transaction finishTransaction,
@@ -1102,7 +1121,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         final Rect boundsOnScreen = taskView.prepareOpen(taskInfo, leash);
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.prepareOpenAnimation(): taskView=%d "
                         + "newTask=%b bounds=%s", taskView.hashCode(), newTask, boundsOnScreen);
-        if (boundsOnScreen != null) {
+        final boolean isSurfaceCreated = boundsOnScreen != null;
+        if (isSurfaceCreated) {
             updateBounds(taskView, boundsOnScreen, startTransaction, finishTransaction, taskInfo,
                     leash, wct);
         } else {
@@ -1126,6 +1146,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         wct.setTaskTrimmableFromRecents(taskInfo.token, false /* isTrimmableFromRecents */);
 
         taskView.notifyAppeared(newTask);
+        return isSurfaceCreated;
     }
 
     /**
