@@ -89,8 +89,6 @@ object WindowDecorationTestHelper {
             DefaultWindowDecoration(
                 taskInfo = taskInfo,
                 taskSurface = SurfaceControl(),
-                genericLinksParser = mock(),
-                assistContentRequester = mock(),
                 context = context,
                 userContext = context,
                 displayController = displayController,
@@ -116,6 +114,7 @@ object WindowDecorationTestHelper {
                 desktopState = desktopState,
                 desktopConfig = desktopConfig,
                 windowDecorationActions = windowDecorationActions,
+                appToWebRepository = mock(),
                 windowManagerWrapper = mock(),
                 lockTaskChangeListener = mock(),
                 surfaceControlTransactionSupplier = { StubTransaction() },

@@ -65,7 +65,6 @@ sealed class CaptionState {
         val runningTaskInfo: RunningTaskInfo,
         val isHandleMenuExpanded: Boolean,
         val globalAppHandleBounds: Rect,
-        val isCapturedLinkAvailable: Boolean,
         val appHandleIdentifier: AppHandleIdentifier,
         override val isFocused: Boolean,
     ) : CaptionState()
@@ -74,13 +73,20 @@ sealed class CaptionState {
         val runningTaskInfo: RunningTaskInfo,
         val isHeaderMenuExpanded: Boolean,
         val globalAppChipBounds: Rect,
-        val isCapturedLinkAvailable: Boolean,
         override val isFocused: Boolean,
     ) : CaptionState()
 
     data class NoCaption(val taskId: Int = INVALID_TASK_ID) : CaptionState() {
         override val isFocused = false
     }
+
+    /** Returns the [RunningTaskInfo] of the [CaptionState] or null if unavailable. */
+    fun getTaskInfo(): RunningTaskInfo? =
+        when (this) {
+            is AppHandle -> runningTaskInfo
+            is AppHeader -> runningTaskInfo
+            is NoCaption -> null
+        }
 
     private companion object {
         private const val INVALID_TASK_ID = -1

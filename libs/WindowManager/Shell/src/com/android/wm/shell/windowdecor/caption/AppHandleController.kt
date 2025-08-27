@@ -151,7 +151,8 @@ class AppHandleController(
 
     private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
-            Flags.enableDesktopWindowingAppToWebEducationIntegration() ||
+            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
     private val display
         get() = displayController.getDisplay(taskInfo.displayId)
@@ -218,12 +219,11 @@ class AppHandleController(
         }
         val captionState =
             CaptionState.AppHandle(
-                taskInfo,
-                isHandleMenuActive,
-                getCurrentAppHandleBounds(captionLayoutResult),
-                appToWebRepository.isCapturedLinkAvailable(),
-                getAppHandleIdentifier(captionLayoutResult),
-                hasGlobalFocus,
+                runningTaskInfo = taskInfo,
+                isHandleMenuExpanded = isHandleMenuActive,
+                globalAppHandleBounds = getCurrentAppHandleBounds(captionLayoutResult),
+                appHandleIdentifier = getAppHandleIdentifier(captionLayoutResult),
+                isFocused = hasGlobalFocus,
             )
         windowDecorHandleRepository.notifyCaptionChanged(captionState)
     }
@@ -417,8 +417,12 @@ class AppHandleController(
                     show(
                         openInAppOrBrowserClickListener = { intent ->
                             windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
-                            appToWebRepository.onCapturedLinkUsed()
-                            if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
+                            appToWebRepository.onCapturedLinkUsed(taskInfo.taskId)
+                            if (
+                                DesktopExperienceFlags
+                                    .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                                    .isTrue
+                            ) {
                                 windowDecorHandleRepository.onAppToWebUsage()
                             }
                         },
