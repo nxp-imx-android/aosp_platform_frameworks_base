@@ -33,6 +33,7 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 
 import android.annotation.ElapsedRealtimeLong;
 import android.app.ActivityManager;
+import android.app.ApplicationExitInfo;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -282,6 +283,95 @@ public abstract class ProcessRecordInternal {
 
     /** Returns an array of package names associated with this process. */
     public abstract String[] getPackageList();
+
+    /** Returns a short string representation of the process. */
+    public abstract String toShortString();
+
+    /** Returns the next scheduled time for PSS collection for this process. */
+    public abstract long getNextPssTime();
+
+    /** Sets the last recorded CPU time for this process. */
+    public abstract void setLastCpuTime(long time);
+
+    /**
+     * Kills the process with the given reason code, using the provided reason string
+     * as both the reason and a default description. The process group is killed
+     * asynchronously.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param reasonCode The reason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, @ApplicationExitInfo.Reason int reasonCode,
+            boolean noisy) {
+        killLocked(reason, reasonCode, ApplicationExitInfo.SUBREASON_UNKNOWN, noisy, true);
+    }
+
+    /**
+     * Kills the process with the given reason and subreason codes, using the provided
+     * reason string as both the reason and a default description. The process group
+     * is killed asynchronously.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy) {
+        killLocked(reason, reason, reasonCode, subReason, noisy, true);
+    }
+
+    /**
+     * Kills the process with detailed reason information. The process group
+     * is killed asynchronously.
+     *
+     * @param reason A string describing the high-level reason for the kill.
+     * @param description A more detailed description of the kill reason.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, String description,
+            @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy) {
+        killLocked(reason, description, reasonCode, subReason, noisy, true);
+    }
+
+    /**
+     * Kills the process with the given reason and subreason codes, using the provided
+     * reason string as both the reason and a default description. Allows control over
+     * whether the process group is killed asynchronously.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     * @param asyncKPG If true, kills the process group asynchronously.
+     */
+    @GuardedBy("mServiceLock")
+    public void killLocked(String reason, @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy, boolean asyncKPG) {
+        killLocked(reason, reason, reasonCode, subReason, noisy, asyncKPG);
+    }
+
+    /**
+     * Kills the process with the given reason, description, reason codes, and async KPG.
+     *
+     * @param reason A string describing the reason for the kill.
+     * @param description A more detailed description of the kill reason.
+     * @param reasonCode The reason code for the kill.
+     * @param subReason The subreason code for the kill.
+     * @param noisy If true, a log message will be reported.
+     * @param asyncKPG If true, kills the process group asynchronously.
+     */
+    @GuardedBy("mServiceLock")
+    public abstract void killLocked(String reason, String description,
+            @ApplicationExitInfo.Reason int reasonCode,
+            @ApplicationExitInfo.SubReason int subReason, boolean noisy, boolean asyncKPG);
 
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
@@ -741,6 +831,14 @@ public abstract class ProcessRecordInternal {
 
     @GuardedBy("mServiceLock")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
+
+    /** TID for RenderThread. */
+    @GuardedBy("mProcLock")
+    private int mRenderThreadTid;
+
+    /** Process is waiting to be killed when in the bg, and reason. */
+    @GuardedBy("mServiceLock")
+    private String mWaitingToKill;
 
     // TODO(b/425766486): Change to package-private after the OomAdjusterImpl class is moved to
     //                    the psc package.
@@ -1720,6 +1818,27 @@ public abstract class ProcessRecordInternal {
     public long getLastCachedTime() {
         return mLastCachedTime;
     }
+
+    @GuardedBy("mServiceLock")
+    public String getWaitingToKill() {
+        return mWaitingToKill;
+    }
+
+    @GuardedBy("mServiceLock")
+    public void setWaitingToKill(String waitingToKill) {
+        mWaitingToKill = waitingToKill;
+    }
+
+    @GuardedBy("mProcLock")
+    public int getRenderThreadTid() {
+        return mRenderThreadTid;
+    }
+
+    @GuardedBy("mProcLock")
+    public void setRenderThreadTid(int renderThreadTid) {
+        mRenderThreadTid = renderThreadTid;
+    }
+
 
     /**
      * Lazily initiates and returns the track name for tracing.

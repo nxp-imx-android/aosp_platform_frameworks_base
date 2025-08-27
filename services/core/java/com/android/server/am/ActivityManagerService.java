@@ -8396,7 +8396,7 @@ public class ActivityManagerService extends IActivityManager.Stub
      * thread of the given process.
      */
     @GuardedBy("mProcLock")
-    static void setFifoPriority(@NonNull ProcessRecord app, boolean enable) {
+    static void setFifoPriority(@NonNull ProcessRecordInternal app, boolean enable) {
         final int pid = app.getPid();
         final int renderThreadTid = app.getRenderThreadTid();
         if (enable) {
@@ -19471,6 +19471,18 @@ public class ActivityManagerService extends IActivityManager.Stub
                     mCachedAppOptimizer.unfreezeAppLSP((ProcessRecord) app,
                             CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(oomAdjReason));
                 }
+            }
+        }
+
+        @Override
+        public void onProcStateUpdated(ProcessRecordInternal appInternal, long now,
+                boolean forceUpdatePssTime) {
+            final ProcessRecord app = (ProcessRecord) appInternal;
+
+            synchronized (mAppProfiler.mProfilerLock) {
+                app.mProfile.updateProcState(app);
+                mAppProfiler.updateNextPssTimeLPf(app.getCurProcState(), app.mProfile, now,
+                        forceUpdatePssTime);
             }
         }
     }

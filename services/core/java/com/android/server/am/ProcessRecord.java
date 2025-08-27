@@ -236,12 +236,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private boolean mUnlocked;
 
     /**
-     * TID for RenderThread.
-     */
-    @GuardedBy("mProcLock")
-    private int mRenderThreadTid;
-
-    /**
      * Last used compatibility mode.
      */
     @GuardedBy("mService")
@@ -282,12 +276,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
      */
     @CompositeRWLock({"mService", "mProcLock"})
     private long mKillTime;
-
-    /**
-     * Process is waiting to be killed when in the bg, and reason.
-     */
-    @GuardedBy("mService")
-    private String mWaitingToKill;
 
     /**
      * Whether this process should be killed and removed from process list.
@@ -516,10 +504,10 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         pw.print(prefix); pw.print("startSeq="); pw.println(mStartSeq);
         pw.print(prefix); pw.print("mountMode="); pw.println(
                 DebugUtils.valueToString(Zygote.class, "MOUNT_EXTERNAL_", mMountMode));
-        if (isKilled() || isKilledByAm() || mWaitingToKill != null) {
+        if (isKilled() || isKilledByAm() || getWaitingToKill() != null) {
             pw.print(prefix); pw.print("killed="); pw.print(isKilled());
             pw.print(" killedByAm="); pw.print(isKilledByAm());
-            pw.print(" waitingToKill="); pw.println(mWaitingToKill);
+            pw.print(" waitingToKill="); pw.println(getWaitingToKill());
         }
         if (mIsolatedEntryPoint != null || mIsolatedEntryPointArgs != null) {
             pw.print(prefix); pw.print("isolatedEntryPoint="); pw.println(mIsolatedEntryPoint);
@@ -904,16 +892,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mUnlocked = unlocked;
     }
 
-    @GuardedBy("mProcLock")
-    int getRenderThreadTid() {
-        return mRenderThreadTid;
-    }
-
-    @GuardedBy("mProcLock")
-    void setRenderThreadTid(int renderThreadTid) {
-        mRenderThreadTid = renderThreadTid;
-    }
-
     @GuardedBy("mService")
     CompatibilityInfo getCompat() {
         return mCompat;
@@ -1001,16 +979,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy({"mService", "mProcLock"})
     void setKillTime(long killTime) {
         mKillTime = killTime;
-    }
-
-    @GuardedBy("mService")
-    String getWaitingToKill() {
-        return mWaitingToKill;
-    }
-
-    @GuardedBy("mService")
-    void setWaitingToKill(String waitingToKill) {
-        mWaitingToKill = waitingToKill;
     }
 
     @Override
@@ -1326,31 +1294,9 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return (rss != null && rss.length > 0) ? rss[0] : 0;
     }
 
+    @Override
     @GuardedBy("mService")
-    void killLocked(String reason, @Reason int reasonCode, boolean noisy) {
-        killLocked(reason, reasonCode, ApplicationExitInfo.SUBREASON_UNKNOWN, noisy, true);
-    }
-
-    @GuardedBy("mService")
-    void killLocked(String reason, @Reason int reasonCode, @SubReason int subReason,
-            boolean noisy) {
-        killLocked(reason, reason, reasonCode, subReason, noisy, true);
-    }
-
-    @GuardedBy("mService")
-    void killLocked(String reason, String description, @Reason int reasonCode,
-            @SubReason int subReason, boolean noisy) {
-        killLocked(reason, description, reasonCode, subReason, noisy, true);
-    }
-
-    @GuardedBy("mService")
-    void killLocked(String reason, @Reason int reasonCode, @SubReason int subReason,
-            boolean noisy, boolean asyncKPG) {
-        killLocked(reason, reason, reasonCode, subReason, noisy, asyncKPG);
-    }
-
-    @GuardedBy("mService")
-    void killLocked(String reason, String description, @Reason int reasonCode,
+    public void killLocked(String reason, String description, @Reason int reasonCode,
             @SubReason int subReason, boolean noisy, boolean asyncKPG) {
         if (!isKilledByAm()) {
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
@@ -1468,6 +1414,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return sb.toString();
     }
 
+    @Override
     public String toShortString() {
         final String shortStringName = mShortStringName;
         if (shortStringName != null) {
@@ -1709,6 +1656,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
+    public long getNextPssTime() {
+        return mProfile.getNextPssTime();
+    }
+
+    @Override
+    public void setLastCpuTime(long time) {
+        mProfile.mLastCpuTime.set(time);
+    }
+
+    @Override
     public void setPendingUiClean(boolean pendingUiClean) {
         synchronized (mProcLock) {
             mProfile.setPendingUiClean(pendingUiClean);
@@ -1760,7 +1717,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     public void onStartActivity(int topProcessState, boolean setProfileProc, String packageName,
             long versionCode) {
         synchronized (mService) {
-            mWaitingToKill = null;
+            setWaitingToKill(null);
             if (setProfileProc) {
                 synchronized (mService.mAppProfiler.mProfilerLock) {
                     mService.mAppProfiler.setProfileProcLPf(this);
