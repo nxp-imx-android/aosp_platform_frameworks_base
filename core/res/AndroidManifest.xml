@@ -8842,9 +8842,22 @@
 
     <!--
         @FlaggedApi(com.android.hardware.input.Flags.FLAG_REQUEST_KEY_CAPTURE_API)
-        Allows an application to be able to capture keys before Android system get chance to
-        process system keys and shortcuts.
+        Allows the currently focused application to be able to consume keys before Android system
+        get chance to process system keys and shortcuts.
+
+        <p> The keys are always sent to the currently focussed application, this permission allows
+        the focussed application to receive the keys that are normally consumed by the system for
+        shortcuts, allowing it to have custom shortcut behavior primarily for use cases like virtual
+        machine apps where the host OS wants to handle the shortcuts differently.
+
+        <p> Certain shortcuts and system keys like Home, Overview, Power, etc are never sent to the
+        currently focused application and are always consumed by the system.
+
+        <p> User can escape out of the capture mode by long pressing the Escape key or simply
+        navigating out of the application.
+
         <p> Protection level: normal
+        {@see android.view.WindowManager.LayoutParams#setKeyboardCaptureEnabled}
     -->
     <permission android:name="android.permission.CAPTURE_KEYBOARD"
         android:protectionLevel="normal"
