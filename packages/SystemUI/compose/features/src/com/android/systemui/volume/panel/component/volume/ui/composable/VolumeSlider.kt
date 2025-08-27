@@ -65,6 +65,7 @@ import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformSlider
@@ -102,6 +103,7 @@ fun VolumeSlider(
     onValueChangeFinished: (() -> Unit)? = null,
     button: (@Composable RowScope.() -> Unit)? = null,
     showLabel: Boolean = true,
+    dimensions: VolumeSliderDimensions = VolumeSliderDimensions.Defaults
 ) {
     if (!Flags.volumeRedesign()) {
         LegacyVolumeSlider(
@@ -127,7 +129,9 @@ fun VolumeSlider(
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = dimensions.verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val materialSliderColors =
@@ -137,10 +141,11 @@ fun VolumeSlider(
                     disabledActiveTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 )
-            val sliderHeight = 52.dp
             if (state is SliderState.Empty) {
                 // reserve the space for the slider to avoid excess resizing
-                Spacer(modifier = Modifier.weight(1f).height(sliderHeight))
+                Spacer(modifier = Modifier
+                    .weight(1f)
+                    .height(dimensions.thumbHeight))
             } else {
                 Slider(
                     value = state.value,
@@ -160,6 +165,7 @@ fun VolumeSlider(
                             sliderState = sliderState,
                             colors = materialSliderColors,
                             isEnabled = state.isEnabled,
+                            trackSize = dimensions.trackHeight,
                             activeTrackEndIcon =
                                 state.icon?.let { icon ->
                                     { iconsState ->
@@ -208,7 +214,7 @@ fun VolumeSlider(
                             interactionSource = interactionSource,
                             enabled = state.isEnabled,
                             colors = materialSliderColors,
-                            thumbSize = DpSize(4.dp, sliderHeight),
+                            thumbSize = DpSize(dimensions.thumbWidth, dimensions.thumbHeight),
                         )
                     },
                     haptics =
@@ -222,7 +228,10 @@ fun VolumeSlider(
                                 orientation = Orientation.Horizontal,
                             )
                         } ?: Haptics.Disabled,
-                    modifier = Modifier.weight(1f).height(sliderHeight).sysuiResTag(state.label),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(dimensions.thumbHeight)
+                        .sysuiResTag(state.label),
                 )
             }
             button?.invoke(this)
@@ -434,4 +443,20 @@ object VolumeSlidersMotionTestKeys {
     const val ACTIVE_ICON_TAG = "Volume_Slider_activeStartIcon"
     const val INACTIVE_ICON_TAG = "Volume_Slider_inactiveStartIcon"
     const val DISABLED_MESSAGE_TAG = "disabledMessage"
+}
+
+data class VolumeSliderDimensions(
+    val thumbHeight: Dp,
+    val thumbWidth: Dp,
+    val trackHeight: Dp,
+    val verticalPadding: Dp
+) {
+    companion object {
+        val Defaults = VolumeSliderDimensions(
+            thumbHeight = 52.dp,
+            thumbWidth = 4.dp,
+            trackHeight = 40.dp,
+            verticalPadding = 4.dp
+        )
+    }
 }
