@@ -126,6 +126,8 @@ class KeyguardMediaControllerTest : SysuiTestCase() {
             kosmos.setHasMedia(visible = true, active = true)
         } else {
             verify(mediaHost).expansion = MediaHostState.EXPANDED
+            verify(mediaHost)
+                .addVisibilityChangeListener(keyguardMediaController::onMediaHostVisibilityChanged)
         }
     }
 
