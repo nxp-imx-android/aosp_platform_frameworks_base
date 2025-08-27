@@ -39,6 +39,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.ElementType;
@@ -97,9 +98,11 @@ public final class ComputerControlSession implements AutoCloseable {
 
     @NonNull
     private final IComputerControlSession mSession;
-    // TODO(b/439774796): Make this non-nullable.
+    private final Object mLock = new Object();
+    @GuardedBy("mLock")
     @Nullable
-    private final ImageReader mImageReader;
+    private ImageReader mImageReader;
+
 
     /** @hide */
     public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
@@ -157,7 +160,9 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     @Nullable
     public Image getScreenshot() {
-        return mImageReader == null ? null : mImageReader.acquireLatestImage();
+        synchronized (mLock) {
+            return mImageReader == null ? null : mImageReader.acquireLatestImage();
+        }
     }
 
     /**
@@ -261,6 +266,15 @@ public final class ComputerControlSession implements AutoCloseable {
         }
     }
 
+    private void closeImageReader() {
+        synchronized (mLock) {
+            if (mImageReader != null) {
+                mImageReader.close();
+                mImageReader = null;
+            }
+        }
+    }
+
     /** Callback for computer control session events. */
     public interface Callback {
 
@@ -299,6 +313,7 @@ public final class ComputerControlSession implements AutoCloseable {
 
         private final Callback mCallback;
         private final Executor mExecutor;
+        private ComputerControlSession mSession;
 
         public CallbackProxy(@NonNull Executor executor, @NonNull Callback callback) {
             mExecutor = executor;
@@ -315,9 +330,9 @@ public final class ComputerControlSession implements AutoCloseable {
         @Override
         public void onSessionCreated(int displayId, IVirtualDisplayCallback displayToken,
                 IComputerControlSession session) {
+            mSession = new ComputerControlSession(displayId, displayToken, session);
             Binder.withCleanCallingIdentity(() ->
-                    mExecutor.execute(() -> mCallback.onSessionCreated(
-                            new ComputerControlSession(displayId, displayToken, session))));
+                    mExecutor.execute(() -> mCallback.onSessionCreated(mSession)));
         }
 
         @Override
@@ -328,6 +343,7 @@ public final class ComputerControlSession implements AutoCloseable {
 
         @Override
         public void onSessionClosed() {
+            mSession.closeImageReader();
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionClosed()));
         }
