@@ -1608,7 +1608,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubblePositioner.updateBubbleBarTopOnScreen(bubbleBarTopToScreenBottom);
 
         if (BubbleOverflow.KEY.equals(key)) {
-            mBubbleData.setSelectedBubbleFromLauncher(mBubbleData.getOverflow());
+            mBubbleData.expandAndSelectBubbleFromLauncher(mBubbleData.getOverflow());
             mLayerView.showExpandedView(mBubbleData.getOverflow());
             mLogger.log(BubbleLogger.Event.BUBBLE_BAR_OVERFLOW_SELECTED);
             return;
@@ -1622,7 +1622,7 @@ public class BubbleController implements ConfigurationChangeListener,
         final boolean wasExpanded = (mLayerView != null && mLayerView.isExpanded());
         if (mBubbleData.hasBubbleInStackWithKey(b.getKey())) {
             // already in the stack
-            mBubbleData.setSelectedBubbleFromLauncher(b);
+            mBubbleData.expandAndSelectBubbleFromLauncher(b);
             mLayerView.showExpandedView(b);
             if (wasExpanded) {
                 mLogger.log(b, BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);

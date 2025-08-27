@@ -383,13 +383,10 @@ public class BubbleData {
      * will already be updated so we don't need to notify them again, but BubbleData should be
      * updated to have the correct state.
      */
-    public void setSelectedBubbleFromLauncher(BubbleViewProvider bubble) {
+    public void expandAndSelectBubbleFromLauncher(BubbleViewProvider bubble) {
         ProtoLog.d(WM_SHELL_BUBBLES, "setSelectedBubbleFromLauncher=%s",
                 (bubble != null ? bubble.getKey() : "null"));
         mExpanded = true;
-        if (Objects.equals(bubble, mSelectedBubble)) {
-            return;
-        }
         boolean isOverflow = bubble != null && BubbleOverflow.KEY.equals(bubble.getKey());
         if (bubble != null
                 && !mBubbles.contains(bubble)
