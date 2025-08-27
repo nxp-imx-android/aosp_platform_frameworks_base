@@ -11854,7 +11854,10 @@ public class Notification implements Parcelable
                         contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
                         contentView.setChronometerCountDown(
                                 metricView.chronometerId(), timeDifference.isTimer());
-
+                        contentView.setBoolean(metricView.chronometerId(),
+                                "setUseAdaptiveFormat",
+                                timeDifference.getFormat()
+                                        == Metric.TimeDifference.FORMAT_ADAPTIVE);
                         if (timeDifference.getZeroTime() != null) {
                             contentView.setChronometer(metricView.chronometerId(),
                                     timeDifference.getZeroTime(), /* format= */ null,
@@ -11871,7 +11874,6 @@ public class Notification implements Parcelable
                                     "No zeroTime or pausedDuration for running TimeDifference in "
                                             + metric);
                         }
-                        // TODO(b/434910979): implement format support for Chronometer.
                     } else {
                         contentView.setViewVisibility(metricView.chronometerId(), View.GONE);
                         contentView.setViewVisibility(metricView.textValueId(), View.VISIBLE);
