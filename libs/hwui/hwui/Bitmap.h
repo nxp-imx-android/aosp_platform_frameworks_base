@@ -51,6 +51,7 @@ enum class BitmapPalette {
     Dark,
     Colorful,
     Barcode,
+    GrayScale,
 };
 
 namespace uirenderer {

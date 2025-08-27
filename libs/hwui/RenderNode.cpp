@@ -457,6 +457,18 @@ void RenderNode::handleForceDark(android::uirenderer::TreeInfo* info) {
             transform = ColorTransform::Invert;
         }
         mDisplayList.applyColorTransform(transform);
+        if (mProperties.hasShadow()) {
+            SkColor newAmbientShadowColor =
+                    transformColor(ColorTransform::Invert,
+                                   SkColor4f::FromColor(mProperties.getAmbientShadowColor()))
+                            .toSkColor();
+            SkColor newSpotShadowColor =
+                    transformColor(ColorTransform::Invert,
+                                   SkColor4f::FromColor(mProperties.getSpotShadowColor()))
+                            .toSkColor();
+            mProperties.setAmbientShadowColor(newAmbientShadowColor);
+            mProperties.setSpotShadowColor(newSpotShadowColor);
+        }
         return;
     }
 

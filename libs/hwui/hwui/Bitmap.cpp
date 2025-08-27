@@ -554,6 +554,7 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
 
     MinMaxAverage hue, saturation, value;
     int sampledCount = 0;
+    Histogram<10> saturationHistogram;
     Histogram<10> valueHistogram;
 
     // Sample a grid of 100 pixels to get an overall estimation of the colors in play
@@ -570,7 +571,9 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
             float hsv[3];
             SkColorToHSV(color, hsv);
             hue.add(hsv[0]);
-            saturation.add(hsv[1]);
+            float s = hsv[1];
+            saturation.add(s);
+            saturationHistogram.add(s);
             float val = hsv[2];
             value.add(val);
             valueHistogram.add(val);
@@ -606,6 +609,15 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
                 return BitmapPalette::Barcode;
             }
         }
+
+        // Identify if the image is grayscale by checking if most samples have low saturation,
+        // but it is not purely black or purely white.
+        int expectedGrayScaleSamples = sampledCount * 0.9;
+        int graySamples = saturationHistogram[0];
+        if (graySamples > expectedGrayScaleSamples && value.delta() > 0.05f) {
+            return BitmapPalette::GrayScale;
+        }
+
         if (saturation.delta() > 0.1f ||
             (hue.delta() > 20 && saturation.average() > 0.2f && value.average() < 0.9f)) {
             return BitmapPalette::Colorful;
