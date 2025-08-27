@@ -706,23 +706,16 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
 
                 if ((entry.getValue().getChangeMask()
                         & WindowContainerTransaction.Change.CHANGE_FORCE_NO_PIP) != 0) {
-                    if (com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
-                        // If we are using a bookend transition, then the transition that we need
-                        // to disable pip on finish is the original transient transition, not the
-                        // bookend transition
-                        final Transition transientHideTransition =
-                                mTransitionController.getTransientHideTransitionForContainer(wc);
-                        if (transientHideTransition != null) {
-                            transientHideTransition.setCanPipOnFinish(false);
-                        } else {
-                            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
-                                    "Set do-not-pip: no task");
-                        }
+                    // If we are using a bookend transition, then the transition that we need
+                    // to disable pip on finish is the original transient transition, not the
+                    // bookend transition
+                    final Transition transientHideTransition =
+                            mTransitionController.getTransientHideTransitionForContainer(wc);
+                    if (transientHideTransition != null) {
+                        transientHideTransition.setCanPipOnFinish(false);
                     } else {
-                        // Disable entering pip (eg. when recents pretends to finish itself)
-                        if (transition != null) {
-                            transition.setCanPipOnFinish(false /* canPipOnFinish */);
-                        }
+                        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+                                "Set do-not-pip: no task");
                     }
                 }
                 // A bit hacky, but we need to detect "remove PiP" so that we can "wrap" the
@@ -1505,10 +1498,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 break;
             }
             case HIERARCHY_OP_TYPE_RESTORE_TRANSIENT_ORDER: {
-                if (!com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
-                    // Only allow restoring transient order when finishing a transition
-                    if (!chain.isFinishing()) break;
-                }
                 // Validate the container
                 final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
                 if (container == null) {
@@ -1541,16 +1530,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 final TaskDisplayArea taskDisplayArea = thisTask.getTaskDisplayArea();
                 taskDisplayArea.moveRootTaskBehindRootTask(thisTask.getRootTask(), restoreAt);
 
-                if (com.android.wm.shell.Flags.enableRecentsBookendTransition()) {
-                    // Because we are in a transient launch transition, the requested visibility of
-                    // tasks does not actually change for the transient-hide tasks, but we do want
-                    // the restoration of these transient-hide tasks to top to be a part of this
-                    // finish transition
-                    final Transition collectingTransition = chain.getTransition();
-                    if (collectingTransition != null) {
-                        collectingTransition.updateChangesForRestoreTransientHideTasks(
-                                transientLaunchTransition);
-                    }
+                // Because we are in a transient launch transition, the requested visibility of
+                // tasks does not actually change for the transient-hide tasks, but we do want
+                // the restoration of these transient-hide tasks to top to be a part of this
+                // finish transition
+                final Transition collectingTransition = chain.getTransition();
+                if (collectingTransition != null) {
+                    collectingTransition.updateChangesForRestoreTransientHideTasks(
+                            transientLaunchTransition);
                 }
 
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;

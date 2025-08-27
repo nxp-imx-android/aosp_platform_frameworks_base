@@ -30,7 +30,6 @@ import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSIT
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
-import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
 import static com.android.wm.shell.Flags.FLAG_FIX_BUBBLES_TO_RECENTS;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
@@ -396,7 +395,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION)
     public void testMerge_consumeBookendTransition() throws Exception {
         // Start and finish the transition
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
@@ -428,7 +426,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION)
     public void testMerge_pendingBookendTransition_mergesTransition() throws Exception {
         // Start and finish the transition
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
@@ -575,7 +572,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION)
     public void testMerge_cancelToHome_onTransitSleep() throws Exception {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_SLEEP)
                 .build();
@@ -583,7 +579,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION, FLAG_ENABLE_PIP2})
+    @EnableFlags(FLAG_ENABLE_PIP2)
     public void testMerge_cancelToHome_onTransitRemovePip() throws Exception {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_REMOVE_PIP)
                 .build();
