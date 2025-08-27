@@ -59,7 +59,6 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinderImpl.InflationTaskTracker
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel
-import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction
 import com.android.systemui.statusbar.notification.row.shared.NewRemoteViews
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel
 import com.android.systemui.statusbar.policy.InflatedSmartReplyState
@@ -87,7 +86,6 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @RunWithLooper
-@EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
 class NotificationRowContentBinderImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     init {
@@ -514,7 +512,6 @@ class NotificationRowContentBinderImplTest(flags: FlagsParameterization) : Sysui
 
     @Test
     @Throws(java.lang.Exception::class)
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     fun testSensitiveContentPublicView_messageStyle() {
         val displayName = "Display Name"
         val messageText = "Message Text"
@@ -557,7 +554,6 @@ class NotificationRowContentBinderImplTest(flags: FlagsParameterization) : Sysui
 
     @Test
     @Throws(java.lang.Exception::class)
-    @EnableFlags(LockscreenOtpRedaction.FLAG_NAME)
     fun testSensitiveContentPublicView_nonMessageStyle() {
         val contentTitle = "Content Title"
         val contentText = "Content Text"

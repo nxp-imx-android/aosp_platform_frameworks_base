@@ -78,7 +78,6 @@ import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -376,7 +375,7 @@ public class NotificationLockscreenUserManagerImpl implements
 
         // To avoid dependency injection cycle, finish constructing this object before using the
         // KeyguardInteractor. The CoroutineScope will only be null in tests.
-        if (LockscreenOtpRedaction.isEnabled() && coroutineScope != null) {
+        if (coroutineScope != null) {
             mMainExecutor.execute(() -> {
                 JavaAdapterKt.collectFlow(coroutineScope,
                     keyguardInteractor.get().isKeyguardDismissible(),
@@ -774,10 +773,6 @@ public class NotificationLockscreenUserManagerImpl implements
      * This version of the method logs a metric about the request.
      */
     private boolean shouldShowSensitiveContentRedactedView(NotificationEntry ent) {
-        if (!LockscreenOtpRedaction.isEnabled()) {
-            return false;
-        }
-
         if (ent.getRanking() == null || !ent.getRanking().hasSensitiveContent()) {
             return false;
         }

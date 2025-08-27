@@ -74,7 +74,6 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel
-import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction
 import com.android.systemui.statusbar.notification.row.shared.NewRemoteViews
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder
@@ -210,18 +209,16 @@ constructor(
                     )
                 }
         }
-        if (LockscreenOtpRedaction.isEnabled) {
-            result.inflatedPublicSingleLineView =
-                result.contentModel.publicSingleLineViewModel?.let { viewModel ->
-                    SingleLineViewInflater.inflatePublicSingleLineView(
-                        viewModel.isConversation(),
-                        reInflateFlags,
-                        entry,
-                        systemUIContext,
-                        logger,
-                    )
-                }
-        }
+        result.inflatedPublicSingleLineView =
+            result.contentModel.publicSingleLineViewModel?.let { viewModel ->
+                SingleLineViewInflater.inflatePublicSingleLineView(
+                    viewModel.isConversation(),
+                    reInflateFlags,
+                    entry,
+                    systemUIContext,
+                    logger,
+                )
+            }
         apply(
             inflationExecutor,
             inflateSynchronously,
@@ -304,10 +301,8 @@ constructor(
                 }
             }
             FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE -> {
-                if (LockscreenOtpRedaction.isEnabled) {
-                    row.publicLayout.performWhenContentInactive(VISIBLE_TYPE_SINGLELINE) {
-                        row.publicLayout.setSingleLineView(null)
-                    }
+                row.publicLayout.performWhenContentInactive(VISIBLE_TYPE_SINGLELINE) {
+                    row.publicLayout.setSingleLineView(null)
                 }
             }
             else -> {}
@@ -343,10 +338,7 @@ constructor(
         ) {
             row.privateLayout.removeContentInactiveRunnable(VISIBLE_TYPE_SINGLELINE)
         }
-        if (
-            LockscreenOtpRedaction.isEnabled &&
-                contentViews and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0
-        ) {
+        if (contentViews and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0) {
             row.publicLayout.removeContentInactiveRunnable(VISIBLE_TYPE_SINGLELINE)
         }
     }
@@ -476,19 +468,17 @@ constructor(
                     }
             }
 
-            if (LockscreenOtpRedaction.isEnabled) {
-                logger.logAsyncTaskProgress(entry.logKey, "inflating public single line view")
-                inflationProgress.inflatedPublicSingleLineView =
-                    inflationProgress.contentModel.publicSingleLineViewModel?.let { viewModel ->
-                        SingleLineViewInflater.inflatePublicSingleLineView(
-                            viewModel.isConversation(),
-                            reInflateFlags,
-                            entry,
-                            context,
-                            logger,
-                        )
-                    }
-            }
+            logger.logAsyncTaskProgress(entry.logKey, "inflating public single line view")
+            inflationProgress.inflatedPublicSingleLineView =
+                inflationProgress.contentModel.publicSingleLineViewModel?.let { viewModel ->
+                    SingleLineViewInflater.inflatePublicSingleLineView(
+                        viewModel.isConversation(),
+                        reInflateFlags,
+                        entry,
+                        context,
+                        logger,
+                    )
+                }
 
             logger.logAsyncTaskProgress(entry.logKey, "loading RON images")
             inflationProgress.rowImageInflater.loadImagesSynchronously(packageContext)
@@ -755,10 +745,7 @@ constructor(
                 } else null
 
             val publicSingleLineViewModel =
-                if (
-                    LockscreenOtpRedaction.isEnabled &&
-                        reInflateFlags and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0
-                ) {
+                if (reInflateFlags and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0) {
                     logger.logAsyncTaskProgress(
                         entry.logKey,
                         "inflating public single line view model",
@@ -879,10 +866,7 @@ constructor(
                 val public =
                     if (reInflateFlags and FLAG_CONTENT_VIEW_PUBLIC != 0) {
                         logger.logAsyncTaskProgress(row.loggingKey, "creating public remote view")
-                        if (
-                            LockscreenOtpRedaction.isEnabled &&
-                                bindParams.redactionType == REDACTION_TYPE_OTP
-                        ) {
+                        if (bindParams.redactionType == REDACTION_TYPE_OTP) {
                             createSensitiveContentMessageNotification(
                                     entry.sbn.notification,
                                     builder.style,
@@ -1588,10 +1572,7 @@ constructor(
                 }
             }
 
-            if (
-                LockscreenOtpRedaction.isEnabled &&
-                    reInflateFlags and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0
-            ) {
+            if (reInflateFlags and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE != 0) {
                 val singleLineView = result.inflatedPublicSingleLineView
                 val viewModel = result.contentModel.publicSingleLineViewModel
                 if (singleLineView != null && viewModel != null) {
