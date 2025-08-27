@@ -221,3 +221,11 @@ flag {
   description: "Deprecate unsupported show/hide flags."
   bug: "322992891"
 }
+
+flag {
+  name: "fix_navbar_deadzone"
+  namespace: "input_method"
+  description: "Reduce DeadZone for navbar"
+  bug: "364856257"
+}
+
