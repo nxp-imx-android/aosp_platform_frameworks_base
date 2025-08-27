@@ -146,6 +146,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      */
     private long mConnectAttempted = -1;
     private long mBondFailureTimeMillis = -1;
+    private long mConnectionFailureTimeMillis = -1;
     private boolean mIsAclConnectedBrEdr = false;
     private boolean mIsAclConnectedLe = false;
 
@@ -362,6 +363,16 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             }
 
             HearingAidStatsLogUtils.updateHistoryIfNeeded(mContext, this, profile, newProfileState);
+        }
+
+        if (Flags.enableBluetoothDiagnosis() && !isBusy()) {
+            if (isProfileConnectedFail()) {
+                mConnectionFailureTimeMillis = SystemClock.elapsedRealtime();
+                dispatchAttributesChanged();
+            } else if (mConnectionFailureTimeMillis > -1) {
+                mConnectionFailureTimeMillis = -1;
+                dispatchAttributesChanged();
+            }
         }
 
         fetchActiveDevices();
@@ -1209,6 +1220,10 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
     public long getBondFailureTimeMillis() {
         return mBondFailureTimeMillis;
+    }
+
+    public long getConnectionFailureTimeMillis() {
+        return mConnectionFailureTimeMillis;
     }
 
     public BluetoothClass getBtClass() {

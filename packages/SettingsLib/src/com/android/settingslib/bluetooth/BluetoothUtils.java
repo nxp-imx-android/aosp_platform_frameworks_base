@@ -92,6 +92,7 @@ public class BluetoothUtils {
 
     private static final String TEMP_BOND_TYPE = "TEMP_BOND_TYPE";
     private static final String TEMP_BOND_DEVICE_METADATA_VALUE = "le_audio_sharing";
+    private static final String BLUETOOTH_DIAGNOSIS_KEY = "cs_bt_diagnostics_enabled";
 
     private static ErrorListener sErrorListener;
 
@@ -1410,5 +1411,12 @@ public class BluetoothUtils {
         }
 
         return !assistantProfile.getAllConnectedDevices().isEmpty();
+    }
+
+    /** Checks if Bluetooth Diagnosis is available by reading from Settings Secure. */
+    public static boolean isBluetoothDiagnosisAvailable(@NonNull Context context) {
+        return Flags.enableBluetoothDiagnosis()
+                && Settings.Secure.getInt(context.getContentResolver(), BLUETOOTH_DIAGNOSIS_KEY, -1)
+                        > 0;
     }
 }
