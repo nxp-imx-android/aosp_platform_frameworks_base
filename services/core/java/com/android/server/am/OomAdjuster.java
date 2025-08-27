@@ -396,6 +396,21 @@ public abstract class OomAdjuster {
     public interface Callback {
         /** Notifies the client component when a process's OOM adjustment changes. */
         void onOomAdjustChanged(int oldAdj, int newAdj, ProcessRecordInternal appInternal);
+
+        /**
+         * Notifies the client component to evaluate and apply process freeze state changes.
+         *
+         * @param app The process record representing the application.
+         * @param freezePolicy True if the process should be frozen.
+         * @param oomAdjReason The reason for the OOM adjustment leading to this call.
+         * @param immediate True if the freeze/unfreeze action should be applied immediately.
+         * @param oldOomAdj The previous OOM adjustment score of the process.
+         * @param shouldNotFreezeChanged True if the process's {@code shouldNotFreeze} property
+         *        has changed during the current OOM adjustment cycle.
+         */
+        void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
+                @OomAdjReason int oomAdjReason, boolean immediate, int oldOomAdj,
+                boolean shouldNotFreezeChanged);
     }
 
     @VisibleForTesting
@@ -2595,105 +2610,10 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     void updateAppFreezeStateLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason,
             boolean immediate, int oldOomAdj) {
-        if (!mService.getCachedAppOptimizer().useFreezer()) {
-            return;
-        }
-
         final boolean freezePolicy = getFreezePolicy(app);
-        if (Flags.traceUpdateAppFreezeStateLsp()) {
-            final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.FREEZER_CUTOFF_ADJ
-                    ^ oldOomAdj >= mConstants.FREEZER_CUTOFF_ADJ) || oldOomAdj == UNKNOWN_ADJ;
-            final boolean shouldNotFreezeChanged = app.shouldNotFreezeAdjSeq() == mAdjSeq;
-            final boolean hasCpuCapability =
-                    (PROCESS_CAPABILITY_CPU_TIME & app.getCurCapability())
-                            == PROCESS_CAPABILITY_CPU_TIME;
-            final boolean usedToHaveCpuCapability =
-                    (PROCESS_CAPABILITY_CPU_TIME & app.getSetCapability())
-                            == PROCESS_CAPABILITY_CPU_TIME;
-            final boolean cpuCapabilityChanged = hasCpuCapability != usedToHaveCpuCapability;
-            final boolean hasImplicitCpuCapability =
-                    (PROCESS_CAPABILITY_IMPLICIT_CPU_TIME & app.getCurCapability())
-                            == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
-            final boolean usedToHaveImplicitCpuCapability =
-                    (PROCESS_CAPABILITY_IMPLICIT_CPU_TIME & app.getSetCapability())
-                            == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
-            final boolean implicitCpuCapabilityChanged =
-                    hasImplicitCpuCapability != usedToHaveImplicitCpuCapability;
-            final int cpuTimeReasons = app.getCurCpuTimeReasons();
-            final int implicitCpuTimeReasons = app.getCurImplicitCpuTimeReasons();
-            if ((oomAdjChanged || shouldNotFreezeChanged || cpuCapabilityChanged
-                    || implicitCpuCapabilityChanged)
-                    && Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
-                Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                        "FreezeLite",
-                        (app.isFrozen() ? "F" : "-")
-                        + (app.isPendingFreeze() ? "P" : "-")
-                        + (/* Keeping for app.isFreezeExempt() */ "-")
-                        + (app.shouldNotFreeze() ? "N" : "-")
-                        + (hasCpuCapability ? "T" : "-")
-                        + (hasImplicitCpuCapability ? "X" : "-")
-                        + (immediate ? "I" : "-")
-                        + (freezePolicy ? "Z" : "-")
-                        + (Flags.cpuTimeCapabilityBasedFreezePolicy() ? "t" : "-")
-                        + (Flags.prototypeAggressiveFreezing() ? "a" : "-")
-                        + "/" + app.getPid()
-                        + "/" + app.getCurAdj()
-                        + "/" + oldOomAdj
-                        + "/" + app.shouldNotFreezeReason()
-                        + "/" + cpuTimeReasons
-                        + "/" + implicitCpuTimeReasons);
-                Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                        CachedAppOptimizer.ATRACE_FREEZER_TRACK,
-                        "updateAppFreezeStateLSP " + app.processName
-                        + " pid: " + app.getPid()
-                        + " isFreezeExempt: " + false
-                        + " isFrozen: " + app.isFrozen()
-                        + " shouldNotFreeze: " + app.shouldNotFreeze()
-                        + " shouldNotFreezeReason: " + app.shouldNotFreezeReason()
-                        + " curAdj: " + app.getCurAdj()
-                        + " oldOomAdj: " + oldOomAdj
-                        + " immediate: " + immediate
-                        + " cpuCapability: " + hasCpuCapability
-                        + " implicitCpuCapability: " + hasImplicitCpuCapability
-                        + " cpuTimeReasons: 0x" + Integer.toHexString(cpuTimeReasons)
-                        + " implicitCpuTimeReasons: 0x"
-                                + Integer.toHexString(implicitCpuTimeReasons));
-            }
-        }
-
-        // TODO: b/425766486 - Consider how to pass ProcessRecordInternal to CachedAppOptimizer.
-        if (freezePolicy) {
-            if (Flags.cpuTimeCapabilityBasedFreezePolicy()
-                    && app.getCurAdj() < CACHED_APP_MIN_ADJ) {
-                Slog.wtfStack(TAG, "Non-cached process may get frozen soon: "
-                        + " name: " + app.processName
-                        + " curAdj: " + app.getCurAdj()
-                        + " oldOomAdj: " + oldOomAdj
-                        + " curRawAdj: " + app.getCurRawAdj()
-                        + " maxAdj: " + app.getMaxAdj()
-                        + " adjType: " + app.getAdjType()
-                        + " adjTarget: " + app.getAdjTarget()
-                        + " adjSource: " + app.getAdjSource()
-                        + " adjSourcePrcState: " + app.getAdjSourceProcState()
-                        + " serviceB: " + app.isServiceB()
-                        + " curProcState: " + app.getCurProcState()
-                        + " curRawProcState: " + app.getCurRawProcState()
-                        + " curSchedGroup: " + app.getCurrentSchedulingGroup());
-            }
-            // This process should be frozen.
-            if (immediate && !app.isFrozen()) {
-                // And it will be frozen immediately.
-                mService.getCachedAppOptimizer().freezeAppAsyncAtEarliestLSP((ProcessRecord) app);
-            } else if (!app.isFrozen() && !app.isPendingFreeze()) {
-                mService.getCachedAppOptimizer().freezeAppAsyncLSP((ProcessRecord) app);
-            }
-        } else {
-            // This process should not be frozen.
-            if (app.isFrozen() || app.isPendingFreeze()) {
-                mService.getCachedAppOptimizer().unfreezeAppLSP((ProcessRecord) app,
-                        CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason(oomAdjReason));
-            }
-        }
+        final boolean shouldNotFreezeChanged = app.shouldNotFreezeAdjSeq() == mAdjSeq;
+        mCallback.onProcessFreezabilityChanged(app, freezePolicy, oomAdjReason, immediate,
+                oldOomAdj, shouldNotFreezeChanged);
     }
 
     /**
