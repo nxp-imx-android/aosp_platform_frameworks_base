@@ -421,12 +421,7 @@ class DesktopTilingWindowDecoration(
         val rightTiledTask = rightTaskResizingHelper ?: return false
         for (change in info.getChanges()) {
             val sc: SurfaceControl = change.getLeash()
-            val endBounds =
-                if (change.taskInfo?.taskId == leftTiledTask.taskInfo.taskId) {
-                    leftTiledTask.bounds
-                } else {
-                    rightTiledTask.bounds
-                }
+            val endBounds = change.endAbsBounds
             startTransaction.setWindowCrop(sc, endBounds.width(), endBounds.height())
             finishTransaction.setWindowCrop(sc, endBounds.width(), endBounds.height())
         }
