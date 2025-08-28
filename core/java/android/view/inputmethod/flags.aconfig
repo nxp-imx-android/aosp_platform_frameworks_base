@@ -223,9 +223,12 @@ flag {
 }
 
 flag {
-  name: "fix_navbar_deadzone"
+  name: "fix_navbar_dead_zone"
   namespace: "input_method"
-  description: "Reduce DeadZone for navbar"
+  description: "Fix DeadZone consuming events for navbar"
   bug: "364856257"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 

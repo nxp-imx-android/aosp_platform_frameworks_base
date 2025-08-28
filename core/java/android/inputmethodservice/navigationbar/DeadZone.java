@@ -120,7 +120,7 @@ final class DeadZone {
 
         mSizeMin = dpToPx(NAVIGATION_BAR_DEADZONE_SIZE, res);
         mSizeMax = dpToPx(NAVIGATION_BAR_DEADZONE_SIZE_MAX, res);
-        if (Flags.fixNavbarDeadzone()) {
+        if (Flags.fixNavbarDeadZone()) {
             mSizeMax = mSizeMax / 2;
             mSizeMin = mSizeMin / 2;
         }
