@@ -872,8 +872,6 @@ public final class ViewRootImpl implements ViewParent,
     private final Rect mLastLayoutFrame;
     Rect mOverrideInsetsFrame;
 
-    final Rect mPendingBackDropFrame = new Rect();
-
     private int mRelayoutSeq;
     private final Rect mWinFrameInScreen = new Rect();
     private final InsetsState mTempInsets = new InsetsState();
@@ -2377,14 +2375,6 @@ public final class ViewRootImpl implements ViewParent,
         mTmpFrames.displayFrame.set(displayFrame);
         if (mTmpFrames.attachedFrame != null && attachedFrame != null) {
             mTmpFrames.attachedFrame.set(attachedFrame);
-        }
-
-        if (mDragResizing && mUseMTRenderer) {
-            boolean fullscreen = frame.equals(mPendingBackDropFrame);
-            for (int i = mWindowCallbacks.size() - 1; i >= 0; i--) {
-                mWindowCallbacks.get(i).onWindowSizeIsChanging(mPendingBackDropFrame, fullscreen,
-                        mAttachInfo.mVisibleInsets, mAttachInfo.mStableInsets);
-            }
         }
 
         mForceNextWindowRelayout |= forceLayout;
@@ -4082,12 +4072,7 @@ public final class ViewRootImpl implements ViewParent,
 
                 if (mDragResizing != dragResizing) {
                     if (dragResizing) {
-                        final boolean backdropSizeMatchesFrame =
-                                mWinFrame.width() == mPendingBackDropFrame.width()
-                                        && mWinFrame.height() == mPendingBackDropFrame.height();
-                        // TODO: Need cutout?
-                        startDragResizing(mPendingBackDropFrame, !backdropSizeMatchesFrame,
-                                mAttachInfo.mContentInsets, mAttachInfo.mStableInsets);
+                        startDragResizing();
                     } else {
                         // We shouldn't come here, but if we come we should end the resize.
                         endDragResizing();
@@ -9832,15 +9817,6 @@ public final class ViewRootImpl implements ViewParent,
             mLastLayoutFrame.set(frame);
         }
 
-        final WindowConfiguration winConfig = getCompatWindowConfiguration();
-        mPendingBackDropFrame.set(mPendingDragResizing && !winConfig.useWindowFrameForBackdrop()
-                ? winConfig.getMaxBounds()
-                : frame);
-        // Surface position is now inherited from parent, and BackdropFrameRenderer uses backdrop
-        // frame to position content. Thus, we just keep the size of backdrop frame, and remove the
-        // offset to avoid double offset from display origin.
-        mPendingBackDropFrame.offsetTo(0, 0);
-
         mInsetsController.onFrameChanged(mOverrideInsetsFrame != null ?
                 mOverrideInsetsFrame : frame);
     }
@@ -12121,14 +12097,12 @@ public final class ViewRootImpl implements ViewParent,
     /**
      * Start a drag resizing which will inform all listeners that a window resize is taking place.
      */
-    private void startDragResizing(Rect initialBounds, boolean fullscreen, Rect systemInsets,
-            Rect stableInsets) {
+    private void startDragResizing() {
         if (!mDragResizing) {
             mDragResizing = true;
             if (mUseMTRenderer) {
                 for (int i = mWindowCallbacks.size() - 1; i >= 0; i--) {
-                    mWindowCallbacks.get(i).onWindowDragResizeStart(
-                            initialBounds, fullscreen, systemInsets, stableInsets);
+                    mWindowCallbacks.get(i).onWindowDragResizeStart();
                 }
             }
             mFullRedrawNeeded = true;
