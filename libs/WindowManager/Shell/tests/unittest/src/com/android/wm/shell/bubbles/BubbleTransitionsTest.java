@@ -39,8 +39,11 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -91,6 +94,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Tests of {@link BubbleTransitions}.
@@ -160,43 +164,57 @@ public class BubbleTransitionsTest extends ShellTestCase {
                     taskViewTaskController);
             return new BubbleTaskView(taskView, syncExecutor);
         };
-        final BubbleBarExpandedView bbev = mock(BubbleBarExpandedView.class);
-        final ViewRootImpl vri = mock(ViewRootImpl.class);
-        when(bbev.getViewRootImpl()).thenReturn(vri);
-        when(mBubble.getBubbleBarExpandedView()).thenReturn(bbev);
+        setUpBubbleBarExpandedView(mBubble);
     }
 
     private ActivityManager.RunningTaskInfo setupBubble() {
-        return setupBubble(mTaskView, mTaskViewTaskController);
+        return setupBubble(mBubble, mTaskView, mTaskViewTaskController);
     }
 
-    private ActivityManager.RunningTaskInfo setupBubble(TaskView taskView,
+    private ActivityManager.RunningTaskInfo setupBubble(Bubble bubble, TaskView taskView,
             TaskViewTaskController taskViewTaskController) {
         final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
         final WindowContainerToken token = new MockToken().token();
         taskInfo.token = token;
         taskInfo.configuration.windowConfiguration.setActivityType(ACTIVITY_TYPE_STANDARD);
-        when(taskViewTaskController.getTaskInfo()).thenReturn(taskInfo);
-        when(taskView.getController()).thenReturn(taskViewTaskController);
-        when(mBubble.getTaskView()).thenReturn(taskView);
-        when(taskView.getTaskInfo()).thenReturn(taskInfo);
+        doReturn(taskInfo).when(taskViewTaskController).getTaskInfo();
+        doReturn(taskViewTaskController).when(taskView).getController();
+        doReturn(taskView).when(bubble).getTaskView();
+        doReturn(taskInfo).when(taskView).getTaskInfo();
         mRepository.add(taskViewTaskController);
         return taskInfo;
     }
 
     private ActivityManager.RunningTaskInfo setupAppBubble() {
-        return setupAppBubble(mTaskView, mTaskViewTaskController);
+        return setupAppBubble(mBubble, mTaskView, mTaskViewTaskController);
     }
 
-    private ActivityManager.RunningTaskInfo setupAppBubble(TaskView taskView,
+    private ActivityManager.RunningTaskInfo setupAppBubble(Bubble bubble, TaskView taskView,
             TaskViewTaskController taskViewTaskController) {
-        when(mBubble.isApp()).thenReturn(true);
-        when(mBubble.getIntent()).thenReturn(new Intent());
-        when(mBubble.getUser()).thenReturn(new UserHandle(0));
+        doReturn(true).when(bubble).isApp();
+        doReturn(new Intent()).when(bubble).getIntent();
+        doReturn(new UserHandle(0)).when(bubble).getUser();
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
-                taskView, taskViewTaskController);
-        when(mBubbleController.shouldBeAppBubble(taskInfo)).thenReturn(true);
+                bubble, taskView, taskViewTaskController);
+        doReturn(true).when(mBubbleController).shouldBeAppBubble(taskInfo);
         return taskInfo;
+    }
+
+    private TaskView setUpBubbleTaskView(Bubble bubble) {
+        final SurfaceControl taskViewLeash = new SurfaceControl.Builder().setName("taskViewLeash")
+                .build();
+        final TaskView taskView = mock(TaskView.class);
+        doReturn(taskViewLeash).when(taskView).getSurfaceControl();
+        doReturn(taskView).when(bubble).getTaskView();
+        return taskView;
+    }
+
+    private BubbleBarExpandedView setUpBubbleBarExpandedView(Bubble bubble) {
+        final BubbleBarExpandedView bbev = mock(BubbleBarExpandedView.class);
+        final ViewRootImpl vri = mock(ViewRootImpl.class);
+        doReturn(vri).when(bbev).getViewRootImpl();
+        doReturn(bbev).when(bubble).getBubbleBarExpandedView();
+        return bbev;
     }
 
     private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo,
@@ -510,13 +528,11 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void convertFloatingBubbleToBarBubble() {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
 
-        final BubbleBarExpandedView expandedView = mock(BubbleBarExpandedView.class);
-        final ViewRootImpl viewRoot = mock(ViewRootImpl.class);
+        final BubbleBarExpandedView expandedView = setUpBubbleBarExpandedView(mBubble);
+        final ViewRootImpl viewRoot = expandedView.getViewRootImpl();
         final SurfaceControl bubblesWindowSurface = mock(SurfaceControl.class);
-        when(expandedView.getViewRootImpl()).thenReturn(viewRoot);
         when(viewRoot.updateAndGetBoundsLayer(any(SurfaceControl.Transaction.class)))
                 .thenReturn(bubblesWindowSurface);
-        when(mBubble.getBubbleBarExpandedView()).thenReturn(expandedView);
         when(expandedView.getRestingCornerRadius()).thenReturn(6f);
 
         final SurfaceControl taskViewSurface = mock(SurfaceControl.class);
@@ -583,14 +599,11 @@ public class BubbleTransitionsTest extends ShellTestCase {
     @Test
     public void convertFloatingBubbleToBarBubble_mergeWithUnfold() {
         setupBubble();
-
-        final BubbleBarExpandedView expandedView = mock(BubbleBarExpandedView.class);
-        final ViewRootImpl viewRoot = mock(ViewRootImpl.class);
+        final BubbleBarExpandedView expandedView = setUpBubbleBarExpandedView(mBubble);
+        final ViewRootImpl viewRoot = expandedView.getViewRootImpl();
         final SurfaceControl bubblesWindowSurface = mock(SurfaceControl.class);
-        when(expandedView.getViewRootImpl()).thenReturn(viewRoot);
         when(viewRoot.updateAndGetBoundsLayer(any(SurfaceControl.Transaction.class)))
                 .thenReturn(bubblesWindowSurface);
-        when(mBubble.getBubbleBarExpandedView()).thenReturn(expandedView);
         when(expandedView.getRestingCornerRadius()).thenReturn(6f);
 
         final SurfaceControl taskViewSurface = mock(SurfaceControl.class);
@@ -1018,6 +1031,86 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 
+    @Test
+    public void testJumpcutBubbleSwitch_bubbleBar() {
+        // Setup open Bubble
+        final TaskView openingTaskView = setUpBubbleTaskView(mBubble);
+        final ActivityManager.RunningTaskInfo openingTaskInfo = setupAppBubble(
+                mBubble, openingTaskView, mTaskViewTaskController);
+        // Setup close Bubble
+        final Bubble closingBubble = mock(Bubble.class);
+        setUpBubbleBarExpandedView(closingBubble);
+        final TaskView closingTaskView = setUpBubbleTaskView(closingBubble);
+        final SurfaceControl closingTaskViewLeash = closingTaskView.getSurfaceControl();
+        final ActivityManager.RunningTaskInfo closingTaskInfo = setupAppBubble(
+                closingBubble, closingTaskView, mTaskViewTaskController);
+        // Setup Transition
+        final IBinder transitionToken = mock(IBinder.class);
+        final Consumer<Transitions.TransitionHandler> onInflatedCallback = mock(Consumer.class);
+        final SurfaceControl openingTaskLeash =
+                new SurfaceControl.Builder().setName("openingTaskLeash").build();
+        final TransitionInfo.Change openingChg = new TransitionInfo.Change(openingTaskInfo.token,
+                openingTaskLeash);
+        openingChg.setTaskInfo(openingTaskInfo);
+        openingChg.setMode(TRANSIT_OPEN);
+        final SurfaceControl closingTaskLeash =
+                new SurfaceControl.Builder().setName("closingTaskLeash").build();
+        final TransitionInfo.Change closingChg = new TransitionInfo.Change(closingTaskInfo.token,
+                closingTaskLeash);
+        closingChg.setTaskInfo(openingTaskInfo);
+        closingChg.setMode(TRANSIT_CLOSE);
+        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        info.addChange(openingChg);
+        info.addChange(closingChg);
+        final SurfaceControl.Transaction startT = spy(new SurfaceControl.Transaction());
+        final SurfaceControl.Transaction finishT = spy(new SurfaceControl.Transaction());
+        doNothing().when(startT).apply();
+        doNothing().when(finishT).apply();
+        final Transitions.TransitionFinishCallback finishCb =
+                mock(Transitions.TransitionFinishCallback.class);
+
+        final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
+                (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
+                        .startJumpcutBubbleSwitchTransition(mBubble, closingBubble,
+                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
+                                transitionToken, onInflatedCallback);
+
+        verify(mBubble).setPreparingTransition(bt);
+
+        bt.onInflated(mBubble);
+
+        // Start playing the transition
+        bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
+
+        // Verify startT modifications
+        verify(startT).setAlpha(closingTaskLeash, 1f);
+        verify(startT).setPosition(closingTaskLeash, 0, 0);
+        verify(startT).reparent(closingTaskLeash, closingTaskViewLeash);
+        verify(startT).show(closingTaskLeash);
+        verify(startT).apply();
+
+        // Bubble data gets updated
+        verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean());
+
+        // Simulate surfaceCreated and continueExpand so the animation can start
+        bt.continueExpand();
+        bt.surfaceCreated();
+
+        // Verify animateExpand is called
+        ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
+        verify(mLayerView).animateExpand(eq(closingBubble), animCb.capture());
+
+        // Trigger animation callback to finish
+        clearInvocations(mBubble);
+        verify(finishCb, never()).onTransitionFinished(any());
+        animCb.getValue().run();
+        verify(finishCb).onTransitionFinished(any());
+
+        // Verify cleanup
+        verify(mBubble).setPreparingTransition(null);
+    }
+
     /**
      * Test a scenario where the TaskViewTransitions queue has a pending TaskView transition. And
      * a new transition for launching a different bubble comes in during it. Once both transitions
@@ -1028,7 +1121,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Set up a bubble and have it queue a transition in the queue that will remain pending
         TaskView existingTaskView = mock(TaskView.class);
         TaskViewTaskController existingTvc = mock(TaskViewTaskController.class);
-        setupAppBubble(existingTaskView, existingTvc);
+        setupAppBubble(mBubble, existingTaskView, existingTvc);
         final IBinder existingTransition = mock(IBinder.class);
         when(mTransitions.startTransition(anyInt(), any(), any())).thenReturn(existingTransition);
         mTaskViewTransitions.setTaskViewVisible(existingTvc, true);

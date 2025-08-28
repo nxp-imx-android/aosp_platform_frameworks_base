@@ -1813,6 +1813,44 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     /**
+     * Jumpcut animation to switch the Task showing in expanded Bubble.
+     */
+    @NonNull
+    Transitions.TransitionHandler jumpcutBubbleSwitchTransition(
+            @NonNull ActivityManager.RunningTaskInfo openingTaskInfo,
+            @NonNull ActivityManager.RunningTaskInfo closingTaskInfo,
+            @NonNull IBinder transition,
+            @NonNull Consumer<Transitions.TransitionHandler> onInflatedCallback) {
+        final Bubble existingBubble = mBubbleData.getBubbleInStackWithTaskId(
+                closingTaskInfo.taskId);
+        if (existingBubble == null || mBubbleData.getSelectedBubble() != existingBubble
+                || !mBubbleData.isExpanded()) {
+            ProtoLog.w(WM_SHELL_BUBBLES, "The existing Bubble for taskId=%s was not expanded,"
+                            + " fallback to expandStackAndSelectBubbleForExistingTransition",
+                    closingTaskInfo.taskId);
+            return expandStackAndSelectBubbleForExistingTransition(openingTaskInfo, transition,
+                    onInflatedCallback);
+        } else if (mBubbleData.getBubbleInStackWithTaskId(openingTaskInfo.taskId) != null) {
+            ProtoLog.w(WM_SHELL_BUBBLES, "There is an existing Bubble for the new launch taskId=%s,"
+                            + " fallback to expandStackAndSelectBubbleForExistingTransition",
+                    closingTaskInfo.taskId);
+            return expandStackAndSelectBubbleForExistingTransition(openingTaskInfo, transition,
+                    onInflatedCallback);
+        }
+
+        ProtoLog.v(WM_SHELL_BUBBLES, "jumpcutBubbleSwitchTransition() newTaskId=%s oldTaskId=%s",
+                openingTaskInfo.taskId, closingTaskInfo.taskId);
+
+        final Bubble newBubble = mBubbleData.getOrCreateBubble(openingTaskInfo);
+        newBubble.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
+
+        return mBubbleTransitions.startJumpcutBubbleSwitchTransition(newBubble, existingBubble,
+                mExpandedViewManager, mBubbleTaskViewFactory, mBubblePositioner, mStackView,
+                mLayerView, mBubbleIconFactory, mInflateSynchronously, transition,
+                onInflatedCallback);
+    }
+
+    /**
      * Expands and selects a bubble based on the provided {@link BubbleEntry}. If no bubble
      * exists for this entry, and it is able to bubble, a new bubble will be created.
      *
