@@ -21,11 +21,13 @@ import android.graphics.Rect
 import android.media.AudioManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
+import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.qs.flags.QsDetailedView
@@ -33,6 +35,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -80,6 +83,7 @@ constructor(
     val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     @Assisted private val volumeSliderCoroutineScope: CoroutineScope?,
     val toolbarViewModelFactory: ToolbarViewModel.Factory,
+    private val blurConfig: BlurConfig,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) : ExclusiveActivatable() {
 
@@ -117,6 +121,21 @@ constructor(
                     flowOf(false)
                 },
         )
+
+    /**
+     * Calculates the blur radius to apply to the overlay.
+     *
+     * @param transitionState The current transition state of the scene (from its `ContentScope`)
+     * @return The blur radius to apply to the scene UI, in pixels.
+     */
+    fun calculateTargetBlurRadius(transitionState: TransitionState): Float {
+        return when {
+            !isTransparencyEnabled -> 0f
+            Overlays.QuickSettingsShade !in transitionState.currentOverlays -> 0f
+            Overlays.Bouncer in transitionState.currentOverlays -> blurConfig.maxBlurRadiusPx
+            else -> 0f
+        }
+    }
 
     private val showVolumeSlider =
         QsDetailedView.isEnabled &&

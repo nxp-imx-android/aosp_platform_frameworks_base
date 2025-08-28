@@ -23,12 +23,14 @@ import android.platform.test.annotations.EnableFlags
 import androidx.compose.ui.geometry.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
@@ -254,6 +256,63 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             fakeWindowRootViewBlurRepository.isBlurSupported.value = false
 
             assertThat(underTest.isTransparencyEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
+    fun calculateTargetBlurRadius() =
+        kosmos.runTest {
+            // Only bouncer shown: no blur.
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
+
+            // Quick Settings shade and bouncer shown: apply blur.
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays =
+                                    setOf(Overlays.Bouncer, Overlays.QuickSettingsShade),
+                            )
+                    )
+                )
+                .isEqualTo(blurConfig.maxBlurRadiusPx)
+
+            // No bouncer shown: no blur.
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.QuickSettingsShade),
+                            )
+                    )
+                )
+                .isEqualTo(0)
+
+            // Blur not supported: no blur.
+            fakeWindowRootViewBlurRepository.isBlurSupported.value = false
+            assertThat(
+                    underTest.calculateTargetBlurRadius(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays =
+                                    setOf(Overlays.Bouncer, Overlays.QuickSettingsShade),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
         }
 
     private fun Kosmos.lockDevice() {
