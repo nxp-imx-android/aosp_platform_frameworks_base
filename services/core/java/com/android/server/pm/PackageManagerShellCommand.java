@@ -749,7 +749,7 @@ class PackageManagerShellCommand extends ShellCommand {
     }
 
     private int runPath() throws RemoteException {
-        int userId = UserHandle.USER_SYSTEM;
+        int userId = UserHandle.USER_CURRENT_OR_SELF;
         String option = getNextOption();
         if (option != null && option.equals("--user")) {
             userId = UserHandle.parseUserArg(getNextArgRequired());
@@ -762,6 +762,8 @@ class PackageManagerShellCommand extends ShellCommand {
         }
         final int translatedUserId =
                 translateUserId(userId, UserHandle.USER_NULL, "runPath");
+        Slog.d(TAG, "runPath with userId: USER_CURRENT_OR_SELF translated to userId:"
+                + translatedUserId);
         return displayPackageFilePath(pkg, translatedUserId);
     }
 
