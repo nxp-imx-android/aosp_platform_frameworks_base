@@ -24,6 +24,7 @@ import static android.content.pm.UserInfo.FLAG_ADMIN;
 import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.content.pm.UserInfo.flagsToString;
 import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
+import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
 import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
@@ -1547,6 +1548,14 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    @EnableFlags(FLAG_CREATE_INITIAL_USER)
+    public void testSetMainUser_secondaryFlag() {
+        // Should behave the same as when the "primary" flag is enabled
+        testSetMainUser();
+    }
+
+    @Test
     @EnableFlags(FLAG_DEMOTE_MAIN_USER)
     public void testSetMainUser_hasMainUser() {
         var mainUserId = assumeHasMainUser();
@@ -1596,8 +1605,8 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
-    public void testSetMainUser_flagDisabled() {
+    @DisableFlags({FLAG_DEMOTE_MAIN_USER, FLAG_CREATE_INITIAL_USER})
+    public void testSetMainUser_flagDemoteMainUserDisabled() {
         assumeDoesntHaveMainUser();
         var adminUser = createAdminUser();
         int userId = adminUser.id;
