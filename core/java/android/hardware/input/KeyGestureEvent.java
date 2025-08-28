@@ -606,6 +606,8 @@ public final class KeyGestureEvent {
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__MULTI_WINDOW_NAVIGATION;
             case KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK:
                 return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__QUIT_FOCUSED_DESKTOP_TASK;
+            case KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN:
+                return FrameworkStatsLog.KEYBOARD_SYSTEMS_EVENT_REPORTED__KEYBOARD_SYSTEM_EVENT__TOGGLE_FULLSCREEN;
             default:
                 return LOG_EVENT_UNSPECIFIED;
         }
