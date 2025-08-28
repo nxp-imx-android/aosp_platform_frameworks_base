@@ -75,9 +75,11 @@ HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$FreeNative
 HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$AllocationStats;->*
 
 # DeliQueue MessageQueue classes
+# TODO(shayba): remove the below once they're in the generated boot-image-profile.txt
 HSPLandroid/os/MessageHeap;->*
 HSPLandroid/os/MessageStack;->*
 HSPLandroid/os/WaitState;->*
+HSPLandroid/os/Message;->compareMessages(Landroid/os/Message;Landroid/os/Message;)I
 
 # While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
 # pre-initialized in the boot image to avoid redundant per-process overhead.
