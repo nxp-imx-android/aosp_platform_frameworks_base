@@ -41,7 +41,8 @@ abstract class FocusAppFromTaskbarOverflow(val rotation: Rotation = Rotation.ROT
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val browserApp = DesktopModeAppHelper(BrowserAppHelper(instrumentation))
+    private val browserAppHelper = BrowserAppHelper(instrumentation)
+    private val browserApp = DesktopModeAppHelper(browserAppHelper)
 
     private val firstApp = DesktopModeAppHelper(CalculatorAppHelper(instrumentation))
     private val secondApp = DesktopModeAppHelper(ClockAppHelper())
@@ -51,6 +52,8 @@ abstract class FocusAppFromTaskbarOverflow(val rotation: Rotation = Rotation.ROT
 
     @Before
     fun setup() {
+        browserAppHelper.launchViaIntent(wmHelper)
+        browserAppHelper.closePopupsIfNeeded(device)
         browserApp.enterDesktopMode(wmHelper, device)
         tapl.limitMaxNumberOfTaskbarIcons(8)
         tapl.showTaskbarIfHidden()
