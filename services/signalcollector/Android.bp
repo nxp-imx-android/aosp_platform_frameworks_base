@@ -11,7 +11,7 @@ java_library {
     name: "services.signal-collectors",
     srcs: ["java/**/*.java"],
     visibility: [
-        "//frameworks/base/services/core",
+        "//frameworks/base/services",
         "//frameworks/base/services/tests/servicestests/src/com/android/server/signalcollector",
     ],
     libs: [
