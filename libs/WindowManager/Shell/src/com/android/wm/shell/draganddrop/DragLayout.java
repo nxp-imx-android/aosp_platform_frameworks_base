@@ -20,6 +20,7 @@ import static android.app.StatusBarManager.DISABLE_NONE;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS;
 import static android.content.pm.ActivityInfo.CONFIG_UI_MODE;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION;
 
@@ -168,8 +169,12 @@ public class DragLayout extends LinearLayout
         // near-square devices may report the same orietation with insets taken into account
         mAllowLeftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(
                 context.getResources());
+        int displayId = (mSession != null && mSession.runningTaskInfo != null)
+                ? mSession.runningTaskInfo.displayId
+                : DEFAULT_DISPLAY;
+
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                getResources().getConfiguration());
+                getResources().getConfiguration(), displayId);
         setOrientation(mIsLeftRightSplit ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
         updateContainerMargins(mIsLeftRightSplit);
     }
@@ -267,8 +272,11 @@ public class DragLayout extends LinearLayout
     }
 
     public void onConfigChanged(Configuration newConfig) {
+        int displayId = (mSession != null && mSession.runningTaskInfo != null)
+                ? mSession.runningTaskInfo.displayId
+                : DEFAULT_DISPLAY;
         boolean isLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                newConfig);
+                newConfig, displayId);
         if (isLeftRightSplit != mIsLeftRightSplit) {
             mIsLeftRightSplit = isLeftRightSplit;
             setOrientation(mIsLeftRightSplit ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
