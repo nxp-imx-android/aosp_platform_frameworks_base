@@ -20,6 +20,7 @@ import android.util.Log
 import android.view.View
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.SourceType
 import com.android.systemui.statusbar.notification.collection.NotificationClassificationFlag
@@ -128,7 +129,9 @@ internal constructor(
         peopleHeaderController.reinflateView(parent)
         incomingHeaderController.reinflateView(parent)
         mediaContainerController.reinflateView(parent)
-        keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
+        if (!SceneContainerFlag.isEnabled) {
+            keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
+        }
         if (NotificationClassificationFlag.isEnabled) {
             newsHeaderController.reinflateView(parent)
             socialHeaderController.reinflateView(parent)

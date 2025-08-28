@@ -31,6 +31,7 @@ import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.shared.model.KeyguardSection
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 
@@ -44,6 +45,7 @@ constructor(
     private val mediaContainerId = R.id.status_view_media_container
 
     override fun addViews(constraintLayout: ConstraintLayout) {
+        SceneContainerFlag.assertInLegacyMode()
         val mediaFrame =
             FrameLayout(context, null).apply {
                 id = mediaContainerId

@@ -45,6 +45,7 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaFalsingSystem
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
@@ -76,7 +77,7 @@ constructor(
     private val bypassController: KeyguardBypassController,
     private val statusBarStateController: SysuiStatusBarStateController,
     @ShadeDisplayAware private val context: Context,
-    @ShadeDisplayAware configurationController: ConfigurationController,
+    @ShadeDisplayAware private val configurationController: ConfigurationController,
     private val splitShadeStateController: SplitShadeStateController,
     private val logger: KeyguardMediaControllerLogger,
     dumpManager: DumpManager,
@@ -106,6 +107,11 @@ constructor(
 
     init {
         dumpManager.registerDumpable(this)
+        setUpListenersAndCallbacks()
+    }
+
+    private fun setUpListenersAndCallbacks() {
+        if (SceneContainerFlag.isEnabled) return
 
         if (!MediaControlsInComposeFlag.isEnabled) {
             // First let's set the desired state that we want for this host
@@ -200,6 +206,7 @@ constructor(
      * Attaches media container in single pane mode, situated at the top of the notifications list
      */
     fun attachSinglePaneContainer(mediaView: MediaContainerView?) {
+        SceneContainerFlag.assertInLegacyMode()
         if (MediaControlsInComposeFlag.isEnabled) {
             singlePaneContainer = mediaView
             reattachHostView()
@@ -243,6 +250,7 @@ constructor(
 
     /** Attaches media container in split shade mode, situated to the left of notifications */
     fun attachSplitShadeContainer(container: ViewGroup) {
+        SceneContainerFlag.assertInLegacyMode()
         splitShadeContainer = container
         reattachHostView()
         refreshMediaPosition(reason = "attachSplitShadeContainer")
@@ -290,6 +298,7 @@ constructor(
     }
 
     fun refreshMediaPosition(reason: String) {
+        SceneContainerFlag.assertInLegacyMode()
         val currentState = statusBarStateController.state
 
         val keyguardOrUserSwitcher = (currentState == StatusBarState.KEYGUARD)
