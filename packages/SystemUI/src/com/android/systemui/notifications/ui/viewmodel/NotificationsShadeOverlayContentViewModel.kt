@@ -18,6 +18,7 @@ package com.android.systemui.notifications.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Rect
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
@@ -124,6 +125,9 @@ constructor(
                     flowOf(false)
                 },
         )
+
+    val alignmentOnWideScreens =
+        if (desktopInteractor.isNotificationShadeOnTopEnd) Alignment.TopEnd else Alignment.TopStart
 
     val mediaUiBehavior =
         MediaUiBehavior(
