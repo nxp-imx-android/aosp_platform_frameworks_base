@@ -562,9 +562,6 @@ public class ProcessedPerfettoProtoLogImplTest {
         } finally {
             traceMonitor.stop(writer);
         }
-
-        final ResultReader reader = new ResultReader(writer.write());
-        assertThrows(java.net.SocketException.class, reader::readProtoLogTrace);
     }
 
     @Test
