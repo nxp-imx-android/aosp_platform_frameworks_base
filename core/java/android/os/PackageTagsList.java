@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.location.flags.Flags;
 import android.util.ArrayMap;
@@ -74,6 +75,19 @@ public final class PackageTagsList implements Parcelable {
     }
 
     /**
+     * This is the same as {@link #containsPackage(String)}. The function name is kept in baklava_1
+     * for backward compatibility with baklava CTS.
+     *
+     * @deprecated to be removed in 26Q2 release.
+     * @hide
+     */
+    @Deprecated
+    @TestApi
+    public boolean includes(@NonNull String packageName) {
+        return containsPackage(packageName);
+    }
+
+    /**
      * Returns true if the given attribution tag is found within this instance under any package.
      * Only returns true if the attribution tag literal is found, not if any package contains the
      * set of all attribution tags.
@@ -101,6 +115,19 @@ public final class PackageTagsList implements Parcelable {
     public boolean containsPackageWithAllTags(@NonNull String packageName) {
         Set<String> tags = mPackageTags.get(packageName);
         return tags != null && tags.isEmpty();
+    }
+
+    /**
+     * This is the same as {@link #containsPackageWithAllTags(String)}. The function name is kept in
+     * baklava_1 for backward compatibility with baklava CTS.
+     *
+     * @deprecated to be removed in 26Q2 release.
+     * @hide
+     */
+    @Deprecated
+    @TestApi
+    public boolean containsAll(@NonNull String packageName) {
+        return containsPackageWithAllTags(packageName);
     }
 
     /**
