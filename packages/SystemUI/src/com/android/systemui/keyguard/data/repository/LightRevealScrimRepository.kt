@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.stateIn
 
 val DEFAULT_REVEAL_EFFECT = LiftReveal
 const val DEFAULT_REVEAL_DURATION = 500L
+const val MINMODE_REVEAL_DURATION = 100L
 
 /**
  * Encapsulates state relevant to the light reveal scrim, the view used to reveal/hide screen

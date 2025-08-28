@@ -20,7 +20,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.kosmos.minModeManager
+import com.android.systemui.minmode.minModeManager
 import com.android.systemui.shade.ui.viewmodel.notificationShadeWindowModel
 import java.util.Optional
 
