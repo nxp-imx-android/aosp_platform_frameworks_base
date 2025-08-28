@@ -921,7 +921,6 @@ class DesktopTasksController(
                 val taskIds = desktopRepository.getActiveTaskIdsInDesk(deskId)
                 for (taskId in taskIds) {
                     val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: continue
-                    destDisplayLayout?.densityDpi()?.let { wct.setDensityDpi(task.token, it) }
                     applyFreeformDisplayChange(wct, task, destinationDisplayId, deskId)
                 }
                 runOnTransitStartList.add { transition ->
@@ -969,7 +968,6 @@ class DesktopTasksController(
             for (taskId in taskIds) {
                 val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: continue
                 wct.reparent(task.token, tdaInfo.token, /* onTop= */ false)
-                destDisplayLayout?.densityDpi()?.let { wct.setDensityDpi(task.token, it) }
             }
             desksOrganizer.removeDesk(wct, deskId, userId)
             runOnTransitStartList.add { transition ->
@@ -1024,9 +1022,8 @@ class DesktopTasksController(
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
-        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
-            focusTransitionObserver.globallyFocusedTaskId
-        )
+        val globallyFocusedTask =
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -1115,7 +1112,6 @@ class DesktopTasksController(
             return null
         }
         desksOrganizer.moveTaskToDesk(wct, deskId, task, minimized = minimized)
-        wct.setDensityDpi(task.token, destinationDisplayLayout.densityDpi())
         taskBounds?.let { wct.setBounds(task.token, it) }
 
         if (!minimized) {
@@ -2697,7 +2693,7 @@ class DesktopTasksController(
     ) {
         val displayId = taskInfo.displayId
         val displayLayout = displayController.getDisplayLayout(displayId)
-        if (displayLayout == null)  {
+        if (displayLayout == null) {
             logW("Display %d is not found, task displayId might be stale", displayId)
             return
         }
