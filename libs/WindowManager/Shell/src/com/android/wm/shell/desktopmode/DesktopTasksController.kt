@@ -1024,9 +1024,8 @@ class DesktopTasksController(
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
-        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
-            focusTransitionObserver.globallyFocusedTaskId
-        )
+        val globallyFocusedTask =
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -2697,7 +2696,7 @@ class DesktopTasksController(
     ) {
         val displayId = taskInfo.displayId
         val displayLayout = displayController.getDisplayLayout(displayId)
-        if (displayLayout == null)  {
+        if (displayLayout == null) {
             logW("Display %d is not found, task displayId might be stale", displayId)
             return
         }
@@ -2867,8 +2866,9 @@ class DesktopTasksController(
         inputMethod: InputMethod,
     ) {
         if (!isSnapResizingAllowed(taskInfo)) {
+            val displayContext = displayController.getDisplayContext(taskInfo.displayId) ?: context
             Toast.makeText(
-                    getContext(),
+                    displayContext,
                     R.string.desktop_mode_non_resizable_snap_text,
                     Toast.LENGTH_SHORT,
                 )
@@ -2912,9 +2912,11 @@ class DesktopTasksController(
                 startBounds = currentDragBounds,
                 endBounds = dragStartBounds,
                 doOnEnd = {
+                    val displayContext =
+                        displayController.getDisplayContext(taskInfo.displayId) ?: context
                     Toast.makeText(
-                            context,
-                            com.android.wm.shell.R.string.desktop_mode_non_resizable_snap_text,
+                            displayContext,
+                            R.string.desktop_mode_non_resizable_snap_text,
                             Toast.LENGTH_SHORT,
                         )
                         .show()
