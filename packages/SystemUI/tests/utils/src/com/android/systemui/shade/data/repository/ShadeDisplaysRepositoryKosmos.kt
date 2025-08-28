@@ -31,6 +31,7 @@ import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.notificationElement
 import com.android.systemui.shade.domain.interactor.qsElement
 import com.android.systemui.util.settings.fakeGlobalSettings
+import com.android.systemui.util.settings.fakeSettings
 
 val Kosmos.defaultShadeDisplayPolicy: DefaultDisplayShadePolicy by
     Kosmos.Fixture { DefaultDisplayShadePolicy() }
@@ -60,6 +61,7 @@ val Kosmos.shadeDisplaysRepository: ShadeDisplaysRepository by
         ShadeDisplaysRepositoryImpl(
             bgScope = testScope.backgroundScope,
             globalSettings = fakeGlobalSettings,
+            secureSettings = fakeSettings,
             policies = shadeDisplayPolicies,
             defaultPolicy = defaultShadeDisplayPolicy,
             shadeOnDefaultDisplayWhenLocked = true,
