@@ -173,12 +173,28 @@ class ProtectedPluginProcessor : AbstractProcessor() {
                     method("getPlugin", returnType = sourceName) { line("return mInstance;") }
 
                     // Method implementations
+                    val seenSignatures = mutableSetOf<String>()
                     for (method in methods) {
-                        if (methods.any { method.simpleName.startsWith("${it.simpleName}\$") }) {
-                            // Skip kotlin generated methods overrides
-                            continue
+                        val skipReason =
+                            when {
+                                !seenSignatures.add("$method") ->
+                                    "Skip methods with identical signatures"
+                                methods.any {
+                                    method.simpleName.startsWith("${it.simpleName}\$")
+                                } -> "Skip kotlin generated methods overrides"
+                                else -> null
+                            }
+
+                        if (skipReason != null) {
+                            line("// $skipReason")
+                            line("/*")
                         }
+
                         writeProxyMethodImpl(sourceName, method, exTypeAttr, targets)
+
+                        if (skipReason != null) {
+                            line("*/")
+                        }
                     }
                 }
             }

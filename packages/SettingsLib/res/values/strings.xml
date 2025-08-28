@@ -179,6 +179,10 @@
     <string name="bluetooth_connected">Connected<xliff:g id="active_device">%1$s</xliff:g></string>
     <!--Bluetooth settings screen, summary text under individual Bluetooth devices when pairing -->
     <string name="bluetooth_pairing">Pairing\u2026</string>
+    <!-- Bluetooth settings. Message when the device having a pairing failure. [CHAR LIMIT=40] -->
+    <string name="bluetooth_pairing_failure">Can\'t pair</string>
+    <!-- Bluetooth settings. Message when the device having a connection failure. [CHAR LIMIT=40] -->
+    <string name="bluetooth_connection_failure">Can\'t connect</string>
 
     <!-- Bluetooth settings.  Message when connected to a device, except for phone audio. [CHAR LIMIT=40] -->
     <string name="bluetooth_connected_no_headset">Connected (no phone)<xliff:g id="active_device">%1$s</xliff:g></string>

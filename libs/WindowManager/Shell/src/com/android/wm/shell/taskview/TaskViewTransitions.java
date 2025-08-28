@@ -835,18 +835,16 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                             startTransaction, finishTransaction, taskInfo, leash, wct);
                     break;
                 case TRANSIT_TO_FRONT:
-                    boolean isNewInTaskView = false;
                     if (wct == null) wct = new WindowContainerTransaction();
                     if (infoTv == null && pending != null && isTaskToTaskView(task, pending)) {
                         // The task is being moved into taskView, so it is still "new" from
                         // TaskView's perspective (e.g. task being moved into a bubble)
                         stillNeedsMatchingLaunch = false;
-                        isNewInTaskView = true;
-                        prepareOpenAnimation(pending.mTaskView, isNewInTaskView, startTransaction,
-                                finishTransaction, taskInfo, leash, wct);
+                        prepareOpenAnimation(pending.mTaskView, true /* isNewInTaskView */,
+                                startTransaction, finishTransaction, taskInfo, leash, wct);
                     } else {
-                        prepareOpenAnimation(infoTv, isNewInTaskView, startTransaction,
-                                finishTransaction, taskInfo, leash, wct);
+                        prepareOpenAnimation(infoTv, false /* isNewInTaskView */,
+                                startTransaction, finishTransaction, taskInfo, leash, wct);
                     }
                     break;
                 case TRANSIT_CHANGE:

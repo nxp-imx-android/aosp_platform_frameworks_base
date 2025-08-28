@@ -26,7 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.keyguard.ui.binder.KeyguardIndicationAreaBinder
 import com.android.systemui.keyguard.ui.view.KeyguardIndicationArea
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardIndicationAreaViewModel
@@ -48,21 +48,20 @@ constructor(
     private val indicationAreaViewModel: KeyguardIndicationAreaViewModel,
     private val indicationController: KeyguardIndicationController,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(indicationAreaElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(IndicationAreaElement()) }
 
-    private val indicationAreaElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.IndicationArea
-            override val context = this@IndicationAreaElementProvider.context
+    private inner class IndicationAreaElement : LockscreenElement {
+        override val key = LockscreenElementKeys.IndicationArea
+        override val context = this@IndicationAreaElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                IndicationArea()
-            }
+        @Composable
+        override fun ElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            IndicationArea()
         }
+    }
 
     @Composable
     fun IndicationArea(modifier: Modifier = Modifier) {

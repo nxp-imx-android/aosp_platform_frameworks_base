@@ -2517,6 +2517,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     CallerIdentity getCallerIdentity(@Nullable ComponentName adminComponent,
             @Nullable String callerPackage) {
         final int callerUid = mInjector.binderGetCallingUid();
+        final int callerPid = mInjector.binderGetCallingPid();
 
         if (callerPackage != null) {
             if (!isCallingFromPackage(callerPackage, callerUid)) {
@@ -2543,7 +2544,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
         }
 
-        return new CallerIdentity(callerUid, callerPackage, adminComponent);
+        return new CallerIdentity(callerPid, callerUid, callerPackage, adminComponent);
     }
 
     /**
@@ -16202,17 +16203,17 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         @Override
         public boolean isActiveDeviceOwner(int uid) {
-            return isDefaultDeviceOwner(new CallerIdentity(uid, null, null));
+            return isDefaultDeviceOwner(new CallerIdentity(Process.INVALID_PID, uid, null, null));
         }
 
         @Override
         public boolean isActiveProfileOwner(int uid) {
-            return isProfileOwner(new CallerIdentity(uid, null, null));
+            return isProfileOwner(new CallerIdentity(Process.INVALID_PID, uid, null, null));
         }
 
         @Override
         public boolean isActiveSupervisionApp(int uid) {
-            if (!isProfileOwner(new CallerIdentity(uid, null, null))) {
+            if (!isProfileOwner(new CallerIdentity(Process.INVALID_PID, uid, null, null))) {
                 return false;
             }
             synchronized (getLockObject()) {
@@ -16277,7 +16278,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 return false;
             }
 
-            CallerIdentity caller = new CallerIdentity(callerUid, null, null);
+            CallerIdentity caller = new CallerIdentity(Process.INVALID_PID, callerUid, null, null);
             if (isUserAffiliatedWithDevice(UserHandle.getUserId(callerUid))
                     && (isActiveProfileOwner(callerUid)
                     || isDefaultDeviceOwner(caller) || isFinancedDeviceOwner(caller))) {

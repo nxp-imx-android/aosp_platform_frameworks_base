@@ -227,6 +227,8 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
                 Lists.newArrayList(mCurrentUser, mWorkUser, mCommunalUser));
         when(mUserManager.getUsers()).thenReturn(Lists.newArrayList(
                 mCurrentUser, mWorkUser, mSecondaryUser, mCommunalUser));
+        when(mUserManager.getAliveUsers()).thenReturn(Lists.newArrayList(
+                mCurrentUser, mWorkUser, mSecondaryUser, mCommunalUser));
         when(mUserManager.getProfiles(mSecondaryUser.id)).thenReturn(Lists.newArrayList(
                 mSecondaryUser));
         when(mUserManager.getProfilesIncludingCommunal(mSecondaryUser.id)).thenReturn(

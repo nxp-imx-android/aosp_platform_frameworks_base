@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
+package com.android.wm.shell.windowdecor.extension
 
-import com.android.systemui.screencapture.record.smallscreen.ui.compose.CaptureTargetSpinner
+import android.view.View
 
-/** Models a single item for the [CaptureTargetSpinner]. */
-data class CaptureTargetSpinnerItemViewModel(val label: String)
+/**
+ * Throttles clicking on the view - if a view gets a click/tap within the delay given, then the
+ * click is dropped.
+ */
+fun View.throttleFirstClicks(delay: Long, onClick: (View) -> Unit) {
+    setOnClickListener {
+        onClick(this)
+        isClickable = false
+        postDelayed({ isClickable = true }, delay)
+    }
+}

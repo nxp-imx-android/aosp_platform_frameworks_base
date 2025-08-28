@@ -22,7 +22,11 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import com.android.app.animation.Interpolators
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
@@ -105,7 +109,30 @@ class FlexClockFaceController(
 
     override val layout: ClockFaceLayout =
         DefaultClockFaceLayout(view).apply {
-            views[0].id =
+            (view as? FlexClockViewGroup)?.let { view ->
+                var startX = 0f
+                largeClockModifier = {
+                    Modifier.onGloballyPositioned {
+                        val currentX = it.positionInWindow().x
+                        when (val state = layoutState.transitionState) {
+                            is TransitionState.Transition -> {
+                                view.offsetGlyphsForStepClockAnimation(
+                                    startX = startX,
+                                    currentX = currentX,
+                                    // TODO(b/441506692): Acquire endX from the state
+                                    endX = (currentX - startX) / state.progress + startX,
+                                    progress = state.progress,
+                                )
+                            }
+                            else -> {
+                                startX = currentX
+                                view.resetGlyphsOffsets()
+                            }
+                        }
+                    }
+                }
+            }
+            view.id =
                 if (isLargeClock) ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
                 else ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
         }

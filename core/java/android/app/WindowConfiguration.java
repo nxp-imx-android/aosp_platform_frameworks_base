@@ -856,15 +856,6 @@ public class WindowConfiguration implements Parcelable, Comparable<WindowConfigu
     }
 
     /**
-     * Returns true if the backdrop on the client side should match the frame of the window.
-     * Returns false, if the backdrop should be fullscreen.
-     * @hide
-     */
-    public boolean useWindowFrameForBackdrop() {
-        return mWindowingMode == WINDOWING_MODE_FREEFORM || mWindowingMode == WINDOWING_MODE_PINNED;
-    }
-
-    /**
      * Returns true if windows in this container should be given move animations by default.
      * @hide
      */

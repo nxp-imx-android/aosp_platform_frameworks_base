@@ -35,6 +35,7 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.PendingIntent;
+import android.app.admin.DevicePolicyManager;
 import android.app.role.RoleManager;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
@@ -3817,6 +3818,10 @@ public final class SmsManager {
             if (userContext.getPackageManager()
                     .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, packageName)
                     == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }
+
+            if (userContext.getSystemService(DevicePolicyManager.class).isDeviceManaged()) {
                 return true;
             }
 

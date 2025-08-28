@@ -309,7 +309,7 @@
     <string name="notification_channel_car_mode" msgid="2123919247040988436">"حالت خودرو"</string>
     <string name="notification_channel_account" msgid="6436294521740148173">"وضعیت حساب"</string>
     <string name="notification_channel_developer" msgid="1691059964407549150">"پیام‌های برنامه‌نویس"</string>
-    <string name="notification_channel_developer_important" msgid="7197281908918789589">"پیام‌های مهم برنامه‌نویس"</string>
+    <string name="notification_channel_developer_important" msgid="7197281908918789589">"پیام‌های مهم توسعه‌دهنده"</string>
     <string name="notification_channel_updates" msgid="7907863984825495278">"به‌روزرسانی‌ها"</string>
     <string name="notification_channel_network_status" msgid="2127687368725272809">"وضعیت شبکه"</string>
     <string name="notification_channel_network_alerts" msgid="6312366315654526528">"هشدارهای شبکه"</string>
@@ -336,10 +336,8 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"رفتن به نمایه کاری"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"رفتن به نمایه شخصی <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"رفتن به نمایه کاری <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for permgrouplab_contacts (7443702399615347952) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_contacts (2001771388402758264) -->
-    <skip />
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"مخاطبین و حساب‌ها"</string>
+    <string name="permgroupdesc_contacts" msgid="2001771388402758264">"به مخاطبین شما دسترسی پیدا کند و فهرست حساب‌های شما را که می‌توانند مخاطبین را در این دستگاه ذخیره کنند، مشاهده کند."</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"مکان"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"دسترسی به موقعیت مکانی این دستگاه"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"تقویم"</string>

@@ -49,6 +49,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser
+import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl
 import com.android.wm.shell.apptoweb.AssistContentRequester
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayChangeController
@@ -72,7 +73,6 @@ import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController
-import com.android.wm.shell.desktopmode.education.AppToWebEducationController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.recents.RecentsTransitionHandler
@@ -140,6 +140,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockWindowManager = mock<IWindowManager>()
     protected val mockInteractionJankMonitor = mock<InteractionJankMonitor>()
     protected val mockGenericLinksParser = mock<AppToWebGenericLinksParser>()
+    protected val mockAppToWebRepository = mock<AppToWebRepositoryImpl>()
     protected val mockUserHandle = mock<UserHandle>()
     protected val mockAssistContentRequester = mock<AssistContentRequester>()
     protected val bgExecutor = TestShellExecutor()
@@ -159,7 +160,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         mock<DesktopModeWindowDecorViewModel.TaskPositionerFactory>()
     protected val mockTaskPositioner = mock<TaskPositioner>()
     protected val mockAppHandleEducationController = mock<AppHandleEducationController>()
-    protected val mockAppToWebEducationController = mock<AppToWebEducationController>()
     protected val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
     protected val mockCaptionHandleRepository = mock<WindowDecorCaptionRepository>()
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
@@ -248,6 +248,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 Optional.of(mockDesktopTasksController),
                 mockDesktopImmersiveController,
                 mockGenericLinksParser,
+                mockAppToWebRepository,
                 mockAssistContentRequester,
                 mockWindowDecorViewHostSupplier,
                 mockMultiInstanceHelper,
@@ -261,7 +262,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockInteractionJankMonitor,
                 Optional.of(mockTasksLimiter),
                 mockAppHandleEducationController,
-                mockAppToWebEducationController,
                 appHandleAndHeaderVisibilityHelper,
                 mockCaptionHandleRepository,
                 Optional.of(mockActivityOrientationChangeHandler),

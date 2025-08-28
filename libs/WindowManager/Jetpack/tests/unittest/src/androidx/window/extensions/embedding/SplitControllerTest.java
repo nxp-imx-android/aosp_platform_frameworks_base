@@ -412,7 +412,7 @@ public class SplitControllerTest {
         assertEquals(intent, container.getPendingAppearedIntent());
 
         // On success, do not clear the pending Intent.
-        monitor.onStartActivityResult(START_SUCCESS, new Bundle());
+        monitor.onStartActivityResult(START_SUCCESS, options0);
 
         assertNull(monitor.mCurrentPendingAppearedIntent);
         assertEquals(intent, container.getPendingAppearedIntent());
@@ -425,8 +425,40 @@ public class SplitControllerTest {
         assertNull(monitor.mCurrentPendingAppearedIntent);
 
         // On failure of a non-tracking Intent, do not clear the pending Intent.
-        monitor.onStartActivityResult(START_DELIVERED_TO_TOP, new Bundle());
+        monitor.onStartActivityResult(START_DELIVERED_TO_TOP, options1);
 
+        assertEquals(intent, container.getPendingAppearedIntent());
+    }
+
+    @Test
+    public void testOnStartActivity_emptyExistingTaskFragment_setPendingAppearedIntent() {
+        final SplitController.ActivityStartMonitor monitor =
+                mSplitController.getActivityStartMonitor();
+        final Intent intent = new Intent();
+        final Bundle options0 = new Bundle();
+        setupSplitRule(mActivity, intent, false /* clearTop */);
+
+        // On creating a new split pair, keep track of the pending Intent.
+        monitor.onStartActivity(mActivity, intent, options0);
+        final IBinder tfToken = options0.getBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN);
+        final TaskFragmentContainer container = mSplitController.getContainer(tfToken);
+
+        assertEquals(intent, monitor.mCurrentPendingAppearedIntent);
+        assertNotNull(container);
+        assertEquals(intent, container.getPendingAppearedIntent());
+
+        // On failure of a tracking Intent, clear the pending Intent.
+        monitor.onStartActivityResult(START_DELIVERED_TO_TOP, options0);
+
+        assertNull(container.getPendingAppearedIntent());
+
+        // On launching another activity into the existing empty container, keep track of the
+        // pending Intent.
+        final Bundle option1 = new Bundle();
+        monitor.onStartActivity(mActivity, intent, option1);
+
+        assertEquals(tfToken, option1.getBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN));
+        assertEquals(intent, monitor.mCurrentPendingAppearedIntent);
         assertEquals(intent, container.getPendingAppearedIntent());
     }
 

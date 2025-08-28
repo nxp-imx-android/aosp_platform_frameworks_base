@@ -454,6 +454,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_always_schedule_auto_hide"
+    namespace: "systemui"
+    description: "Schedule the status bar auto-hide functionality more often for fullscreen mode"
+    bug: "428659575"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_app_handle_tracking"
     namespace: "systemui"
     description: "Have status bar track the location of app handles so that tappable status bar "

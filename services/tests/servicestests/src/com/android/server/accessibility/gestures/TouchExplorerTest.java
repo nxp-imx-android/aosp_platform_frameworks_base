@@ -37,7 +37,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,8 +46,6 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.DexmakerShareClassLoaderRule;
 import android.view.InputDevice;
@@ -62,7 +59,6 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.AccessibilityTraceManager;
 import com.android.server.accessibility.EventStreamTransformation;
-import com.android.server.accessibility.Flags;
 import com.android.server.accessibility.utils.GestureLogParser;
 import com.android.server.testutils.OffsettableClock;
 
@@ -496,22 +492,6 @@ public class TouchExplorerTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_POINTER_UP_MOTION_EVENT_IN_TOUCH_EXPLORATION)
-    public void handleMotionEventStateTouchExploring_pointerUp_doesNotSendToManager() {
-        mTouchExplorer.getState().setServiceDetectsGestures(true);
-        mTouchExplorer.getState().clear();
-
-        mLastEvent = pointerDownEvent();
-        mTouchExplorer.getState().startTouchExploring();
-        MotionEvent event = fromTouchscreen(pointerUpEvent());
-
-        mTouchExplorer.onMotionEvent(event, event, /*policyFlags=*/0);
-
-        verify(mMockAms, never()).sendMotionEventToListeningServices(event);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_POINTER_UP_MOTION_EVENT_IN_TOUCH_EXPLORATION)
     public void handleMotionEventStateTouchExploring_pointerUp_sendsToManager() {
         mTouchExplorer.getState().setServiceDetectsGestures(true);
         mTouchExplorer.getState().clear();

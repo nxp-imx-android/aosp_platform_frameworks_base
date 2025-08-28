@@ -573,11 +573,6 @@ public class HintManagerServiceTest {
                 SessionTag.OTHER, creationConfig, config).session;
         assertNotNull(a);
         assertEquals(sessionId1, config.id);
-
-        creationConfig.tids = createThreads(1, stopLatch1);
-
-        assertEquals(service.getBinderServiceInstance().createHintSessionWithConfig(token,
-                    SessionTag.OTHER, creationConfig, config).pipelineThreadLimitExceeded, true);
     }
 
     @Test

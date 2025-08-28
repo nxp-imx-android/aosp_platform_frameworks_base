@@ -223,7 +223,7 @@ public class DesktopModeVisualIndicator {
         boolean leftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(
                 context.getResources());
         return SplitScreenUtils.isLeftRightSplit(leftRightSplitInPortrait,
-                /* isLargeScreen= */ true, landscape);
+                /* isLargeScreen= */ true, landscape, taskInfo.displayId);
     }
 
     /** Start the fade out animation, running the callback on the main thread once it is done. */

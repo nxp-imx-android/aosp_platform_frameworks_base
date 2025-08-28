@@ -308,11 +308,6 @@ public final class MessageQueue {
                     + " now: " + SystemClock.uptimeMillis());
         }
 
-        /* If we are running on the looper thread we can add directly to the priority queue */
-        if (Thread.currentThread() == mLooperThread) {
-            //TODO
-        }
-
         while (true) {
             long waitState = mWaitState;
             long newWaitState;
@@ -762,6 +757,7 @@ public final class MessageQueue {
             throw new IllegalStateException("The specified message queue synchronization "
                     + " barrier token has not been posted or has already been removed.");
         }
+        maybeDrainFreelist();
 
         boolean needWake;
         while (true) {
@@ -829,6 +825,12 @@ public final class MessageQueue {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    void maybeDrainFreelist() {
+        if (Thread.currentThread() == mLooperThread) {
+            mStack.drainFreelist();
+        }
+    }
+
     boolean hasMessages(Handler h, int what, Object object) {
         if (h == null) {
             return false;
@@ -863,6 +865,7 @@ public final class MessageQueue {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObject, h, what, object, null, 0);
+        maybeDrainFreelist();
     }
 
     void removeEqualMessages(Handler h, int what, Object object) {
@@ -870,6 +873,7 @@ public final class MessageQueue {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObjectEquals, h, what, object, null, 0);
+        maybeDrainFreelist();
     }
 
     void removeMessages(Handler h, Runnable r, Object object) {
@@ -877,6 +881,7 @@ public final class MessageQueue {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObject, h, -1, object, r, 0);
+        maybeDrainFreelist();
     }
 
     void removeEqualMessages(Handler h, Runnable r, Object object) {
@@ -884,6 +889,7 @@ public final class MessageQueue {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObjectEquals, h, -1, object, r, 0);
+        maybeDrainFreelist();
     }
 
     void removeCallbacksAndMessages(Handler h, Object object) {
@@ -891,6 +897,7 @@ public final class MessageQueue {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerAndObject, h, -1, object, null, 0);
+        maybeDrainFreelist();
     }
 
     void removeCallbacksAndEqualMessages(Handler h, Object object) {
@@ -898,14 +905,17 @@ public final class MessageQueue {
             return;
         }
         mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, h, -1, object, null, 0);
+        maybeDrainFreelist();
     }
 
     private void removeAllMessages() {
         mStack.moveMatchingToFreelist(sMatchAllMessages, null, -1, null, null, 0);
+        maybeDrainFreelist();
     }
 
     private void removeAllFutureMessages(long when) {
         mStack.moveMatchingToFreelist(sMatchAllFutureMessages, null, -1, null, null, when);
+        maybeDrainFreelist();
     }
 
     /**

@@ -20,7 +20,9 @@ import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.ClockSize
+import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -32,18 +34,20 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 class LockscreenUpperRegionViewModel
 @AssistedInject
 constructor(
     private val clockInteractor: KeyguardClockInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val unfoldTransitionInteractor: UnfoldTransitionInteractor,
     private val deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
     private val keyguardMediaViewModelFactory: KeyguardMediaViewModel.Factory,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
 ) : ExclusiveActivatable() {
-
     private val hydrator = Hydrator("LockscreenUpperRegionViewModel.hydrator")
     private val keyguardMediaViewModel: KeyguardMediaViewModel by lazy {
         keyguardMediaViewModelFactory.create()
@@ -57,6 +61,17 @@ constructor(
             traceName = "isNotificationsVisible",
             source = activeNotificationsInteractor.areAnyNotificationsPresent,
             initialValue = activeNotificationsInteractor.areAnyNotificationsPresentValue,
+        )
+
+    val isOnAOD: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isOnAOD",
+            source =
+                keyguardTransitionInteractor
+                    .transitionValue(AOD)
+                    .map { it == 1f }
+                    .distinctUntilChanged(),
+            initialValue = false,
         )
 
     val unfoldTranslations: UnfoldTranslations =

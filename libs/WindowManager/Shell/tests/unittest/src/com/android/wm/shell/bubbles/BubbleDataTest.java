@@ -1403,12 +1403,14 @@ public class BubbleDataTest extends ShellTestCase {
         sendUpdatedEntryAtTime(mEntryA1, 1000);
         sendUpdatedEntryAtTime(mEntryA2, 2000);
         mBubbleData.setListener(mListener);
+        assertThat(mBubbleA1.showInShade()).isTrue();
 
         mBubbleData.setSelectedBubbleAndExpandStack(mBubbleA1);
 
         verifyUpdateReceived();
         assertSelectionChangedTo(mBubbleA1);
         assertExpandedChangedTo(true);
+        assertThat(mBubbleA1.showInShade()).isFalse();
     }
 
     @Test
@@ -1416,6 +1418,7 @@ public class BubbleDataTest extends ShellTestCase {
         sendUpdatedEntryAtTime(mEntryA1, 1000);
         sendUpdatedEntryAtTime(mEntryA2, 2000);
         mBubbleData.setListener(mListener);
+        assertThat(mBubbleA1.showInShade()).isTrue();
 
         mBubbleData.setSelectedBubbleAndExpandStack(mBubbleA1, BubbleBarLocation.LEFT);
 
@@ -1423,6 +1426,7 @@ public class BubbleDataTest extends ShellTestCase {
         assertSelectionChangedTo(mBubbleA1);
         assertExpandedChangedTo(true);
         assertLocationChangedTo(BubbleBarLocation.LEFT);
+        assertThat(mBubbleA1.showInShade()).isFalse();
     }
 
     @Test
@@ -1468,6 +1472,30 @@ public class BubbleDataTest extends ShellTestCase {
         verifyUpdateReceived();
         assertThat(mUpdateCaptor.getValue().showOverflowChanged).isTrue();
         assertThat(mBubbleData.getOverflowBubbles()).isEmpty();
+    }
+
+    @Test
+    public void testExpandAndSelectBubbleFromLauncher_sameSelection() {
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        assertThat(mBubbleA1.showInShade()).isTrue();
+
+        mBubbleData.expandAndSelectBubbleFromLauncher(mBubbleA1);
+        assertThat(mBubbleA1.showInShade()).isFalse();
+        assertThat(mBubbleData.isExpanded()).isTrue();
+    }
+
+    @Test
+    public void testExpandAndSelectBubbleFromLauncher_newSelection() {
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 1000);
+        assertThat(mBubbleA1.showInShade()).isTrue();
+        assertThat(mBubbleA2.showInShade()).isTrue();
+        assertThat(mBubbleData.getSelectedBubble()).isEqualTo(mBubbleA2);
+
+        mBubbleData.expandAndSelectBubbleFromLauncher(mBubbleA1);
+        assertThat(mBubbleA1.showInShade()).isFalse();
+        assertThat(mBubbleA2.showInShade()).isTrue();
+        assertThat(mBubbleData.isExpanded()).isTrue();
     }
 
     private void verifyUpdateReceived() {

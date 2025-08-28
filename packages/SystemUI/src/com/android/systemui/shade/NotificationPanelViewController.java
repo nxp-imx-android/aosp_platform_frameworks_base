@@ -1026,8 +1026,10 @@ public final class NotificationPanelViewController implements
             mQsController.updateResources();
             mNotificationsQSContainerController.updateResources();
             updateKeyguardStatusViewAlignment();
-            mKeyguardMediaController.refreshMediaPosition(
-                    "NotificationPanelViewController.updateResources");
+            if (!SceneContainerFlag.isEnabled()) {
+                mKeyguardMediaController.refreshMediaPosition(
+                        "NotificationPanelViewController.updateResources");
+            }
 
             if (splitShadeChanged) {
                 if (isPanelVisibleBecauseOfHeadsUp()) {
@@ -3975,7 +3977,8 @@ public final class NotificationPanelViewController implements
         public boolean onTouchEvent(MotionEvent event) {
             if (!mUseExternalTouch) {
                 mShadeLog.d("onTouch: external touch handling disabled");
-                return false;
+                // Consume touches below notifications on keyguard to allow for expansion
+                return mStatusBarStateController.getState() == StatusBarState.KEYGUARD;
             }
 
             if (mAlternateBouncerInteractor.isVisibleState()) {

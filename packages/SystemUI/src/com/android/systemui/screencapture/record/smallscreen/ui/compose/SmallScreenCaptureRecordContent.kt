@@ -143,7 +143,8 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                         }
                         RecordDetailsPopupType.Settings ->
                             RecordDetailsSettings(
-                                viewModel = viewModel.recordDetailsParametersViewModel,
+                                parametersViewModel = viewModel.recordDetailsParametersViewModel,
+                                targetViewModel = viewModel.recordDetailsTargetViewModel,
                                 drawableLoaderViewModel = viewModel,
                                 modifier = contentModifier,
                             )

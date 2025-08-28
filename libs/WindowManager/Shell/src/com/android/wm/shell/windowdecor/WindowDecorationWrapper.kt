@@ -702,6 +702,35 @@ private constructor(
             else -> error("Expected Non-null default or desktop window decoration")
         }
 
+    /**
+     * Updates last App-to-Web education request timestamp. Returns true if new request to show
+     * education has been received.
+     */
+    fun updateAppToWebEducationRequestTimestamp(
+        latestOpenInBrowserEducationTimestamp: Long
+    ): Boolean =
+        when {
+            desktopWindowDecor != null -> {
+                requireDesktopWindowDecor()
+                    .updateAppToWebEducationRequestTimestamp(latestOpenInBrowserEducationTimestamp)
+            }
+            else -> false
+        }
+
+    /** Returns [true] if browser session is available to switch from App-to-Web. */
+    fun isBrowserSessionAvailable() =
+        when {
+            desktopWindowDecor != null -> requireDesktopWindowDecor().isBrowserSessionAvailable()
+            else -> false
+        }
+
+    /** Returns [true] if captured link is available. */
+    fun isCapturedLinkAvailable() =
+        when {
+            desktopWindowDecor != null -> requireDesktopWindowDecor().isCapturedLinkAvailable
+            else -> false
+        }
+
     /** Factory for [WindowDecorationWrapper]. */
     class Factory {
 

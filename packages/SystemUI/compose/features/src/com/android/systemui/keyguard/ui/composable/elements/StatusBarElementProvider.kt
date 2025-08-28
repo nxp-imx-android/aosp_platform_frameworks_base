@@ -42,7 +42,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.padding
 import com.android.compose.theme.PlatformTheme
@@ -75,21 +75,20 @@ constructor(
     private val notificationPanelView: Lazy<NotificationPanelView>,
     private val viewModel: KeyguardStatusBarViewModel,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(statusBarElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(StatusBarElement()) }
 
-    private val statusBarElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.StatusBar
-            override val context = this@StatusBarElementProvider.context
+    private inner class StatusBarElement : LockscreenElement {
+        override val key = LockscreenElementKeys.StatusBar
+        override val context = this@StatusBarElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                StatusBar(modifier = Modifier.fillMaxWidth())
-            }
+        @Composable
+        override fun ElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            StatusBar(modifier = Modifier.fillMaxWidth())
         }
+    }
 
     @Composable
     fun StatusBar(modifier: Modifier = Modifier) {

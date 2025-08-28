@@ -108,6 +108,9 @@ public enum DesktopExperienceFlags {
     ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
             com.android.server.display.feature.flags.Flags::enableDefaultDisplayInTopologySwitch,
             true, FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH),
+    ENABLE_DEFER_DOWN_RECENTS_ANIMATION_BUGFIX(
+            Flags::enableDeferDownRecentsAnimationBugfix, true,
+            Flags.FLAG_ENABLE_DEFER_DOWN_RECENTS_ANIMATION_BUGFIX),
     ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS(
             Flags::enableDesktopAppHeaderStateChangeAnnouncements, false,
             Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS),
@@ -145,6 +148,9 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
             Flags::enableDesktopTaskLimitSeparateTransition, true,
             Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
+    ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION(
+            Flags::enableDesktopWindowingAppToWebEducationIntegration, true,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION),
     ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX(
             Flags::enableDesktopWindowingEnterpriseBugfix,
             false, Flags.FLAG_ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX),

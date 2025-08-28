@@ -36,8 +36,6 @@ import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
 
-import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -118,7 +116,6 @@ public final class AdbDebuggingManagerTest {
         mHandler = mManager.mHandler;
         mThread.setHandler(mHandler);
 
-        mHandler.initKeyStore();
         mKeyStore = mHandler.mAdbKeyStore;
 
         mOriginalAllowedConnectionTime = mKeyStore.getAllowedConnectionTime();
@@ -283,9 +280,7 @@ public final class AdbDebuggingManagerTest {
                 mContext,
                 mAdbKeyXmlFile,
                 mAdbKeyFile,
-                mFakeTicker,
-                () -> mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_PERSIST_KEYSTORE)
-                        .sendToTarget());
+                mFakeTicker);
         assertTrue(
                 "The key with the 'Always allow' option selected was not persisted in the keystore",
                 newKeyStore.isKeyAuthorized(TEST_KEY_1));
@@ -306,9 +301,7 @@ public final class AdbDebuggingManagerTest {
                 mContext,
                 mAdbKeyXmlFile,
                 mAdbKeyFile,
-                mFakeTicker,
-                () -> mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_PERSIST_KEYSTORE)
-                        .sendToTarget());
+                mFakeTicker);
         assertNotEquals(
                 "The last connection time in the key file was not updated after the update "
                         + "connection time message", lastConnectionTime,
@@ -661,9 +654,7 @@ public final class AdbDebuggingManagerTest {
                 mContext,
                 mAdbKeyXmlFile,
                 mAdbKeyFile,
-                mFakeTicker,
-                () -> mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_PERSIST_KEYSTORE)
-                        .sendToTarget());
+                mFakeTicker);
 
         // Verify that the connection time for each test key is within a small value of the current
         // time.
@@ -788,9 +779,7 @@ public final class AdbDebuggingManagerTest {
                 mContext,
                 mAdbKeyXmlFile,
                 mAdbKeyFile,
-                mFakeTicker,
-                () -> mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_PERSIST_KEYSTORE)
-                        .sendToTarget());
+                mFakeTicker);
 
         assertEquals(
                 "KeyStore not populated from the XML file.",
@@ -857,9 +846,7 @@ public final class AdbDebuggingManagerTest {
                 mContext,
                 mAdbKeyXmlFile,
                 mAdbKeyFile,
-                mFakeTicker,
-                () -> mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_PERSIST_KEYSTORE)
-                        .sendToTarget());
+                mFakeTicker);
 
         assertTrue(
                 "Persisted trusted network not found in new keystore instance.",

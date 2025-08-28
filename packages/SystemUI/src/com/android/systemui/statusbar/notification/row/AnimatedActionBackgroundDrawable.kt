@@ -203,7 +203,10 @@ class BaseBackgroundDrawable(
 
         canvas.withClip(buttonShape) {
             drawAnimatedOutline(canvas, boundsF, 255, outlineStrokeWidth)
-            canvas.drawRenderNode(innerGlow)
+            // Software rendering doesn't support drawRenderNode
+            if (canvas.isHardwareAccelerated()) {
+                canvas.drawRenderNode(innerGlow)
+            }
         }
     }
 

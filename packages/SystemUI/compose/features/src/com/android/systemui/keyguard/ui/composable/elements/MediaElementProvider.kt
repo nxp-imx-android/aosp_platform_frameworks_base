@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.getLayoutType
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardMediaViewModel
@@ -46,42 +46,41 @@ constructor(
     @ShadeDisplayAware private val context: Context,
     private val mediaViewModelFactory: KeyguardMediaViewModel.Factory,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(mediaCarouselElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(MediaCarouselElement()) }
 
-    private val mediaCarouselElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.MediaCarousel
-            override val context = this@MediaElementProvider.context
+    private inner class MediaCarouselElement : LockscreenElement {
+        override val key = LockscreenElementKeys.MediaCarousel
+        override val context = this@MediaElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                val horizontalPadding =
-                    when (getLayoutType()) {
-                        LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
-                        LayoutType.NARROW ->
-                            dimensionResource(R.dimen.notification_side_paddings) +
-                                dimensionResource(R.dimen.notification_panel_margin_horizontal)
-                    }
+        @Composable
+        override fun ElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            val horizontalPadding =
+                when (getLayoutType()) {
+                    LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
+                    LayoutType.NARROW ->
+                        dimensionResource(R.dimen.notification_side_paddings) +
+                            dimensionResource(R.dimen.notification_panel_margin_horizontal)
+                }
 
-                val viewModel =
-                    rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
+            val viewModel =
+                rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
 
-                AnimatedVisibility(viewModel.isMediaVisible) {
-                    Element(
-                        key = Media.Elements.mediaCarousel,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
-                    ) {
-                        Media(
-                            viewModelFactory = viewModel.mediaViewModelFactory,
-                            presentationStyle = MediaPresentationStyle.Default,
-                            behavior = viewModel.mediaUiBehavior,
-                            onDismissed = viewModel::onSwipeToDismiss,
-                        )
-                    }
+            AnimatedVisibility(viewModel.isMediaVisible) {
+                Element(
+                    key = Media.Elements.mediaCarousel,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+                ) {
+                    Media(
+                        viewModelFactory = viewModel.mediaViewModelFactory,
+                        presentationStyle = MediaPresentationStyle.Default,
+                        behavior = viewModel.mediaUiBehavior,
+                        onDismissed = viewModel::onSwipeToDismiss,
+                    )
                 }
             }
         }
+    }
 }

@@ -38,7 +38,8 @@ class SmallScreenCaptureRecordViewModel
 constructor(
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
-    screenCaptureRecordParametersViewModel: ScreenCaptureRecordParametersViewModel.Factory,
+    screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
+    recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
@@ -46,7 +47,9 @@ constructor(
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
         recordDetailsAppSelectorViewModelFactory.create()
     val recordDetailsParametersViewModel: ScreenCaptureRecordParametersViewModel =
-        screenCaptureRecordParametersViewModel.create()
+        screenCaptureRecordParametersViewModelFactory.create()
+    val recordDetailsTargetViewModel: RecordDetailsTargetViewModel =
+        recordDetailsTargetViewModelFactory.create()
 
     var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
         private set
@@ -60,6 +63,9 @@ constructor(
                 "ScreenCaptureRecordSmallScreenViewModel#recordDetailsParametersViewModel"
             ) {
                 recordDetailsParametersViewModel.activate()
+            }
+            launchTraced("ScreenCaptureRecordSmallScreenViewModel#recordDetailsTargetViewModel") {
+                recordDetailsTargetViewModel.activate()
             }
         }
     }

@@ -26,6 +26,8 @@ import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeSettingsPreset;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
+import android.os.Binder;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableContext;
 import android.testing.TestablePermissions;
@@ -46,7 +48,7 @@ public class ThemeBinderServiceTests {
         }
     };
 
-    private final int mUserId = 0;
+    private int mUserId;
     private ThemeBinderService mUnderTest;
     private ThemeManagerInternal mInternal;
     private ThemeSettings mDefaultSettings = ThemeSettings
@@ -59,6 +61,8 @@ public class ThemeBinderServiceTests {
 
         TestableContext context = new TestableContext(InstrumentationRegistry.getTargetContext(),
                 null);
+
+        mUserId = UserHandle.getUserId(Binder.getCallingUid());
 
         Settings.Secure.putStringForUser(context.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);

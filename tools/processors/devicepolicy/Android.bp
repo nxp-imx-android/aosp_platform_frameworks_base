@@ -30,3 +30,30 @@ java_library {
     sdk_version: "core_current",
     host_supported: true,
 }
+
+java_test_host {
+    name: "DevicePolicyAnnotationProcessorTests",
+
+    srcs: ["test/src/**/*.kt"],
+
+    static_libs: [
+        "compile-testing-prebuilt",
+        "junit",
+        "truth",
+        "kotlin-reflect",
+        "DevicePolicyAnnotationProcessorHostLibrary",
+    ],
+
+    java_resources: [":DevicePolicyAnnotationProcessorTestSource"],
+    test_suites: ["general-tests"],
+}
+
+filegroup {
+    name: "DevicePolicyAnnotationProcessorTestSource",
+    srcs: [
+        "test/resources/**/*.java",
+        "test/resources/**/*.json",
+    ],
+    path: "test/resources/",
+    visibility: ["//visibility:private"],
+}

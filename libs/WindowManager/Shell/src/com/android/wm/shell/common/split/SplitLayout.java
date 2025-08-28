@@ -18,6 +18,7 @@ package com.android.wm.shell.common.split;
 
 import static android.content.res.Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
 import static android.content.res.Configuration.SCREEN_WIDTH_DP_UNDEFINED;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.DOCKED_LEFT;
 import static android.view.WindowManager.DOCKED_TOP;
 
@@ -252,7 +253,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mDimNonImeSide = res.getBoolean(R.bool.config_dimNonImeAttachedSide);
         mAllowLeftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(res);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                configuration);
+                configuration, DEFAULT_DISPLAY);
         statusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateDividerConfig(mContext);
 
@@ -499,7 +500,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     }
 
     /** Applies new configuration, returns {@code false} if there's no effect to the layout. */
-    public boolean updateConfiguration(Configuration configuration) {
+    public boolean updateConfiguration(Configuration configuration, int displayId) {
         // Update the split bounds when necessary. Besides root bounds changed, split bounds need to
         // be updated when the rotation changed to cover the case that users rotated the screen 180
         // degrees.
@@ -530,7 +531,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mUiMode = uiMode;
         mIsLargeScreen = configuration.smallestScreenWidthDp >= 600;
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                configuration);
+                configuration, displayId);
         mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateLayouts();
         updateDividerConfig(mContext);
@@ -555,11 +556,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // We only need new bounds here, other configuration should be update later.
         final boolean wasLeftRightSplit = SplitScreenUtils.isLeftRightSplit(
                 mAllowLeftRightSplitInPortrait, mIsLargeScreen,
-                mRootBounds.width() >= mRootBounds.height());
+                mRootBounds.width() >= mRootBounds.height(), DEFAULT_DISPLAY);
         mTempRect.set(mRootBounds);
         mRootBounds.set(tmpRect);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
-                mIsLargeScreen, mRootBounds.width() >= mRootBounds.height());
+                mIsLargeScreen, mRootBounds.width() >= mRootBounds.height(),
+                DEFAULT_DISPLAY);
         mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
 
         updateLayouts();

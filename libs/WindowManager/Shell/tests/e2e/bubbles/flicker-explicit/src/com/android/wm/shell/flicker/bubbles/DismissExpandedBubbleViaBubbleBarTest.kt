@@ -22,7 +22,6 @@ import android.tools.NavBar
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.IComponentNameMatcher
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
@@ -65,7 +64,6 @@ import org.junit.runners.Parameterized
  * - [BubbleAlwaysVisibleTestCases]
  * - [BubbleAppBecomesNotExpandedTestCases]
  */
-@FlakyTest(bugId = 430273288)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

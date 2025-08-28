@@ -17,8 +17,11 @@ package com.android.systemui.plugins.keyguard.ui.composable.elements
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.Key
+import com.android.compose.animation.scene.MovableElementContentScope
+import com.android.compose.animation.scene.MovableElementKey
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.SimpleProperty
 import com.android.systemui.plugins.annotations.ThrowsOnFailure
@@ -26,19 +29,43 @@ import com.android.systemui.plugins.annotations.ThrowsOnFailure
 /** Element Composable together with some metadata about the function. */
 @Stable
 @ProtectedInterface
-interface LockscreenElement {
+interface BaseLockscreenElement {
     @get:SimpleProperty
     /** Key of identifying this lockscreen element */
-    val key: ElementKey
+    val key: Key
 
     @get:SimpleProperty
     /** Context override for the composable */
     val context: Context
+}
+
+@Stable
+@ProtectedInterface
+interface LockscreenElement : BaseLockscreenElement {
+    @get:SimpleProperty
+    /** Key of identifying this lockscreen element */
+    override val key: ElementKey
 
     @Composable
     @ThrowsOnFailure
     /** Compose function which renders this element */
-    fun ContentScope.LockscreenElement(
+    fun ElementContentScope.LockscreenElement(
+        factory: LockscreenElementFactory,
+        context: LockscreenElementContext,
+    )
+}
+
+@Stable
+@ProtectedInterface
+interface MovableLockscreenElement : BaseLockscreenElement {
+    @get:SimpleProperty
+    /** Key of identifying this lockscreen element */
+    override val key: MovableElementKey
+
+    @Composable
+    @ThrowsOnFailure
+    /** Compose function which renders this element */
+    fun MovableElementContentScope.LockscreenElement(
         factory: LockscreenElementFactory,
         context: LockscreenElementContext,
     )

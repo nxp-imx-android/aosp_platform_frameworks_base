@@ -30,7 +30,11 @@ interface ScreenCaptureThumbnailRepository {
     suspend fun loadThumbnail(taskId: Int): Result<Bitmap>
 }
 
-/** Default implementation of [ScreenCaptureThumbnailRepository]. */
+/**
+ * Default implementation of [ScreenCaptureThumbnailRepository].
+ *
+ * Captures new thumbnail on request, falls back to cached thumbnail if capture fails.
+ */
 @ScreenCaptureUiScope
 class ScreenCaptureThumbnailRepositoryImpl
 @Inject
@@ -41,7 +45,11 @@ constructor(
 
     override suspend fun loadThumbnail(taskId: Int): Result<Bitmap> =
         withContext(bgContext) {
-            activityManager.takeTaskThumbnail(taskId).thumbnail?.let { Result.success(it) }
+            getLatestThumbnail(taskId)?.let { Result.success(it) }
                 ?: Result.failure(IllegalStateException("Could not get thumbnail for task $taskId"))
         }
+
+    private fun getLatestThumbnail(taskId: Int): Bitmap? =
+        activityManager.takeTaskThumbnail(taskId).thumbnail
+            ?: activityManager.getTaskThumbnail(taskId, false).thumbnail
 }

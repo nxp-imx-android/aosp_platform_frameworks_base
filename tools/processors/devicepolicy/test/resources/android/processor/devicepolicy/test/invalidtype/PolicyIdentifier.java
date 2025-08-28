@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.shared.ui.viewmodel
+package android.app.admin;
 
-/** Models a generic ViewModel that supports selecting a single item from a list. */
-data class SingleSelectViewModel<T>(
-    val items: List<T>,
-    val selectedItemIndex: Int,
-    val onItemSelect: (Int) -> Unit,
-)
+import android.processor.devicepolicy.BooleanPolicyDefinition;
+import android.processor.devicepolicy.PolicyDefinition;
+
+public final class PolicyIdentifier<T> {
+    // We don't actually do anything with this.
+    public PolicyIdentifier(String id) {
+    }
+
+    private static final String TEST_POLICY_1_KEY = "test_policy_1_key";
+
+    /**
+     * Test policy 1
+     */
+    @PolicyDefinition
+    @BooleanPolicyDefinition
+    public static final PolicyIdentifier<Integer> TEST_POLICY_1 = new PolicyIdentifier<>(
+            TEST_POLICY_1_KEY);
+}

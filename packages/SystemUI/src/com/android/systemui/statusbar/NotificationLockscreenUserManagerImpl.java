@@ -201,7 +201,7 @@ public class NotificationLockscreenUserManagerImpl implements
                     // the user before calling into DPM
                     sendingUserId = mCurrentUserId;
                     @SuppressLint("MissingPermission")
-                    List<UserInfo> users = mUserManager.getUsers();
+                    List<UserInfo> users = mUserManager.getAliveUsers();
                     for (int i = users.size() - 1; i >= 0; i--) {
                         changed |= updateDpcSettings(users.get(i).id);
                     }

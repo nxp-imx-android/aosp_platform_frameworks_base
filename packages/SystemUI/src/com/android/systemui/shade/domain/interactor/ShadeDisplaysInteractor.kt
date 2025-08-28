@@ -147,6 +147,15 @@ constructor(
                     }
                     checkContextDisplayMatchesExpected(destinationId)
                     shadePositionRepository.onDisplayChangedSucceeded(destinationId)
+                    logBuffer.log(
+                        TAG,
+                        LogLevel.DEBUG,
+                        {
+                            int1 = currentId
+                            int2 = destinationId
+                        },
+                        { "Shade window successfully moved from display $int1 to $int2" },
+                    )
                 }
             }
         } catch (e: IllegalStateException) {

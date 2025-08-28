@@ -117,7 +117,7 @@ private constructor(
     private val isBrowserApp: Boolean,
     private val openInAppOrBrowserIntent: Intent?,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
-    private val captionView: View?,
+    private val captionView: View,
     private val captionWidth: Int,
     private val captionHeight: Int,
     captionX: Int,
@@ -528,7 +528,7 @@ private constructor(
         private val windowDecorationActions: WindowDecorationActions,
         private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
         menuWidth: Int,
-        private val captionView: View?,
+        private val captionView: View,
         captionHeight: Int,
         private val shouldShowWindowingPill: Boolean,
         private val shouldShowBrowserPill: Boolean,
@@ -830,18 +830,18 @@ private constructor(
         /** Animates the menu opening. */
         fun animateOpenMenu() {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
-                animator.animateCaptionHandleExpandToOpen(requireNotNull(captionView))
+                animator.animateCaptionHandleExpandToOpen(captionView)
             } else {
-                animator.animateOpen()
+                animator.animateCaptionHeaderExpandToOpen(captionView)
             }
         }
 
         /** Animates the menu closing. */
         fun animateCloseMenu(onAnimFinish: () -> Unit) {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
-                animator.animateCollapseIntoHandleClose(requireNotNull(captionView), onAnimFinish)
+                animator.animateCollapseIntoHandleClose(captionView, onAnimFinish)
             } else {
-                animator.animateClose(onAnimFinish)
+                animator.animateCollapseIntoHeaderClose(captionView, onAnimFinish)
             }
         }
 
@@ -983,6 +983,7 @@ private constructor(
                     SplitScreenUtils.isLeftRightSplit(
                         SplitScreenUtils.allowLeftRightSplitInPortrait(context.resources),
                         configuration,
+                        taskInfo.displayId,
                     )
                 ) {
                     0f
@@ -1132,7 +1133,7 @@ private constructor(
             isBrowserApp: Boolean,
             openInAppOrBrowserIntent: Intent?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
-            captionView: View?,
+            captionView: View,
             captionWidth: Int,
             captionHeight: Int,
             captionX: Int,
@@ -1198,7 +1199,7 @@ private constructor(
             isBrowserApp: Boolean,
             openInAppOrBrowserIntent: Intent?,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
-            captionView: View?,
+            captionView: View,
             captionWidth: Int,
             captionHeight: Int,
             captionX: Int,

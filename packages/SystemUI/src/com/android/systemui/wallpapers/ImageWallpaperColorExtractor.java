@@ -44,14 +44,14 @@ import java.util.concurrent.Executor;
  * It uses a background executor, and uses callbacks to inform that the work is done.
  * It uses  a downscaled version of the wallpaper to extract the colors.
  */
-public class WallpaperLocalColorExtractor {
+public class ImageWallpaperColorExtractor {
 
     private Bitmap mMiniBitmap;
 
     @VisibleForTesting
     static final int MINI_BITMAP_MAX_AREA = 112 * 112;
 
-    private static final String TAG = WallpaperLocalColorExtractor.class.getSimpleName();
+    private static final String TAG = ImageWallpaperColorExtractor.class.getSimpleName();
     private static final @NonNull RectF LOCAL_COLOR_BOUNDS =
             new RectF(0, 0, 1, 1);
 
@@ -75,12 +75,12 @@ public class WallpaperLocalColorExtractor {
     @LongRunning
     private final Executor mLongExecutor;
 
-    private final WallpaperLocalColorExtractorCallback mWallpaperLocalColorExtractorCallback;
+    private final ImageWallpaperColorExtractorCallback mColorExtractorCallback;
 
     /**
      * Interface to handle the callbacks after the different steps of the color extraction
      */
-    public interface WallpaperLocalColorExtractorCallback {
+    public interface ImageWallpaperColorExtractorCallback {
 
         /**
          * Callback after the wallpaper colors have been computed
@@ -115,15 +115,13 @@ public class WallpaperLocalColorExtractor {
      * Creates a new color extractor.
      * @param longExecutor the executor on which the color extraction will be performed
      * @param lock the lock object to use for computing colors or processing the bitmap
-     * @param wallpaperLocalColorExtractorCallback an interface to handle the callbacks from
-     *                                        the color extractor.
+     * @param colorExtractorCallback an interface to handle the callbacks from the color extractor.
      */
-    public WallpaperLocalColorExtractor(@LongRunning Executor longExecutor,
-            Object lock,
-            WallpaperLocalColorExtractorCallback wallpaperLocalColorExtractorCallback) {
+    public ImageWallpaperColorExtractor(Executor longExecutor, Object lock,
+            ImageWallpaperColorExtractorCallback colorExtractorCallback) {
         mLongExecutor = longExecutor;
         mLock = lock;
-        mWallpaperLocalColorExtractorCallback = wallpaperLocalColorExtractorCallback;
+        mColorExtractorCallback = colorExtractorCallback;
     }
 
     /**
@@ -177,7 +175,7 @@ public class WallpaperLocalColorExtractor {
             mBitmapWidth = bitmap.getWidth();
             mBitmapHeight = bitmap.getHeight();
             mMiniBitmap = createMiniBitmap(bitmap);
-            mWallpaperLocalColorExtractorCallback.onMiniBitmapUpdated();
+            mColorExtractorCallback.onMiniBitmapUpdated();
             if (mRecomputeColors) recomputeColorsInternal();
             recomputeLocalColors();
         }
@@ -221,7 +219,7 @@ public class WallpaperLocalColorExtractor {
     /**
      * To be called by {@link ImageWallpaper.CanvasEngine#onComputeColors}. This will either
      * return the current wallpaper colors, or if the bitmap is not yet loaded, return null and call
-     * {@link WallpaperLocalColorExtractorCallback#onColorsProcessed()} when the colors are ready.
+     * {@link ImageWallpaperColorExtractorCallback#onColorsProcessed()} when the colors are ready.
      */
     public WallpaperColors onComputeColors() {
         mLongExecutor.execute(this::onComputeColorsSynchronized);
@@ -242,7 +240,7 @@ public class WallpaperLocalColorExtractor {
     private void recomputeColorsInternal() {
         if (mMiniBitmap == null) return;
         mWallpaperColors = getWallpaperColors(mMiniBitmap, mWallpaperDimAmount);
-        mWallpaperLocalColorExtractorCallback.onColorsProcessed();
+        mColorExtractorCallback.onColorsProcessed();
     }
 
     @VisibleForTesting
@@ -277,7 +275,7 @@ public class WallpaperLocalColorExtractor {
             boolean wasActive = isActive();
             mPendingRegions.addAll(regions);
             if (!wasActive && isActive()) {
-                mWallpaperLocalColorExtractorCallback.onActivated();
+                mColorExtractorCallback.onActivated();
             }
             processLocalColorsInternal();
         }
@@ -299,7 +297,7 @@ public class WallpaperLocalColorExtractor {
             mPendingRegions.removeAll(regions);
             regions.forEach(mProcessedRegions::remove);
             if (wasActive && !isActive()) {
-                mWallpaperLocalColorExtractorCallback.onDeactivated();
+                mColorExtractorCallback.onDeactivated();
             }
         }
     }
@@ -323,7 +321,7 @@ public class WallpaperLocalColorExtractor {
     }
 
     private Bitmap createMiniBitmap(@NonNull Bitmap bitmap) {
-        Trace.beginSection("WallpaperLocalColorExtractor#createMiniBitmap");
+        Trace.beginSection("ImageWallpaperColorExtractor#createMiniBitmap");
         // if the area of the image is greater than MINI_BITMAP_MAX_AREA, downscale the bitmap.
         int area = bitmap.getWidth() * bitmap.getHeight();
         double scale = Math.min(1, Math.sqrt((double) MINI_BITMAP_MAX_AREA / area));
@@ -366,10 +364,10 @@ public class WallpaperLocalColorExtractor {
 
     /**
      * Transform the logical coordinates into wallpaper coordinates.
-     *
+     * <p>
      * Logical coordinates are organised such that the various pages are non-overlapping. So,
      * if there are n pages, the first page will have its X coordinate on the range [0-1/n].
-     *
+     * <p>
      * The real pages are overlapping. If the Wallpaper are a width Ww and the screen a width
      * Ws, the relative width of a page Wr is Ws/Ww. This does not change if the number of
      * pages increase.
@@ -430,7 +428,7 @@ public class WallpaperLocalColorExtractor {
          */
         if (mDisplayWidth < 0 || mDisplayHeight < 0 || mPages < 0) return;
 
-        Trace.beginSection("WallpaperLocalColorExtractor#processColorsInternal");
+        Trace.beginSection("ImageWallpaperColorExtractor#processColorsInternal");
         List<WallpaperColors> processedColors = new ArrayList<>();
         for (int i = 0; i < mPendingRegions.size(); i++) {
             RectF nextArea = mPendingRegions.get(i);
@@ -443,7 +441,7 @@ public class WallpaperLocalColorExtractor {
         mPendingRegions.clear();
         Trace.endSection();
 
-        mWallpaperLocalColorExtractorCallback.onColorsProcessed(processedRegions, processedColors);
+        mColorExtractorCallback.onColorsProcessed(processedRegions, processedColors);
     }
 
     /**

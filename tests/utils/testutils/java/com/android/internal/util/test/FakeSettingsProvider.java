@@ -25,6 +25,7 @@ import android.test.mock.MockContentProvider;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.android.internal.annotations.GuardedBy;
 import java.util.Map;
 import java.util.Objects;
 
@@ -60,6 +61,8 @@ import java.util.Objects;
  * class only fetches the content provider from the passed-in ContentResolver the first time it's
  * used, and after that stores it in a per-process static. If this needs to be used in this case,
  * then call {@link #clearSettingsProvider()} before and after using this.
+ *
+ * This class is thread-safe.
  */
 public class FakeSettingsProvider extends MockContentProvider {
 
@@ -74,6 +77,7 @@ public class FakeSettingsProvider extends MockContentProvider {
      * - User ID (e.g., USER_SYSTEM)
      * - Setting name (e.g., "screen_brightness")
      */
+    @GuardedBy("mDb")
     private final Map<String, Map<Integer, Map<String, String>>> mDb = new ArrayMap<>();
 
     public interface Callback {
@@ -85,8 +89,10 @@ public class FakeSettingsProvider extends MockContentProvider {
 
     public FakeSettingsProvider(@NonNull Callback callback) {
         Objects.requireNonNull(callback);
-        for (int i = 0; i < TABLES.length; i++) {
-            mDb.put(TABLES[i], new ArrayMap<>());
+        synchronized (mDb) {
+            for (int i = 0; i < TABLES.length; i++) {
+                mDb.put(TABLES[i], new ArrayMap<>());
+            }
         }
         mCallback = callback;
     }
@@ -95,7 +101,7 @@ public class FakeSettingsProvider extends MockContentProvider {
         this((user, uri) -> {});
     }
 
-    private Uri getUriFor(String table, String key) {
+    private static Uri getUriFor(String table, String key) {
         switch (table) {
             case "system":
                 return Settings.System.getUriFor(key);
@@ -125,7 +131,7 @@ public class FakeSettingsProvider extends MockContentProvider {
         Settings.System.clearProviderForTest();
     }
 
-    private int getUserId(String table, Bundle extras) {
+    private static int getUserId(String table, Bundle extras) {
         // Global settings always use USER_SYSTEM, see SettingsProvider#getGlobalSetting.
         if ("global".equals(table)) {
             return UserHandle.USER_SYSTEM;
@@ -153,17 +159,13 @@ public class FakeSettingsProvider extends MockContentProvider {
         String value;
         final int userId = getUserId(table, extras);
 
-        if (!mDb.containsKey(table)) {
-            throw new UnsupportedOperationException("Unknown settings table, method=" + method);
-        }
-
-        if (arg == null) {
-            throw new UnsupportedOperationException("Null settings key, method=" + method);
-        }
-
         switch (op) {
             case "GET":
-                value = mDb.get(table).getOrDefault(userId, EMPTY_MAP).get(arg);
+                synchronized (mDb) {
+                    final Map<String, String> perUserTable = mDb.get(table)
+                            .getOrDefault(userId, EMPTY_MAP);
+                    value = perUserTable.get(arg);
+                }
                 if (value != null) {
                     out.putString(Settings.NameValueTable.VALUE, value);
                 }
@@ -175,21 +177,23 @@ public class FakeSettingsProvider extends MockContentProvider {
             case "PUT":
                 value = extras.getString(Settings.NameValueTable.VALUE, null);
                 final boolean changed;
-                if (value != null) {
-                    changed = !value.equals(
-                            mDb.get(table)
-                            .computeIfAbsent(userId, (u) -> new ArrayMap<>())
-                            .put(arg, value));
-                    if (DBG) {
-                        Log.d(TAG, String.format("Inserting fake setting %d:%s.%s = \"%s\"",
-                                userId, table, arg, value));
-                    }
-                } else {
-                    final Map<String, String> perUserTable = mDb.get(table).get(userId);
-                    changed = perUserTable != null && perUserTable.remove(arg) != null;
-                    if (DBG) {
-                        Log.d(TAG, String.format("Removing fake setting %d:%s.%s", userId, table,
-                                arg));
+                synchronized (mDb) {
+                    if (value != null) {
+                        changed = !value.equals(
+                                mDb.get(table)
+                                .computeIfAbsent(userId, (u) -> new ArrayMap<>())
+                                .put(arg, value));
+                        if (DBG) {
+                            Log.d(TAG, String.format("Inserting fake setting %d:%s.%s = \"%s\"",
+                                    userId, table, arg, value));
+                        }
+                    } else {
+                        final Map<String, String> perUserTable = mDb.get(table).get(userId);
+                        changed = perUserTable != null && perUserTable.remove(arg) != null;
+                        if (DBG) {
+                            Log.d(TAG, String.format("Removing fake setting %d:%s.%s", userId,
+                                table, arg));
+                        }
                     }
                 }
                 if (changed) mCallback.onUriChanged(userId, getUriFor(table, arg));

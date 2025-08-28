@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.common.split;
 
+import static android.view.Display.DEFAULT_DISPLAY;
+
 import static com.android.wm.shell.shared.split.SplitScreenConstants.CONTROLLED_ACTIVITY_TYPES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.CONTROLLED_WINDOWING_MODES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
@@ -90,12 +92,13 @@ public class SplitScreenUtils {
      * Returns whether left/right split is supported in the given configuration.
      */
     public static boolean isLeftRightSplit(boolean allowLeftRightSplitInPortrait,
-            Configuration config) {
+            Configuration config, int displayId) {
         // Compare the max bounds sizes as on near-square devices, the insets may result in a
         // configuration in the other orientation
         final Rect maxBounds = config.windowConfiguration.getMaxBounds();
         final boolean isLandscape = maxBounds.width() >= maxBounds.height();
-        return isLeftRightSplit(allowLeftRightSplitInPortrait, isLargeScreen(config), isLandscape);
+        return isLeftRightSplit(allowLeftRightSplitInPortrait, isLargeScreen(config), isLandscape,
+                displayId);
     }
 
     /**
@@ -103,9 +106,16 @@ public class SplitScreenUtils {
      * is useful for cases where we need to calculate this given last saved state.
      */
     public static boolean isLeftRightSplit(boolean allowLeftRightSplitInPortrait,
-            boolean isLargeScreen, boolean isLandscape) {
+            boolean isLargeScreen, boolean isLandscape, int displayId) {
         if (allowLeftRightSplitInPortrait && isLargeScreen) {
-            return !isLandscape;
+            if (displayId == DEFAULT_DISPLAY
+                    || !DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()) {
+                return !isLandscape;
+            } else {
+                // If split is started in external display and the non_default_display_split_bugfix
+                // is enabled, set isLeftRightSplit to true in landscape mode.
+                return isLandscape;
+            }
         } else {
             return isLandscape;
         }
@@ -184,5 +194,31 @@ public class SplitScreenUtils {
         final int displayId = stage.getRunningTaskInfo().displayId;
         final DisplayAreaInfo displayAreaInfo = rootTDAOrganizer.getDisplayAreaInfo(displayId);
         return displayAreaInfo != null ? displayAreaInfo.token : null;
+    }
+
+    /**
+     * Retrieves DisplayAreaInfo for a given task and updates the SplitLayout's configuration.
+     *
+     * @param rootTDAOrganizer The RootTaskDisplayAreaOrganizer instance.
+     * @param displayId The RunningTaskInfo displayId for which to get display information.
+     * @param splitLayout The SplitLayout to update. Can be null.
+     */
+    public static void updateSplitLayoutConfig(
+            @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer,
+            int displayId,
+            @Nullable SplitLayout splitLayout) {
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()) {
+            return;
+        }
+
+        DisplayAreaInfo displayAreaInfo = rootTDAOrganizer.getDisplayAreaInfo(displayId);
+        if (displayAreaInfo == null) {
+            return;
+        }
+
+        Configuration displayConfiguration = displayAreaInfo.configuration;
+        if (splitLayout != null) {
+            splitLayout.updateConfiguration(displayConfiguration, displayId);
+        }
     }
 }

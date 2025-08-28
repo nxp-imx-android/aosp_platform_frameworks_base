@@ -24,8 +24,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -175,14 +177,15 @@ private fun ContentScope.BundleHeaderContent(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.padding(vertical = 12.dp),
+        modifier = modifier.height(48.dp).padding(vertical = 12.dp),
     ) {
         BundleIcon(
             viewModel.bundleIcon,
             large = false, // BundleHeader is always small
             modifier =
-                Modifier.padding(start = 16.dp, end = 8.dp)
+                Modifier.padding(start = 16.dp, end = 16.dp)
                     .align(Alignment.CenterVertically)
+                    .width(40.dp)
                     // Has to be a shared element because we may have a semi-transparent background
                     .element(NotificationRowPrimitives.Elements.NotificationIconBackground),
         )

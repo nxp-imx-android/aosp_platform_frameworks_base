@@ -34,64 +34,63 @@ import androidx.constraintlayout.widget.ConstraintSet.PARENT_ID
 import androidx.constraintlayout.widget.ConstraintSet.START
 import androidx.constraintlayout.widget.ConstraintSet.TOP
 import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.customization.clocks.utils.ContextUtils.getSafeStatusBarHeight
 import com.android.systemui.plugins.keyguard.ui.clocks.AodClockBurnInModel
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
 import kotlin.collections.List
 
 /** A ClockFaceLayout that applies the default lockscreen layout to a single view */
 open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     override val views = listOf(view)
 
-    override val elements: List<LockscreenElement> by lazy {
+    var smallClockModifier: MovableElementContentScope.() -> Modifier = { Modifier }
+    var largeClockModifier: MovableElementContentScope.() -> Modifier = { Modifier }
+    override val elements: List<MovableLockscreenElement> by lazy {
         if (view.id == ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE) {
-            listOf(largeClockElement)
+            listOf(LargeClockElement())
         } else {
-            listOf(smallClockElement)
+            listOf(SmallClockElement())
         }
     }
 
-    private val smallClockElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Clock.Small
-            override val context = view.context
+    private inner class SmallClockElement : MovableLockscreenElement {
+        override val key = LockscreenElementKeys.Clock.Small
+        override val context = view.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                clockView(
-                    view = view,
-                    modifier =
-                        Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
-                            .then(context.burnInModifier),
-                )
-            }
+        @Composable
+        override fun MovableElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            clockView(
+                view,
+                smallClockModifier()
+                    .height(dimensionResource(clocksR.dimen.small_clock_height))
+                    .then(context.burnInModifier),
+            )
         }
+    }
 
-    private val largeClockElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Clock.Large
-            override val context = view.context
+    private inner class LargeClockElement : MovableLockscreenElement {
+        override val key = LockscreenElementKeys.Clock.Large
+        override val context = view.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                // TODO(b/418824686): Migrate stepping animation to compose
-                clockView(view, Modifier.wrapContentSize().then(context.burnInModifier))
-            }
+        @Composable
+        override fun MovableElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            clockView(view, largeClockModifier().wrapContentSize().then(context.burnInModifier))
         }
+    }
 
     companion object {
         @Composable

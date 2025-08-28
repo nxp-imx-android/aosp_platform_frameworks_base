@@ -132,9 +132,6 @@ constructor(
 
     /** Shows the bluetooth dialog. */
     fun showDialog(expandable: Expandable?) {
-        // If `QsDetailedView` is enabled, it should show the details view.
-        QsDetailedView.assertInLegacyMode()
-
         cancelJob()
 
         job =

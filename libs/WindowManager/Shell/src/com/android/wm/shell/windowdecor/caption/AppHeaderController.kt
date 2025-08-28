@@ -183,7 +183,8 @@ class AppHeaderController(
     private val closeMaximizeWindowRunnable = Runnable { closeMaximizeMenu() }
     private val isEducationOrHandleReportingEnabled =
         Flags.enableDesktopWindowingAppHandleEducation() ||
-            Flags.enableDesktopWindowingAppToWebEducationIntegration() ||
+            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
 
     private var isMaximizeMenuHovered = false
@@ -290,11 +291,10 @@ class AppHeaderController(
             )
         val captionState =
             AppHeader(
-                taskInfo,
-                isHandleMenuActive,
-                appChipGlobalPosition,
-                appToWebRepository.isCapturedLinkAvailable(),
-                hasGlobalFocus,
+                runningTaskInfo = taskInfo,
+                isHeaderMenuExpanded = isHandleMenuActive,
+                globalAppChipBounds = appChipGlobalPosition,
+                isFocused = hasGlobalFocus,
             )
 
         windowDecorCaptionRepository.notifyCaptionChanged(captionState)
@@ -523,7 +523,7 @@ class AppHeaderController(
                     isBrowserApp = isBrowserApp,
                     openInAppOrBrowserIntent = openInAppOrBrowserIntent,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
-                    captionView = null,
+                    captionView = viewHolder.rootView,
                     captionWidth = captionLayoutResult.captionWidth,
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,
@@ -536,8 +536,12 @@ class AppHeaderController(
                     show(
                         openInAppOrBrowserClickListener = { intent ->
                             windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
-                            appToWebRepository.onCapturedLinkUsed()
-                            if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
+                            appToWebRepository.onCapturedLinkUsed(taskInfo.taskId)
+                            if (
+                                DesktopExperienceFlags
+                                    .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                                    .isTrue
+                            ) {
                                 windowDecorCaptionRepository.onAppToWebUsage()
                             }
                         },

@@ -88,8 +88,13 @@ class SharedNotificationContainer(context: Context, attrs: AttributeSet?) :
                         // parent width.
                         constraintSet.setHorizontalBias(nsslId, 0f)
                     }
-                    is MiddleToEdge ->
+                    is MiddleToEdge -> {
                         setGuidelinePercent(R.id.nssl_guideline, horizontalPosition.ratio)
+                        constrainMaxWidth(nsslId, horizontalPosition.maxWidth)
+                        // Ensure END alignment in case the maxWidth is smaller than half the
+                        // parent width.
+                        constraintSet.setHorizontalBias(nsslId, 1f)
+                    }
                     else -> Unit
                 }
             }

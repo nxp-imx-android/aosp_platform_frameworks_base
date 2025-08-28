@@ -95,7 +95,6 @@ fun ShortPill(
     onCloseClick: () -> Unit = {},
     onAnimationStateChange: (Int, AmbientCueAnimationState) -> Unit = { _, _ -> },
 ) {
-    val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
     val scrimColor = MaterialTheme.colorScheme.primaryFixedDim
     val minSize = 48.dp
@@ -279,7 +278,7 @@ fun ShortPill(
                             if (actions.size == 1) {
                                 Text(
                                     text = action.label,
-                                    color = outlineColor,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     style = actionTextStyle,
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 1,
@@ -292,7 +291,7 @@ fun ShortPill(
                             ) {
                                 Text(
                                     text = action.label,
-                                    color = outlineColor,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     style = actionTextStyle,
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 1,
@@ -404,13 +403,14 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
         contentDescription = stringResource(id = R.string.ambient_cue_icon_content_description),
         modifier =
             modifier
+                .padding(2.dp)
                 .then(
                     if (action.actionType == ActionType.MR) {
-                        Modifier.size(20.dp)
+                        Modifier.size(16.dp)
                     } else {
-                        Modifier.size(19.25.dp)
+                        Modifier.size(16.dp)
                             .border(
-                                width = 0.75.dp,
+                                width = 0.5.dp,
                                 color = MaterialTheme.colorScheme.outline,
                                 shape = CircleShape,
                             )

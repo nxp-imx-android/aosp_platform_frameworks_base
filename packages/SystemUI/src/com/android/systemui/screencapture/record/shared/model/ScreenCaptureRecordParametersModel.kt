@@ -24,4 +24,5 @@ data class ScreenCaptureRecordParametersModel(
     val target: ScreenCaptureTarget,
     val audioSource: ScreenRecordingAudioSource,
     val shouldShowTaps: Boolean,
+    val shouldShowFrontCamera: Boolean,
 )

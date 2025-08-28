@@ -386,14 +386,8 @@ public class SplitTransitionTests extends ShellTestCase {
 
         // Make sure it cleans-up if recents doesn't restore
         WindowContainerTransaction commitWCT = new WindowContainerTransaction();
-        if (Flags.enableRecentsBookendTransition()) {
-            mStageCoordinator.onRecentsInSplitAnimationFinishing(false /* returnToApp */, commitWCT,
-                    mock(SurfaceControl.Transaction.class));
-        } else {
-            mStageCoordinator.onRecentsInSplitAnimationFinishing(
-                    mStageCoordinator.wctIsReorderingSplitToTop(commitWCT), commitWCT,
-                    mock(SurfaceControl.Transaction.class));
-        }
+        mStageCoordinator.onRecentsInSplitAnimationFinishing(false /* returnToApp */, commitWCT,
+                mock(SurfaceControl.Transaction.class));
         assertFalse(mStageCoordinator.isSplitScreenVisible());
     }
 
@@ -457,14 +451,8 @@ public class SplitTransitionTests extends ShellTestCase {
         // simulate the restoreWCT being applied:
         mMainStage.onTaskAppeared(mMainChild, mock(SurfaceControl.class));
         mSideStage.onTaskAppeared(mSideChild, mock(SurfaceControl.class));
-        if (Flags.enableRecentsBookendTransition()) {
-            mStageCoordinator.onRecentsInSplitAnimationFinishing(true /* returnToApp */, restoreWCT,
-                    mock(SurfaceControl.Transaction.class));
-        } else {
-            mStageCoordinator.onRecentsInSplitAnimationFinishing(
-                    mStageCoordinator.wctIsReorderingSplitToTop(restoreWCT), restoreWCT,
-                    mock(SurfaceControl.Transaction.class));
-        }
+        mStageCoordinator.onRecentsInSplitAnimationFinishing(true /* returnToApp */, restoreWCT,
+                mock(SurfaceControl.Transaction.class));
         assertTrue(mStageCoordinator.isSplitScreenVisible());
     }
 
