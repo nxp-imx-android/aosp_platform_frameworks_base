@@ -54,6 +54,7 @@ import static android.provider.Settings.Secure.VOLUME_HUSH_OFF;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.STATE_OFF;
+import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.KeyEvent.KEYCODE_BACK;
 import static android.view.KeyEvent.KEYCODE_HOME;
 import static android.view.KeyEvent.KEYCODE_POWER;
@@ -200,6 +201,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.HapticFeedbackConstants;
 import android.view.IDisplayFoldListener;
 import android.view.InputDevice;
@@ -216,6 +218,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.autofill.AutofillManagerInternal;
 import android.widget.Toast;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -6310,10 +6313,25 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             Log.d(TAG, "startDockOrHome: startReason= " + startReason);
         }
 
-        int userId = mUserManagerInternal.getUserAssignedToDisplay(displayId);
-        // Start home.
-        mActivityTaskManagerInternal.startHomeOnDisplay(userId, startReason,
-                displayId, true /* allowInstrumenting */, fromHomeKey);
+        DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
+        boolean isDisplayExternal = displayInfo != null && displayInfo.type == TYPE_EXTERNAL;
+        if (DesktopExperienceFlags.ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT.isTrue()
+                && isDisplayExternal) {
+            // TODO(b/441952247): Clean up using home gesture handling in WM Core
+            mInputManagerInternal.handleKeyGestureInKeyGestureController(
+                    new KeyGestureEvent.Builder()
+                            .setKeyGestureType(
+                                 KeyGestureEvent.KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY)
+                            .setKeycodes(new int[]{KEYCODE_HOME})
+                            .setDisplayId(displayId)
+                            .setAction(ACTION_COMPLETE)
+                            .build());
+        } else {
+            int userId = mUserManagerInternal.getUserAssignedToDisplay(displayId);
+            // Start home.
+            mActivityTaskManagerInternal.startHomeOnDisplay(userId, startReason,
+                    displayId, true /* allowInstrumenting */, fromHomeKey);
+        }
     }
 
     void startDockOrHome(int displayId, boolean fromHomeKey, boolean awakenFromDreams) {
