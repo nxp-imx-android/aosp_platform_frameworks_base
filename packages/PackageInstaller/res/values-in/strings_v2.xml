@@ -43,7 +43,7 @@
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Uninstal aplikasi ini untuk semua pengguna?"</string>
     <string name="title_uninstall_other_user" msgid="2271467467800640363">"Uninstal aplikasi ini untuk pengguna \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"Aplikasi tidak ditemukan"</string>
-    <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Tidak dapat meng-uninstal aplikasi ini"</string>
+    <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"Tidak dapat menguninstal aplikasi ini"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"Aplikasi tidak diuninstal"</string>
     <string name="title_archive" msgid="2876455228073419830">"Arsipkan aplikasi ini?"</string>
     <string name="title_archive_all_users" msgid="5904736601499520543">"Arsipkan aplikasi ini untuk semua pengguna?"</string>
@@ -80,7 +80,7 @@
     <string name="message_uninstall_work_profile" msgid="224587253086750763">"Aplikasi ini akan diuninstal dari profil kerja Anda"</string>
     <string name="message_uninstall_private_space" msgid="2815872500665141251">"Aplikasi ini akan diuninstal dari ruang privasi Anda"</string>
     <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Aplikasi ini tidak ditemukan dalam daftar aplikasi terinstal, atau yang telah diuninstal"</string>
-    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Pengguna saat ini tidak diizinkan meng-uninstal"</string>
+    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Pengguna saat ini tidak diizinkan menguninstal"</string>
     <string name="message_uninstall_failed" msgid="4678598986902459187">"Aplikasi ini tidak dapat diuninstal"</string>
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Simpan data aplikasi"</string>
     <string name="message_archive" msgid="943853731737315850">"Data aplikasi Anda akan disimpan"</string>

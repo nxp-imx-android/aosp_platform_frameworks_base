@@ -94,24 +94,16 @@
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Para restaurar esta app, verifique a sua ligação à Internet e tente novamente"</string>
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Para repor esta app, ative o instalador <xliff:g id="INSTALLERNAME">%1$s</xliff:g> nas Definições"</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para repor esta app, tem de instalar o instalador <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
-    <string name="message_restore_error_generic" msgid="5903850636679929406">"Ocorreu um problema ao tentar repor esta app"</string>
+    <string name="message_restore_error_generic" msgid="5903850636679929406">"Ocorreu um problema ao tentar restaurar esta app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> faz parte da seguinte app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Esta app foi bloqueada. Para ajudar a manter o seu dispositivo e dados seguros, só é possível instalar apps de programadores validados.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Esta app não foi atualizada. Para ajudar a manter o seu dispositivo e dados seguros, só é possível instalar atualizações de programadores validados.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Esta app não foi instalada. As apps de programadores não validados podem não ser seguras.&lt;/p&gt; &lt;p&gt;É necessária uma ligação à Internet para validar o programador de apps. Verifique a sua ligação e, de seguida, tente instalar a app novamente. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Esta app não foi atualizada. As atualizações de programadores não validados podem não ser seguras.&lt;/p&gt; &lt;p&gt;É necessária uma ligação à Internet para validar o programador de apps. Verifique a sua ligação e, de seguida, tente atualizar a app novamente. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Ocorreu um problema ao validar o programador desta app. As apps de programadores não validados podem não ser seguras, por isso, a app não foi instalada.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Ocorreu um problema ao validar o programador desta app. As atualizações de programadores não validados podem não ser seguras, por isso, a app não foi atualizada.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Esta app foi bloqueada porque ocorreu um problema ao validar o programador. Para ajudar a manter o seu dispositivo e dados seguros, só é possível instalar apps de programadores validados.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Esta app não foi atualizada porque ocorreu um problema ao validar o programador. Para ajudar a manter o seu dispositivo e dados seguros, só é possível instalar atualizações de programadores validados.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Se instalar sem validar, tenha em atenção que as apps de programadores não validados podem colocar o seu dispositivo e dados em risco."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Se atualizar sem validar, tenha em atenção que as atualizações de programadores não validados podem colocar o seu dispositivo e dados em risco."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programador de apps não validado"</string>

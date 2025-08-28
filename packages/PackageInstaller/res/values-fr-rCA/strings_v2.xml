@@ -52,8 +52,8 @@
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"Action requise"</string>
     <string name="title_restore_error_less_storage" msgid="1702198163928260711">"Espace de stockage insuffisant"</string>
     <string name="title_restore_error_offline" msgid="4611160277876184886">"Vous êtes hors ligne"</string>
-    <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> est désactivé"</string>
-    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> n\'est pas installée"</string>
+    <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"L\'appli <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> est désactivée"</string>
+    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"L\'appli <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> n\'est pas installée"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Un problème est survenu"</string>
     <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Cette appli reçoit normalement des mises à jour de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. En effectuant une mise à jour à partir d\'une source différente, vous pourriez recevoir des mises à jour futures à partir de n\'importe quelle source sur votre tablette. Le fonctionnement de l\'appli peut en être modifié."</string>
     <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Cette appli reçoit normalement des mises à jour de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. En effectuant une mise à jour à partir d\'une source différente, vous pourriez recevoir des mises à jour futures à partir de n\'importe quelle source sur votre téléviseur. Le fonctionnement de l\'appli peut en être modifié."</string>
@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Pour restaurer cette appli, vous devrez installer <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Un problème est survenu lors de la restauration de cette appli"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> fait partie de l\'appli suivante : <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Cette appli a été bloquée. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Cette appli n\'a pas été installée. Les applis provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur de l\'appli. Vérifiez votre connexion, puis réessayez d\'installer l\'appli. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Cette appli n\'a pas été mise à jour. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses.&lt;/p&gt; &lt;p&gt;Une connexion Internet est requise pour vérifier le développeur d\'applis. Vérifiez votre connexion, puis réessayez de mettre à jour l\'appli. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les applis provenant de développeurs non vérifiés peuvent être dangereuses. L\'appli n\'a donc pas été installée.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Un problème est survenu lors de la vérification du développeur de cette appli. Les mises à jour provenant de développeurs non vérifiés peuvent être dangereuses. L\'appli n\'a donc pas été mise à jour.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Cette appli a été bloquée, car un problème est survenu lors de la vérification du développeur. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les applis de développeurs vérifiés peuvent être installées.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Cette appli n\'a pas été mise à jour, car un problème est survenu lors de la vérification du développeur. Afin d\'assurer la sécurité de votre appareil et de vos données, seules les mises à jour de développeurs vérifiés peuvent être installées.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Si vous installez l\'appli sans effectuer la vérification, gardez à l\'esprit que les applis provenant de développeurs non vérifiés peuvent poser un risque pour votre appareil et vos données."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Si vous effectuez une mise à jour sans procéder à la vérification, gardez à l\'esprit que les mises à jour provenant de développeurs non vérifiés peuvent poser un risque pour votre appareil et vos données."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Développeur d\'applis non vérifié"</string>

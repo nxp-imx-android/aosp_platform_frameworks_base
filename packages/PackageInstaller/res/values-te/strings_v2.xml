@@ -46,7 +46,7 @@
     <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"ఈ యాప్‌ను అన్‌ఇన్‌స్టాల్ చేయడం సాధ్యపడదు"</string>
     <string name="title_uninstall_failed" msgid="4522950368147075143">"యాప్ అన్ఇన్‌స్టాల్ కాలేదు"</string>
     <string name="title_archive" msgid="2876455228073419830">"ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
-    <string name="title_archive_all_users" msgid="5904736601499520543">"యూజర్‌లందరికీ ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
+    <string name="title_archive_all_users" msgid="5904736601499520543">"యూజర్లు అందరికీ ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
     <string name="title_archive_other_user" msgid="6686508642274629645">"\"<xliff:g id="USER_NAME">%1$s</xliff:g>\" యూజర్‌కు ఈ యాప్‌ను ఆర్కైవ్ చేయాలా?"</string>
     <string name="title_restore" msgid="8934911753892124574">"ఈ యాప్‌ను రీస్టోర్ చేయాలా?"</string>
     <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"మీరు పూర్తి చేయాల్సిన చర్య"</string>

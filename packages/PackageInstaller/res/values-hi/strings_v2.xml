@@ -84,12 +84,12 @@
     <string name="message_uninstall_failed" msgid="4678598986902459187">"इस ऐप्लिकेशन को अनइंस्टॉल नहीं किया जा सका"</string>
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"ऐप्लिकेशन का डेटा सेव रखें"</string>
     <string name="message_archive" msgid="943853731737315850">"ऐप्लिकेशन का डेटा सेव किया जाएगा"</string>
-    <string name="message_archive_all_users" msgid="4664139369764501351">"ऐप्लिकेशन का पूरा डेटा सेव किया जाएगा"</string>
+    <string name="message_archive_all_users" msgid="4664139369764501351">"ऐप्लिकेशन का पूरा डेटा सेव रहेगा"</string>
     <string name="message_archive_other_user" msgid="6465828676043191175">"ऐप्लिकेशन का डेटा सेव किया जाएगा"</string>
-    <string name="message_archive_work_profile" msgid="7601504268820630858">"इस ऐप्लिकेशन को आपकी वर्क प्रोफ़ाइल से संग्रहित किया जाएगा. साथ ही, आपके ऐप्लिकेशन का डेटा सेव किया जाएगा."</string>
-    <string name="message_archive_private_space" msgid="4873651645762576624">"इस ऐप्लिकेशन को आपके प्राइवेट स्पेस से संग्रहित किया जाएगा. साथ ही, आपके ऐप्लिकेशन का डेटा सेव किया जाएगा."</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"इस ऐप्लिकेशन को आपकी वर्क प्रोफ़ाइल से हटाकर संग्रहित किया जाएगा. हालांकि, ऐप्लिकेशन का डेटा सेव रहेगा."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"इस ऐप्लिकेशन को प्राइवेट स्पेस से हटाकर संग्रहित किया जाएगा. हालांकि, ऐप्लिकेशन का डेटा सेव रहेगा."</string>
     <string name="message_restore" msgid="8402726798623569969">"यह ऐप्लिकेशन, बैकग्राउंड में <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> से डाउनलोड होगा"</string>
-    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"इस ऐप्लिकेशन को वापस लाने से पहले, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> को ज़्यादा जानकारी चाहिए"</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"इस ऐप्लिकेशन को वापस लाने से पहले, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> को और जानकारी चाहिए"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"इस ऐप्लिकेशन को वापस लाने के लिए, &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; स्टोरेज खाली करें और फिर से कोशिश करें"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"इस ऐप्लिकेशन को वापस लाने के लिए, अपने इंटरनेट कनेक्शन की जांच करें और फिर से कोशिश करें"</string>
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"इस ऐप्लिकेशन को वापस लाने के लिए, सेटिंग में जाकर <xliff:g id="INSTALLERNAME">%1$s</xliff:g> को चालू करें"</string>

@@ -92,7 +92,7 @@
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> treba više informacija da biste mogli vratiti tu aplikaciju"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Da biste vratili ovu aplikaciju, oslobodite &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; prostora i pokušajte ponovno"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Da biste vratili ovu aplikaciju, provjerite internetsku vezu i pokušajte ponovno"</string>
-    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Da biste vratili aplikaciju, u postavkama omogućite: <xliff:g id="INSTALLERNAME">%1$s</xliff:g>"</string>
+    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Da biste vratili aplikaciju, u postavkama omogućite <xliff:g id="INSTALLERNAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Da biste vratili aplikaciju, instalirajte: <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Došlo je do problema s vraćanjem aplikacije"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> je dio sljedeće aplikacije: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
