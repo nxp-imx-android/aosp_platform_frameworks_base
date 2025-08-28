@@ -45442,6 +45442,7 @@ package android.telephony {
     field public static final String KEY_APN_EXPAND_BOOL = "apn_expand_bool";
     field public static final String KEY_APN_SETTINGS_DEFAULT_APN_TYPES_STRING_ARRAY = "apn_settings_default_apn_types_string_array";
     field public static final String KEY_AUTO_RETRY_ENABLED_BOOL = "auto_retry_enabled_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.support_auto_unhold") public static final String KEY_AUTO_UNHOLD_ON_REMOTE_DISCONNECT_BOOL = "auto_unhold_on_remote_disconnect_bool";
     field @FlaggedApi("android.net.platform.flags.avoid_bad_wifi_from_carrier_config") public static final String KEY_AVOID_BAD_WIFI_BOOL = "avoid_bad_wifi_bool";
     field public static final String KEY_CALL_BARRING_DEFAULT_SERVICE_CLASS_INT = "call_barring_default_service_class_int";
     field public static final String KEY_CALL_BARRING_SUPPORTS_DEACTIVATE_ALL_BOOL = "call_barring_supports_deactivate_all_bool";

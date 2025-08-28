@@ -2664,8 +2664,18 @@ public class CarrierConfigManager {
      * Where {@code config_device_respects_hold_carrier_config} is false, the value of
      * this carrier configuration is ignored.
      * @hide
+     * @deprecated All carriers should support holding.
      */
+    @Deprecated
     public static final String KEY_ALLOW_HOLD_IN_IMS_CALL_BOOL = "allow_hold_in_ims_call";
+
+    /**
+     * Flag indicating whether the carrier supports auto-unholding the background call on remotely
+     * disconnected calls.
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_AUTO_UNHOLD)
+    public static final String KEY_AUTO_UNHOLD_ON_REMOTE_DISCONNECT_BOOL =
+            "auto_unhold_on_remote_disconnect_bool";
 
     /**
      * Flag indicating whether the carrier supports call deflection for an incoming IMS call.
@@ -11002,6 +11012,7 @@ public class CarrierConfigManager {
         sDefaults = new PersistableBundle();
         sDefaults.putString(KEY_CARRIER_CONFIG_VERSION_STRING, "");
         sDefaults.putBoolean(KEY_ALLOW_HOLD_IN_IMS_CALL_BOOL, true);
+        sDefaults.putBoolean(KEY_AUTO_UNHOLD_ON_REMOTE_DISCONNECT_BOOL, false);
         sDefaults.putBoolean(KEY_CARRIER_ALLOW_DEFLECT_IMS_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_CARRIER_ALLOW_TRANSFER_IMS_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_ALWAYS_PLAY_REMOTE_HOLD_TONE_BOOL, false);
