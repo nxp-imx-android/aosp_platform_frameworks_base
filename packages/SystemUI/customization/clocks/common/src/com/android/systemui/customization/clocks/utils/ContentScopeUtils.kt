@@ -18,12 +18,34 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.BaseContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.ElementScope
+import com.android.compose.animation.scene.MovableElementContentScope
+import com.android.compose.animation.scene.MovableElementKey
 
 object ContentScopeUtils {
     @Composable
     /** Convenience method for building an element w/ the default Modifier */
     fun BaseContentScope.Element(key: ElementKey, content: @Composable BoxScope.() -> Unit) {
         Element(key, Modifier, content)
+    }
+
+    @Composable
+    /** Convenience method for building an element w/ the default Modifier */
+    fun BaseContentScope.ElementWithValues(
+        key: ElementKey,
+        content: @Composable (ElementScope<ElementContentScope>.() -> Unit),
+    ) {
+        ElementWithValues(key, Modifier, content)
+    }
+
+    @Composable
+    /** Convenience method for building a movable element w/ the default Modifier */
+    fun BaseContentScope.MovableElement(
+        key: MovableElementKey,
+        content: @Composable ElementScope<MovableElementContentScope>.() -> Unit,
+    ) {
+        MovableElement(key, Modifier, content)
     }
 }
