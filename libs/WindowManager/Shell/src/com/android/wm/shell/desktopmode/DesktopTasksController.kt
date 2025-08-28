@@ -1024,9 +1024,8 @@ class DesktopTasksController(
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
-        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
-            focusTransitionObserver.globallyFocusedTaskId
-        )
+        val globallyFocusedTask =
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -2697,7 +2696,7 @@ class DesktopTasksController(
     ) {
         val displayId = taskInfo.displayId
         val displayLayout = displayController.getDisplayLayout(displayId)
-        if (displayLayout == null)  {
+        if (displayLayout == null) {
             logW("Display %d is not found, task displayId might be stale", displayId)
             return
         }
@@ -5601,10 +5600,14 @@ class DesktopTasksController(
                     validDragArea,
                 )
 
-                if (destinationBounds == dragStartBounds) {
+                if (
+                    destinationBounds == dragStartBounds && destinationBounds != currentDragBounds
+                ) {
                     // There's no actual difference between the start and end bounds, so while a
                     // WCT change isn't needed, the dragged surface still needs to be snapped back
-                    // to its original location.
+                    // to its original location. This is as long as it moved some in the first
+                    // place, if it didn't and |currentDragBounds| is already at destination then
+                    // there's no need to animate.
                     releaseVisualIndicator()
                     returnToDragStartAnimator.start(
                         taskInfo.taskId,
