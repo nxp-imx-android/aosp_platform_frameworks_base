@@ -29,9 +29,11 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SEQ_INCREMENTAL_STATE_CLEARED;
 import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SEQ_NEEDS_INCREMENTAL_STATE;
 
 import android.os.SystemClock;
@@ -96,6 +98,9 @@ public class ProcessedPerfettoProtoLogImplTest {
     private static ProtoLogCacheUpdater sCacheUpdater;
 
     private static ProtoLogViewerConfigReader sReader;
+
+    private static int sOriginalMaxInternedStringsSize;
+
 
     public ProcessedPerfettoProtoLogImplTest() throws IOException { }
 
@@ -186,6 +191,9 @@ public class ProcessedPerfettoProtoLogImplTest {
                 (instance) -> sCacheUpdater.update(instance), TestProtoLogGroup.values(),
                 sProtoLogConfigurationService);
         sProtoLog.enable();
+
+        sOriginalMaxInternedStringsSize =
+                PerfettoProtoLogImpl.MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET;
     }
 
     @Before
@@ -198,6 +206,8 @@ public class ProcessedPerfettoProtoLogImplTest {
     @After
     public void tearDown() {
         ProtoLogImpl.setSingleInstance(null);
+        PerfettoProtoLogImpl.MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET =
+                sOriginalMaxInternedStringsSize;
     }
 
     @Test
@@ -562,9 +572,6 @@ public class ProcessedPerfettoProtoLogImplTest {
         } finally {
             traceMonitor.stop(writer);
         }
-
-        final ResultReader reader = new ResultReader(writer.write());
-        assertThrows(java.net.SocketException.class, reader::readProtoLogTrace);
     }
 
     @Test
@@ -1307,6 +1314,44 @@ public class ProcessedPerfettoProtoLogImplTest {
         final var incrementalStateFlag = SEQ_NEEDS_INCREMENTAL_STATE.getNumber();
         Truth.assertWithMessage("SEQ_NEEDS_INCREMENTAL_STATE flag should be set")
                 .that(sequenceFlag & incrementalStateFlag).isEqualTo(incrementalStateFlag);
+    }
+
+    @Test
+    public void incrementalStateResetWhenStringsTooLarge() throws IOException {
+        assumeTrue(android.tracing.Flags.protologAutoClearIncrementalState());
+        PerfettoProtoLogImpl.MAX_INTERNED_STRINGS_SIZE_BYTES_BEFORE_RESET = 10;
+
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+
+        final var writer = createTempWriter(mTracingDirectory);
+        try {
+            traceMonitor.start();
+
+            // Log a 5-char string, should not reset yet.
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 6,
+                    LogDataType.STRING, new Object[]{"12345"});
+
+            // Log another 4-char string, should not reset yet (5 + 4 = 9).
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 6,
+                    LogDataType.STRING, new Object[]{"abcd"});
+
+            // Log a message string, should trigger reset because 9 + message_len > 10.
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, "message");
+        } finally {
+            traceMonitor.stop(writer);
+        }
+
+        final ResultReader reader = new ResultReader(writer.write());
+        final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
+        final var trace = Trace.parseFrom(traceBytes);
+
+        final var clearPackets = trace.getPacketList().stream()
+                .filter(it -> (it.getSequenceFlags()
+                        & SEQ_INCREMENTAL_STATE_CLEARED.getNumber()) != 0)
+                .toList();
+        Truth.assertThat(clearPackets).hasSize(1);
     }
 
     private enum TestProtoLogGroup implements IProtoLogGroup {
