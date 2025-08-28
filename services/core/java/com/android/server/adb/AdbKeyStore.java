@@ -69,14 +69,6 @@ class AdbKeyStore {
     private final Context mContext;
     private final AdbDebuggingManager.Ticker mTicker;
 
-    /**
-     * Callback to request that the AdbKeyStore's state be persisted to disk. Schedules a
-     * MESSAGE_ADB_PERSIST_KEYSTORE message in the AdbDebuggingHandler to ensure that AdbKeyStore is
-     * persisted to disk asynchronously.
-     */
-    // TODO: verify if we can persist keystore synchronously without scheduling messages on handler.
-    private final KeyStorePersistAction mKeyStorePersistAction;
-
     private static final String SYSTEM_KEY_FILE = "/adb_keys";
 
     /**
@@ -98,11 +90,9 @@ class AdbKeyStore {
             Context context,
             File tempKeysFile,
             File userKeyFile,
-            AdbDebuggingManager.Ticker ticker,
-            KeyStorePersistAction keyStorePersisAction) {
+            AdbDebuggingManager.Ticker ticker) {
         mContext = context;
         mTicker = ticker;
-        mKeyStorePersistAction = keyStorePersisAction;
 
         mAdbKeyUser = new AdbdKeyStoreStorage(userKeyFile);
         mAuthStore = new AdbAuthorizationStore(tempKeysFile);
@@ -123,7 +113,7 @@ class AdbKeyStore {
 
     synchronized void addTrustedNetwork(String bssid) {
         mAuthEntries.trustedNetworks().add(bssid);
-        mKeyStorePersistAction.requestPersist();
+        persistKeyStore();
     }
 
     synchronized Set<String> getKeys() {
@@ -143,7 +133,7 @@ class AdbKeyStore {
     synchronized void removeKey(String key) {
         if (mAuthEntries.keys().containsKey(key)) {
             mAuthEntries.keys().remove(key);
-            mKeyStorePersistAction.requestPersist();
+            persistKeyStore();
         }
     }
 
@@ -158,7 +148,7 @@ class AdbKeyStore {
      */
     synchronized void updateKeyStore() {
         if (filterOutOldKeys()) {
-            mKeyStorePersistAction.requestPersist();
+            persistKeyStore();
         }
     }
 
@@ -179,7 +169,7 @@ class AdbKeyStore {
             }
         }
         if (mapUpdated) {
-            mKeyStorePersistAction.requestPersist();
+            persistKeyStore();
         }
     }
 
@@ -329,11 +319,5 @@ class AdbKeyStore {
      */
     synchronized boolean isTrustedNetwork(String bssid) {
         return mAuthEntries.trustedNetworks().contains(bssid);
-    }
-
-    @FunctionalInterface
-    interface KeyStorePersistAction {
-        /** Requests that the AdbKeyStore's state be persisted. */
-        void requestPersist();
     }
 }
