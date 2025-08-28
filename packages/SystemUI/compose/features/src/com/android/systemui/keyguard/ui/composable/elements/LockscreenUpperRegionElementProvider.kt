@@ -25,12 +25,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementContentScope
@@ -298,11 +297,14 @@ constructor(
 
         @Composable
         fun getLayoutType(): LayoutType {
-            val windowSizeClass = LocalWindowSizeClass.current
-            val isWindowLarge =
-                windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium &&
-                    windowSizeClass.heightSizeClass >= WindowHeightSizeClass.Medium
-            return if (isWindowLarge) LayoutType.WIDE else LayoutType.NARROW
+            with(LocalWindowSizeClass.current) {
+                val isWindowLarge =
+                    isAtLeastBreakpoint(
+                        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
+                        WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
+                    )
+                return if (isWindowLarge) LayoutType.WIDE else LayoutType.NARROW
+            }
         }
     }
 }

@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -58,6 +57,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutState
@@ -352,14 +352,19 @@ private fun ContentScope.QuickSettingsContent(
                             .align(Alignment.TopCenter)
                             .sysuiResTag("expanded_qs_scroll_view")
                 ) {
-                    when (LocalWindowSizeClass.current.widthSizeClass) {
-                        WindowWidthSizeClass.Compact ->
-                            ExpandedShadeHeader(
-                                viewModel = headerViewModel,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                            )
-                        else ->
-                            CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
+                    with(LocalWindowSizeClass.current) {
+                        when {
+                            isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ->
+                                CollapsedShadeHeader(
+                                    viewModel = headerViewModel,
+                                    isSplitShade = false,
+                                )
+                            else ->
+                                ExpandedShadeHeader(
+                                    viewModel = headerViewModel,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
+                        }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     QuickSettingsContent(viewModel.qsContainerViewModel, mediaInRow)

@@ -59,7 +59,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -94,6 +93,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.PlatformButton
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
@@ -297,7 +297,9 @@ private fun StandardLayout(
     modifier: Modifier = Modifier,
 ) {
     val isHeightExpanded =
-        LocalWindowSizeClass.current.heightSizeClass == WindowHeightSizeClass.Expanded
+        LocalWindowSizeClass.current.isHeightAtLeastBreakpoint(
+            WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
+        )
 
     FoldAware(
         modifier = modifier.padding(top = 92.dp, bottom = 32.dp),
@@ -448,7 +450,9 @@ private fun BesideUserSwitcherLayout(
     // of layout.
     val isSwapped = isLeftToRight == isInputPreferredOnLeftSide
     val isHeightExpanded =
-        LocalWindowSizeClass.current.heightSizeClass == WindowHeightSizeClass.Expanded
+        LocalWindowSizeClass.current.isHeightAtLeastBreakpoint(
+            WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
+        )
     val authMethod by viewModel.authMethodViewModel.collectAsStateWithLifecycle()
 
     var swapAnimationEnd by remember { mutableStateOf(false) }
