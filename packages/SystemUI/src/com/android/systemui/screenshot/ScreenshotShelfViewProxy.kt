@@ -357,7 +357,11 @@ constructor(
                         if (
                             ev is MotionEvent &&
                                 ev.actionMasked == MotionEvent.ACTION_DOWN &&
-                                !getTouchRegion().contains(ev.rawX.toInt(), ev.rawY.toInt())
+                                !view
+                                    .getObservedRegion(
+                                        windowManager.currentWindowMetrics.windowInsets
+                                    )
+                                    .contains(ev.rawX.toInt(), ev.rawY.toInt())
                         ) {
                             callbacks?.onTouchOutside()
                         }
@@ -366,11 +370,7 @@ constructor(
     }
 
     private fun getTouchRegion(): Region {
-        return view.getTouchRegion(
-            windowManager.currentWindowMetrics.windowInsets.getInsets(
-                WindowInsets.Type.systemGestures()
-            )
-        )
+        return view.getTouchRegion(windowManager.currentWindowMetrics.windowInsets)
     }
 
     companion object {
