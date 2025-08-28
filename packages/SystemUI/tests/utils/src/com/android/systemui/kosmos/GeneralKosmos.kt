@@ -37,8 +37,6 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import org.mockito.kotlin.verify
-import com.android.systemui.minmode.MinModeManager
-import com.android.systemui.minmode.MinModeManagerImpl
 
 var Kosmos.testDispatcher by Fixture { StandardTestDispatcher() }
 
@@ -66,7 +64,6 @@ var Kosmos.applicationCoroutineScope by Fixture { testScope.backgroundScope }
 var Kosmos.testCase: SysuiTestCase by Fixture()
 var Kosmos.backgroundCoroutineContext: CoroutineContext by Fixture { testDispatcher }
 var Kosmos.mainCoroutineContext: CoroutineContext by Fixture { testDispatcher }
-var Kosmos.minModeManager: MinModeManager by Fixture { MinModeManagerImpl() }
 
 /**
  * Run this test body with a [Kosmos] as receiver, and using the [testScope] currently installed in
