@@ -479,9 +479,8 @@ private fun CutoutAwareShadeHeader(
         check(measurables[1].size == 1)
 
         val screenWidth = constraints.maxWidth
-        val cutoutWidthPx = cutoutWidth
         val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeight.roundToPx())
-        val childConstraints = Constraints.fixed((screenWidth - cutoutWidthPx) / 2, height)
+        val childConstraints = Constraints.fixed((screenWidth - cutoutWidth) / 2, height)
 
         val startMeasurable = measurables[0][0]
         val endMeasurable = measurables[1][0]
@@ -498,11 +497,11 @@ private fun CutoutAwareShadeHeader(
                 }
                 CutoutLocation.CENTER -> {
                     startPlaceable.placeRelative(x = 0, y = 0)
-                    endPlaceable.placeRelative(x = startPlaceable.width + cutoutWidthPx, y = 0)
+                    endPlaceable.placeRelative(x = startPlaceable.width + cutoutWidth, y = 0)
                 }
                 CutoutLocation.LEFT -> {
-                    startPlaceable.placeRelative(x = cutoutWidthPx, y = 0)
-                    endPlaceable.placeRelative(x = startPlaceable.width + cutoutWidthPx, y = 0)
+                    startPlaceable.placeRelative(x = cutoutWidth, y = 0)
+                    endPlaceable.placeRelative(x = startPlaceable.width + cutoutWidth, y = 0)
                 }
             }
         }

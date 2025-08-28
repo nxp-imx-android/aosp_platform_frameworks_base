@@ -233,7 +233,7 @@ private fun ContentScope.SingleShade(
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
 ) {
-    val cutout = LocalDisplayCutout.current
+    val cutoutLocation = LocalDisplayCutout.current().location
     val cutoutInsets = WindowInsets.Companion.displayCutout
 
     var maxNotifScrimTop by remember { mutableIntStateOf(0) }
@@ -258,8 +258,7 @@ private fun ContentScope.SingleShade(
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
     val shadeMeasurePolicy =
-        remember(cutout, cutoutInsets) {
-            val cutoutLocation = cutout().location
+        remember(cutoutLocation, cutoutInsets) {
             SingleShadeMeasurePolicy(
                 onNotificationsTopChanged = { maxNotifScrimTop = it },
                 cutoutInsetsProvider = {
