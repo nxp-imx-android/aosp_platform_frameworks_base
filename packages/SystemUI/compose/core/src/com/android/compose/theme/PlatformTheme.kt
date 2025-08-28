@@ -29,9 +29,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import com.android.app.tracing.TraceUtils
 import com.android.compose.theme.AndroidColorScheme.Companion.color
 import com.android.compose.theme.typography.TypeScaleTokens
 import com.android.compose.theme.typography.TypefaceNames
@@ -48,19 +46,8 @@ import com.android.internal.R
 fun PlatformTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val context = LocalContext.current
 
-    // Force recreate the color schemes if the theme might have changed.
-    val configuration = LocalConfiguration.current
-    val colorScheme =
-        remember(context, isDarkTheme, configuration) {
-            TraceUtils.trace("PlatformTheme.colorScheme") {
-                platformColorScheme(isDarkTheme, context)
-            }
-        }
-    val androidColorScheme =
-        remember(context, isDarkTheme, configuration) {
-            TraceUtils.trace("PlatformTheme.androidColorScheme") { AndroidColorScheme(context) }
-        }
-
+    val colorScheme = remember(context, isDarkTheme) { platformColorScheme(isDarkTheme, context) }
+    val androidColorScheme = remember(context, isDarkTheme) { AndroidColorScheme(context) }
     val typefaceNames = remember(context) { TypefaceNames.get(context) }
     val typefaceTokens = remember(typefaceNames) { TypefaceTokens(typefaceNames) }
     val typography =
