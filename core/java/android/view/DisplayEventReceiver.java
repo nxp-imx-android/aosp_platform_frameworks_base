@@ -321,11 +321,13 @@ public abstract class DisplayEventReceiver {
      *                             from the target vsync, if target vsync is N then the frame
      *                             should be ready by N - presentationDeadlineNanos.
      * @param overrides The mappings from uid to frame rates
+     * @param supportedRefreshRates The list of refresh rates supported on the display
      */
     public void onModeAndFrameRateOverridesChanged(long timestampNanos,
             long physicalDisplayId,  int modeId,  long renderPeriod,
             long appVsyncOffsetNanos,
-            long presentationDeadlineNanos, FrameRateOverride[] overrides) {
+            long presentationDeadlineNanos, FrameRateOverride[] overrides,
+            float[] supportedRefreshRates) {
     }
 
     /**
@@ -433,9 +435,11 @@ public abstract class DisplayEventReceiver {
     @SuppressWarnings("unused")
     private void dispatchModeChangedWithFrameRateOverrides(long timestampNanos,
             long physicalDisplayId, int modeId, long renderPeriod, long appVsyncOffsetNanos,
-            long presentationDeadlineNanos, FrameRateOverride[] overrides) {
+            long presentationDeadlineNanos, FrameRateOverride[] overrides,
+            float[] supportedRefreshRates) {
         onModeAndFrameRateOverridesChanged(timestampNanos, physicalDisplayId, modeId,
-                renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos, overrides);
+                renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos, overrides,
+                supportedRefreshRates);
     }
 
     // Called from native code.
