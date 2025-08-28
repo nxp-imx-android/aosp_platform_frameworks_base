@@ -113,6 +113,7 @@ import android.view.accessibility.CaptioningManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.textclassifier.TextClassificationManager;
+import android.window.TaskSnapshotManager;
 
 import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.core.app.NotificationManagerCompat;
@@ -306,6 +307,12 @@ public class FrameworkServicesModule {
     @Singleton
     static IActivityTaskManager provideIActivityTaskManager() {
         return ActivityTaskManager.getService();
+    }
+
+    @Provides
+    @Singleton
+    static TaskSnapshotManager provideTaskSnapshotManager() {
+        return TaskSnapshotManager.getInstance();
     }
 
     @Provides
