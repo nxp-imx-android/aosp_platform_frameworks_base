@@ -47,16 +47,16 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
-import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.KeyguardIndicationController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
+import com.android.systemui.util.kotlin.getValue
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
@@ -120,27 +120,46 @@ constructor(
 
     private val logger = Logger(logBuffer, "CommunalViewModel")
 
+    private val mediaCarouselInteractor by mediaCarouselInteractorLazy
+
     private val isMediaHostVisible =
-        conflatedCallbackFlow {
-                val callback = { visible: Boolean ->
-                    trySend(visible)
-                    Unit
+        if (MediaControlsInComposeFlag.isEnabled) {
+            combine(
+                mediaCarouselInteractor.isLockedAndHidden,
+                mediaCarouselInteractor.hasActiveMedia,
+            ) { isLockedAndHidden, hasActiveMedia ->
+                if (isLockedAndHidden) {
+                    false
+                } else {
+                    hasActiveMedia
                 }
-                mediaHost.addVisibilityChangeListener(callback)
-                awaitClose { mediaHost.removeVisibilityChangeListener(callback) }
             }
-            .onStart {
-                // Ensure the visibility state is correct when the hub is opened and this flow is
-                // started so that the UMO is shown when needed. The visibility state in MediaHost
-                // is not updated once its view has been detached, aka the hub is closed, which can
-                // result in this getting stuck as False and never being updated as the UMO is not
-                // shown.
-                mediaHost.updateViewVisibility()
-                emit(mediaHost.visible)
-            }
-            .distinctUntilChanged()
-            .onEach { logger.d({ "_isMediaHostVisible: $bool1" }) { bool1 = it } }
-            .flowOn(mainDispatcher)
+        } else {
+            conflatedCallbackFlow {
+                    val callback = { visible: Boolean ->
+                        trySend(visible)
+                        Unit
+                    }
+                    mediaHost.addVisibilityChangeListener(callback)
+                    awaitClose { mediaHost.removeVisibilityChangeListener(callback) }
+                }
+                .onStart {
+                    // Ensure the visibility state is correct when the hub is opened and this flow
+                    // is
+                    // started so that the UMO is shown when needed. The visibility state in
+                    // MediaHost
+                    // is not updated once its view has been detached, aka the hub is closed, which
+                    // can
+                    // result in this getting stuck as False and never being updated as the UMO is
+                    // not
+                    // shown.
+                    mediaHost.updateViewVisibility()
+                    emit(mediaHost.visible)
+                }
+                .distinctUntilChanged()
+                .onEach { logger.d({ "_isMediaHostVisible: $bool1" }) { bool1 = it } }
+                .flowOn(mainDispatcher)
+        }
 
     /** Communal content saved from the previous emission when the flow is active (not "frozen"). */
     private var frozenCommunalContent: List<CommunalContentModel>? = null
@@ -148,7 +167,9 @@ constructor(
     private val ongoingContent =
         isMediaHostVisible.flatMapLatest { isMediaHostVisible ->
             communalInteractor.ongoingContent(isMediaHostVisible).onEach {
-                mediaHost.updateViewVisibility()
+                if (!MediaControlsInComposeFlag.isEnabled) {
+                    mediaHost.updateViewVisibility()
+                }
             }
         }
 
@@ -267,27 +288,6 @@ constructor(
             .stateIn(scope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     val blurRadiusPx: Float = blurConfig.maxBlurRadiusPx
-
-    init {
-        // Initialize our media host for the UMO. This only needs to happen once and must be done
-        // before the MediaHierarchyManager attempts to move the UMO to the hub.
-        with(mediaHost) {
-            expansion = MediaHostState.EXPANDED
-            expandedMatchesParentHeight = true
-            if (v2FlagEnabled()) {
-                // Only show active media to match lock screen, not resumable media, which can
-                // persist
-                // for up to 2 days.
-                showsOnlyActiveMedia = true
-            } else {
-                // Maintain old behavior on tablet until V2 flag rolls out.
-                showsOnlyActiveMedia = false
-            }
-            falsingProtectionNeeded = false
-            disableScrolling = true
-            init(MediaHierarchyManager.LOCATION_COMMUNAL_HUB)
-        }
-    }
 
     override fun onOpenWidgetEditor(shouldOpenWidgetPickerOnStart: Boolean) {
         // Persist scroll position in glanceable hub so we end up in the same position in edit mode.

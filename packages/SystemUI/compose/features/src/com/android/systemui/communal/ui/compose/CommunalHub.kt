@@ -213,7 +213,6 @@ import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import kotlin.math.max
 import kotlin.math.min
@@ -1867,7 +1866,7 @@ private fun Umo(
                 }
             }
     ) {
-        if (SceneContainerFlag.isEnabled || MediaControlsInComposeFlag.isEnabled) {
+        if (MediaControlsInComposeFlag.isEnabled) {
             Media(
                 viewModelFactory = viewModel.mediaViewModelFactory,
                 presentationStyle = MediaPresentationStyle.Large,
@@ -2205,7 +2204,8 @@ class Dimensions(val context: Context, val config: Configuration) {
     val emptyStatePadding: Dp
         get() {
             return if (
-                WindowSizeUtils.getWindowSizeCategory(context) == WindowSizeUtils.WindowSizeCategory.MOBILE_PORTRAIT
+                WindowSizeUtils.getWindowSizeCategory(context) ==
+                    WindowSizeUtils.WindowSizeCategory.MOBILE_PORTRAIT
             ) {
                 24.adjustedDp
             } else {
