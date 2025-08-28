@@ -33,20 +33,18 @@ import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
-import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.util.KeyguardTransitionRepositorySpySubject.Companion.assertThat
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.kosmos.useStandardTestDispatcher
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
@@ -58,6 +56,7 @@ import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -70,13 +69,13 @@ import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
+@DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
 class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiTestCase() {
     companion object {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
-                .andSceneContainer()
         }
     }
 
@@ -85,7 +84,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
     }
 
     private val kosmos =
-        testKosmos().useUnconfinedTestDispatcher().apply {
+        testKosmos().useStandardTestDispatcher().apply {
             this.fakeKeyguardTransitionRepository =
                 FakeKeyguardTransitionRepository(
                     // This test sends transition steps manually in the test cases.
@@ -103,6 +102,11 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
     @Before
     fun setup() {
         runBlocking {
+            kosmos.fakeKeyguardRepository.setKeyguardOccluded(true)
+            kosmos.fakeKeyguardRepository.setDreaming(true)
+            // Get past initial setup
+            kosmos.testScope.advanceTimeBy(600L)
+
             kosmos.transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.DREAMING,
@@ -120,15 +124,6 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
     @Ignore("Until b/349837588 is fixed")
     fun testTransitionToOccluded_ifDreamEnds_occludingActivityOnTop() =
         kosmos.runTest {
-            fakeKeyguardRepository.setDreaming(true)
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.DREAMING,
-                kosmos.testScope,
-            )
-
-            reset(transitionRepository)
-
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = true)
             fakeKeyguardRepository.setDreaming(false)
 
@@ -137,59 +132,31 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    fun testDoesNotTransitionToOccluded_occludingActivityOnTop_whileStillDreaming() =
-        kosmos.runTest {
-            fakeKeyguardRepository.setDreaming(true)
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.DREAMING,
-                testScope,
-            )
-            reset(transitionRepository)
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = true)
-
-            assertThat(transitionRepository).noTransitionsStarted()
-        }
-
-    @Test
     fun testTransitionsToLockscreen_whenOccludingActivityEnds() =
         kosmos.runTest {
-            fakeKeyguardRepository.setDreaming(true)
-            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true)
-            // Transition to DREAMING and set the power interactor awake
-            powerInteractor.setAwakeForTest()
-
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.DREAMING,
-                testScope,
-            )
-            fakeKeyguardRepository.setBiometricUnlockState(BiometricUnlockMode.NONE)
-
-            // Get past initial setup
-            testScope.advanceTimeBy(600L)
-            reset(transitionRepository)
-
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = false)
             fakeKeyguardRepository.setDreaming(false)
-            testScope.advanceTimeBy(60L)
+            fakeKeyguardRepository.setKeyguardOccluded(false)
+            testScope.advanceTimeBy(110L)
 
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.DREAMING, to = KeyguardState.LOCKSCREEN)
         }
 
     @Test
+    fun testTransitionsToOccluded_whenDreamEnds_andStillOccluded() =
+        kosmos.runTest {
+            fakeKeyguardRepository.setDreaming(false)
+            testScope.advanceTimeBy(110L)
+
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DREAMING, to = KeyguardState.OCCLUDED)
+        }
+
+    @Test
     fun testTransitionToAlternateBouncer() =
         kosmos.runTest {
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.DREAMING,
-                testScope,
-            )
-            reset(transitionRepository)
-
             fakeKeyguardBouncerRepository.setAlternateVisible(true)
+            testScope.runCurrent()
 
             assertThat(transitionRepository)
                 .startedTransition(
@@ -199,17 +166,9 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, FLAG_GLANCEABLE_HUB_V2)
+    @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun testTransitionToGlanceableHubOnWake() =
         kosmos.runTest {
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.DREAMING,
-                testScope,
-            )
-            reset(transitionRepository)
-
-            setCommunalAvailable(true)
             if (glanceableHubV2()) {
                 val user = fakeUserRepository.asMainUser()
                 fakeSettings.putIntForUser(
@@ -228,7 +187,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
 
             // Device wakes up.
             powerInteractor.setAwakeForTest()
-            testScope.advanceTimeBy(150L)
+            testScope.advanceTimeBy(60L)
 
             // We transition to the hub when waking up.
             assertThat(communalSceneRepository.currentScene.value)
