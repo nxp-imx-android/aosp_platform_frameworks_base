@@ -405,7 +405,10 @@ constructor(
     }
 
     override fun resetPrompt(requestId: Long) {
-        _currentView.value = BiometricPromptView.BIOMETRIC
+        val currentRequestId = promptRepository.requestId.value
+        if (currentRequestId != null && currentRequestId == requestId) {
+            _currentView.value = BiometricPromptView.BIOMETRIC
+        }
         promptRepository.unsetPrompt(requestId)
     }
 
