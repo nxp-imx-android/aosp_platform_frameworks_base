@@ -65,9 +65,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.approachLayout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onLayoutRectChanged
@@ -105,6 +102,7 @@ import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
@@ -314,7 +312,7 @@ constructor(
                                 // showing. While the mirror is showing, an ancestor of the
                                 // ComposeView is made alpha 0, but touches are still being captured
                                 // by the composables.
-                                .gesturesDisabled(viewModel.showingMirror)
+                                .thenIf(viewModel.showingMirror) { Modifier.gesturesDisabled() }
                     ) {
                         CollapsableQuickSettingsSTL()
                     }
@@ -1420,22 +1418,6 @@ private interface CanScrollQs {
 
     fun backward(): Boolean
 }
-
-private fun Modifier.gesturesDisabled(disabled: Boolean) =
-    if (disabled) {
-        pointerInput(Unit) {
-            awaitPointerEventScope {
-                // we should wait for all new pointer events
-                while (true) {
-                    awaitPointerEvent(pass = PointerEventPass.Initial)
-                        .changes
-                        .forEach(PointerInputChange::consume)
-                }
-            }
-        }
-    } else {
-        this
-    }
 
 @Composable
 private fun ContentScope.MediaObject(
