@@ -1619,7 +1619,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             openInAppOrBrowserIntent = null;
         }
         final View captionView = isAppHandle(mWindowDecorViewHolder)
-                ? asAppHandle(mWindowDecorViewHolder).getCaptionHandle() : null;
+                ? asAppHandle(mWindowDecorViewHolder).getCaptionHandle()
+                : asAppHeader(mWindowDecorViewHolder).getRootView();
         mHandleMenu = mHandleMenuFactory.create(
                 mMainDispatcher,
                 mMainScope,
