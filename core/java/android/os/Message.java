@@ -622,24 +622,17 @@ public final class Message implements Parcelable {
     }
 
     /*package*/ static int compareMessages(@NonNull Message m1, @NonNull Message m2) {
-        if (m1 == m2) {
-            return 0;
-        }
-
-        // Primary queue order is by when.
-        // Messages with an earlier when should come first in the queue.
-        final long whenDiff = m1.when - m2.when;
-        if (whenDiff > 0) return 1;
-        if (whenDiff < 0) return -1;
-
-        // Secondary queue order is by insert sequence.
-        // If two messages were inserted with the same `when`, the one inserted
-        // first should come first in the queue.
-        final long insertSeqDiff = m1.insertSeq - m2.insertSeq;
-        if (insertSeqDiff > 0) return 1;
-        if (insertSeqDiff < 0) return -1;
-
-        return 0;
+        // Implement the comparison with branchless logic.
+        final long when1 = m1.when;
+        final long when2 = m2.when;
+        final long insertSeq1 = m1.insertSeq;
+        final long insertSeq2 = m2.insertSeq;
+        final int whenSign = Long.signum(when1 - when2);
+        final int insertSeqSign = Long.signum(insertSeq1 - insertSeq2);
+        // whenSign takes precedence over insertSeqSign, so the formula below is such that
+        // insertSeqSign
+        // only matters as a tie-breaker if whenSign is 0.
+        return whenSign * 2 + insertSeqSign;
     }
 
     @Override
