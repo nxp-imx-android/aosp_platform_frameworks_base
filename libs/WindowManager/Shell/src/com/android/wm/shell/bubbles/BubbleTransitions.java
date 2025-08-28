@@ -954,8 +954,7 @@ public class BubbleTransitions {
             mFinishCb = finishCallback;
             mTaskLeash = enterBubbleTask.getLeash();
 
-            mBubbleData.notificationEntryUpdated(mOpeningBubble, /* suppressFlyout= */ true,
-                    /* showInShade= */ false);
+            mBubbleData.jumpcutBubbleSwitch(mOpeningBubble, mClosingBubble);
 
             // Keep showing the closing Bubble Task within the closing Bubble TaskView until the
             // opening Bubble TaskView is ready.

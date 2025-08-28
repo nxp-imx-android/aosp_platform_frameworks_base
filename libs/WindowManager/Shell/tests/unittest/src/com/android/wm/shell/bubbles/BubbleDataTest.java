@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_OPTIONAL_BUBBLE_OVERFLOW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -25,6 +26,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.TestCase.assertEquals;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -1496,6 +1498,37 @@ public class BubbleDataTest extends ShellTestCase {
         assertThat(mBubbleA1.showInShade()).isFalse();
         assertThat(mBubbleA2.showInShade()).isTrue();
         assertThat(mBubbleData.isExpanded()).isTrue();
+    }
+
+    @Test
+    public void testJumpcutBubbleSwitch() {
+        mBubbleData.setListener(mListener);
+
+        mBubbleData.jumpcutBubbleSwitch(mBubbleA1, mBubbleC1);
+
+        verifyUpdateReceived();
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertThat(update.addedBubble).isEqualTo(mBubbleA1);
+        assertThat(update.jumpcutBubbleSwitchClosingBubble).isEqualTo(mBubbleC1);
+        assertThat(update.removedBubbles).isEmpty();
+    }
+
+    @Test
+    public void testToBubbleBarUpdate_suppressAnimationForJumpcutBubbleSwitch() {
+        spyOn(mBubbleA1);
+        doReturn(true).when(mBubbleA1).isJumpcutBubbleSwitching();
+        mBubbleData.setListener(mListener);
+        mBubbleData.jumpcutBubbleSwitch(mBubbleA1, mBubbleC1);
+
+        verifyUpdateReceived();
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        BubbleBarUpdate bubbleBarUpdate = update.toBubbleBarUpdate();
+
+        assertThat(bubbleBarUpdate.suppressAnimation).isTrue();
+        assertThat(bubbleBarUpdate.removedBubbles).hasSize(1);
+        assertThat(bubbleBarUpdate.removedBubbles.get(0).getKey()).isEqualTo(mBubbleC1.getKey());
+        assertThat(bubbleBarUpdate.removedBubbles.get(0).getRemovalReason())
+                .isEqualTo(Bubbles.DISMISS_JUMPCUT_BUBBLE_SWITCH);
     }
 
     private void verifyUpdateReceived() {

@@ -86,6 +86,7 @@ public interface Bubbles {
     int DISMISS_USER_ACCOUNT_REMOVED = 16;
     int DISMISS_SWITCH_TO_STACK = 17;
     int DISMISS_USER_GESTURE_FROM_LAUNCHER = 18;
+    int DISMISS_JUMPCUT_BUBBLE_SWITCH = 19;
 
     /** Returns a binder that can be passed to an external process to manipulate Bubbles. */
     default IBubbles createExternalInterface() {
