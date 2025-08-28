@@ -104,7 +104,12 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             SurfaceControl.Transaction t,
             IBinder mergeTarget,
             IRemoteTransitionFinishedCallback finishCallback) {
-        logD("mergeAnimation - " + info);
+        logD("mergeAnimation for: "
+                + transition
+                + " target: "
+                + mergeTarget
+                + " info: "
+                + info);
         cancel();
     }
 
