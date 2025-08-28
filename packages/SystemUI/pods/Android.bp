@@ -67,6 +67,7 @@ java_defaults {
 java_library {
     name: "com.android.systemui.pods-api-aosp-handheld",
     static_libs: [
+        "com.android.systemui-api",
         "com.android.systemui.dagger-api",
         "com.android.systemui.log-api",
         "com.android.systemui.log.table-api",
