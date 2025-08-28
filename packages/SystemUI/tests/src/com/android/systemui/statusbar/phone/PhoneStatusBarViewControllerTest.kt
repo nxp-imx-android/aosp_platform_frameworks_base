@@ -148,16 +148,6 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
             .thenReturn(Insets.NONE)
         whenever(mStatusOverlayHoverListenerFactory.createDarkAwareListener(any()))
             .thenReturn(mStatusOverlayHoverListener)
-        whenever(
-                mStatusOverlayHoverListenerFactory.createDarkAwareListener(
-                    any(),
-                    eq(0),
-                    eq(0),
-                    eq(6),
-                    eq(6),
-                )
-            )
-            .thenReturn(mStatusOverlayHoverListener)
 
         val parent = FrameLayout(mContext) // add parent to keep layout params
         view =
