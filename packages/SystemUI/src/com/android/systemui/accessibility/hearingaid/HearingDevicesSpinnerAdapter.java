@@ -28,7 +28,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.settingslib.Utils;
 import com.android.systemui.res.R;
 
 /**
@@ -81,5 +80,14 @@ public class HearingDevicesSpinnerAdapter extends ArrayAdapter<String> {
     public void setSelected(int position) {
         mSelectedPosition = position;
         notifyDataSetChanged();
+    }
+
+    /**
+     * Gets the selected position in this adapter.
+     *
+     * @return the selected position
+     */
+    public int getSelected() {
+        return mSelectedPosition;
     }
 }
