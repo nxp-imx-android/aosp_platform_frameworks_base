@@ -181,17 +181,17 @@ constructor(
 
     val inactiveChipHighlight: ChipHighlightModel
         get() =
-            if (isDesktopFeatureSetEnabled) {
+            if (useDesktopStatusBar) {
                 ChipHighlightModel.Transparent
             } else {
                 ChipHighlightModel.Weak
             }
 
-    private val isDesktopFeatureSetEnabled: Boolean by
+    private val useDesktopStatusBar: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isDesktopFeatureSetEnabled",
-            initialValue = desktopInteractor.isDesktopFeatureSetEnabled.value,
-            source = desktopInteractor.isDesktopFeatureSetEnabled,
+            traceName = "useDesktopStatusBar",
+            initialValue = desktopInteractor.useDesktopStatusBar.value,
+            source = desktopInteractor.useDesktopStatusBar,
         )
 
     override suspend fun onActivated(): Nothing {
@@ -209,7 +209,7 @@ constructor(
 
     /** Notifies that the clock was clicked. */
     fun onClockClicked() {
-        if (shadeModeInteractor.isDualShade && isDesktopFeatureSetEnabled) {
+        if (shadeModeInteractor.isDualShade && useDesktopStatusBar) {
             toggleNotificationShade(
                 loggingReason = "ShadeHeaderViewModel.onClockChipClicked",
                 launchClockActivityOnCollapse = false,
@@ -226,7 +226,7 @@ constructor(
         }
         toggleNotificationShade(
             loggingReason = "ShadeHeaderViewModel.onNotificationIconChipClicked",
-            launchClockActivityOnCollapse = !isDesktopFeatureSetEnabled,
+            launchClockActivityOnCollapse = !useDesktopStatusBar,
         )
     }
 

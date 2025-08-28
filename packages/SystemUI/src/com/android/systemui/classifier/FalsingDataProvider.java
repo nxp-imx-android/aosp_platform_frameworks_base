@@ -508,7 +508,7 @@ public class FalsingDataProvider {
     }
 
     public boolean isDesktop() {
-        return mDesktopInteractor.isDesktopFeatureSetEnabled().getValue();
+        return mDesktopInteractor.isDesktopForFalsingPurposes().getValue();
     }
 
     /** Implement to be alerted abotu the beginning and ending of falsing tracking. */

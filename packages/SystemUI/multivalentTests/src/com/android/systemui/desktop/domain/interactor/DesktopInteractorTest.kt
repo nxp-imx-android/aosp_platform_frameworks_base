@@ -51,23 +51,45 @@ class DesktopInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun isDesktopFeatureSetEnabled_false() =
+    fun isDesktopForFalsingPurposes_false() =
         kosmos.runTest {
-            val isDesktopFeatureSetEnabled by collectLastValue(underTest.isDesktopFeatureSetEnabled)
+            val isDesktopForFalsingPurposes by
+                collectLastValue(underTest.isDesktopForFalsingPurposes)
 
-            overrideConfig(R.bool.config_enableDesktopFeatureSet, false)
+            overrideConfig(R.bool.config_isDesktopForFalsingPurposes, false)
 
-            assertThat(isDesktopFeatureSetEnabled).isFalse()
+            assertThat(isDesktopForFalsingPurposes).isFalse()
         }
 
     @Test
-    fun isDesktopFeatureSetEnabled_true() =
+    fun isDesktopForFalsingPurposes_true() =
         kosmos.runTest {
-            val isDesktopFeatureSetEnabled by collectLastValue(underTest.isDesktopFeatureSetEnabled)
+            val isDesktopForFalsingPurposes by
+                collectLastValue(underTest.isDesktopForFalsingPurposes)
 
-            overrideConfig(R.bool.config_enableDesktopFeatureSet, true)
+            overrideConfig(R.bool.config_isDesktopForFalsingPurposes, true)
 
-            assertThat(isDesktopFeatureSetEnabled).isTrue()
+            assertThat(isDesktopForFalsingPurposes).isTrue()
+        }
+
+    @Test
+    fun useDesktopStatusBar_false() =
+        kosmos.runTest {
+            val useDesktopStatusBar by collectLastValue(underTest.useDesktopStatusBar)
+
+            overrideConfig(R.bool.config_useDesktopStatusBar, false)
+
+            assertThat(useDesktopStatusBar).isFalse()
+        }
+
+    @Test
+    fun useDesktopStatusBar_true() =
+        kosmos.runTest {
+            val useDesktopStatusBar by collectLastValue(underTest.useDesktopStatusBar)
+
+            overrideConfig(R.bool.config_useDesktopStatusBar, true)
+
+            assertThat(useDesktopStatusBar).isTrue()
         }
 
     @EnableFlags(Flags.FLAG_STATUS_BAR_FOR_DESKTOP)

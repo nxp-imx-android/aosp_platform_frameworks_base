@@ -100,25 +100,25 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun showHeader_desktopFeatureSetDisabled_true() =
+    fun showHeader_desktopStatusBarDisabled_true() =
         testScope.runTest {
-            setEnableDesktopFeatureSet(false)
+            setUseDesktopStatusBar(false)
             assertThat(underTest.showHeader).isTrue()
         }
 
     @Test
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopEnabled_false() =
+    fun showHeader_desktopStatusBarEnabled_statusBarForDesktopEnabled_false() =
         testScope.runTest {
-            setEnableDesktopFeatureSet(true)
+            setUseDesktopStatusBar(true)
             assertThat(underTest.showHeader).isFalse()
         }
 
     @Test
     @DisableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopDisabled_true() =
+    fun showHeader_desktopStatusBarEnabled_statusBarForDesktopDisabled_true() =
         testScope.runTest {
-            setEnableDesktopFeatureSet(true)
+            setUseDesktopStatusBar(true)
             assertThat(underTest.showHeader).isTrue()
         }
 
@@ -297,8 +297,8 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
     }
 
-    private fun setEnableDesktopFeatureSet(enable: Boolean) {
-        overrideConfig(R.bool.config_enableDesktopFeatureSet, enable)
+    private fun setUseDesktopStatusBar(enable: Boolean) {
+        overrideConfig(R.bool.config_useDesktopStatusBar, enable)
         kosmos.configurationController.onConfigurationChanged(Configuration())
     }
 

@@ -76,18 +76,14 @@ constructor(
     /** True if this view should be visible and false otherwise. */
     val isVisible: StateFlow<Boolean> =
         combine(
-                desktopInteractor.isDesktopFeatureSetEnabled,
+                desktopInteractor.useDesktopStatusBar,
                 sceneInteractor.currentScene,
                 sceneInteractor.currentOverlays,
                 keyguardInteractor.isDozing,
                 showingHeadsUpStatusBar,
-            ) {
-                desktopFeatureSetEnabled,
-                currentScene,
-                currentOverlays,
-                isDozing,
-                showHeadsUpStatusBar ->
-                !desktopFeatureSetEnabled &&
+            ) { useDesktopStatusBar, currentScene, currentOverlays, isDozing, showHeadsUpStatusBar
+                ->
+                !useDesktopStatusBar &&
                     currentScene == Scenes.Lockscreen &&
                     Overlays.NotificationsShade !in currentOverlays &&
                     Overlays.QuickSettingsShade !in currentOverlays &&

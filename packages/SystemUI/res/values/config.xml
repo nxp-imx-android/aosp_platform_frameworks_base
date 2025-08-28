@@ -1121,15 +1121,29 @@
     <string-array name="config_useActivityLogoForBiometricPrompt" translatable="false"/>
 
     <!--
-    Whether to enable the desktop specific feature set.
+    Whether to use the desktop screen size in screenshot test.
 
-    Refrain from using this from code that needs to make decisions
-    regarding the size or density of the display.
-
-    Variant owners and OEMs should override this to true when they want to
-    enable the desktop specific features.
+    Note: this config is only used for testing. It is overridden to true by desktop.
     -->
-    <bool name="config_enableDesktopFeatureSet">false</bool>
+    <bool name="config_testDesktopScreenSize">false</bool>
+
+    <!--
+    Whether to enable showing the shade header feature.
+
+    By default, the Shade header is shown. This should be overridden to true by desktop.
+    -If true, always show status bar instead.
+    -If false (default), show the shade header when shade is.
+    -->
+    <bool name="config_useDesktopStatusBar">false</bool>
+
+    <!--
+    Whether this is a desktop device for purposes of falsing.
+
+    By default, Falsing is enabled. This should be overridden to true by desktop.
+    -If true, it means this is a desktop device for purposes of falsing, and falsing will be skipped
+    -If false (default), Falsing is enabled.
+    -->
+    <bool name="config_isDesktopForFalsingPurposes">false</bool>
 
     <!--
     Determines whether notification shade should be in the top end

@@ -75,9 +75,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetFalse_launchesClock() =
+    fun onClockClicked_enableDesktopStatusBarFalse_launchesClock() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = false)
+            setUseDesktopStatusBar(enable = false)
             underTest.onClockClicked()
 
             verify(activityStarter)
@@ -88,9 +88,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueAndSingleShade_launchesClock() =
+    fun onClockClicked_enableDesktopStatusBarTrueAndSingleShade_launchesClock() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableSingleShade()
 
             underTest.onClockClicked()
@@ -103,9 +103,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueAndDualShade_openNotifShade() =
+    fun onClockClicked_enableDesktopStatusBarTrueAndDualShade_openNotifShade() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableDualShade()
             setDeviceEntered(true)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -119,9 +119,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueOnNotifShade_closesShade() =
+    fun onClockClicked_enablesetDesktopStatusBarTrueOnNotifShade_closesShade() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableDualShade()
             setDeviceEntered(true)
             setOverlay(Overlays.NotificationsShade)
@@ -135,9 +135,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onClockClicked_enableDesktopFeatureSetTrueOnQSShade_openNotifShade() =
+    fun onClockClicked_enableDesktopStatusBarTrueOnQSShade_openNotifShade() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
             enableDualShade()
             setDeviceEntered(true)
             setOverlay(Overlays.QuickSettingsShade)
@@ -152,17 +152,17 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun enableDesktopFeatureSetTrue_inactiveChipHighlightReturnsTransparent() =
+    fun enableDesktopStatusBarTrue_inactiveChipHighlightReturnsTransparent() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = true)
+            setUseDesktopStatusBar(enable = true)
 
             assertThat(underTest.inactiveChipHighlight).isEqualTo(ChipHighlightModel.Transparent)
         }
 
     @Test
-    fun enableDesktopFeatureSetTrue_inactiveChipHighlightReturnsWeak() =
+    fun enableDesktopStatusBarTrue_inactiveChipHighlightReturnsWeak() =
         kosmos.runTest {
-            setEnableDesktopFeatureSet(enable = false)
+            setUseDesktopStatusBar(enable = false)
 
             assertThat(underTest.inactiveChipHighlight).isEqualTo(ChipHighlightModel.Weak)
         }
@@ -437,9 +437,9 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(isEntered)
     }
 
-    private fun Kosmos.setEnableDesktopFeatureSet(enable: Boolean) {
+    private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {
         testableContext.orCreateTestableResources.addOverride(
-            R.bool.config_enableDesktopFeatureSet,
+            R.bool.config_useDesktopStatusBar,
             enable,
         )
         configurationController.onConfigurationChanged(Configuration())

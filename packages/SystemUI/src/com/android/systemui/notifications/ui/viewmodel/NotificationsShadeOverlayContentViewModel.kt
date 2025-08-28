@@ -78,15 +78,15 @@ constructor(
     private val hydrator = Hydrator("NotificationsShadeOverlayContentViewModel.hydrator")
 
     /**
-     * The Shade header can only be shown if desktop features are disabled. This is because the
-     * status bar is always visible when desktop features are enabled.
+     * The Shade header can only be shown if usingDesktopStatusBar is disabled. This is because the
+     * desktop status bar is always visible when usingDesktopStatusBar is enabled.
      */
     val showHeader: Boolean by
         if (StatusBarForDesktop.isEnabled) {
             hydrator.hydratedStateOf(
                 traceName = "showHeader",
-                initialValue = !desktopInteractor.isDesktopFeatureSetEnabled.value,
-                source = desktopInteractor.isDesktopFeatureSetEnabled.map { !it },
+                initialValue = !desktopInteractor.useDesktopStatusBar.value,
+                source = desktopInteractor.useDesktopStatusBar.map { !it },
             )
         } else {
             mutableStateOf(true)

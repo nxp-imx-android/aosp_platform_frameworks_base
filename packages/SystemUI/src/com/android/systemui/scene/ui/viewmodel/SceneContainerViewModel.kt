@@ -131,7 +131,7 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "isDesktopStatusBarEnabled",
             source =
-                desktopInteractor.isDesktopFeatureSetEnabled.map { enabled ->
+                desktopInteractor.useDesktopStatusBar.map { enabled ->
                     enabled && StatusBarForDesktop.isEnabled
                 },
             initialValue = false,
