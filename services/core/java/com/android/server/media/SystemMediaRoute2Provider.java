@@ -138,14 +138,14 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         mHandler.post(
                 () -> {
                     mDeviceRouteController.stop();
-                    notifyProviderState();
+                    notifyProviderStateChanged();
                 });
     }
 
     @Override
     public void setCallback(Callback callback) {
         super.setCallback(callback);
-        notifyProviderState();
+        notifyProviderStateChanged();
         notifyGlobalSessionInfoUpdated();
     }
 
@@ -161,7 +161,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         // Assume a router without MODIFY_AUDIO_ROUTING permission can't request with
         // a route ID different from the default route ID. The service should've filtered.
         if (TextUtils.equals(routeOriginalId, MediaRoute2Info.ROUTE_ID_DEFAULT)) {
-            mCallback.onSessionCreated(this, requestId, mDefaultSessionInfo);
+            notifySessionCreated(requestId, mDefaultSessionInfo);
             return;
         }
 
@@ -172,7 +172,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                             Flags.enableMirroringInMediaRouter2()
                                     ? mSystemSessionInfo
                                     : mSessionInfos.get(0);
-                    mCallback.onSessionCreated(this, requestId, currentSessionInfo);
+                    notifySessionCreated(requestId, currentSessionInfo);
                     return;
                 }
             }
@@ -181,8 +181,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         synchronized (mRequestLock) {
             // Handle the previous request as a failure if exists.
             if (mPendingSessionCreationOrTransferRequest != null) {
-                mCallback.onRequestFailed(
-                        /* provider= */ this,
+                notifyRequestFailed(
                         mPendingSessionCreationOrTransferRequest.mRequestId,
                         MediaRoute2ProviderService.REASON_UNKNOWN_ERROR);
             }
@@ -605,7 +604,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                                 + mPendingSessionCreationOrTransferRequest.mTargetOriginalRouteId);
             }
             mPendingSessionCreationOrTransferRequest = null;
-            mCallback.onSessionCreated(this, pendingRequestId, newSessionInfo);
+            notifySessionCreated(pendingRequestId, newSessionInfo);
         } else {
             if (DEBUG) {
                 Slog.w(
@@ -614,8 +613,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                                 + mPendingSessionCreationOrTransferRequest.mTargetOriginalRouteId);
             }
             mPendingSessionCreationOrTransferRequest = null;
-            mCallback.onRequestFailed(
-                    this, pendingRequestId, MediaRoute2ProviderService.REASON_UNKNOWN_ERROR);
+            notifyRequestFailed(
+                    pendingRequestId, MediaRoute2ProviderService.REASON_UNKNOWN_ERROR);
         }
     }
 
@@ -640,11 +639,11 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
     void publishProviderState() {
         updateProviderState();
-        notifyProviderState();
+        notifyProviderStateChanged();
     }
 
     void notifyGlobalSessionInfoUpdated() {
-        if (mCallback == null) {
+        if (!haveCallback()) {
             return;
         }
 
@@ -656,7 +655,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             sessionInfo = mSessionInfos.get(0);
         }
 
-        mCallback.onSessionUpdated(
+        notifySessionUpdated(
                 this,
                 sessionInfo,
                 /* packageNamesWithRoutingSessionOverrides= */ Set.of(),
