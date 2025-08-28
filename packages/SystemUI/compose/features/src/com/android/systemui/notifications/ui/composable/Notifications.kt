@@ -836,15 +836,13 @@ private suspend fun scrollNotificationStack(
 private fun TransitionState.isOnLockscreen(): Boolean {
     return currentScene == Scenes.Lockscreen && currentOverlays.isEmpty()
 }
-
 private fun shouldUseLockscreenStackBounds(state: TransitionState): Boolean {
     return when (state) {
         is TransitionState.Idle -> state.isOnLockscreen()
         is TransitionState.Transition ->
-            // Keep using the lockscreen stack bounds when transitioning from lockscreen
-            // to other states for visual consistency, eg. the smart space should be visible.
-            state.isTransitioning(from = Scenes.Lockscreen)
-                    || state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
+            // Keep using the lockscreen stack bounds when there is no placeholder on the next content
+            state.fromContent == Scenes.Lockscreen && state.toContent != Scenes.Shade
+                || state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
     }
 }
 
