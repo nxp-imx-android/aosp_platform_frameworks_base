@@ -328,16 +328,8 @@ class ExpandableNotificationRowBuilder(
     }
 
     fun createRowGroup(childCount: Int = 4): ExpandableNotificationRow {
-        val summary =
-            kosmos.buildSummaryNotificationEntry {
-                Notification.Builder(context, "channel")
-                    .setSmallIcon(R.drawable.ic_person)
-                    .setGroupSummary(true)
-                    .setGroup("group")
-            }
-        summary.row = kosmos.createRowWithEntry(summary)
-        val groupBuilder = GroupEntryBuilder().setSummary(summary)
-        for (i in 0..<childCount) {
+        val children = ArrayList<NotificationEntry>()
+        for (i in 0..< childCount) {
             val childEntry =
                 kosmos.buildNotificationEntry {
                     Notification.Builder(context, "channel")
@@ -345,10 +337,19 @@ class ExpandableNotificationRowBuilder(
                         .setGroup("group")
                 }
             childEntry.row = kosmos.createRowWithEntry(childEntry)
-            groupBuilder.addChild(childEntry)
-            summary.row.addChildNotification(childEntry.row)
+            children.add(childEntry)
         }
-        groupBuilder.build()
+        val summary =
+            kosmos.buildSummaryNotificationEntry(children, {
+                Notification.Builder(context, "channel")
+                    .setSmallIcon(R.drawable.ic_person)
+                    .setGroupSummary(true)
+                    .setGroup("group")
+            })
+        summary.row = kosmos.createRowWithEntry(summary)
+        for (child in children) {
+            summary.row.addChildNotification(child.row)
+        }
         return summary.row
     }
 

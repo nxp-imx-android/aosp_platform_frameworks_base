@@ -678,16 +678,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         return !getEntryLegacy().isBlockable();
     }
 
-    private boolean isConversation() {
-        if (NotificationBundleUi.isEnabled()) {
-            return getEntryAdapter().getPeopleNotificationType()
-                    != PeopleNotificationIdentifier.TYPE_NON_PERSON;
-        } else {
-            return mPeopleNotificationIdentifier.getPeopleNotificationType(getEntryLegacy())
-                    != PeopleNotificationIdentifier.TYPE_NON_PERSON;
-        }
-    }
-
     public void onNotificationUpdated() {
         if (mIsSummaryWithChildren) {
             Trace.beginSection("ExpNotRow#onNotifUpdated (summary)");
@@ -713,8 +703,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 mChildrenContainer.updateGroupHeaderExpandState();
             } else {
                 // We create the header from the background thread instead
-                mChildrenContainer.recreateNotificationHeader(mExpandClickListener,
-                        isConversation());
+                mChildrenContainer.recreateNotificationHeader(mExpandClickListener);
             }
             mChildrenContainer.onNotificationUpdated();
         }
@@ -3408,8 +3397,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             if (!AsyncGroupHeaderViewInflation.isEnabled()) {
                 NotificationViewWrapper wrapper = mChildrenContainer.getNotificationViewWrapper();
                 if (wrapper == null || wrapper.getNotificationHeader() == null) {
-                    mChildrenContainer.recreateNotificationHeader(mExpandClickListener,
-                            isConversation());
+                    mChildrenContainer.recreateNotificationHeader(mExpandClickListener);
                 }
             }
         }
