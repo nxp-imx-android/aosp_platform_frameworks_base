@@ -4702,7 +4702,9 @@ class DesktopTasksController(
         }
         // The task's density may have been overridden in freeform; revert it here as we don't
         // want it overridden in multi-window.
-        wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
+        if (desktopConfig.useDesktopOverrideDensity) {
+            wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
+        }
     }
 
     /** Returns the ID of the Task that will be minimized, or null if no task will be minimized. */
