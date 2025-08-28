@@ -21,9 +21,8 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -31,11 +30,11 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class PreShareViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+class ShareContentListViewModelTest : SysuiTestCase() {
+    private val kosmos = testKosmosNew()
     private val testScope = kosmos.testScope
 
-    private val viewModel: PreShareViewModel by lazy { kosmos.preShareViewModel }
+    private val viewModel: ShareContentListViewModel = kosmos.fakeShareContentListViewModel
 
     @Before
     fun setUp() {
@@ -46,13 +45,6 @@ class PreShareViewModelTest : SysuiTestCase() {
     fun initialState() =
         kosmos.runTest {
             // Assert that the initial values are as expected upon creation and activation.
-            assertThat(viewModel.selectedScreenShareTarget).isEqualTo(ScreenShareTarget.APP_WINDOW)
-        }
-
-    @Test
-    fun onTargetSelected_updateScreenShareTarget() =
-        kosmos.runTest {
-            viewModel.onTargetSelected(ScreenShareTarget.TAB)
-            assertThat(viewModel.selectedScreenShareTarget).isEqualTo(ScreenShareTarget.TAB)
+            assertThat(viewModel.selectedRecentTaskViewModel).isEqualTo(null)
         }
 }
