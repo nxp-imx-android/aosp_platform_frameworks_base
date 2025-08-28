@@ -108,36 +108,40 @@ private fun isRectInScreen(rect: Rect, screenWidth: Float, screenHeight: Float):
 }
 
 /**
- * Determines which zone (corner or edge) of a box is being touched based on the press offset.
+ * Determines which zone (corner or edge) of the box is being tapped or hovered by the pointer.
  *
  * @param boxWidth The total width of the box.
  * @param boxHeight The total height of the box.
- * @param startOffset The position of the initial press.
- * @param touchAreaPx The size of the touch area in pixels.
- * @return The ResizeZone that was pressed, or `null` if the press was not on a zone.
+ * @param pointerOffset The offset position of the pointer relative to box's top-left corner.
+ * @param tapTargetSizePx The size of an individual tap target in pixels.
+ * @return The `ResizeZone` that is tapped or hovered, or `null` if none.
  */
-private fun getTouchedZone(
+private fun getTappedOrHoveredZone(
     boxWidth: Float,
     boxHeight: Float,
-    startOffset: Offset,
-    touchAreaPx: Float,
+    pointerOffset: Offset,
+    tapTargetSizePx: Float,
 ): ResizeZone? {
-    // Check if the touch is within the touch area of the box.
-    val touchedZone =
+    val tapTargetHalfPx = tapTargetSizePx / 2
+
+    // Check if the press is within the overall zone of the box.
+    val boxZone =
         Rect(
-            left = -touchAreaPx,
-            top = -touchAreaPx,
-            right = boxWidth + touchAreaPx,
-            bottom = boxHeight + touchAreaPx,
+            left = -tapTargetHalfPx,
+            top = -tapTargetHalfPx,
+            right = boxWidth + tapTargetHalfPx,
+            bottom = boxHeight + tapTargetHalfPx,
         )
-    if (!touchedZone.contains(startOffset)) {
+    if (!boxZone.contains(pointerOffset)) {
         return null
     }
 
-    val isTouchingTop = startOffset.y in -touchAreaPx..touchAreaPx
-    val isTouchingBottom = startOffset.y in (boxHeight - touchAreaPx)..(boxHeight + touchAreaPx)
-    val isTouchingLeft = startOffset.x in -touchAreaPx..touchAreaPx
-    val isTouchingRight = startOffset.x in (boxWidth - touchAreaPx)..(boxWidth + touchAreaPx)
+    val isTouchingTop = pointerOffset.y in -tapTargetHalfPx..tapTargetHalfPx
+    val isTouchingBottom =
+        pointerOffset.y in (boxHeight - tapTargetHalfPx)..(boxHeight + tapTargetHalfPx)
+    val isTouchingLeft = pointerOffset.x in -tapTargetHalfPx..tapTargetHalfPx
+    val isTouchingRight =
+        pointerOffset.x in (boxWidth - tapTargetHalfPx)..(boxWidth + tapTargetHalfPx)
 
     return when {
         // Corners have priority over edges, as they occupy overlapping areas.
@@ -204,21 +208,19 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
             dragMode = DragMode.DRAWING
             newBoxStartOffset = startOffset
         } else {
-            // The offset of the existing box.
-            val currentRectOffset = startOffset - currentRect.topLeft
-            val touchedZone =
-                getTouchedZone(
-                    currentRect.width,
-                    currentRect.height,
-                    currentRectOffset,
-                    touchAreaPx,
+            val tappedZone =
+                getTappedOrHoveredZone(
+                    boxWidth = currentRect.width,
+                    boxHeight = currentRect.height,
+                    pointerOffset = startOffset - currentRect.topLeft,
+                    tapTargetSizePx = touchAreaPx,
                 )
             when {
-                touchedZone != null -> {
+                tappedZone != null -> {
                     // If the drag was initiated within the current rectangle's drag-to-resize touch
                     // zone, it is a resizing drag.
                     dragMode = DragMode.RESIZING
-                    resizeZone = touchedZone
+                    resizeZone = tappedZone
                 }
                 currentRect.contains(startOffset) -> {
                     // If the drag was initiated inside the rectangle and not within the touch
@@ -326,15 +328,12 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
 
         if (event.type == PointerEventType.Move) {
             rect?.let { currentRect ->
-                // Convert to coordinates relative to the box's top-left.
-                val relativePosition = pointerPosition - currentRect.topLeft
-
                 hoveredZone =
-                    getTouchedZone(
+                    getTappedOrHoveredZone(
                         boxWidth = currentRect.width,
                         boxHeight = currentRect.height,
-                        startOffset = relativePosition,
-                        touchAreaPx = touchAreaPx,
+                        pointerOffset = pointerPosition - currentRect.topLeft,
+                        tapTargetSizePx = touchAreaPx,
                     )
 
                 isHoveringBox = currentRect.contains(pointerPosition)
