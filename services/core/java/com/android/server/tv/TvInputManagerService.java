@@ -1074,7 +1074,7 @@ public final class TvInputManagerService extends SystemService {
         if (serviceState != null) {
             serviceState.sessionTokens.remove(sessionToken);
         }
-        if (!serviceState.isHardware) {
+        if (!serviceState.isHardware || serviceState.reconnecting) {
             updateServiceConnectionLocked(sessionState.componentName, userId);
         } else {
             updateHardwareServiceConnectionDelayed(userId);
