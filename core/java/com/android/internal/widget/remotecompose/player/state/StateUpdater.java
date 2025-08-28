@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.state;
 
+
+
 import android.annotation.NonNull;
 import android.graphics.Bitmap;
 
@@ -36,7 +38,7 @@ public interface StateUpdater {
      * @param integerName the original name of the integer parameter.
      * @param value the integer value to set.
      */
-    void setUserLocalInt(String integerName, int value);
+    void setUserLocalInt(@NonNull String integerName, int value);
 
     /**
      * Calls {@link RemoteContext#setNamedColorOverride(String, int)}
@@ -45,7 +47,7 @@ public interface StateUpdater {
      * @param name the original name of the color parameter.
      * @param value the color value to set (as an int).
      */
-    void setUserLocalColor(String name, int value);
+    void setUserLocalColor(@NonNull String name, int value);
 
     /**
      * Calls {@link RemoteContext#setNamedDataOverride(String, Object)}
@@ -54,7 +56,7 @@ public interface StateUpdater {
      * @param name the original name of the data parameter.
      * @param content the {@link android.graphics.Bitmap} content to set.
      */
-    void setUserLocalBitmap(String name, Bitmap content);
+    void setUserLocalBitmap(@NonNull String name, @NonNull Bitmap content);
 
     /**
      * Calls {@link RemoteContext#setNamedStringOverride(String,
@@ -63,7 +65,7 @@ public interface StateUpdater {
      * @param stringName the original name of the string parameter.
      * @param value the string value to set.
      */
-    void setUserLocalString(String stringName, String value);
+    void setUserLocalString(@NonNull String stringName, @NonNull String value);
 
     /**
      * Returns the user domain string for the given parameter name.
@@ -71,7 +73,8 @@ public interface StateUpdater {
      * @param name the original name of the parameter.
      * @return the user domain string for the given parameter name.
      */
-    static String getUserDomainString(String name) {
+
+    static String getUserDomainString(@NonNull String name) {
         return RemoteDomains.USER + ":" + name;
     }
 }

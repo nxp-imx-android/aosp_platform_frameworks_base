@@ -79,6 +79,7 @@ import com.android.internal.widget.remotecompose.core.operations.PathAppend;
 import com.android.internal.widget.remotecompose.core.operations.PathCombine;
 import com.android.internal.widget.remotecompose.core.operations.PathCreate;
 import com.android.internal.widget.remotecompose.core.operations.PathData;
+import com.android.internal.widget.remotecompose.core.operations.PathExpression;
 import com.android.internal.widget.remotecompose.core.operations.PathTween;
 import com.android.internal.widget.remotecompose.core.operations.Rem;
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
@@ -99,6 +100,7 @@ import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.WakeIn;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasContent;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
+import com.android.internal.widget.remotecompose.core.operations.layout.ClickModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.ComponentStart;
 import com.android.internal.widget.remotecompose.core.operations.layout.ContainerEnd;
 import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseOperation;
@@ -106,6 +108,10 @@ import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseP
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponentContent;
 import com.android.internal.widget.remotecompose.core.operations.layout.LoopOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
+import com.android.internal.widget.remotecompose.core.operations.layout.TouchCancelModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.TouchDownModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.TouchUpModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.animation.AnimationSpec;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.BoxLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CanvasLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleColumnLayout;
@@ -119,7 +125,12 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BackgroundModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BorderModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.CollapsiblePriorityModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DrawContentOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.MarqueeModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.OffsetModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.PaddingModifierOperation;
@@ -127,12 +138,20 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.RoundedClipRectModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.RunActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ScrollModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueFloatChangeActionOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueFloatExpressionChangeActionOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueIntegerChangeActionOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueIntegerExpressionChangeActionOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ValueStringChangeActionOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ZIndexModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.matrix.MatrixConstant;
 import com.android.internal.widget.remotecompose.core.operations.matrix.MatrixExpression;
 import com.android.internal.widget.remotecompose.core.operations.matrix.MatrixVectorMath;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 import com.android.internal.widget.remotecompose.core.operations.utilities.easing.FloatAnimation;
+import com.android.internal.widget.remotecompose.core.semantics.CoreSemantics;
 import com.android.internal.widget.remotecompose.core.types.BooleanConstant;
 import com.android.internal.widget.remotecompose.core.types.IntegerConstant;
 import com.android.internal.widget.remotecompose.core.types.LongConstant;
@@ -775,6 +794,20 @@ public class RemoteComposeBuffer {
         return id;
     }
 
+    /**
+     * Add a path object
+     *
+     * @param id the path id
+     * @param pathData the path data
+     * @return the id of the path on the wire
+     */
+    public int addPathData(int id, @NonNull float [] pathData, int winding) {
+        if (mApiLevel < 7 && winding != 0) {
+            throw new RuntimeException("winding not supported in API level < 7");
+        }
+        PathData.apply(mBuffer, id | (winding << 24), pathData);
+        return id;
+    }
     /**
      * Adds a paint Bundle to the doc
      *
@@ -2193,5 +2226,207 @@ public class RemoteComposeBuffer {
      */
     public void wakeIn(float seconds) {
         WakeIn.apply(mBuffer, seconds);
+    }
+
+    /**
+     * Add a path expression
+     *
+     * @param id output id
+     * @param expressionX expression for x
+     * @param expressionY expression for y
+     * @param start start value
+     * @param end end value
+     * @param count count value
+     * @param flags flags
+     */
+    public void addPathExpression(
+            int id,
+            @NonNull float [] expressionX,
+            @Nullable float [] expressionY,
+            float start,
+            float end,
+            float count,
+            int flags) {
+        PathExpression.apply(mBuffer, id, expressionX, expressionY, start, end, count, flags);
+    }
+
+    /**
+     * Add a component visibility operation
+     * @param valueId id of the value
+     */
+    public void addComponentVisibilityOperation(int valueId) {
+        ComponentVisibilityOperation.apply(mBuffer, valueId);
+    }
+
+    /**
+     * Add a width modifier operation
+     * @param type type of operation
+     * @param value value of the operation
+     */
+    public void addWidthModifierOperation(int type, float value) {
+        WidthModifierOperation.apply(mBuffer,  type, value);
+    }
+
+    /**
+     * Add a height modifier operation
+     * @param type type of operation
+     * @param value value of the operation
+     */
+    public void addHeightModifierOperation(int type, float value) {
+        HeightModifierOperation.apply(mBuffer,  type, value);
+    }
+
+    /**
+     * Add a height in modifier operation
+     * @param min min value
+     * @param max max value
+     */
+    public void addHeightInModifierOperation(float min, float max) {
+        HeightInModifierOperation.apply(mBuffer,  min, max);
+    }
+
+    /**
+     * Add a touch down modifier operation
+     */
+    public void addTouchDownModifierOperation() {
+        TouchDownModifierOperation.apply(mBuffer);
+    }
+
+    /**
+     * Add a touch up modifier operation
+     */
+    public void addTouchUpModifierOperation() {
+        TouchUpModifierOperation.apply(mBuffer);
+    }
+
+    /**
+     * Add a touch cancel modifier operation
+     */
+    public void addTouchCancelModifierOperation() {
+        TouchCancelModifierOperation.apply(mBuffer);
+    }
+
+    /**
+     * Add a width in modifier operation
+     */
+    public void addWidthInModifierOperation(float min, float max) {
+        WidthInModifierOperation.apply(mBuffer,  min, max);
+    }
+
+    /**
+     * Add a draw content operation
+     */
+    public void addDrawContentOperation() {
+        DrawContentOperation.apply(mBuffer);
+    }
+
+    /**
+     * Add a semantics modifier operation
+     */
+    public void addSemanticsModifier(int contentDescriptionId,
+                                     byte role,
+                                     int textId,
+                                     int stateDescriptionId,
+                                     int mode,
+                                     boolean enabled,
+                                     boolean clickable) {
+        CoreSemantics.apply(
+                mBuffer, contentDescriptionId,
+                role,
+                textId,
+                stateDescriptionId,
+                mode,
+                enabled,
+                clickable);
+    }
+
+    /**
+     * Add a click modifier operation
+     */
+    public void addClickModifierOperation() {
+        ClickModifierOperation.apply(mBuffer);
+    }
+
+    /**
+     * Add a collapsible priority modifier operation
+     * @param orientation orientation
+     * @param priority priority
+     */
+    public void addCollapsiblePriorityModifier(int orientation, float priority) {
+        CollapsiblePriorityModifierOperation.apply(mBuffer, orientation, priority);
+    }
+
+    /**
+     * Add an animation spec modifier operation
+     * @param animationId animation id
+     * @param motionDuration duration of the motion
+     * @param motionEasingType easing type
+     * @param visibilityDuration duration of the visibility
+     * @param visibilityEasingType easing type
+     * @param enterAnimation enter animation
+     * @param exitAnimation exit animation
+     */
+    public void addAnimationSpecModifier(int animationId,
+                                         float motionDuration,
+                                         int motionEasingType,
+                                         float visibilityDuration,
+                                         int visibilityEasingType,
+                                         int enterAnimation,
+                                         int exitAnimation) {
+        AnimationSpec.apply(mBuffer,
+                animationId,
+                motionDuration,
+                motionEasingType,
+                visibilityDuration,
+                visibilityEasingType,
+                enterAnimation,
+                exitAnimation);
+    }
+
+    /**
+     * Add a value string change action operation
+     * @param destTextId dest text id
+     * @param srcTextId src text id
+     */
+    public void addValueStringChangeActionOperation(int destTextId, int srcTextId) {
+        ValueStringChangeActionOperation.apply(mBuffer, destTextId, srcTextId);
+    }
+
+    /**
+     * Add a value integer expression change action operation
+     * @param destIntegerId dest integer id
+     * @param srcIntegerId src integer id
+     */
+    public void addValueIntegerExpressionChangeActionOperation(
+            long destIntegerId,
+            long srcIntegerId) {
+        ValueIntegerExpressionChangeActionOperation.apply(mBuffer, destIntegerId, srcIntegerId);
+    }
+
+    /**
+     * Add a value float change action operation
+     * @param valueId dest value id
+     * @param value value
+     */
+    public void addValueFloatChangeActionOperation(int valueId, float value) {
+        ValueFloatChangeActionOperation.apply(mBuffer, valueId, value);
+    }
+
+    /**
+     * Add a value integer change action operation
+     * @param valueId dest value id
+     * @param value value
+     */
+    public void addValueIntegerChangeActionOperation(int valueId, int value) {
+        ValueIntegerChangeActionOperation.apply(mBuffer, valueId, value);
+    }
+
+    /**
+     * Add a value float expression change action operation
+     * @param mValueId dest value id
+     * @param mValue value
+     */
+    public void addValueFloatExpressionChangeActionOperation(int mValueId, int mValue) {
+        ValueFloatExpressionChangeActionOperation.apply(mBuffer, mValueId, mValue);
     }
 }

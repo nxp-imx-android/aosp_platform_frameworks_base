@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
+
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.PointF;
@@ -47,6 +49,7 @@ import java.util.stream.Stream;
  * list of modifiers that must be tagged with {@link AccessibilitySemantics} either incidentally
  * (see {@link ClickModifierOperation}) or explicitly (see {@link CoreSemantics}).
  */
+
 public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibility {
     private final CoreDocument mDocument;
     private final RemoteContextActions mRemoteContextActions;
@@ -107,6 +110,7 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
      * @param arguments Optional arguments for the action.
      * @return True if the action was successfully performed, false otherwise.
      */
+    @Override
     public boolean performAction(Component component, int action, Bundle arguments) {
         boolean needsRepaint = true;
 
@@ -213,6 +217,7 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("MixedMutabilityReturnType")
     @Override
     public List<Integer> semanticallyRelevantChildComponents(
             Component component, boolean useUnmergedTree) {

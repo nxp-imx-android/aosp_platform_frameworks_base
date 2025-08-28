@@ -50,7 +50,6 @@ import com.android.internal.widget.remotecompose.player.state.StateUpdater;
 import com.android.internal.widget.remotecompose.player.state.StateUpdaterImpl;
 
 import java.io.InputStream;
-import java.time.Clock;
 
 /**
  * This is a player for a RemoteComposeDocument.
@@ -65,8 +64,11 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     private static final int MAX_SUPPORTED_MINOR_VERSION = MINOR_VERSION;
 
     // Theme constants
+
     public static final int THEME_UNSPECIFIED = Theme.UNSPECIFIED;
+
     public static final int THEME_LIGHT = Theme.LIGHT;
+
     public static final int THEME_DARK = Theme.DARK;
 
     private RemoteComposeView mInner;
@@ -81,26 +83,27 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
                 return false;
             };
 
-    public RemoteComposePlayer(Context context) {
+    public RemoteComposePlayer(@NonNull Context context) {
         super(context);
         init(context, null, 0);
     }
 
-    public RemoteComposePlayer(Context context, AttributeSet attrs) {
+    public RemoteComposePlayer(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs, 0);
     }
 
-    public RemoteComposePlayer(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RemoteComposePlayer(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs, defStyleAttr);
     }
 
-    private RemoteContext getRemoteContext() {
+    private @NonNull RemoteContext getRemoteContext() {
         return mInner.getRemoteContext();
     }
 
-    public StateUpdater getStateUpdater() {
+    public @NonNull StateUpdater getStateUpdater() {
         return mStateUpdater;
     }
 
@@ -167,6 +170,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     /**
      * @inheritDoc
      */
+    @Override
     public void requestLayout() {
         super.requestLayout();
 
@@ -178,6 +182,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     /**
      * @inheritDoc
      */
+    @Override
     public void invalidate() {
         super.invalidate();
 
@@ -190,7 +195,6 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * Returns true if the document supports drag touch events. This is used in platform.
      *
      * @return true if draggable content, false otherwise
-     * @hide
      */
     public boolean isDraggable() {
         return mInner.isDraggable();
@@ -205,12 +209,8 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         mInner.setDebug(debugFlags);
     }
 
-    /**
-     * Returns the document
-     *
-     * @hide
-     */
-    public RemoteComposeDocument getDocument() {
+    /** Returns the document */
+    public @NonNull RemoteComposeDocument getDocument() {
         return mInner.getDocument();
     }
 
@@ -218,7 +218,6 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * This will update values in the already loaded document.
      *
      * @param value the document to update variables in the current document width
-     * @hide
      */
     public void updateDocument(RemoteComposeDocument value) {
         AndroidRemoteContext tmpContext = new AndroidRemoteContext(value.getClock());
@@ -263,19 +262,12 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         setDocument(document);
     }
 
-    @VisibleForTesting
-    private void setDocument(InputStream inputStream, Clock clock) {
-        RemoteComposeDocument document = new RemoteComposeDocument(inputStream, clock);
-        setDocument(document);
-    }
-
     /**
      * Set a document on the player
      *
      * @param value
-     * @hide
      */
-    public void setDocument(RemoteComposeDocument value) {
+    public void setDocument(@NonNull RemoteComposeDocument value) {
         if (value != null) {
             if (value.canBeDisplayed(
                     MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
@@ -507,7 +499,6 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * This is the number of ops used to calculate the last frame.
      *
      * @return number of ops
-     * @hide
      */
     public int getOpsPerFrame() {
         return mInner.getDocument().getDocument().getOpsPerFrame();
@@ -531,7 +522,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
          * @param id the id of the action
          * @param metadata the metadata of the action
          */
-        void onAction(int id, String metadata);
+        void onAction(int id, @Nullable String metadata);
     }
 
     /**
@@ -545,7 +536,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *       <li>metadata: a client provided unstructured string associated with that id action
      *     </ul>
      */
-    public void addIdActionListener(IdActionCallbacks callback) {
+    public void addIdActionListener(@NonNull IdActionCallbacks callback) {
         mInner.addIdActionListener((id, metadata) -> callback.onAction(id, metadata));
     }
 
@@ -629,11 +620,10 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     }
 
     /**
-     * This returns the amount of time in ms the player used to evalueate a pass it is averaged over
+     * This returns the amount of time in ms the player used to evaluate a pass it is averaged over
      * a number of evaluations.
      *
      * @return time in ms
-     * @hide
      */
     public float getEvalTime() {
         return mInner.getEvalTime();
@@ -644,7 +634,6 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * accept shaders.
      *
      * @param ctl the controller
-     * @hide
      */
     public void setShaderControl(CoreDocument.ShaderControl ctl) {
         mShaderControl = ctl;
