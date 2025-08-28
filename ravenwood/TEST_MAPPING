@@ -15,7 +15,7 @@
     { "name": "RavenwoodMockitoTest_device" },
     { "name": "RavenwoodBivalentTest_device" },
     { "name": "RavenwoodBivalentTest_device_ravenizer" },
-    { "name": "RavenwoodBivalentInstTest_nonself_inst" },
+    { "name": "RavenwoodBivalentInstTest_nonself_inst_device" },
     { "name": "RavenwoodBivalentInstTest_self_inst_device" },
     { "name": "RavenwoodUiTest_device" },
 
