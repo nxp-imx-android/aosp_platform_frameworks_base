@@ -25,11 +25,14 @@ import static android.view.WindowManager.REMOVE_CONTENT_MODE_UNDEFINED;
 
 import static com.android.server.wm.DisplayContent.FORCE_SCALING_MODE_AUTO;
 import static com.android.server.wm.DisplayContent.FORCE_SCALING_MODE_DISABLED;
+import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.WindowConfiguration;
 import android.provider.Settings;
+import android.util.Slog;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IWindowManager;
@@ -41,6 +44,7 @@ import android.window.DesktopExperienceFlags;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.DisplayContent.ForceScalingMode;
 
+import java.io.PrintWriter;
 import java.util.Objects;
 
 /**
@@ -48,6 +52,7 @@ import java.util.Objects;
  * delegates the persistence and lookup of settings values to the supplied {@link SettingsProvider}.
  */
 class DisplayWindowSettings {
+    private static final String TAG = TAG_WITH_CLASS_NAME ? "DisplayWindowSettings" : TAG_WM;
     @NonNull
     private final WindowManagerService mService;
     @NonNull
@@ -279,6 +284,9 @@ class DisplayWindowSettings {
 
      void setShouldShowSystemDecorsInternalLocked(@NonNull DisplayContent dc,
             boolean shouldShow) {
+        final int displayId = dc.getDisplayId();
+        Slog.i(TAG, "Set shouldShowSystemDecors for display: displayId=" + displayId
+                + ", shouldShow=" + shouldShow);
         final DisplayInfo displayInfo = dc.getDisplayInfo();
         final SettingsProvider.SettingsEntry overrideSettings =
                 mSettingsProvider.getOverrideSettings(displayInfo);
@@ -459,6 +467,13 @@ class DisplayWindowSettings {
      */
     void onDisplayRemoved(@NonNull DisplayContent dc) {
         mSettingsProvider.onDisplayRemoved(dc.getDisplayInfo());
+    }
+
+    void dump(@NonNull DisplayContent dc, @NonNull String prefix, @NonNull PrintWriter pw) {
+        final DisplayInfo displayInfo = dc.getDisplayInfo();
+        final SettingsProvider.SettingsEntry settings = mSettingsProvider.getSettings(displayInfo);
+        pw.println(prefix + "DisplayWindowSettingsProvider");
+        pw.println(prefix + "  " + settings);
     }
 
     /**
