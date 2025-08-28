@@ -9223,7 +9223,10 @@ public class UserManagerService extends IUserManager.Stub {
      * @return whether it succeeded.
      */
     boolean setMainUser(@UserIdInt int userId) {
-        if (!android.multiuser.Flags.demoteMainUser()) {
+        // NOTE: ideally it should check just for demoteMainUser(), but then it wouldn't allow the
+        // main user to be promoted when it's needed while rolling back this flag
+        if (!android.multiuser.Flags.demoteMainUser()
+                && !android.multiuser.Flags.createInitialUser()) {
             Slogf.d(LOG_TAG, "setMainUser(%d): ignoring because flag is disabled", userId);
             return false;
         }
