@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Перезаписать"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Изменить"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Удалить"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Воспроизвести"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Приостановить"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Отключить звук"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Включить звук"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Сделать скриншот всего экрана"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Скриншот всего экрана"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Сделать скриншот выбранной области"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Записать видео выбранной области"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Скриншот"</string>
@@ -539,7 +534,7 @@
     <string name="zen_mode_on" msgid="9085304934016242591">"Включено"</string>
     <string name="zen_mode_on_with_details" msgid="7416143430557895497">"Вкл. • <xliff:g id="TRIGGER_DESCRIPTION">%1$s</xliff:g>"</string>
     <string name="zen_mode_off" msgid="1736604456618147306">"Отключено"</string>
-    <string name="zen_mode_set_up" msgid="8231201163894922821">"Не задано"</string>
+    <string name="zen_mode_set_up" msgid="8231201163894922821">"Не настроен"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Открыть настройки"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{0 режимов}=1{Режим \"{mode}\"}one{# режим}few{# режима}many{# режимов}other{# режима}}"</string>
     <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Режимов: <xliff:g id="NUMBER">%s</xliff:g>"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Разговоры"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Отклонить все беззвучные уведомления"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Открыть настройки уведомлений"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"В режиме \"Не беспокоить\" уведомления заблокированы"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Уведомлений нет}=1{Режим \"{mode}\" приостанавливает уведомления}=2{Режим \"{mode}\" и ещё один режим приостанавливают уведомления}one{Режим \"{mode}\" и ещё # режим приостанавливают уведомления}few{Режим \"{mode}\" и ещё # режима приостанавливают уведомления}many{Режим \"{mode}\" и ещё # режимов приостанавливают уведомления}other{Режим \"{mode}\" и ещё # режима приостанавливают уведомления}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Начать"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Нет уведомлений."</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Новых уведомлений нет"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Посмотреть уведомления"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Открыть быстрые настройки"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Сделать скриншот"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Показать сочетания клавиш"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Вернуться назад"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Перейти на главный экран"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Включить быстрый доступ к функции \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Клавиша действия "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – это сочетание клавиш для запуска функции \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> – это программа чтения с экрана, которая озвучивает описание элементов. Она полезна для людей с нарушениями зрения."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> позволяет управлять устройством с помощью голосовых команд."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Включить"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Сочетание клавиш для функции \"<xliff:g id="ID_1">%1$s</xliff:g>\" включено"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Клавиша действия "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – это сочетание клавиш для запуска функции \"<xliff:g id="ID_3">^3</xliff:g>\", которая позволяет быстро увеличить масштаб контента на экране. Чтобы изменить масштаб, нажмите клавишу действия"<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> + Плюс (+) или Минус (-)."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Отключить сочетание клавиш"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не отключать"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заблокированный экран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Выключение…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Подробнее о действиях при перегреве…"</string>

@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Chụp lại"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Chỉnh sửa"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Xoá"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Phát"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Tạm dừng"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Tắt tiếng"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Bật tiếng"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Chụp ảnh toàn màn hình"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Ghi toàn màn hình"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Chụp ảnh màn hình vùng đã chọn"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Ghi vùng đã chọn"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Ảnh chụp màn hình"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Cuộc trò chuyện"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Xóa tất cả thông báo im lặng"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Mở phần cài đặt thông báo"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Chế độ Không làm phiền đã tạm dừng thông báo"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Không có thông báo}=1{{mode} đã tạm dừng thông báo}=2{{mode} và một chế độ khác đã tạm dừng thông báo}other{{mode} và # chế độ khác đã tạm dừng thông báo}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Bắt đầu ngay"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Không có thông báo nào"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Không có thông báo mới"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Xem thông báo"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Xem trình đơn cài đặt nhanh"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Chụp ảnh màn hình"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Hiện phím tắt"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Quay lại"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Chuyển đến màn hình chính"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Bật <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Thao tác "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> là phím tắt để dùng <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> là một trình đọc màn hình cho phép bạn nghe các mục được đọc to. Ứng dụng này có thể giúp ích cho những người khó thấy nội dung màn hình."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> giúp bạn điều khiển thiết bị mà không dùng tay."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Bật"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Đã bật phím tắt <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Thao tác "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> là phím tắt để dùng <xliff:g id="ID_3">^3</xliff:g>. Thao tác này giúp bạn nhanh chóng phóng to nội dung trên màn hình. Nhấn vào Thao tác "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> và \"+\" hoặc \"-\" để điều chỉnh mức thu phóng."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Tắt phím tắt"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Tiếp tục bật"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Màn hình khóa"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Đang tắt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Xem các bước chăm sóc"</string>

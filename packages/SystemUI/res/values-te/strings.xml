@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"మళ్లీ తీయండి"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ఎడిట్ చేయండి"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"తొలగించండి"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"ప్లే చేయండి"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"పాజ్ చేయండి"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"మ్యూట్ చేయండి"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"అన్‌మ్యూట్ చేయండి"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ఫుల్-స్క్రీన్ తాలూకు స్క్రీన్‌షాట్ తీయండి"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ఎంచుకున్న ప్రాంతానికి స్క్రీన్‌షాట్ తీయండి"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ఎంచుకున్న ఏరియాను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"స్క్రీన్‌షాట్"</string>
@@ -336,7 +331,7 @@
     <string name="accessibility_desc_close" msgid="8293708213442107755">"మూసివేస్తుంది"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"మొత్తం నిశ్శబ్దం"</string>
     <string name="accessibility_quick_settings_dnd_alarms_on" msgid="3375848309132140014">"అలారాలు మాత్రమే"</string>
-    <string name="accessibility_quick_settings_dnd" msgid="2415967452264206047">"అంతరాయం కలిగించవద్దు."</string>
+    <string name="accessibility_quick_settings_dnd" msgid="2415967452264206047">"డిస్టర్బ్ చేయవద్దు."</string>
     <string name="accessibility_quick_settings_bluetooth" msgid="8250942386687551283">"బ్లూటూత్."</string>
     <string name="accessibility_quick_settings_bluetooth_on" msgid="3819082137684078013">"బ్లూటూత్ ఆన్‌లో ఉంది."</string>
     <string name="accessibility_quick_settings_alarm" msgid="558094529584082090">"<xliff:g id="TIME">%s</xliff:g>కి అలారం సెట్ చేయబడింది."</string>
@@ -361,7 +356,7 @@
     <string name="dessert_case" msgid="9104973640704357717">"డెజర్ట్ కేస్"</string>
     <string name="start_dreams" msgid="9131802557946276718">"స్క్రీన్ సేవర్"</string>
     <string name="ethernet_label" msgid="2203544727007463351">"ఈథర్‌నెట్"</string>
-    <string name="quick_settings_dnd_label" msgid="7728690179108024338">"అంతరాయం కలిగించవద్దు"</string>
+    <string name="quick_settings_dnd_label" msgid="7728690179108024338">"డిస్టర్బ్ చేయవద్దు"</string>
     <string name="quick_settings_modes_label" msgid="879156359479504244">"మోడ్‌లు"</string>
     <string name="quick_settings_bluetooth_label" msgid="7018763367142041481">"బ్లూటూత్"</string>
     <string name="quick_settings_bluetooth_detail_empty_text" msgid="5760239584390514322">"జత చేసిన పరికరాలు ఏవీ అందుబాటులో లేవు"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"సంభాషణలు"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"అన్ని నిశ్శబ్ద నోటిఫికేషన్‌లను క్లియర్ చేస్తుంది"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"నోటిఫికేషన్‌ల సెట్టింగ్‌లను తెరవండి"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"అంతరాయం కలిగించవద్దు ద్వారా నోటిఫికేషన్‌లు పాజ్ చేయబడ్డాయి"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{నోటిఫికేషన్‌లు ఏవీ లేవు}=1{{mode} ద్వారా నోటిఫికేషన్‌లు పాజ్ చేయబడ్డాయి}=2{నోటిఫికేషన్‌లు, {mode}, మరో ఒక మోడ్ ద్వారా పాజ్ చేయబడ్డాయి}other{నోటిఫికేషన్‌లు, {mode}, మరో # మోడ్‌ల ద్వారా పాజ్ చేయబడ్డాయి}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"ఇప్పుడే ప్రారంభించండి"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"నోటిఫికేషన్‌లు లేవు"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"కొత్త నోటిఫికేషన్‌లు ఏవీ లేవు"</string>
@@ -897,7 +893,7 @@
     <string name="notification_automatic_title" msgid="3745465364578762652">"ఆటోమేటిక్"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"సౌండ్ లేదా వైబ్రేషన్‌లు ఏవీ ఉండవు"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ఎటువంటి సౌండ్ లేదా వైబ్రేషన్ లేకుండా సంభాషణ విభాగంలో నోటిఫికేషన్ కనిపిస్తుంది"</string>
-    <string name="notification_channel_summary_default" msgid="777294388712200605">"పరికర సెట్టింగ్‌ల ఆధారంగా రింగ్ లేదా వైబ్రేట్ కావచ్చు"</string>
+    <string name="notification_channel_summary_default" msgid="777294388712200605">"డివైజ్‌‌ సెట్టింగ్‌ల ఆధారంగా రింగ్ లేదా వైబ్రేట్ కావచ్చు"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"పరికర సెట్టింగ్‌ల ఆధారంగా రింగ్ లేదా వైబ్రేట్ కావచ్చు. <xliff:g id="APP_NAME">%1$s</xliff:g> నుండి సంభాషణలు ఆటోమేటిక్‌గా బబుల్‌లో కనిపిస్తాయి."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ఈ నోటిఫికేషన్ వచ్చినప్పుడు శబ్దం చేయాలా లేదా వైబ్రేట్ చేయాలా అనేది నిర్ణయించడానికి సిస్టమ్‌కు అనుమతి ఇవ్వండి"</string>
     <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;స్టేటస్:&lt;/b&gt; ఆటోమేటిక్ సెట్టింగ్‌కు ప్రోమోట్ చేయబడింది"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"నోటిఫికేషన్‌లను చూడండి"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"క్విక్ సెట్టింగ్‌లను చూడండి"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"స్క్రీన్‌షాట్‌ను తీయండి"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"షార్ట్‌కట్‌లను చూపించండి"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"వెనుకకు వెళ్లండి"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"మొదటి స్క్రీన్‌కు వెళ్లండి"</string>
@@ -1040,7 +1038,7 @@
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"TalkBackను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"మ్యాగ్నిఫికేషన్‌ను టోగుల్ చేయండి"</string>
     <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"\'వినడానికి ఎంచుకోండి\'ని యాక్టివేట్ చేయండి"</string>
-    <string name="volume_and_do_not_disturb" msgid="502044092739382832">"అంతరాయం కలిగించవద్దు"</string>
+    <string name="volume_and_do_not_disturb" msgid="502044092739382832">"డిస్టర్బ్ చేయవద్దు"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"వాల్యూమ్ బటన్‌ల షార్ట్‌కట్"</string>
     <string name="battery" msgid="769686279459897127">"బ్యాటరీ"</string>
     <string name="headset" msgid="4485892374984466437">"హెడ్‌సెట్"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>‌ను ఆన్ చేయాలా?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్: యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> అనేది, స్క్రీన్‌పై ఉన్న ఐటెమ్‌ల గురించి మీకు బిగ్గరగా చదివి వినిపించే స్క్రీన్ రీడర్. స్క్రీన్‌ను చూడటంలో ఇబ్బంది ఉన్న వారికి ఇది ఉపయోగకరం కాగలదు."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"మీ డివైజ్‌ను హ్యాండ్స్-ఫ్రీగా కంట్రోల్ చేసే వీలును <xliff:g id="ID_1">%1$s</xliff:g> మీకు కల్పిస్తుంది."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ఆన్ చేయండి"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్ ఆన్ అయింది"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"<xliff:g id="ID_3">^3</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్: యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. కంటెంట్‌ను మరింత పెద్దగా డిస్‌ప్లే చేయడానికి, స్క్రీన్‌ను క్విక్‌గా జూమ్ - ఇన్ చేసే వీలును ఇది మీకు కల్పిస్తుంది. జూమ్‌ను సర్దుబాటు చేయడానికి, యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>‌ను నొక్కి, ఆ తర్వాత \"+\"ను కానీ, \"-\"ను కానీ నొక్కండి."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"షార్ట్‌కట్‌ను ఆఫ్ చేయండి"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ఆన్‌లోనే ఉంచండి"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"తీసుకోవాల్సిన జాగ్రత్తలు ఏమిటో చూడండి"</string>

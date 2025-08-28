@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Wiederholen"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Bearbeiten"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Löschen"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Wiedergeben"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Pausieren"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Stummschalten"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Stummschaltung aufheben"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Screenshot des gesamten Bildschirms erstellen"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gesamten Bildschirm aufnehmen"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Screenshot des ausgewählten Bereichs erstellen"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Ausgewählten Bereich aufnehmen"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Screenshot"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Unterhaltungen"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Alle lautlosen Benachrichtigungen löschen"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Benachrichtigungseinstellungen öffnen"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Benachrichtigungen durch „Bitte nicht stören“ pausiert"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Keine Benachrichtigungen}=1{Benachrichtigungen durch {mode} pausiert}=2{Benachrichtigungen durch {mode} und einen weiteren Modus pausiert}other{Benachrichtigungen durch {mode} und # weitere Modi pausiert}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Jetzt starten"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Keine Benachrichtigungen"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Keine neuen Benachrichtigungen"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Be­nach­­rich­ti­­­gun­­gen ansehen"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Schnelleinstellungen ansehen"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Screenshot erstellen"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Tasten­kürzel anzeigen"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Zurück"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Zum Startbildschirm wechseln"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aktivieren?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Die Aktion "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ist ein Screenreader, mit dem du dir Text vorlesen lassen kannst. Das kann Nutzern helfen, die den Bildschirm nur schlecht oder gar nicht sehen können."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"Mit <xliff:g id="ID_1">%1$s</xliff:g> kannst du dein Gerät per Sprachbefehl steuern."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Aktivieren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Verknüpfung mit <xliff:g id="ID_1">%1$s</xliff:g> aktiviert"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"Die Aktion "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_3">^3</xliff:g>. Dadurch kannst du schnell auf dem Display heranzoomen, um Inhalte zu vergrößern. Drücke auf das "<annotation id="action_key_icon">"Symbol"</annotation>" der Aktion + <xliff:g id="ID_4">^1</xliff:g> und auf „+“ oder „-“, um den Zoom anzupassen."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Verknüpfung deaktivieren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aktiviert lassen"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sperrbildschirm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Wird heruntergefahren…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Schritte zur Abkühlung des Geräts ansehen"</string>
@@ -1660,7 +1665,7 @@
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"Animation während des Tutorials, zum Pausieren und Fortsetzen der Wiedergabe klicken."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Tastaturbeleuchtung"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"Level %1$d von %2$d"</string>
-    <string name="home_controls_dream_label" msgid="6567105701292324257">"Smart-Home"</string>
+    <string name="home_controls_dream_label" msgid="6567105701292324257">"Smart Home"</string>
     <string name="home_controls_dream_description" msgid="4644150952104035789">"Smart-Home-Steuer­ung anzeigen"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Rückgängig machen"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"Wenn du zurückgehen möchtest, wische auf dem Touchpad mit drei Fingern nach links oder rechts"</string>

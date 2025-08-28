@@ -684,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversas"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Limpar todas as notificações silenciosas"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Abrir definições de notificações"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Notificações colocadas em pausa pelo modo Não incomodar."</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Sem notificações}=1{Notificações pausadas pelo modo {mode}}=2{Notificações pausadas pelo modo {mode} e mais um modo}many{Notificações pausadas pelo modo {mode} e mais # modos}other{Notificações pausadas pelo modo {mode} e mais # modos}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Começar agora"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Sem notificações"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Não existem novas notificações"</string>
@@ -985,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Ver notificações"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Ver Definições rápidas"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Fazer captura de ecrã"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Mostrar atalhos"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Voltar"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Aceder ao ecrã principal"</string>
@@ -1009,8 +1012,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Mover janela para a direita"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximizar janela"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimizar janela"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Fechar janela atual"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Alternar entre ambientes de trabalho"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Entrada"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Mudar para idioma seguinte"</string>
@@ -1132,12 +1134,15 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ativar a <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"A ação "<annotation id="action_key_icon">"ícone"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> é o atalho de teclado para usar a <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"O <xliff:g id="ID_1">%1$s</xliff:g> é um leitor de ecrã que lhe permite ouvir os itens em voz alta. Pode ser útil para pessoas que têm dificuldade em ver o ecrã."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"A app <xliff:g id="ID_1">%1$s</xliff:g> permite-lhe controlar o seu dispositivo em modo mãos-livres."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Ativar"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Atalho de teclado para <xliff:g id="ID_1">%1$s</xliff:g> ativado"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"A ação "<annotation id="action_key_icon">"ícone"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> é o atalho de teclado para usar a <xliff:g id="ID_3">^3</xliff:g>. Esta opção permite-lhe aumentar o zoom rapidamente no ecrã para ampliar o tamanho do conteúdo. Prima a ação "<annotation id="action_key_icon">"ícone"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> e \"+\" ou \"-\" para ajustar o zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desativar atalho"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Manter"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Ativar o atalho de teclado do <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Se premir Ação "<annotation id="action_key_icon">"ícone"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, ativa o <xliff:g id="ID_3">^3</xliff:g>, uma funcionalidade de acessibilidade. Isto permite-lhe controlar o seu dispositivo em modo mãos-livres."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Não ativar"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Ativar atalho"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecrã de bloqueio"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"A encerrar…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Veja os passos de manutenção"</string>

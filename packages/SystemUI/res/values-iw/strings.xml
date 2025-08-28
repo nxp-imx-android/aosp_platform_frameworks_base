@@ -546,7 +546,7 @@
     <string name="zen_silence_introduction" msgid="6117517737057344014">"הפעולה הזו מבטלת את כל הצלילים והרטט, כולל בהתראות, מוזיקה, סרטונים ומשחקים."</string>
     <string name="notification_tap_again" msgid="4477318164947497249">"יש ללחוץ שוב כדי לפתוח את ההתראה"</string>
     <string name="tap_again" msgid="1315420114387908655">"צריך ללחוץ פעם נוספת"</string>
-    <string name="keyguard_unlock" msgid="8031975796351361601">"אפשר להחליק כדי לפתוח"</string>
+    <string name="keyguard_unlock" msgid="8031975796351361601">"אפשר להחליק למעלה כדי לפתוח"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"לפתיחה, לוחצים על סמל ביטול הנעילה"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"הנעילה בוטלה באמצעות זיהוי הפנים. צריך להחליק כדי לפתוח."</string>
     <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"הנעילה נפתחה באמצעות זיהוי הפנים. כדי להמשיך, צריך ללחוץ על \"אישור\"."</string>
@@ -684,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"שיחות"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ניקוי כל ההתראות השקטות"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"פתיחה של הגדרת ההתראות"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"התראות הושהו על ידי מצב \'נא לא להפריע\'"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{אין התראות}=1{ההתראות הושהו על ידי {mode}}=2{ההתראות הושהו על ידי {mode} ועל ידי מצב אחד נוסף}one{ההתראות הושהו על ידי {mode} ועל ידי # מצבים נוספים}other{ההתראות הושהו על ידי {mode} ועל ידי # מצבים נוספים}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"כן, אפשר להתחיל"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"אין התראות"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"אין התראות חדשות"</string>
@@ -901,7 +902,7 @@
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"‏&lt;b&gt;הסטטוס:&lt;/b&gt; דורג נמוך יותר"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"מוצגת בחלק העליון של קטע ההתראות וכתמונת פרופיל במסך הנעילה"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"מוצגת בחלק העליון של קטע התראות השיחה וכתמונת פרופיל במסך הנעילה, מופיעה בבועה"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"מופיעה בחלק העליון של התראות השיחה וכתמונת פרופיל במסך הנעילה, מפריעה במצב \"נא לא להפריע\""</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"ההודעה מופיעה בחלק העליון של התראות השיחה וכתמונת פרופיל במסך הנעילה, מפריעה במצב \"נא לא להפריע\""</string>
     <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"מוצגת בחלק העליון של קטע התראות השיחה וכתמונת פרופיל במסך הנעילה, מופיעה בבועה צפה ומפריעה במצב \'נא לא להפריע\'"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"בעדיפות גבוהה"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> לא תומכת בתכונות השיחה"</string>
@@ -985,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"צפייה בהתראות"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"הצגת ההגדרות המהירות"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"צילום המסך"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"צפייה במקשי הקיצור"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"חזרה"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"מעבר למסך הבית"</string>
@@ -1132,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"להפעיל את <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> הוא מקש הקיצור לשימוש בתכונה \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> הוא קורא מסך שמאפשר לשמוע הקראה של פריטים. זה יכול להועיל לאנשים שמתקשים לראות את המסך."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"עם <xliff:g id="ID_1">%1$s</xliff:g> אפשר לשלוט במכשיר באמצעות הקול."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"הפעלה"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"מקש הקיצור <xliff:g id="ID_1">%1$s</xliff:g> הופעל"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> הוא מקש הקיצור לשימוש בתכונה <xliff:g id="ID_3">^3</xliff:g>. כך אפשר להגדיל את התצוגה במהירות כדי לראות טוב יותר את התוכן. כדי לשנות את מרחק התצוגה, לוחצים על מקש הפעולה "<annotation id="action_key_icon">"סמל "</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ועל \"+\" או \"-\"."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"השבתת מקש הקיצור"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"לא, התחרטתי"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"מסך נעילה"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"בתהליך כיבוי…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"לצפייה בשלבי הטיפול"</string>
