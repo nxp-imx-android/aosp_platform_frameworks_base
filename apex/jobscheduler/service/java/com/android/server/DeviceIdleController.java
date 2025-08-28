@@ -2771,8 +2771,9 @@ public class DeviceIdleController extends SystemService
                 mPowerSaveWhitelistChangedIntent = new Intent(
                         PowerManager.ACTION_POWER_SAVE_WHITELIST_CHANGED);
                 mPowerSaveWhitelistChangedIntent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+                //This intent is not exposed in PowerManager, so hardcoding the broadcast string.
                 mPowerSaveTempWhitelistChangedIntent = new Intent(
-                        PowerManager.ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED);
+                        "android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED");
                 mPowerSaveTempWhitelistChangedIntent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
                 mPowerSaveWhitelistChangedOptions = mostRecentDeliveryOptions;
                 mPowerSaveTempWhilelistChangedOptions = mostRecentDeliveryOptions;

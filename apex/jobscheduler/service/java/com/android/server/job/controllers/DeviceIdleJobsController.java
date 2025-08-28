@@ -104,7 +104,7 @@ public final class DeviceIdleJobsController extends StateController {
                         }
                     }
                     break;
-                case PowerManager.ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED:
+                case "android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED":
                     synchronized (mLock) {
                         mPowerSaveTempWhitelistAppIds =
                                 mLocalDeviceIdleController.getPowerSaveTempWhitelistAppIds();
@@ -115,8 +115,7 @@ public final class DeviceIdleJobsController extends StateController {
                         final ArraySet<JobStatus> changedJobs = new ArraySet<>();
                         final long nowElapsed = sElapsedRealtimeClock.millis();
                         for (int i = 0; i < mAllowInIdleJobs.size(); i++) {
-                            if (updateTaskStateLocked(mAllowInIdleJobs.valueAt(i),
-                                    nowElapsed)) {
+                            if (updateTaskStateLocked(mAllowInIdleJobs.valueAt(i), nowElapsed)) {
                                 changedJobs.add(mAllowInIdleJobs.valueAt(i));
                             }
                         }
@@ -154,7 +153,7 @@ public final class DeviceIdleJobsController extends StateController {
         filter.addAction(PowerManager.ACTION_LIGHT_DEVICE_IDLE_MODE_CHANGED);
         filter.addAction(PowerManager.ACTION_POWER_SAVE_WHITELIST_CHANGED);
         if (!Flags.stopPowerSaveTempWhitelistBroadcast()) {
-            filter.addAction(PowerManager.ACTION_POWER_SAVE_TEMP_WHITELIST_CHANGED);
+            filter.addAction("android.os.action.POWER_SAVE_TEMP_WHITELIST_CHANGED");
         }
         mContext.registerReceiverAsUser(mBroadcastReceiver, UserHandle.ALL, filter, null, mHandler);
     }
