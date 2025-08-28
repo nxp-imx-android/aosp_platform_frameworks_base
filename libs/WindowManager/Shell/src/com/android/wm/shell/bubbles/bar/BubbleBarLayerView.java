@@ -110,10 +110,10 @@ public class BubbleBarLayerView extends FrameLayout
     private Insets mInsets;
 
     /**
-     * Tracks bubbles used in switch animations. Ideally, we should track bubbles used in all types
-     * of animations, but so far it only seems helpful for switch animations.
+     * Tracks bubbles used in animations. We keep animating bubbles attached until the end of all
+     * animations.
      */
-    private final ReferenceCounter<BubbleViewProvider> mSwitchAnimationBubbleTracker =
+    private final ReferenceCounter<BubbleViewProvider> mAnimatingBubbleTracker =
             new ReferenceCounter();
 
     public BubbleBarLayerView(Context context, BubbleController controller, BubbleData bubbleData,
@@ -354,9 +354,9 @@ public class BubbleBarLayerView extends FrameLayout
                 // Add temporary references to the previous and the current bubbles to prevent
                 // them from being removed when canceling ongoing animations. References will be
                 // added again when starting the switch animation.
-                mSwitchAnimationBubbleTracker.increment(previousBubble, b);
+                mAnimatingBubbleTracker.increment(previousBubble, b);
                 mAnimationHelper.cancelAnimations();
-                mSwitchAnimationBubbleTracker.decrement(previousBubble, b);
+                mAnimatingBubbleTracker.decrement(previousBubble, b);
 
                 // Need to check again because cancelAnimations might remove it from the parent.
                 // TODO(b/403612574) use reference tracking for other animations.
@@ -459,7 +459,11 @@ public class BubbleBarLayerView extends FrameLayout
         if (!mIsExpanded || mExpandedBubble == null) {
             throw new IllegalStateException("Can't animateExpand without expnaded state");
         }
-        final Runnable afterAnimation = () -> {
+        final BubbleViewProvider expandedBubble = mExpandedBubble;
+        mAnimatingBubbleTracker.increment(previousBubble, expandedBubble);
+        final Runnable endRunnable = () -> {
+            mAnimatingBubbleTracker.decrement(previousBubble, expandedBubble);
+            ensureAnimationEndingState();
             if (mExpandedView == null) return;
             // Touch delegate for the menu
             BubbleBarHandleView view = mExpandedView.getHandleView();
@@ -476,15 +480,9 @@ public class BubbleBarLayerView extends FrameLayout
         };
 
         if (previousBubble != null) {
-            final BubbleViewProvider expandedBubble = mExpandedBubble;
-            mSwitchAnimationBubbleTracker.increment(previousBubble, expandedBubble);
-            mAnimationHelper.animateSwitch(previousBubble, expandedBubble, () -> {
-                mSwitchAnimationBubbleTracker.decrement(previousBubble, expandedBubble);
-                ensureSwitchAnimationEndingState();
-                afterAnimation.run();
-            });
+            mAnimationHelper.animateSwitch(previousBubble, expandedBubble, endRunnable);
         } else {
-            mAnimationHelper.animateExpansion(mExpandedBubble, afterAnimation);
+            mAnimationHelper.animateExpansion(expandedBubble, endRunnable);
         }
     }
 
@@ -522,8 +520,15 @@ public class BubbleBarLayerView extends FrameLayout
         if (!mIsExpanded || mExpandedBubble == null) {
             throw new IllegalStateException("Can't animateExpand without expanded state");
         }
+        final BubbleViewProvider expandedBubble = mExpandedBubble;
+        mAnimatingBubbleTracker.increment(expandedBubble);
+        final Runnable endRunnable = () -> {
+            mAnimatingBubbleTracker.decrement(expandedBubble);
+            ensureAnimationEndingState();
+            animFinish.run();
+        };
         mAnimationHelper.animateConvert(mExpandedBubble, startT, startBounds, startScale, snapshot,
-                taskLeash, animFinish);
+                taskLeash, endRunnable);
     }
 
     public void removeBubble(@NonNull Bubble bubble, @NonNull Runnable endAction) {
@@ -568,10 +573,12 @@ public class BubbleBarLayerView extends FrameLayout
             return;
         }
         mIsExpanded = false;
-        final BubbleBarExpandedView viewToRemove = mExpandedView;
+        final BubbleViewProvider bubbleToCollapse = mExpandedBubble;
         mEducationViewController.hideEducation(/* animated = */ true);
-        Runnable runnable = () -> {
-            removeView(viewToRemove);
+        mAnimatingBubbleTracker.increment(bubbleToCollapse);
+        final Runnable endRunnable = () -> {
+            mAnimatingBubbleTracker.decrement(bubbleToCollapse);
+            ensureAnimationEndingState();
             if (endAction != null) {
                 endAction.run();
             }
@@ -580,12 +587,13 @@ public class BubbleBarLayerView extends FrameLayout
             }
         };
         if (mDragController != null && mDragController.isStuckToDismiss()) {
-            mAnimationHelper.animateDismiss(runnable);
+            mAnimationHelper.animateDismiss(endRunnable);
         } else {
-            mAnimationHelper.animateCollapse(runnable);
+            mAnimationHelper.animateCollapse(endRunnable);
         }
         mBubbleController.getSysuiProxy().onStackExpandChanged(false);
         mExpandedView = null;
+        mExpandedBubble = null;
         mDragController = null;
         setTouchDelegate(null);
         showScrim(false);
@@ -720,16 +728,21 @@ public class BubbleBarLayerView extends FrameLayout
         setupDragZoneFactory();
     }
 
-    /** Ensures that only the expanded bubble is added at the end of all switch animations. */
-    private void ensureSwitchAnimationEndingState() {
-        if (!mSwitchAnimationBubbleTracker.hasReferences()) {
-            // All switch animations are done, so we remove bubbles except for the expanded one.
-            mSwitchAnimationBubbleTracker.forEach(bubble -> {
+    /** Ensures that only the expanded bubble is added at the end of all animations. */
+    private void ensureAnimationEndingState() {
+        if (!mAnimatingBubbleTracker.hasReferences()) {
+            // All animations are done, so we remove bubbles except for the expanded one.
+            mAnimatingBubbleTracker.forEach(bubble -> {
                 if (bubble != mExpandedBubble) {
                     removeView(bubble.getBubbleBarExpandedView());
                 }
             });
-            mSwitchAnimationBubbleTracker.clear();
+            mAnimatingBubbleTracker.clear();
         }
+    }
+
+    @VisibleForTesting
+    boolean isAnimatingBubbleTracked(@NonNull BubbleViewProvider bubble) {
+        return mAnimatingBubbleTracker.isTracked(bubble);
     }
 }
