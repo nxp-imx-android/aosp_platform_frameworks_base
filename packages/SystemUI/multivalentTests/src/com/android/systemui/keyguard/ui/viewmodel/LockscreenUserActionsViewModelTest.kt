@@ -32,6 +32,8 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
+import com.android.systemui.communal.domain.interactor.setCommunalAvailable
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.collectLastValue
@@ -68,12 +70,12 @@ import platform.test.runner.parameterized.Parameters
 class LockscreenUserActionsViewModelTest : SysuiTestCase() {
 
     companion object {
-        private const val parameterCount = 5
+        private const val parameterCount = 6
 
         @Parameters(
             name =
                 "canSwipeToEnter={0}, downWithTwoPointers={1}, downFromEdge={2}," +
-                    " isSingleShade={3}, isShadeTouchable={4}"
+                    " isSingleShade={3}, isShadeTouchable={4}, isCommunalAvailable={5}"
         )
         @JvmStatic
         fun combinations() = buildList {
@@ -85,6 +87,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                             /* downFromEdge= */ combination and 4 != 0,
                             /* isSingleShade= */ combination and 8 != 0,
                             /* isShadeTouchable= */ combination and 16 != 0,
+                            /* isCommunalAvailable= */ combination and 32 != 0,
                         )
                         .also { check(it.size == parameterCount) }
                 )
@@ -143,6 +146,17 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 else -> Overlays.Bouncer
             }
         }
+
+        private fun expectedStartDestination(
+            isCommunalAvailable: Boolean,
+            isShadeTouchable: Boolean,
+        ): SceneKey? {
+            return when {
+                !isShadeTouchable -> null
+                isCommunalAvailable -> Scenes.Communal
+                else -> null
+            }
+        }
     }
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -152,6 +166,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
     @JvmField @Parameter(2) var downFromEdge: Boolean = false
     @JvmField @Parameter(3) var isNarrowScreen: Boolean = true
     @JvmField @Parameter(4) var isShadeTouchable: Boolean = false
+    @JvmField @Parameter(5) var isCommunalAvailable: Boolean = false
 
     private val underTest by lazy { kosmos.lockscreenUserActionsViewModel }
 
@@ -175,6 +190,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
             shadeRepository.setShadeLayoutWide(!isNarrowScreen)
+            kosmos.setCommunalAvailable(isCommunalAvailable)
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
@@ -227,6 +243,21 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                         isShadeTouchable = isShadeTouchable,
                     )
                 )
+
+            val startScene by
+                collectLastValue(
+                    (userActions?.get(Swipe.Start) as? ChangeScene)?.toScene?.let { scene ->
+                        sceneInteractor.resolveSceneFamily(scene)
+                    } ?: flowOf(null)
+                )
+
+            assertThat(startScene)
+                .isEqualTo(
+                    expectedStartDestination(
+                        isCommunalAvailable = isCommunalAvailable,
+                        isShadeTouchable = isShadeTouchable,
+                    )
+                )
         }
 
     @Test
@@ -243,6 +274,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 }
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
+            kosmos.setCommunalAvailable(isCommunalAvailable)
             fakePowerRepository.updateWakefulness(
                 rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
@@ -296,6 +328,21 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 .isEqualTo(
                     expectedUpDestination(
                         canSwipeToEnter = canSwipeToEnter,
+                        isShadeTouchable = isShadeTouchable,
+                    )
+                )
+
+            val startScene by
+                collectLastValue(
+                    (userActions?.get(Swipe.Start) as? ChangeScene)?.toScene?.let { scene ->
+                        sceneInteractor.resolveSceneFamily(scene)
+                    } ?: flowOf(null)
+                )
+
+            assertThat(startScene)
+                .isEqualTo(
+                    expectedStartDestination(
+                        isCommunalAvailable = isCommunalAvailable,
                         isShadeTouchable = isShadeTouchable,
                     )
                 )
