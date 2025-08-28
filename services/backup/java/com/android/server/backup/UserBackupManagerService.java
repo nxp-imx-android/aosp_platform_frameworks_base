@@ -97,6 +97,7 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.util.Preconditions;
 import com.android.server.AppWidgetBackupBridge;
 import com.android.server.EventLogTags;
@@ -451,6 +452,8 @@ public class UserBackupManagerService {
         mConstants = backupManagerConstants;
         mActivityManager = activityManager;
         mActivityManagerInternal = activityManagerInternal;
+        mScheduledBackupEligibility =
+                getEligibilityRules(mPackageManager, userId, mContext, BackupDestination.CLOUD);
 
         mBaseStateDir = null;
         mDataDir = null;
@@ -466,7 +469,6 @@ public class UserBackupManagerService {
         mBackupPasswordManager = null;
         mPackageManagerBinder = null;
         mBackupManagerBinder = null;
-        mScheduledBackupEligibility = null;
     }
 
     private UserBackupManagerService(
@@ -1614,10 +1616,15 @@ public class UserBackupManagerService {
         }
     }
 
-    private BackupEligibilityRules getEligibilityRulesForRestoreAtInstall(long restoreToken) {
+    @VisibleForTesting(visibility = Visibility.PRIVATE)
+    protected BackupEligibilityRules getEligibilityRulesForRestoreAtInstall(long restoreToken) {
         if (mAncestralBackupDestination == BackupDestination.DEVICE_TRANSFER
                 && restoreToken == mAncestralToken) {
             return getEligibilityRulesForOperation(BackupDestination.DEVICE_TRANSFER);
+        } else if (Flags.enableCrossPlatformTransfer()
+                && mAncestralBackupDestination == BackupDestination.CROSS_PLATFORM_TRANSFER
+                && restoreToken == mAncestralToken) {
+            return getEligibilityRulesForOperation(BackupDestination.CROSS_PLATFORM_TRANSFER);
         } else {
             // If we're not using the ancestral data set, it means we're restoring from a backup
             // that happened on this device.
