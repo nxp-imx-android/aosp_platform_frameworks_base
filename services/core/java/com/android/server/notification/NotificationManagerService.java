@@ -9072,6 +9072,19 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
+        if (notification.extras.getBoolean(Notification.EXTRA_PREFER_SMALL_ICON, false)) {
+            int hasPackageVerifierAgentPerm = getContext().checkPermission(
+                    Manifest.permission.PACKAGE_VERIFICATION_AGENT, -1, notificationUid);
+            if (hasPackageVerifierAgentPerm != PERMISSION_GRANTED) {
+                notification.extras.remove(Notification.EXTRA_PREFER_SMALL_ICON);
+                if (DBG) {
+                    Slog.w(TAG, "warning: pkg " + pkg + " attempting to show small icon"
+                            + " without holding perm "
+                            + Manifest.permission.PACKAGE_VERIFICATION_AGENT);
+                }
+            }
+        }
+
         notification.flags &= ~FLAG_FSI_REQUESTED_BUT_DENIED;
 
         // Apps cannot post notifications that are lifetime extended.

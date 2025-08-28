@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.row.icon
 
 import android.annotation.WorkerThread
 import android.app.Flags
+import android.app.Notification
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.UserManager
@@ -73,8 +74,13 @@ constructor(
     override fun shouldShowAppIcon(notification: StatusBarNotification, context: Context): Boolean {
         return cache.getOrFetch(notification.packageName) {
             val packageContext = notification.getPackageContext(context)
-            !belongsToHeadlessSystemApp(packageContext)
+            !prefersSmallIcon(notification.notification) &&
+                !belongsToHeadlessSystemApp(packageContext)
         }
+    }
+
+    private fun prefersSmallIcon(notification: Notification): Boolean {
+        return notification.extras.getBoolean(Notification.EXTRA_PREFER_SMALL_ICON)
     }
 
     @WorkerThread
