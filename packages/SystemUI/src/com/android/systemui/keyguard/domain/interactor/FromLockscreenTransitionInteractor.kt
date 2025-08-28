@@ -332,6 +332,26 @@ constructor(
                     .filterRelevantKeyguardStateAnd { isOccluded -> isOccluded }
                     .collect { startTransitionTo(KeyguardState.OCCLUDED) }
             }
+            // Safety check added for incoming phone calls while on AOD/DOZING. If a transition has
+            // begun to LOCKSCREEN but keyguard is occluded then make sure we change the transition
+            // to go to OCCLUDED. This intentionally uses the [startedKeyguardTransitionStep] to
+            // ensure that the transition has really begun
+            scope.launch("$TAG#listenForLockscreenToOccludedOrDreamingFailSafe") {
+                transitionInteractor.startedKeyguardTransitionStep
+                    .filter {
+                        it.from != KeyguardState.OCCLUDED &&
+                            it.from != KeyguardState.DREAMING &&
+                            it.to == KeyguardState.LOCKSCREEN
+                    }
+                    .collect {
+                        if (keyguardInteractor.isKeyguardOccluded.value) {
+                            startTransitionTo(
+                                KeyguardState.OCCLUDED,
+                                ownerReason = "occluded failsafe",
+                            )
+                        }
+                    }
+            }
         }
     }
 
