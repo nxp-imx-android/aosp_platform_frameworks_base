@@ -341,6 +341,24 @@ public class BluetoothEventManagerTest {
     }
 
     @Test
+    public void dispatchAclConnectionStateChanged_forSubDevice_shouldDispatchCallback() {
+        // This test verifies that ACL state changes for sub-devices are handled.
+        // A previous implementation skipped this, but the check was removed.
+        when(mCachedDeviceManager.isSubDevice(mBluetoothDevice)).thenReturn(true);
+        mBluetoothEventManager.registerCallback(mBluetoothCallback);
+        Intent intent = new Intent(BluetoothDevice.ACTION_ACL_CONNECTED);
+        intent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
+
+        mContext.sendBroadcast(intent);
+
+        // Verify that the callback is dispatched and the device state is updated.
+        verify(mCachedBluetoothDevice).onAclStateChanged(eq(BluetoothAdapter.STATE_CONNECTED),
+                anyInt());
+        verify(mBluetoothCallback).onAclConnectionStateChanged(mCachedBluetoothDevice,
+                BluetoothAdapter.STATE_CONNECTED);
+    }
+
+    @Test
     public void dispatchAclConnectionStateChanged_aclBeforeDeviceCreation_shouldDispatchCallback() {
         when(mCachedDeviceManager.findDevice(mBluetoothDevice)).thenReturn(null);
         when(mCachedDeviceManager.addDevice(mBluetoothDevice)).thenReturn(mCachedBluetoothDevice);
