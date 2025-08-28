@@ -49,7 +49,6 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewModel
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.ActivityStarter
-import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
@@ -197,9 +196,6 @@ constructor(
         if (isInDialog) {
             progressBarBackground =
                 contentView.requireViewById(R.id.bluetooth_tile_dialog_progress_background)
-
-            // If `QsDetailedView` is enabled, it should show the details view.
-            QsDetailedView.assertInLegacyMode()
 
             // If rendering with tile details view, the title and subtitle will be added in the
             // `TileDetails`
