@@ -59,6 +59,7 @@ fun ContentScope.QuickQuickSettings(
                 keys = { it.spec },
                 elementKey = { it.spec.toElementKey() },
                 horizontalPadding = dimensionResource(R.dimen.qs_tile_margin_horizontal),
+                modifier = Modifier.sysuiResTag("qqs_tile_layout"),
             ) { sizedTile, interactionSource ->
                 Tile(
                     tile = sizedTile.tile,

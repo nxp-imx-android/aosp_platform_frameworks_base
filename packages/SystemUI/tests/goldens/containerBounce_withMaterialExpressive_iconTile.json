@@ -42,19 +42,7 @@
       "type": "dpSize",
       "data_points": [
         {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.28571,
+          "width": 96.85714,
           "height": 72
         },
         {
@@ -62,31 +50,71 @@
           "height": 72
         },
         {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.28571,
+          "height": 72
+        },
+        {
+          "width": 94.85714,
+          "height": 72
+        },
+        {
+          "width": 93.14286,
+          "height": 72
+        },
+        {
+          "width": 91.42857,
+          "height": 72
+        },
+        {
+          "width": 90,
+          "height": 72
+        },
+        {
+          "width": 90,
+          "height": 72
+        },
+        {
+          "width": 90.85714,
+          "height": 72
+        },
+        {
+          "width": 92.28571,
+          "height": 72
+        },
+        {
+          "width": 94,
+          "height": 72
+        },
+        {
           "width": 95.14286,
           "height": 72
         },
         {
-          "width": 93.42857,
+          "width": 96.28571,
           "height": 72
         },
         {
-          "width": 92,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 92,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 92.85714,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 94.28571,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 96,
+          "width": 97.42857,
           "height": 72
         },
         {
@@ -94,91 +122,63 @@
           "height": 72
         },
         {
-          "width": 98.28571,
+          "width": 97.14286,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         }
       ]
@@ -188,35 +188,39 @@
       "type": "dpSize",
       "data_points": [
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 96.28571,
+          "width": 98.28571,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 101.14286,
           "height": 72
         },
         {
-          "width": 102.57143,
+          "width": 104.57143,
           "height": 72
         },
         {
-          "width": 105.71429,
+          "width": 107.71429,
           "height": 72
         },
         {
-          "width": 108.28571,
+          "width": 110.28571,
+          "height": 72
+        },
+        {
+          "width": 110.85714,
           "height": 72
         },
         {
@@ -224,15 +228,15 @@
           "height": 72
         },
         {
-          "width": 106.85714,
+          "width": 106,
           "height": 72
         },
         {
-          "width": 104,
+          "width": 102.85714,
           "height": 72
         },
         {
-          "width": 100.85714,
+          "width": 100,
           "height": 72
         },
         {
@@ -240,91 +244,87 @@
           "height": 72
         },
         {
+          "width": 96.57143,
+          "height": 72
+        },
+        {
+          "width": 95.71429,
+          "height": 72
+        },
+        {
+          "width": 95.42857,
+          "height": 72
+        },
+        {
+          "width": 95.71429,
+          "height": 72
+        },
+        {
+          "width": 95.71429,
+          "height": 72
+        },
+        {
           "width": 96,
           "height": 72
         },
         {
-          "width": 94.57143,
+          "width": 96.28571,
           "height": 72
         },
         {
-          "width": 93.71429,
+          "width": 96.57143,
           "height": 72
         },
         {
-          "width": 93.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 93.71429,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 93.71429,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.28571,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.57143,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         }
       ]
@@ -334,51 +334,23 @@
       "type": "dpSize",
       "data_points": [
         {
-          "width": 94.85714,
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.28571,
           "height": 72
         },
         {
           "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.85714,
-          "height": 72
-        },
-        {
-          "width": 94.28571,
-          "height": 72
-        },
-        {
-          "width": 92.85714,
-          "height": 72
-        },
-        {
-          "width": 91.14286,
-          "height": 72
-        },
-        {
-          "width": 89.42857,
-          "height": 72
-        },
-        {
-          "width": 88,
-          "height": 72
-        },
-        {
-          "width": 88,
-          "height": 72
-        },
-        {
-          "width": 88.85714,
-          "height": 72
-        },
-        {
-          "width": 90.28571,
-          "height": 72
-        },
-        {
-          "width": 92,
           "height": 72
         },
         {
@@ -386,31 +358,27 @@
           "height": 72
         },
         {
-          "width": 94.28571,
+          "width": 91.42857,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 90,
           "height": 72
         },
         {
-          "width": 95.42857,
+          "width": 90,
           "height": 72
         },
         {
-          "width": 95.42857,
+          "width": 90.85714,
           "height": 72
         },
         {
-          "width": 95.42857,
+          "width": 92.28571,
           "height": 72
         },
         {
-          "width": 95.42857,
-          "height": 72
-        },
-        {
-          "width": 95.14286,
+          "width": 94,
           "height": 72
         },
         {
@@ -418,59 +386,91 @@
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.28571,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 97.14286,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 97.14286,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 94.85714,
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
+          "height": 72
+        },
+        {
+          "width": 96.85714,
           "height": 72
         }
       ]

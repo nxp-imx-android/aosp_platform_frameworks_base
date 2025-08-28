@@ -42,35 +42,39 @@
       "type": "dpSize",
       "data_points": [
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 97.42857,
+          "width": 95.42857,
           "height": 72
         },
         {
-          "width": 94.57143,
+          "width": 92.57143,
           "height": 72
         },
         {
-          "width": 91.14286,
+          "width": 89.14286,
           "height": 72
         },
         {
-          "width": 88,
+          "width": 86,
           "height": 72
         },
         {
-          "width": 85.42857,
+          "width": 83.42857,
+          "height": 72
+        },
+        {
+          "width": 82.85714,
           "height": 72
         },
         {
@@ -78,15 +82,15 @@
           "height": 72
         },
         {
-          "width": 86.85714,
+          "width": 87.71429,
           "height": 72
         },
         {
-          "width": 89.71429,
+          "width": 90.85714,
           "height": 72
         },
         {
-          "width": 92.85714,
+          "width": 93.71429,
           "height": 72
         },
         {
@@ -94,91 +98,87 @@
           "height": 72
         },
         {
+          "width": 97.14286,
+          "height": 72
+        },
+        {
+          "width": 98,
+          "height": 72
+        },
+        {
+          "width": 98.28571,
+          "height": 72
+        },
+        {
+          "width": 98,
+          "height": 72
+        },
+        {
+          "width": 98,
+          "height": 72
+        },
+        {
           "width": 97.71429,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 100,
+          "width": 97.14286,
           "height": 72
         },
         {
-          "width": 100.28571,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 100,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 100,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.71429,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         }
       ]
@@ -188,51 +188,55 @@
       "type": "dpSize",
       "data_points": [
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 200.28572,
+          "width": 204.28572,
           "height": 72
         },
         {
-          "width": 206.28572,
+          "width": 210.28572,
           "height": 72
         },
         {
-          "width": 213.14285,
+          "width": 217.14285,
           "height": 72
         },
         {
-          "width": 219.42857,
+          "width": 223.42857,
           "height": 72
         },
         {
-          "width": 224.57143,
+          "width": 228.57143,
           "height": 72
         },
         {
-          "width": 225.71428,
+          "width": 229.71428,
           "height": 72
         },
         {
-          "width": 222,
+          "width": 226,
           "height": 72
         },
         {
-          "width": 216,
+          "width": 220,
           "height": 72
         },
         {
-          "width": 209.71428,
+          "width": 213.71428,
+          "height": 72
+        },
+        {
+          "width": 208,
           "height": 72
         },
         {
@@ -240,91 +244,87 @@
           "height": 72
         },
         {
-          "width": 200,
+          "width": 201.14285,
           "height": 72
         },
         {
-          "width": 197.14285,
+          "width": 199.71428,
           "height": 72
         },
         {
-          "width": 195.71428,
+          "width": 199.14285,
           "height": 72
         },
         {
-          "width": 195.14285,
+          "width": 199.14285,
           "height": 72
         },
         {
-          "width": 195.14285,
+          "width": 199.71428,
           "height": 72
         },
         {
-          "width": 195.71428,
+          "width": 200.28572,
           "height": 72
         },
         {
-          "width": 196.28572,
+          "width": 200.85715,
           "height": 72
         },
         {
-          "width": 196.85715,
+          "width": 201.14285,
           "height": 72
         },
         {
-          "width": 197.14285,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 202,
           "height": 72
         },
         {
-          "width": 198,
+          "width": 202,
           "height": 72
         },
         {
-          "width": 198,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         },
         {
-          "width": 197.71428,
-          "height": 72
-        },
-        {
-          "width": 197.71428,
+          "width": 201.71428,
           "height": 72
         }
       ]
@@ -334,35 +334,39 @@
       "type": "dpSize",
       "data_points": [
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 97.42857,
+          "width": 95.42857,
           "height": 72
         },
         {
-          "width": 94.57143,
+          "width": 92.57143,
           "height": 72
         },
         {
-          "width": 91.14286,
+          "width": 89.14286,
           "height": 72
         },
         {
-          "width": 88,
+          "width": 86,
           "height": 72
         },
         {
-          "width": 85.42857,
+          "width": 83.42857,
+          "height": 72
+        },
+        {
+          "width": 82.85714,
           "height": 72
         },
         {
@@ -370,15 +374,15 @@
           "height": 72
         },
         {
-          "width": 86.85714,
+          "width": 87.71429,
           "height": 72
         },
         {
-          "width": 89.71429,
+          "width": 90.85714,
           "height": 72
         },
         {
-          "width": 92.85714,
+          "width": 93.71429,
           "height": 72
         },
         {
@@ -386,91 +390,87 @@
           "height": 72
         },
         {
+          "width": 97.14286,
+          "height": 72
+        },
+        {
+          "width": 98,
+          "height": 72
+        },
+        {
+          "width": 98.28571,
+          "height": 72
+        },
+        {
+          "width": 98,
+          "height": 72
+        },
+        {
+          "width": 98,
+          "height": 72
+        },
+        {
           "width": 97.71429,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 97.42857,
           "height": 72
         },
         {
-          "width": 100,
+          "width": 97.14286,
           "height": 72
         },
         {
-          "width": 100.28571,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 100,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 100,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.71429,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.42857,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 99.14286,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         },
         {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
-          "height": 72
-        },
-        {
-          "width": 98.85714,
+          "width": 96.85714,
           "height": 72
         }
       ]
