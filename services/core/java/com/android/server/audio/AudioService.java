@@ -75,6 +75,7 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
+import static com.android.media.audio.Flags.audioStreamBtScoCleanup;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
 import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
@@ -5495,6 +5496,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tcom.android.media.audio.absVolumeIndexFix - EOL");
         pw.println("\tcom.android.media.audio.absVolumePrioritizesAbsDevice:"
                 + absVolumePrioritizesAbsDevice());
+        pw.println("\tcom.android.media.audio.audioStreamBtScoCleanup:"
+                + audioStreamBtScoCleanup());
         pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder - EOL");
         pw.println("\tcom.android.media.audio.replaceStreamBtSco - EOL");
         pw.println("\tcom.android.media.audio.equalScoHaVcIndexRange:"
@@ -9253,36 +9256,53 @@ public class AudioService extends IAudioService.Stub
     private static final SparseArray<VolumeGroupState> sVolumeGroupStates = new SparseArray<>();
 
     private void initVolumeGroupStates() {
-        int btScoGroupId = -1;
-        VolumeGroupState voiceCallGroup = null;
-        for (final AudioVolumeGroup avg : getAudioVolumeGroups()) {
-            try {
-                if (ensureValidVolumeGroup(avg)) {
-                    final VolumeGroupState vgs = new VolumeGroupState(avg);
-                    sVolumeGroupStates.append(avg.getId(), vgs);
-                    if (vgs.isVoiceCall()) {
-                        voiceCallGroup = vgs;
-                    }
-                } else {
-                    // invalid volume group will be reported for bt sco group with no other
-                    // legacy stream type, we try to replace it in sVolumeGroupStates with the
-                    // voice call volume group
-                    // TODO(b/441152611): remove this when deprecating BT SCO groups in native
-                    btScoGroupId = avg.getId();
+        if (audioStreamBtScoCleanup()) {
+            for (final AudioVolumeGroup avg : getAudioVolumeGroups()) {
+                boolean hasAtLeastOneValidAudioAttributes = avg.getAudioAttributes().stream()
+                        .anyMatch(aa -> !aa.equals(AudioProductStrategy.getDefaultAttributes()));
+                if (!hasAtLeastOneValidAudioAttributes) {
+                    // Volume Groups without attributes are not controllable through set/get volume
+                    // using attributes. Do not append them.
+                    Slog.d(TAG, "volume group " + avg.name()
+                            + " for internal policy needs,  has no valid audio attributes");
+                    continue;
                 }
-            } catch (IllegalArgumentException e) {
-                // Volume Groups without attributes are not controllable through set/get volume
-                // using attributes. Do not append them.
-                if (DEBUG_VOL) {
-                    Log.d(TAG, "volume group " + avg.name() + " for internal policy needs");
+
+                final VolumeGroupState vgs = new VolumeGroupState(avg);
+                sVolumeGroupStates.append(avg.getId(), vgs);
+            }
+        } else {
+            int btScoGroupId = -1;
+            VolumeGroupState voiceCallGroup = null;
+            for (final AudioVolumeGroup avg : getAudioVolumeGroups()) {
+                try {
+                    if (ensureValidVolumeGroup(avg)) {
+                        final VolumeGroupState vgs = new VolumeGroupState(avg);
+                        sVolumeGroupStates.append(avg.getId(), vgs);
+                        if (vgs.isVoiceCall()) {
+                            voiceCallGroup = vgs;
+                        }
+                    } else {
+                        // invalid volume group will be reported for bt sco group with no other
+                        // legacy stream type, we try to replace it in sVolumeGroupStates with the
+                        // voice call volume group
+                        // TODO(b/441152611): remove this when deprecating BT SCO groups in native
+                        btScoGroupId = avg.getId();
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Volume Groups without attributes are not controllable through set/get volume
+                    // using attributes. Do not append them.
+                    if (DEBUG_VOL) {
+                        Log.d(TAG, "volume group " + avg.name() + " for internal policy needs");
+                    }
                 }
             }
-        }
 
-        if (btScoGroupId >= 0 && voiceCallGroup != null) {
-            // the bt sco group is deprecated, storing the voice call group instead
-            // to keep the code backwards compatible when calling the volume group APIs
-            sVolumeGroupStates.append(btScoGroupId, voiceCallGroup);
+            if (btScoGroupId >= 0 && voiceCallGroup != null) {
+                // the bt sco group is deprecated, storing the voice call group instead
+                // to keep the code backwards compatible when calling the volume group APIs
+                sVolumeGroupStates.append(btScoGroupId, voiceCallGroup);
+            }
         }
 
         // need mSettingsLock for vgs.applyAllVolumes -> vss.setIndex which grabs this lock after
