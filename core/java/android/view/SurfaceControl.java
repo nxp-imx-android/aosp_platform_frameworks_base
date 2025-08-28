@@ -515,17 +515,19 @@ public final class SurfaceControl implements Parcelable {
         private final @DurationNanosLong long mFrameIntervalNs;
         private final @DurationNanosLong long mScheduledAppFrameTimeNs;
         private final @DurationNanosLong long mActualAppFrameTimeNs;
+        private final @DurationNanosLong long mPresentDelayNs;
 
         /**
          * @hide
          */
         public JankData(long frameVsyncId, @JankType int jankType, long frameIntervalNs,
-                long scheduledAppFrameTimeNs, long actualAppFrameTimeNs) {
+                long scheduledAppFrameTimeNs, long actualAppFrameTimeNs, long presentDelayNs) {
             mFrameVsyncId = frameVsyncId;
             mJankType = jankType;
             mFrameIntervalNs = frameIntervalNs;
             mScheduledAppFrameTimeNs = scheduledAppFrameTimeNs;
             mActualAppFrameTimeNs = actualAppFrameTimeNs;
+            mPresentDelayNs = presentDelayNs;
         }
 
         /**
@@ -579,6 +581,17 @@ public final class SurfaceControl implements Parcelable {
          */
         public @DurationNanosLong long getActualAppFrameTimeNanos() {
             return mActualAppFrameTimeNs;
+        }
+
+        /**
+         * Returns the difference between actual and expected present time. Can be negative,
+         * signaling an early present.
+         *
+         * @return the present delay in ns
+         * @hide
+         */
+        public @DurationNanosLong long getPresentDelayNanos() {
+            return mPresentDelayNs;
         }
 
         @Override

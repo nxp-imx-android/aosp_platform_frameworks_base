@@ -320,7 +320,8 @@ public class JankDataProcessorTest {
                     SurfaceControl.JankData.JANK_NONE,
                     NANOS_PER_MS * ((long) i),
                     NANOS_PER_MS * ((long) i),
-                    NANOS_PER_MS * ((long) i)));
+                    NANOS_PER_MS * ((long) i),
+                    /*delay*/0));
 
         }
 
@@ -339,7 +340,8 @@ public class JankDataProcessorTest {
                     SurfaceControl.JankData.JANK_NONE,
                     NANOS_PER_MS * ((long) i),
                     NANOS_PER_MS * ((long) i),
-                    NANOS_PER_MS * ((long) i)));
+                    NANOS_PER_MS * ((long) i),
+                    /*delay*/0));
 
         }
 
