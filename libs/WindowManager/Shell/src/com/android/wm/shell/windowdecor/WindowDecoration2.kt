@@ -103,6 +103,8 @@ abstract class WindowDecoration2<T>(
     var hasGlobalFocus = false
     /** The exclusion region of the task's display. */
     val exclusionRegion = Region.obtain()
+    /** The last calculated valid drag area of the task. */
+    var lastValidDragArea: Rect? = null
 
     private val onDisplaysChangedListener: OnDisplaysChangedListener =
         object : OnDisplaysChangedListener {
@@ -192,6 +194,7 @@ abstract class WindowDecoration2<T>(
                 if (params.setTaskVisibilityPositionAndCrop) {
                     finishT.hide(taskSurface)
                 }
+                lastValidDragArea = captionController?.calculateValidDragArea()
                 logD("relayout(task=%d) invisible task, skipping", taskInfo.taskId)
                 return null
             }
@@ -275,6 +278,8 @@ abstract class WindowDecoration2<T>(
                     wct = wct,
                 )
 
+            lastValidDragArea = captionController?.calculateValidDragArea()
+
             return RelayoutResult(
                 captionResult = captionResult,
                 taskWidth = taskBounds.width(),
@@ -301,8 +306,7 @@ abstract class WindowDecoration2<T>(
     private fun releaseCaptionController() {
         val wct = windowContainerTransactionSupplier()
         val t = surfaceControlTransactionSupplier()
-        captionController?.close(wct, t)
-        captionController = null
+        releaseCaptionController(wct, t)
         t.apply()
         if (!wct.isEmpty) {
             if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue) {
@@ -313,6 +317,16 @@ abstract class WindowDecoration2<T>(
                 taskOrganizer.applyTransaction(wct)
             }
         }
+    }
+
+    /** Releases the caption controller. Returns [true] if a caption view was actually released. */
+    private fun releaseCaptionController(
+        wct: WindowContainerTransaction,
+        t: SurfaceControl.Transaction,
+    ): Boolean {
+        val released = captionController?.close(wct, t) == true
+        captionController = null
+        return released
     }
 
     private fun updateTaskSurface(
@@ -543,8 +557,7 @@ abstract class WindowDecoration2<T>(
                 released = true
             }
 
-            released = released or (captionController?.close(wct, t) == true)
-            captionController = null
+            released = released or releaseCaptionController(wct, t)
 
             if (released) {
                 t.apply()

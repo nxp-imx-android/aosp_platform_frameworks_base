@@ -222,6 +222,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final DesktopModeUiEventLogger mDesktopModeUiEventLogger;
     private boolean mIsRecentsTransitionRunning = false;
     private boolean mIsDragging = false;
+
+    /** The last calculated valid drag area of the task. */
+    private Rect mLastValidDragArea = null;
     private final boolean mEnableDrawingAppHandle =
             DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue();
 
@@ -362,6 +365,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mDesktopConfig = desktopConfig;
         mWindowDecorationActions = windowDecorationActions;
         mLockTaskChangeListener = lockTaskChangeListener;
+    }
+
+    /** Returns the last valid drag area of the task or null if the task cannot be dragged. */
+    public Rect getLastValidDragArea() {
+        return mLastValidDragArea;
     }
 
     /**
@@ -581,6 +589,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             updateAppHeaderViewHolder(inFullImmersive, hasGlobalFocus);
         }
         Trace.endSection();
+
+        mLastValidDragArea = calculateValidDragArea();
 
         if (!hasGlobalFocus) {
             closeHandleMenu();
@@ -1429,9 +1439,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /**
      * Determine valid drag area for this task based on elements in the app chip.
      */
-    @Override
-    @NonNull
-    Rect calculateValidDragArea() {
+    @Nullable
+    private Rect calculateValidDragArea() {
+        // If task is not draggable, return null
+        if (!isAppHeader(mWindowDecorViewHolder)) {
+            return null;
+        }
         final int appTextWidth = ((AppHeaderViewHolder)
                 mWindowDecorViewHolder).getAppNameTextWidth();
         final int leftButtonsWidth = loadDimensionPixelSize(mContext.getResources(),
