@@ -50,6 +50,10 @@ public class CleanupTemporaryFilesRule implements TestRule {
      * @param directory the path to start from
      */
     public static void removeFilesRecursively(File directory) {
+        if (directory == null || !directory.exists() || directory.listFiles().length == 0) {
+            return;
+        }
+
         for (File childFile : directory.listFiles()) {
             if (childFile.isDirectory()) {
                 removeFilesRecursively(childFile);
