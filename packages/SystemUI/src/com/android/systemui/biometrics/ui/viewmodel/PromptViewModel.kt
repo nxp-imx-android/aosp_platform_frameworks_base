@@ -102,8 +102,9 @@ constructor(
     accessibilityManager: AccessibilityManager,
     promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
     shadeInteractor: ShadeInteractor,
+    promptIconViewModelFactory: PromptIconViewModel.Factory,
     biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
-    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    keyguardTransitionInteractor: KeyguardTransitionInteractor,
 ) {
     /** Viewmodel for the fallback view */
     val promptFallbackViewModel = promptFallbackViewModelFactory.create()
@@ -400,15 +401,12 @@ constructor(
         promptSelectorInteractor.prompt.map { it?.contentView }.distinctUntilChanged()
 
     /** ViewModel for the biometric icon in the prompt. */
-    val iconViewModel =
-        PromptIconViewModel(
-            this,
-            context,
-            biometricAuthIconViewModelFactory.create(
-                promptViewModel = this,
-                secureLockDeviceViewModel = null,
-            ),
+    val iconViewModel: PromptIconViewModel by lazy {
+        promptIconViewModelFactory.create(
+            promptViewModel = this,
+            biometricAuthIconViewModelFactory = biometricAuthIconViewModelFactory,
         )
+    }
 
     private val originalDescription =
         promptSelectorInteractor.prompt.map { it?.description ?: "" }.distinctUntilChanged()

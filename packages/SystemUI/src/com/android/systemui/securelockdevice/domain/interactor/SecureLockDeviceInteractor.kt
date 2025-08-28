@@ -28,6 +28,7 @@ import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFac
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.SecureLockDeviceLog
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -85,9 +86,9 @@ constructor(
             false,
         )
 
-    private val _shouldShowBiometricAuth = MutableStateFlow<Boolean>(false)
+    private val _isBiometricAuthVisible = MutableStateFlow<Boolean>(false)
     /** Whether the secure lock device biometric auth UI should be shown. */
-    val shouldShowBiometricAuth: StateFlow<Boolean> = _shouldShowBiometricAuth.asStateFlow()
+    val isBiometricAuthVisible: StateFlow<Boolean> = _isBiometricAuthVisible.asStateFlow()
 
     /**
      * The timestamp of the last strong face authentication success, or null otherwise. This is used
@@ -129,6 +130,11 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
+
+    /**
+     * When !SceneContainerFlags.isEnabled, runnable for when the disappear animation has finished.
+     */
+    private var disappearAnimationFinishedRunnable: Runnable? = null
 
     /** Called upon updates to strong biometric authenticated status. */
     fun onBiometricAuthenticatedStateUpdated(authState: PromptAuthState) {
@@ -190,8 +196,38 @@ constructor(
     // TODO: call when secure lock device biometric auth is shown
     fun onBiometricAuthRequested() {
         logBuffer.log(TAG, LogLevel.DEBUG, "onBiometricAuthRequested")
-        _shouldShowBiometricAuth.value = true
+        _isBiometricAuthVisible.value = true
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
+    }
+
+    /** Called when the biometric auth view or overlay is hidden. */
+    fun onBiometricAuthUiHidden() {
+        logBuffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            { bool1 = _isFullyUnlockedAndReadyToDismiss.value },
+            { "onBiometricAuthUiHidden: isFullyUnlockedAndReadyToDismiss=$bool1" },
+        )
+    }
+
+    // TODO (b/427071498): remove when SceneContainerFlag is removed
+    /**
+     * Called from legacy keyguard controller to set runnable with actions to complete when the
+     * disappear animation has finished.
+     */
+    fun setDisappearAnimationFinishedRunnable(finishRunnable: Runnable?) {
+        SceneContainerFlag.assertInLegacyMode()
+        disappearAnimationFinishedRunnable = finishRunnable
+    }
+
+    // TODO (b/427071498): remove when SceneContainerFlag is removed
+    /**
+     * Runs actions to complete when the disappear animation has finished in the legacy keyguard
+     * implementation.
+     */
+    fun onDisappearAnimationFinished() {
+        SceneContainerFlag.assertInLegacyMode()
+        disappearAnimationFinishedRunnable?.run()
     }
 
     companion object {

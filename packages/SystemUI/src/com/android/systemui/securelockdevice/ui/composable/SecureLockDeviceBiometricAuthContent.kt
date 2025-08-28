@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.systemui.securelockdevice.ui
+package com.android.systemui.securelockdevice.ui.composable
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
@@ -33,9 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -44,6 +44,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.width
 import com.android.systemui.biometrics.BiometricAuthIconAssets
+import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
 import kotlin.time.Duration.Companion.milliseconds
@@ -54,36 +55,41 @@ private val TO_GONE_DURATION = 500.milliseconds
 
 @Composable
 fun SecureLockDeviceContent(
-    secureLockDeviceViewModel: SecureLockDeviceBiometricAuthContentViewModel,
+    secureLockDeviceViewModelFactory: SecureLockDeviceBiometricAuthContentViewModel.Factory,
     modifier: Modifier = Modifier,
 ) {
-    val isVisible by secureLockDeviceViewModel.isVisible.collectAsStateWithLifecycle(false)
+    val secureLockDeviceViewModel =
+        rememberActivated(traceName = "SecureLockDeviceBiometricAuthContentViewModel") {
+            secureLockDeviceViewModelFactory.create()
+        }
+
+    val isVisible = secureLockDeviceViewModel.isVisible
     val visibleState = remember { MutableTransitionState(isVisible) }
 
-    // Feeds the isVisible value to the MutableTransitionState used by AnimatedVisibility below.
-    LaunchedEffect(isVisible) {
-        visibleState.targetState = isVisible
-        if (isVisible) {
-            // Start appear animation
-            // TODO: start CUJ_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR
-        }
-    }
+    /** This effect is run when the composable enters the composition */
+    LaunchedEffect(Unit) { secureLockDeviceViewModel.startAppearAnimation() }
 
-    // Watches the MutableTransitionState and calls onHideAnimationFinished when the authenticated
-    // animation is finished. This way the window view is removed from the view hierarchy only after
-    // the animation is complete.
+    /**
+     * Updates the [visibleState] that drives the [AnimatedVisibility] animation.
+     *
+     * When [SecureLockDeviceBiometricAuthContentViewModel.isVisible] changes, this effect updates
+     * the [MutableTransitionState.targetState] of the [visibleState], which triggers the animation.
+     */
+    LaunchedEffect(isVisible) { visibleState.targetState = isVisible }
+
+    /**
+     * Watches [visibleState] to track jank for the appear and disappear animations.
+     *
+     * When the disappear animation is complete, this calls
+     * [SecureLockDeviceBiometricAuthContentViewModel.onDisappearAnimationFinished] to allow the
+     * legacy keyguard to delay dismissal of the biometric auth composable until the animations on
+     * the UI have finished playing on the UI.
+     */
     LaunchedEffect(visibleState.currentState, visibleState.targetState, visibleState.isIdle) {
-        if (visibleState.currentState && !visibleState.targetState) { // Disappear animation started
-            // TODO: start CUJ_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR
-        } else if (visibleState.currentState && visibleState.isIdle) { // Appear animation complete
-            // TODO: end CUJ_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_APPEAR
-        } else if (
-            !visibleState.currentState && visibleState.isIdle
-        ) { // Disappear animation complete
-            // TODO: end CUJ_SECURE_LOCK_DEVICE_BIOMETRIC_AUTH_DISAPPEAR
-        }
+        // TODO(b/436359935) report interaction jank metrics
     }
 
+    /** Animates the biometric auth content in and out of view. */
     AnimatedVisibility(
         visibleState = visibleState,
         enter =
@@ -91,8 +97,7 @@ fun SecureLockDeviceContent(
         exit = fadeOut(tween(durationMillis = TO_GONE_DURATION.toInt(DurationUnit.MILLISECONDS))),
         modifier = modifier,
     ) {
-        val iconSize by
-            secureLockDeviceViewModel.iconViewModel.iconSize.collectAsStateWithLifecycle(Pair(0, 0))
+        val iconSize: Pair<Int, Int> = secureLockDeviceViewModel.iconViewModel.iconSizeState
         val iconBottomPadding =
             dimensionResource(R.dimen.biometric_prompt_portrait_medium_bottom_padding)
 
@@ -115,19 +120,18 @@ private fun BiometricIconLottie(
     modifier: Modifier = Modifier,
 ) {
     val iconViewModel = viewModel.iconViewModel
-    val iconAsset by iconViewModel.iconAsset.collectAsStateWithLifecycle(-1)
-    val iconViewRotation by iconViewModel.iconViewRotation.collectAsStateWithLifecycle(0f)
-    val iconContentDescription by iconViewModel.contentDescription.collectAsStateWithLifecycle("")
-    val shouldAnimateIconView by
-        iconViewModel.shouldAnimateIconView.collectAsStateWithLifecycle(false)
-    val shouldLoopIconView by iconViewModel.shouldLoopIconView.collectAsStateWithLifecycle(false)
-    val showingError by iconViewModel.showingError.collectAsStateWithLifecycle(false)
+    val iconState = viewModel.iconViewModel.hydratedIconState
+    val iconContentDescription = stringResource(iconState.contentDescriptionId)
+    val showingError = iconViewModel.showingErrorState
 
-    val lottie by rememberLottieComposition(LottieCompositionSpec.RawRes(iconAsset))
-    if (lottie == null) return
+    val lottie by
+        rememberLottieComposition(
+            spec = LottieCompositionSpec.RawRes(iconState.asset),
+            cacheKey = iconState.asset.toString(),
+        )
 
     val animatingFromSfpsAuthenticating =
-        BiometricAuthIconAssets.animatingFromSfpsAuthenticating(iconAsset)
+        BiometricAuthIconAssets.animatingFromSfpsAuthenticating(iconState.asset)
     val minFrame: Int =
         if (animatingFromSfpsAuthenticating) {
             // Skipping to error / success / unlock segment of animation
@@ -135,10 +139,10 @@ private fun BiometricIconLottie(
         } else {
             0
         }
-    // TODO: figure out lottie dynamic coloring
+    // TODO(b/437829879): figure out lottie dynamic coloring
 
     val numIterations =
-        if (shouldLoopIconView) {
+        if (iconState.shouldLoop) {
             LottieConstants.IterateForever
         } else {
             1
@@ -148,9 +152,9 @@ private fun BiometricIconLottie(
         composition = lottie,
         modifier =
             modifier
-                .graphicsLayer { rotationZ = iconViewRotation }
+                .graphicsLayer { rotationZ = iconState.rotation }
                 .semantics { contentDescription = iconContentDescription },
-        isPlaying = shouldAnimateIconView,
+        isPlaying = iconState.shouldAnimate,
         iterations = numIterations,
         clipSpec = LottieClipSpec.Frame(min = minFrame),
         contentScale = ContentScale.FillBounds,

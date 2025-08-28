@@ -25,13 +25,14 @@ import android.graphics.Rect
 import android.hardware.biometrics.Flags
 import android.security.Flags.secureLockDevice
 import android.util.RotationUtils
+import androidx.compose.runtime.getValue
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.biometrics.ui.PromptIconState
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.DisplayRotation
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
 import com.android.systemui.util.kotlin.Quad
@@ -64,7 +65,7 @@ constructor(
     @Application private val applicationContext: Context,
     private val displayStateInteractor: DisplayStateInteractor,
     udfpsOverlayInteractor: UdfpsOverlayInteractor,
-) : ExclusiveActivatable() {
+) : HydratedActivatable() {
 
     /** Biometric auth modalities for the UI to display */
     enum class BiometricAuthModalities {
@@ -110,22 +111,27 @@ constructor(
         }
 
     private val hasSfps: Flow<Boolean> =
-        if (promptViewModel != null) {
-            promptViewModel.modalities.map { it.hasSfps }
-        } else if (secureLockDevice() && secureLockDeviceViewModel != null) {
-            secureLockDeviceViewModel.enrolledStrongBiometrics.map { it.hasSfps }
-        } else {
-            flowOf(false)
-        }
+        promptViewModel?.modalities?.map { it.hasSfps }
+            ?: if (secureLockDevice() && secureLockDeviceViewModel != null) {
+                secureLockDeviceViewModel.enrolledStrongBiometrics.map { it.hasSfps }
+            } else {
+                flowOf(false)
+            }
 
+    /** Whether UDFPS is available on the biometric prompt. */
     val hasUdfps: Flow<Boolean> =
-        if (promptViewModel != null) {
-            promptViewModel.modalities.map { it.hasUdfps }
-        } else if (secureLockDevice() && secureLockDeviceViewModel != null) {
-            secureLockDeviceViewModel.enrolledStrongBiometrics.map { it.hasUdfps }
-        } else {
-            flowOf(false)
-        }
+        promptViewModel?.modalities?.map { it.hasUdfps }
+            ?: if (secureLockDevice() && secureLockDeviceViewModel != null) {
+                secureLockDeviceViewModel.enrolledStrongBiometrics.map { it.hasUdfps }
+            } else {
+                flowOf(false)
+            }
+    /**
+     * Hydrated state version of [hasUdfps] for use in composables. Should replace [hasUdfps] when
+     * legacy icon view / view-binder are fully migrated to compose.
+     */
+    val hasUdfpsState: Boolean by
+        hasUdfps.hydratedStateOf(traceName = "hasUdfps", initialValue = false)
 
     /** If the user is currently authenticating (i.e. at least one biometric is scanning). */
     val isAuthenticating: Flow<Boolean> =
@@ -136,6 +142,12 @@ constructor(
     /** Whether an error message is currently being shown. */
     val showingError: Flow<Boolean> =
         promptViewModel?.showingError ?: secureLockDeviceViewModel?.showingError ?: emptyFlow()
+    /**
+     * Hydrated state version of [showingError] for use in composables. Should replace
+     * [showingError] when legacy icon view / view-binder are fully migrated to compose.
+     */
+    val showingErrorState: Boolean by
+        showingError.hydratedStateOf(traceName = "showingError", initialValue = false)
 
     /** Whether the previous icon shown displayed an error. */
     internal val previousIconWasError: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -151,10 +163,15 @@ constructor(
             ?: emptyFlow()
 
     /** If the auth is pending confirmation. */
-    val isPendingConfirmation: Flow<Boolean> =
+    private val isPendingConfirmation: Flow<Boolean> =
         isAuthenticated.map { authState ->
             authState.isAuthenticated && authState.needsUserConfirmation
         }
+    val isPendingConfirmationState: Boolean by
+        isPendingConfirmation.hydratedStateOf(
+            traceName = "isPendingConfirmation",
+            initialValue = false,
+        )
 
     /** Current biometric icon asset. */
     val iconAsset: Flow<Int> =
@@ -340,6 +357,13 @@ constructor(
             }
         }
 
+    /**
+     * Hydrated state version of [iconSize] for use in composables. Should replace [iconSize] when
+     * legacy icon view / view-binder are fully migrated to compose.
+     */
+    val iconSizeState: Pair<Int, Int> by
+        iconSize.hydratedStateOf(traceName = "iconSize", initialValue = Pair(0, 0))
+
     /** Content description for iconView */
     val contentDescriptionId: Flow<Int> =
         activeBiometricAuthType.flatMapLatest { modalities ->
@@ -507,6 +531,24 @@ constructor(
                 )
             }
             .distinctUntilChanged()
+    /**
+     * Hydrated state version of [iconState] for use in composables. Should replace [iconState] when
+     * legacy icon view / view-binder are fully migrated to compose.
+     */
+    val hydratedIconState: PromptIconState by
+        iconState.hydratedStateOf(
+            traceName = "iconState",
+            initialValue =
+                PromptIconState(
+                    asset = -1,
+                    shouldAnimate = false,
+                    shouldLoop = false,
+                    contentDescriptionId = -1,
+                    rotation = 0f,
+                    activeBiometricAuthType = BiometricAuthModalities.None,
+                    showingError = false,
+                ),
+        )
 
     fun onConfigurationChanged(newConfig: Configuration) {
         displayStateInteractor.onConfigurationChanged(newConfig)
@@ -702,7 +744,8 @@ constructor(
         when {
             authState.isAuthenticatedAndExplicitlyConfirmed ->
                 R.string.biometric_dialog_face_icon_description_confirmed
-            authState.isAuthenticated -> R.string.biometric_dialog_face_icon_description_authenticated
+            authState.isAuthenticated ->
+                R.string.biometric_dialog_face_icon_description_authenticated
             isAuthenticating -> R.string.biometric_dialog_face_icon_description_authenticating
             showingError -> R.string.keyguard_face_failed
             else -> R.string.biometric_dialog_face_icon_description_idle
