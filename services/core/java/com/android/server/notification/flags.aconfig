@@ -212,16 +212,6 @@ flag {
 }
 
 flag {
-  name: "preferences_throws_on_invalid_uid"
-  namespace: "systemui"
-  description: "Throw IAE when calling getOrCreatePackagePreferences() with INVALID_UID."
-  bug: "430250142"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "show_noisy_bundled_notifications"
   namespace: "notifications"
   description: "If a classification arrived late and the notification made noise, show the notification as unclassified temporarily"
