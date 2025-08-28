@@ -371,13 +371,6 @@ flag {
 }
 
 flag {
-    name: "query_angle_choice_flag"
-    namespace: "gpu"
-    description: "Unconditionally querying ANGLE choice to fix a driver load malfunction"
-    bug: "408439360"
-}
-
-flag {
     name: "remove_app_profiler_pss_collection"
     is_exported: true
     namespace: "backstage_power"
@@ -431,6 +424,13 @@ flag {
      namespace: "system_performance"
      description: "Whether MessageQueue can use the new concurrent implementation in any process"
      bug: "418770969"
+}
+
+flag {
+    name: "use_query_angle_choice"
+    namespace: "gpu"
+    description: "Use new query for ANGLE choice"
+    bug: "408439360"
 }
 
 flag {
