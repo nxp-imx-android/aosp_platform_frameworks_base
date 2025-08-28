@@ -1975,12 +1975,7 @@ public class MediaRecorder implements AudioRouting,
      * may be expected when unnecessary multiple instances are used
      * at the same time.
      */
-    public void release() {
-        native_release();
-        mRecordingInfoImpl.endRecordingCallbackHandling();
-    }
-
-    private native void native_release();
+    public native void release();
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private static native final void native_init();
