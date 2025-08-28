@@ -499,6 +499,10 @@ class TaskFragmentContainer {
             return;
         }
         mPendingAppearedIntent = null;
+        if (mPendingAppearedActivities.isEmpty() && mAppearEmptyTimeout != null) {
+            // Nothing to wait. Can be cleanup now.
+            mAppearEmptyTimeout.run();
+        }
     }
 
     boolean hasActivity(@NonNull IBinder activityToken) {
@@ -548,6 +552,10 @@ class TaskFragmentContainer {
             if (mPendingAppearedIntent != null || !mPendingAppearedActivities.isEmpty()) {
                 mAppearEmptyTimeout = () -> {
                     synchronized (mController.mLock) {
+                        if (mAppearEmptyTimeout == null) {
+                            // The timeout has already been executed.
+                            return;
+                        }
                         Log.w(SplitController.TAG,
                                 "Fail to wait for activity start in TaskFragment=" + this);
                         mAppearEmptyTimeout = null;

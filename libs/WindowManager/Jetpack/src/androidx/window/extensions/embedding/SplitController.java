@@ -1121,8 +1121,9 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                 }
 
                 // Update the latest taskFragmentInfo and perform necessary clean-up
-                container.setInfo(wct, taskFragmentInfo);
+                // Clear pending first, so that the #setInfo will evaluate for clean-up
                 container.clearPendingAppearedActivities();
+                container.setInfo(wct, taskFragmentInfo);
                 if (container.isEmpty()) {
                     mTransactionManager.getCurrentTransactionRecord()
                             .setOriginType(TASK_FRAGMENT_TRANSIT_CLOSE);
@@ -3204,6 +3205,12 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                         // in case the startActivity fails, so that we can cleanup early.
                         // If the TF is an existing one, this Intent will not be kept as a pending
                         // appeared Intent.
+                        mCurrentPendingAppearedIntent = intent;
+                    } else if (launchedInTaskFragment.isEmpty()
+                            && launchedInTaskFragment.getPendingAppearedIntent() == null) {
+                        // When this Intent is added to an empty TaskFragment, make sure to wait for
+                        // this Intent launch before consider cleanup.
+                        launchedInTaskFragment.setPendingAppearedIntent(intent);
                         mCurrentPendingAppearedIntent = intent;
                     }
                 } else {
