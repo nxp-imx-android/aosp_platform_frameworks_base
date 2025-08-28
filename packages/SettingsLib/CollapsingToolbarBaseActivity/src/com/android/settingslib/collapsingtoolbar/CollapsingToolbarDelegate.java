@@ -26,6 +26,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.text.LineBreakConfig;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.android.settingslib.collapsingtoolbar.widget.ScrollableToolbarItemLayout;
 import com.android.settingslib.widget.SettingsThemeHelper;
@@ -511,6 +515,37 @@ public class CollapsingToolbarDelegate {
             return;
         }
         mActionButton.setContentDescription(contentDescription);
+    }
+
+    /**
+     * Set the state of CollapsingToolbar to collapsed when multiple fragments share a single
+     * FragmentManager within an activity.
+     */
+    public void registerToolbarCollapseBehavior(@NonNull Activity activity) {
+        if (!(activity instanceof FragmentActivity)) {
+            return;
+        }
+        FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
+        fragmentManager.registerFragmentLifecycleCallbacks(
+            new FragmentManager.FragmentLifecycleCallbacks() {
+                @Override
+                public void onFragmentViewCreated(@NonNull FragmentManager fm, @NonNull Fragment f,
+                        @NonNull View v, @Nullable Bundle savedInstanceState) {
+                    super.onFragmentViewCreated(fm, f, v, savedInstanceState);
+                    if (!SettingsThemeHelper.isExpressiveTheme(activity)) {
+                        return;
+                    }
+                    // Check if multiple fragments use the same activity
+                    if (fm.getBackStackEntryCount() > 0) {
+                        AppBarLayout appBarLayout = getAppBarLayout();
+                        if (appBarLayout != null) {
+                            appBarLayout.post(() -> appBarLayout.setExpanded(false, true));
+                        } else {
+                            Log.e(TAG, "AppBarLayout is null, can't collapse toolbar.");
+                        }
+                    }
+                }
+            }, false);
     }
 
     private void autoSetCollapsingToolbarLayoutScrolling(AppBarLayout appBarLayout) {
