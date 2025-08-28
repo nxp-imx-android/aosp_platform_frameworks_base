@@ -417,6 +417,7 @@ public final class SensorPrivacyService extends SystemService {
             }
 
             int sensor;
+            boolean isPhoneCall = false;
             if (result == MODE_IGNORED) {
                 if (code == OP_RECORD_AUDIO || code == OP_PHONE_CALL_MICROPHONE
                         || code == OP_RECEIVE_EXPLICIT_USER_INTERACTION_AUDIO) {
@@ -426,13 +427,16 @@ public final class SensorPrivacyService extends SystemService {
                 } else {
                     return;
                 }
+                if (code == OP_PHONE_CALL_MICROPHONE || code == OP_PHONE_CALL_CAMERA) {
+                    isPhoneCall = true;
+                }
             } else {
                 return;
             }
 
             final long token = Binder.clearCallingIdentity();
             try {
-                onSensorUseStarted(uid, packageName, sensor);
+                onSensorUseStarted(uid, packageName, sensor, isPhoneCall);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
@@ -446,7 +450,8 @@ public final class SensorPrivacyService extends SystemService {
          * @param sensor The sensor that is attempting to be used
          */
         @RequiresPermission(Manifest.permission.OBSERVE_SENSOR_PRIVACY)
-        private void onSensorUseStarted(int uid, String packageName, int sensor) {
+        private void onSensorUseStarted(int uid, String packageName, int sensor,
+                boolean isPhoneCall) {
             UserHandle user = UserHandle.of(mCurrentUser);
 
             if (com.android.internal.camera.flags.Flags.cameraPrivacyAllowlist()
@@ -458,9 +463,12 @@ public final class SensorPrivacyService extends SystemService {
                 return;
             }
 
-            if (uid == Process.SYSTEM_UID) {
+            if (uid == Process.SYSTEM_UID
+                    && !(com.android.server.telecom.flags.Flags.resolveHiddenDependenciesTwo()
+                    && isPhoneCall)) {
                 // If the system uid is being blamed for sensor access, the ui must be shown
-                // explicitly using SensorPrivacyManager#showSensorUseDialog
+                // explicitly using SensorPrivacyManager#showSensorUseDialog. An exception is made
+                // for phone calls which are handled by the Telecom subsystem.
                 return;
             }
 
