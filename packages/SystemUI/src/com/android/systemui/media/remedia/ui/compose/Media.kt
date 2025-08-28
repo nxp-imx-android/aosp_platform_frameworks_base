@@ -109,6 +109,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -144,7 +145,9 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asImageBitmap
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.PagerDots
+import com.android.systemui.common.ui.compose.byLayoutId
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.common.ui.compose.singleton
 import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
@@ -458,7 +461,7 @@ private fun ContentScope.CardForeground(
                 fillHeight = fillHeight,
                 colorScheme = colorScheme,
                 modifier =
-                    Modifier.graphicsLayer {
+                    Modifier.layoutId(Media.LayoutId.CardForeground).graphicsLayer {
                         compositingStrategy = CompositingStrategy.ModulateAlpha
                         alpha = 1f - gutsAlphaAnimatable.value
                     },
@@ -468,7 +471,7 @@ private fun ContentScope.CardForeground(
                 viewModel = viewModel.guts,
                 colorScheme = colorScheme,
                 modifier =
-                    Modifier.graphicsLayer {
+                    Modifier.layoutId(Media.LayoutId.CardGuts).graphicsLayer {
                         compositingStrategy = CompositingStrategy.ModulateAlpha
                         alpha = gutsAlphaAnimatable.value
                     },
@@ -476,12 +479,13 @@ private fun ContentScope.CardForeground(
         },
         modifier = modifier,
     ) { measurables, constraints ->
-        check(measurables.size == 2)
-        val contentPlaceable = measurables[0].measure(constraints)
+        val measurableByLayoutId = measurables.byLayoutId<Media.LayoutId>()
+        val contentPlaceable =
+            measurableByLayoutId[Media.LayoutId.CardForeground]!!.measure(constraints)
         // Guts should always have the exact dimensions as the content, even if we don't show the
         // content.
         val gutsPlaceable =
-            measurables[1].measure(
+            measurableByLayoutId[Media.LayoutId.CardGuts]!!.measure(
                 Constraints.fixed(contentPlaceable.width, contentPlaceable.height)
             )
 
@@ -1412,7 +1416,8 @@ private fun RevealedContent(
             Icon(
                 icon = viewModel.icon,
                 modifier =
-                    Modifier.size(48.dp)
+                    Modifier.layoutId(Media.LayoutId.CardRevealedContent)
+                        .size(48.dp)
                         .padding(12.dp)
                         .graphicsLayer {
                             alpha = abs(revealAmount()).fastCoerceIn(0f, 1f)
@@ -1423,8 +1428,9 @@ private fun RevealedContent(
         },
         modifier = modifier,
     ) { measurables, constraints ->
-        check(measurables.size == 1)
-        val placeable = measurables[0].measure(constraints)
+        val placeable =
+            measurables.singleton(Media.LayoutId.CardRevealedContent).measure(constraints)
+
         val totalWidth =
             min(horizontalPadding.roundToPx() * 2 + placeable.measuredWidth, constraints.maxWidth)
 
@@ -1546,6 +1552,12 @@ object Media {
             val name = "additional_action_$index"
             return ElementKey(debugName = name, identity = name)
         }
+    }
+
+    enum class LayoutId {
+        CardForeground,
+        CardGuts,
+        CardRevealedContent,
     }
 }
 
