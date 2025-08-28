@@ -68,8 +68,14 @@ public class AndroidKeyStoreProvider extends Provider {
     private static final String DESEDE_SYSTEM_PROPERTY =
             "ro.hardware.keystore_desede";
 
-    // Conscrypt returns the Ed25519 OID as the JCA key algorithm.
+    // Conscrypt added EdDSA classes to the "OpenSSLProvider" in
+    // https://github.com/google/conscrypt/commit/5473d34964ce77ab2594ae0cc0ecf74931f28cc3.
+    // The public key class returns "EdDSA" as the JCA key algorithm name. Before this class was
+    // introduced, the OpenSSLX509Certificate class would fall back to using the OID as the
+    // algorithm name.
     private static final String ED25519_OID = "1.3.101.112";
+    private static final String EDDSA_ALGORITHM_NAME = "EdDSA";
+
     // Conscrypt returns "XDH" as the X25519 JCA key algorithm.
     private static final String X25519_ALIAS = "XDH";
 
@@ -245,7 +251,11 @@ public class AndroidKeyStoreProvider extends Provider {
         } else if (KeyProperties.KEY_ALGORITHM_RSA.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreRSAPublicKey(descriptor, metadata,
                     iSecurityLevel, (RSAPublicKey) publicKey);
-        } else if (ED25519_OID.equalsIgnoreCase(jcaKeyAlgorithm)) {
+        } else if (ED25519_OID.equalsIgnoreCase(jcaKeyAlgorithm)
+                || EDDSA_ALGORITHM_NAME.equalsIgnoreCase(jcaKeyAlgorithm)) {
+            // This condition should be updated to only accept "EdDSA" as the algorithm name once
+            // https://github.com/google/conscrypt/commit/5473d34964ce77ab2594ae0cc0ecf74931f28cc3
+            // is merged into Android.
             final byte[] publicKeyEncoded = publicKey.getEncoded();
             return new AndroidKeyStoreEdECPublicKey(descriptor, metadata, ED25519_OID,
                     iSecurityLevel, publicKeyEncoded);
