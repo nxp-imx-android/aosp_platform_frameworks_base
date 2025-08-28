@@ -124,7 +124,7 @@ class JavaClassWriter(val writer: TabbedWriter, val className: String) : TabbedW
                 append(" ")
 
                 if (isStatic) {
-                    append(" static ")
+                    append("static ")
                 }
 
                 if (!returnType.isNullOrEmpty()) {
@@ -136,6 +136,9 @@ class JavaClassWriter(val writer: TabbedWriter, val className: String) : TabbedW
             }
         ) {
             writer.args()
+            if (!writer.isFirstArg) {
+                completeLine("")
+            }
         }
 
         braceBlock { writer.contents() }
@@ -154,7 +157,10 @@ class JavaMethodWriter(
     val isVoid: Boolean = returnType == "void"
 
     var isFirstArg = true
+        private set
+
     var callArgs = StringBuilder()
+        private set
 
     fun arg(name: String, type: String) {
         if (!isFirstArg) {
