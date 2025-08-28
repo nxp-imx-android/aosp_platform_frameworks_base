@@ -3194,7 +3194,6 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                     transactionRecord.apply(false /* shouldApplyIndependently */);
                     // Amend the request to let the WM know that the activity should be placed in
                     // the dedicated container.
-                    // TODO(b/229680885): skip override launching TaskFragment token by split-rule
                     final IBinder tfToken = launchedInTaskFragment.getTaskFragmentToken();
                     options.putBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN, tfToken);
                     if (activityEmbeddingDelayTaskFragmentFinishForActivityLaunch()) {
