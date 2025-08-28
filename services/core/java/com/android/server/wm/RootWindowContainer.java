@@ -1577,6 +1577,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             return false;
         }
 
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+            if (!display.mDisplay.canHostTasks()) {
+                // Can't launch home on display that cannot host tasks.
+                return false;
+            }
+        }
+
         return true;
     }
 
