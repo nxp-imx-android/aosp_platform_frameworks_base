@@ -305,6 +305,7 @@ flag {
     description: "Add a new category to get the built in displays."
     bug: "293651324"
     is_fixed_read_only: false
+    is_exported: true
 }
 
 flag {
