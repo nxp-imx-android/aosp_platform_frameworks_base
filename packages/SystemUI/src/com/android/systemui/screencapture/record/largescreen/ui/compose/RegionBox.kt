@@ -461,50 +461,57 @@ fun RegionBox(
                 // button [RegionDimensionsPill]'s size, which is only known after measurement.
                 SubcomposeLayout { constraints ->
                     // First, measure the pill [RegionDimensionsPill] to get its actual height.
-                    val dimensionPillPlaceable =
+                    val dimensionPillMeasurables =
                         subcompose("dimensionPill") {
-                                val pillVerticalSpacingDp = 16.dp
-                                RegionDimensionsPill(
-                                    widthPx = currentRect.width.roundToInt(),
-                                    heightPx = currentRect.height.roundToInt(),
-                                    modifier =
-                                        Modifier.layout { measurable, _ ->
-                                            val pillInnerPlaceable =
-                                                measurable.measure(Constraints())
-                                            val pillVerticalSpacingPx =
-                                                with(density) { pillVerticalSpacingDp.toPx() }
-                                            // Center the pill horizontally relative to the region
-                                            // box's width.
-                                            val pillX =
-                                                (currentRect.width - pillInnerPlaceable.width) / 2
+                            val pillVerticalSpacingDp = 16.dp
+                            RegionDimensionsPill(
+                                widthPx = currentRect.width.roundToInt(),
+                                heightPx = currentRect.height.roundToInt(),
+                                modifier =
+                                    Modifier.layout { measurable, _ ->
+                                        val pillInnerPlaceable = measurable.measure(Constraints())
+                                        val pillVerticalSpacingPx =
+                                            with(density) { pillVerticalSpacingDp.toPx() }
+                                        // Center the pill horizontally relative to the region
+                                        // box's width.
+                                        val pillX =
+                                            (currentRect.width - pillInnerPlaceable.width) / 2
 
-                                            // Calculate the Y position of the pill, and restrict it
-                                            // to stay within the screen bounds.
-                                            val pillY =
-                                                (currentRect.height + pillVerticalSpacingPx)
-                                                    .coerceAtMost(
-                                                        state.screenHeight -
-                                                            currentRect.top -
-                                                            pillInnerPlaceable.height -
-                                                            pillVerticalSpacingPx
-                                                    )
-                                            layout(
-                                                pillInnerPlaceable.width,
-                                                pillInnerPlaceable.height,
-                                            ) {
-                                                pillInnerPlaceable.placeRelative(
-                                                    pillX.roundToInt(),
-                                                    pillY.roundToInt(),
+                                        // Calculate the Y position of the pill, and restrict it
+                                        // to stay within the screen bounds.
+                                        val pillY =
+                                            (currentRect.height + pillVerticalSpacingPx)
+                                                .coerceAtMost(
+                                                    state.screenHeight -
+                                                        currentRect.top -
+                                                        pillInnerPlaceable.height -
+                                                        pillVerticalSpacingPx
                                                 )
-                                            }
-                                        },
-                                )
-                            }
-                            .first()
-                            .measure(constraints)
+                                        layout(
+                                            pillInnerPlaceable.width,
+                                            pillInnerPlaceable.height,
+                                        ) {
+                                            pillInnerPlaceable.placeRelative(
+                                                pillX.roundToInt(),
+                                                pillY.roundToInt(),
+                                            )
+                                        }
+                                    },
+                            )
+                        }
+
+                    val dimensionPillPlaceable =
+                        if (
+                            state.dragMode == DragMode.RESIZING ||
+                                state.dragMode == DragMode.DRAWING
+                        ) {
+                            dimensionPillMeasurables.first().measure(constraints)
+                        } else {
+                            null
+                        }
 
                     val dimensionPillHeightDp =
-                        with(density) { dimensionPillPlaceable.height.toDp() }
+                        dimensionPillPlaceable?.let { with(density) { it.height.toDp() } } ?: 0.dp
 
                     // To determine the button's placement, we first need to know its size. We
                     // subcompose the button once just to measure it.
@@ -676,7 +683,7 @@ fun RegionBox(
                         // SubcomposeLayout to the correct on-screen position, ensuring all
                         // elements move as a single, synchronized unit.
                         selectionBoxPlaceable.placeRelative(0, 0)
-                        dimensionPillPlaceable.placeRelative(0, 0)
+                        dimensionPillPlaceable?.placeRelative(0, 0)
                         captureButtonPlaceable.placeRelative(0, 0)
                     }
                 }
