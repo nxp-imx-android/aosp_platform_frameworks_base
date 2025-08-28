@@ -20,7 +20,9 @@ import android.app.StatusBarManager.WINDOW_STATE_HIDDEN
 import android.app.StatusBarManager.WINDOW_STATE_HIDING
 import android.app.StatusBarManager.WINDOW_STATE_SHOWING
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
+import android.content.Context
 import android.graphics.Insets
+import android.graphics.Region
 import android.hardware.display.DisplayManagerGlobal
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -33,6 +35,7 @@ import android.view.InputDevice
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewRootImpl
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
@@ -159,10 +162,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
             )
             .thenReturn(mStatusOverlayHoverListener)
 
-        val parent = FrameLayout(mContext) // add parent to keep layout params
-        view =
-            LayoutInflater.from(mContext).inflate(R.layout.status_bar, parent, false)
-                as PhoneStatusBarView
+        view = createView(mContext)
         controller = createAndInitController(view)
 
         whenever(
@@ -183,18 +183,14 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
                 )
             )
 
-        val secondaryDisplayParent =
-            FrameLayout(contextForSecondaryDisplay) // add parent to keep layout params
-        viewForSecondaryDisplay =
-            LayoutInflater.from(contextForSecondaryDisplay)
-                .inflate(R.layout.status_bar, secondaryDisplayParent, false) as PhoneStatusBarView
+        viewForSecondaryDisplay = createView(contextForSecondaryDisplay)
         createAndInitController(viewForSecondaryDisplay)
     }
 
     @Test
     @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun onViewAttachedAndDrawn_addStatusBarConfigurationControllerCallback() {
-        val view = createViewMock(view)
+        attachToWindow(view)
 
         controller = createAndInitController(view)
 
@@ -204,7 +200,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun onViewAttachedAndDrawn_doesNotAddStatusBarConfigurationControllerCallback() {
-        val view = createViewMock(view)
+        attachToWindow(view)
 
         controller = createAndInitController(view)
 
@@ -213,7 +209,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     fun onViewAttachedAndDrawn_darkReceiversRegistered() {
-        val view = createViewMock(view)
+        attachToWindow(view)
 
         controller = createAndInitController(view)
 
@@ -225,7 +221,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun onViewAttachedAndDrawn_connectedDisplaysFlagOff_doesNotSetInteractionGate() {
-        val view = createViewMock(view)
+        attachToWindow(view)
 
         controller = createAndInitController(view)
 
@@ -235,7 +231,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun onViewAttachedAndDrawn_connectedDisplaysFlagOn_defaultDisplay_doesNotSetInteractionGate() {
-        val view = createViewMock(view)
+        attachToWindow(view)
 
         controller = createAndInitController(view)
 
@@ -245,7 +241,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun onViewAttachedAndDrawn_connectedDisplaysFlagOn_secondaryDisplay_setsInteractionGate() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
 
         controller = createAndInitController(viewForSecondaryDisplay)
 
@@ -254,7 +250,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     fun onViewAttached_containersInteractive() {
-        val view = createViewMock(view)
+        attachToWindow(view)
         val endSideContainer = spy(view.requireViewById<View>(R.id.system_icons))
         whenever(view.requireViewById<View>(R.id.system_icons)).thenReturn(endSideContainer)
         val startSideContainer = spy(view.requireViewById<View>(R.id.status_bar_start_side_content))
@@ -271,7 +267,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     fun onViewDetached_darkReceiversUnregistered() {
-        val view = createViewMock(view)
+        attachToWindow(view)
 
         controller = createAndInitController(view)
 
@@ -360,7 +356,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_interactionsAllowed_shadeReceivesEvent() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(shadeViewController.isViewEnabled).thenReturn(true)
@@ -383,7 +379,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_interactionsNotAllowed_shadeDoesNotReceiveEvent() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(shadeViewController.isViewEnabled).thenReturn(true)
@@ -579,7 +575,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun onTouch_withMouseOnEndSideIcons_flagOn_propagatedToShadeDisplayPolicy() {
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val event = getActionUpEventFromSource(InputDevice.SOURCE_MOUSE)
 
@@ -592,7 +588,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun onTouch_withMouseOnStartSideIcons_flagOn_propagatedToShadeDisplayPolicy() {
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val event = getActionUpEventFromSource(InputDevice.SOURCE_MOUSE)
 
@@ -605,7 +601,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun onTouch_withMouseOnSystemIcons_flagOff_notPropagatedToShadeDisplayPolicy() {
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val event = getActionUpEventFromSource(InputDevice.SOURCE_MOUSE)
 
@@ -620,7 +616,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
     fun shouldAllowInteractions_shadeGoesAroundFlagOff_returnsFalse() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
         val argumentCaptor = argumentCaptor<BooleanSupplier>()
         verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
@@ -631,7 +627,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun shouldAllowInteractions_defaultShadeDisplayPolicy_returnsFalse() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
         val argumentCaptor = argumentCaptor<BooleanSupplier>()
         verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
@@ -643,7 +639,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun shouldAllowInteractions_statusBarTouchShadeDisplayPolicy_returnsTrue() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
         val argumentCaptor = argumentCaptor<BooleanSupplier>()
         verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
@@ -655,7 +651,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME, ShadeWindowGoesAround.FLAG_NAME)
     fun shouldAllowInteractions_shadePolicyChanges_updatesReturnValue() {
-        val viewForSecondaryDisplay = createViewMock(viewForSecondaryDisplay)
+        attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
         val argumentCaptor = argumentCaptor<BooleanSupplier>()
         verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
@@ -676,7 +672,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
             val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
 
-            val view = createViewMock(view)
+            attachToWindow(view)
             controller = createAndInitController(view)
             val endSideContainer = view.requireViewById<View>(R.id.system_icons)
             endSideContainer.dispatchTouchEvent(
@@ -690,7 +686,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     fun shadeIsExpandedOnEndSideContentMouseClick_singleShade_expandsNotificationsShade() {
         kosmos.enableSingleShade()
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val endSideContainer = view.requireViewById<View>(R.id.system_icons)
         endSideContainer.dispatchTouchEvent(getActionUpEventFromSource(InputDevice.SOURCE_MOUSE))
@@ -703,7 +699,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @EnableSceneContainer
     fun shadeIsExpandedOnEndSideContentMouseClick_dualShade_expandsQuickSettingsShade() {
         kosmos.enableDualShade()
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val endSideContainer = view.requireViewById<View>(R.id.system_icons)
         endSideContainer.dispatchTouchEvent(getActionUpEventFromSource(InputDevice.SOURCE_MOUSE))
@@ -714,7 +710,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     fun shadeIsExpandedOnStartSideContentMouseClick() {
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
 
         val startSideContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
@@ -727,7 +723,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     fun shadeIsExpandedOnStartSideContentTap_flagOn() {
         Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
 
         val startSideContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
@@ -745,7 +741,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Test
     fun shadeIsNotExpandedOnStartSideContentTap_flagoff() {
         Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
 
         val startSideContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
@@ -763,7 +759,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     fun statusIconContainerIsHandlingTouchScreenTaps_singleShade_expandsNotificationsShade_flagOn() {
         Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
         kosmos.enableSingleShade()
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(
@@ -782,7 +778,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     fun statusIconContainerIsNotHandlingTouchScreenTaps_flagOff() {
         Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
         kosmos.enableSingleShade()
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(
@@ -800,7 +796,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     fun statusIconContainerIsHandlingTouchScreenTaps_dualShade_expandsQuickSettingsShade_flagOn() {
         Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
         kosmos.enableDualShade()
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val endSideContainer = view.requireViewById<View>(R.id.system_icons)
         endSideContainer.dispatchTouchEvent(
@@ -819,7 +815,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     fun statusIconContainerIsNotHandlingTouchScreenTaps_dualShade_flagOff() {
         Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
         kosmos.enableDualShade()
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         val endSideContainer = view.requireViewById<View>(R.id.system_icons)
         endSideContainer.dispatchTouchEvent(
@@ -846,7 +842,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     fun shadeIsNotExpandedOnStatusBarGeneralClick() {
-        val view = createViewMock(view)
+        attachToWindow(view)
         controller = createAndInitController(view)
         view.performClick()
         verify(shadeControllerImpl, never()).animateExpandShade()
@@ -858,12 +854,22 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         return captor.lastValue
     }
 
-    private fun createViewMock(view: PhoneStatusBarView): PhoneStatusBarView {
-        val mView = spy(view)
+    private fun createView(context: Context): PhoneStatusBarView {
+        val parent = FrameLayout(context) // add parent to keep layout params
+        val view =
+            spy(
+                LayoutInflater.from(context).inflate(R.layout.status_bar, parent, false)
+                    as PhoneStatusBarView
+            )
+        whenever(view.viewRootImpl).thenReturn(mock(ViewRootImpl::class.java))
+        view.updateTouchableRegion(TOUCHABLE_REGION)
+        return view
+    }
+
+    private fun attachToWindow(view: PhoneStatusBarView) {
         val viewTreeObserver = mock(ViewTreeObserver::class.java)
-        whenever(mView.viewTreeObserver).thenReturn(viewTreeObserver)
-        whenever(mView.isAttachedToWindow).thenReturn(true)
-        return mView
+        whenever(view.viewTreeObserver).thenReturn(viewTreeObserver)
+        whenever(view.isAttachedToWindow).thenReturn(true)
     }
 
     private fun createAndInitController(view: PhoneStatusBarView): PhoneStatusBarViewController {
@@ -900,5 +906,6 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         const val DISPLAY_ID = 0
         const val SECONDARY_DISPLAY_ID = 2
+        val TOUCHABLE_REGION = Region(0, 0, 500, 500)
     }
 }
