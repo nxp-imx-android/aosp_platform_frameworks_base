@@ -29,7 +29,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -331,6 +330,8 @@ public class SliderPreference extends Preference {
     public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
         holder.itemView.setOnKeyListener(mSliderKeyListener);
+        // SliderPreference is not clickable under normal conditions.
+        holder.itemView.setClickable(false);
         mSlider = (Slider) holder.findViewById(R.id.slider);
 
         if (mSlider == null) {
@@ -354,11 +355,11 @@ public class SliderPreference extends Preference {
         }
         final CharSequence title = getTitle();
         if (!TextUtils.isEmpty(mSliderContentDescription)) {
-            mSlider.setContentDescription(mSliderContentDescription);
+            holder.itemView.setContentDescription(mSliderContentDescription);
         } else if (!TextUtils.isEmpty(title)) {
-            mSlider.setContentDescription(title);
+            holder.itemView.setContentDescription(title);
         } else {
-            mSlider.setContentDescription(null);
+            holder.itemView.setContentDescription(null);
         }
         if (!TextUtils.isEmpty(mSliderStateDescription)) {
             mSlider.setStateDescription(mSliderStateDescription);
@@ -410,16 +411,6 @@ public class SliderPreference extends Preference {
 
         ImageView iconEndView = (ImageView) holder.findViewById(R.id.icon_end);
         updateIconEndIfNeeded(iconEndView);
-
-        // Remove the accessibility label of click action
-        holder.itemView.getRootView().setAccessibilityDelegate(new View.AccessibilityDelegate() {
-            @Override
-            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
-                super.onInitializeAccessibilityNodeInfo(host, info);
-                info.removeAction(AccessibilityNodeInfo.ACTION_CLICK);
-                info.setClickable(false);
-            }
-        });
     }
 
     /**
@@ -580,8 +571,10 @@ public class SliderPreference extends Preference {
      * @see #getShowSliderValue()
      */
     public void setShowSliderValue(boolean showSliderValue) {
-        mShowSliderValue = showSliderValue;
-        notifyChanged();
+        if (showSliderValue != mShowSliderValue) {
+            mShowSliderValue = showSliderValue;
+            notifyChanged();
+        }
     }
 
     public void setLabelFormater(@Nullable LabelFormatter formater) {
@@ -613,9 +606,9 @@ public class SliderPreference extends Preference {
      * @param contentDescription The content description of the {@link Slider}
      */
     public void setSliderContentDescription(@Nullable CharSequence contentDescription) {
-        mSliderContentDescription = contentDescription;
-        if (mSlider != null) {
-            mSlider.setContentDescription(contentDescription);
+        if (!TextUtils.equals(contentDescription, mSliderContentDescription)) {
+            mSliderContentDescription = contentDescription;
+            notifyChanged();
         }
     }
 
