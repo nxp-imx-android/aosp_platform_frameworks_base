@@ -39,11 +39,13 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.RecordDetailsTargetViewModel
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 
 @Composable
 fun RecordDetailsSettings(
-    viewModel: ScreenCaptureRecordParametersViewModel,
+    parametersViewModel: ScreenCaptureRecordParametersViewModel,
+    targetViewModel: RecordDetailsTargetViewModel,
     drawableLoaderViewModel: DrawableLoaderViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -52,7 +54,19 @@ fun RecordDetailsSettings(
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(28.dp),
     ) {
-        Column(modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(vertical = 12.dp).fillMaxWidth(),
+        ) {
+            CaptureTargetSelector(
+                items = targetViewModel.items,
+                selectedItemIndex = targetViewModel.selectedIndex,
+                onItemSelected = { targetViewModel.select(it) },
+                itemToString = { stringResource(it.labelRes) },
+                isItemEnabled = { it.isSelectable },
+                viewModel = drawableLoaderViewModel,
+                modifier = Modifier.padding(vertical = 12.dp),
+            )
             RichSwitch(
                 icon =
                     loadIcon(
@@ -61,8 +75,8 @@ fun RecordDetailsSettings(
                         contentDescription = null,
                     ),
                 label = stringResource(R.string.screen_record_record_device_audio_label),
-                checked = viewModel.shouldRecordDevice,
-                onCheckedChange = { viewModel.shouldRecordDevice = it },
+                checked = parametersViewModel.shouldRecordDevice,
+                onCheckedChange = { parametersViewModel.shouldRecordDevice = it },
                 modifier = Modifier,
             )
             RichSwitch(
@@ -73,11 +87,22 @@ fun RecordDetailsSettings(
                         contentDescription = null,
                     ),
                 label = stringResource(R.string.screen_record_record_microphone_label),
-                checked = viewModel.shouldRecordMicrophone,
-                onCheckedChange = { viewModel.shouldRecordMicrophone = it },
+                checked = parametersViewModel.shouldRecordMicrophone,
+                onCheckedChange = { parametersViewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
-
+            RichSwitch(
+                icon =
+                    loadIcon(
+                        viewModel = drawableLoaderViewModel,
+                        resId = R.drawable.ic_selfie_expressive,
+                        contentDescription = null,
+                    ),
+                label = stringResource(R.string.screen_record_should_show_camera_label),
+                checked = parametersViewModel.shouldShowFrontCamera == true,
+                onCheckedChange = { parametersViewModel.setShouldShowFrontCamera(it) },
+                modifier = Modifier,
+            )
             RichSwitch(
                 icon =
                     loadIcon(
@@ -86,8 +111,8 @@ fun RecordDetailsSettings(
                         contentDescription = null,
                     ),
                 label = stringResource(R.string.screen_record_should_show_touches_label),
-                checked = viewModel.shouldShowTaps == true,
-                onCheckedChange = { viewModel.setShouldShowTaps(it) },
+                checked = parametersViewModel.shouldShowTaps == true,
+                onCheckedChange = { parametersViewModel.setShouldShowTaps(it) },
                 modifier = Modifier,
             )
         }

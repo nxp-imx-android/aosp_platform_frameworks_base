@@ -45,6 +45,11 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
             .map { it.shouldShowTaps }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowTaps", null)
 
+    val shouldShowFrontCamera: Boolean? by
+        interactor.parameters
+            .map { it.shouldShowFrontCamera }
+            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowFrontCamera", null)
+
     var shouldRecordDevice: Boolean
         get() =
             audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
@@ -95,6 +100,10 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
 
     fun setShouldShowTaps(shouldShowTaps: Boolean) {
         interactor.setShouldShowTaps(shouldShowTaps)
+    }
+
+    fun setShouldShowFrontCamera(shouldShowFrontCamera: Boolean) {
+        interactor.setShouldShowFrontCamera(shouldShowFrontCamera)
     }
 
     @AssistedFactory
