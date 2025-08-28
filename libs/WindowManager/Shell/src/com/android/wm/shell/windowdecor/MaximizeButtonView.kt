@@ -113,7 +113,7 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
             requireNotNull(backgroundDrawable) { "Background drawable must be non-null" }
             maximizeWindow.imageTintList = iconForegroundColor
             maximizeWindow.background = backgroundDrawable
-            onProgressBarInflated { progressBar ->
+            onProgressBarInflated { _, progressBar ->
                 progressBar.progressTintList =
                     ColorStateList.valueOf(baseForegroundColor).withAlpha(OPACITY_15)
                 progressBar.progressBackgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
@@ -141,7 +141,7 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
                         R.color.desktop_mode_caption_button_color_selector_light,
                     )
                 }
-            onProgressBarInflated { progressBar -> progressBar.progressTintList = progressTint }
+            onProgressBarInflated { _, progressBar -> progressBar.progressTintList = progressTint }
             maximizeWindow.background?.setTintList(backgroundTint)
         }
     }
@@ -153,13 +153,29 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
 
     /** Sets the dimensions of the maximize button. */
     fun setDimensions(width: Int, height: Int, padding: Rect) {
+        this.layoutParams =
+            this.layoutParams.apply {
+                this.width = width
+                this.height = height
+            }
         maximizeWindow.layoutParams =
             maximizeWindow.layoutParams.apply {
                 this.width = width
                 this.height = height
             }
         maximizeWindow.setPadding(padding.left, padding.top, padding.right, padding.bottom)
-        onProgressBarInflated { progressBar ->
+
+        stubProgressBarContainer.layoutParams =
+            stubProgressBarContainer.layoutParams.apply {
+                this.width = width
+                this.height = height
+            }
+        onProgressBarInflated { container, progressBar ->
+            container.layoutParams =
+                container.layoutParams.apply {
+                    this.width = width
+                    this.height = height
+                }
             progressBar.layoutParams =
                 progressBar.layoutParams.apply {
                     this.width = width
@@ -168,11 +184,13 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
         }
     }
 
-    private fun onProgressBarInflated(onInflated: (ProgressBar) -> Unit) {
+    private fun onProgressBarInflated(
+        onInflated: (container: FrameLayout, progressBar: ProgressBar) -> Unit
+    ) {
         stubProgressBarContainer.setOnInflateListener { _, inflated ->
-            val progressBar =
-                (inflated as FrameLayout).requireViewById<ProgressBar>(R.id.progress_bar)
-            onInflated(progressBar)
+            val container = inflated as FrameLayout
+            val progressBar = container.requireViewById<ProgressBar>(R.id.progress_bar)
+            onInflated(container, progressBar)
         }
     }
 
