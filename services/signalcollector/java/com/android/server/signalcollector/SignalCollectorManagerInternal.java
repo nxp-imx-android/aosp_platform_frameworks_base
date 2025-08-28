@@ -16,7 +16,9 @@
 
 package com.android.server.signalcollector;
 
-import android.app.ActivityManager.ProcessState;
+import android.annotation.Nullable;
+
+import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
 
 /**
  * Internal interface for the SignalCollectorService.
@@ -24,13 +26,9 @@ import android.app.ActivityManager.ProcessState;
  * @hide Only for use within the system server.
  */
 public abstract class SignalCollectorManagerInternal {
-
     /**
-     * Gets the process state of a uid.
-     *
-     * @param uid The uid to get the process state for.
-     * @return The process state of the uid, or PROCESS_STATE_UNKNOWN if the uid is not found.
+     * Gets the binder call signal collector.
      */
-    @ProcessState
-    public abstract int getProcessState(int uid);
+    @Nullable
+    public abstract BinderSpamSignalCollector getBinderSpamSignalCollector();
 }

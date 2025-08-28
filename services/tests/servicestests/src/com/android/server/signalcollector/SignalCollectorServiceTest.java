@@ -25,14 +25,15 @@ import static android.app.ActivityManager.UID_OBSERVER_PROCSTATE;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.IActivityManager;
 import android.app.UidObserver;
 import android.os.RemoteException;
+import android.os.profiling.anomaly.flags.Flags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -40,8 +41,12 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.os.profiling.anomaly.AnomalyDetectorManagerLocal;
+import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
+import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 import com.android.server.LocalServices;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,8 +58,8 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 @RunWith(AndroidJUnit4.class)
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_BINDER_CALL_SIGNAL_COLLECTOR)
-public final class SignalCollectorManagerServiceTest {
+@RequiresFlagsEnabled(Flags.FLAG_ANOMALY_DETECTOR_CORE)
+public final class SignalCollectorServiceTest {
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -67,6 +72,7 @@ public final class SignalCollectorManagerServiceTest {
 
     @Mock private SignalCollectorService.Injector mInjector;
     @Mock private IActivityManager mActivityManager;
+    @Mock private AnomalyDetectorManagerLocal mAnomalyDetectorManagerLocal;
 
     @Captor private ArgumentCaptor<UidObserver> mUidObserverCaptor;
 
@@ -76,13 +82,19 @@ public final class SignalCollectorManagerServiceTest {
     @Before
     public void setUp() {
         when(mInjector.getActivityManager()).thenReturn(mActivityManager);
+        when(mInjector.getAnomalyDetectorManagerLocal()).thenReturn(mAnomalyDetectorManagerLocal);
         mSignalCollectorService = new SignalCollectorService(
                 ApplicationProvider.getApplicationContext(), mInjector);
         mSignalCollectorManagerInternal = mSignalCollectorService.getInternal();
     }
 
+    @After
+    public void cleanUp() {
+        LocalServices.removeAllServicesForTest();
+    }
+
     @Test
-    public void onStart_uidObserverRegisteredwithCorrectParameters() throws RemoteException {
+    public void onStart_uidObserverRegisteredWithCorrectParameters() throws RemoteException {
         mSignalCollectorService.onStart();
 
         verify(mActivityManager).registerUidObserver(any(),
@@ -91,7 +103,18 @@ public final class SignalCollectorManagerServiceTest {
     }
 
     @Test
-    public void onStart_publishesLocalService() throws RemoteException {
+    public void onStart_binderSpamSignalCollectorRegisteredWithCorrectParameters() {
+        mSignalCollectorService.onStart();
+
+        verify(mAnomalyDetectorManagerLocal).registerSignalCollector(
+                BinderSpamConfig.class,
+                BinderSpamData.class,
+                mSignalCollectorManagerInternal.getBinderSpamSignalCollector());
+    }
+
+
+    @Test
+    public void onStart_publishesLocalService() {
         mSignalCollectorService.onStart();
 
         assertThat(LocalServices.getService(SignalCollectorManagerInternal.class))
@@ -100,7 +123,7 @@ public final class SignalCollectorManagerServiceTest {
 
     @Test
     public void testGetProcessState_returnsUnknownWhenUidNotFound() {
-        assertThat(mSignalCollectorManagerInternal.getProcessState(UID_UNKNOWN))
+        assertThat(mSignalCollectorService.getProcessState(UID_UNKNOWN))
                 .isEqualTo(PROCESS_STATE_UNKNOWN);
     }
 
@@ -110,9 +133,9 @@ public final class SignalCollectorManagerServiceTest {
         uidObserver.onUidStateChanged(UID_PERSISTENT_UI, PROCESS_STATE_PERSISTENT, 0, 0);
         uidObserver.onUidStateChanged(UID_TOP, PROCESS_STATE_TOP, 0, 0);
 
-        assertThat(mSignalCollectorManagerInternal.getProcessState(UID_PERSISTENT_UI))
+        assertThat(mSignalCollectorService.getProcessState(UID_PERSISTENT_UI))
                 .isEqualTo(PROCESS_STATE_PERSISTENT);
-        assertThat(mSignalCollectorManagerInternal.getProcessState(UID_TOP))
+        assertThat(mSignalCollectorService.getProcessState(UID_TOP))
                 .isEqualTo(PROCESS_STATE_TOP);
     }
 
@@ -120,7 +143,7 @@ public final class SignalCollectorManagerServiceTest {
         mSignalCollectorService.onStart();
         try {
             verify(mActivityManager).registerUidObserver(mUidObserverCaptor.capture(),
-                any(), any(), any());
+                    anyInt(), anyInt(), any());
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

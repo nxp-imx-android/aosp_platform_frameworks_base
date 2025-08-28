@@ -267,7 +267,6 @@ import com.android.server.selinux.SelinuxAuditLogsService;
 import com.android.server.sensorprivacy.SensorPrivacyService;
 import com.android.server.sensors.SensorService;
 import com.android.server.serial.SerialManagerService;
-import com.android.server.signalcollector.SignalCollectorService;
 import com.android.server.signedconfig.SignedConfigService;
 import com.android.server.slice.SliceManagerService;
 import com.android.server.smartspace.SmartspaceManagerService;
@@ -467,6 +466,8 @@ public final class SystemServer implements Dumpable {
             "/apex/com.android.profiling/javalib/service-profiling.jar";
     private static final String ANOMALY_DETECTOR_SERVICE_CLASS =
             "com.android.os.profiling.anomaly.AnomalyDetectorService";
+    private static final String SIGNAL_COLLECTOR_SERVICE_CLASS =
+            "com.android.server.signalcollector";
 
     private static final String RANGING_APEX_SERVICE_JAR_PATH =
             "/apex/com.android.uwb/javalib/service-ranging.jar";
@@ -2974,6 +2975,14 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("StartAnomalyDetectorService");
             mSystemServiceManager.startService(ANOMALY_DETECTOR_SERVICE_CLASS);
             t.traceEnd();
+
+            t.traceBegin("StartSignalCollectorService");
+            try {
+                mSystemServiceManager.startService(SIGNAL_COLLECTOR_SERVICE_CLASS);
+            } catch (Throwable e) {
+                reportWtf("starting SignalCollectorService", e);
+            }
+            t.traceEnd();
         }
 
         if (safeMode) {
@@ -3532,19 +3541,6 @@ public final class SystemServer implements Dumpable {
             reportWtf("starting System UI", e);
         }
         t.traceEnd();
-
-        // TODO(b/421229308): The collector service should only be running if
-        // the anomaly detection service APIs are enabled.
-        // Replace this flag with the exported API flag after it's ready.
-        if (com.android.server.signalcollector.Flags.enableBinderCallSignalCollector()) {
-            t.traceBegin("StartSignalCollectorService");
-            try {
-                mSystemServiceManager.startService(SignalCollectorService.class);
-            } catch (Throwable e) {
-                reportWtf("starting SignalCollectorService", e);
-            }
-            t.traceEnd();
-        }
 
         t.traceEnd(); // startOtherServices
     }
