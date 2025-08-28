@@ -30,6 +30,9 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
+import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -161,6 +164,68 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
             // THEN empty shade is not visible
             assertThat(shouldShowEmptyShadeView).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldShowEmptyShadeView_dualShade_falseWhenNoNotifsWithMedia() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+
+            val hasActiveMedia by collectLastValue(mediaCarouselInteractor.hasActiveMedia)
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+
+            // WHEN has no notifs but has media
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+
+            val userMedia = MediaData(active = true)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
+            runCurrent()
+
+            // THEN empty shade is not visible
+            assertThat(hasActiveMedia).isTrue()
+            assertThat(shouldShowEmptyShadeView).isFalse()
+
+            // WHEN media is dismissed
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia.copy(active = false))
+            runCurrent()
+
+            // THEN empty shade is visible
+            assertThat(hasActiveMedia).isFalse()
+            assertThat(shouldShowEmptyShadeView).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldShowEmptyShadeView_singleShade_trueWhenNoNotifsWithMedia() =
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
+            val hasActiveMedia by collectLastValue(mediaCarouselInteractor.hasActiveMedia)
+            val shouldShowEmptyShadeView by
+                collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
+
+            // WHEN has no notifs but has media
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+
+            val userMedia = MediaData(active = true)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
+            runCurrent()
+
+            // THEN empty shade is visible
+            assertThat(hasActiveMedia).isTrue()
+            assertThat(shouldShowEmptyShadeView).isTrue()
+
+            // WHEN media is dismissed
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia.copy(active = false))
+            runCurrent()
+
+            // THEN empty shade is still visible
+            assertThat(hasActiveMedia).isFalse()
+            assertThat(shouldShowEmptyShadeView).isTrue()
         }
 
     @Test
