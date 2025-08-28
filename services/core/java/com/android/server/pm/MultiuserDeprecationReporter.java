@@ -22,6 +22,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Process;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.SparseIntArray;
@@ -37,16 +38,20 @@ import java.io.PrintWriter;
  */
 final class MultiuserDeprecationReporter {
 
+    private static final String PROP_ENABLE_IT = "fw.user.log_deprecation";
+    private static final int PROP_ENABLED = 1;
+    private static final int PROP_DEFAULT = -1;
+
     private final Handler mHandler;
 
     // TODO(b/414326600): merge collections below and/or use the proper proto / structure
 
     // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
-    @Nullable // Only set on debuggable builds
+    @Nullable
     private final SparseIntArray mGetMainUserCalls;
 
     // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
-    @Nullable // Only set on debuggable builds
+    @Nullable
     private final SparseIntArray mIsMainUserCalls;
 
     // Activities launched while the current user is the headless system user.
@@ -59,7 +64,8 @@ final class MultiuserDeprecationReporter {
 
     MultiuserDeprecationReporter(Handler handler) {
         mHandler = handler;
-        if (Build.isDebuggable()) {
+        if (Build.isDebuggable()
+                || SystemProperties.getInt(PROP_ENABLE_IT, PROP_DEFAULT) == PROP_ENABLED) {
             mGetMainUserCalls = new SparseIntArray();
             mIsMainUserCalls = new SparseIntArray();
             mLaunchedHsuActivities = new ArraySet<>();
