@@ -70,6 +70,7 @@ internal fun createSensorEvent(
     sensor, 0, timestamp, floatArrayOf(value)
 )
 
+@JvmOverloads
 fun createDisplayMode(
     id: Int = Display.Mode.INVALID_MODE_ID,
     parentId: Int = Display.Mode.INVALID_MODE_ID,

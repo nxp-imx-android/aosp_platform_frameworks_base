@@ -437,6 +437,16 @@ flag {
 }
 
 flag {
+    name: "enable_anisotropy_corrected_modes"
+    namespace: "display_manager"
+    description: "Enable synthetic anisotropy corrected modes for external displays."
+    bug: "375563565"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_single_app_event_for_mode_and_frame_rate_override"
     namespace: "display_manager"
     description: "Enable single app event for mode and frame rate override changed event."

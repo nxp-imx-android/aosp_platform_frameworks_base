@@ -33,6 +33,7 @@ import android.view.DisplayAddress;
 import android.view.Surface;
 import android.view.SurfaceControl;
 
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.mode.DisplayModeDirector;
 
 import java.io.PrintWriter;
@@ -81,9 +82,6 @@ abstract class DisplayDevice {
     // DEBUG STATE: Last device info which was written to the log, or null if none.
     // Do not use for any other purpose.
     DisplayDeviceInfo mDebugLastLoggedDeviceInfo;
-
-    private boolean mIsAnisotropyCorrectionEnabled;
-
     DisplayDevice(DisplayAdapter displayAdapter, IBinder displayToken, String uniqueId,
             Context context) {
         mDisplayAdapter = displayAdapter;
@@ -158,12 +156,18 @@ abstract class DisplayDevice {
         DisplayDeviceInfo displayDeviceInfo = getDisplayDeviceInfoLocked();
         var width = displayDeviceInfo.width;
         var height = displayDeviceInfo.height;
-        if (mIsAnisotropyCorrectionEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
-                    && displayDeviceInfo.yDpi > 0 && displayDeviceInfo.xDpi > 0) {
+        Display.Mode userMode = getUserPreferredDisplayModeLocked();
+        if (displayDeviceInfo.type == Display.TYPE_EXTERNAL && userMode != null
+                && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
+            width = userMode.getPhysicalWidth();
+            height = userMode.getPhysicalHeight();
+        } else if (!Flags.enableAnisotropyCorrectedModes()
+                && displayDeviceInfo.type == Display.TYPE_EXTERNAL
+                && displayDeviceInfo.yDpi > 0 && displayDeviceInfo.xDpi > 0) {
             if (displayDeviceInfo.xDpi > displayDeviceInfo.yDpi * MAX_ANISOTROPY) {
                 height = (int) (height * displayDeviceInfo.xDpi / displayDeviceInfo.yDpi + 0.5);
             } else if (displayDeviceInfo.xDpi * MAX_ANISOTROPY < displayDeviceInfo.yDpi) {
-                width = (int) (width * displayDeviceInfo.yDpi / displayDeviceInfo.xDpi  + 0.5);
+                width = (int) (width * displayDeviceInfo.yDpi / displayDeviceInfo.xDpi + 0.5);
             }
         }
         return isRotatedLocked() ? new Point(height, width) : new Point(width, height);
@@ -457,11 +461,6 @@ abstract class DisplayDevice {
         pw.println("mCurrentLayerStackRect=" + mCurrentLayerStackRect);
         pw.println("mCurrentDisplayRect=" + mCurrentDisplayRect);
         pw.println("mCurrentSurface=" + mCurrentSurface);
-        pw.println("mIsAnisotropyCorrectionEnabled=" + mIsAnisotropyCorrectionEnabled);
-    }
-
-    void setAnisotropyCorrectionEnabled(boolean enabled) {
-        mIsAnisotropyCorrectionEnabled = enabled;
     }
 
     /**

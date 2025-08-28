@@ -37,6 +37,7 @@ import android.view.DisplayInfo;
 import android.view.Surface;
 import android.view.SurfaceControl;
 
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.DisplayModeDirector;
 import com.android.server.display.mode.SyntheticModeManager;
@@ -216,20 +217,11 @@ final class LogicalDisplay {
             new SparseArray<>();
 
     /**
-     * If the aspect ratio of the resolution of the display does not match the physical aspect
-     * ratio of the display, then without this feature enabled, picture would appear stretched to
-     * the user. This is because applications assume that they are rendered on square pixels
-     * (meaning density of pixels in x and y directions are equal). This would result into circles
-     * appearing as ellipses to the user.
-     * To compensate for non-square (anisotropic) pixels, if this feature is enabled:
-     * 1. LogicalDisplay will add more pixels for the applications to render on, as if the pixels
-     * were square and occupied the full display.
-     * 2. SurfaceFlinger will squeeze this taller/wider surface into the available number of
-     * physical pixels in the current display resolution.
-     * 3. If a setting on the display itself is set to "fill the entire display panel" then the
-     * display will stretch the pixels to fill the display fully.
+     * Modes with corrected anisotropy are supplied by LocalDisplayAdapter, no anisotropy
+     * calculation is needed on LocalDisplay side. User selected resolution is scaled to fit
+     * physical resolution of the display.
      */
-    private boolean mIsAnisotropyCorrectionEnabled;
+    private final boolean mIsAnisotropicModesEnabled;
 
     private final boolean mSyncedResolutionSwitchEnabled;
 
@@ -259,13 +251,9 @@ final class LogicalDisplay {
         mSyntheticModesV2Enabled = syntheticModesV2Enabled;
         mSizeOverrideEnabled = sizeOverrideEnabled;
 
+        mIsAnisotropicModesEnabled = Flags.enableAnisotropyCorrectedModes();
         // No need to initialize mCanHostTasks here; it's handled in
         // DisplayManagerService#setupLogicalDisplay().
-    }
-
-    public void setAnisotropyCorrectionEnabled(boolean enabled) {
-        mIsAnisotropyCorrectionEnabled = enabled;
-        mPrimaryDisplayDevice.setAnisotropyCorrectionEnabled(enabled);
     }
 
     public void setDevicePositionLocked(int position) {
@@ -443,9 +431,6 @@ final class LogicalDisplay {
             return;
         }
 
-        // TODO(b/375563565): Implement per-display setting to enable/disable anisotropy correction.
-        setAnisotropyCorrectionEnabled(true);
-
         // Bootstrap the logical display using its associated primary physical display.
         // We might use more elaborate configurations later.  It's possible that the
         // configuration of several physical displays might be used to determine the
@@ -528,7 +513,8 @@ final class LogicalDisplay {
             int maskedWidth = currentWidth - maskingInsets.left - maskingInsets.right;
             int maskedHeight = currentHeight - maskingInsets.top - maskingInsets.bottom;
 
-            if (mIsAnisotropyCorrectionEnabled && deviceInfo.type == Display.TYPE_EXTERNAL
+            if (!mIsAnisotropicModesEnabled
+                    && deviceInfo.type == Display.TYPE_EXTERNAL
                         && currentXDpi > 0 && currentYDpi > 0) {
                 if (currentXDpi > currentYDpi * DisplayDevice.MAX_ANISOTROPY) {
                     maskedHeight = (int) (maskedHeight * currentXDpi / currentYDpi + 0.5);
@@ -812,7 +798,7 @@ final class LogicalDisplay {
         var displayLogicalWidth = displayInfo.logicalWidth;
         var displayLogicalHeight = displayInfo.logicalHeight;
 
-        if (mIsAnisotropyCorrectionEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
+        if (!mIsAnisotropicModesEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
                     && displayDeviceInfo.xDpi > 0 && displayDeviceInfo.yDpi > 0) {
             if (displayDeviceInfo.xDpi > displayDeviceInfo.yDpi * DisplayDevice.MAX_ANISOTROPY) {
                 var scalingFactor = displayDeviceInfo.yDpi / displayDeviceInfo.xDpi;
@@ -834,6 +820,16 @@ final class LogicalDisplay {
             }
         }
 
+        // For size override modes we want to scale logical width and height to physical/user mode
+        // width and height ratio
+        Display.Mode userMode = getUserPreferredModeForSizeOverrideLocked(displayDeviceInfo);
+        if (mIsAnisotropicModesEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
+                && userMode != null
+                && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
+            displayLogicalWidth = displayLogicalWidth * physWidth / userMode.getPhysicalWidth();
+            displayLogicalHeight = displayLogicalHeight * physHeight / userMode.getPhysicalHeight();
+        }
+
         // Determine whether the width or height is more constrained to be scaled.
         //    physWidth / displayInfo.logicalWidth    => letter box
         // or physHeight / displayInfo.logicalHeight  => pillar box
@@ -841,8 +837,10 @@ final class LogicalDisplay {
         // We avoid a division (and possible floating point imprecision) here by
         // multiplying the fractions by the product of their denominators before
         // comparing them.
+
         int displayRectWidth, displayRectHeight;
-        if ((displayInfo.flags & Display.FLAG_SCALING_DISABLED) != 0 || mDisplayScalingDisabled) {
+        if ((displayInfo.flags & Display.FLAG_SCALING_DISABLED) != 0
+                || mDisplayScalingDisabled) {
             displayRectWidth = displayLogicalWidth;
             displayRectHeight = displayLogicalHeight;
         } else if (physWidth * displayLogicalHeight

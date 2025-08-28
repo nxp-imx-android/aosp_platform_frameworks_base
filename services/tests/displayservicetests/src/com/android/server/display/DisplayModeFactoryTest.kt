@@ -141,8 +141,6 @@ class DisplayModeFactoryTest {
             .that(result).isEmpty()
     }
 
-
-
     private fun assertModesEqual(result: Display.Mode, expected: Display.Mode) {
         assertWithMessage("parentModeId is different")
             .that(result.parentModeId).isEqualTo(expected.parentModeId)
