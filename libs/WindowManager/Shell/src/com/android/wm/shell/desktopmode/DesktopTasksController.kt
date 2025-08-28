@@ -2863,8 +2863,9 @@ class DesktopTasksController(
         inputMethod: InputMethod,
     ) {
         if (!isSnapResizingAllowed(taskInfo)) {
+            val displayContext = displayController.getDisplayContext(taskInfo.displayId) ?: context
             Toast.makeText(
-                    getContext(),
+                    displayContext,
                     R.string.desktop_mode_non_resizable_snap_text,
                     Toast.LENGTH_SHORT,
                 )
@@ -2908,9 +2909,11 @@ class DesktopTasksController(
                 startBounds = currentDragBounds,
                 endBounds = dragStartBounds,
                 doOnEnd = {
+                    val displayContext =
+                        displayController.getDisplayContext(taskInfo.displayId) ?: context
                     Toast.makeText(
-                            context,
-                            com.android.wm.shell.R.string.desktop_mode_non_resizable_snap_text,
+                            displayContext,
+                            R.string.desktop_mode_non_resizable_snap_text,
                             Toast.LENGTH_SHORT,
                         )
                         .show()
