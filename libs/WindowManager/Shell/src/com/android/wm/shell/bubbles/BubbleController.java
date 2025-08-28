@@ -1245,7 +1245,8 @@ public class BubbleController implements ConfigurationChangeListener,
                 // if we're converting the bubble to a different mode, don't collapse since we want
                 // the bubble to stay expanded.
                 if (!isSelectedBubbleConvertingMode()) {
-                    mMainExecutor.execute(() -> collapseStack());
+                    // force-post the runnable, so broadcast receiver completes faster
+                    mMainExecutor.executeDelayed(() -> collapseStack(), 0);
                 }
             }
         }
