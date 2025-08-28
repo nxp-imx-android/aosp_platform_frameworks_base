@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
@@ -57,23 +58,22 @@ constructor(
     private val keyguardRootViewModel: KeyguardRootViewModel,
     private val aodPromotedNotificationViewModelFactory: AODPromotedNotificationViewModel.Factory,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(promotedNotificationElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(PromotedNotificationElement()) }
 
-    private val promotedNotificationElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Notifications.AOD.Promoted
-            override val context = this@AodPromotedNotificationAreaElementProvider.context
+    private inner class PromotedNotificationElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Notifications.AOD.Promoted
+        override val context = this@AodPromotedNotificationAreaElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                if (PromotedNotificationUi.isEnabled) {
-                    AodPromotedNotificationArea(factory, context)
-                }
+        @Composable
+        override fun ElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            if (PromotedNotificationUi.isEnabled) {
+                AodPromotedNotificationArea(factory, context)
             }
         }
+    }
 
     @Composable
     private fun ContentScope.AodPromotedNotificationArea(

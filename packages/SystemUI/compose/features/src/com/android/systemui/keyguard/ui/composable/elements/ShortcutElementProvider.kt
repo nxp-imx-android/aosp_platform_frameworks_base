@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
-import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.modifiers.padding
 import com.android.systemui.animation.view.LaunchableImageView
@@ -71,7 +71,7 @@ constructor(
         override val context = this@ShortcutElementProvider.context
 
         @Composable
-        override fun ContentScope.LockscreenElement(
+        override fun ElementContentScope.LockscreenElement(
             factory: LockscreenElementFactory,
             context: LockscreenElementContext,
         ) {
@@ -87,7 +87,7 @@ constructor(
      *   shortcut is placed along the edges of the display.
      */
     @Composable
-    private fun ContentScope.Shortcut(
+    private fun Shortcut(
         isStart: Boolean,
         applyPadding: Boolean,
         onTopChanged: ((Float) -> Unit)? = null,

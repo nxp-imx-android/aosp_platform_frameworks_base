@@ -17,34 +17,17 @@ package com.android.systemui.plugins.keyguard.ui.composable.elements
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.BaseContentScope
+import com.android.compose.animation.scene.Key
 
 @Immutable
 /** Factory to build composable lockscreen elements based on keys */
 interface LockscreenElementFactory {
-    /**
-     * Finds and renders the composable element at the specified key.
-     *
-     * @return true if the element was found and rendered, otherwise false.
-     */
     @Composable
-    fun lockscreenElement(
-        key: ElementKey,
+    /** Finds and renders the composable element at the specified key. */
+    fun BaseContentScope.LockscreenElement(
+        key: Key,
         context: LockscreenElementContext,
         modifier: Modifier,
-    ): Boolean
-
-    companion object {
-        /**
-         * Finds and renders the composable at the specified key with the default modifier. This is
-         * provided because compose doesn't seem to like interface methods with default arguments.
-         */
-        @Composable
-        fun LockscreenElementFactory.lockscreenElement(
-            key: ElementKey,
-            context: LockscreenElementContext,
-        ): Boolean {
-            return lockscreenElement(key, context, Modifier)
-        }
-    }
+    )
 }

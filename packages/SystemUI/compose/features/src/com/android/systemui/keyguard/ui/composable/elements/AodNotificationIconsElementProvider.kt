@@ -34,6 +34,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.modifiers.padding
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dagger.SysUISingleton
@@ -70,21 +71,20 @@ constructor(
     private val nicAodIconViewStore: AlwaysOnDisplayNotificationIconViewStore,
     @ShadeDisplayAware private val systemBarUtilsState: SystemBarUtilsState,
 ) : LockscreenElementProvider {
-    override val elements: List<LockscreenElement> by lazy { listOf(aodNotificationElement) }
+    override val elements: List<LockscreenElement> by lazy { listOf(AodNotificationElement()) }
 
-    private val aodNotificationElement =
-        object : LockscreenElement {
-            override val key = LockscreenElementKeys.Notifications.AOD.IconShelf
-            override val context = this@AodNotificationIconsElementProvider.context
+    private inner class AodNotificationElement : LockscreenElement {
+        override val key = LockscreenElementKeys.Notifications.AOD.IconShelf
+        override val context = this@AodNotificationIconsElementProvider.context
 
-            @Composable
-            override fun ContentScope.LockscreenElement(
-                factory: LockscreenElementFactory,
-                context: LockscreenElementContext,
-            ) {
-                AodNotificationIcons(factory, context)
-            }
+        @Composable
+        override fun ElementContentScope.LockscreenElement(
+            factory: LockscreenElementFactory,
+            context: LockscreenElementContext,
+        ) {
+            AodNotificationIcons(factory, context)
         }
+    }
 
     @Composable
     private fun ContentScope.AodNotificationIcons(

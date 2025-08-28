@@ -17,6 +17,7 @@
 package com.android.systemui.scene.shared.model
 
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSceneKeys
 
 /**
  * Keys of all known scenes.
@@ -37,7 +38,7 @@ object Scenes {
     @JvmField val Gone = SceneKey("gone")
 
     /** The lockscreen is the scene that shows when the device is locked. */
-    @JvmField val Lockscreen = SceneKey("lockscreen")
+    @JvmField val Lockscreen = LockscreenSceneKeys.Lockscreen
 
     /**
      * Activities that render over lockscreen. Similar to [Gone], it is the absence of any SystemUI
