@@ -902,7 +902,7 @@ public class NotificationContentView extends FrameLayout implements Notification
     }
 
     public int getMinHeight(boolean likeGroupExpanded) {
-        if (likeGroupExpanded || !mIsChildInGroup || isGroupExpanded()) {
+        if (likeGroupExpanded || !mIsChildInGroup || isParentGroupExpanded()) {
             return mContractedChild != null
                     ? getViewHeight(VISIBLE_TYPE_CONTRACTED) : mMinContractedHeight;
         } else {
@@ -926,6 +926,10 @@ public class NotificationContentView extends FrameLayout implements Notification
 
     private boolean isGroupExpanded() {
         return mContainingNotification.isGroupExpanded();
+    }
+
+    private boolean isParentGroupExpanded() {
+        return mContainingNotification.isParentGroupExpanded();
     }
 
     public void setClipTopAmount(int clipTopAmount) {
@@ -1264,6 +1268,10 @@ public class NotificationContentView extends FrameLayout implements Notification
         }
     }
 
+    private boolean shouldShowSingleLineView() {
+        return mIsChildInGroup && !isParentGroupExpanded();
+    }
+
     /**
      * @return one of the static enum types in this view, calculated from the current state
      */
@@ -1277,14 +1285,13 @@ public class NotificationContentView extends FrameLayout implements Notification
                 height = mContentHeight;
             }
             int expandedVisualType = getVisualTypeForHeight(height);
-            final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
             final boolean isSingleLineViewPresent = mSingleLineView != null;
 
-            if (shouldShowSingleLineView && !isSingleLineViewPresent) {
+            if (shouldShowSingleLineView() && !isSingleLineViewPresent) {
                 Log.wtf(TAG, "calculateVisibleType: SingleLineView is not available!");
             }
 
-            final int collapsedVisualType = shouldShowSingleLineView && isSingleLineViewPresent
+            final int collapsedVisualType = shouldShowSingleLineView() && isSingleLineViewPresent
                     ? VISIBLE_TYPE_SINGLELINE
                     : getVisualTypeForHeight(mContainingNotification.getCollapsedHeight());
             return mTransformationStartVisibleType == collapsedVisualType
@@ -1305,10 +1312,9 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (!noExpandedChild && viewHeight == getViewHeight(VISIBLE_TYPE_EXPANDED)) {
             return VISIBLE_TYPE_EXPANDED;
         }
-        final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
         final boolean isSingleLinePresent =  mSingleLineView != null;
 
-        if (!mUserExpanding && shouldShowSingleLineView && isSingleLinePresent) {
+        if (!mUserExpanding && shouldShowSingleLineView() && isSingleLinePresent) {
             return VISIBLE_TYPE_SINGLELINE;
         }
 
