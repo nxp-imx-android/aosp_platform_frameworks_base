@@ -75,6 +75,7 @@ import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.identityHashCode
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
+import com.android.wm.shell.windowdecor.extension.throttleFirstClicks
 import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
 import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
 import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
@@ -166,13 +167,19 @@ class AppHeaderViewHolder(
         captionHandle.setOnTouchListener(onCaptionTouchListener)
         openMenuButton.setOnClickListener(onCaptionButtonClickListener)
         openMenuButton.setOnTouchListener(onCaptionTouchListener)
-        closeWindowButton.setOnClickListener(onCaptionButtonClickListener)
-        maximizeWindowButton.setOnClickListener(onCaptionButtonClickListener)
+        closeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
+        maximizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
         maximizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeWindowButton.setOnGenericMotionListener(onCaptionGenericMotionListener)
         maximizeWindowButton.onLongClickListener = onLongClickListener
         closeWindowButton.setOnTouchListener(onCaptionTouchListener)
-        minimizeWindowButton.setOnClickListener(onCaptionButtonClickListener)
+        minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
         minimizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeButtonView.onHoverAnimationFinishedListener =
             onMaximizeHoverAnimationFinishedListener
@@ -982,6 +989,7 @@ class AppHeaderViewHolder(
         private const val DARK_THEME_UNFOCUSED_OPACITY = 140 // 55%
         private const val LIGHT_THEME_UNFOCUSED_OPACITY = 166 // 65%
         private const val FOCUSED_OPACITY = 255
+        private const val CLICK_DELAY: Long = 500
     }
 
     class Factory {
