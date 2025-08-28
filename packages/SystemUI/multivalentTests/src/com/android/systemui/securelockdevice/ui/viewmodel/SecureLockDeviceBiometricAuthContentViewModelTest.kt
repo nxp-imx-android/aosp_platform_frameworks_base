@@ -88,6 +88,31 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updatesStateOnRetryAfterFaceFailureOrError() =
+        testScope.runTest {
+            val isAuthenticating by collectLastValue(underTest.isAuthenticating)
+            val isAuthenticated by collectLastValue(underTest.isAuthenticated)
+            val showingError by collectLastValue(underTest.showingError)
+            val canTryAgainNow by collectLastValue(underTest.canTryAgainNow)
+
+            // On face error shown
+            underTest.showTemporaryError(
+                authenticateAfterError = false,
+                failedModality = BiometricModality.Face,
+            )
+            runCurrent()
+
+            // On retry button clicked
+            underTest.onTryAgainButtonClicked()
+
+            // Verify internal state updated to restart authentication
+            assertThat(isAuthenticating).isTrue()
+            assertThat(showingError).isFalse()
+            assertThat(isAuthenticated?.isAuthenticated).isFalse()
+            assertThat(canTryAgainNow).isFalse()
+        }
+
+    @Test
     fun updatesStateAndSkipsHaptics_onFaceHelp() =
         testScope.runTest {
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)

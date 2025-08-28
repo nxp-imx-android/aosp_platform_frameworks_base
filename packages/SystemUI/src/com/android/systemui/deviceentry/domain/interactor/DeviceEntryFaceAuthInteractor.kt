@@ -95,6 +95,8 @@ interface DeviceEntryFaceAuthInteractor : CoreStartable {
 
     fun onSecureLockDeviceConfirmButtonShowingChanged(isShowingConfirmButton: Boolean)
 
+    fun onSecureLockDeviceTryAgainButtonShowingChanged(isShowingTryAgainButton: Boolean)
+
     /** Whether face auth is considered class 3 */
     fun isFaceAuthStrong(): Boolean
 

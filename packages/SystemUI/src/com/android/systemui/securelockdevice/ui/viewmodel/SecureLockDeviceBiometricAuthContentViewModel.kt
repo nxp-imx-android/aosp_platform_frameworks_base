@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -136,6 +137,22 @@ constructor(
         )
     }
 
+    private val isRetrySupported: Flow<Boolean> = enrolledStrongBiometrics.map { it.hasFaceOnly }
+
+    private val _canTryAgainNow = MutableStateFlow(false)
+
+    /**
+     * If authentication can be manually restarted via the try again button or touching a
+     * fingerprint sensor.
+     */
+    val canTryAgainNow: Flow<Boolean> =
+        combine(_canTryAgainNow, isAuthenticated, isRetrySupported) {
+            readyToTryAgain,
+            authState,
+            supportsRetry ->
+            readyToTryAgain && supportsRetry && authState.isNotAuthenticated
+        }
+
     private val _actionButton = MutableStateFlow<SecureLockDeviceBouncerActionButtonModel?>(null)
 
     /**
@@ -210,6 +227,7 @@ constructor(
         if (_isAuthenticated.value.isAuthenticated) {
             return@coroutineScope
         }
+        _canTryAgainNow.value = supportsRetry(failedModality)
         _isAuthenticating.value = false
         _showingError.value = true
         _isAuthenticated.value = PromptAuthState(false)
@@ -228,6 +246,9 @@ constructor(
             }
         }
     }
+
+    private fun supportsRetry(failedModality: BiometricModality) =
+        failedModality == BiometricModality.Face
 
     /**
      * Show a persistent help message.
@@ -254,6 +275,11 @@ constructor(
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
 
         _isAuthenticated.value = PromptAuthState(false)
+
+        // reset the try again button(s) after the user attempts a retry
+        if (isRetry) {
+            _canTryAgainNow.value = false
+        }
 
         _showingError.value = false
         displayErrorJob?.cancel()
@@ -400,6 +426,15 @@ constructor(
     }
 
     /**
+     * Notifies that the user has pressed the try again button to retry authentication during secure
+     * lock device.
+     */
+    fun onTryAgainButtonClicked() {
+        showAuthenticating(isRetry = true)
+        secureLockDeviceInteractor.onRetryBiometricAuth()
+    }
+
+    /**
      * Listener for confirm or try again button click events during secure lock device biometric
      * auth.
      */
@@ -408,6 +443,11 @@ constructor(
             is SecureLockDeviceBouncerActionButtonModel.ConfirmStrongBiometricAuthButtonModel -> {
                 if (secureLockDevice()) {
                     onConfirmButtonClicked()
+                }
+            }
+            is SecureLockDeviceBouncerActionButtonModel.TryAgainButtonModel -> {
+                if (secureLockDevice()) {
+                    onTryAgainButtonClicked()
                 }
             }
         }
@@ -446,7 +486,8 @@ constructor(
                         launch {
                             actionButtonInteractor.secureLockDeviceActionButton.collect {
                                 when (it) {
-                                    is SecureLockDeviceBouncerActionButtonModel.ConfirmStrongBiometricAuthButtonModel ->
+                                    is SecureLockDeviceBouncerActionButtonModel.ConfirmStrongBiometricAuthButtonModel,
+                                    is SecureLockDeviceBouncerActionButtonModel.TryAgainButtonModel ->
                                         _actionButton.value = it
                                     else -> _actionButton.value = null
                                 }
@@ -456,6 +497,18 @@ constructor(
                         launch {
                             isAuthenticated.collectLatest {
                                 secureLockDeviceInteractor.onBiometricAuthenticatedStateUpdated(it)
+                            }
+                        }
+
+                        launch {
+                            canTryAgainNow.collectLatest { canTryAgainNow ->
+                                secureLockDeviceInteractor.onRetryAvailableChanged(canTryAgainNow)
+                            }
+                        }
+
+                        launch {
+                            showingError.collectLatest { showingError ->
+                                secureLockDeviceInteractor.onShowingError(showingError)
                             }
                         }
 

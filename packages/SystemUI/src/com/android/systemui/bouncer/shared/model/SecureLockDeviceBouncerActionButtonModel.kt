@@ -28,4 +28,9 @@ sealed class SecureLockDeviceBouncerActionButtonModel(
         @StringRes private val labelResourceId: Int,
         @StringRes private val contentDescId: Int,
     ) : SecureLockDeviceBouncerActionButtonModel(labelResourceId, contentDescId)
+
+    data class TryAgainButtonModel(
+        @StringRes private val labelResourceId: Int,
+        @StringRes private val contentDescId: Int,
+    ) : SecureLockDeviceBouncerActionButtonModel(labelResourceId, contentDescId)
 }

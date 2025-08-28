@@ -111,7 +111,10 @@ constructor(
      * be shown.
      */
     val secureLockDeviceActionButton: Flow<SecureLockDeviceBouncerActionButtonModel?> =
-        secureLockDeviceInteractor.showConfirmBiometricAuthButton.asUnitFlow
+        merge(
+                secureLockDeviceInteractor.showConfirmBiometricAuthButton.asUnitFlow,
+                secureLockDeviceInteractor.showTryAgainButton.asUnitFlow,
+            )
             .map {
                 when {
                     isConfirmStrongBiometricAuthButton() ->
@@ -123,7 +126,14 @@ constructor(
                                     com.android.systemui.res.R.string
                                         .accessibility_confirm_biometric_auth_to_unlock,
                             )
-                    else -> null
+                    isTryAgainButton() ->
+                        SecureLockDeviceBouncerActionButtonModel.TryAgainButtonModel(
+                            labelResourceId =
+                                com.android.systemui.res.R.string.biometric_dialog_try_again,
+                            contentDescId =
+                                com.android.systemui.res.R.string.accessibility_retry_face_auth,
+                        )
+                    else -> null // Do not show the button.
                 }
             }
             .distinctUntilChanged()
@@ -185,6 +195,10 @@ constructor(
 
     private fun isConfirmStrongBiometricAuthButton(): Boolean {
         return secureLockDevice() && secureLockDeviceInteractor.showConfirmBiometricAuthButton.value
+    }
+
+    private fun isTryAgainButton(): Boolean {
+        return secureLockDevice() && secureLockDeviceInteractor.showTryAgainButton.value
     }
 
     private fun prepareToPerformAction() {

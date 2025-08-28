@@ -294,13 +294,23 @@ object KeyguardBouncerViewBinder {
                                     }
                                 }
                         }
-                    }
 
-                    launch {
-                        viewModel.showConfirmBiometricAuthButton.collect { showConfirmButton ->
-                            if (showConfirmButton) {
-                                bouncerMessageInteractor.onSecureLockDevicePendingConfirmation()
+                        launch {
+                            viewModel.showConfirmBiometricAuthButton.collect { showConfirmButton ->
+                                if (showConfirmButton) {
+                                    bouncerMessageInteractor.onSecureLockDevicePendingConfirmation()
+                                }
                             }
+                        }
+
+                        launch {
+                            combine(viewModel.showTryAgainButton, viewModel.showingError, ::Pair)
+                                .collect { (showTryAgainButton, showingError) ->
+                                    if (showTryAgainButton) {
+                                        bouncerMessageInteractor
+                                            .onSecureLockDeviceRetryAuthentication(showingError)
+                                    }
+                                }
                         }
                     }
 

@@ -30,12 +30,16 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
+import com.android.systemui.biometrics.data.repository.facePropertyRepository
 import com.android.systemui.biometrics.shared.model.BiometricModality
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo
+import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
 import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionButtonModel
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -260,6 +264,58 @@ class BouncerActionButtonInteractorTest : SysuiTestCase() {
                         SecureLockDeviceBouncerActionButtonModel.ConfirmStrongBiometricAuthButtonModel
                 )
                 .isTrue()
+            activateViewModelJob.cancel()
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun showsTryAgainButtonOnFaceAuthFailure_hidesAfterButtonClicked_duringSecureLockDevice() =
+        testScope.runTest {
+            val underTest = kosmos.bouncerActionButtonInteractor
+            val secureLockDeviceActionButton by
+                collectLastValue(underTest.secureLockDeviceActionButton)
+            val activateViewModelJob = launch {
+                kosmos.secureLockDeviceBiometricAuthContentViewModel.activate()
+            }
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            runCurrent()
+
+            // Only face auth is allowed & enrolled to allow retry
+            kosmos.biometricSettingsRepository.setIsFaceAuthCurrentlyAllowed(true)
+            kosmos.biometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
+            kosmos.facePropertyRepository.setSensorInfo(
+                FaceSensorInfo(id = 0, strength = SensorStrength.STRONG)
+            )
+            kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(false)
+            runCurrent()
+
+            // After PIN auth
+            kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
+            runCurrent()
+
+            // After face auth error
+            kosmos.secureLockDeviceBiometricAuthContentViewModel.showTemporaryError(
+                authenticateAfterError = false,
+                failedModality = BiometricModality.Face,
+            )
+            runCurrent()
+
+            assertThat(
+                    secureLockDeviceActionButton
+                        is SecureLockDeviceBouncerActionButtonModel.TryAgainButtonModel
+                )
+                .isTrue()
+
+            // After clicking try again button
+            kosmos.secureLockDeviceBiometricAuthContentViewModel.onTryAgainButtonClicked()
+            runCurrent()
+
+            assertThat(
+                    secureLockDeviceActionButton
+                        is SecureLockDeviceBouncerActionButtonModel.TryAgainButtonModel
+                )
+                .isFalse()
             activateViewModelJob.cancel()
         }
 

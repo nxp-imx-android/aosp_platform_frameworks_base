@@ -216,17 +216,53 @@ constructor(
     val showConfirmBiometricAuthButton: StateFlow<Boolean> =
         _showConfirmBiometricAuthButton.asStateFlow()
 
+    private val _showTryAgainButton = MutableStateFlow<Boolean>(false)
+    /**
+     * Indicates a try again button should be displayed on the UI for the user to retry
+     * authentication during secure lock device.
+     */
+    val showTryAgainButton: StateFlow<Boolean> = _showTryAgainButton.asStateFlow()
+
+    private val _showingError = MutableStateFlow<Boolean>(false)
+    /**
+     * Indicates an error is being displayed on the UI during secure lock device biometric
+     * authentication.
+     */
+    val showingError: StateFlow<Boolean> = _showingError.asStateFlow()
+
     /**
      * Whether the device should listen for biometric auth while secure lock device is enabled. The
      * device should stop listening when pending authentication, when authenticated, or when the
      * biometric auth screen is exited without authenticating.
      */
     val shouldListenForBiometricAuth: Flow<Boolean> =
-        combine(requiresStrongBiometricAuthForSecureLockDevice, showConfirmBiometricAuthButton) {
-            requiresBiometricAuth,
-            confirmButtonShowing ->
-            requiresBiometricAuth && !confirmButtonShowing
+        combine(
+            requiresStrongBiometricAuthForSecureLockDevice,
+            showConfirmBiometricAuthButton,
+            showTryAgainButton,
+        ) { requiresBiometricAuth, confirmButtonShowing, showTryAgainButton ->
+            requiresBiometricAuth && !confirmButtonShowing && !showTryAgainButton
         }
+
+    /**
+     * Called after a biometric authentication error during secure lock device when a try again
+     * button should be displayed on the UI to allow the user to restart auth.
+     */
+    fun onRetryAvailableChanged(isAvailable: Boolean) {
+        logBuffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            { bool1 = isAvailable },
+            { "onRetryAvailableChanged=$bool1" },
+        )
+        _showTryAgainButton.value = isAvailable
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceTryAgainButtonShowingChanged(isAvailable)
+    }
+
+    fun onShowingError(showingError: Boolean) {
+        logBuffer.log(TAG, LogLevel.DEBUG, { bool1 = showingError }, { "onShowingError=$bool1" })
+        _showingError.value = showingError
+    }
 
     /** Strong biometric modalities enrolled and enabled on the device. */
     val enrolledStrongBiometricModalities: Flow<BiometricModalities> =
@@ -275,6 +311,15 @@ constructor(
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
     }
 
+    /** Called when the user clicks the try again button to resume authentication. */
+    fun onRetryBiometricAuth() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "onRetryBiometricAuth")
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = false
+        _showTryAgainButton.value = false
+        _showingError.value = false
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
+    }
+
     /**
      * Resets UI state when leaving the biometric auth screen without authenticating, or when the
      * secure lock device UI state is reset upon the gone transition completing.
@@ -284,6 +329,8 @@ constructor(
         secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
         _isBiometricAuthVisible.value = false
         _showConfirmBiometricAuthButton.value = false
+        _showTryAgainButton.value = false
+        _showingError.value = false
     }
 
     /** Called when the biometric auth view or overlay is hidden. */

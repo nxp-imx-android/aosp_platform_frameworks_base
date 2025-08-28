@@ -103,6 +103,25 @@ constructor(
             flowOf(false)
         }
 
+    /** Whether an error is being shown during secure lock device biometric authentication */
+    val showingError: Flow<Boolean> =
+        if (secureLockDevice()) {
+            secureLockDeviceInteractor.get().showingError
+        } else {
+            flowOf(false)
+        }
+
+    /**
+     * Whether the try again button is being shown during secure lock device biometric
+     * authentication.
+     */
+    val showTryAgainButton: Flow<Boolean> =
+        if (secureLockDevice()) {
+            secureLockDeviceInteractor.get().showTryAgainButton
+        } else {
+            flowOf(false)
+        }
+
     /** Observe whether bouncer is starting to hide. */
     val startingToHide: Flow<Unit> = interactor.startingToHide
 
