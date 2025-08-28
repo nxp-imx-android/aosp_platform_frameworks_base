@@ -93,6 +93,7 @@ public class Chronometer extends TextView {
     private boolean mRunning;
     private boolean mLogged;
     private String mFormat;
+    private boolean mUseAdaptiveFormat = false;
     private Formatter mFormatter;
     private Locale mFormatterLocale;
     private Object[] mFormatterArgs = new Object[1];
@@ -268,6 +269,21 @@ public class Chronometer extends TextView {
     }
 
     /**
+     * @hide
+     */
+    public boolean isUseAdaptiveFormat() {
+        return mUseAdaptiveFormat;
+    }
+
+    /**
+     * @hide
+     */
+    @android.view.RemotableViewMethod
+    public void setUseAdaptiveFormat(boolean useAdaptiveFormat) {
+        mUseAdaptiveFormat = useAdaptiveFormat;
+    }
+
+    /**
      * Returns the current format string as set through {@link #setFormat}.
      */
     @InspectableProperty
@@ -356,13 +372,20 @@ public class Chronometer extends TextView {
     private synchronized void updateText(long now) {
         updateBaseTimeIfSystemClockChanged();
         mNow = now;
+
         long seconds = Math.round((mCountDown ? mBase - now - 499 : now - mBase) / 1000f);
         boolean negative = false;
         if (seconds < 0) {
             seconds = -seconds;
             negative = true;
         }
-        String text = DateUtils.formatElapsedTime(mRecycle, seconds);
+        String text;
+        if (mUseAdaptiveFormat) {
+            text = formatTextWithAdaptiveTimeFormat(Duration.ofSeconds(seconds));
+        } else {
+            text = DateUtils.formatElapsedTime(mRecycle, seconds);
+        }
+
         if (negative) {
             text = getResources().getString(R.string.negative_duration, text);
         }
@@ -385,7 +408,41 @@ public class Chronometer extends TextView {
                 }
             }
         }
+
         setText(text);
+    }
+
+    private String formatTextWithAdaptiveTimeFormat(Duration duration) {
+        final Measure days = new Measure(duration.toDaysPart(), MeasureUnit.DAY);
+        final Measure hours = new Measure(duration.toHoursPart(), MeasureUnit.HOUR);
+        final Measure minutes = new Measure(duration.toMinutesPart(), MeasureUnit.MINUTE);
+        final Measure seconds = new Measure(duration.toSecondsPart(), MeasureUnit.SECOND);
+        final MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                FormatWidth.NARROW);
+
+        final ArrayList<Measure> partsList = new ArrayList<>();
+        if (days.getNumber().intValue() != 0) {
+            partsList.add(days);
+            if (hours.getNumber().intValue() != 0) {
+                partsList.add(hours);
+            }
+        } else if (hours.getNumber().intValue() != 0) {
+            partsList.add(hours);
+            if (minutes.getNumber().intValue() != 0) {
+                partsList.add(minutes);
+            }
+        } else if (minutes.getNumber().intValue() != 0) {
+            partsList.add(minutes);
+            if (minutes.getNumber().intValue() < 3) {
+              partsList.add(seconds);
+            }
+        }
+
+        if (partsList.isEmpty()) {
+            partsList.add(seconds);
+        }
+
+        return formatter.formatMeasures(partsList.toArray(new Measure[0]));
     }
 
     private static final long SIGNIFICANT_DRIFT_MILLIS = 500;
