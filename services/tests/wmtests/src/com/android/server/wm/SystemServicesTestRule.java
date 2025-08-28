@@ -90,6 +90,7 @@ import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.am.ProcessStateController;
+import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.display.DisplayControl;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.firewall.IntentFirewall;
@@ -666,8 +667,7 @@ public class SystemServicesTestRule implements TestRule {
             final ProcessStateController psc = mock(ProcessStateController.class);
             final ProcessStateController.ActivityStateAsyncUpdater asau = mock(
                     ProcessStateController.ActivityStateAsyncUpdater.class);
-            doReturn(mock(ProcessStateController.AsyncBatchSession.class)).when(
-                    asau).startBatchSession();
+            doReturn(mock(AsyncBatchSession.class)).when(asau).startBatchSession();
             doReturn(asau).when(psc).createActivityStateAsyncUpdater(any());
             initialize(intentFirewall, null /* intentController */, psc,
                     DisplayThread.getHandler().getLooper());

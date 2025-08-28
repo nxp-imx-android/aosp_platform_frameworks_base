@@ -41,6 +41,7 @@ import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_TOP_SLEEPING;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_NONE;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
@@ -4469,6 +4470,43 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     @Test
+    @EnableFlags(Flags.FLAG_PSC_BATCH_UPDATE)
+    public void testBatchSession() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+
+        try (var unused = mProcessStateController.startBatchSession(OOM_ADJ_REASON_BACKUP)) {
+            setBackupTarget(app);
+            updateOomAdj(app);
+            // While in the BatchSession the update should not have run.
+            assertProcStates(app, PROCESS_STATE_NONEXISTENT, INVALID_ADJ, SCHED_GROUP_BACKGROUND);
+        }
+        assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, BACKUP_APP_ADJ,
+                SCHED_GROUP_BACKGROUND);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_PSC_BATCH_UPDATE)
+    public void testBatchSession_nested() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+
+        try (var unused = mProcessStateController.startBatchSession(OOM_ADJ_REASON_BACKUP)) {
+            try (var unused2 = mProcessStateController.startBatchSession(OOM_ADJ_REASON_NONE)) {
+                setBackupTarget(app);
+                updateOomAdj(app);
+            }
+            // While in the BatchSession the update should not have run.
+            assertProcStates(app, PROCESS_STATE_NONEXISTENT, INVALID_ADJ,
+                    SCHED_GROUP_BACKGROUND);
+        }
+        assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, BACKUP_APP_ADJ,
+                SCHED_GROUP_BACKGROUND);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
     public void testUpdateOomAdj_repeatedFreeze_notPendingFreeze() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
@@ -4835,11 +4873,11 @@ public class MockingOomAdjusterTests {
         long mNextPssTime;
         long mLastPss = 12345;
         int mMaxAdj = UNKNOWN_ADJ;
-        int mSetRawAdj = UNKNOWN_ADJ;
-        int mCurAdj = UNKNOWN_ADJ;
-        int mSetAdj = CACHED_APP_MAX_ADJ;
-        int mCurSchedGroup = SCHED_GROUP_DEFAULT;
-        int mSetSchedGroup = SCHED_GROUP_DEFAULT;
+        int mSetRawAdj = INVALID_ADJ;
+        int mCurAdj = INVALID_ADJ;
+        int mSetAdj = INVALID_ADJ;
+        int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
+        int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
         int mCurProcState = PROCESS_STATE_NONEXISTENT;
         int mRepProcState = PROCESS_STATE_NONEXISTENT;
         int mCurRawProcState = PROCESS_STATE_NONEXISTENT;
