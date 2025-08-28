@@ -46,6 +46,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -83,13 +85,11 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 public class UserBackupManagerServiceTest {
     private static final String TEST_PACKAGE = "package1";
-    private static final String[] TEST_PACKAGES = new String[] { TEST_PACKAGE };
+    private static final String[] TEST_PACKAGES = new String[] {TEST_PACKAGE};
     private static final String TEST_TRANSPORT = "transport";
 
-    @Rule
-    public TestRule compatChangeRule = new PlatformCompatChangeRule();
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public TestRule compatChangeRule = new PlatformCompatChangeRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock IBackupManagerMonitor mBackupManagerMonitor;
     @Mock IBackupObserver mBackupObserver;
@@ -103,8 +103,7 @@ public class UserBackupManagerServiceTest {
     @Mock BackupHandler mBackupHandler;
     @Mock BackupManagerMonitorEventSender mBackupManagerMonitorEventSender;
     @Mock IActivityManager mActivityManager;
-    @Mock
-    ActivityManagerInternal mActivityManagerInternal;
+    @Mock ActivityManagerInternal mActivityManagerInternal;
 
     @UserIdInt private int mUserId;
     private TestableContext mContext;
@@ -114,21 +113,23 @@ public class UserBackupManagerServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        mSession = mockitoSession()
-                .initMocks(this)
-                .mockStatic(BackupManagerMonitorEventSender.class)
-                .mockStatic(FeatureFlagUtils.class)
-                // TODO(b/263239775): Remove unnecessary stubbing.
-                .strictness(Strictness.LENIENT)
-                .startMocking();
+        mSession =
+                mockitoSession()
+                        .initMocks(this)
+                        .mockStatic(BackupManagerMonitorEventSender.class)
+                        .mockStatic(FeatureFlagUtils.class)
+                        // TODO(b/263239775): Remove unnecessary stubbing.
+                        .strictness(Strictness.LENIENT)
+                        .startMocking();
         MockitoAnnotations.initMocks(this);
 
         mUserId = ActivityManager.getCurrentUser();
 
         mContext = new TestableContext(ApplicationProvider.getApplicationContext());
         mContext.addMockSystemService(JobScheduler.class, mJobScheduler);
-        mContext.getTestablePermissions().setPermission(android.Manifest.permission.BACKUP,
-                PackageManager.PERMISSION_GRANTED);
+        mContext.getTestablePermissions()
+                .setPermission(
+                        android.Manifest.permission.BACKUP, PackageManager.PERMISSION_GRANTED);
 
         mService = new TestBackupService();
         mService.setEnabled(true);
@@ -148,18 +149,18 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void testSetFrameworkSchedulingEnabled_enablesAndSchedulesBackups() throws Exception {
-        Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                Settings.Secure.BACKUP_SCHEDULING_ENABLED, 0, mUserId);
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.BACKUP_SCHEDULING_ENABLED,
+                0,
+                mUserId);
 
         mService.setFrameworkSchedulingEnabled(true);
 
         assertThat(mService.isFrameworkSchedulingEnabled()).isTrue();
-        verify(mJobScheduler).schedule(
-                matchesJobWithId(KeyValueBackupJob.getJobIdForUserId(
-                        mUserId)));
-        verify(mJobScheduler).schedule(
-                matchesJobWithId(FullBackupJob.getJobIdForUserId(
-                        mUserId)));
+        verify(mJobScheduler)
+                .schedule(matchesJobWithId(KeyValueBackupJob.getJobIdForUserId(mUserId)));
+        verify(mJobScheduler).schedule(matchesJobWithId(FullBackupJob.getJobIdForUserId(mUserId)));
     }
 
     private static JobInfo matchesJobWithId(int id) {
@@ -168,8 +169,11 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void testSetFrameworkSchedulingEnabled_disablesAndCancelBackups() throws Exception {
-        Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                Settings.Secure.BACKUP_SCHEDULING_ENABLED, 1, mUserId);
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.BACKUP_SCHEDULING_ENABLED,
+                1,
+                mUserId);
 
         mService.setFrameworkSchedulingEnabled(false);
 
@@ -194,14 +198,21 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void getRequestBackupParams_appIsEligibleForFullBackup() throws Exception {
-        when(mPackageManager.getPackageInfoAsUser(anyString(), anyInt(), anyInt())).thenReturn(
-                getPackageInfo(TEST_PACKAGE));
+        when(mPackageManager.getPackageInfoAsUser(anyString(), anyInt(), anyInt()))
+                .thenReturn(getPackageInfo(TEST_PACKAGE));
         when(mBackupEligibilityRules.appIsEligibleForBackup(any())).thenReturn(true);
         when(mBackupEligibilityRules.appGetsFullBackup(any())).thenReturn(true);
 
-        BackupParams params = mService.getRequestBackupParams(TEST_PACKAGES, mBackupObserver,
-                mBackupManagerMonitor, /* flags */ 0, mBackupEligibilityRules,
-                mTransportConnection, /* transportDirName */ "", OnTaskFinishedListener.NOP);
+        BackupParams params =
+                mService.getRequestBackupParams(
+                        TEST_PACKAGES,
+                        mBackupObserver,
+                        mBackupManagerMonitor, /* flags */
+                        0,
+                        mBackupEligibilityRules,
+                        mTransportConnection, /* transportDirName */
+                        "",
+                        OnTaskFinishedListener.NOP);
 
         assertThat(params.kvPackages).isEmpty();
         assertThat(params.fullPackages).contains(TEST_PACKAGE);
@@ -210,14 +221,21 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void getRequestBackupParams_appIsEligibleForKeyValueBackup() throws Exception {
-        when(mPackageManager.getPackageInfoAsUser(anyString(), anyInt(), anyInt())).thenReturn(
-                getPackageInfo(TEST_PACKAGE));
+        when(mPackageManager.getPackageInfoAsUser(anyString(), anyInt(), anyInt()))
+                .thenReturn(getPackageInfo(TEST_PACKAGE));
         when(mBackupEligibilityRules.appIsEligibleForBackup(any())).thenReturn(true);
         when(mBackupEligibilityRules.appGetsFullBackup(any())).thenReturn(false);
 
-        BackupParams params = mService.getRequestBackupParams(TEST_PACKAGES, mBackupObserver,
-                mBackupManagerMonitor, /* flags */ 0, mBackupEligibilityRules,
-                mTransportConnection, /* transportDirName */ "", OnTaskFinishedListener.NOP);
+        BackupParams params =
+                mService.getRequestBackupParams(
+                        TEST_PACKAGES,
+                        mBackupObserver,
+                        mBackupManagerMonitor, /* flags */
+                        0,
+                        mBackupEligibilityRules,
+                        mTransportConnection, /* transportDirName */
+                        "",
+                        OnTaskFinishedListener.NOP);
 
         assertThat(params.kvPackages).contains(TEST_PACKAGE);
         assertThat(params.fullPackages).isEmpty();
@@ -226,14 +244,21 @@ public class UserBackupManagerServiceTest {
 
     @Test
     public void getRequestBackupParams_appIsNotEligibleForBackup() throws Exception {
-        when(mPackageManager.getPackageInfoAsUser(anyString(), anyInt(), anyInt())).thenReturn(
-                getPackageInfo(TEST_PACKAGE));
+        when(mPackageManager.getPackageInfoAsUser(anyString(), anyInt(), anyInt()))
+                .thenReturn(getPackageInfo(TEST_PACKAGE));
         when(mBackupEligibilityRules.appIsEligibleForBackup(any())).thenReturn(false);
         when(mBackupEligibilityRules.appGetsFullBackup(any())).thenReturn(false);
 
-        BackupParams params = mService.getRequestBackupParams(TEST_PACKAGES, mBackupObserver,
-                mBackupManagerMonitor, /* flags */ 0, mBackupEligibilityRules,
-                mTransportConnection, /* transportDirName */ "", OnTaskFinishedListener.NOP);
+        BackupParams params =
+                mService.getRequestBackupParams(
+                        TEST_PACKAGES,
+                        mBackupObserver,
+                        mBackupManagerMonitor, /* flags */
+                        0,
+                        mBackupEligibilityRules,
+                        mTransportConnection, /* transportDirName */
+                        "",
+                        OnTaskFinishedListener.NOP);
 
         assertThat(params.kvPackages).isEmpty();
         assertThat(params.fullPackages).isEmpty();
@@ -241,8 +266,7 @@ public class UserBackupManagerServiceTest {
     }
 
     @Test
-    public void testGetBackupDestinationFromTransport_returnsCloudByDefault()
-            throws Exception {
+    public void testGetBackupDestinationFromTransport_returnsCloudByDefault() throws Exception {
         when(mTransportConnection.connectOrThrow(any())).thenReturn(mBackupTransport);
         when(mBackupTransport.getTransportFlags()).thenReturn(0);
 
@@ -255,8 +279,8 @@ public class UserBackupManagerServiceTest {
     public void testGetBackupDestinationFromTransport_returnsDeviceTransferForD2dTransport()
             throws Exception {
         when(mTransportConnection.connectOrThrow(any())).thenReturn(mBackupTransport);
-        when(mBackupTransport.getTransportFlags()).thenReturn(
-                BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER);
+        when(mBackupTransport.getTransportFlags())
+                .thenReturn(BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER);
 
         int backupDestination = mService.getBackupDestinationFromTransport(mTransportConnection);
 
@@ -266,20 +290,62 @@ public class UserBackupManagerServiceTest {
     @Test
     public void testReportDelayedRestoreResult_sendsLogsToMonitor() throws Exception {
         PackageInfo packageInfo = getPackageInfo(TEST_PACKAGE);
-        when(mPackageManager.getPackageInfoAsUser(anyString(),
-                any(PackageManager.PackageInfoFlags.class), anyInt())).thenReturn(packageInfo);
+        when(mPackageManager.getPackageInfoAsUser(
+                        anyString(), any(PackageManager.PackageInfoFlags.class), anyInt()))
+                .thenReturn(packageInfo);
         when(mTransportManager.getCurrentTransportName()).thenReturn(TEST_TRANSPORT);
         when(mTransportManager.getTransportClientOrThrow(eq(TEST_TRANSPORT), anyString()))
                 .thenReturn(mTransportConnection);
         when(mTransportConnection.connectOrThrow(any())).thenReturn(mBackupTransport);
         when(mBackupTransport.getBackupManagerMonitor()).thenReturn(mBackupManagerMonitor);
 
-        List<DataTypeResult> results = Arrays.asList(new DataTypeResult(/* dataType */ "type_1"),
-                new DataTypeResult(/* dataType */ "type_2"));
+        List<DataTypeResult> results =
+                Arrays.asList(
+                        new DataTypeResult(/* dataType */ "type_1"),
+                        new DataTypeResult(/* dataType */ "type_2"));
         mService.reportDelayedRestoreResult(TEST_PACKAGE, results);
 
-        verify(mBackupManagerMonitorEventSender).sendAgentLoggingResults(
-                eq(packageInfo), eq(results), eq(OperationType.RESTORE));
+        verify(mBackupManagerMonitorEventSender)
+                .sendAgentLoggingResults(eq(packageInfo), eq(results), eq(OperationType.RESTORE));
+    }
+
+    @Test
+    @DisableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testGetEligibilityRulesForRestoreAtInstall_flagOff_defaultEligibility()
+            throws Exception {
+        long restoreToken = 1;
+        mService.setAncestralToken(restoreToken);
+        mService.setAncestralBackupDestination(BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        BackupEligibilityRules eligibilityRules =
+                mService.getEligibilityRulesForRestoreAtInstall(restoreToken);
+
+        assertThat(eligibilityRules.getBackupDestination()).isEqualTo(BackupDestination.CLOUD);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testGetEligibilityRulesForRestoreAtInstall_flagOn_correctEligibilityRules()
+            throws Exception {
+        long restoreToken = 1;
+        mService.setAncestralToken(restoreToken);
+        mService.setAncestralBackupDestination(BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        BackupEligibilityRules eligibilityRules =
+                mService.getEligibilityRulesForRestoreAtInstall(restoreToken);
+
+        assertThat(eligibilityRules.getBackupDestination())
+                .isEqualTo(BackupDestination.CROSS_PLATFORM_TRANSFER);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testGetEligibilityRulesForRestoreAtInstall_noAncestralToken_defaultEligibility()
+            throws Exception {
+        BackupEligibilityRules eligibilityRules =
+                mService.getEligibilityRulesForRestoreAtInstall(1);
+
+        assertThat(eligibilityRules.getBackupDestination()).isEqualTo(BackupDestination.CLOUD);
     }
 
     private static PackageInfo getPackageInfo(String packageName) {
@@ -293,15 +359,21 @@ public class UserBackupManagerServiceTest {
         boolean isEnabledStatePersisted = false;
 
         TestBackupService() {
-            super(mUserId, mContext, mPackageManager, mOperationStorage, mTransportManager,
-                    mBackupHandler, createConstants(mContext), mActivityManager,
+            super(
+                    mUserId,
+                    mContext,
+                    mPackageManager,
+                    mOperationStorage,
+                    mTransportManager,
+                    mBackupHandler,
+                    createConstants(mContext),
+                    mActivityManager,
                     mActivityManagerInternal);
         }
 
         private static BackupManagerConstants createConstants(Context context) {
-            BackupManagerConstants constants = new BackupManagerConstants(
-                    Handler.getMain(),
-                    context.getContentResolver());
+            BackupManagerConstants constants =
+                    new BackupManagerConstants(Handler.getMain(), context.getContentResolver());
             // This will trigger constants default values to be set thus preventing invalid values
             // being used in tests.
             constants.update(new KeyValueListParser(','));
