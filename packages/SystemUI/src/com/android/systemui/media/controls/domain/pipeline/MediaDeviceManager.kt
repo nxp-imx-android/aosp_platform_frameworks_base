@@ -242,7 +242,6 @@ constructor(
         fun start() =
             bgExecutor.execute {
                 if (!started) {
-                    // Fetch in case a suggestion already exists before registering for suggestions
                     localMediaManager.registerCallback(this)
                     if (!Flags.removeUnnecessaryRouteScanning()) {
                         localMediaManager.startScan()
@@ -251,13 +250,19 @@ constructor(
                     playbackType = controller?.playbackInfo?.playbackType ?: PLAYBACK_TYPE_UNKNOWN
                     playbackVolumeControlId = controller?.playbackInfo?.volumeControlId
                     controller?.registerCallback(this)
-                    if (enableSuggestedDeviceUi() && !isResumption) {
-                        suggestedDeviceManager.addListener(this)
+                    if (enableSuggestedDeviceUi()) {
                         updateCurrent(notifyListeners = false)
-                        updateSuggestion(
-                            suggestedDeviceManager.getSuggestedDevice(),
-                            notifyListeners = false,
-                        )
+                        if (isResumption) {
+                            // Set the onSuggestionSpaceVisible callback only.
+                            updateSuggestion(state = null, notifyListeners = false)
+                        } else {
+                            suggestedDeviceManager.addListener(this)
+                            // Fetch in case a suggestion already exists before requesting a new one
+                            updateSuggestion(
+                                state = suggestedDeviceManager.getSuggestedDevice(),
+                                notifyListeners = false,
+                            )
+                        }
                         fgExecutor.execute {
                             processMediaDeviceAndSuggestionData(
                                 key,
