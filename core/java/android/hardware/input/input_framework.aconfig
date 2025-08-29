@@ -120,7 +120,7 @@ flag {
     name: "enable_talkback_key_gestures"
     namespace: "accessibility"
     description: "Adds key gesture for TalkBack"
-    bug: "375277034"
+    bug: "441787329"
 }
 
 flag {
