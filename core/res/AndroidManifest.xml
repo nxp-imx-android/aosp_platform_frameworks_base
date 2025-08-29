@@ -10003,6 +10003,20 @@
                   android:process=":ui">
         </activity>
 
+        <!-- Activity that allows the user to enable or disable App Lock for an app. -->
+        <activity android:name="com.android.internal.app.AppLockActivity"
+                  android:permission="android.permission.LOCK_APPS"
+                  android:theme="@style/Theme.Dialog.Confirmation"
+                  android:excludeFromRecents="true"
+                  android:exported="false"
+                  android:process=":ui"
+                  android:featureFlag="android.security.app_lock_core">
+            <intent-filter android:priority="100">
+                <action android:name="android.content.pm.action.SET_APP_LOCK" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <activity android:name="com.android.internal.app.UnlaunchableAppActivity"
                 android:theme="@style/Theme.Dialog.Confirmation"
                 android:excludeFromRecents="true"
