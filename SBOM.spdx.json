@@ -1,0 +1,58 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2025-08-27T01:55:44Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.20"
+  },
+  "name": "aosp_platform_frameworks_base-android-16.0.0_1.0.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/0c28ed27-ce7a-4ec4-bb77-e87f6cae7e28",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-0c28ed27-ce7a-4ec4-bb77-e87f6cae7e28",
+      "name": "aosp_platform_frameworks_base",
+      "versionInfo": "android-16.0.0_1.0.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-imx-android/aosp_platform_frameworks_base",
+      "originator": "Organization: aosp_platform_frameworks_base",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-03229395-ab12-48dc-8534-35824b5db3a7",
+      "name": "platform_frameworks_base",
+      "versionInfo": "android-16.0.0_r1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "https://android.googlesource.com/platform/frameworks/base",
+      "originator": "Organization: android",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "2fe67617-f18a-4f7e-ab5a-c8b15662ed09",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        }
+      ],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-0c28ed27-ce7a-4ec4-bb77-e87f6cae7e28"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-0c28ed27-ce7a-4ec4-bb77-e87f6cae7e28",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-03229395-ab12-48dc-8534-35824b5db3a7"
+    }
+  ]
+}
