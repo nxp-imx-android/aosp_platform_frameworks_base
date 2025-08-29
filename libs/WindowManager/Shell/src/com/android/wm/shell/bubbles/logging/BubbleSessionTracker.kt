@@ -16,22 +16,75 @@
 
 package com.android.wm.shell.bubbles.logging
 
+import com.android.wm.shell.bubbles.Bubble
+import com.android.wm.shell.bubbles.BubbleOverflow
+import com.android.wm.shell.bubbles.BubbleViewProvider
+
 /**
  * Keeps track of the current Bubble session.
  *
  * Bubble sessions start when the stack expands and end when the stack collapses.
  */
-interface BubbleSessionTracker {
+fun interface BubbleSessionTracker {
 
     /** Starts tracking a new bubble bar session. */
-    fun startBubbleBar()
+    fun log(event: SessionEvent)
 
-    /** Stops tracking the current bubble bar session. */
-    fun stopBubbleBar()
+    /** Session events that are tracked. */
+    sealed class SessionEvent {
+        data class Started(
+            val forBubbleBar: Boolean,
+            val selectedBubblePackage: String,
+        ) : SessionEvent() {
 
-    /** Starts tracking a new floating bubble session. */
-    fun startFloating()
+            companion object {
 
-    /** Stops tracking the current floating bubble session. */
-    fun stopFloating()
+                @JvmStatic
+                fun forBubbleBar(selectedBubblePackage: String) =
+                    Started(forBubbleBar = true, selectedBubblePackage)
+
+                @JvmStatic
+                fun forFloatingBubble(selectedBubblePackage: String) =
+                    Started(forBubbleBar = false, selectedBubblePackage)
+            }
+        }
+
+        data class Ended(val forBubbleBar: Boolean) : SessionEvent() {
+
+            companion object {
+
+                @JvmStatic
+                fun forBubbleBar() = Ended(forBubbleBar = true)
+
+                @JvmStatic
+                fun forFloatingBubble() = Ended(forBubbleBar = false)
+            }
+        }
+
+        data class SwitchedBubble(
+            val forBubbleBar: Boolean,
+            val toBubblePackage: String,
+        ) : SessionEvent() {
+
+            companion object {
+
+                @JvmStatic
+                fun forBubbleBar(toBubblePackage: String) =
+                    SwitchedBubble(forBubbleBar = true, toBubblePackage)
+
+                @JvmStatic
+                fun forFloatingBubble(toBubblePackage: String) =
+                    SwitchedBubble(forBubbleBar = false, toBubblePackage)
+            }
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun BubbleViewProvider.getBubblePackageForLogging() = when (this) {
+            is Bubble -> packageName
+            is BubbleOverflow -> "Overflow"
+            else -> throw IllegalArgumentException("Unsupported type of BubbleViewProvider")
+        }
+    }
 }

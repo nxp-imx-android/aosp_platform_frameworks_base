@@ -33,6 +33,7 @@ import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.ResizabilityChecker;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -88,7 +89,8 @@ public class TestableBubbleController extends BubbleController {
             ResizabilityChecker resizabilityChecker,
             HomeIntentProvider homeIntentProvider,
             BubbleAppInfoProvider appInfoProvider,
-            Optional<SplitScreenController> splitScreenController) {
+            Optional<SplitScreenController> splitScreenController,
+            BubbleSessionTracker sessionTracker) {
         super(context, shellInit, shellCommandHandler, shellController, data, Runnable::run,
                 floatingContentCoordinator, dataRepository, bubbleTransitions, statusBarService,
                 windowManager, displayInsetsController, displayImeController, userManager,
@@ -96,7 +98,8 @@ public class TestableBubbleController extends BubbleController {
                 displayController, oneHandedOptional, dragAndDropController, shellMainExecutor,
                 shellMainHandler, new SyncExecutor(), taskViewTransitions,
                 transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider,
-                appInfoProvider, () -> splitScreenController, Optional.empty(), () -> false);
+                appInfoProvider, () -> splitScreenController, Optional.empty(), () -> false,
+                sessionTracker);
         setInflateSynchronously(true);
         onInit();
     }

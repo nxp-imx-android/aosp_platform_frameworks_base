@@ -46,6 +46,7 @@ import androidx.annotation.OptIn;
 
 import com.android.app.viewcapture.ViewCaptureAwareWindowManagerFactory;
 import com.android.internal.jank.InteractionJankMonitor;
+import com.android.internal.logging.InstanceIdSequence;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.policy.FoldLockSettingsObserver;
@@ -76,6 +77,8 @@ import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.DragToBubbleController;
 import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
 import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserverImpl;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -246,12 +249,6 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static BubbleLogger provideBubbleLogger(UiEventLogger uiEventLogger) {
-        return new BubbleLogger(uiEventLogger);
-    }
-
-    @WMSingleton
-    @Provides
     static BubblePositioner provideBubblePositioner(Context context, WindowManager windowManager) {
         return new BubblePositioner(context, windowManager);
     }
@@ -327,9 +324,19 @@ public abstract class WMShellModule {
         return observer;
     }
 
+    @WMSingleton
+    @Provides
+    @Bubbles
+    static InstanceIdSequence provideBubbleInstanceIdSequence() {
+        return new InstanceIdSequence(Integer.MAX_VALUE);
+    }
+
     @Binds
     abstract BubblesFoldLockSettingsObserver bindBubblesFoldLockSettingsObserver(
             BubblesFoldLockSettingsObserverImpl impl);
+
+    @Binds
+    abstract BubbleSessionTracker bindBubbleSessionTracker(BubbleSessionTrackerImpl impl);
 
     // Note: Handler needed for LauncherApps.register
     @WMSingleton
@@ -366,7 +373,8 @@ public abstract class WMShellModule {
             BubbleAppInfoProvider appInfoProvider,
             Lazy<Optional<SplitScreenController>> splitScreenController,
             @NonNull Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
-            BubblesFoldLockSettingsObserver foldLockSettingsObserver) {
+            BubblesFoldLockSettingsObserver foldLockSettingsObserver,
+            BubbleSessionTracker sessionTracker) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -409,7 +417,8 @@ public abstract class WMShellModule {
                 appInfoProvider,
                 splitScreenController,
                 unfoldProgressProvider,
-                foldLockSettingsObserver);
+                foldLockSettingsObserver,
+                sessionTracker);
     }
 
     //

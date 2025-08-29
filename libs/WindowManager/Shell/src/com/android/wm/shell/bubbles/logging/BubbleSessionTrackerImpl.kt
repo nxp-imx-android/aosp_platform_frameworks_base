@@ -20,11 +20,15 @@ import com.android.internal.logging.InstanceId
 import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.bubbles.BubbleLogger
-import com.android.wm.shell.bubbles.BubbleLogger.Event
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_FROM
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_ENDED
 import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_STARTED
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_SWITCHED_FROM
+import com.android.wm.shell.bubbles.BubbleLogger.Event.BUBBLE_SESSION_SWITCHED_TO
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent
 import com.android.wm.shell.dagger.Bubbles
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup
@@ -33,7 +37,7 @@ import javax.inject.Inject
 /**
  * Keeps track of the current bubble session and logs when sessions start and end.
  *
- * Sessions are identified using an [InstanceId].
+ * Sessions are represented using [Session].
  */
 @WMSingleton
 class BubbleSessionTrackerImpl
@@ -43,17 +47,25 @@ constructor(
     private val logger: BubbleLogger
 ) : BubbleSessionTracker {
 
-    private var currentSession: InstanceId? = null
+    private var currentSession: Session? = null
 
-    override fun startBubbleBar() {
-        start(BUBBLE_BAR_SESSION_STARTED)
+    /** Represents a bubble session. */
+    private data class Session(
+        /** Session identifier. The identifier remains the same until a new session is started. */
+        val id: InstanceId,
+        /** The package for the currently selected bubble in this session. */
+        val appPackage: String,
+    )
+
+    override fun log(event: SessionEvent) {
+        when (event) {
+            is SessionEvent.Started -> sessionStarted(event)
+            is SessionEvent.Ended -> sessionEnded(event)
+            is SessionEvent.SwitchedBubble -> switchedBubble(event)
+        }
     }
 
-    override fun startFloating() {
-        start(BUBBLE_SESSION_STARTED)
-    }
-
-    private fun start(event: Event) {
+    private fun sessionStarted(event: SessionEvent.Started) {
         if (currentSession != null) {
             ProtoLog.d(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
@@ -61,29 +73,55 @@ constructor(
                     "previous session still active"
             )
         }
-        val sessionId = instanceIdSequence.newInstanceId()
-        logger.logWithSessionId(event, sessionId)
-        currentSession = sessionId
+
+        val uiEvent =
+            if (event.forBubbleBar) BUBBLE_BAR_SESSION_STARTED else BUBBLE_SESSION_STARTED
+        val session =
+            Session(
+                id = instanceIdSequence.newInstanceId(),
+                appPackage = event.selectedBubblePackage
+            )
+        logger.logWithSessionId(uiEvent, session.appPackage, session.id)
+        currentSession = session
     }
 
-    override fun stopBubbleBar() {
-        stop(BUBBLE_BAR_SESSION_ENDED)
-    }
-
-    override fun stopFloating() {
-        stop(BUBBLE_SESSION_ENDED)
-    }
-
-    fun stop(event: Event) {
-        val sessionId = currentSession
-        if (sessionId == null) {
+    private fun sessionEnded(event: SessionEvent.Ended) {
+        val session = currentSession
+        if (session == null) {
             ProtoLog.d(
                 ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
                 "BubbleSessionTracker: session tracking stopped but current session is null"
             )
             return
         }
-        logger.logWithSessionId(event, sessionId)
+
+        val uiEvent =
+            if (event.forBubbleBar) BUBBLE_BAR_SESSION_ENDED else BUBBLE_SESSION_ENDED
+        logger.logWithSessionId(uiEvent, session.appPackage, session.id)
         currentSession = null
+    }
+
+    private fun switchedBubble(event: SessionEvent.SwitchedBubble) {
+        val session = currentSession
+        if (session == null) {
+            ProtoLog.d(
+                ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY,
+                "BubbleSessionTracker: tracking bubble switch but current session is null"
+            )
+            return
+        }
+
+        val uiEventSwitchedFrom =
+            if (event.forBubbleBar) {
+                BUBBLE_BAR_SESSION_SWITCHED_FROM
+            } else {
+                BUBBLE_SESSION_SWITCHED_FROM
+            }
+        logger.logWithSessionId(uiEventSwitchedFrom, session.appPackage, session.id)
+
+        val uiEventSwitchedTo =
+            if (event.forBubbleBar) BUBBLE_BAR_SESSION_SWITCHED_TO else BUBBLE_SESSION_SWITCHED_TO
+        logger.logWithSessionId(uiEventSwitchedTo, event.toBubblePackage, session.id)
+        currentSession = session.copy(appPackage = event.toBubblePackage)
     }
 }

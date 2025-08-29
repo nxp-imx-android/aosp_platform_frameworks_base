@@ -181,6 +181,7 @@ import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.StackEducationView;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -329,6 +330,8 @@ public class BubblesTest extends SysuiTestCase {
     private DisplayImeController mDisplayImeController;
     @Mock
     private BubbleLogger mBubbleLogger;
+    @Mock
+    private BubbleSessionTracker mSessionTracker;
     @Mock
     private BubbleEducationController mEducationController;
     @Mock
@@ -542,7 +545,8 @@ public class BubblesTest extends SysuiTestCase {
                 new BubbleResizabilityChecker(),
                 mHomeIntentProvider,
                 mAppInfoProvider,
-                Optional.empty());
+                Optional.empty(),
+                mSessionTracker);
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 
