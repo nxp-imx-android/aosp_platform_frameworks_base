@@ -26,6 +26,7 @@ cc_test {
         "libutils",
         "libandroid",
         "libbinder",
+        "libbinder_ndk",
     ],
 
     static_libs: [

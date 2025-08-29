@@ -48,12 +48,12 @@ parcelable RunningAppProcessInfo {
     /**
      * All packages that have been loaded into the process.
      */
-    @utf8InCpp String[] pkgList;
+    @nullable @utf8InCpp String[] pkgList;
 
     /**
      * Additional packages loaded into the process as dependency.
      */
-    @utf8InCpp String[] pkgDeps;
+    @nullable @utf8InCpp String[] pkgDeps;
 
     /**
      * Constant for {@link #flags}: this is an app that is unable to
