@@ -83,6 +83,18 @@ public class BubbleLogger {
         @UiEvent(doc = "The previously selected bubble while expanded.")
         BUBBLE_SESSION_SWITCHED_FROM(2428),
 
+        @UiEvent(doc = "New bubble created from a notification for a previously promoted chat.")
+        BUBBLE_CREATED_FROM_NOTIF(2432),
+
+        @UiEvent(doc = "New bubble created by tapping on the bubble button on the notification.")
+        BUBBLE_CREATED_FROM_NOTIF_BUBBLE_BUTTON(2433),
+
+        @UiEvent(doc = "New bubble created from an all apps icon menu.")
+        BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU(2436),
+
+        @UiEvent(doc = "New bubble created from a launcher icon menu.")
+        BUBBLE_CREATED_FROM_LAUNCHER_ICON_MENU(2437),
+
         // endregion
 
         // region bubble bar events
@@ -188,6 +200,27 @@ public class BubbleLogger {
 
         @UiEvent(doc = "The previously selected bubble bar bubble while expanded.")
         BUBBLE_BAR_SESSION_SWITCHED_FROM(2430),
+
+        @UiEvent(doc = "New bubble created from a notification for a previously promoted chat.")
+        BUBBLE_BAR_CREATED_FROM_NOTIF(2438),
+
+        @UiEvent(doc = "New bubble created by tapping on the bubble button on the notification.")
+        BUBBLE_BAR_CREATED_FROM_NOTIF_BUBBLE_BUTTON(2439),
+
+        @UiEvent(doc = "New bubble created by dragging a taskbar icon.")
+        BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_DRAG(2440),
+
+        @UiEvent(doc = "New bubble created by dragging an all apps icon.")
+        BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_DRAG(2441),
+
+        @UiEvent(doc = "New bubble created from an all apps icon menu.")
+        BUBBLE_BAR_CREATED_FROM_ALL_APPS_ICON_MENU(2442),
+
+        @UiEvent(doc = "New bubble created from a launcher icon menu.")
+        BUBBLE_BAR_CREATED_FROM_LAUNCHER_ICON_MENU(2443),
+
+        @UiEvent(doc = "New bubble created from a taskbar icon menu.")
+        BUBBLE_BAR_CREATED_FROM_TASKBAR_ICON_MENU(2444),
 
         // endregion
         ;
