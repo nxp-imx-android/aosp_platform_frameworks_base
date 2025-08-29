@@ -18,7 +18,6 @@ package com.android.systemui.screenshot.ui
 
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Insets
 import android.graphics.Rect
 import android.graphics.Region
 import android.util.AttributeSet
@@ -119,7 +118,21 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
         })
     }
 
-    fun getTouchRegion(gestureInsets: Insets): Region {
+    fun getObservedRegion(insets: WindowInsets): Region {
+        val region = getTouchRegion(insets)
+        if (
+            resources.getInteger(com.android.internal.R.integer.config_navBarInteractionMode) !=
+                NAV_BAR_MODE_GESTURAL
+        ) {
+            region.op(
+                insets.getBoundingRects(WindowInsets.Type.navigationBars())[0],
+                Region.Op.UNION,
+            )
+        }
+        return region
+    }
+
+    fun getTouchRegion(insets: WindowInsets): Region {
         val region = getSwipeRegion()
 
         // only add gesture insets to touch region in gestural mode
@@ -127,6 +140,7 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
             resources.getInteger(com.android.internal.R.integer.config_navBarInteractionMode) ==
                 NAV_BAR_MODE_GESTURAL
         ) {
+            val gestureInsets = insets.getInsets(WindowInsets.Type.systemGestures())
             // Receive touches in gesture insets so they don't cause TOUCH_OUTSIDE
             // left edge gesture region
             val insetRect = Rect(0, 0, gestureInsets.left, displayMetrics.heightPixels)
