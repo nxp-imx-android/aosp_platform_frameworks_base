@@ -714,6 +714,44 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
+    public void onInputDeviceListUpdate_verifyCurrentInputDevice() {
+        mMediaSwitchingController.start(mCb);
+
+        assertThat(mMediaSwitchingController.mCurrentInputDevice).isNull();
+
+        final MediaDevice mediaDevice3 =
+                InputMediaDevice.create(
+                        mContext,
+                        TEST_DEVICE_3_ID,
+                        "",
+                        AudioDeviceInfo.TYPE_BUILTIN_MIC,
+                        MAX_VOLUME,
+                        CURRENT_VOLUME,
+                        VOLUME_FIXED_TRUE,
+                        /* isSelected= */ true,
+                        PRODUCT_NAME_BUILTIN_MIC);
+        final MediaDevice mediaDevice4 =
+                InputMediaDevice.create(
+                        mContext,
+                        TEST_DEVICE_4_ID,
+                        "",
+                        AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                        MAX_VOLUME,
+                        CURRENT_VOLUME,
+                        VOLUME_FIXED_TRUE,
+                        /* isSelected= */ false,
+                        PRODUCT_NAME_WIRED_HEADSET);
+        final List<MediaDevice> inputDevices = new ArrayList<>();
+        inputDevices.add(mediaDevice3);
+        inputDevices.add(mediaDevice4);
+
+        // Input devices have changed.
+        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
+
+        assertThat(mMediaSwitchingController.mCurrentInputDevice.get()).isEqualTo(mediaDevice3);
+    }
+
+    @Test
     public void advanced_categorizeMediaItems_withSuggestedDevice_verifyDeviceListSize() {
         when(mMediaDevice1.isSuggestedDevice()).thenReturn(true);
         when(mMediaDevice2.isSuggestedDevice()).thenReturn(false);
