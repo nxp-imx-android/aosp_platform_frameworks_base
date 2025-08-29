@@ -49,15 +49,15 @@ fun PlatformTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Compos
     val context = LocalContext.current
 
     // Force recreate the color schemes if the theme might have changed.
-    val configuration = LocalConfiguration.current
+    val currentAssetsSeq = LocalConfiguration.current.assetsSeq
     val colorScheme =
-        remember(context, isDarkTheme, configuration) {
+        remember(context, isDarkTheme, currentAssetsSeq) {
             TraceUtils.trace("PlatformTheme.colorScheme") {
                 platformColorScheme(isDarkTheme, context)
             }
         }
     val androidColorScheme =
-        remember(context, isDarkTheme, configuration) {
+        remember(context, isDarkTheme, currentAssetsSeq) {
             TraceUtils.trace("PlatformTheme.androidColorScheme") { AndroidColorScheme(context) }
         }
 
