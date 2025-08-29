@@ -237,7 +237,21 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
         public final Set<Long> protologMessageInterningSet = new HashSet<>();
         public final Map<String, Integer> argumentInterningMap = new HashMap<>();
         public final Map<String, Integer> stacktraceInterningMap = new HashMap<>();
+        public long internedStringsSizeBytes = 0;
         public boolean clearReported = false;
+
+        /**
+         * Resets the incremental state, clearing all interned data. This is used to prevent
+         * the state from growing too large during long tracing sessions.
+         */
+        public void reset() {
+            protologGroupInterningSet.clear();
+            protologMessageInterningSet.clear();
+            argumentInterningMap.clear();
+            stacktraceInterningMap.clear();
+            internedStringsSizeBytes = 0;
+            clearReported = false;
+        }
     }
 
     public static class ProtoLogConfig {
