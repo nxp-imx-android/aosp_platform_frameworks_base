@@ -2338,7 +2338,10 @@ class DesktopTasksController(
                 )
                 return@moveToNextDisplay false
             }
-            val focusedNonDesktopTasks = getFocusedNonDesktopTasks(displayId, userId)
+            val focusedNonDesktopTasks =
+                getFocusedNonDesktopTasks(displayId, userId).filter {
+                    !DesktopWallpaperActivity.isWallpaperTask(it)
+                }
             if (!focusedNonDesktopTasks.isEmpty()) {
                 logD(
                     "moveToNextDesktopDisplay: Skip displayId=$displayId as it has focused " +
