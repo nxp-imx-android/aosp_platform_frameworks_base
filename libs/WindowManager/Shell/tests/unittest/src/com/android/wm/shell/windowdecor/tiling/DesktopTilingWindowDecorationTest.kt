@@ -708,7 +708,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(configuration.uiMode).thenReturn(-1)
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
         tilingDecoration.isTilingManagerInitialised = true
-        tilingDecoration.onConfigurationChanged(newConfig)
+        tilingDecoration.onDisplayConfigurationChanged(displayId, newConfig)
         verify(desktopTilingDividerWindowManager, times(1)).onThemeChange()
     }
 
@@ -739,9 +739,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
 
         tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
         tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
-        assertThrows(NullPointerException::class.java) {
-            tilingDecoration.onDensityOrFontScaleChanged()
-        }
+        assertThrows(NullPointerException::class.java) { tilingDecoration.onDensityChanged() }
     }
 
     @Test
