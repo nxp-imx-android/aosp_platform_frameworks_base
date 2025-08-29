@@ -17,6 +17,7 @@
 package com.android.server.appbinding;
 
 import android.annotation.NonNull;
+import android.app.supervision.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.ConditionVariable;
@@ -24,9 +25,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInterface;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.PersistentConnection;
 import com.android.server.appbinding.finders.AppServiceFinder;
 import com.android.server.utils.Slogf;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.function.Consumer;
 
 /**
  * Establishes a persistent connection to a given service component for a given user
@@ -39,6 +46,10 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     private final AppServiceFinder mFinder;
     private final String mPackageName;
     private final ConditionVariable mConditionVariable = new ConditionVariable();
+    private final Handler mHandler;
+    @GuardedBy("mLock")
+    private final Queue<Consumer<AppServiceConnection>> mCallbacks = new ArrayDeque<>();
+    private final Object mLock = new Object();
 
     AppServiceConnection(Context context, int userId, AppBindingConstants constants,
             Handler handler, AppServiceFinder finder, String packageName,
@@ -51,6 +62,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
         mFinder = finder;
         mConstants = constants;
         mPackageName = packageName;
+        mHandler = handler;
     }
 
     @Override
@@ -69,12 +81,18 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected void onConnected(@NonNull IInterface service) {
-        mConditionVariable.open();
+        if (Flags.enableAppServiceConnectionCallback()) {
+            scheduleCallbacks();
+        } else {
+            mConditionVariable.open();
+        }
     }
 
     @Override
     protected void onDisconnected() {
-        mConditionVariable.close();
+        if (!Flags.enableAppServiceConnectionCallback()) {
+            mConditionVariable.close();
+        }
     }
 
     public AppServiceFinder getFinder() {
@@ -86,13 +104,50 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     }
 
     /**
+     * Adds a callback to the queue and tries to schedule it immediately
+     *
+     * @param callback The action to be executed
+     */
+    public void addCallback(Consumer<AppServiceConnection> callback) {
+        if (Flags.enableAppServiceConnectionCallback()) {
+            synchronized (mLock) {
+                mCallbacks.add(callback);
+            }
+            scheduleCallbacks();
+        }
+    }
+
+    /**
+     * Schedules all callbacks in the queue to be executed in the background if the connection is
+     * already established
+     */
+    private void scheduleCallbacks() {
+        if (isConnected()) {
+            ArrayList<Consumer<AppServiceConnection>> callbacks;
+            synchronized (mLock) {
+                callbacks = new ArrayList<>(mCallbacks);
+                mCallbacks.clear();
+            }
+
+            for (Consumer<AppServiceConnection> action : callbacks) {
+                mHandler.post(() -> {
+                    action.accept(this);
+                });
+            }
+        }
+    }
+
+    /**
      * Establishes the service connection and blocks until the service is connected
      * or a timeout occurs.
      *
      * @return true if the service connected successfully within the timeout, false otherwise.
      */
     public boolean awaitConnection() {
-        long timeoutMs = mConstants.SERVICE_RECONNECT_MAX_BACKOFF_SEC * 10 * 1000L;
-        return mConditionVariable.block(timeoutMs) && isConnected();
+        if (!Flags.enableAppServiceConnectionCallback()) {
+            long timeoutMs = mConstants.SERVICE_RECONNECT_MAX_BACKOFF_SEC * 10 * 1000L;
+            return mConditionVariable.block(timeoutMs) && isConnected();
+        }
+        return isConnected();
     }
 }

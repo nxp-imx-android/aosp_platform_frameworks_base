@@ -123,3 +123,11 @@ flag {
     description: "Flag that enables app store filters screen with Supervision settings entry point"
     bug: "438298503"
 }
+
+flag {
+  name: "enable_app_service_connection_callback"
+  is_exported: false
+  namespace: "supervision"
+  description: "Enables AppBindingService to dispatch actions to be executed by AppServiceConnection after a connection is established."
+  bug: "441932377"
+}
