@@ -122,12 +122,6 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
     }
 
     @Override
-    @NonNull
-    Rect calculateValidDragArea() {
-        return new Rect();
-    }
-
-    @Override
     int getCaptionViewId() {
         return R.id.caption;
     }

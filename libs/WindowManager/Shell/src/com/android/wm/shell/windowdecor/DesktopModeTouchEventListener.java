@@ -672,7 +672,7 @@ public class DesktopModeTouchEventListener
                 // Tasks bounds haven't actually been updated (only its leash), so pass to
                 // DesktopTasksController to allow secondary transformations (i.e. snap resizing
                 // or transforming to fullscreen) before setting new task bounds.
-                final Rect validDragArea = decoration.calculateValidDragArea();
+                final Rect validDragArea = decoration.getValidDragArea();
                 final boolean needDragIndicatorCleanup =
                         mDesktopTasksController.onDragPositioningEnd(
                                 taskInfo, decoration.getTaskSurface(), e.getDisplayId(),

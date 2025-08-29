@@ -117,7 +117,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
                     isResizeable = true
                 }
             )
-        `when`(mockWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
+        `when`(mockWindowDecoration.getValidDragArea()).thenReturn(VALID_DRAG_AREA)
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockWindowDecoration.decorWindowContext).thenReturn(mockContext)
         whenever(mockContext.resources).thenReturn(mockResources)

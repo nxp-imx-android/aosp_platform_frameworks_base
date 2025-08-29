@@ -392,7 +392,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         if (task.windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
             whenever(mockSplitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
         }
-        whenever(decoration.calculateValidDragArea()).thenReturn(Rect(0, 60, 2560, 1600))
+        whenever(decoration.getValidDragArea()).thenReturn(Rect(0, 60, 2560, 1600))
         return decoration
     }
 

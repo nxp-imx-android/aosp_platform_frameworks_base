@@ -1363,11 +1363,6 @@ public class WindowDecorationTests extends ShellTestCase {
         }
 
         @Override
-        Rect calculateValidDragArea() {
-            return null;
-        }
-
-        @Override
         int getCaptionViewId() {
             return R.id.caption;
         }
