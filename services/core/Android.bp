@@ -180,6 +180,13 @@ java_library_static {
 
     static_libs: [
         "accounts_flags_lib",
+        // TODO(b/443097042): Investigate the possibility of including
+        // `android.automotive.watchdog.internal-java` only for Automotive and TV form-factors,
+        // rather than all form factors. The current implementation includes it for all
+        // form factors because it's unclear how to target only the TV form factor.
+        // Following the investigation, move `android.automotive.watchdog.internal-java`
+        // from `services.jar` to Automotive and TV specific build rules.
+        "android.automotive.watchdog.internal-java", // AIDL
         "android.frameworks.vibrator-V1-java", // AIDL
         "android.frameworks.devicestate-V1-java", // AIDL
         "android.hardware.authsecret-V1.0-java",
