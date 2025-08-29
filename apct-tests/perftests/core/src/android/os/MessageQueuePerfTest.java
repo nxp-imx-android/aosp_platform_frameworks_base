@@ -32,8 +32,6 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.helpers.SimpleperfHelper;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,9 +39,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -58,53 +53,17 @@ public class MessageQueuePerfTest {
     private static final int TOTAL_MESSAGE_COUNT = PER_THREAD_MESSAGE_COUNT * THREAD_COUNT;
     private static final int DEFAULT_MESSAGE_WHAT = 2;
 
-    private SimpleperfHelper mSimpleperfHelper = new SimpleperfHelper();
-    private boolean mEnableSimpleperf = true;
-
     @Rule public TestName mTestName = new TestName();
-
-    /** Start simpleperf sampling. */
-    public void startSimpleperf(String subcommand, String arguments) {
-        if (!mSimpleperfHelper.startCollecting(subcommand, arguments)) {
-            Log.e(TAG, "Simpleperf did not start successfully.");
-        }
-    }
-
-    /** Stop simpleperf sampling and dump the collected file into the given path. */
-    private void stopSimpleperf(Path path) {
-        if (!mSimpleperfHelper.stopCollecting(path.toString())) {
-            Log.e(TAG, "Failed to collect the simpleperf output.");
-        }
-    }
 
     @Before
     public void setUp() {
         mHandlerThread = new HandlerThread("MessageQueuePerfTest");
         mHandlerThread.start();
-
-        Bundle arguments = androidx.test.platform.app.InstrumentationRegistry.getArguments();
-        if (arguments != null && arguments.getString("no-simpleperf") != null) {
-            mEnableSimpleperf = false;
-        }
-
-        if (mEnableSimpleperf) {
-            String args =
-                    "-o /data/local/tmp/perf.data -g -e cpu-cycles -p "
-                            + mSimpleperfHelper.getPID("com.android.perftests.core");
-            startSimpleperf("record", args);
-        }
     }
 
     @After
     public void tearDown() {
         mHandlerThread.quitSafely();
-
-        if (mEnableSimpleperf) {
-            final File outputDir = InstrumentationRegistry.getContext().getExternalFilesDir(null);
-            final Path outputPath =
-                    new File(outputDir, mTestName.getMethodName() + ".perf.data").toPath();
-            stopSimpleperf(outputPath);
-        }
     }
 
     static class EnqueueThread extends Thread {
