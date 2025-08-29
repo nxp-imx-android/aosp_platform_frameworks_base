@@ -41,11 +41,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 
 @Composable
 fun ShareContentSelector(
     shareContentListViewModel: ShareContentListViewModel,
+    audioSwitchViewModel: AudioSwitchViewModel,
     recentTaskViewModelFactory: RecentTaskViewModel.Factory,
 ) {
     val selectedRecentTaskViewModel = shareContentListViewModel.selectedRecentTaskViewModel
@@ -68,7 +70,7 @@ fun ShareContentSelector(
                 )
             }
             DisclaimerText()
-            AudioSwitch()
+            AudioSwitch(audioSwitchViewModel, selectedRecentTaskViewModel)
         }
     }
 }
@@ -106,13 +108,23 @@ private fun DisclaimerText() {
 }
 
 @Composable
-private fun AudioSwitch() {
+private fun AudioSwitch(
+    audioSwitchViewModel: AudioSwitchViewModel,
+    selectedRecentTaskViewModel: RecentTaskViewModel?,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(12.dp, 0.dp).fillMaxWidth(),
     ) {
         Text(text = "Share audio", style = MaterialTheme.typography.labelMedium)
-        Switch(checked = true, onCheckedChange = {}, modifier = Modifier.height(24.dp))
+        Switch(
+            checked = audioSwitchViewModel.audioSwitchChecked,
+            onCheckedChange = {
+                audioSwitchViewModel.audioSwitchChecked = !audioSwitchViewModel.audioSwitchChecked
+            },
+            modifier = Modifier.height(24.dp),
+            enabled = selectedRecentTaskViewModel != null,
+        )
     }
 }

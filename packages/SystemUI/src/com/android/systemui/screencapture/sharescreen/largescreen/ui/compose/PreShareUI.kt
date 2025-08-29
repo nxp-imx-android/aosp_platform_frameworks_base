@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
+import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 
@@ -32,6 +33,7 @@ import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.S
 fun PreShareUI(
     preShareToolbarViewModel: PreShareToolbarViewModel,
     shareContentListViewModel: ShareContentListViewModel,
+    audioSwitchViewModel: AudioSwitchViewModel,
     recentTaskViewModelFactory: RecentTaskViewModel.Factory,
 ) {
     Column(
@@ -47,6 +49,7 @@ fun PreShareUI(
         ShareContentSelector(
             shareContentListViewModel = shareContentListViewModel,
             recentTaskViewModelFactory = recentTaskViewModelFactory,
+            audioSwitchViewModel = audioSwitchViewModel,
         )
     }
 }
