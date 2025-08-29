@@ -43,8 +43,8 @@ flag {
 }
 
 flag {
-    name: "add_memcg_information_puller"
-    namespace: "statsd"
+    name: "add_memcg_memory_information_puller"
+    namespace: "watch_software_performance"
     description: "Adds memcgv2 atom logging"
     bug: "434920925"
 }
