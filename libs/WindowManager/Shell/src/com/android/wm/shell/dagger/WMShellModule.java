@@ -152,6 +152,7 @@ import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationFilter;
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository;
+import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer;
@@ -950,6 +951,7 @@ public abstract class WMShellModule {
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             WindowDragTransitionHandler windowDragTransitionHandler,
+            DeskSwitchTransitionHandler deskSwitchTransitionHandler,
             DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler,
             HomeIntentProvider homeIntentProvider,
             DesktopState desktopState,
@@ -998,6 +1000,7 @@ public abstract class WMShellModule {
                 userProfileContexts,
                 desktopModeCompatPolicy,
                 windowDragTransitionHandler,
+                deskSwitchTransitionHandler,
                 moveToDisplayTransitionHandler,
                 homeIntentProvider,
                 desktopState,
@@ -1165,6 +1168,20 @@ public abstract class WMShellModule {
                         context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
                         desktopUserRepositories, interactionJankMonitor, bubbleController,
                         desktopState);
+    }
+
+    @WMSingleton
+    @Provides
+    static DeskSwitchTransitionHandler provideDeskSwitchTransitionHandler(
+            Context context,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesktopState desktopState,
+            Transitions transitions,
+            DisplayController displayController
+    ) {
+        return new DeskSwitchTransitionHandler(context, desktopUserRepositories, desktopState,
+                transitions, displayController);
+
     }
 
     @WMSingleton

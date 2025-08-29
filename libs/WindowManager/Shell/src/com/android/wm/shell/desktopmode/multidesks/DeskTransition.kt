@@ -115,6 +115,7 @@ sealed interface DeskTransition {
         override val token: IBinder,
         override val userId: Int,
         val deskId: Int,
+        val displayId: Int,
         val switchingUser: Boolean,
         val exitReason: DesktopModeEventLogger.Companion.ExitReason,
     ) : DeskTransition {
@@ -122,10 +123,11 @@ sealed interface DeskTransition {
             token: IBinder,
             userId: Int,
             deskId: Int,
+            displayId: Int,
             switchingUser: Boolean,
             exitReason: DesktopModeEventLogger.Companion.ExitReason,
             runOnTransitEnd: (() -> Unit)?,
-        ) : this(token, userId, deskId, switchingUser, exitReason) {
+        ) : this(token, userId, deskId, displayId, switchingUser, exitReason) {
             this.runOnTransitEnd = runOnTransitEnd
         }
 
