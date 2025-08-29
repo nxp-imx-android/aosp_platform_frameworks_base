@@ -42,6 +42,7 @@ fun PreShareToolbar(
     expanded: Boolean,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
+    shareButtonEnabled: Boolean,
 ) {
     val tabIcon by
         loadIcon(
@@ -90,6 +91,7 @@ fun PreShareToolbar(
                 icon = shareIcon,
                 text = stringResource(R.string.screen_share_toolbar_share_button),
                 onClick = {},
+                enabled = shareButtonEnabled,
             )
         }
     }
