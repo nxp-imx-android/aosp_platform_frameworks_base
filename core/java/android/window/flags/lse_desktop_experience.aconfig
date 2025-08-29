@@ -975,6 +975,16 @@ flag {
 }
 
 flag {
+    name: "enable_external_display_persistence_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix for desktop persistence on external displays."
+    bug: "437420625"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_freeform_box_shadows"
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
