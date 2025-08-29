@@ -22,12 +22,14 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryBiometricSe
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.securelockdevice.data.repository.secureLockDeviceRepository
 
 val Kosmos.secureLockDeviceInteractor by
     Kosmos.Fixture {
         SecureLockDeviceInteractor(
             applicationScope = applicationCoroutineScope,
+            logBuffer = logcatLogBuffer("SecureLockDeviceLog"),
             secureLockDeviceRepository = secureLockDeviceRepository,
             biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
             deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
