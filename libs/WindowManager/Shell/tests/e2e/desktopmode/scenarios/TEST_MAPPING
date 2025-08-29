@@ -73,6 +73,9 @@
       "name": "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-appcompat-ResizeActivityEmbeddedAppToMinimumWindowTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-appcompat-ShowAppDialogInDesktopModeTest"
     },
     {
