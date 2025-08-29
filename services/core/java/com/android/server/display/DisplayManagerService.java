@@ -1310,6 +1310,9 @@ public final class DisplayManagerService extends SystemService {
             // No change in setting.
             return false;
         }
+
+        Slog.i(TAG, "Update mirrorBuiltInDisplaySetting: " + mirrorBuiltInDisplay
+                + ", shouldSendDisplayChangeEvent: " + shouldSendDisplayChangeEvent);
         mMirrorBuiltInDisplay = mirrorBuiltInDisplay;
         if (mFlags.isDisplayContentModeManagementEnabled()) {
             mLogicalDisplayMapper.forEachLocked(logicalDisplay -> {
@@ -3874,6 +3877,7 @@ public final class DisplayManagerService extends SystemService {
             pw.println("  mStableDisplaySize=" + mStableDisplaySize);
             pw.println("  mMinimumBrightnessCurve=" + mMinimumBrightnessCurve);
             pw.println("  mMaxImportanceForRRCallbacks=" + mMaxImportanceForRRCallbacks);
+            pw.println("  mMirrorBuiltInDisplaySetting=" + mMirrorBuiltInDisplay);
 
             if (mUserPreferredMode != null) {
                 pw.println(" mUserPreferredMode=" + mUserPreferredMode);
