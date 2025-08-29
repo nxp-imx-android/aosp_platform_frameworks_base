@@ -34,6 +34,7 @@ import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeDisplayStateInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.transition.ScrimShadeTransitionController
 import com.android.systemui.statusbar.NotificationShadeDepthController
 import com.android.systemui.statusbar.PulseExpansionHandler
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
@@ -61,6 +62,7 @@ constructor(
     private val shadeInteractorProvider: Provider<ShadeInteractor>,
     private val shadeModeInteractorProvider: Provider<ShadeModeInteractor>,
     private val splitShadeStateController: SplitShadeStateController,
+    private val scrimShadeTransitionController: ScrimShadeTransitionController,
     private val sceneInteractorProvider: Provider<SceneInteractor>,
     private val shadeExpansionStateManager: ShadeExpansionStateManager,
     private val pulseExpansionHandler: PulseExpansionHandler,
@@ -74,6 +76,7 @@ constructor(
         hydrateFullWidth()
         hydrateShadeExpansionStateManager()
         logTouchesTo(touchLog)
+        scrimShadeTransitionController.init()
         pulseExpansionHandler.setUp(nsslc)
     }
 

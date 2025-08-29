@@ -18,6 +18,7 @@ package com.android.systemui.shade.transition
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.PanelState
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionStateManager
@@ -63,7 +64,9 @@ constructor(
     private fun onStateChanged() {
         val expansionEvent = lastExpansionEvent ?: return
         val expansionFraction = expansionEvent.fraction
-        scrimController.get().setRawPanelExpansionFraction(expansionFraction)
+        if (!SceneContainerFlag.isEnabled) {
+            scrimController.get().setRawPanelExpansionFraction(expansionFraction)
+        }
         lastExpansionFraction = expansionFraction
     }
 
