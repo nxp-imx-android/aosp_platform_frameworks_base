@@ -27,10 +27,12 @@ cc_test {
         "libandroid",
         "libbinder",
         "libbinder_ndk",
+        "libactivitymanager_aidl",
     ],
 
     static_libs: [
         "libbase",
+        "libgmock",
         "libgtest",
     ],
     stl: "c++_shared",
