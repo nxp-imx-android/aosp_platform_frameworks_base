@@ -71,6 +71,7 @@ import android.net.MacAddress;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
@@ -339,6 +340,7 @@ public class AssociationRequestsProcessor {
                         .setDeviceIcon(deviceIcon)
                         .setDeviceId(null)
                         .setPackagesToNotify(null)
+                        .setMetadata(new PersistableBundle())
                         .build();
 
         if (skipRoleGrant) {

@@ -20,6 +20,7 @@ import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_APP_STREAMIN
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH;
+import static android.companion.AssociationInfo.METADATA_TIMESTAMP;
 import static android.graphics.drawable.Icon.TYPE_URI;
 import static android.graphics.drawable.Icon.TYPE_URI_ADAPTIVE_BITMAP;
 
@@ -31,6 +32,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.StringDef;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -61,6 +63,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.notification.NotificationListenerService;
@@ -218,6 +221,36 @@ public final class CompanionDeviceManager {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_TASK_CONTINUITY)
     public static final int FLAG_TASK_CONTINUITY = 2;
+
+    /**
+     * The feature name for task continuity manager.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public static final String FEATURE_TASK_CONTINUITY = "task_continuity_manager";
+
+    /**
+     * The feature name for the mode Sync.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public static final String FEATURE_MODE_SYNC = "mode_sync";
+
+    /**
+     * The feature name for airplane mode sync.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public static final String FEATURE_AIRPLANE_MODE_SYNC = "airplane_mode_sync";
+
+    /** @hide */
+    @StringDef(prefix = { "FEATURE_" }, value = {
+            FEATURE_TASK_CONTINUITY,
+            FEATURE_MODE_SYNC,
+            FEATURE_AIRPLANE_MODE_SYNC,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FeatureName {}
 
     /**
      * A device, returned in the activity result of the {@link IntentSender} received in
@@ -612,7 +645,7 @@ public final class CompanionDeviceManager {
     }
 
     /**
-     * <p>Enable system data sync.
+     * <p>Enable system data sync (it only supports call metadata sync for now).
      * By default all supported system data types are enabled.</p>
      *
      * <p>Calling this API requires a uses-feature
@@ -635,7 +668,7 @@ public final class CompanionDeviceManager {
     }
 
     /**
-     * <p>Disable system data sync.
+     * <p>Disable system data sync (it only supports call metadata sync for now).
      * By default all supported system data types are enabled.</p>
      *
      * <p>Calling this API requires a uses-feature
@@ -1970,6 +2003,36 @@ public final class CompanionDeviceManager {
 
         try {
             return mService.getAssociationByDeviceId(mContext.getUserId(), deviceId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets the metadata for this device. If the metadata for the feature is already set, then
+     * it will be overwritten. The client feature service can use this metadata to store
+     * feature-relevant data to be shared with associated devices.
+     *
+     * @param userId The user id of the user for which this metadata is set.
+     * @param feature The feature name for this metadata.
+     * @param value The bundle containing feature-relevant metadata.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public void setLocalMetadata(@UserIdInt int userId, @NonNull @FeatureName String feature,
+            @Nullable PersistableBundle value) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        if (METADATA_TIMESTAMP.equals(feature)) {
+            throw new IllegalArgumentException("Cannot set metadata timestamp");
+        }
+
+        try {
+            mService.setLocalMetadata(userId, feature, value);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -43,6 +43,7 @@ import android.companion.DeviceId;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
 import android.os.Environment;
+import android.os.PersistableBundle;
 import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.Xml;
@@ -136,32 +137,34 @@ import java.util.concurrent.ConcurrentMap;
  *             last_time_connected="1634641160229"
  *             time_approved="1634389553216"
  *             system_data_sync_flags="0"
- *             transport_flags="0"
- *             device_icon="device_icon">
+ *             transport_flags="0">
  *             <device_id
  *                 custom_device_id="1234"/>
  *             <packages_to_notify
- *                 package_name="com.sample.anotherCompanion.app">
- *             </packages_to_notify>
+ *                 package_to_notify="com.sample.anotherCompanion.app"/>
  *         </association>
  *         <association
  *             id="3"
  *             profile="android.app.role.COMPANION_DEVICE_WATCH"
  *             package="com.sample.companion.another.app"
- *             display_name="Jhon's Chromebook"
+ *             display_name="John's Watch"
  *             self_managed="true"
  *             notify_device_nearby="false"
  *             revoked="false"
  *             last_time_connected="1634641160229"
  *             time_approved="1634641160229"
  *             system_data_sync_flags="1"
- *             transport_flags="0"
- *             device_icon="device_icon">
+ *             transport_flags="0">
  *             <device_id
  *                 custom_device_id="1234"/>
  *             <packages_to_notify
- *                  "com.sample1.anotherCompanion.app-com.sample2.anotherCompanion.app">
- *             </packages_to_notify>
+ *                 package_to_notify="com.example.app1|com.example.app2"/>
+ *             <metadata>
+ *                 <pbundle_as_map name="feature1">
+ *                     <int name="version">1</string>
+ *                     <string name="data">test</string>
+ *                 </pbundle_as_map>
+ *             </metadata>
  *         </association>
  *     </associations>
  * </state>
@@ -185,6 +188,7 @@ public final class AssociationDiskStore {
     private static final String XML_TAG_ASSOCIATION = "association";
     private static final String XML_TAG_DEVICE_ID = "device_id";
     private static final String XML_TAG_PACKAGES_TO_NOTIFY = "packages_to_notify";
+    private static final String XML_TAG_METADATA = "metadata";
 
 
     private static final String XML_ATTR_PERSISTENCE_VERSION = "persistence-version";
@@ -207,7 +211,7 @@ public final class AssociationDiskStore {
     private static final String XML_ATTR_MAC_ADDRESS_DEVICE_ID = "mac_address_device_id";
     private static final String XML_ATTR_KEY_DEVICE_ID = "key_device_id";
     private static final String XML_ATTR_PACKAGE_TO_NOTIFY = "package_to_notify";
-
+    private static final String XML_ATTR_METADATA = "metadata";
 
     private static final String LEGACY_XML_ATTR_DEVICE = "device";
 
@@ -549,6 +553,7 @@ public final class AssociationDiskStore {
         // Read nested tags
         DeviceId deviceId = null;
         List<String> packagesToNotify = null;
+        PersistableBundle metadata = new PersistableBundle();
         while (true) {
             parser.nextTag();
             if (isEndOfTag(parser, XML_TAG_ASSOCIATION)) {
@@ -558,6 +563,8 @@ public final class AssociationDiskStore {
                 deviceId = readDeviceId(parser);
             } else if (isStartOfTag(parser, XML_TAG_PACKAGES_TO_NOTIFY)) {
                 packagesToNotify = readPackagesToNotify(parser);
+            } else if (isStartOfTag(parser, XML_TAG_METADATA)) {
+                metadata = readMetadata(parser);
             } else {
                 Slog.e(TAG, "Unexpected tag " + parser.getName()
                         + " inside <" + XML_TAG_ASSOCIATION + "> for user " + userId);
@@ -579,6 +586,7 @@ public final class AssociationDiskStore {
                 .setDeviceIcon(deviceIcon)
                 .setDeviceId(deviceId)
                 .setPackagesToNotify(packagesToNotify)
+                .setMetadata(metadata)
                 .build();
     }
 
@@ -607,6 +615,16 @@ public final class AssociationDiskStore {
         parser.nextTag();
 
         return new DeviceId(customDeviceId, macAddress, id);
+    }
+
+    private static PersistableBundle readMetadata(@NonNull TypedXmlPullParser parser)
+            throws XmlPullParserException, IOException {
+        try {
+            return PersistableBundle.restoreFromXml(parser);
+        } catch (XmlPullParserException e) {
+            Slog.w(TAG, "Error while reading metadata of association", e);
+        }
+        return new PersistableBundle();
     }
 
     private static void writeAssociations(@NonNull XmlSerializer parent,
@@ -648,6 +666,9 @@ public final class AssociationDiskStore {
         if (a.getPackagesToNotify() != null && !a.getPackagesToNotify().isEmpty()) {
             writePackagesToNotify(serializer, a);
         }
+        if (!a.getMetadata().isEmpty()) {
+            writeMetadata(serializer, a);
+        }
         serializer.endTag(null, XML_TAG_ASSOCIATION);
     }
 
@@ -678,6 +699,17 @@ public final class AssociationDiskStore {
                 a.getDeviceId().getKey()
         );
         serializer.endTag(null, XML_TAG_DEVICE_ID);
+    }
+
+    private static void writeMetadata(XmlSerializer parent, @NonNull AssociationInfo a)
+            throws IOException {
+        final XmlSerializer serializer = parent.startTag(null, XML_TAG_METADATA);
+        try {
+            a.getMetadata().saveToXml(serializer);
+        } catch (XmlPullParserException e) {
+            Slog.w(TAG, "Error while writing metadata of association " + a.getId(), e);
+        }
+        serializer.endTag(null, XML_TAG_METADATA);
     }
 
     private static void requireStartOfTag(@NonNull XmlPullParser parser, @NonNull String tag)

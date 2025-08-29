@@ -77,6 +77,7 @@ import android.net.MacAddress;
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
+import android.os.PersistableBundle;
 import android.os.PowerExemptionManager;
 import android.os.PowerManagerInternal;
 import android.os.RemoteException;
@@ -98,6 +99,8 @@ import com.android.server.companion.association.AssociationRequestsProcessor;
 import com.android.server.companion.association.AssociationStore;
 import com.android.server.companion.association.DisassociationProcessor;
 import com.android.server.companion.association.InactiveAssociationsRemovalService;
+import com.android.server.companion.datasync.DataSyncProcessor;
+import com.android.server.companion.datasync.LocalMetadataStore;
 import com.android.server.companion.datatransfer.SystemDataTransferProcessor;
 import com.android.server.companion.datatransfer.SystemDataTransferRequestStore;
 import com.android.server.companion.datatransfer.contextsync.CrossDeviceCall;
@@ -137,6 +140,8 @@ public class CompanionDeviceManagerService extends SystemService {
     private final CompanionTransportManager mTransportManager;
     private final DisassociationProcessor mDisassociationProcessor;
     private final CrossDeviceSyncController mCrossDeviceSyncController;
+    private final LocalMetadataStore mLocalMetadataStore;
+    private final DataSyncProcessor mDataSyncProcessor;
 
     private final Object mPackageLock = new Object();
 
@@ -163,6 +168,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mAssociationStore = new AssociationStore(context, userManager, associationDiskStore);
         mSystemDataTransferRequestStore = new SystemDataTransferRequestStore();
         mObservableUuidStore = new ObservableUuidStore();
+        mLocalMetadataStore = new LocalMetadataStore();
 
         // Init processors
         mAssociationRequestsProcessor = new AssociationRequestsProcessor(context,
@@ -191,6 +197,8 @@ public class CompanionDeviceManagerService extends SystemService {
         mSystemDataTransferProcessor = new SystemDataTransferProcessor(this,
                 packageManagerInternal, mAssociationStore,
                 mSystemDataTransferRequestStore, mTransportManager);
+
+        mDataSyncProcessor = new DataSyncProcessor(mAssociationStore, mLocalMetadataStore);
 
         // TODO(b/279663946): move context sync to a dedicated system service
         mCrossDeviceSyncController = new CrossDeviceSyncController(getContext(), mTransportManager);
@@ -647,25 +655,22 @@ public class CompanionDeviceManagerService extends SystemService {
 
         @Override
         public void enablePermissionsSync(int associationId) {
-            if (UserHandle.getAppId(Binder.getCallingUid()) != SYSTEM_UID) {
-                throw new SecurityException("Caller must be system UID");
-            }
+            enforceCallerIsSystem();
+
             mSystemDataTransferProcessor.enablePermissionsSync(associationId);
         }
 
         @Override
         public void disablePermissionsSync(int associationId) {
-            if (UserHandle.getAppId(Binder.getCallingUid()) != SYSTEM_UID) {
-                throw new SecurityException("Caller must be system UID");
-            }
+            enforceCallerIsSystem();
+
             mSystemDataTransferProcessor.disablePermissionsSync(associationId);
         }
 
         @Override
         public PermissionSyncRequest getPermissionSyncRequest(int associationId) {
-            if (UserHandle.getAppId(Binder.getCallingUid()) != SYSTEM_UID) {
-                throw new SecurityException("Caller must be system UID");
-            }
+            enforceCallerIsSystem();
+
             return mSystemDataTransferProcessor.getPermissionSyncRequest(associationId);
         }
 
@@ -734,6 +739,12 @@ public class CompanionDeviceManagerService extends SystemService {
             }
         }
 
+        private void enforceCallerIsSystem() {
+            if (UserHandle.getAppId(Binder.getCallingUid()) != SYSTEM_UID) {
+                throw new SecurityException("Caller must be system UID");
+            }
+        }
+
         @Override
         public boolean canPairWithoutPrompt(String packageName, String macAddress, int userId) {
             final AssociationInfo association =
@@ -760,18 +771,23 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        public void setLocalMetadata(int userId, String key, PersistableBundle value) {
+            enforceCallerIsSystem();
+
+            mDataSyncProcessor.setLocalMetadata(userId, key, value);
+        }
+
+        @Override
         public byte[] getBackupPayload(int userId) {
-            if (UserHandle.getAppId(Binder.getCallingUid()) != SYSTEM_UID) {
-                throw new SecurityException("Caller must be system");
-            }
+            enforceCallerIsSystem();
+
             return mBackupRestoreProcessor.getBackupPayload(userId);
         }
 
         @Override
         public void applyRestoredPayload(byte[] payload, int userId) {
-            if (UserHandle.getAppId(Binder.getCallingUid()) != SYSTEM_UID) {
-                throw new SecurityException("Caller must be system");
-            }
+            enforceCallerIsSystem();
+
             mBackupRestoreProcessor.applyRestoredPayload(payload, userId);
         }
 
