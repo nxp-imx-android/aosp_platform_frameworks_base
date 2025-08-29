@@ -66,6 +66,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION
 import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
 import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility
@@ -118,6 +119,8 @@ class DesktopTilingWindowDecoration(
 
     var leftTaskResizingHelper: AppResizingHelper? = null
     var rightTaskResizingHelper: AppResizingHelper? = null
+
+    var explodedViewTopTaskId: Int? = null
     @VisibleForTesting var isTilingManagerInitialised = false
     @VisibleForTesting
     var desktopTilingDividerWindowManager: DesktopTilingDividerWindowManager? = null
@@ -518,6 +521,13 @@ class DesktopTilingWindowDecoration(
             desktopTilingDividerWindowManager?.showDividerBar(hiddenByOverviewAnimation)
             hiddenByOverviewAnimation = false
         }
+
+        if (info.type == TRANSIT_END_RECENTS_TRANSITION) {
+            explodedViewTopTaskId?.let {
+                moveTiledPairToFront(taskId = it, isFocusedOnDisplay = true)
+            }
+            explodedViewTopTaskId = null
+        }
     }
 
     private fun handleTaskBroughtToFront(taskId: Int) {
@@ -719,6 +729,10 @@ class DesktopTilingWindowDecoration(
 
             tearDownTiling()
         }
+    }
+
+    fun onExplodedViewReorder(topTaskId: Int) {
+        explodedViewTopTaskId = topTaskId
     }
 
     fun resetTilingSession(shouldPersistTilingData: Boolean = false) {

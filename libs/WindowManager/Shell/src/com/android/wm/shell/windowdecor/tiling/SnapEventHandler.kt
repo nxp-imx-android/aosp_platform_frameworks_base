@@ -71,4 +71,7 @@ interface SnapEventHandler {
 
     /** Notifies the snap event handler of a desk being removed. */
     fun onDeskRemoved(deskId: Int)
+
+    /** Notifies tiling of an exploded view reorder to prepare the tiling view for the event. */
+    fun notifyTilingOfExplodedViewReorder(deskId: Int, topTaskId: Int)
 }

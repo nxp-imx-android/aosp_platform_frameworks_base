@@ -1050,6 +1050,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
+    public void notifyTilingOfExplodedViewReorder(int deskId, int topTaskId) {
+        mDesktopTilingDecorViewModel.onExplodedViewReorder(deskId, topTaskId);
+    }
+
+    @Override
     public void onDeskActivated(int deskId, int displayId) {
         if (mDesktopTilingDecorViewModel.tilingDeskActive(deskId)) {
             return;
