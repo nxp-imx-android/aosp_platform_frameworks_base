@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.android.compose.PlatformButton
@@ -68,25 +69,21 @@ constructor(
 
     init {
         if (FlashlightStrength.isUnexpectedlyInLegacyMode()) {
-            logger.w("$TAG#init: UnexpectedlyInLegacyMode")
+            logger.dialogW("UnexpectedlyInLegacyMode on init")
         }
     }
 
     override fun createDialog(): SystemUIDialog {
         if (FlashlightStrength.isUnexpectedlyInLegacyMode()) {
-            logger.w("$TAG#createDialog: UnexpectedlyInLegacyMode!")
+            logger.dialogW("UnexpectedlyInLegacyMode on create dialog")
         }
 
         Assert.isMainThread()
         if (currentDialog != null) {
-            logger.w(
-                "$TAG#createDialog: " +
-                    "Dialog is already open, dismissing it and creating a new one."
-            )
+            logger.dialogW("Already open when creating, dismissing it and creating a new one")
             currentDialog?.dismiss()
             return currentDialog!!
         }
-
         currentDialog =
             sysuiDialogFactory.create(context = shadeDialogContextInteractor.context) {
                 FlashlightDialogContent(it)
@@ -144,6 +141,7 @@ constructor(
                         Text(stringResource(R.string.flashlight_dialog_turn_off))
                     }
                 },
+                contentBottomPadding = 8.dp,
             )
         }
     }
@@ -151,7 +149,7 @@ constructor(
     /** Runs on @Main CoroutineContext */
     suspend fun showDialog(expandable: Expandable? = null): SystemUIDialog? {
         if (FlashlightStrength.isUnexpectedlyInLegacyMode()) {
-            logger.w("$TAG#showDialog: UnexpectedlyInLegacyMode!")
+            logger.dialogW("UnexpectedlyInLegacyMode on show")
             return null
         }
 
@@ -173,7 +171,6 @@ constructor(
     }
 
     companion object {
-        private const val TAG = "FlashlightDialogDelegate"
         private const val INTERACTION_JANK_TAG = "flashlight"
         private const val FLASHLIGHT_TITLE_TAG = "flashlight_title"
         private const val FLASHLIGHT_DONE_TAG = "flashlight_done"
