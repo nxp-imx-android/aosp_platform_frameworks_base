@@ -776,6 +776,16 @@ public final class ViewRootImpl implements ViewParent,
     int mSyncSeqId = 0;
     int mLastSyncSeqId = 0;
 
+    /**
+     * Specific optimization where a sync relayout (WM) has determined that the results of a
+     * relayout are likely-valid despite this client providing parameters based on an out-dated
+     * configuration. In this case, relayout will provide a (later) seqId (this one) which it
+     * believes doesn't require another sync relayout and then will NOT cancel. This allows the
+     * VRI to assume the frames are already correct, layout/draw immediately, and then skip the
+     * next sync relayout.
+     */
+    int mNonSyncEarlySeqId = 0;
+
     /** @hide */
     public static final class NoPreloadHolder {
         public static final boolean sAlwaysSeqId;
@@ -9597,7 +9607,9 @@ public final class ViewRootImpl implements ViewParent,
         if ((mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) == 0
                 && mWindowAttributes.type != TYPE_APPLICATION_STARTING
                 && mSyncSeqId <= mLastSyncSeqId
-                && (mSeqId <= mLastSeqId || !NoPreloadHolder.sAlwaysSeqId)
+                && (!NoPreloadHolder.sAlwaysSeqId
+                    || mSeqId <= mLastSeqId
+                    || mSeqId <= mNonSyncEarlySeqId)
                 && winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */) == 0) {
             final InsetsState state = mInsetsController.getState();
             final Rect displayCutoutSafe = mTempRect;
@@ -9688,9 +9700,13 @@ public final class ViewRootImpl implements ViewParent,
                     mPendingActivityWindowInfo.set(outInfo);
                 }
             }
-            final int maybeSyncSeqId = mRelayoutResult.syncSeqId;
-            if (maybeSyncSeqId > (NoPreloadHolder.sAlwaysSeqId ? mSyncSeqId : 0)) {
-                mSyncSeqId = maybeSyncSeqId;
+            if (NoPreloadHolder.sAlwaysSeqId) {
+                // mRelayoutResult.syncSeqId is a legacy name. In practice, with sAlwaysSeqId, it
+                // has been repurposed to be "the highest (non-sync) seqId that this relayout
+                // result is valid for". See docstring on mNonSyncEarlySeqId for more info.
+                mNonSyncEarlySeqId = Math.max(mRelayoutResult.syncSeqId, mNonSyncEarlySeqId);
+            } else if (mRelayoutResult.syncSeqId > 0) {
+                mSyncSeqId = mRelayoutResult.syncSeqId;
             }
 
             mWinFrameInScreen.set(mTmpFrames.frame);
