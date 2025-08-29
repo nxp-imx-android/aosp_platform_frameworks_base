@@ -39,6 +39,7 @@ import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO
 import static android.view.WindowManager.PROPERTY_COMPAT_IGNORE_REQUESTED_ORIENTATION;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 
 import static org.junit.Assert.assertEquals;
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.verify;
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
@@ -84,6 +86,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges({OVERRIDE_ANY_ORIENTATION_TO_USER})
     public void testOverrideOrientationIfNeeded_fullscreenOverrideEnabled_returnsUser() {
         runTestScenarioWithActivity((robot) -> {
@@ -275,6 +278,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     @Test
     @EnableCompatChanges({OVERRIDE_UNDEFINED_ORIENTATION_TO_PORTRAIT,
             OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA})
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testOverrideOrientationIfNeeded_whenCameraNotActive_isUnchanged() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c)-> {
@@ -294,6 +298,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     @Test
     @EnableCompatChanges({OVERRIDE_UNDEFINED_ORIENTATION_TO_PORTRAIT,
             OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA})
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testOverrideOrientationIfNeeded_whenCameraActive_returnsPortrait() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
@@ -324,6 +329,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testOverrideOrientationIfNeeded_fullscreenOverride_cameraActivity_unchanged() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
@@ -443,6 +449,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges({OVERRIDE_ENABLE_COMPAT_IGNORE_REQUESTED_ORIENTATION})
     public void testShouldIgnoreRequestedOrientation_cameraCompatTreatment_returnsTrue() {
         runTestScenario((robot) -> {
