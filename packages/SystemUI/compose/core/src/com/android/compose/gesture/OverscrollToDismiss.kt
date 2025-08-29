@@ -46,8 +46,9 @@ import com.android.mechanics.effects.MagneticDetach
 import com.android.mechanics.effects.MagneticDetach.Defaults.AttachDetachState
 import com.android.mechanics.spec.InputDirection
 import com.android.mechanics.spec.SemanticKey
-import com.android.mechanics.spec.builder.MotionBuilderContext
+import com.android.mechanics.spec.builder.ComposeMotionBuilderContext
 import com.android.mechanics.spec.builder.fixedSpatialValueSpec
+import com.android.mechanics.spec.builder.motionBuilderContext
 import com.android.mechanics.spec.builder.spatialMotionSpec
 import com.android.mechanics.spec.with
 import com.android.mechanics.spring.SpringParameters
@@ -56,27 +57,20 @@ import kotlin.math.sign
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-/**
- * "Swipe to dismiss" effect that supports nested scrolling.
- *
- * TODO: Once b/413283893 is done, motionBuilderContext can be read internally via
- *   CompositionLocalConsumerModifierNode, instead of passing it.
- */
+/** "Swipe to dismiss" effect that supports nested scrolling. */
 fun Modifier.overscrollToDismiss(
-    motionBuilderContext: MotionBuilderContext,
     orientation: Orientation = Orientation.Horizontal,
     enabled: Boolean = true,
     onDismissed: () -> Unit,
-) = this.then(OverscrollToDismissElement(motionBuilderContext, orientation, enabled, onDismissed))
+) = this.then(OverscrollToDismissElement(orientation, enabled, onDismissed))
 
 private data class OverscrollToDismissElement(
-    val motionBuilderContext: MotionBuilderContext,
     val orientation: Orientation,
     val enabled: Boolean,
     val onDismissed: () -> Unit,
 ) : ModifierNodeElement<OverscrollToDismissNode>() {
     override fun create(): OverscrollToDismissNode {
-        return OverscrollToDismissNode(orientation, enabled, motionBuilderContext, onDismissed)
+        return OverscrollToDismissNode(orientation, enabled, onDismissed)
     }
 
     override fun update(node: OverscrollToDismissNode) {
@@ -93,7 +87,6 @@ private data class OverscrollToDismissElement(
 private class OverscrollToDismissNode(
     orientation: Orientation,
     enabled: Boolean,
-    var motionBuilderContext: MotionBuilderContext,
     var onDismissed: () -> Unit,
 ) :
     DelegatingNode(),
@@ -118,31 +111,9 @@ private class OverscrollToDismissNode(
         Dismissed,
     }
 
-    private val spec = derivedStateOf {
-        with(motionBuilderContext) {
-            when (dragState) {
-                DragState.Idle -> fixedSpatialValueSpec(0f, SnapBackSpring)
-                DragState.Dragging -> spatialMotionSpec { after(0f, MagneticDetach()) }
-                DragState.Dismissed ->
-                    fixedSpatialValueSpec(
-                        contentBoxWidth.toFloat(),
-                        SnapBackSpring,
-                        listOf(isDismissedState with true),
-                    )
-            }
-        }
-    }
+    private lateinit var motionValue: MotionValue
 
-    private val motionValue =
-        MotionValue(
-            input = { gestureContext.dragOffset },
-            gestureContext = gestureContext,
-            spec = spec::value,
-        )
-
-    init {
-        delegate(DebugMotionValueNode(motionValue))
-    }
+    private lateinit var motionBuilderContext: ComposeMotionBuilderContext
 
     private var delegateNode =
         delegate(NestedDraggableRootNode(this, orientation, null, enabled, true))
@@ -156,6 +127,29 @@ private class OverscrollToDismissNode(
     private var motionValueJob: Job? = null
 
     override fun onAttach() {
+        motionBuilderContext = motionBuilderContext()
+        val spec = derivedStateOf {
+            with(motionBuilderContext) {
+                when (dragState) {
+                    DragState.Idle -> fixedSpatialValueSpec(0f, SnapBackSpring)
+                    DragState.Dragging -> spatialMotionSpec { after(0f, MagneticDetach()) }
+                    DragState.Dismissed ->
+                        fixedSpatialValueSpec(
+                            contentBoxWidth.toFloat(),
+                            SnapBackSpring,
+                            listOf(isDismissedState with true),
+                        )
+                }
+            }
+        }
+
+        motionValue =
+            MotionValue(
+                input = { gestureContext.dragOffset },
+                gestureContext = gestureContext,
+                spec = spec::value,
+            )
+        delegate(DebugMotionValueNode(motionValue))
         onObservedReadsChanged()
         motionValueJob = coroutineScope.launch { keepRunningUntilDismissed() }
     }

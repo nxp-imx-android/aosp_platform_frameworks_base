@@ -141,7 +141,6 @@ import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.overscrollToDismiss
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
-import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asImageBitmap
@@ -297,7 +296,6 @@ private fun CardCarouselContent(
             Box(
                 modifier =
                     Modifier.overscrollToDismiss(
-                        rememberMotionBuilderContext(),
                         orientation = Orientation.Horizontal,
                         enabled = isSwipingEnabled,
                         onDismissed = onDismissed,
