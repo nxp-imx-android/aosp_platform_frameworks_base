@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +80,9 @@ constructor(
                             ),
                 ) {
                     Box(
-                        Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.start }
+                        Modifier
+                            .graphicsLayer { translationX = viewModel.unfoldTranslations.start }
+                            .wrapContentHeight(Alignment.Bottom, unbounded = true),
                     ) {
                         LockscreenElement(Shortcuts.Start, context, Modifier)
                     }
@@ -89,7 +92,9 @@ constructor(
                     }
 
                     Box(
-                        Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }
+                        Modifier
+                            .graphicsLayer { translationX = viewModel.unfoldTranslations.end }
+                            .wrapContentHeight(Alignment.Bottom, unbounded = true),
                     ) {
                         LockscreenElement(Shortcuts.End, context, Modifier)
                     }
