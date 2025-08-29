@@ -50,6 +50,7 @@ import static android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID;
 import static android.util.MathUtils.constrain;
 import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
+import static com.android.internal.os.MemcgProcMemoryUtil.readMemcgMemorySnapshot;
 import static com.android.internal.os.ProcfsMemoryUtil.DmaBufType;
 import static com.android.internal.os.ProcfsMemoryUtil.getProcessCmdlines;
 import static com.android.internal.os.ProcfsMemoryUtil.readCmdlineFromProcfs;
@@ -76,6 +77,7 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__TELEPHONY;
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__UNKNOWN;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
+import static com.android.server.stats.Flags.addMemcgInformationPuller;
 import static com.android.server.stats.pull.IonMemoryUtil.readProcessSystemIonHeapSizesFromDebugfs;
 import static com.android.server.stats.pull.IonMemoryUtil.readSystemIonHeapSizeFromDebugfs;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.fromPublicNetworkStats;
@@ -213,6 +215,7 @@ import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidClusterTimeRea
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidFreqTimeReader;
 import com.android.internal.os.KernelCpuUidTimeReader.KernelCpuUidUserSysTimeReader;
 import com.android.internal.os.LooperStats;
+import com.android.internal.os.MemcgProcMemoryUtil.MemcgMemorySnapshot;
 import com.android.internal.os.PowerProfile;
 import com.android.internal.os.ProcessCpuTracker;
 import com.android.internal.os.ProcfsMemoryUtil;
@@ -468,6 +471,10 @@ public class StatsPullAtomService extends SystemService {
      */
     public static final boolean ENABLE_MOBILE_DATA_STATS_AGGREGATED_PULLER =
                 addMobileBytesTransferByProcStatePuller();
+
+    public static final boolean ENABLE_MEMCG_STATS_PULLER =
+                addMemcgInformationPuller();
+
     private static final ArrayMap<String, Integer> mPreviousThermalThrottlingStatus =
             new ArrayMap<>();
     // Puller locks
@@ -853,6 +860,8 @@ public class StatsPullAtomService extends SystemService {
                         return pullCachedAppsHighWatermark(atomTag, data);
                     case FrameworkStatsLog.PRESSURE_STALL_INFORMATION:
                         return pullPressureStallInformation(atomTag, data);
+                    case FrameworkStatsLog.MEMCG_MEMORY_SNAPSHOT:
+                        return pullMemcgProcessMemoryInformation(atomTag, data);
                     default:
                         throw new UnsupportedOperationException("Unknown tagId=" + atomTag);
                 }
@@ -1053,6 +1062,9 @@ public class StatsPullAtomService extends SystemService {
         registerCachedAppsHighWatermarkPuller();
         registerPressureStallInformation();
         registerBatteryLife();
+        if (ENABLE_MEMCG_STATS_PULLER) {
+            registerMemcgInformation();
+        }
     }
 
     private void initMobileDataStatsPuller() {
@@ -5230,6 +5242,38 @@ public class StatsPullAtomService extends SystemService {
                     psiData.getFullAvg60SecPercentage(),
                     psiData.getFullAvg300SecPercentage(),
                     psiData.getFullTotalUsec()));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private void registerMemcgInformation() {
+        int tagId = FrameworkStatsLog.MEMCG_MEMORY_SNAPSHOT;
+        mStatsManager.setPullAtomCallback(
+                tagId,
+                new PullAtomMetadata.Builder()
+                        .setCoolDownMillis(MILLIS_PER_SEC)
+                        .build(),
+                DIRECT_EXECUTOR,
+                mStatsCallbackImpl
+        );
+    }
+
+    int pullMemcgProcessMemoryInformation(int atomTag, List<StatsEvent> pulledData) {
+        List<ProcessMemoryState> managedProcessList =
+                LocalServices.getService(ActivityManagerInternal.class)
+                        .getMemoryStateForProcesses();
+        for (ProcessMemoryState managedProcess : managedProcessList) {
+            final MemcgMemorySnapshot snapshot = readMemcgMemorySnapshot(managedProcess.pid);
+            if (snapshot == null) {
+                continue;
+            }
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                    atomTag,
+                    managedProcess.uid,
+                    managedProcess.processName,
+                    snapshot.memcgMemoryInBytes / 1024,
+                    snapshot.memcgSwapMemoryInBytes / 1024
+            ));
         }
         return StatsManager.PULL_SUCCESS;
     }
