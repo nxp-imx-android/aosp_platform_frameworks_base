@@ -397,6 +397,7 @@ import android.compat.annotation.EnabledSince;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9601,8 +9602,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     void sendBugreportToDeviceOwner(Uri bugreportUri, String bugreportHash) {
         synchronized (getLockObject()) {
             final Intent intent = new Intent(DeviceAdminReceiver.ACTION_BUGREPORT_SHARE);
+            final int deviceOwnerUserId = mOwners.getDeviceOwnerUserId();
+            final Uri bugreportUriForUser;
+
+            if (Flags.fixHsumBugreportShareCrash()) {
+                // Bugreports are collected by the shell, which runs as UserHandle.USER_SYSTEM.
+                bugreportUriForUser = ContentProvider.createContentUriForUser(
+                        bugreportUri, UserHandle.of(UserHandle.USER_SYSTEM));
+            } else {
+                bugreportUriForUser = bugreportUri;
+            }
+
             intent.setComponent(mOwners.getDeviceOwnerComponent());
-            intent.setDataAndType(bugreportUri, RemoteBugreportManager.BUGREPORT_MIMETYPE);
+            intent.setDataAndType(bugreportUriForUser, RemoteBugreportManager.BUGREPORT_MIMETYPE);
             intent.putExtra(DeviceAdminReceiver.EXTRA_BUGREPORT_HASH, bugreportHash);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
@@ -9610,10 +9622,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     .getService(UriGrantsManagerInternal.class);
             final NeededUriGrants needed = ugm.checkGrantUriPermissionFromIntent(intent,
                     Process.SHELL_UID, mOwners.getDeviceOwnerComponent().getPackageName(),
-                    mOwners.getDeviceOwnerUserId());
+                    deviceOwnerUserId);
             ugm.grantUriPermissionUncheckedFromIntent(needed, null);
 
-            mContext.sendBroadcastAsUser(intent, UserHandle.of(mOwners.getDeviceOwnerUserId()));
+            mContext.sendBroadcastAsUser(intent, UserHandle.of(deviceOwnerUserId));
         }
     }
 
