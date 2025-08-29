@@ -219,6 +219,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     @Test
     public void testRemoveTask() {
         final ActivityRecord activity1 = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity1.setVisibleRequested(false);
         activity1.setVisible(false);
         activity1.finishing = true;
         activity1.setState(ActivityRecord.State.STOPPING, "test");
@@ -235,6 +236,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         assertEquals(ActivityRecord.State.DESTROYING, activity2.getState());
         assertEquals(ActivityRecord.State.STOPPING, activity1.getState());
         assertTrue(mSupervisor.mStoppingActivities.contains(activity1));
+        waitHandlerIdle(mAtm.mH);
         // Assume that it is called by scheduleIdle from addToStopping. And because
         // mStoppingActivities remembers the finishing activity, it can continue to destroy.
         mSupervisor.processStoppingAndFinishingActivities(null /* launchedActivity */,
