@@ -76,6 +76,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
@@ -703,6 +704,7 @@ class MediaRouter2ServiceImpl {
                         callerPid,
                         callerPackageName,
                         /* targetPackageName */ null,
+                        /* targetUid= */ Process.INVALID_UID,
                         callerUser);
             }
         } finally {
@@ -746,6 +748,7 @@ class MediaRouter2ServiceImpl {
                         callerPid,
                         callerPackageName,
                         targetPackageName,
+                        getUidForPackage(targetPackageName, targetUser),
                         targetUser);
             }
         } finally {
@@ -1133,6 +1136,19 @@ class MediaRouter2ServiceImpl {
             return true;
         } catch (PackageManager.NameNotFoundException ex) {
             return false;
+        }
+    }
+
+    @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS)
+    private int getUidForPackage(@NonNull String clientPackageName, @NonNull UserHandle user) {
+        try {
+            PackageManager pm = mContext.getPackageManager();
+            return pm.getApplicationInfoAsUser(
+                            clientPackageName, /* flags= */ 0, user.getIdentifier())
+                    .uid;
+
+        } catch (PackageManager.NameNotFoundException ex) {
+            return Process.INVALID_UID;
         }
     }
 
@@ -1828,6 +1844,9 @@ class MediaRouter2ServiceImpl {
                         routerRecord.mPackageName,
                         routerRecord.mPackageName,
                         suggestedDeviceInfo));
+        mMediaRouterMetricLogger.notifyDeviceSuggestionsUpdated(
+                /* targetPackageUid= */ routerRecord.mUid,
+                /* suggestingPackageUid= */ routerRecord.mUid);
     }
 
     @GuardedBy("mLock")
@@ -1897,6 +1916,7 @@ class MediaRouter2ServiceImpl {
             int callerPid,
             @NonNull String callerPackageName,
             @Nullable String targetPackageName,
+            int targetUid,
             @NonNull UserHandle targetUser) {
         final IBinder binder = manager.asBinder();
         ManagerRecord managerRecord = mAllManagerRecords.get(binder);
@@ -1935,6 +1955,7 @@ class MediaRouter2ServiceImpl {
                         callerPid,
                         callerPackageName,
                         targetPackageName,
+                        targetUid,
                         hasMediaRoutingControl,
                         hasMediaContentControl);
         try {
@@ -2307,6 +2328,8 @@ class MediaRouter2ServiceImpl {
                         managerRecord.mTargetPackageName,
                         managerRecord.mOwnerPackageName,
                         suggestedDeviceInfo));
+        mMediaRouterMetricLogger.notifyDeviceSuggestionsUpdated(
+                managerRecord.mTargetUid, managerRecord.mOwnerUid);
     }
 
     @GuardedBy("mLock")
@@ -2368,6 +2391,8 @@ class MediaRouter2ServiceImpl {
                         UserHandler::notifyDeviceSuggestionRequestedOnHandler,
                         managerRecord.mUserRecord.mHandler,
                         managerRecord.mTargetPackageName));
+        mMediaRouterMetricLogger.notifyDeviceSuggestionsRequested(
+                managerRecord.mTargetUid, managerRecord.mOwnerUid);
     }
 
     // End of locked methods that are used by MediaRouter2Manager.
@@ -2952,8 +2977,14 @@ class MediaRouter2ServiceImpl {
         public final int mOwnerPid;
         @NonNull public final String mOwnerPackageName;
         public final int mManagerId;
-        // TODO (b/281072508): Document behaviour around nullability for mTargetPackageName.
+        // The target package name can be null when the manager does not target a local router.
         @Nullable public final String mTargetPackageName;
+
+        /**
+         * The target Uid can be {@link Process.INVALID_UID} if the manager does not target a local
+         * router.
+         */
+        public final int mTargetUid;
 
         public final boolean mHasMediaRoutingControl;
         public final boolean mHasMediaContentControl;
@@ -2968,6 +2999,7 @@ class MediaRouter2ServiceImpl {
                 int ownerPid,
                 @NonNull String ownerPackageName,
                 @Nullable String targetPackageName,
+                int targetUid,
                 boolean hasMediaRoutingControl,
                 boolean hasMediaContentControl) {
             mUserRecord = userRecord;
@@ -2976,6 +3008,7 @@ class MediaRouter2ServiceImpl {
             mOwnerPid = ownerPid;
             mOwnerPackageName = ownerPackageName;
             mTargetPackageName = targetPackageName;
+            mTargetUid = targetUid;
             mManagerId = mNextRouterOrManagerId.getAndIncrement();
             mHasMediaRoutingControl = hasMediaRoutingControl;
             mHasMediaContentControl = hasMediaContentControl;
