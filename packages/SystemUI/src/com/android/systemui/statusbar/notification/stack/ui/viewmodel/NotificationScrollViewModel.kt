@@ -40,6 +40,7 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
+import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenDisplayConfig
 import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenNotificationDisplayConfigInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
@@ -80,6 +81,7 @@ constructor(
     shadeModeInteractor: ShadeModeInteractor,
     bouncerInteractor: BouncerInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
+    private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     sceneInteractor: SceneInteractor,
     // TODO(b/336364825) Remove Lazy when SceneContainerFlag is released -
     // while the flag is off, creating this object too early results in a crash
@@ -263,9 +265,13 @@ constructor(
      * scene container will handle touches.
      */
     val interactive: Flow<Boolean> =
-        combine(blurFraction, brightnessMirrorShowing) { blurFraction, brightnessMirrorShowing ->
-                blurFraction != 1f && !brightnessMirrorShowing
-            }
+        combine(
+            blurFraction,
+            brightnessMirrorShowing,
+            headsUpNotificationInteractor.hasPinnedRows,
+        ) { blurFraction, brightnessMirrorShowing, hasPinnedHun ->
+            (blurFraction != 1f || hasPinnedHun) && !brightnessMirrorShowing
+        }
             .distinctUntilChanged()
             .dumpWhileCollecting("interactive")
 
