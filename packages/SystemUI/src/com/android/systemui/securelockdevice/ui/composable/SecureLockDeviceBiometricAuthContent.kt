@@ -43,10 +43,12 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.width
+import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.BiometricAuthIconAssets
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
+import com.android.systemui.util.ui.compose.LottieColorUtils
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 
@@ -139,7 +141,6 @@ private fun BiometricIconLottie(
         } else {
             0
         }
-    // TODO(b/437829879): figure out lottie dynamic coloring
 
     val numIterations =
         if (iconState.shouldLoop) {
@@ -150,6 +151,7 @@ private fun BiometricIconLottie(
 
     LottieAnimation(
         composition = lottie,
+        dynamicProperties = LottieColorUtils.getDynamicProperties(bpColors()),
         modifier =
             modifier
                 .graphicsLayer { rotationZ = iconState.rotation }
