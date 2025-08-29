@@ -356,15 +356,14 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
 
         // Checking whether an activity in fullscreen rather than the task as this camera
         // compat treatment doesn't cover activity embedding.
-        if (cameraActivity != null
-                && cameraActivity.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
+        if (cameraActivity.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
             recomputeConfigurationForCameraCompatIfNeeded(cameraActivity);
             mDisplayContent.updateOrientation();
             return;
         }
         // Checking that the whole app is in multi-window mode as we shouldn't show toast
         // for the activity embedding case.
-        if (cameraTask.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
+        if (cameraActivity.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                 && isTreatmentEnabledForActivity(cameraActivity, /* mustBeFullscreen */ false)) {
             final PackageManager packageManager = mWmService.mContext.getPackageManager();
             try {
