@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"Repetir"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eliminar"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"Reproducir"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"Pausar"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"Silenciar"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"Activar sonido"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Hacer captura de toda la pantalla"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Grabar toda la pantalla"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Hacer captura de pantalla del área seleccionada"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Grabar área seleccionada"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Captura de pantalla"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversaciones"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Borrar todas las notificaciones silenciosas"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Abrir los ajustes de notificaciones"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Notificaciones pausadas por el modo No molestar"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{No hay notificaciones}=1{Notificaciones pausadas por {mode}}=2{Notificaciones pausadas por {mode} y un modo más}many{Notificaciones pausadas por {mode} y # modos más}other{Notificaciones pausadas por {mode} y # modos más}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Empezar ahora"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"No hay notificaciones"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"No hay notificaciones nuevas"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Ver notificaciones"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Ver ajustes rápidos"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Hacer captura de pantalla"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Mostrar accesos directos"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Volver"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Ir a pantalla de inicio"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"¿Activar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"icono de acción"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> es un lector de pantalla que te permite oír los elementos en voz alta. Puede ser útil para las personas que tienen dificultades para ver la pantalla."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> te permite controlar tu dispositivo sin usar las manos."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Activar"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Combinación de teclas de <xliff:g id="ID_1">%1$s</xliff:g> activada"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"icono"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. Esto te permite ampliar rápidamente la pantalla para que el contenido se vea más grande. Pulsa el "<annotation id="action_key_icon">"icono"</annotation>" de acción + <xliff:g id="ID_4">^1</xliff:g> y \"+\" o \"-\" para ajustar el zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar combinación de teclas"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantener activada"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Apagando…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Ver pasos de mantenimiento"</string>
@@ -1530,7 +1535,7 @@
     <string name="stylus_battery_low_percentage" msgid="2564243323894629626">"Batería del lápiz óptico al <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="stylus_battery_low_subtitle" msgid="3583843128908823273">"Conecta tu lápiz óptico a un cargador"</string>
     <string name="stylus_battery_low" msgid="7134370101603167096">"Batería del lápiz óptico baja"</string>
-    <string name="video_camera" msgid="7654002575156149298">"Videocámara"</string>
+    <string name="video_camera" msgid="7654002575156149298">"Cámara vídeo"</string>
     <string name="call_from_work_profile_title" msgid="5418253516453177114">"No puedes llamar desde una aplicación personal"</string>
     <string name="call_from_work_profile_text" msgid="2856337395968118274">"Tu organización solo te permite hacer llamadas desde apps de trabajo"</string>
     <string name="call_from_work_profile_action" msgid="2937701298133010724">"Cambiar al perfil de trabajo"</string>
@@ -1570,8 +1575,8 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Gestionar acceso"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"En uso por llamada telefónica"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Usado recientemente en llamada telefónica"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"En uso por <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Uso reciente por <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"En uso en <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Uso reciente en <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"En uso por <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Usado recientemente por <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_active_app_usage_2" msgid="2770926061339921767">"En uso por <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>)"</string>

@@ -537,7 +537,7 @@
     <string name="zen_mode_set_up" msgid="8231201163894922821">"Nije podešeno"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Upravljajte u podešavanjima"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nema aktivnih režima}=1{Aktivan je {mode} režim}one{Aktivan je # režim}few{Aktivna su # režima}other{Aktivno je # režima}}"</string>
-    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> režim/a"</string>
+    <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%s</xliff:g> režima"</string>
     <string name="zen_modes_multiple_on_status" msgid="8120633422509269588">"Uključeno"</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Neće vas uznemiravati zvukovi i vibracije osim za alarme, podsetnike, događaje i pozivaoce koje navedete. I dalje ćete čuti sve što odaberete da pustite, uključujući muziku, video snimke i igre."</string>
     <string name="zen_alarms_introduction" msgid="3987266042682300470">"Neće vas uznemiravati zvukovi i vibracije osim za alarme. I dalje ćete čuti sve što odaberete da pustite, uključujući muziku, video snimke i igre."</string>
@@ -684,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Konverzacije"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Obrišite sva nečujna obaveštenja"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Otvorite podešavanja obaveštenja"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"Obaveštenja su pauzirana režimom Ne uznemiravaj"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Nema obaveštenja}=1{Obaveštenja je pauzirao {mode}}=2{Obaveštenja su pauzirali {mode} i još jedan režim}one{Obaveštenja su pauzirali {mode} i još # režim}few{Obaveštenja su pauzirali {mode} i još # režima}other{Obaveštenja su pauzirali {mode} i još # režima}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"Započni"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"Nema obaveštenja"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"Nema novih obaveštenja"</string>
@@ -985,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Prikaži obaveštenja"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Prikaži brza podešavanja"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Napravi snimak ekrana"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Prikaži prečice"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Nazad"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Idi na početni ekran"</string>
@@ -1009,8 +1012,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Pomeri prozor nadesno"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Povećaj prozor"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Smanji prozor"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"Zatvara prozor u kome se trenutno radi"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Prelazi sa jedne radne površine na drugu"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Unos"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Pređi na sledeći jezik"</string>
@@ -1132,12 +1134,15 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Želite da uključite funkciju <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Radnja "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je tasterska prečica za korišćenje funkcije <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> je čitač ekrana koji vam omogućava da čujete naglas izgovorene nazive stavki. Može da bude koristan ljudima koji imaju poteškoća sa vidom."</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> vam omogućava da kontrolišete uređaj hendsfri."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Uključi"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Tasterska prečica za <xliff:g id="ID_1">%1$s</xliff:g> je uključena"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379"><annotation id="action_key_icon">"Ikona"</annotation>" Radnja + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je tasterska prečica za korišćenje funkcije <xliff:g id="ID_3">^3</xliff:g>. To vam omogućava da brzo zumirate ekran da bi sadržaj bio veći. Pritisnite "<annotation id="action_key_icon">"ikonu"</annotation>" Radnja + <xliff:g id="ID_4">^1</xliff:g> i „+“ ili „–“ da biste prilagodili zumiranje."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečicu"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ne isključuj"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_title" msgid="7828090789777023683">"Želite da uključite tastersku prečicu za <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kada pritisnete "<annotation id="action_key_icon">"ikonu"</annotation>" Radnja + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, uključuje se funkcija pristupačnosti za <xliff:g id="ID_3">^3</xliff:g>. Ovo vam omogućava da kontrolišete uređaj hendsfri."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_negative_button_text" msgid="3573570279554465078">"Ne uključuj"</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_positive_button_text" msgid="2306321856544446858">"Uključi prečicu"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključan ekran"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključuje se…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Pogledajte upozorenja"</string>

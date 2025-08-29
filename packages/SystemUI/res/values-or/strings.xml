@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"ପୁଣି ଉଠାନ୍ତୁ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ଡିଲିଟ କରନ୍ତୁ"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"ଚଲାନ୍ତୁ"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"ବିରତ କରନ୍ତୁ"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"ମ୍ୟୁଟ କରନ୍ତୁ"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"ଅନମ୍ୟୁଟ କରନ୍ତୁ"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ ରେକର୍ଡ କରନ୍ତୁ"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"ଚୟନିତ ଏରିଆର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"ଚୟନିତ ଏରିଆ ରେକର୍ଡ କରନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"ସ୍କ୍ରିନସଟ"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"ସମସ୍ତ ନୀରବ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଖାଲି କରନ୍ତୁ"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"ବିଜ୍ଞପ୍ତି ସେଟିଂସ ଖୋଲନ୍ତୁ"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"\"ବିରକ୍ତ କରନ୍ତୁ ନାହିଁ\" ବିକଳ୍ପ ଦ୍ୱାରା ବିଜ୍ଞପ୍ତି ପଜ୍‍ ହୋଇଛି"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{କୌଣସି ବିଜ୍ଞପ୍ତି ନାହିଁ}=1{{mode} ଦ୍ୱାରା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବିରତ କରାଯାଇଛି}=2{{mode} ଏବଂ ଅନ୍ୟ ଏକ ମୋଡ ଦ୍ୱାରା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବିରତ କରାଯାଇଛି}other{{mode} ଏବଂ ଅନ୍ୟ # ମୋଡ ଦ୍ୱାରା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବିରତ କରାଯାଇଛି}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"ବର୍ତ୍ତମାନ ଆରମ୍ଭ କରନ୍ତୁ"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"କୌଣସି ବିଜ୍ଞପ୍ତି ନାହିଁ"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"କୌଣସି ନୂଆ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ନାହିଁ"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"କ୍ୱିକ ସେଟିଂ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"ସର୍ଟକଟଗୁଡ଼ିକ ଦେଖାନ୍ତୁ"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"ପଛକୁ ଫେରନ୍ତୁ"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"ହୋମ ସ୍କ୍ରିନକୁ ଯାଆନ୍ତୁ"</string>
@@ -1137,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ଚାଲୁ କରିବେ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ଆକ୍ସନ "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ହେଉଛି <xliff:g id="ID_3">^3</xliff:g> ବ୍ୟବହାର କରିବା ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟ। <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ହେଉଛି ଏକ ସ୍କ୍ରିନ ରିଡର ଯାହା ଆପଣଙ୍କୁ ବଡ଼ ପାଟିରେ ଆଇଟମଗୁଡ଼ିକୁ ଶୁଣିବାକୁ ଅନୁମତି ଦିଏ। ସ୍କ୍ରିନ ଦେଖିବାରେ ଅସୁବିଧାର ସମ୍ମୁଖୀନ ହେଉଥିବା ଲୋକମାନଙ୍କ ପାଇଁ ଏହା ଉପଯୋଗୀ ହୋଇପାରିବ।"</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> ଆପଣଙ୍କୁ ଆପଣଙ୍କ ଡିଭାଇସକୁ ହେଣ୍ଡ୍ସ ଫ୍ରି ଭାବରେ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଦିଏ।"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> କୀବୋର୍ଡ ସର୍ଟକଟ ଚାଲୁ କରାଯାଇଛି"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"କାର୍ଯ୍ୟ "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ହେଉଛି <xliff:g id="ID_3">^3</xliff:g> ବ୍ୟବହାର କରିବା ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟ। ଏହା ଆପଣଙ୍କୁ ବିଷୟବସ୍ତୁକୁ ଆହୁରି ବଡ଼ କରିବା ପାଇଁ ସ୍କ୍ରିନରେ ଶୀଘ୍ର ଜୁମ ଇନ କରିବାକୁ ଅନୁମତି ଦିଏ। ଜୁମ ଆଡଜଷ୍ଟ କରିବା ପାଇଁ କାର୍ଯ୍ୟ "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ଏବଂ \"+\" କିମ୍ବା \"-\" ଦବାନ୍ତୁ।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ସର୍ଟକଟ ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ଚାଲୁ ରଖନ୍ତୁ"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ବନ୍ଦ କରାଯାଉଛି…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"ଯତ୍ନ ନେବା ପାଇଁ ଷ୍ଟେପଗୁଡ଼ିକ ଦେଖନ୍ତୁ"</string>

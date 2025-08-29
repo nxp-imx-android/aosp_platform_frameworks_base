@@ -69,7 +69,7 @@
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"हाल यस डिभाइसमा साइन इन भएका प्रयोगकर्ताले USB डिबगिङ अन गर्न सक्दैनन्। यो सुविधा प्रयोग गर्न कृपया खाताका एड्मिनका रूपमा साइन इन गर्नुहोस्।"</string>
     <string name="change_connected_wifi_text" msgid="6346095920396568246">"तपाईंले लग इन गरेपछि तपाईं यो सेटिङ बदल्न सक्नुहुन्छ"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB पोर्ट असक्षम पारियो"</string>
-    <string name="usb_contaminant_message" msgid="7730476585174719805">"तपाईंको यन्त्रलाई तरल पदार्थ वा धुलोबाट जोगाउन यसको USB पोर्ट असक्षम पारिएको छ र यसले कुनै पनि सहायक उपकरणहरू पहिचान गर्ने छैन।\n\nउक्त USB पोर्ट फेरि प्रयोग गर्दा हुन्छ भने तपाईंलाई यसबारे सूचित गरिने छ।"</string>
+    <string name="usb_contaminant_message" msgid="7730476585174719805">"तपाईंको यन्त्रलाई तरल पदार्थ वा धुलोबाट जोगाउन यसको USB पोर्ट अफ गरिएको छ र यसले कुनै पनि सहायक उपकरणहरू पहिचान गर्ने छैन।\n\nउक्त USB पोर्ट फेरि प्रयोग गर्दा हुन्छ भने तपाईंलाई यसबारे सूचित गरिने छ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"चार्जर तथा सामानहरू पत्ता लगाउन सक्षम पारिएको USB पोर्ट"</string>
     <string name="usb_disable_contaminant_detection" msgid="3827082183595978641">"USB सक्षम पार्नुहोस्"</string>
     <string name="learn_more" msgid="4690632085667273811">"थप जान्नुहोस्"</string>
@@ -146,17 +146,12 @@
     <string name="screen_record_retake" msgid="3846643688365398450">"फेरि खिच्नुहोस्"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"सम्पादन गर्नुहोस्"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"मेटाउनुहोस्"</string>
-    <!-- no translation found for screen_record_play (4732544724679889445) -->
-    <skip />
-    <!-- no translation found for screen_record_pause (1715012292444967776) -->
-    <skip />
-    <!-- no translation found for screen_record_mute (8111682249858638168) -->
-    <skip />
-    <!-- no translation found for screen_record_unmute (2207912659365156472) -->
-    <skip />
+    <string name="screen_record_play" msgid="4732544724679889445">"प्ले गर्नुहोस्"</string>
+    <string name="screen_record_pause" msgid="1715012292444967776">"पज गर्नुहोस्"</string>
+    <string name="screen_record_mute" msgid="8111682249858638168">"म्युट गर्नुहोस्"</string>
+    <string name="screen_record_unmute" msgid="2207912659365156472">"अनम्युट गर्नुहोस्"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"सम्पूर्ण स्क्रिनको स्क्रिनसट लिनुहोस्"</string>
-    <!-- no translation found for screen_capture_fullscreen_record_button (5697594296042198690) -->
-    <skip />
+    <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"सम्पूर्ण स्क्रिन रेकर्ड गर्नुहोस्"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"चयन गरिएको भागको स्क्रिनसट लिनुहोस्"</string>
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"चयन गरिएको क्षेत्र रेकर्ड गर्नुहोस्"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"स्क्रिनसट"</string>
@@ -456,8 +451,8 @@
     <string name="quick_settings_dark_mode_secondary_label_on_at_bedtime" msgid="2274300599408864897">"सुत्ने समयमा अन हुने छ"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_bedtime_ends" msgid="1790772410777123685">"सुत्ने समय नसकिएसम्म अन रहने छ"</string>
     <string name="quick_settings_nfc_label" msgid="1054317416221168085">"NFC"</string>
-    <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC लाई असक्षम पारिएको छ"</string>
-    <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC लाई सक्षम पारिएको छ"</string>
+    <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC लाई अफ गरिएको छ"</string>
+    <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC लाई अन गरिएको छ"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"स्क्रिन रेकर्ड"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"सुरु गर्नुहोस्"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"रोक्नुहोस्"</string>
@@ -689,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"वार्तालापहरू"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"सबै मौन सूचनाहरू हटाउनुहोस्"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"नोटिफिकेसन सेटिङ खोल्नुहोस्"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"बाधा नपुऱ्याउनुहोस् नामक मोडमार्फत पज पारिएका सूचनाहरू"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{कुनै पनि नोटिफिकेसन छैन}=1{{mode} ले गर्दा नोटिफिकेसनहरू पज गरिएका छन्}=2{{mode} र अन्य एक मोडले गर्दा नोटिफिकेसनहरू पज गरिएका छन्}other{{mode} र अन्य # वटा मोडले गर्दा नोटिफिकेसनहरू पज गरिएका छन्}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"अहिले न"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"कुनै सूचनाहरू छैनन्"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"कुनै पनि नयाँ सूचना छैन"</string>
@@ -916,7 +912,7 @@
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"यो एपबाट प्राप्त हुने लाइभ अपडेटहरू ब्लक गर्नुहोस्"</string>
     <string name="live_notifications_title" msgid="5926318111951903878">"लाइभ अपडेट"</string>
     <string name="live_notifications_desc" msgid="2639662830862800119">"अफ गरिएका बेला यो एपबाट प्राप्त हुने जारी कार्यसम्बन्धी नोटिफिकेसनहरू तपाईंको डिभाइसको लक स्क्रिन र स्ट्याटस बारमा देखाइने छैनन्"</string>
-    <string name="notification_unblockable_desc" msgid="2073030886006190804">"यी सूचनाहरू परिमार्जन गर्न मिल्दैन।"</string>
+    <string name="notification_unblockable_desc" msgid="2073030886006190804">"यी नोटिफिकेसनहरू परिमार्जन गर्न मिल्दैन।"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कलसम्बन्धी सूचनाहरू परिमार्जन गर्न मिल्दैन।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"यहाँबाट सूचनाहरूको यो समूह कन्फिगर गर्न सकिँदैन"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"प्रोक्सीमार्फत आउने सूचना"</string>
@@ -990,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"सूचनाहरू हेर्नुहोस्"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"द्रुत सेटिङ हेर्नुहोस्"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"स्क्रिनसट लिनुहोस्"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"सर्टकटहरू देखाउनुहोस्"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"पछाडि जानुहोस्"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"होम स्क्रिनमा जानुहोस्"</string>
@@ -1014,8 +1012,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"विन्डो सारेर दायाँतिर लैजानुहोस्"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"विन्डो म्याक्सिमाइज गर्नुहोस्"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"विन्डो मिनिमाइज गर्नुहोस्"</string>
-    <!-- no translation found for system_desktop_mode_close_window (3072490692608682536) -->
-    <skip />
+    <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"हालको विन्डो बन्द गर्नुहोस्"</string>
     <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"एउटा डेस्कटपबाट अर्को डेस्कटपमा जानुहोस्"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"इनपुट"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"अर्को भाषा प्रयोग गर्नुहोस्"</string>
@@ -1137,12 +1134,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> अन गर्ने हो?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्ने किबोर्ड सर्टकट हो। <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> भनेको विभिन्न वस्तुहरू ठुलो आवाजमा पढेर सुनाउने स्क्रिन रिडर हो। स्क्रिनमा भएको कुरा देख्न गाह्रो हुने मान्छेहरूका लागि यो सुविधा उपयोगी हुन सक्छ।"</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"तपाईं <xliff:g id="ID_1">%1$s</xliff:g> प्रयोग गरेर आफ्नो डिभाइस ह्यान्ड्सफ्री तरिकाले नियन्त्रण गर्न सक्नुहुन्छ।"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"अन गर्नुहोस्"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> किबोर्डको सर्टकट अन गरिएको छ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। तपाईं यसका सहायताले स्क्रिनमा तुरुन्तै जुम इन गरेर त्यसमा भएको कन्टेन्ट अझ ठुलो बनाउन सक्नुहुन्छ। जुम मिलाउन एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> र \"+\" वा \"-\" थिच्नुहोस्।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"सर्टकट अफ गर्नुहोस्"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"अन राखिरहनुहोस्"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"डिभाइसको हेरचाह गर्ने तरिका हेर्नुहोस्"</string>

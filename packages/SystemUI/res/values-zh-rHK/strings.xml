@@ -684,8 +684,9 @@
     <string name="notification_section_header_conversations" msgid="821834744538345661">"對話"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"清除所有靜音通知"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"打開通知設定"</string>
-    <string name="dnd_suppressing_shade_text" msgid="5588252250634464042">"「請勿騷擾」模式已將通知暫停"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{沒有通知}=1{{mode}已暫停通知}=2{{mode}和另外一個模式已暫停通知}other{{mode}和另外 # 個模式已暫停通知}}"</string>
+    <!-- no translation found for caught_up_shade_text (8166221989384139659) -->
+    <skip />
     <string name="media_projection_action_text" msgid="3634906766918186440">"立即開始"</string>
     <string name="empty_shade_text" msgid="8935967157319717412">"沒有通知"</string>
     <string name="no_unseen_notif_text" msgid="395512586119868682">"沒有新通知"</string>
@@ -985,6 +986,8 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"查看通知"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"查看快速設定"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"擷取螢幕截圖"</string>
+    <!-- no translation found for group_system_partial_screenshot (2114314797127648010) -->
+    <skip />
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"顯示快速鍵"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"返回"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"前往主畫面"</string>
@@ -1132,12 +1135,19 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要啟用「<xliff:g id="ID_1">%1$s</xliff:g>」嗎？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"快捷操作鍵 "<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用「<xliff:g id="ID_3">^3</xliff:g>」的鍵盤快速鍵。<xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款螢幕閱讀器，會朗讀畫面項目給你聽，讓無法看清楚螢幕的使用者瞭解螢幕內容。"</string>
-    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"「<xliff:g id="ID_1">%1$s</xliff:g>」讓你開句聲就能控制裝置。"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"啟用"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>鍵盤快速鍵已開啟"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="7575802369763469379">"「快捷操作鍵」圖示"<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的鍵盤快速鍵。此功能可讓你快速放大畫面內容。按下「快捷操作鍵」圖示"<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g>，以及「+」或「-」，即可調整縮放程度。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"關閉快速鍵"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"保持開啟"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_title (7828090789777023683) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (7934170819801013870) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_negative_button_text (3573570279554465078) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_positive_button_text (2306321856544446858) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"螢幕鎖定"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在關機…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"查看保養步驟"</string>
