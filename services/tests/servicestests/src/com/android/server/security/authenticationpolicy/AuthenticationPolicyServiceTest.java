@@ -16,26 +16,35 @@
 
 package com.android.server.security.authenticationpolicy;
 
+import static android.hardware.biometrics.BiometricConstants.BIOMETRIC_ERROR_LOCKOUT;
+import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
+import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
+import static android.security.Flags.secureLockdown;
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.SUCCESS;
 
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 import static com.android.server.security.authenticationpolicy.AuthenticationPolicyService.MAX_ALLOWED_FAILED_AUTH_ATTEMPTS;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.AuthenticationStateListener;
 import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricRequestConstants;
 import android.hardware.biometrics.BiometricSourceType;
+import android.hardware.biometrics.events.AuthenticationErrorInfo;
 import android.hardware.biometrics.events.AuthenticationFailedInfo;
 import android.hardware.biometrics.events.AuthenticationSucceededInfo;
 import android.os.RemoteException;
@@ -66,7 +75,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /**
  * atest FrameworksServicesTests:AuthenticationPolicyServiceTest
@@ -77,11 +87,11 @@ import org.mockito.MockitoAnnotations;
 public class AuthenticationPolicyServiceTest {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
     private static final int PRIMARY_USER_ID = 0;
     private static final int MANAGED_PROFILE_USER_ID = 12;
     private static final int DEFAULT_COUNT_FAILED_AUTH_ATTEMPTS = 0;
-    private static final int REASON_UNKNOWN = 0; // BiometricRequestConstants.RequestReason
 
     private Context mContext;
     private AuthenticationPolicyService mAuthenticationPolicyService;
@@ -108,10 +118,9 @@ public class AuthenticationPolicyServiceTest {
     @Captor
     ArgumentCaptor<AuthenticationStateListener> mAuthenticationStateListenerCaptor;
 
+    @SuppressLint("VisibleForTests")
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
         mContext = spy(ApplicationProvider.getApplicationContext());
 
         assumeTrue("Adaptive auth is disabled on device",
@@ -128,14 +137,14 @@ public class AuthenticationPolicyServiceTest {
         LocalServices.addService(UserManagerInternal.class, mUserManager);
         LocalServices.removeServiceForTest(WatchRangingServiceInternal.class);
         LocalServices.addService(WatchRangingServiceInternal.class, mWatchRangingService);
-        if (android.security.Flags.secureLockdown()) {
+
+        if (secureLockdown()) {
             LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
             LocalServices.addService(SecureLockDeviceServiceInternal.class,
                     mSecureLockDeviceService);
         }
 
-        mAuthenticationPolicyService = new AuthenticationPolicyService(
-                mContext, mLockPatternUtils);
+        mAuthenticationPolicyService = new AuthenticationPolicyService(mContext, mLockPatternUtils);
         mAuthenticationPolicyService.init();
 
         verify(mLockSettings).registerLockSettingsStateListener(
@@ -146,11 +155,12 @@ public class AuthenticationPolicyServiceTest {
         // Set PRIMARY_USER_ID as the parent of MANAGED_PROFILE_USER_ID
         when(mUserManager.getProfileParentId(eq(MANAGED_PROFILE_USER_ID)))
                 .thenReturn(PRIMARY_USER_ID);
+
         if (android.security.Flags.secureLockdown()) {
             when(mSecureLockDeviceService.enableSecureLockDevice(eq(UserHandle.of(PRIMARY_USER_ID)),
                     any())).thenReturn(SUCCESS);
             when(mSecureLockDeviceService.disableSecureLockDevice(
-                    eq(UserHandle.of(PRIMARY_USER_ID)), any())).thenReturn(SUCCESS);
+                    eq(UserHandle.of(PRIMARY_USER_ID)), any(), anyBoolean())).thenReturn(SUCCESS);
         }
 
         toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, false /* disable */);
@@ -161,7 +171,7 @@ public class AuthenticationPolicyServiceTest {
         LocalServices.removeServiceForTest(LockSettingsInternal.class);
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
-        if (android.security.Flags.secureLockdown()) {
+        if (secureLockdown()) {
             LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
         }
         toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, false /* disable */);
@@ -214,7 +224,7 @@ public class AuthenticationPolicyServiceTest {
         }
         waitForAuthCompletion();
 
-        verifyLockDevice(PRIMARY_USER_ID);
+        verifyAdaptiveAuthLocksDevice(PRIMARY_USER_ID);
     }
 
     @Test
@@ -225,6 +235,52 @@ public class AuthenticationPolicyServiceTest {
         waitForAuthCompletion();
 
         verifyNotLockDevice(DEFAULT_COUNT_FAILED_AUTH_ATTEMPTS /* expectedCntFailedAttempts */,
+                PRIMARY_USER_ID);
+    }
+
+    @Test
+    @EnableFlags({FLAG_SECURE_LOCK_DEVICE, FLAG_SECURE_LOCKDOWN})
+    public void testSecureLockDeviceServiceNotified_onSuccessfulBiometricAuth()
+            throws RemoteException {
+        when(mSecureLockDeviceService.isSecureLockDeviceEnabled()).thenReturn(true);
+        mAuthenticationStateListenerCaptor.getValue().onAuthenticationSucceeded(
+                authSuccessInfo(PRIMARY_USER_ID));
+        waitForAuthCompletion();
+        verify(mSecureLockDeviceService).onStrongBiometricAuthenticationSuccess(
+                eq(UserHandle.of(PRIMARY_USER_ID)));
+    }
+
+    @Test
+    @EnableFlags({FLAG_SECURE_LOCK_DEVICE, FLAG_SECURE_LOCKDOWN})
+    public void testSecureLockDeviceResetsPrimaryAuthFlag_onBiometricLockout()
+            throws RemoteException {
+        when(mSecureLockDeviceService.isSecureLockDeviceEnabled()).thenReturn(true);
+        mAuthenticationStateListenerCaptor.getValue().onAuthenticationError(
+                authErrorInfo(BIOMETRIC_ERROR_LOCKOUT));
+        waitForAuthCompletion();
+        verify(mLockPatternUtils).requireStrongAuth(
+                eq(PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE), eq(UserHandle.USER_ALL));
+    }
+
+    @Test
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    public void testAdaptiveAuthDisabled_whenSecureLockDeviceEnabled()
+            throws RemoteException {
+        // Secure lock device is enabled
+        when(mSecureLockDeviceService.isSecureLockDeviceEnabled()).thenReturn(true);
+
+        // Device is currently locked and Keyguard is showing
+        when(mKeyguardManager.isDeviceLocked(PRIMARY_USER_ID)).thenReturn(true);
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+
+        // Fail biometric auth 5 times
+        for (int i = 0; i < MAX_ALLOWED_FAILED_AUTH_ATTEMPTS; i++) {
+            mAuthenticationStateListenerCaptor.getValue().onAuthenticationFailed(
+                    authFailedInfo(PRIMARY_USER_ID));
+        }
+        waitForAuthCompletion();
+
+        verifyNotLockDevice(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS /* expectedCntFailedAttempts */,
                 PRIMARY_USER_ID);
     }
 
@@ -285,7 +341,7 @@ public class AuthenticationPolicyServiceTest {
         waitForAuthCompletion();
 
         if (enabled) {
-            verifyLockDevice(PRIMARY_USER_ID);
+            verifyAdaptiveAuthLocksDevice(PRIMARY_USER_ID);
         } else {
             verifyNotLockDevice(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS, PRIMARY_USER_ID);
         }
@@ -371,7 +427,7 @@ public class AuthenticationPolicyServiceTest {
         waitForAuthCompletion();
 
         if (enabled) {
-            verifyLockDevice(PRIMARY_USER_ID);
+            verifyAdaptiveAuthLocksDevice(PRIMARY_USER_ID);
         } else {
             verifyNotLockDevice(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS, PRIMARY_USER_ID);
         }
@@ -405,7 +461,7 @@ public class AuthenticationPolicyServiceTest {
         waitForAuthCompletion();
 
         if (enabled) {
-            verifyLockDevice(MANAGED_PROFILE_USER_ID);
+            verifyAdaptiveAuthLocksDevice(MANAGED_PROFILE_USER_ID);
         } else {
             verifyNotLockDevice(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS, MANAGED_PROFILE_USER_ID);
         }
@@ -417,7 +473,7 @@ public class AuthenticationPolicyServiceTest {
         verify(mWindowManager, never()).lockNow();
     }
 
-    private void verifyLockDevice(int userId) {
+    private void verifyAdaptiveAuthLocksDevice(int userId) {
         assertEquals(MAX_ALLOWED_FAILED_AUTH_ATTEMPTS,
                 mAuthenticationPolicyService.mFailedAttemptsForUser.get(userId));
         verify(mLockPatternUtils).requireStrongAuth(
@@ -440,12 +496,17 @@ public class AuthenticationPolicyServiceTest {
 
     private AuthenticationSucceededInfo authSuccessInfo(int userId) {
         return new AuthenticationSucceededInfo.Builder(BiometricSourceType.FINGERPRINT,
-                REASON_UNKNOWN, true, userId).build();
+                BiometricRequestConstants.REASON_UNKNOWN, true, userId).build();
+    }
+
+    private AuthenticationErrorInfo authErrorInfo(int errCode) {
+        return new AuthenticationErrorInfo.Builder(BiometricSourceType.FINGERPRINT,
+                BiometricRequestConstants.REASON_UNKNOWN, "errString", errCode).build();
     }
 
     private AuthenticationFailedInfo authFailedInfo(int userId) {
-        return new AuthenticationFailedInfo.Builder(BiometricSourceType.FINGERPRINT, REASON_UNKNOWN,
-                userId).build();
+        return new AuthenticationFailedInfo.Builder(BiometricSourceType.FINGERPRINT,
+                BiometricRequestConstants.REASON_UNKNOWN, userId).build();
     }
 
     private void toggleAdaptiveAuthSettingsOverride(int userId, boolean disable) {
