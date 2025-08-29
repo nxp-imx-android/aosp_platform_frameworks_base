@@ -54,6 +54,9 @@ public final class HsumBootUserInitializerTest {
 
     private static final String TAG = HsumBootUserInitializerTest.class.getSimpleName();
 
+    private static final int MOBILE_BOOT_STRATEGY =
+            UserManagerService.BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE;
+
     @Rule
     public final Expect expect = Expect.create();
     @Rule
@@ -83,7 +86,9 @@ public final class HsumBootUserInitializerTest {
     public void setFixtures() {
         mFixture = new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
                 // value of args below don't matter
-                /* shouldDesignateMainUser= */ false, /* shouldCreateInitialUser= */ false);
+                /* shouldDesignateMainUser= */ false,
+                /* shouldCreateInitialUser= */ false,
+                /* bootStrategy= */ MOBILE_BOOT_STRATEGY);
     }
 
     @Test
