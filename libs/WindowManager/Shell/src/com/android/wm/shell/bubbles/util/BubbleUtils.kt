@@ -37,34 +37,45 @@ object BubbleUtils {
      */
     private fun getBubbleTransaction(
         token: WindowContainerToken,
+        rootToken: WindowContainerToken?,
         toBubble: Boolean,
         isAppBubble: Boolean,
         reparentToTda: Boolean,
         captionInsetsOwner: Binder?,
     ): WindowContainerTransaction {
         val wct = WindowContainerTransaction()
-        if (reparentToTda) {
-            // Reparenting must happen before setAlwaysOnTop() below since WCT operations are
-            // applied in order and always-on-top for nested tasks is not supported
-            wct.reparent(token, null, true)
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && isAppBubble) {
+            if (toBubble && rootToken != null) {
+                wct.reparent(token, rootToken, true /* onTop */)
+                wct.setAlwaysOnTop(rootToken, true /* alwaysOnTop */)
+            } else {
+                wct.reparent(token, null, true /* onTop */)
+            }
+        } else {
+            if (reparentToTda) {
+                // Reparenting must happen before setAlwaysOnTop() below since WCT operations are
+                // applied in order and always-on-top for nested tasks is not supported
+                wct.reparent(token, null, true)
+            }
+            wct.setWindowingMode(
+                token,
+                if (toBubble)
+                    WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+                else
+                    WindowConfiguration.WINDOWING_MODE_UNDEFINED,
+            )
+            wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
+            if (!isAppBubble || !BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+                wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
+            }
+            if (!toBubble || isAppBubble) {
+                // We only set launch next to Bubble for App Bubble, since new Task opened from Chat
+                // Bubble should be launched in fullscreen.
+                // Always reset everything when exit bubble.
+                wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
+            }
         }
-        wct.setWindowingMode(
-            token,
-            if (toBubble)
-                WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
-            else
-                WindowConfiguration.WINDOWING_MODE_UNDEFINED,
-        )
-        wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
-        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
-            wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
-        }
-        if (!toBubble || isAppBubble) {
-            // We only set launch next to Bubble for App Bubble, since new Task opened from Chat
-            // Bubble should be launched in fullscreen.
-            // Always reset everything when exit bubble.
-            wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
-        }
+        // TODO: b/407669465 - review if those could also be set on the bubble root task.
         wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
         wct.setDisablePip(token, toBubble /* disablePip */)
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
@@ -96,11 +107,13 @@ object BubbleUtils {
     @JvmStatic
     fun getEnterBubbleTransaction(
         token: WindowContainerToken,
+        rootToken: WindowContainerToken?,
         isAppBubble: Boolean,
         reparentToTda: Boolean = false,
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             token,
+            rootToken,
             toBubble = true,
             isAppBubble,
             reparentToTda,
@@ -119,6 +132,7 @@ object BubbleUtils {
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             token,
+            rootToken = null,
             toBubble = false,
             // Everything will be reset, so doesn't matter for exit.
             isAppBubble = true,

@@ -34,12 +34,17 @@ object BubbleTestUtils {
         taskToken: IBinder,
         isAppBubble: Boolean,
         reparentToTda: Boolean = false,
+        rootTaskToken: IBinder? = null,
     ) {
         // Verify hierarchy ops
 
         val alwaysOnTopOp: HierarchyOp
 
-        if (reparentToTda) {
+        if (rootTaskToken != null) {
+            assertThat(wct.hierarchyOps.size).isEqualTo(2)
+            alwaysOnTopOp = wct.hierarchyOps[1]
+            assertThat(alwaysOnTopOp.container).isEqualTo(rootTaskToken)
+        } else if (reparentToTda) {
             assertThat(wct.hierarchyOps.size).isEqualTo(2)
             val reparentOp = wct.hierarchyOps[0]
             assertThat(reparentOp.container).isEqualTo(taskToken)
@@ -48,11 +53,12 @@ object BubbleTestUtils {
             assertThat(reparentOp.toTop).isTrue()
 
             alwaysOnTopOp = wct.hierarchyOps[1]
+            assertThat(alwaysOnTopOp.container).isEqualTo(taskToken)
         } else {
             assertThat(wct.hierarchyOps.size).isEqualTo(1)
             alwaysOnTopOp = wct.hierarchyOps[0]
+            assertThat(alwaysOnTopOp.container).isEqualTo(taskToken)
         }
-        assertThat(alwaysOnTopOp.container).isEqualTo(taskToken)
         assertThat(alwaysOnTopOp.isAlwaysOnTop).isTrue()
 
         // Verify Change
@@ -60,16 +66,18 @@ object BubbleTestUtils {
         assertThat(wct.changes.size).isEqualTo(1)
         assertThat(wct.changes[taskToken]).isNotNull()
         val change = wct.changes[taskToken]!!
-        assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
-        if (isAppBubble) {
+        if (rootTaskToken == null) {
+            assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
+        }
+        if (rootTaskToken == null && isAppBubble) {
             assertThat(change.launchNextToBubble).isTrue()
+            assertThat(change.interceptBackPressed).isTrue()
         } else {
             assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
         }
         assertThat(change.forceExcludedFromRecents).isTrue()
         assertThat(change.disablePip).isTrue()
         assertThat(change.disableLaunchAdjacent).isTrue()
-        assertThat(change.interceptBackPressed).isTrue()
     }
 
     /** Verifies the [WindowContainerTransaction] to exit Bubble. */
@@ -103,12 +111,14 @@ object BubbleTestUtils {
         assertThat(wct.changes.size).isEqualTo(1)
         assertThat(wct.changes[taskToken]).isNotNull()
         val change = wct.changes[taskToken]!!
-        assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_UNDEFINED)
-        assertThat(change.launchNextToBubble).isFalse()
+        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+            assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_UNDEFINED)
+            assertThat(change.launchNextToBubble).isFalse()
+            assertThat(change.interceptBackPressed).isFalse()
+        }
         assertThat(change.forceExcludedFromRecents).isFalse()
         assertThat(change.disablePip).isFalse()
         assertThat(change.disableLaunchAdjacent).isFalse()
         assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
-        assertThat(change.interceptBackPressed).isFalse()
     }
 }
