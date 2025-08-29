@@ -6992,7 +6992,16 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void setNotificationPolicyAccessGrantedForUser(
                 String pkg, int userId, boolean granted) {
-            checkCallerIsSystemOrShell();
+            if (UserHandle.getCallingUserId() != userId) {
+                getContext().enforceCallingOrSelfPermission(
+                        android.Manifest.permission.INTERACT_ACROSS_USERS,
+                        "setNotificationPolicyAccessGrantedForUser for user " + userId);
+            }
+            if (!isCallerSystemOrSystemUiOrShell()) {
+                getContext().enforceCallingPermission(
+                        android.Manifest.permission.MANAGE_NOTIFICATIONS,
+                        "setNotificationPolicyAccessGrantedForUser");
+            }
             final long identity = Binder.clearCallingIdentity();
             try {
                 if (mAllowedManagedServicePackages.test(
