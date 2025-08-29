@@ -30,6 +30,9 @@ import java.util.Arrays;
  * A simple tool for tracking the concept of a process state change "session". Session starts can
  * be nested and a session is considered active until every start has an accompanying close.
  *
+ * A BatchSession must be active when a method annotated with
+ * {@link com.android.server.am.psc.annotation.RequiresEnclosingBatchSession} is called.
+ *
  * BatchSession is not thread-safe and should only be used within the same thread or lock.
  */
 @RavenwoodKeepWholeClass
