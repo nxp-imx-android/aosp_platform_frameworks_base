@@ -144,6 +144,7 @@ constructor(
                                     builder
                                         .setParameters(parameters)
                                         .setScope(coroutineScope)
+                                        .setDisplay(display)
                                         .build()
                                 }
                             Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
