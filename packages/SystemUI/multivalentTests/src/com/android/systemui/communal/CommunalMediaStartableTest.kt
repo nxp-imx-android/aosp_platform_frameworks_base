@@ -23,6 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
@@ -45,6 +46,7 @@ class CommunalMediaStartableTest : SysuiTestCase() {
     private val Kosmos.underTest by
         Kosmos.Fixture { CommunalMediaStartable(communalSettingsInteractor, mediaHost) }
 
+    @DisableSceneContainer
     @DisableFlags(FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     @Test
     fun onStart_mediaControlsInComposeDisabled_initializeMediaHostForCommunal() =
