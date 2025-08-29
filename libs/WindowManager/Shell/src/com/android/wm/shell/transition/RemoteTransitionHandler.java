@@ -60,7 +60,7 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
     private final ArrayMap<IBinder, RemoteTransition> mRequestedRemotes = new ArrayMap<>();
 
     /** Ordered by specificity. Last filters will be checked first */
-    private final ArrayList<Pair<TransitionFilter, RemoteTransition>> mFilters =
+    final ArrayList<Pair<TransitionFilter, RemoteTransition>> mFilters =
             new ArrayList<>();
     private final ArrayList<Pair<TransitionFilter, RemoteTransition>> mTakeoverFilters =
             new ArrayList<>();
