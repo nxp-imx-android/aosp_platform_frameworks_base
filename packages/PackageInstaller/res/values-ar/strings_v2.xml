@@ -89,7 +89,7 @@
     <string name="message_archive_work_profile" msgid="7601504268820630858">"ستتم أرشفة هذا التطبيق من ملف العمل مع حفظ بياناته."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"ستتم أرشفة هذا التطبيق من مساحتك الخاصّة مع حفظ بياناته."</string>
     <string name="message_restore" msgid="8402726798623569969">"سيتم تنزيل هذا التطبيق من \"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>\" في الخلفية"</string>
-    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"‫\"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>\" بحاجة لمزيد من المعلومات لتمكينك من استعادة هذا التطبيق"</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"يجب تقديم المزيد من المعلومات إلى ‫\"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>\" لتمكينك من استعادة هذا التطبيق"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"‏لاستعادة هذا التطبيق، يجب إخلاء &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; من مساحة التخزين ثم إعادة المحاولة"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"لاستعادة هذا التطبيق، يُرجى التحقّق من اتصالك بالإنترنت ثم إعادة المحاولة"</string>
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"لاستعادة هذا التطبيق، يجب تفعيل \"<xliff:g id="INSTALLERNAME">%1$s</xliff:g>\" في \"الإعدادات\""</string>
@@ -124,7 +124,7 @@
     <string name="button_update_anyway" msgid="6674207037708730779">"التحديث على أي حال"</string>
     <string name="button_done" msgid="3408025390982260629">"تم"</string>
     <string name="button_open" msgid="6892684987374117955">"فتح"</string>
-    <string name="button_cancel" msgid="6690491435205617214">"إلغاء"</string>
+    <string name="button_cancel" msgid="6690491435205617214">"إغلاق"</string>
     <string name="button_continue" msgid="107501685249826244">"متابعة"</string>
     <string name="button_close" msgid="7187308556466275899">"إغلاق"</string>
     <string name="button_uninstall" msgid="6317309210023038915">"إلغاء التثبيت"</string>

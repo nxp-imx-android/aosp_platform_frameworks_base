@@ -88,7 +88,7 @@
     <string name="message_archive_other_user" msgid="6465828676043191175">"Подаци апликације ће бити сачувани"</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Ова апликација ће бити архивирана са пословног профила. Подаци апликације ће бити сачувани."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Ова апликација ће бити архивирана из приватног простора. Подаци апликације ће бити сачувани."</string>
-    <string name="message_restore" msgid="8402726798623569969">"Ова апликација се преузима у позадини са: <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
+    <string name="message_restore" msgid="8402726798623569969">"Ова апликација ће се преузети у позадини из: <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"Неопходне су додатне информације за <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> да бисте могли да вратите ову апликацију"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Да бисте вратили ову апликацију, ослободите &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; и пробајте поново"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Да бисте вратили ову апликацију, проверите интернет везу и пробајте поново."</string>
@@ -96,22 +96,14 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Да бисте вратили ову апликацију, треба да инсталирате <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Дошло је до проблема при враћању ове апликације"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> је део следеће апликације: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (5439893912308217959) -->
-    <skip />
-    <!-- no translation found for cannot_update_app_blocked_summary (7817560122951640605) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (236829543597389666) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_no_internet_summary (28024736898646891) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (6208343652461257248) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_summary (367099122142054088) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3798407602770929670) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2871425967967934618) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="5439893912308217959">"&lt;p&gt;Ова апликација је блокирана. Да би уређај и подаци били безбедни, могу да се инсталирају само апликације верификованих програмера.&lt;/p&gt;"</string>
+    <string name="cannot_update_app_blocked_summary" msgid="7817560122951640605">"&lt;p&gt;Ова апликација није ажурирана. Да би уређај и подаци били безбедни, могу да се инсталирају само ажурирања верификованих програмера.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_no_internet_summary" msgid="236829543597389666">"&lt;p&gt;Ова апликација није инсталирана. Апликације неверификованих програмера могу да буду небезбедне.&lt;/p&gt; &lt;p&gt;Потребна је интернет веза да би се верификовао програмер апликације. Проверите везу, па пробајте поново да инсталирате апликацију. &lt;/p&gt;"</string>
+    <string name="cannot_update_verification_no_internet_summary" msgid="28024736898646891">"&lt;p&gt;Ова апликација није ажурирана. Ажурирања неверификованих програмера могу да буду небезбедна.&lt;/p&gt; &lt;p&gt;Потребна је интернет веза да би се верификовао програмер апликације. Проверите везу, па поново пробајте да ажурирате апликацију. &lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="6208343652461257248">"&lt;p&gt;Дошло је до проблема при верификацији програмера ове апликације. Апликације неверификованих програмера могу да буду небезбедне, па апликација није инсталирана.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_summary" msgid="367099122142054088">"&lt;p&gt;Дошло је до проблема при верификацији програмера ове апликације. Ажурирања неверификованих програмера могу да буду небезбедна, па апликација није ажурирана.&lt;/p&gt;"</string>
+    <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3798407602770929670">"&lt;p&gt;Ова апликација је блокирана јер је дошло до проблема при верификацији програмера. Да би уређај и подаци били безбедни, могу да се инсталирају само апликације верификованих програмера.&lt;/p&gt;"</string>
+    <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2871425967967934618">"&lt;p&gt;Ова апликација није ажурирана јер је дошло до проблема при верификацији програмера. Да би уређај и подаци били безбедни, могу да се инсталирају само ажурирања верификованих програмера.&lt;/p&gt;"</string>
     <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"Ако инсталирате без верификације, имајте на уму да апликације неверификованих програмера могу да угрозе уређај и податке."</string>
     <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"Ако ажурирате без верификације, имајте на уму да ажурирања неверификованих програмера могу да угрозе уређај и податке."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Програмер апликације није верификован"</string>

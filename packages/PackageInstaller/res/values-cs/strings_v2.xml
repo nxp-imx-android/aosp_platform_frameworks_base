@@ -130,7 +130,7 @@
     <string name="button_uninstall" msgid="6317309210023038915">"Odinstalovat"</string>
     <string name="button_delete" msgid="1050833585936159792">"Smazat"</string>
     <string name="button_reinstall" msgid="476377927808336418">"Přeinstalovat"</string>
-    <string name="button_manage_apps" msgid="957735904821659812">"Spravovat aplikace"</string>
+    <string name="button_manage_apps" msgid="957735904821659812">"Správa aplikací"</string>
     <string name="button_archive" msgid="2719647830439699121">"Archivovat"</string>
     <string name="button_restore" msgid="4388317532933866637">"Obnovit"</string>
     <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"Odinstalovat aktualizace"</string>
