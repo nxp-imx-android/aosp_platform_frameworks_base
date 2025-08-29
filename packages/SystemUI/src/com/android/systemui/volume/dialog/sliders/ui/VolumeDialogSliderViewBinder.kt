@@ -40,7 +40,7 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.res.R
-import com.android.systemui.volume.dialog.domain.interactor.DesktopAudioTileDetailsFeatureInteractor
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderScope
 import com.android.systemui.volume.dialog.sliders.ui.compose.SliderTrack
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogOverscrollViewModel
@@ -62,11 +62,11 @@ constructor(
     private val viewModel: VolumeDialogSliderViewModel,
     private val overscrollViewModel: VolumeDialogOverscrollViewModel,
     private val hapticsViewModelFactory: SliderHapticsViewModel.Factory,
-    private val desktopAudioTileDetailsFeatureInteractor: DesktopAudioTileDetailsFeatureInteractor,
+    private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
 ) {
     fun bind(view: View) {
         // Use horizontal volume dialog if the audio tile details view is enabled
-        val isVolumeDialogVertical = !desktopAudioTileDetailsFeatureInteractor.isEnabled()
+        val isVolumeDialogVertical = !expandedAudioTileDetailsFeatureInteractor.isEnabled()
         val sliderComposeView: ComposeView = view.requireViewById(R.id.volume_dialog_slider)
         sliderComposeView.setContent {
             PlatformTheme {

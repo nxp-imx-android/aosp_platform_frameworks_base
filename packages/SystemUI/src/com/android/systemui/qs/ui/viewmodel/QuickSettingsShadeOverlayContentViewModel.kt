@@ -30,11 +30,9 @@ import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.domain.interactor.QSPanelAppearanceInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
-import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -45,6 +43,7 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.panel.component.volume.domain.model.SliderType
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
@@ -77,6 +76,7 @@ constructor(
     audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
     val audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
     val buildNumberViewModelFactory: BuildNumberViewModel.Factory,
+    val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
     @ShadeDisplayAware shadeContext: Context,
     val shadeInteractor: ShadeInteractor,
     val shadeModeInteractor: ShadeModeInteractor,
@@ -139,9 +139,7 @@ constructor(
         }
     }
 
-    private val showVolumeSlider =
-        QsDetailedView.isEnabled &&
-            shadeContext.resources.getBoolean(R.bool.config_enableDesktopAudioTileDetailsView)
+    private val showVolumeSlider = expandedAudioTileDetailsFeatureInteractor.isEnabled()
 
     val volumeSliderViewModel =
         if (showVolumeSlider && volumeSliderCoroutineScope != null)

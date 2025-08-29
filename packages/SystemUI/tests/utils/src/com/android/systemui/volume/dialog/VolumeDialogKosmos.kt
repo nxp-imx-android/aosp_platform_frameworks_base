@@ -19,7 +19,7 @@ package com.android.systemui.volume.dialog
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.volume.dialog.dagger.volumeDialogComponentFactory
-import com.android.systemui.volume.dialog.domain.interactor.desktopAudioTileDetailsFeatureInteractor
+import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.domain.interactor.volumeDialogVisibilityInteractor
 
 val Kosmos.volumeDialog by
@@ -28,6 +28,6 @@ val Kosmos.volumeDialog by
             context = applicationContext,
             visibilityInteractor = volumeDialogVisibilityInteractor,
             componentFactory = volumeDialogComponentFactory,
-            desktopAudioTileDetailsFeatureInteractor = desktopAudioTileDetailsFeatureInteractor,
+            expandedAudioTileDetailsFeatureInteractor = expandedAudioTileDetailsFeatureInteractor,
         )
     }
