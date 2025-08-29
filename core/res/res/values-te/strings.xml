@@ -66,7 +66,7 @@
     <string name="ThreeWCMmi" msgid="2436550866139999411">"మూడు మార్గాల కాలింగ్"</string>
     <string name="RuacMmi" msgid="1876047385848991110">"అవాంఛిత అంతరాయ కాల్స్‌ల తిరస్కరణ"</string>
     <string name="CndMmi" msgid="185136449405618437">"కాలింగ్ నంబర్ డెలివరీ"</string>
-    <string name="DndMmi" msgid="8797375819689129800">"అంతరాయం కలిగించవద్దు"</string>
+    <string name="DndMmi" msgid="8797375819689129800">"డిస్టర్బ్ చేయవద్దు"</string>
     <string name="CLIRDefaultOnNextCallOn" msgid="4511621022859867988">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి ఉంటుంది. తర్వాత కాల్: పరిమితి ఉంటుంది"</string>
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి ఉంటుంది. తర్వాత కాల్: పరిమితి లేదు"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి లేదు. తర్వాత కాల్: పరిమితి ఉంటుంది"</string>
@@ -639,6 +639,10 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"సమీపంలోని అల్ట్రా-వైడ్‌బ్యాండ్ పరికరాల మధ్య సంబంధిత పొజిషన్‌ను నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"సమీపంలోని Wi-Fi పరికరాలతో ఇంటరాక్ట్ చేస్తుంది"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"అడ్వర్టయిజ్, కనెక్ట్ చేయడానికి, సమీపంలోని Wi-Fi పరికరాల సంబంధిత పొజిషన్‌ను నిర్ణయించడానికి యాప్‌ను అనుమతిస్తుంది"</string>
+    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
+    <skip />
+    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"సమీపంలో పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించండి"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"సమీపంలోని పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ప్రాధాన్యత ఇవ్వబడిన NFC చెల్లింపు సేవల సమాచారం"</string>
@@ -2004,7 +2008,7 @@
     <string name="zen_mode_forever_dnd" msgid="3423201955704180067">"మీరు అంతరాయం కలిగించవద్దు ఎంపిక ఆఫ్ చేసే వరకు"</string>
     <string name="zen_mode_rule_name_combination" msgid="7174598364351313725">"<xliff:g id="FIRST">%1$s</xliff:g> / <xliff:g id="REST">%2$s</xliff:g>"</string>
     <string name="toolbar_collapse_description" msgid="8009920446193610996">"కుదించండి"</string>
-    <string name="zen_mode_feature_name" msgid="3785547207263754500">"అంతరాయం కలిగించవద్దు"</string>
+    <string name="zen_mode_feature_name" msgid="3785547207263754500">"డిస్టర్బ్ చేయవద్దు"</string>
     <string name="zen_mode_downtime_feature_name" msgid="5886005761431427128">"ముఖ్యమైన పనిలో ఉన్నప్పుడు"</string>
     <string name="zen_mode_default_weeknights_name" msgid="7902108149994062847">"వారపు రోజుల్లో రాత్రి"</string>
     <string name="zen_mode_default_weekends_name" msgid="4707200272709377930">"వారాంతం"</string>

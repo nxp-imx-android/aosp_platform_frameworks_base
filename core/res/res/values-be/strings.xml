@@ -641,6 +641,10 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Дазволіць праграме вызначаць адлегласць паміж прыладамі паблізу, якія выкарыстоўваюць звышшырокапалосную сувязь"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"узаемадзейнічаць з прыладамі з Wi‑Fi паблізу"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Праграма зможа адпраўляць даныя на прылады Wi-Fi паблізу, падключацца да іх і вызначаць іх месцазнаходжанне"</string>
+    <!-- no translation found for permlab_access_local_network (3420360767259066877) -->
+    <skip />
+    <!-- no translation found for permdesc_access_local_network (6364679803386822638) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"вызначаць адноснае месцазнаходжанне прылад паблізу"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Дазвольце праграме вызначаць адноснае месцазнаходжанне прылад паблізу"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Інфармацыя пра прыярытэтны сэрвіс аплаты NFC"</string>
