@@ -20,11 +20,10 @@ import static android.bluetooth.BluetoothHidHost.ACTION_CONNECTION_STATE_CHANGED
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.DEFAULT_DISPLAY_GROUP;
+import static android.view.Display.TYPE_INTERNAL;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -38,6 +37,8 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
 import static com.android.server.policy.PhoneWindowManager.EXTRA_TRIGGER_HUB;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_GO_TO_SLEEP;
@@ -62,6 +63,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
 import android.os.Bundle;
@@ -78,6 +80,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.testing.TestableContext;
+import android.view.DisplayInfo;
 
 import androidx.test.filters.SmallTest;
 
@@ -148,6 +151,9 @@ public class PhoneWindowManagerTests {
     private StatusBarManagerInternal mStatusBarManagerInternal;
     @Mock
     private UserManagerInternal mUserManagerInternal;
+    @Mock
+    private DisplayManagerInternal mDisplayManagerInternal;
+    private final DisplayInfo mDisplayInfo = new DisplayInfo();
 
     @Mock
     private PowerManager mPowerManager;
@@ -708,6 +714,10 @@ public class PhoneWindowManagerTests {
         when(mAtmInternal.startHomeOnDisplay(
                 anyInt(), anyString(), anyInt(), anyBoolean(), anyBoolean())).thenReturn(false);
         mPhoneWindowManager.mUserManagerInternal = mock(UserManagerInternal.class);
+
+        mPhoneWindowManager.mDisplayManagerInternal = mDisplayManagerInternal;
+        mDisplayInfo.type = TYPE_INTERNAL;
+        when(mDisplayManagerInternal.getDisplayInfo(anyInt())).thenReturn(mDisplayInfo);
     }
 
     private class TestInjector extends PhoneWindowManager.Injector {
