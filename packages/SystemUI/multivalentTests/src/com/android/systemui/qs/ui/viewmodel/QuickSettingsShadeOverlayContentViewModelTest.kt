@@ -42,6 +42,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.panels.data.repository.qsPanelAppearanceRepository
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
@@ -182,6 +183,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             underTest.onPanelShapeInWindowChanged(expected)
 
             assertThat(actual).isEqualTo(expected)
+            assertThat(kosmos.qsPanelAppearanceRepository.qsPanelShape.value).isEqualTo(expected)
 
             disposable.dispose()
         }
