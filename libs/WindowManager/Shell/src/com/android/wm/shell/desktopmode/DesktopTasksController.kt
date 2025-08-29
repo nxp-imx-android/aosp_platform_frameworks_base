@@ -2339,10 +2339,11 @@ class DesktopTasksController(
                 )
                 return@moveToNextDisplay false
             }
-            if (!getFocusedNonDesktopTasks(displayId, userId).isEmpty()) {
+            val focusedNonDesktopTasks = getFocusedNonDesktopTasks(displayId, userId)
+            if (!focusedNonDesktopTasks.isEmpty()) {
                 logD(
-                    "moveToNextDesktopDisplay: Skip displayId=$displayId as the focused " +
-                        "task is not desktop task focused non desktop tasks."
+                    "moveToNextDesktopDisplay: Skip displayId=$displayId as it has focused " +
+                        "non desktop tasks ${focusedNonDesktopTasks.joinToString()}"
                 )
                 return@moveToNextDisplay false
             }
