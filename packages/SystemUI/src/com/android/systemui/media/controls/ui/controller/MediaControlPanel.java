@@ -31,6 +31,7 @@ import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.theming.ThemeStyle;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Color;
@@ -102,7 +103,6 @@ import com.android.systemui.media.controls.util.MediaDataUtils;
 import com.android.systemui.media.controls.util.MediaUiEventLogger;
 import com.android.systemui.media.dialog.MediaOutputDialogManager;
 import com.android.systemui.monet.ColorScheme;
-import com.android.systemui.monet.Style;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
@@ -233,7 +233,8 @@ public class MediaControlPanel {
     private TurbulenceNoiseAnimationConfig mTurbulenceNoiseAnimationConfig;
     private boolean mWasPlaying = false;
     private boolean mButtonClicked = false;
-    @Nullable private Runnable mOnSuggestionSpaceVisibleRunnable = null;
+    @Nullable
+    private Runnable mOnSuggestionSpaceVisibleRunnable = null;
 
     private final PaintDrawCallback mNoiseDrawCallback =
             new PaintDrawCallback() {
@@ -682,7 +683,7 @@ public class MediaControlPanel {
                 break;
             default:
                 Log.wtf(TAG, "Invalid media device state for suggestion: "
-                                + suggestionData.getConnectionState());
+                        + suggestionData.getConnectionState());
         }
         mMediaViewHolder.getDeviceSuggestionText().setText(suggestionText);
     }
@@ -764,8 +765,8 @@ public class MediaControlPanel {
                         boolean showOverLockscreen =
                                 mKeyguardStateController.isShowing()
                                         && mActivityIntentHelper.wouldPendingShowOverLockscreen(
-                                                deviceIntent,
-                                                mLockscreenUserManager.getCurrentUserId());
+                                        deviceIntent,
+                                        mLockscreenUserManager.getCurrentUserId());
                         if (deviceIntent.isActivity()) {
                             if (!showOverLockscreen) {
                                 mActivityStarter.postStartActivityDismissingKeyguard(deviceIntent);
@@ -891,7 +892,8 @@ public class MediaControlPanel {
             WallpaperColors wallpaperColors = getWallpaperColor(artworkIcon);
             boolean darkTheme = false;
             if (wallpaperColors != null) {
-                mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme, Style.CONTENT);
+                mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme,
+                        ThemeStyle.CONTENT);
                 artwork = addGradientToPlayerAlbum(artworkIcon, mutableColorScheme, finalWidth,
                         finalHeight);
                 isArtworkBound = true;
@@ -903,7 +905,7 @@ public class MediaControlPanel {
                     Drawable icon = mContext.getPackageManager()
                             .getApplicationIcon(data.getPackageName());
                     mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon),
-                            darkTheme, Style.CONTENT);
+                            darkTheme, ThemeStyle.CONTENT);
                 } catch (PackageManager.NameNotFoundException e) {
                     Log.w(TAG, "Cannot find icon for package " + data.getPackageName(), e);
                 }
@@ -1319,7 +1321,7 @@ public class MediaControlPanel {
         int notVisibleValue;
         if (!shouldBeHiddenDueToScrubbing
                 && ((buttonId == R.id.actionPrev && semanticActions.getReservePrev())
-                    || (buttonId == R.id.actionNext && semanticActions.getReserveNext()))) {
+                || (buttonId == R.id.actionNext && semanticActions.getReserveNext()))) {
             notVisibleValue = ConstraintSet.INVISIBLE;
             mMediaViewHolder.getAction(buttonId).setFocusable(visible);
             mMediaViewHolder.getAction(buttonId).setClickable(visible);
@@ -1359,7 +1361,7 @@ public class MediaControlPanel {
         return semanticActions != null && SEMANTIC_ACTIONS_HIDE_WHEN_SCRUBBING.stream().allMatch(
                 id -> (semanticActions.getActionById(id) != null
                         || ((id == R.id.actionPrev && semanticActions.getReservePrev())
-                            || (id == R.id.actionNext && semanticActions.getReserveNext())))
+                        || (id == R.id.actionNext && semanticActions.getReserveNext())))
         );
     }
 

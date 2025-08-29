@@ -46,6 +46,7 @@ import android.content.Intent;
 import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayIdentifier;
 import android.content.res.Resources;
+import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.graphics.Color;
 import android.os.Handler;
@@ -68,7 +69,6 @@ import com.android.systemui.flags.SystemPropertiesHelper;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.monet.DynamicColors;
-import com.android.systemui.monet.Style;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController.DeviceProvisionedListener;
@@ -253,7 +253,7 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         registrationRunnable.getValue().run();
         verify(mWallpaperManager, never()).getWallpaperColors(anyInt());
 
-        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.MONOCHROMATIC);
+        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(ThemeStyle.MONOCHROMATIC);
         assertThat(mThemeOverlayController.mCurrentColors.get(0).getMainColors().get(
                 0).toArgb()).isEqualTo(Color.RED);
     }
@@ -271,7 +271,7 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         registrationRunnable.getValue().run();
         verify(mWallpaperManager).getWallpaperColors(eq(WallpaperManager.FLAG_SYSTEM));
 
-        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.VIBRANT);
+        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(ThemeStyle.VIBRANT);
     }
 
     @Test
@@ -284,8 +284,9 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         registrationRunnable.getValue().run();
         verify(mWallpaperManager).getWallpaperColors(eq(WallpaperManager.FLAG_SYSTEM));
 
-        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.TONAL_SPOT);
+        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(ThemeStyle.TONAL_SPOT);
     }
+
     @Test
     @HardwareColors(color = "BLK", options = {
             "BLK|MONOCHROMATIC|#FF0000",
@@ -299,7 +300,7 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         registrationRunnable.getValue().run();
         verify(mWallpaperManager, never()).getWallpaperColors(anyInt());
 
-        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.MONOCHROMATIC);
+        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(ThemeStyle.MONOCHROMATIC);
         assertThat(mThemeOverlayController.mCurrentColors.get(0).getMainColors().get(
                 0).toArgb()).isEqualTo(Color.RED);
 
@@ -514,13 +515,16 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
     @Test
     public void onSettingChanged_honorThemeStyle() {
         when(mDeviceProvisionedController.isUserSetup(anyInt())).thenReturn(true);
-        @Style.Type List<Integer> validStyles = Arrays.asList(Style.EXPRESSIVE, Style.SPRITZ,
-                Style.TONAL_SPOT, Style.FRUIT_SALAD, Style.RAINBOW, Style.VIBRANT);
-        for (@Style.Type int style : validStyles) {
+        @ThemeStyle.Type List<Integer> validStyles = Arrays.asList(
+                ThemeStyle.EXPRESSIVE, ThemeStyle.SPRITZ,
+                ThemeStyle.TONAL_SPOT, ThemeStyle.FRUIT_SALAD, ThemeStyle.RAINBOW,
+                ThemeStyle.VIBRANT);
+        for (@ThemeStyle.Type int style : validStyles) {
             reset(mSecureSettings);
 
             String jsonString = "{\"android.theme.customization.system_palette\":\"A16B00\","
-                    + "\"android.theme.customization.theme_style\":\"" + Style.name(style) + "\"}";
+                    + "\"android.theme.customization.theme_style\":\"" + ThemeStyle.name(style)
+                    + "\"}";
 
             when(mSecureSettings.getStringForUser(
                     eq(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES), anyInt()))
@@ -544,7 +548,7 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
 
         mSettingsObserver.getValue().onChange(true, null, 0, mUserTracker.getUserId());
 
-        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.TONAL_SPOT);
+        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(ThemeStyle.TONAL_SPOT);
     }
 
     @Test

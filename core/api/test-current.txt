@@ -1340,6 +1340,27 @@ package android.content.rollback {
 
 }
 
+package android.content.theming {
+
+  @FlaggedApi("android.server.enable_theme_service") public final class ThemeStyle {
+    method @NonNull public static String name(int);
+    method @NonNull public static String toString(int);
+    method public static int valueOf(@NonNull String);
+    method @NonNull public static int[] values();
+    field public static final int CLOCK = 8; // 0x8
+    field public static final int CLOCK_VIBRANT = 9; // 0x9
+    field public static final int CONTENT = 6; // 0x6
+    field public static final int EXPRESSIVE = 3; // 0x3
+    field public static final int FRUIT_SALAD = 5; // 0x5
+    field public static final int MONOCHROMATIC = 7; // 0x7
+    field public static final int RAINBOW = 4; // 0x4
+    field public static final int SPRITZ = 0; // 0x0
+    field public static final int TONAL_SPOT = 1; // 0x1
+    field public static final int VIBRANT = 2; // 0x2
+  }
+
+}
+
 package android.credentials {
 
   public final class CredentialManager {
