@@ -16811,7 +16811,7 @@ public class Notification implements Parcelable
                 }
             }
             // make sure every color has a valid value
-            mProtectionColor = ctx.getColor(R.color.surface_effect_3);
+            mProtectionColor = ColorUtils.blendARGB(mPrimaryTextColor, mBackgroundColor, 0.9f);
             mSemanticRedContainerHighColor =
                     ctx.getColor(R.color.materialColorSemanticRedContainerHigh);
         }
