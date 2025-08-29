@@ -116,11 +116,30 @@
     *** *init*(...);
 }
 
+-keep class com.android.compose.animation.scene.MovableElementKey {
+    *** *init*(...);
+}
+
+-keep class com.android.compose.animation.scene.ElementScope { *; }
+
 -keep class androidx.compose.runtime.internal.ComposableLambdaKt {
     *** rememberComposableLambda(...);
+    *** composableLambdaInstance(...);
 }
 
 -keep class androidx.compose.foundation.layout.IntrinsicKt {
     *** height(...);
     *** width(...);
+}
+
+-keep class androidx.compose.ui.layout.MeasureScope {
+    *** layout*$default(...);
+}
+
+-keep class androidx.compose.ui.layout.Placeable$PlacementScope {
+    *** placeRelative*$default(...);
+}
+
+-keep class androidx.compose.ui.unit.Constraints {
+    *** copy-*$default(...);
 }
