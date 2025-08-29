@@ -42,3 +42,10 @@ flag {
     description: "New APIs required by File System Access"
     bug: "40101963"
 }
+
+flag {
+    name: "always_enforce_thread_checking"
+    namespace: "webview"
+    description: "Always enforce that WebView APIs are called on the same thread"
+    bug: "440569275"
+}
