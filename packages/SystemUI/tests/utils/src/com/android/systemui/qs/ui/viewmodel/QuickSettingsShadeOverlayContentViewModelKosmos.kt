@@ -19,6 +19,7 @@ package com.android.systemui.qs.ui.viewmodel
 import android.content.applicationContext
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.development.ui.viewmodel.buildNumberViewModelFactory
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.toolbarViewModelFactory
@@ -51,6 +52,7 @@ val Kosmos.quickSettingsShadeOverlayContentViewModelFactory:
                     buildNumberViewModelFactory = buildNumberViewModelFactory,
                     volumeSliderCoroutineScope = volumeSliderCoroutineScope,
                     toolbarViewModelFactory = toolbarViewModelFactory,
+                    blurConfig = blurConfig,
                     windowRootViewBlurInteractor = windowRootViewBlurInteractor,
                 )
             }

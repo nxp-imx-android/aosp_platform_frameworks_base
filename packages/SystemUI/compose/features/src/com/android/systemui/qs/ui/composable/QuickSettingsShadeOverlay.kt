@@ -39,10 +39,13 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -155,6 +158,15 @@ constructor(
         val contentAlphaFromBrightnessMirror by
             animateFloatAsState(if (showBrightnessMirror) 0f else 1f)
 
+        val targetBlurRadiusPx: Float by
+            remember(layoutState) {
+                derivedStateOf {
+                    contentViewModel.calculateTargetBlurRadius(layoutState.transitionState)
+                }
+            }
+        val animatedBlurRadiusPx: Float by
+            animateFloatAsState(targetValue = targetBlurRadiusPx, label = "NSOverlay-blurRadius")
+
         // Set the bounds to null when the QuickSettings overlay disappears.
         DisposableEffectWithLifecycle(Unit) {
             onDispose {
@@ -169,6 +181,7 @@ constructor(
             modifier =
                 modifier
                     .graphicsLayer { alpha = contentAlphaFromBrightnessMirror }
+                    .blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() })
                     .thenIf(showBrightnessMirror) { Modifier.gesturesDisabled() }
         ) {
             OverlayShade(
