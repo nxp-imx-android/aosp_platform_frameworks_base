@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
@@ -74,6 +75,7 @@ constructor(
     deviceEntryFingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
     val udfpsAccessibilityOverlayViewModel: AlternateBouncerUdfpsAccessibilityOverlayViewModel,
+    val interactionJankMonitor: InteractionJankMonitor,
 ) : HydratedActivatable() {
     /** @see SecureLockDeviceInteractor.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled = secureLockDeviceInteractor.isSecureLockDeviceEnabled
