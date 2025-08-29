@@ -26,6 +26,7 @@ import com.android.systemui.settings.brightness.domain.interactor.brightnessMirr
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.domain.interactor.remoteInputInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.lockscreenNotificationDisplayConfigInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 
@@ -39,6 +40,7 @@ val Kosmos.notificationScrollViewModel by Fixture {
         shadeModeInteractor = shadeModeInteractor,
         bouncerInteractor = bouncerInteractor,
         remoteInputInteractor = remoteInputInteractor,
+        headsUpNotificationInteractor = headsUpNotificationInteractor,
         sceneInteractor = sceneInteractor,
         keyguardInteractor = { keyguardInteractor },
     )
