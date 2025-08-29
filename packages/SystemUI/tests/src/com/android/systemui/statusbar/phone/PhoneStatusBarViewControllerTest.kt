@@ -71,6 +71,7 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.fakeStatusBarContentInsetsProviderStore
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
@@ -129,6 +130,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Mock private lateinit var mStatusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
     @Mock private lateinit var statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     @Mock private lateinit var shadeDisplayRepository: ShadeDisplaysRepository
+    @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
     private lateinit var statusBarWindowStateController: StatusBarWindowStateController
     private lateinit var view: PhoneStatusBarView
     private lateinit var controller: PhoneStatusBarViewController
@@ -848,6 +850,26 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         verify(shadeControllerImpl, never()).animateExpandShade()
     }
 
+    @Test
+    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun connectedDisplayFlagOff_windowControllerIsSetInView() {
+        attachToWindow(view)
+
+        controller = createAndInitController(view)
+
+        verify(view).setStatusBarWindowControllerStore(statusBarWindowControllerStore)
+    }
+
+    @Test
+    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun connectedDisplayFlagOn_windowControllerIsSetInView() {
+        attachToWindow(view)
+
+        controller = createAndInitController(view)
+
+        verify(view, never()).setStatusBarWindowControllerStore(statusBarWindowControllerStore)
+    }
+
     private fun getCommandQueueCallback(): CommandQueue.Callbacks {
         val captor = argumentCaptor<CommandQueue.Callbacks>()
         verify(commandQueue).addCallback(captor.capture())
@@ -892,6 +914,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
                 statusBarContentInsetsProviderStore,
                 { statusBarTouchShadeDisplayPolicy },
                 { shadeDisplayRepository },
+                statusBarWindowControllerStore,
             )
             .create(view)
             .also { it.init() }
