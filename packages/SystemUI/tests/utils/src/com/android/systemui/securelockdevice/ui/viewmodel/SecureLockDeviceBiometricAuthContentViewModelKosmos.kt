@@ -19,6 +19,7 @@ package com.android.systemui.securelockdevice.ui.viewmodel
 import android.view.accessibility.accessibilityManager
 import com.android.systemui.biometrics.ui.viewmodel.biometricAuthIconViewModelFactory_secureLockDevice
 import com.android.systemui.bouncer.domain.interactor.bouncerActionButtonInteractor
+import com.android.systemui.deviceentry.data.ui.viewmodel.alternateBouncerUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.deviceentry.domain.interactor.biometricMessageInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
@@ -39,6 +40,7 @@ var Kosmos.secureLockDeviceBiometricAuthContentViewModel by Fixture {
         deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
         deviceEntryFingerprintAuthInteractor = deviceEntryFingerprintAuthInteractor,
         secureLockDeviceInteractor = secureLockDeviceInteractor,
+        udfpsAccessibilityOverlayViewModel = alternateBouncerUdfpsAccessibilityOverlayViewModel,
     )
 }
 

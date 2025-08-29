@@ -35,6 +35,7 @@ import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFac
 import com.android.systemui.deviceentry.shared.model.FaceMessage
 import com.android.systemui.deviceentry.shared.model.FingerprintMessage
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
+import com.android.systemui.deviceentry.ui.viewmodel.AlternateBouncerUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -72,9 +73,17 @@ constructor(
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
     deviceEntryFingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
+    val udfpsAccessibilityOverlayViewModel: AlternateBouncerUdfpsAccessibilityOverlayViewModel,
 ) : HydratedActivatable() {
     /** @see SecureLockDeviceInteractor.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled = secureLockDeviceInteractor.isSecureLockDeviceEnabled
+
+    /** @see SecureLockDeviceInteractor.shouldListenForBiometricAuth */
+    val shouldListenForBiometricAuth: Boolean by
+        secureLockDeviceInteractor.shouldListenForBiometricAuth.hydratedStateOf(
+            traceName = "shouldListenForBiometricAuth",
+            initialValue = false,
+        )
 
     /** @see SecureLockDeviceInteractor.enrolledStrongBiometricModalities */
     val enrolledStrongBiometrics = secureLockDeviceInteractor.enrolledStrongBiometricModalities
