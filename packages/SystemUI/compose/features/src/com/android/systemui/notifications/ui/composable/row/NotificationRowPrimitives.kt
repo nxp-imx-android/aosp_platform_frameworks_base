@@ -51,6 +51,7 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
+import com.android.compose.theme.LocalAndroidColorScheme
 
 object NotificationRowPrimitives {
     object Elements {
@@ -68,7 +69,7 @@ object NotificationRowPrimitives {
 /** The Icon displayed at the start of any notification row. */
 @Composable
 fun BundleIcon(@DrawableRes drawable: Int?, large: Boolean, modifier: Modifier = Modifier) {
-    val iconBackground = bundleHeaderIconBGColor()
+    val iconBackground = LocalAndroidColorScheme.current.surfaceEffect2
     Box(
         modifier =
             if (large) {
@@ -139,7 +140,7 @@ fun ContentScope.ExpansionControl(
 
 @Composable
 private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
-    val surfaceColor = notificationProtectionColor()
+    val surfaceColor = LocalAndroidColorScheme.current.surfaceEffect3
     // Needs to be a shared element so it does not overlap while animating
     ElementWithValues(NotificationRowPrimitives.Elements.PillBackground, modifier) {
         Box(
