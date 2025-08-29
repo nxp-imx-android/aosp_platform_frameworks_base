@@ -194,6 +194,11 @@ class TransitionController {
             mOnStartCollect = onStartCollect;
             mLegacySync = legacySync;
         }
+
+        boolean isAborted(BLASTSyncEngine syncEngine) {
+            return mTransition == null ? syncEngine.getSyncSet(mLegacySync.mSyncId) == null
+                    : mTransition.isAborted();
+        }
     }
 
     private final ArrayList<QueuedTransition> mQueuedTransitions = new ArrayList<>();
@@ -1232,6 +1237,8 @@ class TransitionController {
             // Post this so that the now-playing transition logic isn't interrupted.
             mAtm.mH.post(() -> {
                 synchronized (mAtm.mGlobalLock) {
+                    // The transition/sync may be aborted if the transition player died.
+                    if (queued.isAborted(mSyncEngine)) return;
                     queued.mOnStartCollect.onCollectStarted(true /* deferred */);
                 }
             });
