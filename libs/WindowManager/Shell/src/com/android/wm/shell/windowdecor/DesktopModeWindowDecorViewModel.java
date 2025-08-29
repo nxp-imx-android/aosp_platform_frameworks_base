@@ -951,7 +951,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             return;
         }
 
-        final int orientation = mContext.getResources().getConfiguration().orientation;
+        int displayId = decoration.getTaskInfo().displayId;
+        final int orientation = mDisplayController.getDisplayContext(displayId).getResources()
+                .getConfiguration().orientation;
+
         // Set leftOrTop as True to split to the top in portrait mode.
         // Set leftOrTop as False to split to the right in landscape mode.
         boolean leftOrTop = orientation == Configuration.ORIENTATION_PORTRAIT;
