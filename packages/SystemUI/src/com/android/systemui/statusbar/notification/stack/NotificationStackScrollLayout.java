@@ -1368,7 +1368,7 @@ public class NotificationStackScrollLayout
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         // The received drawBounds are relative to the Window, but NSSL  expects a rect relative to
         // its own position, so we need to offset it in case the NSSL has some horizontal margins.
-        drawBounds.offset(-getX(), 0f);
+        drawBounds.offset(-getX(), -getY());
         if (mAmbientState.getDrawBounds() != drawBounds) {
             mAmbientState.setDrawBounds(drawBounds);
             updateStackEndHeightAndStackHeight(mAmbientState.getExpansionFraction());
