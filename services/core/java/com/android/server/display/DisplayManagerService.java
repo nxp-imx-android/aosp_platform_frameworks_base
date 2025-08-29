@@ -1252,7 +1252,7 @@ public final class DisplayManagerService extends SystemService {
                         if (updateMirrorBuiltInDisplaySettingLocked(
                                 /*shouldSendDisplayChangeEvent=*/ true)) {
                             mExternalDisplayPolicy.handleMirrorBuiltInDisplaySettingChangeLocked(
-                                /*enableDisplays=*/ true);
+                                /*enableDisplays=*/ false);
                         }
                     }
                 }
