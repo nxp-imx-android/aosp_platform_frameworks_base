@@ -17,6 +17,8 @@
 package com.android.server.display;
 
 
+import static com.android.server.display.DeviceStateToLayoutMap.STATE_DEFAULT;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -294,6 +296,28 @@ public class DeviceStateToLayoutMapTest {
         testLayout.postProcessLocked();
 
         assertEquals(testLayout, configLayout);
+    }
+
+    @Test
+    public void testPut() {
+        Layout layout = new Layout();
+        int identifier = 10;
+
+        mDeviceStateToLayoutMap.put(identifier, layout);
+
+        assertEquals(layout, mDeviceStateToLayoutMap.get(identifier));
+    }
+
+    @Test
+    public void testRemove() {
+        Layout layout = new Layout();
+        int identifier = 10;
+
+        mDeviceStateToLayoutMap.put(identifier, layout);
+        mDeviceStateToLayoutMap.remove(identifier);
+
+        assertEquals(mDeviceStateToLayoutMap.get(STATE_DEFAULT),
+                mDeviceStateToLayoutMap.get(identifier));
     }
 
     ////////////////////

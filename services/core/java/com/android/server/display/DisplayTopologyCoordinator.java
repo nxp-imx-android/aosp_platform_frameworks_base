@@ -151,7 +151,7 @@ class DisplayTopologyCoordinator {
      * @param info The new display info
      */
     void onDisplayChanged(DisplayInfo info) {
-        if (!isDisplayAllowedInTopology(info, /* shouldLog= */ false)) {
+        if (!isDisplayAllowedInTopology(info)) {
             return;
         }
         synchronized (mSyncRoot) {
@@ -274,6 +274,10 @@ class DisplayTopologyCoordinator {
         final String uniqueId = getUniqueId(info);
         mUniqueIdToDisplayIdMapping.put(uniqueId, info.displayId);
         mDisplayIdToUniqueIdMapping.put(info.displayId, uniqueId);
+    }
+
+    boolean isDisplayAllowedInTopology(DisplayInfo info) {
+        return isDisplayAllowedInTopology(info, /* shouldLog= */ false);
     }
 
     private boolean isDisplayAllowedInTopology(DisplayInfo info, boolean shouldLog) {
