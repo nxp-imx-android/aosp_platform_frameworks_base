@@ -63,6 +63,7 @@ abstract class DesktopModeBaseTest(flicker: FlickerTest) : BaseBenchmarkTest(fli
             DesktopState.fromContext(instrumentation.context)
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
+        tapl.expectedRotationCheckEnabled = false
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(flicker.scenario.startRotation.value)
         ChangeDisplayOrientationRule.setRotation(flicker.scenario.startRotation)
