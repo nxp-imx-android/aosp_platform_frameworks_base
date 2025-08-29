@@ -27,6 +27,9 @@ import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderView
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
+import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -60,6 +63,7 @@ constructor(
     private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     private val isShowingUiFlow = MutableStateFlow(true)
@@ -121,7 +125,7 @@ constructor(
     fun beginCapture() {
         when (captureTypeSource.value) {
             ScreenCaptureType.SCREENSHOT -> takeScreenshot()
-            ScreenCaptureType.SCREEN_RECORD -> {}
+            ScreenCaptureType.SCREEN_RECORD -> startRecording()
         }
     }
 
@@ -153,6 +157,36 @@ constructor(
             screenshotInteractor.requestPartialScreenshot(regionBoxRect, displayId)
         }
         closeUi()
+    }
+
+    private fun startRecording() {
+        when (captureRegionSource.value) {
+            ScreenCaptureRegion.FULLSCREEN -> startFullscreenRecording()
+            ScreenCaptureRegion.PARTIAL -> {}
+            ScreenCaptureRegion.APP_WINDOW -> {}
+        }
+    }
+
+    private fun startFullscreenRecording() {
+        require(captureTypeSource.value == ScreenCaptureType.SCREEN_RECORD)
+        require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
+
+        // Hide the pre-capture UI before starting the recording.
+        // TODO(b/437970158): Show the countdown before starting recording.
+        hideUi()
+        closeUi()
+
+        backgroundScope.launch {
+            screenRecordingServiceInteractor.startRecording(
+                // TODO(b/437971334): Get options from the UI.
+                ScreenRecordingParameters(
+                    captureTarget = null, // Fullscreen.
+                    audioSource = ScreenRecordingAudioSource.INTERNAL,
+                    displayId = displayId,
+                    shouldShowTaps = false,
+                )
+            )
+        }
     }
 
     /**
