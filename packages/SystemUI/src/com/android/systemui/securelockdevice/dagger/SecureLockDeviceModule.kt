@@ -16,6 +16,7 @@
 package com.android.systemui.securelockdevice.dagger
 
 import android.security.authenticationpolicy.AuthenticationPolicyManager
+import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
 import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -24,12 +25,15 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.dagger.SecureLockDeviceLog
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepository
 import com.android.systemui.securelockdevice.data.repository.SecureLockDeviceRepositoryImpl
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import java.util.concurrent.Executor
@@ -64,6 +68,10 @@ interface SecureLockDeviceModule {
             deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
             fingerprintPropertyInteractor: FingerprintPropertyInteractor,
             facePropertyInteractor: FacePropertyInteractor,
+            lockPatternUtils: LockPatternUtils,
+            authenticationPolicyManager: AuthenticationPolicyManager?,
+            selectedUserInteractor: SelectedUserInteractor,
+            keyguardTransitionInteractor: Lazy<KeyguardTransitionInteractor>,
         ): SecureLockDeviceInteractor {
             return SecureLockDeviceInteractor(
                 applicationScope = applicationScope,
@@ -73,6 +81,10 @@ interface SecureLockDeviceModule {
                 deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
                 fingerprintPropertyInteractor = fingerprintPropertyInteractor,
                 facePropertyInteractor = facePropertyInteractor,
+                lockPatternUtils = lockPatternUtils,
+                authenticationPolicyManager = authenticationPolicyManager,
+                selectedUserInteractor = selectedUserInteractor,
+                keyguardTransitionInteractor = keyguardTransitionInteractor,
             )
         }
 

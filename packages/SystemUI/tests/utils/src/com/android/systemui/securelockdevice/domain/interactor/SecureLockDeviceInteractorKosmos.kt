@@ -16,14 +16,18 @@
 
 package com.android.systemui.securelockdevice.domain.interactor
 
+import android.security.authenticationpolicy.authenticationPolicyManager
+import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.biometrics.domain.interactor.facePropertyInteractor
 import com.android.systemui.biometrics.domain.interactor.fingerprintPropertyInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryBiometricSettingsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.securelockdevice.data.repository.secureLockDeviceRepository
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
 
 val Kosmos.secureLockDeviceInteractor by
     Kosmos.Fixture {
@@ -35,5 +39,9 @@ val Kosmos.secureLockDeviceInteractor by
             deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
             fingerprintPropertyInteractor = fingerprintPropertyInteractor,
             facePropertyInteractor = facePropertyInteractor,
+            lockPatternUtils = lockPatternUtils,
+            authenticationPolicyManager = authenticationPolicyManager,
+            selectedUserInteractor = selectedUserInteractor,
+            keyguardTransitionInteractor = { keyguardTransitionInteractor },
         )
     }

@@ -88,6 +88,31 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updatesStateOnRetryAfterFaceFailureOrError() =
+        testScope.runTest {
+            val isAuthenticating by collectLastValue(underTest.isAuthenticating)
+            val isAuthenticated by collectLastValue(underTest.isAuthenticated)
+            val showingError by collectLastValue(underTest.showingError)
+            val canTryAgainNow by collectLastValue(underTest.canTryAgainNow)
+
+            // On face error shown
+            underTest.showTemporaryError(
+                authenticateAfterError = false,
+                failedModality = BiometricModality.Face,
+            )
+            runCurrent()
+
+            // On retry button clicked
+            underTest.onTryAgainButtonClicked()
+
+            // Verify internal state updated to restart authentication
+            assertThat(isAuthenticating).isTrue()
+            assertThat(showingError).isFalse()
+            assertThat(isAuthenticated?.isAuthenticated).isFalse()
+            assertThat(canTryAgainNow).isFalse()
+        }
+
+    @Test
     fun updatesStateAndSkipsHaptics_onFaceHelp() =
         testScope.runTest {
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
@@ -106,7 +131,7 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun updatesState_onFaceSuccess() =
+    fun updatesState_onFaceSuccess_andPlaysHapticsOnConfirm() =
         testScope.runTest {
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
@@ -122,6 +147,15 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
             assertThat(isAuthenticated?.isAuthenticated).isTrue()
             assertThat(isAuthenticated?.isAuthenticatedAndExplicitlyConfirmed).isFalse()
             assertThat(kosmos.fakeMSDLPlayer.latestTokenPlayed).isNull()
+
+            underTest.onConfirmButtonClicked()
+            runCurrent()
+
+            // Verify internal state updated to show confirmed
+            assertThat(isAuthenticating).isFalse()
+            assertThat(showingError).isFalse()
+            assertThat(isAuthenticated?.isAuthenticatedAndExplicitlyConfirmed).isTrue()
+            assertThat(kosmos.fakeMSDLPlayer.latestTokenPlayed).isEqualTo(MSDLToken.UNLOCK)
         }
 
     @Test

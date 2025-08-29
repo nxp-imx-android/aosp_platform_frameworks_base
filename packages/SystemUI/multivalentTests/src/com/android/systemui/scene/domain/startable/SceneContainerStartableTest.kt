@@ -24,6 +24,7 @@ import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -59,6 +60,7 @@ import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepositor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryHapticsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.deviceentry.shared.model.FailedFaceAuthenticationStatus
 import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
@@ -108,6 +110,8 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -2904,6 +2908,62 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(isDeviceEntered).isFalse()
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun doesNotUnlock_onFaceAuthSuccess_untilConfirmedAndReadyToDismissInSecureLockDevice() =
+        kosmos.runTest {
+            val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val isSecureLockDeviceEnabled by
+                collectLastValue(kosmos.secureLockDeviceInteractor.isSecureLockDeviceEnabled)
+            val isFullyUnlockedAndReadyToDismiss by
+                collectLastValue(kosmos.secureLockDeviceInteractor.isFullyUnlockedAndReadyToDismiss)
+
+            val transitionState =
+                prepareState(
+                    authenticationMethod = AuthenticationMethodModel.Pin,
+                    isDeviceUnlocked = false,
+                    initialSceneKey = Scenes.Lockscreen,
+                )
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            runCurrent()
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+            underTest.start()
+            runCurrent()
+
+            sceneInteractor.showOverlay(Overlays.Bouncer, "showing bouncer for test")
+            transitionState.value =
+                ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
+            runCurrent()
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+
+            kosmos.fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
+            kosmos.secureLockDeviceInteractor.onBiometricAuthRequested()
+
+            updateFaceAuthStatus(isSuccess = true)
+
+            assertThat(isSecureLockDeviceEnabled).isTrue()
+            assertThat(isFullyUnlockedAndReadyToDismiss).isFalse()
+            assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource).isNull()
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+
+            // Face auth confirm button clicked, pending -> confirmed auth animation played
+            kosmos.secureLockDeviceInteractor.onReadyToDismissBiometricAuth()
+            runCurrent()
+
+            assertThat(isSecureLockDeviceEnabled).isTrue()
+            assertThat(isFullyUnlockedAndReadyToDismiss).isTrue()
+            assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
+            assertThat(deviceUnlockStatus?.deviceUnlockSource)
+                .isEqualTo(DeviceUnlockSource.FaceWithoutBypass)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
         }
 
     private fun Kosmos.emulateSceneTransition(

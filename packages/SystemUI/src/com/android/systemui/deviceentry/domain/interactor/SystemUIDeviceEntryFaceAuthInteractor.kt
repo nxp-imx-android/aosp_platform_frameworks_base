@@ -324,6 +324,7 @@ constructor(
 
     override fun onSecureLockDeviceBiometricAuthHidden() {
         if (!secureLockDevice()) return
+
         repository.cancel()
     }
 
@@ -386,6 +387,23 @@ constructor(
         repository.cancel()
     }
 
+    private val _pendingFaceAuthConfirmationInSecureLockDevice = MutableStateFlow(false)
+    private val _pendingRetryBiometricAuthInSecureLockDevice = MutableStateFlow(false)
+
+    override fun onSecureLockDeviceConfirmButtonShowingChanged(isShowingConfirmButton: Boolean) {
+        if (!secureLockDevice()) return
+
+        _pendingFaceAuthConfirmationInSecureLockDevice.value = isShowingConfirmButton
+        repository.cancel()
+    }
+
+    override fun onSecureLockDeviceTryAgainButtonShowingChanged(isShowingTryAgainButton: Boolean) {
+        if (!secureLockDevice()) return
+
+        _pendingRetryBiometricAuthInSecureLockDevice.value = isShowingTryAgainButton
+        repository.cancel()
+    }
+
     private val faceAuthenticationStatusOverride = MutableStateFlow<FaceAuthenticationStatus?>(null)
 
     /** Provide the status of face authentication */
@@ -419,6 +437,14 @@ constructor(
         authenticationStatus.filterIsInstance<SuccessFaceAuthenticationStatus>()
 
     private fun runFaceAuth(uiEvent: FaceAuthUiEvent, fallbackToDetect: Boolean) {
+        if (
+            secureLockDevice() &&
+                (_pendingFaceAuthConfirmationInSecureLockDevice.value ||
+                    _pendingRetryBiometricAuthInSecureLockDevice.value)
+        ) {
+            return
+        }
+
         if (repository.isLockedOut.value && !isBypassEnabled.value) {
             faceAuthenticationStatusOverride.value =
                 ErrorFaceAuthenticationStatus(

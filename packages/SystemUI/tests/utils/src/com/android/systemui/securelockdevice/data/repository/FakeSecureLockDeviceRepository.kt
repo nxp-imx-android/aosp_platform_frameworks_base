@@ -36,6 +36,9 @@ class FakeSecureLockDeviceRepository : SecureLockDeviceRepository {
     override val requiresStrongBiometricAuthForSecureLockDevice: Flow<Boolean> =
         _requiresStrongBiometricAuthForSecureLockDevice.asStateFlow()
 
+    override val suppressBouncerMessageUpdates: MutableStateFlow<Boolean> =
+        MutableStateFlow(false)
+
     fun setRequiresPrimaryAuthForSecureLockDevice(requiresPrimaryAuth: Boolean) {
         _requiresPrimaryAuthForSecureLockDevice.value = requiresPrimaryAuth
     }

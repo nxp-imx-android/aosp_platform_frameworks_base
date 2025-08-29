@@ -43,7 +43,10 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.util.kotlin.Utils.Companion.sampleFilter
+import com.android.systemui.util.kotlin.Utils.Companion.toTriple
+import com.android.systemui.util.kotlin.sample
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -79,7 +82,7 @@ constructor(
     fingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val powerInteractor: PowerInteractor,
     private val biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
-    secureLockDeviceInteractor: SecureLockDeviceInteractor,
+    secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     private val systemPropertiesHelper: SystemPropertiesHelper,
     private val secureSettingsRepository: SecureSettingsRepository,
     private val keyguardInteractor: KeyguardInteractor,
@@ -162,11 +165,27 @@ constructor(
      * authentication: primary auth on the bouncer, followed by strong biometric-only auth on the
      * bouncer.
      *
+     * @see SecureLockDeviceInteractor.isSecureLockDeviceEnabled
+     *
      * Returns false when FLAG_SECURE_LOCK_DEVICE is disabled
      */
     val isSecureLockDeviceEnabled: Flow<Boolean> =
         if (secureLockDevice()) {
-            secureLockDeviceInteractor.isSecureLockDeviceEnabled
+            secureLockDeviceInteractor.get().isSecureLockDeviceEnabled
+        } else {
+            flowOf(false)
+        }
+
+    /**
+     * Whether the device is fully unlocked and ready to dismiss in secure lock device.
+     *
+     * @see SecureLockDeviceInteractor.isFullyUnlockedAndReadyToDismiss
+     *
+     * Returns false when FLAG_SECURE_LOCK_DEVICE is disabled
+     */
+    private val isFullyUnlockedAndReadyToDismissInSecureLockDevice: Flow<Boolean> =
+        if (secureLockDevice()) {
+            secureLockDeviceInteractor.get().isFullyUnlockedAndReadyToDismiss
         } else {
             flowOf(false)
         }
@@ -187,10 +206,26 @@ constructor(
 
     private val deviceUnlockSource =
         merge(
-            fingerprintAuthInteractor.fingerprintSuccess.map { DeviceUnlockSource.Fingerprint },
-            faceAuthInteractor.isAuthenticated
-                .filter { it }
-                .map {
+            combine(
+                    fingerprintAuthInteractor.fingerprintSuccess,
+                    isFullyUnlockedAndReadyToDismissInSecureLockDevice,
+                    ::Pair,
+                )
+                .sample(isSecureLockDeviceEnabled, ::toTriple)
+                .filter { (_, readyToDismissInSecureLockDevice, isSecureLockDeviceEnabled) ->
+                    !isSecureLockDeviceEnabled || readyToDismissInSecureLockDevice
+                }
+                .map { DeviceUnlockSource.Fingerprint },
+            combine(
+                    faceAuthInteractor.isAuthenticated.filter { it },
+                    isFullyUnlockedAndReadyToDismissInSecureLockDevice,
+                    ::Pair,
+                )
+                .sample(isSecureLockDeviceEnabled, ::toTriple)
+                .filter { (_, readyToDismissInSecureLockDevice, isSecureLockDeviceEnabled) ->
+                    !isSecureLockDeviceEnabled || readyToDismissInSecureLockDevice
+                }
+                .map { (_, _, _) ->
                     if (deviceEntryBypassInteractor.isBypassEnabled.value) {
                         DeviceUnlockSource.FaceWithBypass
                     } else {
