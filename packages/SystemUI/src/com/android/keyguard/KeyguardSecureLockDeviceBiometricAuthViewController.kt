@@ -25,7 +25,8 @@ import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.securelockdevice.ui.SecureLockDeviceContent
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
+import com.android.systemui.securelockdevice.ui.composable.SecureLockDeviceContent
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import kotlinx.coroutines.launch
@@ -36,7 +37,9 @@ import kotlinx.coroutines.launch
  */
 class KeyguardSecureLockDeviceBiometricAuthViewController(
     private val view: KeyguardSecureLockDeviceBiometricAuthView,
-    secureLockDeviceViewModelFactory: SecureLockDeviceBiometricAuthContentViewModel.Factory,
+    private val secureLockDeviceViewModelFactory:
+        SecureLockDeviceBiometricAuthContentViewModel.Factory,
+    private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
     selectedUserInteractor: SelectedUserInteractor,
     securityMode: KeyguardSecurityModel.SecurityMode?,
     keyguardSecurityCallback: KeyguardSecurityCallback?,
@@ -56,9 +59,6 @@ class KeyguardSecureLockDeviceBiometricAuthViewController(
         bouncerHapticPlayer,
     ) {
 
-    private val secureLockDeviceViewModel: SecureLockDeviceBiometricAuthContentViewModel =
-        secureLockDeviceViewModelFactory.create()
-
     public override fun onInit() {
         if (SceneContainerFlag.isEnabled) {
             return
@@ -71,17 +71,12 @@ class KeyguardSecureLockDeviceBiometricAuthViewController(
                 id = R.id.secure_lock_device_biometric_auth_content
                 setContent {
                     SecureLockDeviceContent(
-                        secureLockDeviceViewModel = secureLockDeviceViewModel,
+                        secureLockDeviceViewModelFactory = secureLockDeviceViewModelFactory,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
-        view.repeatWhenAttached {
-            lifecycleScope.launch {
-                view.addView(composeView)
-                secureLockDeviceViewModel.activate()
-            }
-        }
+        view.repeatWhenAttached { lifecycleScope.launch { view.addView(composeView) } }
     }
 
     override fun updateMessageAreaVisibility() {}
@@ -95,12 +90,11 @@ class KeyguardSecureLockDeviceBiometricAuthViewController(
     override fun needsInput(): Boolean = false
 
     override fun startAppearAnimation() {
-        secureLockDeviceViewModel.startAppearAnimation()
         super.startAppearAnimation()
     }
 
     override fun startDisappearAnimation(finishRunnable: Runnable?): Boolean {
-        secureLockDeviceViewModel.setDisappearAnimationFinishedRunnable(finishRunnable)
+        secureLockDeviceInteractor.setDisappearAnimationFinishedRunnable(finishRunnable)
         return true
     }
 

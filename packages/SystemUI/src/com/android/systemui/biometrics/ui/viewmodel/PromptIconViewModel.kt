@@ -25,17 +25,31 @@ import com.android.systemui.biometrics.ui.PromptPosition
 import com.android.systemui.biometrics.ui.isMedium
 import com.android.systemui.biometrics.ui.isSmall
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.res.R
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /** Models UI of [BiometricPromptLayout.iconView] */
-class PromptIconViewModel(
-    promptViewModel: PromptViewModel,
+class PromptIconViewModel
+@AssistedInject
+constructor(
+    @Assisted private val promptViewModel: PromptViewModel,
+    @Assisted private val biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
     @Application private val context: Context,
-    val internal: BiometricAuthIconViewModel,
-) {
+) : ExclusiveActivatable() {
+    val internal: BiometricAuthIconViewModel =
+        biometricAuthIconViewModelFactory.create(
+            promptViewModel = promptViewModel,
+            secureLockDeviceViewModel = null,
+        )
+
     /** Padding for placing icons */
     val portraitSmallBottomPadding =
         context.resources.getDimensionPixelSize(
@@ -150,5 +164,17 @@ class PromptIconViewModel(
     /** Called on configuration changes */
     fun onConfigurationChanged(newConfig: Configuration) {
         internal.onConfigurationChanged(newConfig)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            promptViewModel: PromptViewModel,
+            biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
+        ): PromptIconViewModel
+    }
+
+    override suspend fun onActivated(): Nothing {
+        coroutineScope { awaitCancellation() }
     }
 }
