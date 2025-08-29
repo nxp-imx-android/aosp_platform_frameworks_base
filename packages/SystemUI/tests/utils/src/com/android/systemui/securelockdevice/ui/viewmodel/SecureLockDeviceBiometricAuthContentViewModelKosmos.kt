@@ -27,12 +27,10 @@ import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 
 var Kosmos.secureLockDeviceBiometricAuthContentViewModel by Fixture {
     SecureLockDeviceBiometricAuthContentViewModel(
-        applicationScope = applicationCoroutineScope,
         accessibilityManager = accessibilityManager,
         actionButtonInteractor = bouncerActionButtonInteractor,
         biometricAuthIconViewModelFactory = biometricAuthIconViewModelFactory_secureLockDevice,

@@ -24,6 +24,8 @@ import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_REAR
 import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UDFPS_OPTICAL
 import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UDFPS_ULTRASONIC
 import android.hardware.fingerprint.FingerprintSensorPropertiesInternal
+import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -41,9 +43,11 @@ import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.biometrics.shared.model.toSensorType
 import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel.BiometricAuthModalities
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
+import com.android.systemui.securelockdevice.ui.viewmodel.secureLockDeviceBiometricAuthContentViewModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -77,6 +81,7 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
         } else if (sensorType == TYPE_REAR) {
             kosmos.fingerprintPropertyRepository.supportsRearFps(sensorStrength)
         }
+        kosmos.biometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
     }
 
     private fun enrollFace(isStrongBiometric: Boolean) {
@@ -86,6 +91,7 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
                 strength = if (isStrongBiometric) SensorStrength.STRONG else SensorStrength.WEAK,
             )
         kosmos.facePropertyRepository.setSensorInfo(faceSensorInfo)
+        kosmos.biometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
     }
 
     private fun startBiometricPrompt(hasFpAuth: Boolean, isImplicitFlow: Boolean = false) {
@@ -103,9 +109,19 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
         }
     }
 
+    private fun startSecureLockDevicePrompt() {
+        secureLockDeviceViewModel!!.showAuthenticating()
+    }
+
     private fun initPromptViewModel() {
         promptViewModel = kosmos.promptViewModel
         underTest = promptViewModel!!.iconViewModel.internal
+        underTest.activateIn(testScope)
+    }
+
+    private fun initSecureLockDeviceViewModel() {
+        secureLockDeviceViewModel = kosmos.secureLockDeviceBiometricAuthContentViewModel
+        underTest = secureLockDeviceViewModel!!.iconViewModel
         underTest.activateIn(testScope)
     }
 
@@ -122,6 +138,21 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
             kosmos.promptSelectorInteractor.initializePrompt(null, faceProps)
             runCurrent()
             startBiometricPrompt(hasFpAuth = false)
+
+            assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.Face)
+        }
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun activeBiometricAuthType_basedOnModalities_forSecureLockDevice_face() {
+        testScope.runTest {
+            initSecureLockDeviceViewModel()
+            val activeBiometricAuthType by collectLastValue(underTest.activeBiometricAuthType)
+
+            enrollFace(isStrongBiometric = true)
+            runCurrent()
+            startSecureLockDevicePrompt()
 
             assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.Face)
         }
@@ -147,6 +178,24 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
         }
     }
 
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun activeBiometricAuthType_basedOnModalities_forSecureLockDevice_sfps() {
+        testScope.runTest {
+            initSecureLockDeviceViewModel()
+            val activeBiometricAuthType by collectLastValue(underTest.activeBiometricAuthType)
+
+            enrollFingerprint(
+                sensorStrength = SensorStrength.STRONG,
+                sensorType = TYPE_POWER_BUTTON,
+            )
+            runCurrent()
+            startSecureLockDevicePrompt()
+
+            assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.Sfps)
+        }
+    }
+
     @Test
     fun activeBiometricAuthType_basedOnModalitiesAndFaceMode_forBiometricPrompt_nonSfps() {
         testScope.runTest {
@@ -163,6 +212,24 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
             kosmos.promptSelectorInteractor.initializePrompt(fpProps, faceProps)
             runCurrent()
             startBiometricPrompt(hasFpAuth = true)
+
+            assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.NonSfps)
+        }
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun activeBiometricAuthType_basedOnModalities_forSecureLockDevice_nonSfps() {
+        testScope.runTest {
+            initSecureLockDeviceViewModel()
+            val activeBiometricAuthType by collectLastValue(underTest.activeBiometricAuthType)
+
+            enrollFingerprint(
+                sensorStrength = SensorStrength.STRONG,
+                sensorType = TYPE_UDFPS_OPTICAL,
+            )
+            runCurrent()
+            startSecureLockDevicePrompt()
 
             assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.NonSfps)
         }
@@ -212,6 +279,25 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
         }
     }
 
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun activeBiometricAuthType_basedOnModalities_forSecureLockDevice_sfpsCoex() {
+        testScope.runTest {
+            initSecureLockDeviceViewModel()
+            val activeBiometricAuthType by collectLastValue(underTest.activeBiometricAuthType)
+
+            enrollFingerprint(
+                sensorStrength = SensorStrength.STRONG,
+                sensorType = TYPE_POWER_BUTTON,
+            )
+            enrollFace(isStrongBiometric = true)
+            runCurrent()
+            startSecureLockDevicePrompt()
+
+            assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.SfpsCoex)
+        }
+    }
+
     @Test
     fun activeBiometricAuthType_basedOnModalitiesAndFaceMode_forBiometricPrompt_coexNonSfpsImplicit() {
         testScope.runTest {
@@ -253,6 +339,41 @@ class BiometricAuthIconViewModelTest() : SysuiTestCase() {
             startBiometricPrompt(hasFpAuth = true)
 
             assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.NonSfpsCoex)
+        }
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun activeBiometricAuthType_basedOnModalities_forSecureLockDevice_coexNonSfps() {
+        testScope.runTest {
+            initSecureLockDeviceViewModel()
+            val activeBiometricAuthType by collectLastValue(underTest.activeBiometricAuthType)
+
+            enrollFingerprint(
+                sensorStrength = SensorStrength.STRONG,
+                sensorType = TYPE_UDFPS_OPTICAL,
+            )
+            enrollFace(isStrongBiometric = true)
+            runCurrent()
+            startSecureLockDevicePrompt()
+
+            assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.NonSfpsCoex)
+        }
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun activeBiometricAuthNone_forNonStrongBiometrics_forSecureLockDevice() {
+        testScope.runTest {
+            initSecureLockDeviceViewModel()
+            val activeBiometricAuthType by collectLastValue(underTest.activeBiometricAuthType)
+
+            enrollFingerprint(sensorStrength = SensorStrength.WEAK, sensorType = TYPE_UDFPS_OPTICAL)
+            enrollFace(isStrongBiometric = false)
+            runCurrent()
+            startSecureLockDevicePrompt()
+
+            assertThat(activeBiometricAuthType).isEqualTo(BiometricAuthModalities.None)
         }
     }
 

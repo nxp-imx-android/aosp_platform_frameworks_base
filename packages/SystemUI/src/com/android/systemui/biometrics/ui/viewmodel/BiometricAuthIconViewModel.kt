@@ -162,11 +162,11 @@ constructor(
             ?: secureLockDeviceViewModel?.isAuthenticated
             ?: emptyFlow()
 
-    /** If the auth is pending confirmation. */
     private val isPendingConfirmation: Flow<Boolean> =
         isAuthenticated.map { authState ->
             authState.isAuthenticated && authState.needsUserConfirmation
         }
+    /** If the auth is pending confirmation. */
     val isPendingConfirmationState: Boolean by
         isPendingConfirmation.hydratedStateOf(
             traceName = "isPendingConfirmation",
