@@ -3377,6 +3377,12 @@ public class KeyguardViewMediator implements CoreStartable,
         Log.d(TAG, "handleStartKeyguardExitAnimation startTime=" + startTime
                 + " fadeoutDuration=" + fadeoutDuration);
         int currentUserId = mSelectedUserInteractor.getSelectedUserId();
+
+        // Requests to exit directly from WM are valid if the lockscreen can be dismissed
+        if (mKeyguardStateController.canDismissLockScreen()) {
+            mLastHideRequest = mLastShowRequest;
+        }
+
         String error = null;
         if (mGoingAwayRequestedForUserId != currentUserId) {
             error = "Not executing handleStartKeyguardExitAnimationInner() due to userId "
