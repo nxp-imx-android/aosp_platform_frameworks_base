@@ -20,7 +20,7 @@ import android.graphics.RectF
 import android.view.SurfaceControl
 import android.window.DesktopExperienceFlags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
-import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.android.wm.shell.desktopmode.ShellDesktopState
 
 /**
  * Controller to manage the indicators that show users the current position of the dragged window on
@@ -30,7 +30,7 @@ class MultiDisplayDragMoveIndicatorController(
     private val displayController: DisplayController,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val indicatorSurfaceFactory: MultiDisplayDragMoveIndicatorSurface.Factory,
-    private val desktopState: DesktopState,
+    private val shellDesktopState: ShellDesktopState,
 ) {
     private val dragIndicators =
         mutableMapOf<Int, MutableMap<Int, MultiDisplayDragMoveIndicatorSurface>>()
@@ -55,10 +55,17 @@ class MultiDisplayDragMoveIndicatorController(
             displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return
         val transaction = transactionSupplier()
         for (displayId in displayIds) {
+            val allowDropToDisplay =
+                if (
+                    DesktopExperienceFlags.ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX
+                        .isTrue
+                )
+                    shellDesktopState.isEligibleWindowDropTarget(displayId)
+                else shellDesktopState.isDesktopModeSupportedOnDisplay(displayId)
             if (
                 (displayId == startDisplayId &&
                     !DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) ||
-                    !desktopState.isDesktopModeSupportedOnDisplay(displayId)
+                    !allowDropToDisplay
             ) {
                 // No need to render indicators on displays that do not support desktop mode.
                 continue
