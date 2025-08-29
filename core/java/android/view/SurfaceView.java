@@ -2118,6 +2118,11 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
      * any {@link SurfaceControl.Transaction} to this SurfaceControl except for reparenting
      * child SurfaceControls. See: {@link SurfaceControl.Transaction#reparent}.
      *
+     *  The SurfaceControl lifetime follows the SurfaceView's Surface lifetime. You should implement
+     * {@link SurfaceHolder.Callback#surfaceCreated} and
+     * {@link SurfaceHolder.Callback#surfaceDestroyed} to discover when the
+     * SurfaceControl is valid. Outside of that, a {@code null} SurfaceControl will be returned.
+     *
      * @return The SurfaceControl for this SurfaceView.
      */
     public SurfaceControl getSurfaceControl() {
