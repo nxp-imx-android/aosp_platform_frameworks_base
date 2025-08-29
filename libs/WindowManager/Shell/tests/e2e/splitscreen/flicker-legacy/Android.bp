@@ -31,7 +31,7 @@ filegroup {
     ],
 }
 
-java_library {
+android_library {
     name: "WMShellFlickerTestsSplitScreenBase",
     srcs: [
         ":WMShellFlickerTestsSplitScreenBase-src",
