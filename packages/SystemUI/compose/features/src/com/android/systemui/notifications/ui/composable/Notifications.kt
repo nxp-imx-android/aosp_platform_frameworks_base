@@ -68,6 +68,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -181,14 +182,18 @@ fun ContentScope.HeadsUpNotificationSpace(
 /**
  * A version of [HeadsUpNotificationSpace] that can be swiped up off the top edge of the screen by
  * the user. When swiped up, the heads up notification is snoozed.
+ *
+ * @param useDrawBounds Whether to communicate drawBounds updated to the [stackScrollView]. This
+ *   should be `true` when content rendering the regular stack is not setting draw bounds anymore,
+ *   but HUNs can still appear.
  */
 @Composable
 fun ContentScope.SnoozeableHeadsUpNotificationSpace(
+    useDrawBounds: () -> Boolean,
     stackScrollView: NotificationScrollView,
     viewModel: NotificationsPlaceholderViewModel,
     modifier: Modifier = Modifier,
 ) {
-
     val isSnoozable by viewModel.isHeadsUpOrAnimatingAway.collectAsStateWithLifecycle(false)
 
     var scrollOffset by remember { mutableFloatStateOf(0f) }
@@ -229,11 +234,38 @@ fun ContentScope.SnoozeableHeadsUpNotificationSpace(
         }
     }
 
+    // Wait for being Idle on this content, otherwise LaunchedEffect would fire too soon, and
+    // another transition could override the NSSL stack bounds.
+    val updateDrawBounds = layoutState.transitionState.isIdle() && useDrawBounds()
+
+    LaunchedEffect(updateDrawBounds) {
+        if (updateDrawBounds) {
+            // Reset the stack bounds to avoid caching these values from the previous Scenes, and
+            // not to confuse the StackScrollAlgorithm when it displays a HUN over GONE.
+            stackScrollView.apply {
+                // use -headsUpInset to allow HUN translation outside bounds for snoozing
+                setStackTop(-headsUpInset)
+            }
+        }
+    }
+
     HeadsUpNotificationSpace(
         stackScrollView = stackScrollView,
         viewModel = viewModel,
         modifier =
             modifier
+                .onGloballyPositioned {
+                    if (updateDrawBounds) {
+                        stackScrollView.updateDrawBounds(
+                            it.boundsInWindow().toAndroidRectF().apply {
+                                // extend bounds to the screen top to avoid cutting off HUN
+                                // transitions
+                                top = 0f
+                                bottom += headsUpInset
+                            }
+                        )
+                    }
+                }
                 .absoluteOffset {
                     IntOffset(
                         x = 0,
@@ -836,13 +868,15 @@ private suspend fun scrollNotificationStack(
 private fun TransitionState.isOnLockscreen(): Boolean {
     return currentScene == Scenes.Lockscreen && currentOverlays.isEmpty()
 }
+
 private fun shouldUseLockscreenStackBounds(state: TransitionState): Boolean {
     return when (state) {
         is TransitionState.Idle -> state.isOnLockscreen()
         is TransitionState.Transition ->
-            // Keep using the lockscreen stack bounds when there is no placeholder on the next content
-            state.fromContent == Scenes.Lockscreen && state.toContent != Scenes.Shade
-                || state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
+            // Keep using the lockscreen stack bounds when there is no placeholder on the next
+            // content
+            state.fromContent == Scenes.Lockscreen && state.toContent != Scenes.Shade ||
+                state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
     }
 }
 

@@ -92,6 +92,7 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayActionsView
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayContentViewModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.OverlayShade
@@ -218,6 +219,13 @@ constructor(
                 )
             }
             SnoozeableHeadsUpNotificationSpace(
+                useDrawBounds = {
+                    with(layoutState.transitionState) {
+                        // When overlaid on top of the lock screen, drawBounds updates are already
+                        // being sent.
+                        isIdle(key) && !isIdle(Scenes.Lockscreen)
+                    }
+                },
                 stackScrollView = notificationStackScrollView.get(),
                 viewModel = hunPlaceholderViewModel,
             )

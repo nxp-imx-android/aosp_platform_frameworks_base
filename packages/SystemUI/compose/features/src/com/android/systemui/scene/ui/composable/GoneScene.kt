@@ -19,13 +19,7 @@ package com.android.systemui.scene.ui.composable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toAndroidRectF
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
@@ -34,7 +28,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
-import com.android.systemui.notifications.ui.composable.headsUpTopInset
 import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -47,13 +40,13 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * "Gone" is not a real scene but rather the absence of scenes when we want to skip showing any
- * content from the scene framework.
+ * scene from the scene framework. Overlays from the scene framework may still be shown.
  */
 @SysUISingleton
 class GoneScene
 @Inject
 constructor(
-    private val notificationStackScrolLView: Lazy<NotificationScrollView>,
+    private val notificationStackScrollView: Lazy<NotificationScrollView>,
     private val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
     private val viewModelFactory: GoneUserActionsViewModel.Factory,
 ) : ExclusiveActivatable(), Scene {
@@ -71,53 +64,20 @@ constructor(
 
     @Composable
     override fun ContentScope.Content(modifier: Modifier) {
-
-        val isIdleAndNotOccluded =
-            with(layoutState.transitionState) {
-                isIdle(key) &&
-                    !isIdle(Overlays.NotificationsShade) &&
-                    !isIdle(Overlays.QuickSettingsShade)
-            }
-
-        val headsUpInset = with(LocalDensity.current) { headsUpTopInset().toPx() }
-
-        LaunchedEffect(isIdleAndNotOccluded) {
-            // Wait for being Idle on this Scene, otherwise LaunchedEffect would fire too soon,
-            // and another transition could override the NSSL stack bounds.
-            if (isIdleAndNotOccluded) {
-                // Reset the stack bounds to avoid caching these values from the previous Scenes,
-                // and not to confuse the StackScrollAlgorithm when it displays a HUN over GONE.
-                notificationStackScrolLView.get().apply {
-                    // use -headsUpInset to allow HUN translation outside bounds for snoozing
-                    setStackTop(-headsUpInset)
-                }
-            }
-        }
-
         animateContentFloatAsState(
             value = QuickSettings.SharedValues.SquishinessValues.GoneSceneStarting,
             key = QuickSettings.SharedValues.TilesSquishiness,
         )
         Spacer(modifier.fillMaxSize())
         SnoozeableHeadsUpNotificationSpace(
-            modifier =
-                Modifier.onGloballyPositioned {
-                    // Once we are on the non-occluded Lockscreen, the regular stack is not setting
-                    // draw bounds anymore, but HUNs can still appear.
-                    if (isIdleAndNotOccluded) {
-                        notificationStackScrolLView
-                            .get()
-                            .updateDrawBounds(
-                                it.boundsInWindow().toAndroidRectF().apply {
-                                    // extend bounds to the screen top to avoid cutting off HUN
-                                    // transitions
-                                    top = 0f
-                                    bottom += headsUpInset
-                                }
-                            )
-                    }
-                },
-            stackScrollView = notificationStackScrolLView.get(),
+            useDrawBounds = {
+                with(layoutState.transitionState) {
+                    isIdle(key) &&
+                        !isIdle(Overlays.NotificationsShade) &&
+                        !isIdle(Overlays.QuickSettingsShade)
+                }
+            },
+            stackScrollView = notificationStackScrollView.get(),
             viewModel =
                 rememberViewModel("GoneScene") { notificationsPlaceholderViewModelFactory.create() },
         )
