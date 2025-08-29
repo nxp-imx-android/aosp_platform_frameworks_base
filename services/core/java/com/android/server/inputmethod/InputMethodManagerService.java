@@ -1482,14 +1482,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
         final String selectedImeId;
-        if (Flags.consistentGetCurrentInputMethodInfo()) {
-            final var bindingController = getInputMethodBindingController(userId);
-            synchronized (ImfLock.class) {
-                selectedImeId = bindingController.getSelectedMethodId();
-            }
-        } else {
-            selectedImeId = settings.getSelectedInputMethod();
+        final var bindingController = getInputMethodBindingController(userId);
+        synchronized (ImfLock.class) {
+            selectedImeId = bindingController.getSelectedMethodId();
         }
+
         return settings.getMethodMap().get(selectedImeId);
     }
 
