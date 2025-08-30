@@ -499,21 +499,32 @@ fun ContentScope.NotificationScrollingStack(
     }
 
     val scrimNestedScrollConnection =
-        shadeSession.rememberSession(key = "ScrimConnection", scrimOffset, minScrimTop, density) {
-            val flingSpec: DecayAnimationSpec<Float> = splineBasedDecay(density)
-            val flingBehavior = NotificationScrimFlingBehavior(flingSpec)
-            NotificationScrimNestedScrollConnection(
-                scrimOffset = { scrimOffset.value },
-                snapScrimOffset = { value -> coroutineScope.launch { scrimOffset.snapTo(value) } },
-                animateScrimOffset = { value ->
-                    coroutineScope.launch { scrimOffset.animateTo(value) }
-                },
-                minScrimOffset = minScrimOffset,
-                maxScrimOffset = 0f,
-                contentHeight = { stackHeight.intValue.toFloat() },
-                minVisibleScrimHeight = minVisibleScrimHeight,
-                flingBehavior = flingBehavior,
-            )
+        if (supportNestedScrolling) {
+            shadeSession.rememberSession(
+                key = "ScrimConnection",
+                scrimOffset,
+                minScrimTop,
+                density,
+            ) {
+                val flingSpec: DecayAnimationSpec<Float> = splineBasedDecay(density)
+                val flingBehavior = NotificationScrimFlingBehavior(flingSpec)
+                NotificationScrimNestedScrollConnection(
+                    scrimOffset = { scrimOffset.value },
+                    snapScrimOffset = { value ->
+                        coroutineScope.launch { scrimOffset.snapTo(value) }
+                    },
+                    animateScrimOffset = { value ->
+                        coroutineScope.launch { scrimOffset.animateTo(value) }
+                    },
+                    minScrimOffset = minScrimOffset,
+                    maxScrimOffset = 0f,
+                    contentHeight = { stackHeight.intValue.toFloat() },
+                    minVisibleScrimHeight = minVisibleScrimHeight,
+                    flingBehavior = flingBehavior,
+                )
+            }
+        } else {
+            null
         }
 
     val swipeToExpandNotificationScrollConnection =
@@ -683,8 +694,8 @@ fun ContentScope.NotificationScrollingStack(
                 modifier =
                     Modifier.disableSwipesWhenScrolling()
                         .nestedScroll(swipeToExpandNotificationScrollConnection)
-                        .thenIf(supportNestedScrolling) {
-                            Modifier.nestedScroll(scrimNestedScrollConnection)
+                        .thenIf(supportNestedScrolling && scrimNestedScrollConnection != null) {
+                            Modifier.nestedScroll(scrimNestedScrollConnection!!)
                         }
                         .verticalScroll(scrollState, overscrollEffect = overScrollEffect)
                         .fillMaxWidth()
@@ -836,13 +847,15 @@ private suspend fun scrollNotificationStack(
 private fun TransitionState.isOnLockscreen(): Boolean {
     return currentScene == Scenes.Lockscreen && currentOverlays.isEmpty()
 }
+
 private fun shouldUseLockscreenStackBounds(state: TransitionState): Boolean {
     return when (state) {
         is TransitionState.Idle -> state.isOnLockscreen()
         is TransitionState.Transition ->
-            // Keep using the lockscreen stack bounds when there is no placeholder on the next content
-            state.fromContent == Scenes.Lockscreen && state.toContent != Scenes.Shade
-                || state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
+            // Keep using the lockscreen stack bounds when there is no placeholder on the next
+            // content
+            state.fromContent == Scenes.Lockscreen && state.toContent != Scenes.Shade ||
+                state.isTransitioningBetween(content = Scenes.Lockscreen, other = Overlays.Bouncer)
     }
 }
 

@@ -387,6 +387,7 @@ private fun ContentScope.QuickSettingsContent(
                     .padding(horizontal = shadeHorizontalPadding),
         )
 
+        // TODO(b/436646848): remove NotificationScrollingStack from QuickSettings
         // The minimum possible value for the top of the notification stack. In other words: how
         // high is the notification stack allowed to get when the scene is at rest. It may still be
         // translated farther upwards by a transition animation but, at rest, the top edge of its
@@ -406,7 +407,7 @@ private fun ContentScope.QuickSettingsContent(
             stackTopPadding = notificationStackPadding,
             stackBottomPadding = navBarBottomHeight,
             shouldIncludeHeadsUpSpace = false,
-            supportNestedScrolling = true,
+            supportNestedScrolling = false,
             modifier =
                 Modifier.fillMaxWidth()
                     // Match the screen height with the scrim, so it covers the whole screen,
