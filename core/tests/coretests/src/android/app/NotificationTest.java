@@ -1393,7 +1393,6 @@ public class NotificationTest {
 
         if (rawColor != Notification.COLOR_DEFAULT) {
             // When a color is provided, night mode should have no effect on the notification
-            // Exception: ProtectionColor will not match, since it has different values for LT/DT
             assertEquals(cDay.getBackgroundColor(), cNight.getBackgroundColor());
             assertEquals(cDay.getPrimaryTextColor(), cNight.getPrimaryTextColor());
             assertEquals(cDay.getSecondaryTextColor(), cNight.getSecondaryTextColor());
@@ -1406,6 +1405,7 @@ public class NotificationTest {
                     cNight.getTertiaryFixedDimAccentColor());
             assertEquals(cDay.getOnTertiaryFixedAccentTextColor(),
                     cNight.getOnTertiaryFixedAccentTextColor());
+            assertEquals(cDay.getProtectionColor(), cNight.getProtectionColor());
             assertEquals(cDay.getContrastColor(), cNight.getContrastColor());
             assertEquals(cDay.getRippleAlpha(), cNight.getRippleAlpha());
         }
